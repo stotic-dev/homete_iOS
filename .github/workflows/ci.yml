@@ -80,3 +80,8 @@ jobs:
           -clonedSourcePackagesDirPath SourcePackages
           clean test |
           xcbeautify --renderer github-actions
+
+  # Deploy
+  call_deploy:
+    uses: ./.github/workflows/cd.yml
+    secrets: inherit

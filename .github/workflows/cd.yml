@@ -4,9 +4,7 @@
 name: deploy
 
 on:
-  pull_request:
-    branches:
-      - "main"
+  workflow_call:
 
 env:
   # チェックアウト
@@ -53,6 +51,9 @@ jobs:
           API_KEY_PATH="private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_KEY_ID}.p8"
           echo "${{ secrets.ASC_SECRET_KEY }}" | base64 --decode > "$API_KEY_PATH"
           chmod 600 "$API_KEY_PATH"
+
+      - name: Increment build number
+        run: xcrun agvtool new-version -all ${{github.run_number}}
 
       # 依存ライブラリ解決
       - name: Xcode Resolve Package Dependencies
@@ -102,4 +103,4 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          scripts/upload_ipa.sh "$IPA_PATH" "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_ISSUER_ID}}" "${{secrets.APP_ID_NUMBER}}"
+          scripts/upload_ipa.sh "$IPA_PATH" "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_ISSUER_ID}}" "${{secrets.APP_ID}}"
