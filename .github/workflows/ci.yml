@@ -56,7 +56,7 @@ jobs:
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
           xcodebuild \
-          -workspace ${WORKSPACE_DIR} \
+          -project ${WORKSPACE_DIR} \
           -scheme ${BUILD_SCHEME} \
           -configuration Debug \
           -clonedSourcePackagesDirPath SourcePackages \
@@ -69,7 +69,7 @@ jobs:
       - name: Xcode test
         run: set -o pipefail &&
           xcodebuild \
-          -workspace ${WORKSPACE_DIR} \
+          -project ${WORKSPACE_DIR} \
           -configuration Debug \
           -destination 'platform=iOS Simulator,OS=18.1,name=iPhone 16 Pro' \
           -scheme ${BUILD_SCHEME} \
