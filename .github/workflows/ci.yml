@@ -55,28 +55,28 @@ jobs:
       # ビルド
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
-          xcodebuild \
-          -project ${WORKSPACE_DIR} \
-          -scheme ${BUILD_SCHEME} \
-          -configuration Debug \
-          -clonedSourcePackagesDirPath SourcePackages \
-          -skipPackagePluginValidation \
-          -skipMacroValidation \
-          -scmProvider xcode \
+          xcodebuild
+          -project "${WORKSPACE_DIR}"
+          -scheme "${BUILD_SCHEME}"
+          -configuration Debug
+          -clonedSourcePackagesDirPath SourcePackages
+          -skipPackagePluginValidation
+          -skipMacroValidation
+          -scmProvider xcode
           -resolvePackageDependencies
 
       # 単体テストの実行
       - name: Xcode test
         run: set -o pipefail &&
-          xcodebuild \
-          -project ${WORKSPACE_DIR} \
-          -configuration Debug \
-          -destination 'platform=iOS Simulator,OS=18.1,name=iPhone 16 Pro' \
-          -scheme ${BUILD_SCHEME} \
-          -testPlan ${TEST_PLAN} \
-          -skipPackagePluginValidation \
-          -skipMacroValidation \
-          -scmProvider xcode \
-          -clonedSourcePackagesDirPath SourcePackages \
+          xcodebuild
+          -project "${WORKSPACE_DIR}"
+          -configuration Debug
+          -destination 'platform=iOS Simulator,OS=18.1,name=iPhone 16 Pro'
+          -scheme "${BUILD_SCHEME}"
+          -testPlan "${TEST_PLAN}"
+          -skipPackagePluginValidation
+          -skipMacroValidation
+          -scmProvider xcode
+          -clonedSourcePackagesDirPath SourcePackages
           clean test |
           xcbeautify --renderer github-actions
