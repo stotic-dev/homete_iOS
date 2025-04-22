@@ -6,18 +6,17 @@ name: deploy
 on:
   pull_request:
     branches:
-      - "*"
-    paths-ignore:
-      - ".github/ISSUE_TEMPLATE/*"
-      - ".gitignore"
-      - README.md
-  workflow_dispatch:
+      - "main"
 
 env:
   # チェックアウト
   DEVELOPER_DIR: /Applications/Xcode_16.2.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
+  TEST_FLIGHT_EXPORT_OPTION_PATH: deploy/config/ExportOptions_TestFlight.plist
+  ARCHIVE_PATH: Build/homete
+  EXPORT_PATH: Build/app
+  SPM_CLONE_PATH: SourcePackages
 
 jobs:
   build:
@@ -47,31 +46,60 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # ビルド
+      # ASC_API_KEYのファイルを生成
+      - name: Setup api key
+        run: |
+          mkdir -p private_keys
+          API_KEY_PATH="private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_KEY_ID}.p8"
+          echo "${{ secrets.ASC_SECRET_KEY }}" | base64 --decode > "$API_KEY_PATH"
+          chmod 600 "$API_KEY_PATH"
+
+      # 依存ライブラリ解決
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
           xcodebuild
           -project "${WORKSPACE_DIR}"
           -scheme "${BUILD_SCHEME}"
-          -configuration Debug
+          -configuration Release
           -clonedSourcePackagesDirPath SourcePackages
           -skipPackagePluginValidation
           -skipMacroValidation
           -scmProvider xcode
           -resolvePackageDependencies
 
-      # 単体テストの実行
-      - name: Xcode test
+      # アーカイブ実行
+      - name: Archive app
         run: set -o pipefail &&
           xcodebuild
-          -project "${WORKSPACE_DIR}"
-          -configuration Debug
-          -destination 'platform=iOS Simulator,OS=18.1,name=iPhone 16 Pro'
+          -clonedSourcePackagesDirPath $SPM_CLONE_PATH
+          -configuration Release
           -scheme "${BUILD_SCHEME}"
-          -testPlan "${TEST_PLAN}"
-          -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
-          -clonedSourcePackagesDirPath SourcePackages
-          clean test |
-          xcbeautify --renderer github-actions
+          -project "${WORKSPACE_DIR}"
+          -archivePath "${ARCHIVE_PATH}"
+          -authenticationKeyPath "$API_KEY_PATH"
+          -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
+          -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
+          -allowProvisioningUpdates
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGNING_ALLOWED=NO
+          clean archive
+
+      # IPAファイルを生成
+      - name: Create ipa
+        run: set -o pipefail &&
+          xcodebuild
+          -exportArchive
+          -archivePath "${ARCHIVE_PATH}"
+          -exportPath "${EXPORT_PATH}"
+          -authenticationKeyPath "$API_KEY_PATH"
+          -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
+          -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
+          -allowProvisioningUpdates
+          -exportOptionsPlist "${TEST_FLIGHT_EXPORT_OPTION_PATH}"
+
+      # IPAをApp Store Connectへアップロードする
+      - name: Upload ipa
+        run: |
+          chmod -R 777 "${EXPORT_PATH}"
+          IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
+          scripts/upload_ipa.sh "$IPA_PATH" "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_ISSUER_ID}}" "${{secrets.APP_ID_NUMBER}}"
