@@ -48,10 +48,6 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # xcbeautifyをインストール
-      - name: Install xcbeautify
-        run: brew install xcbeautify
-
       # ビルド
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
