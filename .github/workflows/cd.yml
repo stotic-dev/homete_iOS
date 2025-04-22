@@ -52,6 +52,10 @@ jobs:
           echo "${{ secrets.ASC_SECRET_KEY }}" | base64 --decode > "$API_KEY_PATH"
           chmod 600 "$API_KEY_PATH"
 
+      - run: echo "$API_KEY_PATH"
+      - run: ls -l "$API_KEY_PATH"
+      - run: cat "$API_KEY_PATH" | base64 --decode
+
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{github.run_number}}
 

@@ -4,6 +4,8 @@
 <dict>
 	<key>destination</key>
 	<string>export</string>
+	<key>generateAppStoreInformation</key>
+	<false/>
 	<key>manageAppVersionAndBuildNumber</key>
 	<false/>
 	<key>method</key>
