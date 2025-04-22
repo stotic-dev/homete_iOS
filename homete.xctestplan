@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "935E1E91-669A-4322-91EB-338493FFF294",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:homete.xcodeproj",
+      "identifier" : "BCC853F42DB74BBC00C9A44B",
+      "name" : "homete"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:homete.xcodeproj",
+        "identifier" : "BCC854012DB74BBF00C9A44B",
+        "name" : "hometeTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:homete.xcodeproj",
+        "identifier" : "BCC8540B2DB74BBF00C9A44B",
+        "name" : "hometeUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
