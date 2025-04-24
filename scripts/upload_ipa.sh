@@ -27,7 +27,14 @@ VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$PLIST_
 BUILD=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$PLIST_PATH")
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$PLIST_PATH")
 
-# 4. altoolでアップロード
+# 4. ipaのバリデーション
+xcrun altool --validate-app \
+  -f Build/app/homete.ipa \
+  -t ios \
+  --apiKey "$API_KEY" \
+  --apiIssuer "$API_ISSUER"
+
+# 5. altoolでアップロード
 xcrun altool \
   --upload-package "$IPA_PATH" \
   --type ios \
@@ -36,7 +43,9 @@ xcrun altool \
   --bundle-short-version-string "$VERSION" \
   --bundle-id "$BUNDLE_ID" \
   --apiKey "$API_KEY" \
-  --apiIssuer "$API_ISSUER"
+  --apiIssuer "$API_ISSUER" \
+  --show-progress \
+  --verbose
 
 # 5. 一時ディレクトリ削除
 rm -rf "$TMP_DIR"

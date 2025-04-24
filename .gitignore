@@ -67,4 +67,8 @@ fastlane/test_output
 
 # secret
 
-private_key/
+private_keys/
+
+# other
+
+Build/

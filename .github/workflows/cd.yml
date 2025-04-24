@@ -21,7 +21,7 @@ jobs:
     # 実行環境はmacosに設定
     runs-on: macos-latest
     env:
-      API_KEY_PATH: "private_key/${{ secrets.ASC_KEY_ID }}.p8"
+      API_KEY_PATH: "private_keys/${{ secrets.ASC_KEY_ID }}.p8"
 
     steps:
       # fetch-depth の計算
@@ -50,9 +50,9 @@ jobs:
       - name: Setup api key
         run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{ secrets.ASC_SECRET_KEY }}"
 
-      - run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
-      - run: echo ${{ env.API_KEY_ABSOLUTE_PATH }}
-      - run: ls -l ${{ env.API_KEY_ABSOLUTE_PATH }}
+      # ASC_API_KEYの絶対パスを環境変数へ設定
+      - name: Setup env for api key path
+        run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
 
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{ github.run_number }}
