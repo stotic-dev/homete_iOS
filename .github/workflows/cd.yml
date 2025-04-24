@@ -51,6 +51,9 @@ jobs:
       - name: Setup api key
         run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{secrets.ASC_SECRET_KEY}}"
 
+      - run: echo $API_KEY_ABSOLUTE_PATH
+      - run: ls -l $API_KEY_ABSOLUTE_PATH
+
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{github.run_number}}
 
