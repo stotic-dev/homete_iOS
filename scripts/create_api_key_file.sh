@@ -12,7 +12,7 @@ API_KEY_ID="$2"
 API_KEY_BASE_64="$3"
 
 # ASCのAPIキーファイル生成処理を行って、環境変数に設定する
-mkdir -p private_keys
+mkdir -p $BASE_DIR
 API_KEY_PATH="$BASE_DIR/AuthKey_$API_KEY_ID.p8"
 echo "$API_KEY_BASE_64" | base64 --decode > "$API_KEY_PATH"
 chmod 600 "$API_KEY_PATH"
