@@ -21,8 +21,7 @@ jobs:
     # 実行環境はmacosに設定
     runs-on: macos-latest
     env:
-      API_KEY_PATH: "private_key/${{secrets.ASC_KEY_ID}}.p8"
-      API_KEY_ABSOLUTE_PATH: "$(pwd)/$API_KEY_PATH"
+      API_KEY_PATH: "private_key/${{ secrets.ASC_KEY_ID }}.p8"
 
     steps:
       # fetch-depth の計算
@@ -49,13 +48,14 @@ jobs:
 
       # ASC_API_KEYのファイルを生成
       - name: Setup api key
-        run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{secrets.ASC_SECRET_KEY}}"
+        run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{ secrets.ASC_SECRET_KEY }}"
 
-      - run: echo $API_KEY_ABSOLUTE_PATH
-      - run: ls -l $API_KEY_ABSOLUTE_PATH
+      - run: echo "API_KEY_ABSOLUTE_PATH=$(( pwd ))/$API_KEY_PATH" >> $GITHUB_ENV
+      - run: echo ${{ env.API_KEY_ABSOLUTE_PATH }}
+      - run: ls -l ${{ env.API_KEY_ABSOLUTE_PATH }}
 
       - name: Increment build number
-        run: xcrun agvtool new-version -all ${{github.run_number}}
+        run: xcrun agvtool new-version -all ${{ github.run_number }}
 
       # 依存ライブラリ解決
       - name: Xcode Resolve Package Dependencies
@@ -79,9 +79,9 @@ jobs:
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
           -archivePath "${ARCHIVE_PATH}"
-          -authenticationKeyPath "$API_KEY_ABSOLUTE_PATH"
-          -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
-          -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
+          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
           -allowProvisioningUpdates
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGNING_ALLOWED=NO
@@ -94,9 +94,9 @@ jobs:
           -exportArchive
           -archivePath "${ARCHIVE_PATH}"
           -exportPath "${EXPORT_PATH}"
-          -authenticationKeyPath "$API_KEY_ABSOLUTE_PATH"
-          -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
-          -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
+          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
           -allowProvisioningUpdates
           -exportOptionsPlist "${TEST_FLIGHT_EXPORT_OPTION_PATH}"
 
@@ -105,4 +105,4 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          scripts/upload_ipa.sh "$IPA_PATH" "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_ISSUER_ID}}" "${{secrets.APP_ID}}"
+          scripts/upload_ipa.sh "$IPA_PATH" "${{ secrets.ASC_KEY_ID }}" "${{ secrets.ASC_ISSUER_ID }}" "${{ secrets.APP_ID }}"
