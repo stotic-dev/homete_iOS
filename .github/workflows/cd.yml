@@ -21,7 +21,8 @@ jobs:
     # 実行環境はmacosに設定
     runs-on: macos-latest
     env:
-      API_KEY_PATH: "$(pwd)/private_key/${{secrets.ASC_KEY_ID}}.p8"
+      API_KEY_PATH: "private_key/${{secrets.ASC_KEY_ID}}.p8"
+      API_KEY_ABSOLUTE_PATH: "$(pwd)/$API_KEY_PATH"
 
     steps:
       # fetch-depth の計算
@@ -50,10 +51,6 @@ jobs:
       - name: Setup api key
         run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{secrets.ASC_SECRET_KEY}}"
 
-      - run: echo "$API_KEY_PATH"
-      - run: ls -l "$API_KEY_PATH"
-      - run: cat "$API_KEY_PATH" | base64 --decode
-
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{github.run_number}}
 
@@ -79,7 +76,7 @@ jobs:
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
           -archivePath "${ARCHIVE_PATH}"
-          -authenticationKeyPath "$API_KEY_PATH"
+          -authenticationKeyPath "$API_KEY_ABSOLUTE_PATH"
           -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
           -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
           -allowProvisioningUpdates
@@ -94,7 +91,7 @@ jobs:
           -exportArchive
           -archivePath "${ARCHIVE_PATH}"
           -exportPath "${EXPORT_PATH}"
-          -authenticationKeyPath "$API_KEY_PATH"
+          -authenticationKeyPath "$API_KEY_ABSOLUTE_PATH"
           -authenticationKeyID "${{secrets.ASC_KEY_ID}}"
           -authenticationKeyIssuerID "${{secrets.ASC_ISSUER_ID}}"
           -allowProvisioningUpdates
