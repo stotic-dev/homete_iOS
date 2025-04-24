@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 引数チェック
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
   echo "Usage: $0 <base_directory> <api_key_id> <api_key_base64>"
   exit 1
 fi
