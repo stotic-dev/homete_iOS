@@ -21,7 +21,7 @@ jobs:
     # 実行環境はmacosに設定
     runs-on: macos-latest
     env:
-      API_KEY_PATH: "private_key/${{secrets.ASC_KEY_ID}}.p8"
+      API_KEY_PATH: "$(pwd)/private_key/${{secrets.ASC_KEY_ID}}.p8"
 
     steps:
       # fetch-depth の計算
