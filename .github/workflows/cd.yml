@@ -48,7 +48,7 @@ jobs:
 
       # ASC_API_KEYのファイルを生成
       - name: Setup api key
-        run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{ secrets.ASC_SECRET_KEY }}"
+        run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_keys "${{ secrets.ASC_SECRET_KEY }}"
 
       # ASC_API_KEYの絶対パスを環境変数へ設定
       - name: Setup env for api key path
