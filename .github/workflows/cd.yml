@@ -50,7 +50,7 @@ jobs:
       - name: Setup api key
         run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{ secrets.ASC_SECRET_KEY }}"
 
-      - run: echo "API_KEY_ABSOLUTE_PATH=$(( pwd ))/$API_KEY_PATH" >> $GITHUB_ENV
+      - run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
       - run: echo ${{ env.API_KEY_ABSOLUTE_PATH }}
       - run: ls -l ${{ env.API_KEY_ABSOLUTE_PATH }}
 
