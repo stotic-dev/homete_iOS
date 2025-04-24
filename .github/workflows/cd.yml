@@ -20,6 +20,8 @@ jobs:
   deploy_testFlight:
     # 実行環境はmacosに設定
     runs-on: macos-latest
+    env:
+      API_KEY_PATH: "private_key/${{secrets.ASC_KEY_ID}}.p8"
 
     steps:
       # fetch-depth の計算
@@ -46,7 +48,7 @@ jobs:
 
       # ASC_API_KEYのファイルを生成
       - name: Setup api key
-        run: scripts/create_api_key_file.sh private_key "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_SECRET_KEY}}"
+        run: scripts/create_api_key_file.sh "$API_KEY_PATH" private_key "${{secrets.ASC_SECRET_KEY}}"
 
       - run: echo "$API_KEY_PATH"
       - run: ls -l "$API_KEY_PATH"
