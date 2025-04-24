@@ -46,11 +46,7 @@ jobs:
 
       # ASC_API_KEYのファイルを生成
       - name: Setup api key
-        run: |
-          mkdir -p private_keys
-          API_KEY_PATH="private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_KEY_ID}.p8"
-          echo "${{ secrets.ASC_SECRET_KEY }}" | base64 --decode > "$API_KEY_PATH"
-          chmod 600 "$API_KEY_PATH"
+        run: scripts/create_api_key_file.sh private_key "${{secrets.ASC_KEY_ID}}" "${{secrets.ASC_SECRET_KEY}}"
 
       - run: echo "$API_KEY_PATH"
       - run: ls -l "$API_KEY_PATH"
