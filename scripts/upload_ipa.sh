@@ -44,8 +44,9 @@ xcrun altool \
   --bundle-id "$BUNDLE_ID" \
   --apiKey "$API_KEY" \
   --apiIssuer "$API_ISSUER" \
-  --show-progress \
   --verbose
+  # --show-progress \
+ 
 
 # 5. 一時ディレクトリ削除
 rm -rf "$TMP_DIR"

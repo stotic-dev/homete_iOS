@@ -54,6 +54,9 @@ jobs:
       - name: Setup env for api key path
         run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
 
+      - run: echo $API_KEY_ABSOLUTE_PATH
+      - run: echo $API_KEY_PATH
+
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{ github.run_number }}
 
