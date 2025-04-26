@@ -46,7 +46,6 @@ xcrun altool \
   --apiIssuer "$API_ISSUER" \
   --verbose
   # --show-progress \
- 
 
 # 5. 一時ディレクトリ削除
 rm -rf "$TMP_DIR"
