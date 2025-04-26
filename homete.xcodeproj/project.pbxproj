@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BCC854032DB74BBF00C9A44B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -25,6 +29,7 @@
 
 /* Begin PBXFileReference section */
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
+		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BCC854022DB74BBF00C9A44B /* hometeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BCC8540C2DB74BBF00C9A44B /* hometeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -76,6 +81,7 @@
 		BCC853EC2DB74BBC00C9A44B = {
 			isa = PBXGroup;
 			children = (
+				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
 				BCC854052DB74BBF00C9A44B /* hometeTests */,
@@ -214,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

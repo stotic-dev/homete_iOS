@@ -36,6 +36,14 @@ platform :ios do
       ipa: ipa_path,
       api_key: api_key
     )
+
+    add_git_tag(
+      grouping: "release",
+      includes_lane: true,
+      prefix: "v",
+      build_number: options[:app_version],
+      force: true
+    )
   end
 
   private_lane :generate_api_key do |options|
