@@ -68,63 +68,63 @@ jobs:
       - run: bundle install
 
       # SPMのライブラリのキャッシュ
-      - name: Cache Swift Packages
-        uses: actions/cache@v4.2.2
-        with:
-          path: SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
-          restore-keys: ${{ runner.os }}-spm-
+      # - name: Cache Swift Packages
+      #   uses: actions/cache@v4.2.2
+      #   with:
+      #     path: SourcePackages
+      #     key: ${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
+      #     restore-keys: ${{ runner.os }}-spm-
 
-      # ビルド番号更新
-      - name: Increment build number
-        run: xcrun agvtool new-version -all ${{ github.run_number }}
+      # # ビルド番号更新
+      # - name: Increment build number
+      #   run: xcrun agvtool new-version -all ${{ github.run_number }}
 
-      # 依存ライブラリ解決
-      - name: Xcode Resolve Package Dependencies
-        run: set -o pipefail &&
-          xcodebuild
-          -project "${WORKSPACE_DIR}"
-          -scheme "${BUILD_SCHEME}"
-          -configuration Release
-          -clonedSourcePackagesDirPath SourcePackages
-          -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
-          -resolvePackageDependencies
+      # # 依存ライブラリ解決
+      # - name: Xcode Resolve Package Dependencies
+      #   run: set -o pipefail &&
+      #     xcodebuild
+      #     -project "${WORKSPACE_DIR}"
+      #     -scheme "${BUILD_SCHEME}"
+      #     -configuration Release
+      #     -clonedSourcePackagesDirPath SourcePackages
+      #     -skipPackagePluginValidation
+      #     -skipMacroValidation
+      #     -scmProvider xcode
+      #     -resolvePackageDependencies
 
-      # アーカイブ実行
-      - name: Archive app
-        run: set -o pipefail &&
-          xcodebuild
-          -clonedSourcePackagesDirPath $SPM_CLONE_PATH
-          -configuration Release
-          -scheme "${BUILD_SCHEME}"
-          -project "${WORKSPACE_DIR}"
-          -archivePath "${ARCHIVE_PATH}"
-          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
-          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
-          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
-          -allowProvisioningUpdates
-          CODE_SIGNING_REQUIRED=NO
-          CODE_SIGNING_ALLOWED=NO
-          clean archive
+      # # アーカイブ実行
+      # - name: Archive app
+      #   run: set -o pipefail &&
+      #     xcodebuild
+      #     -clonedSourcePackagesDirPath $SPM_CLONE_PATH
+      #     -configuration Release
+      #     -scheme "${BUILD_SCHEME}"
+      #     -project "${WORKSPACE_DIR}"
+      #     -archivePath "${ARCHIVE_PATH}"
+      #     -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+      #     -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+      #     -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
+      #     -allowProvisioningUpdates
+      #     CODE_SIGNING_REQUIRED=NO
+      #     CODE_SIGNING_ALLOWED=NO
+      #     clean archive
 
-      # IPAファイルを生成
-      - name: Create ipa
-        run: set -o pipefail &&
-          xcodebuild
-          -exportArchive
-          -archivePath "${ARCHIVE_PATH}"
-          -exportPath "${EXPORT_PATH}"
-          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
-          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
-          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
-          -allowProvisioningUpdates
-          -exportOptionsPlist "${TEST_FLIGHT_EXPORT_OPTION_PATH}"
+      # # IPAファイルを生成
+      # - name: Create ipa
+      #   run: set -o pipefail &&
+      #     xcodebuild
+      #     -exportArchive
+      #     -archivePath "${ARCHIVE_PATH}"
+      #     -exportPath "${EXPORT_PATH}"
+      #     -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+      #     -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+      #     -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
+      #     -allowProvisioningUpdates
+      #     -exportOptionsPlist "${TEST_FLIGHT_EXPORT_OPTION_PATH}"
 
-      # IPAをApp Store Connectへアップロードする
-      - name: Upload ipa
-        run: |
-          chmod -R 777 "${EXPORT_PATH}"
-          IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
+      # # IPAをApp Store Connectへアップロードする
+      # - name: Upload ipa
+      #   run: |
+      #     chmod -R 777 "${EXPORT_PATH}"
+      #     IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
+      #     fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
