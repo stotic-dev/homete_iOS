@@ -55,7 +55,7 @@ jobs:
       - name: Setup env for api key path
         run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
 
-      # Bundlerの依存ライブラリキャッシュ
+      # Gemfileの依存ライブラリキャッシュ
       - name: cache bundle directory
         uses: actions/cache@v4.2.2
         with:
@@ -64,8 +64,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gem-${{ hashFiles('Gemfile.lock') }}
 
-      # Bundleの依存ライブラリインストール
-      - run: bundle install
+      # Gemfileの依存ライブラリインストール
+      - name: Install Gemfile lib
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
 
       # SPMのライブラリのキャッシュ
       # - name: Cache Swift Packages
