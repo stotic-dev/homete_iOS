@@ -15,6 +15,7 @@ env:
   ARCHIVE_PATH: Build/homete.xcarchive
   EXPORT_PATH: Build/app
   SPM_CLONE_PATH: SourcePackages
+  SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 jobs:
   deploy_testFlight:
@@ -54,8 +55,27 @@ jobs:
       - name: Setup env for api key path
         run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
 
-      - run: brew install fastlane
+      # Bundlerの依存ライブラリキャッシュ
+      - name: cache bundle directory
+        uses: actions/cache@v4.2.2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
 
+      # Bundleの依存ライブラリインストール
+      - run: bundle install
+
+      # SPMのライブラリのキャッシュ
+      - name: Cache Swift Packages
+        uses: actions/cache@v4.2.2
+        with:
+          path: SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
+          restore-keys: ${{ runner.os }}-spm-
+
+      # ビルド番号更新
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{ github.run_number }}
 
@@ -107,4 +127,4 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH" --verbose
+          fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
