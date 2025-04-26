@@ -64,3 +64,11 @@ fastlane/test_output
 # macOS
 
 *.DS_Store
+
+# secret
+
+private_keys/
+
+# other
+
+Build/

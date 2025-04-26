@@ -76,3 +76,10 @@ jobs:
           -clonedSourcePackagesDirPath SourcePackages
           clean test |
           xcbeautify --renderer github-actions
+
+  # Deploy
+  call_deploy:
+    if: github.repository == 'main'
+    needs: build
+    uses: ./.github/workflows/cd.yml
+    secrets: inherit
