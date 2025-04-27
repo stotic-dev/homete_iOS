@@ -18,7 +18,7 @@ env:
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 jobs:
-  deploy_testFlight:
+  deploy_app_store:
     # 実行環境はmacosに設定
     runs-on: macos-latest
     env:
