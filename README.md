@@ -1,2 +1,3 @@
 # homete_iOS
-hometeのiOSアプリリポジトリ
+
+homete の iOS アプリリポジトリ

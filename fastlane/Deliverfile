@@ -3,4 +3,6 @@
 # https://docs.fastlane.tools/actions/deliver/
 
 submit_for_review(true)
-skip_screenshot_upload(true)
+skip_screenshots(true)
+run_precheck_before_submit(false)
+force(true)

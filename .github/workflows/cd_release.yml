@@ -131,20 +131,3 @@ jobs:
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
           fastlane release asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
-
-      # 追加: バージョン取得
-      - name: Get app version from archive
-        id: get_version
-        run: |
-          VERSION=$(/usr/libexec/PlistBuddy -c "Print :ApplicationProperties:CFBundleShortVersionString" "${ARCHIVE_PATH}/Info.plist")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-      # 追加: git tag作成＆push（強制上書き）
-      - name: Push git tag
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          TAG_NAME="v${{ steps.get_version.outputs.VERSION }}"
-          git tag -f "$TAG_NAME"
-          git push -f origin "$TAG_NAME"
