@@ -21,7 +21,15 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 [bundle exec] fastlane ios upload_testFlight
 ```
 
-Description of what the lane does
+指定されたipaでTestFlight配信を行う
+
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+指定されたipaでApp Storeリリースを行う
 
 ----
 
