@@ -37,12 +37,15 @@ platform :ios do
       api_key: api_key
     )
 
+    app_version = options[:app_version]
+
     add_git_tag(
-      grouping: "release",
-      includes_lane: true,
-      prefix: "v",
-      build_number: options[:app_version],
+      tag: "v#{app_version}",
       force: true
+    )
+
+    push_git_tags(
+      tag: "v#{app_version}"
     )
   end
 
