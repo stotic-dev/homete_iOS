@@ -45,6 +45,7 @@ platform :ios do
     )
 
     push_git_tags(
+      force: true,
       tag: "v#{app_version}"
     )
   end
