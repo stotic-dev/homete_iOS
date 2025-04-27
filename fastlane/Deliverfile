@@ -6,3 +6,6 @@ submit_for_review(true)
 skip_screenshots(true)
 run_precheck_before_submit(false)
 force(true)
+submission_information(
+    { export_compliance_uses_encryption: false }
+)
