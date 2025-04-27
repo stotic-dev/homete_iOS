@@ -85,7 +85,7 @@ jobs:
   call_deploy:
     if: github.repository == 'main'
     needs: build
-    uses: ./.github/workflows/cd.yml
+    uses: ./.github/workflows/cd_testFlight.yml
     secrets: inherit
 
   # Deploy(Release)
