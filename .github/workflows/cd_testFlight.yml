@@ -12,7 +12,6 @@ env:
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
   TEST_FLIGHT_EXPORT_OPTION_PATH: deploy/config/ExportOptions_TestFlight.plist
-  RELEASE_EXPORT_OPTION_PATH: deploy/config/ExportOptions_Release.plist
   ARCHIVE_PATH: Build/homete.xcarchive
   EXPORT_PATH: Build/app
   SPM_CLONE_PATH: SourcePackages
@@ -99,19 +98,14 @@ jobs:
       # アーカイブ実行
       - name: Archive app
         run: set -o pipefail &&
-          xcodebuild
+          xcodebuild clean archive
           -clonedSourcePackagesDirPath $SPM_CLONE_PATH
           -configuration Release
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
           -archivePath "${ARCHIVE_PATH}"
-          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
-          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
-          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
-          -allowProvisioningUpdates
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGNING_ALLOWED=NO
-          clean archive
 
       # IPAファイルを生成
       - name: Create ipa
@@ -131,4 +125,8 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
+          fastlane upload_testFlight \
+            asc_key_id:"${{ secrets.ASC_KEY_ID }}" \
+            asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" \
+            asc_key_path:"$API_KEY_PATH" \
+            ipa:"$IPA_PATH"
