@@ -105,8 +105,9 @@ jobs:
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
           -archivePath "${ARCHIVE_PATH}"
-          CODE_SIGNING_REQUIRED="NO"
-          CODE_SIGNING_ALLOWED="NO"
+          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
 
       # IPAファイルを生成
       - name: Create ipa
