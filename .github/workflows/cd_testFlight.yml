@@ -109,8 +109,6 @@ jobs:
           -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
           -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
           -allowProvisioningUpdates
-          CODE_SIGNING_REQUIRED=NO
-          CODE_SIGNING_ALLOWED=NO
           clean archive
 
       # IPAファイルを生成
