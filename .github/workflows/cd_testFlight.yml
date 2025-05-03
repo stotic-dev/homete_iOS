@@ -99,13 +99,14 @@ jobs:
       # アーカイブ実行
       - name: Archive app
         run: set -o pipefail &&
-          xcodebuild
+          xcodebuild clean archive
           -clonedSourcePackagesDirPath $SPM_CLONE_PATH
           -configuration Release
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
           -archivePath "${ARCHIVE_PATH}"
-          clean archive
+          CODE_SIGNING_REQUIRED="NO"
+          CODE_SIGNING_ALLOWED="NO"
 
       # IPAファイルを生成
       - name: Create ipa
