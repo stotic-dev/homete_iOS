@@ -12,7 +12,6 @@ env:
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
   TEST_FLIGHT_EXPORT_OPTION_PATH: deploy/config/ExportOptions_TestFlight.plist
-  RELEASE_EXPORT_OPTION_PATH: deploy/config/ExportOptions_Release.plist
   ARCHIVE_PATH: Build/homete.xcarchive
   EXPORT_PATH: Build/app
   SPM_CLONE_PATH: SourcePackages
@@ -128,4 +127,8 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
-          fastlane upload_testFlight asc_key_id:"${{ secrets.ASC_KEY_ID }}" asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" asc_key_path:"$API_KEY_PATH" ipa:"$IPA_PATH"
+          fastlane upload_testFlight 
+            asc_key_id:"${{ secrets.ASC_KEY_ID }}"\
+            asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" \
+            asc_key_path:"$API_KEY_PATH" \
+            ipa:"$IPA_PATH"
