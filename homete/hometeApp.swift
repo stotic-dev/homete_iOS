@@ -14,7 +14,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
         
+        #if DEBUG
+        let devPlistFilePath = (Bundle.main.url(forResource: "GoogleService-Info-dev", withExtension: "plist")?.path())!
+        FirebaseApp.configure(options: .init(contentsOfFile: devPlistFilePath)!)
+        #else
         FirebaseApp.configure()
+        #endif
+        
         return true
     }
 }
