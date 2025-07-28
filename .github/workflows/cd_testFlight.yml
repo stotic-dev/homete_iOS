@@ -74,9 +74,12 @@ jobs:
       - name: Cache Swift Packages
         uses: actions/cache@v4.2.2
         with:
-          path: SourcePackages
+          path: ${{ env.SPM_CLONE_PATH }}
           key: ${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
           restore-keys: ${{ runner.os }}-spm-
+
+      - name: Decode Firebase Api Key
+        run: echo "${{ secrets.FIREBASE_API_KEY_BASE64 }}" | base64 --decode > homete/GoogleService-Info.plist
 
       # ビルド番号更新
       - name: Increment build number
@@ -89,7 +92,7 @@ jobs:
           -project "${WORKSPACE_DIR}"
           -scheme "${BUILD_SCHEME}"
           -configuration Release
-          -clonedSourcePackagesDirPath SourcePackages
+          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           -skipPackagePluginValidation
           -skipMacroValidation
           -scmProvider xcode
@@ -99,7 +102,7 @@ jobs:
       - name: Archive app
         run: set -o pipefail &&
           xcodebuild clean archive
-          -clonedSourcePackagesDirPath $SPM_CLONE_PATH
+          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           -configuration Release
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"

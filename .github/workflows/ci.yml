@@ -23,6 +23,8 @@ env:
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
   TEST_PLAN: homete
+  SPM_CLONE_PATH: SourcePackages
+  SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 jobs:
   build:
@@ -52,14 +54,24 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      # ビルド
+      # SPMのライブラリのキャッシュ
+      - name: Cache Swift Packages
+        uses: actions/cache@v4.2.2
+        with:
+          path: SourcePackages
+          key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
+          restore-keys: v1-dev-${{ runner.os }}-spm-
+
+      - name: Decode Firebase Api Key
+        run: echo "${{ secrets.DEV_FIREBASE_API_KEY_BASE64 }}" | base64 --decode > homete/GoogleService-Info-dev.plist
+
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
           xcodebuild
           -project "${WORKSPACE_DIR}"
           -scheme "${BUILD_SCHEME}"
           -configuration Debug
-          -clonedSourcePackagesDirPath SourcePackages
+          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           -skipPackagePluginValidation
           -skipMacroValidation
           -scmProvider xcode
@@ -77,7 +89,7 @@ jobs:
           -skipPackagePluginValidation
           -skipMacroValidation
           -scmProvider xcode
-          -clonedSourcePackagesDirPath SourcePackages
+          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           clean test |
           xcbeautify --renderer github-actions
 
