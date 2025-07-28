@@ -55,6 +55,9 @@ jobs:
       - name: Setup env for api key path
         run: echo "API_KEY_ABSOLUTE_PATH=$(pwd)/$API_KEY_PATH" >> $GITHUB_ENV
 
+      - name: Decode Firebase Api Key
+        run: echo "${{ secrets.FIREBASE_API_KEY_BASE64 }}" | base64 --decode > homete/GoogleService-Info.plist
+
       # Gemfileの依存ライブラリキャッシュ
       - name: cache bundle directory
         uses: actions/cache@v4.2.2
