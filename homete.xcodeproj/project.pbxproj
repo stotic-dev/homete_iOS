@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
+		BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,6 +61,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
+				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,6 +82,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BCB8DB162E37B3F900FFB4E1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BCC853EC2DB74BBC00C9A44B = {
 			isa = PBXGroup;
 			children = (
@@ -88,6 +97,7 @@
 				BCC853F72DB74BBC00C9A44B /* homete */,
 				BCC854052DB74BBF00C9A44B /* hometeTests */,
 				BCC8540F2DB74BBF00C9A44B /* hometeUITests */,
+				BCB8DB162E37B3F900FFB4E1 /* Frameworks */,
 				BCC853F62DB74BBC00C9A44B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +122,7 @@
 				BCC853F12DB74BBC00C9A44B /* Sources */,
 				BCC853F22DB74BBC00C9A44B /* Frameworks */,
 				BCC853F32DB74BBC00C9A44B /* Resources */,
+				BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */,
 			);
 			buildRules = (
 			);
@@ -123,6 +134,7 @@
 			name = homete;
 			packageProductDependencies = (
 				BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */,
+				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -245,6 +257,33 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}.debug.dylib",
+			);
+			name = "Run Upload dSYM";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"$CONFIGURATION\" != \"Debug\" ] && [ \"$IS_RELEASE\" ]; then\n    \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\nelse\n    echo \"do not upload dsym.\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BCC853F12DB74BBC00C9A44B /* Sources */ = {
@@ -614,6 +653,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
+		};
+		BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
