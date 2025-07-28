@@ -68,6 +68,7 @@ fastlane/test_output
 # secret
 
 private_keys/
+GoogleService-Info*.plist
 
 # other
 
