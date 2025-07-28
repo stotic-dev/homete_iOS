@@ -8,12 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @Environment(\.rootNavigationPath) var rootNavigationPath
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("Hello, world! \(rootNavigationPath.path.count)")
+            Button("Debug") {
+                rootNavigationPath.showContent()
+            }
         }
         .padding()
     }
