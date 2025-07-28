@@ -95,14 +95,14 @@ jobs:
 
   # Deploy(TestFlight)
   call_deploy:
-    if: github.repository == 'main'
+    if: github.ref_name == 'main'
     needs: build
     uses: ./.github/workflows/cd_testFlight.yml
     secrets: inherit
 
   # Deploy(Release)
   call_deploy_release:
-    if: github.repository == 'release/*'
+    if: github.ref_name == 'release/*'
     needs: build
     uses: ./.github/workflows/cd_release.yml
     secrets: inherit
