@@ -16,6 +16,7 @@ env:
   EXPORT_PATH: Build/app
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+  IS_RELEASE: true
 
 jobs:
   deploy_app_store:
