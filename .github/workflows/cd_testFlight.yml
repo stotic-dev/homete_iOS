@@ -111,6 +111,11 @@ jobs:
           -allowProvisioningUpdates
           -exportOptionsPlist "${TEST_FLIGHT_EXPORT_OPTION_PATH}"
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: Build/
+
       # IPAをApp Store Connectへアップロードする
       - name: Upload ipa
         run: |
