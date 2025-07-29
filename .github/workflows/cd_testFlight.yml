@@ -128,6 +128,7 @@ jobs:
         run: |
           chmod -R 777 "${EXPORT_PATH}"
           IPA_PATH=$(find "${EXPORT_PATH}" -name "*.ipa" -print -quit)
+          cat Build/app/DistributionSummary.plist
           fastlane upload_testFlight \
             asc_key_id:"${{ secrets.ASC_KEY_ID }}" \
             asc_issuer_id:"${{ secrets.ASC_ISSUER_ID }}" \
