@@ -95,8 +95,7 @@ jobs:
           -project "${WORKSPACE_DIR}"
           -destination "generic/platform=iOS"
           -archivePath "${ARCHIVE_PATH}"
-          CODE_SIGNING_REQUIRED=NO
-          CODE_SIGNING_ALLOWED=NO
+          -allowProvisioningUpdates
 
       # IPAファイルを生成
       - name: Create ipa
