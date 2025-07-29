@@ -85,19 +85,6 @@ jobs:
       - name: Increment build number
         run: xcrun agvtool new-version -all ${{ github.run_number }}
 
-      # 依存ライブラリ解決
-      - name: Xcode Resolve Package Dependencies
-        run: set -o pipefail &&
-          xcodebuild
-          -project "${WORKSPACE_DIR}"
-          -scheme "${BUILD_SCHEME}"
-          -configuration Release
-          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
-          -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
-          -resolvePackageDependencies
-
       # アーカイブ実行
       - name: Archive app
         run: set -o pipefail &&
@@ -106,6 +93,7 @@ jobs:
           -configuration Release
           -scheme "${BUILD_SCHEME}"
           -project "${WORKSPACE_DIR}"
+          -destination "generic/platform=iOS"
           -archivePath "${ARCHIVE_PATH}"
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGNING_ALLOWED=NO
