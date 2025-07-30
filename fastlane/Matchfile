@@ -6,6 +6,7 @@ type("development") # The default type, can be: appstore, adhoc, enterprise or d
 
 app_identifier(["taichi.satou.hometekure.dev"])
 username("taichis844@gmail.com")
+git_branch("main")
 
 # For all available options run `fastlane match --help`
 # Remove the # in the beginning of the line to enable the other options
