@@ -95,6 +95,9 @@ jobs:
           -project "${WORKSPACE_DIR}"
           -destination "generic/platform=iOS"
           -archivePath "${ARCHIVE_PATH}"
+          -authenticationKeyPath "${{ env.API_KEY_ABSOLUTE_PATH }}"
+          -authenticationKeyID "${{ secrets.ASC_KEY_ID }}"
+          -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}"
           -allowProvisioningUpdates
 
       # IPAファイルを生成

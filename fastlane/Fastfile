@@ -16,6 +16,10 @@
 default_platform(:ios)
 
 platform :ios do
+  before_all do
+    setup_ci if ENV['CI']
+  end
+
   desc "指定されたipaでTestFlight配信を行う"
   lane :upload_testFlight do |options|
     api_key = generate_api_key(options)
