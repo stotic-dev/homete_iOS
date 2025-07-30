@@ -92,6 +92,7 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_API_KEY_PATH: ${{ env.API_KEY_ABSOLUTE_PATH }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
       # ipaをワークフローのアーティファクトとしてアップロード
       - uses: actions/upload-artifact@v4
