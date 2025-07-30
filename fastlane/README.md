@@ -39,6 +39,14 @@ ipaを生成
 
 指定されたipaでApp Storeリリースを行う
 
+### ios update_profile
+
+```sh
+[bundle exec] fastlane ios update_profile
+```
+
+指定されたipaでTestFlight配信を行う
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
