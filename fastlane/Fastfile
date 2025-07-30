@@ -23,7 +23,7 @@ platform :ios do
 
   desc "ipaを生成"
   lane :make_ipa do |options|
-    xcargs = "-allowProvisioningUpdates -authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']} -authenticationKeyID #{ENV['ASC_KEY_ID']} -authenticationKeyPath #{ENV['API_KEY_PATH']}"
+    xcargs = "-allowProvisioningUpdates -authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']} -authenticationKeyID #{ENV['ASC_KEY_ID']} -authenticationKeyPath #{ENV['ASC_API_KEY_PATH']}"
     gym(
       project: "homete.xcodeproj",
       scheme: "homete",
@@ -75,7 +75,7 @@ platform :ios do
     app_store_connect_api_key(
       key_id: ENV['ASC_KEY_ID'],
       issuer_id: ENV['ASC_ISSUER_ID'],
-      key_filepath: ENV['API_KEY_PATH'],
+      key_filepath: ENV['ASC_API_KEY_PATH'],
       in_house: false
     )
   end
