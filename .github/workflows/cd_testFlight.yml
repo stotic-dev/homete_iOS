@@ -93,6 +93,7 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_API_KEY_PATH: ${{ env.API_KEY_ABSOLUTE_PATH }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.GITHUB_TOKEN }}
 
       # ipaをワークフローのアーティファクトとしてアップロード
       - uses: actions/upload-artifact@v4
