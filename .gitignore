@@ -71,6 +71,7 @@ fastlane/test_output
 private_keys/
 GoogleService-Info.plist
 GoogleService-Info-dev.plist
+.env
 
 # other
 

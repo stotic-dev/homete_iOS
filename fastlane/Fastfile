@@ -16,17 +16,34 @@
 default_platform(:ios)
 
 platform :ios do
+
   before_all do
     setup_ci if ENV['CI']
   end
 
+  desc "ipaを生成"
+  lane :make_ipa do |options|
+    xcargs = "-allowProvisioningUpdates -authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']} -authenticationKeyID #{ENV['ASC_KEY_ID']} -authenticationKeyPath #{ENV['API_KEY_PATH']}"
+    gym(
+      project: "homete.xcodeproj",
+      scheme: "homete",
+      output_directory: "Build/app",
+      cloned_source_packages_path: "SourcePackages",
+      export_method: "app-store",
+      export_options: options[:export_options_path],
+      xcargs: xcargs
+    )
+  end
+
   desc "指定されたipaでTestFlight配信を行う"
   lane :upload_testFlight do |options|
-    api_key = generate_api_key(options)
-    ipa_path = options[:ipa]
+    # ipa生成
+    make_ipa(options)
 
+    # ipaをTestFlight用にアップロード
+    api_key = generate_api_key(options)
     upload_to_testflight(
-      ipa: ipa_path,
+      ipa: "Build/app/homete.ipa",
       api_key: api_key
     )
   end
@@ -56,9 +73,9 @@ platform :ios do
 
   private_lane :generate_api_key do |options|
     app_store_connect_api_key(
-      key_id: options[:asc_key_id],
-      issuer_id: options[:asc_issuer_id],
-      key_filepath: options[:asc_key_path],
+      key_id: ENV['ASC_KEY_ID'],
+      issuer_id: ENV['ASC_ISSUER_ID'],
+      key_filepath: ENV['API_KEY_PATH'],
       in_house: false
     )
   end
