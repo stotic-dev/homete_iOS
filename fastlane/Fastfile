@@ -25,7 +25,7 @@ platform :ios do
   lane :make_ipa do |options|
     match(
       api_key: generate_api_key,
-      type: "development",
+      type: "appstore",
       readonly: true
     )
 
@@ -54,11 +54,13 @@ platform :ios do
 
   desc "指定されたipaでApp Storeリリースを行う"
   lane :release do |options|
-    api_key = generate_api_key(options)
-    ipa_path = options[:ipa]
+    # ipa生成
+    make_ipa(options)
 
+    # ipaをリリース用にアップロード
+    api_key = generate_api_key(options)
     upload_to_app_store(
-      ipa: ipa_path,
+      ipa: "Build/app/homete.ipa",
       api_key: api_key
     )
 
