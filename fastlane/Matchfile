@@ -4,7 +4,7 @@ storage_mode("git")
 
 type("development") # The default type, can be: appstore, adhoc, enterprise or development
 
-app_identifier(["taichi.satou.hometekure.dev"])
+app_identifier(["taichi.satou.hometekure"])
 username("taichis844@gmail.com")
 git_branch("main")
 
