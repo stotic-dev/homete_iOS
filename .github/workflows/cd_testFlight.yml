@@ -87,7 +87,7 @@ jobs:
           
       # IPAをApp Store Connectへアップロードする
       - name: Upload ipa for TestFlight
-        run: fastlane upload_testFlight export_options_path:"${TEST_FLIGHT_EXPORT_OPTION_PATH}"
+        run: fastlane upload_testFlight
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}

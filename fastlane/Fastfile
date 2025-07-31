@@ -34,15 +34,14 @@ platform :ios do
       scheme: "homete",
       output_directory: "Build/app",
       cloned_source_packages_path: "SourcePackages",
-      export_method: "app-store",
-      export_options: options[:export_options_path]
+      export_method: "app-store"
     )
   end
 
   desc "指定されたipaでTestFlight配信を行う"
   lane :upload_testFlight do |options|
     # ipa生成
-    make_ipa(options)
+    make_ipa
 
     # ipaをTestFlight用にアップロード
     api_key = generate_api_key
