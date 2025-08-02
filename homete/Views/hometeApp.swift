@@ -15,8 +15,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         
         #if DEBUG
-        let devPlistFilePath = (Bundle.main.url(forResource: "GoogleService-Info-dev", withExtension: "plist")?.path())!
-        FirebaseApp.configure(options: .init(contentsOfFile: devPlistFilePath)!)
+        guard let devPlistFilePath = (Bundle.main.url(forResource: "GoogleService-Info-dev", withExtension: "plist")?.path()),
+              let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
+        FirebaseApp.configure(options: firebaseOption)
         #else
         FirebaseApp.configure()
         #endif
