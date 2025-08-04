@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(\.accountStore) var accountStore
     @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
     
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
-            ContentView()
-                .navigationDestination(for: RootNavigationPath.self) { path in
-                    path.Destination()
-                }
+            if accountStore?.account == nil {
+                LoginView()
+                    .navigationTitle("Login")
+            }
+            else {
+                ContentView()
+                    .navigationDestination(for: RootNavigationPath.self) { path in
+                        path.Destination()
+                    }
+            }
         }
         .environment(\.rootNavigationPath, navigationPath)
     }

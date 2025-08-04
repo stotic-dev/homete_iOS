@@ -29,9 +29,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct hometeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @Environment(\.appDependencies) var appDependencies
+    
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(\.accountStore, .init(appDependencies: appDependencies))
         }
     }
 }
