@@ -19,3 +19,13 @@ extension EnvironmentValues {
         accountRepository: .liveValue
     )
 }
+
+// MARK: Preview用の定義
+
+extension AppDependencies {
+    
+    static let previewValue: Self = .init(
+        nonceGeneratorRepository: .previewValue,
+        accountRepository: .previewValue
+    )
+}

@@ -25,19 +25,22 @@ struct SignInUpWithAppleButton: View {
             case .success(let authorization):
                 guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
                       let currentNonce else {
+                    
                     preconditionFailure("No sent sign in request.")
+                }
+                guard let appleIDToken = appleIDCredential.identityToken else {
+                    
+                    print("Unable to fetch identity token")
+                    return
+                }
+                guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                    
+                    print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+                    return
                 }
                 Task {
                     do {
-                        guard let appleIDToken = appleIDCredential.identityToken else {
-                            print("Unable to fetch identity token")
-                            return
-                        }
-                        guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-                            print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
-                            return
-                        }
-                        _ = try await accountRepository.signIn(idTokenString, currentNonce.original)
+                        try await accountRepository.signIn(idTokenString, currentNonce.original)
                     }
                     catch {
                         print("error: \(error)")
@@ -56,6 +59,7 @@ struct SignInUpWithAppleButton: View {
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .light)
+        .environment(\.appDependencies, .previewValue)
 }
 
 #Preview("dark scheme") {
@@ -63,4 +67,5 @@ struct SignInUpWithAppleButton: View {
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .dark)
+        .environment(\.appDependencies, .previewValue)
 }

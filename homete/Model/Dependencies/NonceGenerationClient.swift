@@ -49,4 +49,9 @@ extension NonceGenerationClient: DependencyClient {
       let hashString = hashedData.compactMap { String(format: "%02x", $0) }.joined()
       return hashString
     }
+    
+    static let previewValue: NonceGenerationClient = .init {
+        
+        return .init(original: "preview", sha256: "preview sha256")
+    }
 }

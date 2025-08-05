@@ -35,4 +35,5 @@ struct LoginView: View {
             .navigationTitle("Homete")
             .navigationBarTitleDisplayMode(.inline)
     }
+    .environment(\.appDependencies, .previewValue)
 }
