@@ -54,8 +54,8 @@ extension DesignSystem {
 
 extension View {
     
-    func font(_ designSystem: DesignSystem.Font) -> some View {
+    func font(with font: DesignSystem.Font) -> some View {
         
-        return self.font(designSystem.value)
+        return self.font(font.value)
     }
 }
