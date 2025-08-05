@@ -15,7 +15,8 @@ struct RootView: View {
         NavigationStack(path: $navigationPath.path) {
             if accountStore?.account == nil {
                 LoginView()
-                    .navigationTitle("Login")
+                    .navigationTitle("Homete")
+                    .navigationBarTitleDisplayMode(.inline)
             }
             else {
                 ContentView()

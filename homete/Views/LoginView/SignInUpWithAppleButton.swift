@@ -9,6 +9,7 @@ import AuthenticationServices
 import SwiftUI
 
 struct SignInUpWithAppleButton: View {
+    @Environment(\.colorScheme) var colorScheme
     @Environment(\.appDependencies.accountRepository) var accountRepository
     @Environment(\.appDependencies.nonceGeneratorRepository) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
@@ -46,5 +47,20 @@ struct SignInUpWithAppleButton: View {
                 print("error: \(error)")
             }
         }
+        .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
     }
+}
+
+#Preview("light scheme") {
+    SignInUpWithAppleButton()
+        .frame(height: 48)
+        .padding()
+        .environment(\.colorScheme, .light)
+}
+
+#Preview("dark scheme") {
+    SignInUpWithAppleButton()
+        .frame(height: 48)
+        .padding()
+        .environment(\.colorScheme, .dark)
 }
