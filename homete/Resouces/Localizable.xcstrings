@@ -1,0 +1,55 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Debug" : {
+
+    },
+    "Hello, world! %lld" : {
+
+    },
+    "Homete" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homete"
+          }
+        }
+      }
+    },
+    "LogOut" : {
+
+    },
+    "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サービスを利用するには、Appleアカウントでサインインする必要があります。"
+          }
+        }
+      }
+    },
+    "ようこそ!" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ようこそ!"
+          }
+        }
+      }
+    },
+    "続行すると、利用規約とプライバシーポリシーに同意したことになります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

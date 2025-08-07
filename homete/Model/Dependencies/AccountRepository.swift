@@ -9,7 +9,7 @@ import FirebaseAuth
 import SwiftUI
 
 struct AccountRepository {
-    let signIn: @Sendable (String, String) async throws -> Account
+    let signIn: @Sendable (String, String) async throws -> Void
     let signOut: @Sendable () throws -> Void
     let makeListener: @Sendable () -> AccountListenerStream
 }
@@ -23,8 +23,7 @@ extension AccountRepository: DependencyClient {
             idToken: tokenId,
             rawNonce: nonce
         )
-        let result = try await Auth.auth().signIn(with: credential)
-        return .init(id: result.user.uid)
+        let _ = try await Auth.auth().signIn(with: credential)
     }, signOut: {
         
         try Auth.auth().signOut()
@@ -46,4 +45,16 @@ extension AccountRepository: DependencyClient {
         }
         return .init(values: stream, listenerToken: token, continuation: continuation)
     }
+    
+    static let previewValue: AccountRepository = .init(
+        signIn: { _, _ in },
+        signOut: {},
+        makeListener: {
+            
+            let (stream, continuation) = AsyncStream<Account?>.makeStream()
+            return AccountListenerStream(values: stream,
+                                         listenerToken: NSObject(),
+                                         continuation: continuation)
+        }
+    )
 }
