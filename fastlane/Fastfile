@@ -87,13 +87,35 @@ platform :ios do
     )
   end
 
-  desc "指定されたipaでTestFlight配信を行う"
+  desc "本番用のプロビジョニングプロファイルを更新"
+  lane :update_profile_prod do |options|
+    api_key = generate_api_key
+    match(
+      api_key: api_key,
+      app_identifier: "taichi.satou.hometekure",
+      type: "appstore",
+      force: true
+    )
+  end
+
+  desc "開発用のプロビジョニングプロファイルをインストール"
   lane :install_dev_profile do |options|
     api_key = generate_api_key
     match(
       api_key: api_key,
       app_identifier: "taichi.satou.hometekure.dev",
       type: "development",
+      readonly: true
+    )
+  end
+
+  desc "本番用のプロビジョニングプロファイルをインストール"
+  lane :install_prod_profile do |options|
+    api_key = generate_api_key
+    match(
+      api_key: api_key,
+      app_identifier: "taichi.satou.hometekure",
+      type: "appstore",
       readonly: true
     )
   end
