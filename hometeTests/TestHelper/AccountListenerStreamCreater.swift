@@ -12,7 +12,7 @@ extension AccountListenerStream {
     
     static func defaultValue() -> Self {
         
-        let (stream, continuation) = AsyncStream<Account?>.makeStream()
+        let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
         return .init(values: stream, listenerToken: NSObject(), continuation: continuation)
     }
 }

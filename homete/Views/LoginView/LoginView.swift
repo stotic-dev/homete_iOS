@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     
-    @Environment(\.accountStore) var accountStore
+    var accountAuthStore: AccountAuthStore
     @State var isPresentedErrorAlert = false
     @State var domainError: DomainError?
     @State var isLoading = false
@@ -52,7 +52,7 @@ private extension LoginView {
         case .success(let success):
             do {
                 
-                try await accountStore?.login(success)
+                try await accountAuthStore.login(success)
             }
             catch {
                 
@@ -72,9 +72,8 @@ private extension LoginView {
 
 #Preview {
     NavigationStack {
-        LoginView()
+        LoginView(accountAuthStore: .init(appDependencies: .previewValue))
             .navigationTitle("Homete")
             .navigationBarTitleDisplayMode(.inline)
     }
-    .environment(\.appDependencies, .previewValue)
 }

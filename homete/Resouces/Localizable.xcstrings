@@ -4,9 +4,6 @@
     "Debug" : {
 
     },
-    "Hello, world! %lld" : {
-
-    },
     "Homete" : {
       "localizations" : {
         "ja" : {
@@ -19,6 +16,16 @@
     },
     "LogOut" : {
 
+    },
+    "Name: %@: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Name: %1$@: %2$lld"
+          }
+        }
+      }
     },
     "OK" : {
 

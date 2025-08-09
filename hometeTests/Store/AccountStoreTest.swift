@@ -9,19 +9,19 @@ import Testing
 @testable import homete
 
 @MainActor
-struct AccountStoreTest {
+struct AccountAuthStoreTest {
 
     @Test("ログイン処理ではサーバー側でサインイン後、成功したらログを送信する")
     func test_login() async throws {
         
         let inputTokenId = "testId"
         let inputNonce = "testNonce"
-        let outputAccount = Account(id: "testAccountId", displayName: "testDisplayName")
+        let outputAccount = AccountAuthResult(id: "testAccountId", displayName: "testDisplayName")
         
         try await confirmation(expectedCount: 4) { confirmation in
             
-            let store = AccountStore(appDependencies: .init(
-                accountClient: .init(signIn: { tokenId, nonce in
+            let store = AccountAuthStore(appDependencies: .init(
+                accountAuthClient: .init(signIn: { tokenId, nonce in
                     
                     confirmation()
                     #expect(tokenId == inputTokenId)
