@@ -47,13 +47,29 @@ ipaを生成
 
 指定されたipaでTestFlight配信を行う
 
+### ios update_profile_prod
+
+```sh
+[bundle exec] fastlane ios update_profile_prod
+```
+
+本番用のプロビジョニングプロファイルを更新
+
 ### ios install_dev_profile
 
 ```sh
 [bundle exec] fastlane ios install_dev_profile
 ```
 
-指定されたipaでTestFlight配信を行う
+開発用のプロビジョニングプロファイルをインストール
+
+### ios install_prod_profile
+
+```sh
+[bundle exec] fastlane ios install_prod_profile
+```
+
+本番用のプロビジョニングプロファイルをインストール
 
 ----
 
