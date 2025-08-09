@@ -59,3 +59,21 @@ extension View {
         return self.font(font.value)
     }
 }
+
+// MARK: CornerRadiusの定義
+
+extension DesignSystem {
+    
+    enum Corner: CGFloat {
+        
+        case radius8 = 8
+        case radius16 = 16
+    }
+}
+
+extension View {
+    
+    func cornerRadius(_ radius: DesignSystem.Corner) -> some View {
+        self.clipShape(RoundedRectangle(cornerRadius: radius.rawValue))
+    }
+}
