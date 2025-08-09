@@ -11,15 +11,35 @@ import SwiftUI
 @Observable
 final class AccountStore {
     var account: Account?
-    private let accountRepository: AccountRepository
+    
+    private let accountClient: AccountClient
+    private let analyticsClient: AnalyticsClient
     private let listener: AccountListenerStream
     
     init(appDependencies: AppDependencies) {
-        self.accountRepository = appDependencies.accountRepository
-        self.listener = accountRepository.makeListener()
+        
+        accountClient = appDependencies.accountClient
+        analyticsClient = appDependencies.analyticsClient
+        listener = accountClient.makeListener()
         
         Task {
+            
             await listen()
+        }
+    }
+    
+    func login(tokenId: String, nonce: String) async throws {
+        
+        do {
+            
+            let account = try await accountClient.signIn(tokenId, nonce)
+            analyticsClient.setId(account.id)
+            analyticsClient.log(.login(isSuccess: true))
+        }
+        catch {
+            
+            analyticsClient.log(.login(isSuccess: false))
+            throw error
         }
     }
 }
@@ -27,7 +47,9 @@ final class AccountStore {
 private extension AccountStore {
     
     func listen() async {
+        
         for await value in listener.values {
+            
             account = value
         }
     }

@@ -6,6 +6,7 @@
 //
 
 protocol DependencyClient: Sendable {
+    
     static var liveValue: Self { get }
     static var previewValue: Self { get }
 }

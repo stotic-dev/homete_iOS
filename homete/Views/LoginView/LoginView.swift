@@ -8,15 +8,27 @@
 import SwiftUI
 
 struct LoginView: View {
+    @Environment(\.accountStore) var accountStore
+    
     var body: some View {
         VStack(spacing: DesignSystem.Space.space16) {
             Text("ようこそ!")
                 .font(with: .headLineL)
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)
-            SignInUpWithAppleButton()
-                .frame(height: DesignSystem.Space.space48)
-                .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Space.space16 / 2))
+            SignInUpWithAppleButton { tokenId, nonce in
+                
+                do {
+                    
+                    try await accountStore?.login(tokenId: tokenId, nonce: nonce)
+                }
+                catch {
+                    
+                    print("error: \(error)")
+                }
+            }
+            .frame(height: DesignSystem.Space.space48)
+            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Space.space16 / 2))
             Spacer()
             Text("続行すると、利用規約とプライバシーポリシーに同意したことになります。")
                 .font(with: .caption)

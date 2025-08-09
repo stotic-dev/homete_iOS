@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct AppDependencies {
-    let nonceGeneratorRepository: NonceGenerationClient
-    let accountRepository: AccountRepository
+    let nonceGeneratorClient: NonceGenerationClient
+    let accountClient: AccountClient
+    let analyticsClient: AnalyticsClient
 }
 
 extension EnvironmentValues {
     
     @Entry var appDependencies: AppDependencies = .init(
-        nonceGeneratorRepository: .liveValue,
-        accountRepository: .liveValue
+        nonceGeneratorClient: .liveValue,
+        accountClient: .liveValue,
+        analyticsClient: .liveValue
     )
 }
 
@@ -25,7 +27,8 @@ extension EnvironmentValues {
 extension AppDependencies {
     
     static let previewValue: Self = .init(
-        nonceGeneratorRepository: .previewValue,
-        accountRepository: .previewValue
+        nonceGeneratorClient: .previewValue,
+        accountClient: .previewValue,
+        analyticsClient: .previewValue
     )
 }

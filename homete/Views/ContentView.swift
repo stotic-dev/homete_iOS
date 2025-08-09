@@ -11,7 +11,7 @@ import SwiftUI
 struct ContentView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
-    @Environment(\.appDependencies.accountRepository) var accountRepository
+    @Environment(\.appDependencies.accountClient) var accountClient
     
     var body: some View {
         VStack {
@@ -24,7 +24,7 @@ struct ContentView: View {
             }
             Button("LogOut") {
                 do {
-                    try accountRepository.signOut()
+                    try accountClient.signOut()
                 }
                 catch {
                     print("error: \(error)")

@@ -10,9 +10,9 @@ import SwiftUI
 
 struct SignInUpWithAppleButton: View {
     @Environment(\.colorScheme) var colorScheme
-    @Environment(\.appDependencies.accountRepository) var accountRepository
-    @Environment(\.appDependencies.nonceGeneratorRepository) var nonceGenerationClient
+    @Environment(\.appDependencies.nonceGeneratorClient) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
+    let onSignIn: (String, String) async -> Void
     
     var body: some View {
         SignInWithAppleButton {
@@ -53,12 +53,7 @@ private extension SignInUpWithAppleButton {
                 return
             }
             Task {
-                do {
-                    try await accountRepository.signIn(idTokenString, currentNonce.original)
-                }
-                catch {
-                    print("error: \(error)")
-                }
+                await onSignIn(idTokenString, currentNonce.original)
             }
         case .failure(let error):
             print("error: \(error)")
@@ -67,7 +62,7 @@ private extension SignInUpWithAppleButton {
 }
 
 #Preview("light scheme") {
-    SignInUpWithAppleButton()
+    SignInUpWithAppleButton { _, _ in }
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .light)
@@ -75,7 +70,7 @@ private extension SignInUpWithAppleButton {
 }
 
 #Preview("dark scheme") {
-    SignInUpWithAppleButton()
+    SignInUpWithAppleButton { _, _ in }
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .dark)
