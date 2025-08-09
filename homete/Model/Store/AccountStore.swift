@@ -12,7 +12,6 @@ import SwiftUI
 final class AccountStore {
     
     var account: Account = .empty
-    var isLoadingInfo: Bool { account == .empty }
         
     private let accountAuthClient: AccountAuthClient
     private let accountInfoClient: AccountInfoClient
@@ -25,7 +24,7 @@ final class AccountStore {
         analyticsClient = appDependencies.analyticsClient
     }
     
-    func setAccount(_ auth: AccountAuthResult) async {
+    func setAccountOnLogin(_ auth: AccountAuthResult) async {
         
         do {
             

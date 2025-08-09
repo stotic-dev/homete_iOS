@@ -24,7 +24,7 @@ struct RootView: View {
                     }
                     .environment(accountStore)
                     .task {
-                        await accountStore.setAccount(auth)
+                        await accountStore.setAccountOnLogin(auth)
                     }
             }
             else {

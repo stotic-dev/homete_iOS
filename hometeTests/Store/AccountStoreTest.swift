@@ -9,43 +9,29 @@ import Testing
 @testable import homete
 
 @MainActor
-struct AccountAuthStoreTest {
+struct AccountStoreTest {
 
-    @Test("ログイン処理ではサーバー側でサインイン後、成功したらログを送信する")
-    func test_login() async throws {
+    @Test("ログイン時にサーバーにアカウント情報を登録する")
+    func test_setAccountOnLogin() async throws {
         
-        let inputTokenId = "testId"
-        let inputNonce = "testNonce"
-        let outputAccount = AccountAuthResult(id: "testAccountId", displayName: "testDisplayName")
-        
-        try await confirmation(expectedCount: 4) { confirmation in
+        await confirmation(expectedCount: 2) { confirmation in
             
-            let store = AccountAuthStore(appDependencies: .init(
-                accountAuthClient: .init(signIn: { tokenId, nonce in
-                    
-                    confirmation()
-                    #expect(tokenId == inputTokenId)
-                    #expect(nonce == inputNonce)
-                    return outputAccount
-                },
-                                     signOut: { confirmation() },
-                                     makeListener: {
-                                         
-                                         confirmation()
-                                         return .defaultValue()
-                                     }),
-                analyticsClient: .init(setId: { id in
-                    
-                    confirmation()
-                    #expect(id == outputAccount.id)
-                }, log: { event in
-                    
-                    confirmation()
-                    #expect(event == .login(isSuccess: true))
-                })
-            ))
+            let inputAuthResult = AccountAuthResult(id: "test", displayName: "testName")
+            let accountInfoClient = AccountInfoClient {
+                
+                confirmation()
+                let expectedAccount = try Account(id: inputAuthResult.id, displayName: #require(inputAuthResult.displayName))
+                #expect($0 == expectedAccount)
+            } fetch: {
+                
+                confirmation()
+                #expect($0 == inputAuthResult.id)
+                return nil
+            }
+            let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
             
-            try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce))
+            await store.setAccountOnLogin(inputAuthResult)
         }
     }
+
 }

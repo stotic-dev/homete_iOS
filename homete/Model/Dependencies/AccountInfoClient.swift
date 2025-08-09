@@ -15,21 +15,23 @@ struct AccountInfoClient {
 
 extension AccountInfoClient: DependencyClient {
     
-    static let collectionPath = "Account"
-    static let primaryKey = "id"
+    private static let collectionPath = "Account"
+    private static let primaryKey = "id"
     
     static let liveValue: AccountInfoClient = .init { account in
         
-        try Firestore.firestore().collection(collectionPath).document(account.id).setData(from: account)
+        try await FirestoreService.shared.insertOrUpdate(data: account) {
+            
+            $0.collection(collectionPath).document(account.id)
+        }
     } fetch: { id in
         
-        let snapshots = try await Firestore.firestore()
-            .collection(collectionPath)
-            .whereField(primaryKey, isEqualTo: id)
-            .getDocuments()
-        return try snapshots.documents.first?.data(as: Account.self)
+        let result: [Account] = try await FirestoreService.shared.fetch {
+            
+            $0.collection(collectionPath).whereField(primaryKey, isEqualTo: id)
+        }
+        return result.first
     }
-    
     
     static let previewValue: AccountInfoClient = .init(insertOrUpdate: { _ in },
                                                        fetch: { _ in .init(id: "", displayName: "") })

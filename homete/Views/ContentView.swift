@@ -30,9 +30,8 @@ struct ContentView: View {
             }
             .padding()
             LoadingIndicator()
-                .opacity(accountStore.isLoadingInfo ? 1 : 0)
+                .opacity(accountStore.account == .empty ? 1 : 0)
         }
-        
     }
 }
 
