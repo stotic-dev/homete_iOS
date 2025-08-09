@@ -11,6 +11,17 @@ struct AppDependencies {
     let nonceGeneratorClient: NonceGenerationClient
     let accountClient: AccountClient
     let analyticsClient: AnalyticsClient
+    
+    init(
+        nonceGeneratorClient: NonceGenerationClient = .previewValue,
+        accountClient: AccountClient = .previewValue,
+        analyticsClient: AnalyticsClient = .previewValue
+    ) {
+        
+        self.nonceGeneratorClient = nonceGeneratorClient
+        self.accountClient = accountClient
+        self.analyticsClient = analyticsClient
+    }
 }
 
 extension EnvironmentValues {
@@ -26,9 +37,5 @@ extension EnvironmentValues {
 
 extension AppDependencies {
     
-    static let previewValue: Self = .init(
-        nonceGeneratorClient: .previewValue,
-        accountClient: .previewValue,
-        analyticsClient: .previewValue
-    )
+    static let previewValue: Self = .init()
 }
