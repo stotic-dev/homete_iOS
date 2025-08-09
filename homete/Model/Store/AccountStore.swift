@@ -28,11 +28,11 @@ final class AccountStore {
         }
     }
     
-    func login(tokenId: String, nonce: String) async throws {
+    func login(_ signInResult: SignInWithAppleResult) async throws {
         
         do {
             
-            let account = try await accountClient.signIn(tokenId, nonce)
+            let account = try await accountClient.signIn(signInResult.tokenId, signInResult.nonce)
             analyticsClient.setId(account.id)
             analyticsClient.log(.login(isSuccess: true))
         }

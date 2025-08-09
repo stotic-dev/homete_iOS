@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct LoginView: View {
+    
     @Environment(\.accountStore) var accountStore
+    @State var isPresentedErrorAlert = false
+    @State var domainError: DomainError?
     
     var body: some View {
         VStack(spacing: DesignSystem.Space.space16) {
@@ -16,16 +19,8 @@ struct LoginView: View {
                 .font(with: .headLineL)
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)
-            SignInUpWithAppleButton { tokenId, nonce in
-                
-                do {
-                    
-                    try await accountStore?.login(tokenId: tokenId, nonce: nonce)
-                }
-                catch {
-                    
-                    print("error: \(error)")
-                }
+            SignInUpWithAppleButton {
+                await onSignInWithApple($0)
             }
             .frame(height: DesignSystem.Space.space48)
             .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Space.space16 / 2))
@@ -38,6 +33,33 @@ struct LoginView: View {
         }
         .padding(.horizontal, DesignSystem.Space.space16)
         .ignoresSafeArea(edges: [.bottom])
+        .commonError(isPresented: $isPresentedErrorAlert, error: $domainError)
+    }
+}
+
+private extension LoginView {
+    
+    func onSignInWithApple(_ result: Result<SignInWithAppleResult, any Error>) async {
+        
+        switch result {
+        case .success(let success):
+            do {
+                
+                try await accountStore?.login(success)
+            }
+            catch {
+                
+                handleError(error)
+            }
+            
+        case .failure(let failure):
+            handleError(failure)
+        }
+    }
+    
+    func handleError(_ error: any Error) {
+        
+        domainError = .make(error)
     }
 }
 

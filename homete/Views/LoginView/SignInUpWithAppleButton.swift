@@ -12,7 +12,8 @@ struct SignInUpWithAppleButton: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.appDependencies.nonceGeneratorClient) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
-    let onSignIn: (String, String) async -> Void
+    
+    let onSignIn: (Result<SignInWithAppleResult, any Error>) async -> Void
     
     var body: some View {
         SignInWithAppleButton {
@@ -35,34 +36,38 @@ private extension SignInUpWithAppleButton {
     }
    
     func handleCompletion(result: Result<ASAuthorization, any Error>) {
-        switch result {
-        case .success(let authorization):
-            guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
-                  let currentNonce else {
+        Task {
+            switch result {
+            case .success(let authorization):
+                guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                      let currentNonce else {
+                    
+                    preconditionFailure("No sent sign in request.")
+                }
+                guard let appleIDToken = appleIDCredential.identityToken,
+                      let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+                    
+                    await onSignIn(.failure(DomainError.failAuth))
+                    return
+                }
                 
-                preconditionFailure("No sent sign in request.")
-            }
-            guard let appleIDToken = appleIDCredential.identityToken else {
+                let result = SignInWithAppleResult(tokenId: idTokenString, nonce: currentNonce.original)
+                await onSignIn(.success(result))
                 
-                print("Unable to fetch identity token")
-                return
+            case .failure(let error):
+                print("failed sign in with apple: \(error)")
+                if let error = error as? ASAuthorizationError,
+                   error.code != .canceled {
+                    
+                    await onSignIn(.failure(DomainError.failAuth))
+                }
             }
-            guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-                
-                print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
-                return
-            }
-            Task {
-                await onSignIn(idTokenString, currentNonce.original)
-            }
-        case .failure(let error):
-            print("error: \(error)")
         }
     }
 }
 
 #Preview("light scheme") {
-    SignInUpWithAppleButton { _, _ in }
+    SignInUpWithAppleButton { _ in }
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .light)
@@ -70,7 +75,7 @@ private extension SignInUpWithAppleButton {
 }
 
 #Preview("dark scheme") {
-    SignInUpWithAppleButton { _, _ in }
+    SignInUpWithAppleButton { _ in }
         .frame(height: 48)
         .padding()
         .environment(\.colorScheme, .dark)

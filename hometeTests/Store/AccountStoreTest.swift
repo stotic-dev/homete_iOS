@@ -45,8 +45,7 @@ struct AccountStoreTest {
                 })
             ))
             
-            try await store.login(tokenId: inputTokenId, nonce: inputNonce)
+            try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce))
         }
     }
-
 }
