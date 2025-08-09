@@ -10,52 +10,50 @@ import SwiftUI
 @MainActor
 @Observable
 final class AccountStore {
-    var account: Account?
     
-    private let accountClient: AccountClient
+    var account: Account = .empty
+        
+    private let accountAuthClient: AccountAuthClient
+    private let accountInfoClient: AccountInfoClient
     private let analyticsClient: AnalyticsClient
-    private let listener: AccountListenerStream
     
     init(appDependencies: AppDependencies) {
         
-        accountClient = appDependencies.accountClient
+        accountAuthClient = appDependencies.accountAuthClient
+        accountInfoClient = appDependencies.accountInfoClient
         analyticsClient = appDependencies.analyticsClient
-        listener = accountClient.makeListener()
-        
-        Task {
-            
-            await listen()
-        }
     }
     
-    func login(_ signInResult: SignInWithAppleResult) async throws {
+    func setAccountOnLogin(_ auth: AccountAuthResult) async {
         
         do {
             
-            let account = try await accountClient.signIn(signInResult.tokenId, signInResult.nonce)
-            analyticsClient.setId(account.id)
-            analyticsClient.log(.login(isSuccess: true))
+            if let account = try await accountInfoClient.fetch(auth.id) {
+                
+                self.account = account
+                return
+            }
+            
+            let newAccount = Account.initial(auth)
+            try await accountInfoClient.insertOrUpdate(newAccount)
+            account = newAccount
         }
         catch {
             
-            analyticsClient.log(.login(isSuccess: false))
-            throw error
+            print("failed to fetch account info: \(error)")
         }
     }
-}
-
-private extension AccountStore {
     
-    func listen() async {
+    func logOut() {
         
-        for await value in listener.values {
+        do {
             
-            account = value
+            try accountAuthClient.signOut()
+            analyticsClient.log(.logout())
+        }
+        catch {
+            
+            print("occurred error: \(error)")
         }
     }
-}
-
-extension EnvironmentValues {
-    
-    @Entry var accountStore: AccountStore?
 }

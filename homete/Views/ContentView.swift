@@ -11,28 +11,27 @@ import SwiftUI
 struct ContentView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
-    @Environment(\.appDependencies.accountClient) var accountClient
+    @Environment(AccountStore.self) var accountStore
     
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world! \(rootNavigationPath.path.count)")
-            Button("Debug") {
-                rootNavigationPath.showContent()
-            }
-            Button("LogOut") {
-                do {
-                    try accountClient.signOut()
+        ZStack {
+            VStack {
+                Image(systemName: "globe")
+                    .imageScale(.large)
+                    .foregroundStyle(.tint)
+                Text("Name: \(accountStore.account.displayName): \(rootNavigationPath.path.count)")
+                Button("Debug") {
+                    rootNavigationPath.showContent()
                 }
-                catch {
-                    print("error: \(error)")
+                Button("LogOut") {
+                    accountStore.logOut()
                 }
+                Spacer()
             }
-            Spacer()
+            .padding()
+            LoadingIndicator()
+                .opacity(accountStore.account == .empty ? 1 : 0)
         }
-        .padding()
     }
 }
 

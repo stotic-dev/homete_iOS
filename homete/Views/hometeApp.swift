@@ -33,8 +33,10 @@ struct hometeApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environment(\.accountStore, .init(appDependencies: appDependencies))
+            RootView(
+                accountAuthStore: .init(appDependencies: appDependencies),
+                accountStore: .init(appDependencies: appDependencies)
+            )
         }
     }
 }

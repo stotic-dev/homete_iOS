@@ -20,4 +20,12 @@ extension AnalyticsEvent {
             parameters: ["isSuccess": "\(isSuccess)"]
         )
     }
+    
+    static func logout() -> Self {
+        
+        return .init(
+            name: "logout",
+            parameters: [:]
+        )
+    }
 }

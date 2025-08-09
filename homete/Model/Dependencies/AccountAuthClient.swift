@@ -7,16 +7,16 @@
 
 import FirebaseAuth
 
-struct AccountClient {
+struct AccountAuthClient {
     
-    let signIn: @Sendable (String, String) async throws -> Account
+    let signIn: @Sendable (String, String) async throws -> AccountAuthResult
     let signOut: @Sendable () throws -> Void
     let makeListener: @Sendable () -> AccountListenerStream
 }
 
-extension AccountClient: DependencyClient {
+extension AccountAuthClient: DependencyClient {
     
-    static let liveValue: AccountClient = .init(signIn: { tokenId, nonce in
+    static let liveValue: AccountAuthClient = .init(signIn: { tokenId, nonce in
         
         try await signInWithApple(tokenId: tokenId, nonce: nonce)
     }, signOut: {
@@ -27,12 +27,12 @@ extension AccountClient: DependencyClient {
         return Self.makeListener()
     })
     
-    static let previewValue: AccountClient = .init(
+    static let previewValue: AccountAuthClient = .init(
         signIn: { _, _ in .init(id: "id", displayName: "name") },
         signOut: {},
         makeListener: {
             
-            let (stream, continuation) = AsyncStream<Account?>.makeStream()
+            let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
             return AccountListenerStream(values: stream,
                                          listenerToken: NSObject(),
                                          continuation: continuation)
@@ -40,9 +40,9 @@ extension AccountClient: DependencyClient {
     )
 }
 
-private extension AccountClient {
+private extension AccountAuthClient {
     
-    static func signInWithApple(tokenId: String, nonce: String) async throws -> Account {
+    static func signInWithApple(tokenId: String, nonce: String) async throws -> AccountAuthResult {
         
         let credential = OAuthProvider.credential(
             providerID: .apple,
@@ -61,7 +61,7 @@ private extension AccountClient {
     }
     
     static func makeListener() -> AccountListenerStream {
-        let (stream, continuation) = AsyncStream<Account?>.makeStream()
+        let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
         let token = Auth.auth().addStateDidChangeListener { auth, user in
             
             guard let user else {

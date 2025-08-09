@@ -8,21 +8,29 @@
 import SwiftUI
 
 struct RootView: View {
-    @Environment(\.accountStore) var accountStore
+    @Environment(\.appDependencies) var appDependencies
     @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
+    
+    var accountAuthStore: AccountAuthStore
+    var accountStore: AccountStore
     
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
-            if accountStore?.account == nil {
-                LoginView()
-                    .navigationTitle("Homete")
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            else {
+            if accountAuthStore.isLogin,
+               let auth = accountAuthStore.auth {
                 ContentView()
                     .navigationDestination(for: RootNavigationPath.self) { path in
                         path.Destination()
                     }
+                    .environment(accountStore)
+                    .task {
+                        await accountStore.setAccountOnLogin(auth)
+                    }
+            }
+            else {
+                LoginView(accountAuthStore: accountAuthStore)
+                    .navigationTitle("Homete")
+                    .navigationBarTitleDisplayMode(.inline)
             }
         }
         .environment(\.rootNavigationPath, navigationPath)
@@ -30,5 +38,8 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(
+        accountAuthStore: .init(appDependencies: .previewValue),
+        accountStore: .init(appDependencies: .previewValue)
+    )
 }
