@@ -1,0 +1,77 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Debug" : {
+
+    },
+    "Homete" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Homete"
+          }
+        }
+      }
+    },
+    "LogOut" : {
+
+    },
+    "Name: %@: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Name: %1$@: %2$lld"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サービスを利用するには、Appleアカウントでサインインする必要があります。"
+          }
+        }
+      }
+    },
+    "ようこそ!" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ようこそ!"
+          }
+        }
+      }
+    },
+    "不明のエラーが発生しました" : {
+
+    },
+    "操作が完了しませんでした" : {
+
+    },
+    "続行すると、利用規約とプライバシーポリシーに同意したことになります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+          }
+        }
+      }
+    },
+    "認証に失敗しました。再度サインインをお試しください。" : {
+
+    },
+    "通信に失敗しました" : {
+
+    }
+  },
+  "version" : "1.0"
+}

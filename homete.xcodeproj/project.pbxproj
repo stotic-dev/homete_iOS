@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
+		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
 		BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */; };
@@ -61,6 +63,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
+				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
+				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -135,6 +139,8 @@
 			packageProductDependencies = (
 				BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */,
 				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
+				BC2E372B2E3DE189005BD910 /* FirebaseAuth */,
+				BC47E6A52E47240F00308562 /* FirebaseFirestore */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -201,6 +207,7 @@
 					};
 					BCC854012DB74BBF00C9A44B = {
 						CreatedOnToolsVersion = 16.3;
+						LastSwiftMigration = 1640;
 						TestTargetID = BCC853F42DB74BBC00C9A44B;
 					};
 					BCC8540B2DB74BBF00C9A44B = {
@@ -215,6 +222,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ja,
 			);
 			mainGroup = BCC853EC2DB74BBC00C9A44B;
 			minimizedProjectReferenceProxies = 1;
@@ -383,6 +391,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
 			};
@@ -441,6 +450,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -451,6 +461,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = homete/hometeDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
@@ -493,6 +504,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = homete/hometeRelease.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -533,6 +545,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
@@ -542,6 +555,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/homete.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/homete";
@@ -552,6 +566,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
@@ -656,6 +671,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BC2E372B2E3DE189005BD910 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		BC47E6A52E47240F00308562 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
