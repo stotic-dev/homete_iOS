@@ -6,7 +6,7 @@
 //
 
 import CryptoKit
-import SwiftUI
+import Foundation
 
 struct NonceGenerationClient {
     

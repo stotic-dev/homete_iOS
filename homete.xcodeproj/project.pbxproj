@@ -204,6 +204,7 @@
 					};
 					BCC854012DB74BBF00C9A44B = {
 						CreatedOnToolsVersion = 16.3;
+						LastSwiftMigration = 1640;
 						TestTargetID = BCC853F42DB74BBC00C9A44B;
 					};
 					BCC8540B2DB74BBF00C9A44B = {
@@ -540,6 +541,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
@@ -549,6 +551,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/homete.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/homete";
@@ -559,6 +562,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;

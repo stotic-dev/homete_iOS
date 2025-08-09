@@ -6,5 +6,7 @@
 //
 
 struct Account {
+    
     let id: String
+    let displayName: String?
 }
