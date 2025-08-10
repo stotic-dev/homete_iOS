@@ -13,9 +13,11 @@ struct AccountListenerStream {
     let listenerToken: any NSObjectProtocol
     private let continuation: AsyncStream<AccountAuthResult?>.Continuation
     
-    init(values: AsyncStream<AccountAuthResult?>,
-         listenerToken: any NSObjectProtocol,
-         continuation: AsyncStream<AccountAuthResult?>.Continuation) {
+    init(
+        values: AsyncStream<AccountAuthResult?>,
+        listenerToken: any NSObjectProtocol,
+        continuation: AsyncStream<AccountAuthResult?>.Continuation
+    ) {
         
         self.values = values
         self.listenerToken = listenerToken

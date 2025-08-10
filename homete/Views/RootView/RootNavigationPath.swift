@@ -12,7 +12,7 @@ enum RootNavigationPath: Hashable {
     case content
     
     @ViewBuilder
-    func Destination() -> some View {
+    func destination() -> some View {
         switch self {
         case .content: ContentView()
         }

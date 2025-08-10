@@ -1,0 +1,49 @@
+# Directory and file filters
+included:
+  - homete
+  - hometeTests
+  - hometeUITests
+
+excluded:
+  - ProjectTools
+
+# Enabled/disabled rules
+opt_in_rules:
+  - convenience_type
+  - discouraged_optional_collection
+  - force_unwrapping
+  - function_default_parameter_at_end
+  - multiline_arguments
+  - multiline_function_chains
+  - multiline_parameters_brackets
+  - prefer_key_path
+  - sorted_enum_cases
+  - trailing_closure
+  - vertical_whitespace_between_cases
+
+disabled_rules:
+  - anonymous_argument_in_multiline_closure
+  - conditional_returns_on_newline
+  - contrasted_opening_brace
+  - explicit_acl
+  - explicit_enum_raw_value
+  - explicit_top_level_acl
+  - explicit_type_interface
+  - file_types_order
+  - indentation_width
+  - missing_docs
+  - multiline_arguments_brackets
+  - no_extension_access_modifier
+  - no_grouping_extension
+  - no_magic_numbers
+  - one_declaration_per_file
+  - prefixed_toplevel_constant
+  - required_deinit
+  - strict_fileprivate
+  - switch_case_on_newline
+  - type_contents_order
+  - statement_position
+
+# Configurations
+trailing_whitespace:
+  ignores_empty_lines: true

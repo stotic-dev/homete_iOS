@@ -9,9 +9,11 @@ import SwiftUI
 
 extension View {
     
-    func commonError(isPresented: Binding<Bool>,
-                     error: Binding<DomainError?>,
-                     onDismiss: @escaping () -> Void = {}) -> some View {
+    func commonError(
+        isPresented: Binding<Bool>,
+        error: Binding<DomainError?>,
+        onDismiss: @escaping () -> Void = {}
+    ) -> some View {
         self
             .onChange(of: error.wrappedValue) { _, newValue in
                 if newValue != nil {

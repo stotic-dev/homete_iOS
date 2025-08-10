@@ -10,11 +10,11 @@ import FirebaseFirestore
 final actor FirestoreService {
     
     static let shared = FirestoreService()
-    private let db = Firestore.firestore()
+    private let firestore = Firestore.firestore()
     
     func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
         
-        return try await predicate(db)
+        return try await predicate(firestore)
             .getDocuments()
             .documents
             .map { try $0.data(as: T.self) }
@@ -22,6 +22,6 @@ final actor FirestoreService {
     
     func insertOrUpdate<T: Encodable>(data: T, predicate: (Firestore) -> DocumentReference) throws {
         
-        try predicate(db).setData(from: data, merge: true)
+        try predicate(firestore).setData(from: data, merge: true)
     }
 }

@@ -123,6 +123,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854162DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "homete" */;
 			buildPhases = (
+				BC70E19B2E4869090000C1BD /* Run Swift Lint */,
 				BCC853F12DB74BBC00C9A44B /* Sources */,
 				BCC853F22DB74BBC00C9A44B /* Frameworks */,
 				BCC853F32DB74BBC00C9A44B /* Resources */,
@@ -153,6 +154,7 @@
 				BCC853FE2DB74BBF00C9A44B /* Sources */,
 				BCC853FF2DB74BBF00C9A44B /* Frameworks */,
 				BCC854002DB74BBF00C9A44B /* Resources */,
+				BC70E19C2E48DC220000C1BD /* Run Swift Lint */,
 			);
 			buildRules = (
 			);
@@ -176,6 +178,7 @@
 				BCC854082DB74BBF00C9A44B /* Sources */,
 				BCC854092DB74BBF00C9A44B /* Frameworks */,
 				BCC8540A2DB74BBF00C9A44B /* Resources */,
+				BC70E19D2E495D080000C1BD /* Run Swift Lint */,
 			);
 			buildRules = (
 			);
@@ -267,6 +270,63 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Swift Lint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+		};
+		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Swift Lint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+		};
+		BC70E19D2E495D080000C1BD /* Run Swift Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Swift Lint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -333,6 +393,8 @@
 /* Begin XCBuildConfiguration section */
 		BCC854142DB74BBF00C9A44B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
+			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -399,6 +461,8 @@
 		};
 		BCC854152DB74BBF00C9A44B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
+			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -469,6 +533,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -511,6 +576,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -549,6 +615,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -570,6 +637,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -588,6 +656,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
@@ -606,6 +675,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
