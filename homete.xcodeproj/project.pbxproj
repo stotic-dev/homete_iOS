@@ -151,10 +151,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854192DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeTests" */;
 			buildPhases = (
+				BC70E19C2E48DC220000C1BD /* Run Swift Lint */,
 				BCC853FE2DB74BBF00C9A44B /* Sources */,
 				BCC853FF2DB74BBF00C9A44B /* Frameworks */,
 				BCC854002DB74BBF00C9A44B /* Resources */,
-				BC70E19C2E48DC220000C1BD /* Run Swift Lint */,
 			);
 			buildRules = (
 			);
@@ -175,10 +175,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC8541C2DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeUITests" */;
 			buildPhases = (
+				BC70E19D2E495D080000C1BD /* Run Swift Lint */,
 				BCC854082DB74BBF00C9A44B /* Sources */,
 				BCC854092DB74BBF00C9A44B /* Frameworks */,
 				BCC8540A2DB74BBF00C9A44B /* Resources */,
-				BC70E19D2E495D080000C1BD /* Run Swift Lint */,
 			);
 			buildRules = (
 			);
@@ -287,7 +287,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
 		};
 		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -306,7 +306,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
 		};
 		BC70E19D2E495D080000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -325,7 +325,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n$SWIFT_LINT_CMD\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
 		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
