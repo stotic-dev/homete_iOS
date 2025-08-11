@@ -42,9 +42,9 @@ extension DesignSystem {
             
             switch self {
                 
-            case .headLineL: .title
-            case .headLineM: .title2
-            case .headLineS: .title3
+            case .headLineL: .title.weight(.heavy)
+            case .headLineM: .title2.weight(.heavy)
+            case .headLineS: .headline
             case .body: .body
             case .caption: .caption
             }

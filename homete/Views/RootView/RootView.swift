@@ -18,7 +18,7 @@ struct RootView: View {
         NavigationStack(path: $navigationPath.path) {
             if accountAuthStore.isLogin,
                let auth = accountAuthStore.auth {
-                ContentView()
+                HomeView()
                     .navigationDestination(for: RootNavigationPath.self) { path in
                         path.destination()
                     }

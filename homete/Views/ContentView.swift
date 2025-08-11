@@ -20,9 +20,6 @@ struct ContentView: View {
                     .imageScale(.large)
                     .foregroundStyle(.tint)
                 Text("Name: \(accountStore.account.displayName): \(rootNavigationPath.path.count)")
-                Button("Debug") {
-                    rootNavigationPath.showContent()
-                }
                 Button("LogOut") {
                     accountStore.logOut()
                 }
