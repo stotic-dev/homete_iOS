@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingView: View {
     
+    @Environment(\.rootNavigationPath) var rootNavigationPath
     @Environment(AccountAuthStore.self) var accountAuthStore
     
     @State var isPresentedLogoutConfirmAlert = false
@@ -43,10 +44,10 @@ struct SettingView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("設定")
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
-            Button("OK") {
+            Button("ログアウト", role: .destructive) {
                 accountAuthStore.logOut()
+                rootNavigationPath.popToRoot()
             }
-            Button("キャンセル") {}
         }
         
     }

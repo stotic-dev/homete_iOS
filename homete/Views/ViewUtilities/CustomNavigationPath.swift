@@ -9,9 +9,15 @@ import SwiftUI
 
 @Observable
 final class CustomNavigationPath<Element: Hashable> {
+    
     var path: [Element]
     
     init(path: [Element]) {
         self.path = path
+    }
+    
+    func popToRoot() {
+        
+        path.removeAll()
     }
 }

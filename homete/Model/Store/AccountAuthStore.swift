@@ -35,7 +35,6 @@ final class AccountAuthStore {
         do {
             
             let authInfo = try await accountAuthClient.signIn(signInResult.tokenId, signInResult.nonce)
-            
             analyticsClient.setId(authInfo.id)
             analyticsClient.log(.login(isSuccess: true))
         }
@@ -50,6 +49,7 @@ final class AccountAuthStore {
         
         do {
             
+            auth = nil
             try accountAuthClient.signOut()
             analyticsClient.log(.logout())
         }

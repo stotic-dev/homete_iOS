@@ -7,11 +7,13 @@
 
 import SwiftUI
 
+// swiftlint:disable:next blanket_disable_command
+// swiftlint:disable sorted_enum_cases
 enum SettingMenuItem: Equatable, CaseIterable {
     
+    case taskTemplate
     case privacyPolicy
     case license
-    case taskTemplate
     
     var title: LocalizedStringKey {
         

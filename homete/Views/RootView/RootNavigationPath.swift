@@ -11,11 +11,13 @@ import SwiftUI
 enum RootNavigationPath: Hashable {
     
     case home
+    case setting
     
     @ViewBuilder
     func destination() -> some View {
         switch self {
         case .home: HomeView()
+        case .setting: SettingView()
         }
     }
 }
@@ -23,4 +25,12 @@ enum RootNavigationPath: Hashable {
 extension EnvironmentValues {
     
     @Entry var rootNavigationPath = CustomNavigationPath<RootNavigationPath>(path: [])
+}
+
+extension CustomNavigationPath where Element == RootNavigationPath {
+    
+    func showSettingView() {
+        
+        path.append(.setting)
+    }
 }

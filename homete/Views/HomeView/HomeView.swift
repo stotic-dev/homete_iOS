@@ -40,7 +40,7 @@ struct HomeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationBarButton(label: .settings) {
-                    // TODO: 設定画面へ遷移
+                    rootNavigationPath.showSettingView()
                 }
             }
         }
