@@ -104,6 +104,10 @@ jobs:
           clean test |
           xcbeautify --renderer github-actions
 
+      # DangerJSをインストール
+      - name: Install Danger JS
+        run: npm install -g danger
+
       # Dangerの実行
       - name: Static Analyze with Danger
         run: |
