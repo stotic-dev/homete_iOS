@@ -17,19 +17,6 @@
         }
       }
     },
-    "LogOut" : {
-
-    },
-    "Name: %@: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Name: %1$@: %2$lld"
-          }
-        }
-      }
-    },
     "OK" : {
 
     },

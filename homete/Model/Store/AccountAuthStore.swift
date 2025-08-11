@@ -45,6 +45,19 @@ final class AccountAuthStore {
             throw error
         }
     }
+    
+    func logOut() {
+        
+        do {
+            
+            try accountAuthClient.signOut()
+            analyticsClient.log(.logout())
+        }
+        catch {
+            
+            print("occurred error: \(error)")
+        }
+    }
 }
 
 private extension AccountAuthStore {

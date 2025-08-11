@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct SettingView: View {
+    
+    @Environment(AccountAuthStore.self) var accountAuthStore
+    
+    @State var isPresentedLogoutConfirmAlert = false
+    
     var body: some View {
         VStack(spacing: .zero) {
             Spacer()
@@ -26,7 +31,7 @@ struct SettingView: View {
             Spacer()
                 .frame(height: DesignSystem.Space.space32)
             Button {
-                // TODO: ログアウト処理
+                isPresentedLogoutConfirmAlert = true
             } label: {
                 Text("ログアウト")
                     .frame(maxWidth: .infinity)
@@ -37,11 +42,19 @@ struct SettingView: View {
         .padding(.horizontal, DesignSystem.Space.space16)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("設定")
+        .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
+            Button("OK") {
+                accountAuthStore.logOut()
+            }
+            Button("キャンセル") {}
+        }
+        
     }
 }
 
 #Preview {
     NavigationStack {
         SettingView()
+            .environment(AccountAuthStore(appDependencies: .previewValue))
     }
 }

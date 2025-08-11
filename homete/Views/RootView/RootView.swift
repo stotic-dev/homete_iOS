@@ -28,12 +28,11 @@ struct RootView: View {
                     }
             }
             else {
-                LoginView(accountAuthStore: accountAuthStore)
-                    .navigationTitle("Homete")
-                    .navigationBarTitleDisplayMode(.inline)
+                LoginView()
             }
         }
         .environment(\.rootNavigationPath, navigationPath)
+        .environment(accountAuthStore)
     }
 }
 
