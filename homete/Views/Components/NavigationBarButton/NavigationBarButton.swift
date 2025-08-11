@@ -20,6 +20,7 @@ struct NavigationBarButton: View {
                 .resizable()
                 .frame(width: 24, height: 24)
                 .padding(DesignSystem.Space.space8)
+                .foregroundStyle(.primaryFg)
         }
     }
 }
