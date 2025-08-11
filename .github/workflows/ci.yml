@@ -106,7 +106,9 @@ jobs:
 
       # Dangerの実行
       - name: Static Analyze with Danger
-        run: swift run danger-swift ci --cwd ../
+        run: |
+          swift build
+          swift run danger-swift ci --cwd ../
         working-directory: ProjectTools
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
