@@ -106,10 +106,12 @@ jobs:
 
       # DangerJSをインストール
       - name: Install Danger JS
+        if: github.event_name == 'pull_request'
         run: npm install -g danger
 
       # Dangerの実行
       - name: Static Analyze with Danger
+        if: github.event_name == 'pull_request'
         run: |
           swift build
           swift run danger-swift ci --cwd ../

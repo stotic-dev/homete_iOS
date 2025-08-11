@@ -13,15 +13,11 @@ final class AccountStore {
     
     var account: Account = .empty
         
-    private let accountAuthClient: AccountAuthClient
     private let accountInfoClient: AccountInfoClient
-    private let analyticsClient: AnalyticsClient
     
     init(appDependencies: AppDependencies) {
         
-        accountAuthClient = appDependencies.accountAuthClient
         accountInfoClient = appDependencies.accountInfoClient
-        analyticsClient = appDependencies.analyticsClient
     }
     
     func setAccountOnLogin(_ auth: AccountAuthResult) async {
@@ -41,19 +37,6 @@ final class AccountStore {
         catch {
             
             print("failed to fetch account info: \(error)")
-        }
-    }
-    
-    func logOut() {
-        
-        do {
-            
-            try accountAuthClient.signOut()
-            analyticsClient.log(.logout())
-        }
-        catch {
-            
-            print("occurred error: \(error)")
         }
     }
 }

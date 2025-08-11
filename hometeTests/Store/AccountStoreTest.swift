@@ -36,5 +36,4 @@ struct AccountStoreTest {
             await store.setAccountOnLogin(inputAuthResult)
         }
     }
-
 }
