@@ -104,11 +104,12 @@ jobs:
           clean test |
           xcbeautify --renderer github-actions
 
+      # Dangerの実行
       - name: Static Analyze with Danger
         run: swift run danger-swift ci --cwd ../
         working-directory: ProjectTools
         env:
-          DANGER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
 
   # Deploy(TestFlight)
   call_deploy:
