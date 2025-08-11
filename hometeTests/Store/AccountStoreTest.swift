@@ -20,7 +20,10 @@ struct AccountStoreTest {
             let accountInfoClient = AccountInfoClient {
                 
                 confirmation()
-                let expectedAccount = try Account(id: inputAuthResult.id, displayName: #require(inputAuthResult.displayName))
+                let expectedAccount = try Account(
+                    id: inputAuthResult.id,
+                    displayName: #require(inputAuthResult.displayName)
+                )
                 #expect($0 == expectedAccount)
             } fetch: {
                 

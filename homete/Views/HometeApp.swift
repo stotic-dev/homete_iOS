@@ -1,21 +1,29 @@
 //
-//  hometeApp.swift
+//  HometeApp.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/04/22.
 //
 
-import SwiftUI
 import FirebaseCore
+import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    
     func application(
         _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+        // swiftlint:disable:next discouraged_optional_collection
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         
         #if DEBUG
-        guard let devPlistFilePath = (Bundle.main.url(forResource: "GoogleService-Info-dev", withExtension: "plist")?.path()),
+        guard let devPlistFilePath = (
+            Bundle.main.url(
+                forResource: "GoogleService-Info-dev",
+                withExtension: "plist"
+            )?
+                .path()
+        ),
               let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
         FirebaseApp.configure(options: firebaseOption)
         #else
@@ -27,7 +35,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 @main
-struct hometeApp: App {
+struct HometeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @Environment(\.appDependencies) var appDependencies
     

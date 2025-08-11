@@ -20,7 +20,7 @@ struct RootView: View {
                let auth = accountAuthStore.auth {
                 ContentView()
                     .navigationDestination(for: RootNavigationPath.self) { path in
-                        path.Destination()
+                        path.destination()
                     }
                     .environment(accountStore)
                     .task {

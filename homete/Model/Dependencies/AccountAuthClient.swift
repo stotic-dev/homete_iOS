@@ -62,7 +62,7 @@ private extension AccountAuthClient {
     
     static func makeListener() -> AccountListenerStream {
         let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
-        let token = Auth.auth().addStateDidChangeListener { auth, user in
+        let token = Auth.auth().addStateDidChangeListener { _, user in
             
             guard let user else {
                 continuation.yield(nil)
