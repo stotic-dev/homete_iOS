@@ -1,5 +1,5 @@
 //
-//  CohabitantRegistrationScanningState.swift
+//  CohabitantRegistrationSenderState.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/16.
@@ -7,7 +7,7 @@
 
 import MultipeerConnectivity
 
-final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBridge {
+final class CohabitantRegistrationSenderState: CohabitantRegistrationStateBridge {
     
     let myPeerID: MCPeerID
     private(set) var connectedPeerIDs: Set<MCPeerID> = []
@@ -16,11 +16,13 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
     
     init(
         myPeerID: MCPeerID,
+        cohabitantPeerIDs: Set<MCPeerID>,
         provider: any P2PServiceProvider,
         stateContinuation: AsyncStream<CohabitantRegistrationState>.Continuation
     ) {
         
         self.myPeerID = myPeerID
+        self.connectedPeerIDs = cohabitantPeerIDs
         self.provider = provider
         self.stateContinuation = stateContinuation
         self.provider.delegate = self
@@ -28,26 +30,14 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
     
     func didEnter() {
         
-        provider.startSearching()
-    }
-    
-    func didConnect(to peerID: MCPeerID) {
-        
-        connectedPeerIDs.insert(peerID)
     }
     
     func next() -> CohabitantRegistrationSenderState? {
         
-        return CohabitantRegistrationSenderState(
-            myPeerID: myPeerID,
-            cohabitantPeerIDs: connectedPeerIDs,
-            provider: provider,
-            stateContinuation: stateContinuation
-        )
+        return nil
     }
     
     func sendMessage<Message>(_ message: Message) throws where Message: Encodable {
         
-        preconditionFailure("Unexpected call(message: \(message))")
     }
 }

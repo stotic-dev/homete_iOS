@@ -1,17 +1,18 @@
 //
-//  UserDefaults+Extension.swift
+//  AppStorage.swift
 //  homete
 //
-//  Created by 佐藤汰一 on 2025/08/12.
+//  Created by 佐藤汰一 on 2025/08/16.
 //
 
 import Foundation
 
 actor AppStorage {
-    
+        
     private let userDefaults: UserDefaults
     
     init(userDefaults: UserDefaults) {
+        
         self.userDefaults = userDefaults
     }
     
@@ -29,11 +30,4 @@ actor AppStorage {
 enum UserDefaultsDataObjectKey: String {
     
     case archivedPeerIDDataKey
-}
-
-extension AppStorage: DependencyClient {
-    
-    static let liveValue: AppStorage = .init(userDefaults: .standard)
-    
-    static let previewValue: AppStorage = .init(userDefaults: .init(suiteName: "preview")!)
 }
