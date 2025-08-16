@@ -12,18 +12,24 @@ struct AppDependencies {
     let accountAuthClient: AccountAuthClient
     let analyticsClient: AnalyticsClient
     let accountInfoClient: AccountInfoClient
+    let p2pServiceGenerator: P2PServiceGenerater
+    let appStorage: AppStorage
     
     init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
-        accountInfoClient: AccountInfoClient = .previewValue
+        accountInfoClient: AccountInfoClient = .previewValue,
+        p2pServiceGenerator: P2PServiceGenerater = .previewValue,
+        appStorage: AppStorage = .previewValue
     ) {
         
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
         self.analyticsClient = analyticsClient
         self.accountInfoClient = accountInfoClient
+        self.p2pServiceGenerator = p2pServiceGenerator
+        self.appStorage = appStorage
     }
 }
 
@@ -33,7 +39,9 @@ extension EnvironmentValues {
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
-        accountInfoClient: .liveValue
+        accountInfoClient: .liveValue,
+        p2pServiceGenerator: .liveValue,
+        appStorage: .liveValue
     )
 }
 

@@ -12,12 +12,14 @@ enum RootNavigationPath: Hashable {
     
     case home
     case setting
+    case registerCohabitant
     
     @ViewBuilder
     func destination() -> some View {
         switch self {
         case .home: HomeView()
         case .setting: SettingView()
+        case .registerCohabitant: RegisterCohabitantView()
         }
     }
 }
@@ -32,5 +34,10 @@ extension CustomNavigationPath where Element == RootNavigationPath {
     func showSettingView() {
         
         path.append(.setting)
+    }
+    
+    func showRegisterCohabitantView() {
+        
+        path.append(.registerCohabitant)
     }
 }

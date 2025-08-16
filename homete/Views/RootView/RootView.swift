@@ -22,7 +22,6 @@ struct RootView: View {
                     .navigationDestination(for: RootNavigationPath.self) { path in
                         path.destination()
                     }
-                    .environment(accountStore)
                     .task {
                         guard let auth = accountAuthStore.auth else { return }
                         await accountStore.setAccountOnLogin(auth)
@@ -42,6 +41,7 @@ struct RootView: View {
             }
         }
         .environment(\.rootNavigationPath, navigationPath)
+        .environment(accountStore)
         .environment(accountAuthStore)
     }
 }

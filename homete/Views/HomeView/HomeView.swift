@@ -29,6 +29,7 @@ struct HomeView: View {
                 }
                 Button("パートナーを登録する") {
                     print("tapped register")
+                    rootNavigationPath.showRegisterCohabitantView()
                 }
                 .primaryButtonStyle()
                 Spacer()
