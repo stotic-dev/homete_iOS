@@ -19,7 +19,7 @@ protocol P2PServiceProvider {
     func finish()
     
     /// セッションに参加しているデバイスのうち指定したデバイスにデータを送信する
-    func send(_ data: Data, to peerID: [MCPeerID]) async
+    func send(_ data: Data, to peerID: [MCPeerID])
     
     /// 指定のデバイスとの接続を切断する
     func disconnect(to peerIDs: [MCPeerID])
@@ -33,7 +33,7 @@ final class P2PServiceProviderMock: P2PServiceProvider {
     var delegate: (any P2PServiceDelegate)?
     func startSearching() {}
     func finish() {}
-    func send(_ data: Data, to peerID: [MCPeerID]) async {}
+    func send(_ data: Data, to peerID: [MCPeerID]) {}
     func disconnect(to peerIDs: [MCPeerID]) {}
     func finishSearching() {}
 }

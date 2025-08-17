@@ -8,13 +8,11 @@
 import MultipeerConnectivity
 
 protocol CohabitantRegistrationStateBridge: P2PServiceDelegate {
-    
-    associatedtype NextState: CohabitantRegistrationStateBridge
-        
+            
     var provider: any P2PServiceProvider { get }
-    var stateContinuation: AsyncStream<CohabitantRegistrationState>.Continuation { get }
+    var stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation { get }
     func didEnter()
-    func next() -> NextState?
+    func next() -> (any CohabitantRegistrationStateBridge)?
     func sendMessage<Message: Encodable>(_ message: Message) throws
 }
 

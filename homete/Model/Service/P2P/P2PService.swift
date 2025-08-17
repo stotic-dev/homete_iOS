@@ -42,7 +42,7 @@ extension P2PService: P2PServiceProvider {
         browser.stopBrowsingForPeers()
     }
     
-    func send(_ data: Data, to peerID: [MCPeerID]) async {
+    func send(_ data: Data, to peerID: [MCPeerID]) {
         
         do {
             
@@ -73,14 +73,22 @@ extension P2PService: MCSessionDelegate {
     
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         
+        print("did change session state: \(state)")
         if state == .connected {
             
+            print("connected to: \(peerID.displayName)")
             delegate?.didConnect(to: peerID)
+        }
+        else if state == .notConnected {
+            
+            print("disconnected to: \(peerID.displayName)")
+            delegate?.didDisconnect(from: peerID)
         }
     }
     
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID) {
         
+        print("didReceive from: \(peerID.displayName), data: \(data)")
         delegate?.didReceiveData(data, from: peerID)
     }
     
@@ -138,6 +146,7 @@ extension P2PService: MCNearbyServiceBrowserDelegate {
         
         print("found device: \(peerID.displayName)")
         delegate?.didFoundDevice(peerID: peerID)
+        browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {

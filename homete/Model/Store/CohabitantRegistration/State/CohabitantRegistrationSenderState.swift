@@ -12,13 +12,13 @@ final class CohabitantRegistrationSenderState: CohabitantRegistrationStateBridge
     let myPeerID: MCPeerID
     private(set) var connectedPeerIDs: Set<MCPeerID> = []
     private(set) var provider: any P2PServiceProvider
-    let stateContinuation: AsyncStream<CohabitantRegistrationState>.Continuation
+    let stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
     
     init(
         myPeerID: MCPeerID,
         cohabitantPeerIDs: Set<MCPeerID>,
         provider: any P2PServiceProvider,
-        stateContinuation: AsyncStream<CohabitantRegistrationState>.Continuation
+        stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
     ) {
         
         self.myPeerID = myPeerID
@@ -32,12 +32,19 @@ final class CohabitantRegistrationSenderState: CohabitantRegistrationStateBridge
         
     }
     
-    func next() -> CohabitantRegistrationSenderState? {
+    func next() -> (any CohabitantRegistrationStateBridge)? {
         
         return nil
     }
     
+    func didDisconnect(from peerID: MCPeerID) {
+        
+        stateContinuation.yield(.error)
+    }
+    
     func sendMessage<Message>(_ message: Message) throws where Message: Encodable {
         
+        let encodedData = try JSONEncoder().encode(message)
+        provider.send(encodedData, to: .init(connectedPeerIDs))
     }
 }

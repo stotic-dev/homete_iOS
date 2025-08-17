@@ -12,17 +12,19 @@ import SwiftUI
 @Observable
 final class CohabitantRegistrationDataStore {
     
-    var cohabitantPeerIDs: [String] = []
+    var state: CohabitantRegistrationState = .initial
+    var cohabitantId: String?
+    var hasError = false
 
     @ObservationIgnored
     private var stateBridge: (any CohabitantRegistrationStateBridge)?
     
-    private let continuation: AsyncStream<CohabitantRegistrationState>.Continuation
-    private let stateStream: AsyncStream<CohabitantRegistrationState>
+    private let continuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
+    private let stateStream: AsyncStream<CohabitantRegistrationSessionResponse>
     
     init(provider: some P2PServiceProvider, myPeerID: MCPeerID) {
         
-        let (stateStream, continuation) = AsyncStream<CohabitantRegistrationState>.makeStream()
+        let (stateStream, continuation) = AsyncStream<CohabitantRegistrationSessionResponse>.makeStream()
         self.stateStream = stateStream
         self.continuation = continuation
         stateBridge = CohabitantRegistrationScanningState(
@@ -34,27 +36,25 @@ final class CohabitantRegistrationDataStore {
     
     func startLoading() async {
         
-        continuation.yield(.searching)
+        stateBridge?.didEnter()
         
-        for await state in stateStream {
+        for await response in stateStream {
             // イベントディスパッチ
-            switch state {
+            switch response {
+            case .searching(let connectedDeviceNameList):
+                state = .searching(connectedDeviceNameList: connectedDeviceNameList)
                 
-            case .initial: return
-                    
-            case .searching: break
+            case .connected: break
                 
-            case .registering:
-                stateBridge = stateBridge?.next()
+            case .receivedId(let cohabitantIdMessage):
+                cohabitantId = cohabitantIdMessage.value
                 
-            case .registered:
-                stateBridge = nil
+            case .completed:
+                state = .completed
                 
             case .error:
-                stateBridge = nil
+                hasError = true
             }
-            
-            stateBridge?.didEnter()
         }
     }
     
@@ -63,7 +63,24 @@ final class CohabitantRegistrationDataStore {
         continuation.finish()
     }
     
-    func register() async {
+    func register() {
         
+        state = .registering
+        stateBridge = stateBridge?.next()
+    }
+    
+    func shareCohabitantInfo(cohabitantId: String) {
+        
+        let message = CohabitantIdMessage(value: cohabitantId)
+        
+        do {
+            
+            try stateBridge?.sendMessage(message)
+        }
+        catch {
+            
+            print("failed to send message: \(error)")
+            hasError = true
+        }
     }
 }
