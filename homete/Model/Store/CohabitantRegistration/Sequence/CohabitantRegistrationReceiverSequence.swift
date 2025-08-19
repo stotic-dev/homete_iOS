@@ -7,27 +7,28 @@
 
 import MultipeerConnectivity
 
-final class CohabitantRegistrationReceiverState: CohabitantRegistrationStateBridge {
+final class CohabitantRegistrationReceiverSequence: CohabitantRegistrationP2PSequence {
     
+    private let connectedPeerId: MCPeerID
     private(set) var provider: any P2PServiceProvider
     let stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
     
     init(
+        connectedPeerId: MCPeerID,
         provider: any P2PServiceProvider,
         stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
     ) {
         
+        print("didEnter CohabitantRegistrationReceiverSequence")
+        self.connectedPeerId = connectedPeerId
         self.provider = provider
         self.stateContinuation = stateContinuation
         self.provider.delegate = self
     }
     
-    func didEnter() {
+    func next() -> (any CohabitantRegistrationP2PSequence)? {
         
-    }
-    
-    func next() -> (any CohabitantRegistrationStateBridge)? {
-        
+        provider.finish()
         return nil
     }
     
@@ -38,18 +39,26 @@ final class CohabitantRegistrationReceiverState: CohabitantRegistrationStateBrid
     
     func sendMessage<Message>(_ message: Message) throws where Message: Encodable {
         
+        print("\(#file) \(#function)")
+        let encodedData = try JSONEncoder().encode(message)
+        provider.send(encodedData, to: [connectedPeerId])
     }
     
     func didReceiveData(_ data: Data, from peerID: MCPeerID) {
         
-        do {
+        print("\(#file) \(#function)")
+        if let confirmMessage = try? JSONDecoder().decode(CohabitantRegistrationConfirmMessage.self, from: data),
+           confirmMessage.response == .ok {
             
-            let decodedData = try JSONDecoder().decode(CohabitantIdMessage.self, from: data)
+            stateContinuation.yield(.readyToShareAccountId)
+        }
+        else if let decodedData = try? JSONDecoder().decode(CohabitantIdShareMessage.self, from: data) {
+            
             stateContinuation.yield(.receivedId(decodedData))
         }
-        catch {
+        else {
             
-            stateContinuation.yield(.error)
+            preconditionFailure("did received unexpected data: \(data)")
         }
     }
 }

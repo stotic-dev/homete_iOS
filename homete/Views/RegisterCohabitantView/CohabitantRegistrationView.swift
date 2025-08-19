@@ -1,5 +1,5 @@
 //
-//  RegisterCohabitantView.swift
+//  CohabitantRegistrationView.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RegisterCohabitantView: View {
+struct CohabitantRegistrationView: View {
     
     @Environment(AccountStore.self) var accountStore
     @Environment(\.appDependencies.appStorage) var appStorage
@@ -22,23 +22,30 @@ struct RegisterCohabitantView: View {
                 ZStack {
                     switch cohabitantRegistrationDataStore.state {
                     case .initial:
-                        CohabitantRegistrationInitialStateView(
-                            cohabitantRegistrationDataStore: cohabitantRegistrationDataStore
-                        )
+                        CohabitantRegistrationInitialStateView()
                         
                     case .searching(let connectedDeviceNameList):
                         CohabitantRegistrationSearchingStateView(
-                            cohabitantRegistrationDataStore: cohabitantRegistrationDataStore,
                             connectedDeviceNameList: connectedDeviceNameList
                         )
                         
-                    case .registering:
-                        CohabitantRegistrationRegisteringStateView()
+                    case .waitingForConfirmation:
+                        Text("待機中")
+                        
+                    case .registering(let isLead):
+                        CohabitantRegistrationRegisteringStateView(
+                            myAccountId: accountStore.account.id,
+                            isLeadDevice: isLead
+                        )
                         
                     case .completed:
                         Text("登録完了")
+                            .onAppear {
+                                cohabitantRegistrationDataStore.removeResources()
+                            }
                     }
                 }
+                .environment(cohabitantRegistrationDataStore)
                 .alert("登録に失敗しました", isPresented: $cohabitantRegistrationDataStore.hasError) {
                     Button("OK") {
                         rootNavigationPath.pop()
@@ -70,5 +77,5 @@ struct RegisterCohabitantView: View {
 }
 
 #Preview {
-    RegisterCohabitantView()
+    CohabitantRegistrationView()
 }

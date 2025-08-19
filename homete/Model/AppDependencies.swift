@@ -13,13 +13,15 @@ struct AppDependencies {
     let analyticsClient: AnalyticsClient
     let accountInfoClient: AccountInfoClient
     let appStorage: AppStorageClient
+    let cohabitantClient: CohabitantClient
     
     init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue,
-        appStorage: AppStorageClient = .previewValue
+        appStorage: AppStorageClient = .previewValue,
+        cohabitantClient: CohabitantClient = .previewValue
     ) {
         
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -27,6 +29,7 @@ struct AppDependencies {
         self.analyticsClient = analyticsClient
         self.accountInfoClient = accountInfoClient
         self.appStorage = appStorage
+        self.cohabitantClient = cohabitantClient
     }
 }
 
@@ -37,7 +40,8 @@ extension EnvironmentValues {
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
         accountInfoClient: .liveValue,
-        appStorage: .liveValue
+        appStorage: .liveValue,
+        cohabitantClient: .liveValue
     )
 }
 

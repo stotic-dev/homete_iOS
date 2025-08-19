@@ -11,22 +11,10 @@ enum CohabitantRegistrationState: Equatable {
     case initial
     /// 他ユーザーを探索中
     case searching(connectedDeviceNameList: [String])
+    /// 他ユーザーの確認待ち
+    case waitingForConfirmation
     /// 検知したユーザーを登録中
-    case registering
+    case registering(isLead: Bool)
     /// 同居人の登録完了
     case completed
-}
-
-enum CohabitantRegistrationSessionResponse {
-    
-    /// 他ユーザーを探索中
-    case searching(connectedDeviceNameList: [String])
-    /// 接続メンバー確定時
-    case connected(isSenderRole: Bool)
-    /// 同居人IDを受信
-    case receivedId(CohabitantIdMessage)
-    /// 登録完了
-    case completed
-    /// エラー発生
-    case error
 }

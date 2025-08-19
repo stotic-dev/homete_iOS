@@ -13,11 +13,15 @@ import SwiftUI
 final class CohabitantRegistrationDataStore {
     
     var state: CohabitantRegistrationState = .initial
-    var cohabitantId: String?
     var hasError = false
-
+    var isConfirmedCohabitants = false
+    var sharedCohabitantAccountIds: [String] = []
+    var shouldShareAccountId = false
+    
+    private var isAllConfirmation = false
+    
     @ObservationIgnored
-    private var stateBridge: (any CohabitantRegistrationStateBridge)?
+    private var sequence: (any CohabitantRegistrationP2PSequence)?
     
     private let continuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
     private let stateStream: AsyncStream<CohabitantRegistrationSessionResponse>
@@ -27,7 +31,7 @@ final class CohabitantRegistrationDataStore {
         let (stateStream, continuation) = AsyncStream<CohabitantRegistrationSessionResponse>.makeStream()
         self.stateStream = stateStream
         self.continuation = continuation
-        stateBridge = CohabitantRegistrationScanningState(
+        sequence = CohabitantRegistrationScanningSequence(
             myPeerID: myPeerID,
             provider: provider,
             stateContinuation: continuation
@@ -35,19 +39,35 @@ final class CohabitantRegistrationDataStore {
     }
     
     func startLoading() async {
-        
-        stateBridge?.didEnter()
-        
+                
         for await response in stateStream {
+            print("received response: \(response)")
             // イベントディスパッチ
             switch response {
             case .searching(let connectedDeviceNameList):
                 state = .searching(connectedDeviceNameList: connectedDeviceNameList)
+                                
+            case .receivedRegistrationRequest(let isAllConfirmation):
+                isConfirmedCohabitants = true
+                self.isAllConfirmation = isAllConfirmation
                 
-            case .connected: break
+                if state == .waitingForConfirmation,
+                   isAllConfirmation {
+                    
+                    sequence = sequence?.next()
+                    state = .registering(isLead: sequence is CohabitantRegistrationSenderSequence)
+                }
+                
+            case .readyToShareAccountId:
+                shouldShareAccountId = true
+                
+            case .receivedAccountId(let accounts):
+                sharedCohabitantAccountIds = accounts
                 
             case .receivedId(let cohabitantIdMessage):
-                cohabitantId = cohabitantIdMessage.value
+                // TODO: 同居人IDの保存
+                sendMessage(CohabitantRegistrationCompleteMessage(response: .ok))
+                state = .completed
                 
             case .completed:
                 state = .completed
@@ -60,22 +80,46 @@ final class CohabitantRegistrationDataStore {
     
     func removeResources() {
         
+        sequence = sequence?.next()
         continuation.finish()
     }
     
     func register() {
         
-        state = .registering
-        stateBridge = stateBridge?.next()
+        if isAllConfirmation {
+            
+            sequence = sequence?.next()
+            state = .registering(isLead: sequence is CohabitantRegistrationSenderSequence)
+        }
+        else {
+            
+            state = .waitingForConfirmation
+            sendMessage(CohabitantRegistrationConfirmMessage(response: .ok))
+        }
+    }
+    
+    func shareAccount(id: String) {
+        
+        print("shareAccount: \(id)")
+        let message = CohabitantAccountShareMessage(accountId: id)
+        sendMessage(message)
     }
     
     func shareCohabitantInfo(cohabitantId: String) {
         
-        let message = CohabitantIdMessage(value: cohabitantId)
+        print("shareCohabitantInfo cohabitantId: \(cohabitantId)")
+        let message = CohabitantIdShareMessage(value: cohabitantId)
+        sendMessage(message)
+    }
+}
+
+private extension CohabitantRegistrationDataStore {
+    
+    func sendMessage<Message: Encodable>(_ message: Message) {
         
         do {
             
-            try stateBridge?.sendMessage(message)
+            try sequence?.sendMessage(message)
         }
         catch {
             

@@ -19,7 +19,7 @@ enum RootNavigationPath: Hashable {
         switch self {
         case .home: HomeView()
         case .setting: SettingView()
-        case .registerCohabitant: RegisterCohabitantView()
+        case .registerCohabitant: CohabitantRegistrationView()
         }
     }
 }

@@ -10,7 +10,8 @@ import SwiftUI
 
 struct CohabitantRegistrationSearchingStateView: View {
     
-    var cohabitantRegistrationDataStore: CohabitantRegistrationDataStore
+    @Environment(CohabitantRegistrationDataStore.self) var cohabitantRegistrationDataStore
+    @State var isPresentedConfirmCohabitantsAlert = false
     var connectedDeviceNameList: [String]
     
     var body: some View {
@@ -18,22 +19,29 @@ struct CohabitantRegistrationSearchingStateView: View {
             Text("検索中")
             if !connectedDeviceNameList.isEmpty {
                 Button("登録開始") {
-                    cohabitantRegistrationDataStore.register()
+                    cohabitantRegistrationDataStore.isConfirmedCohabitants = true
                 }
             }
             ForEach(connectedDeviceNameList, id: \.self) { displayName in
                 Text(displayName)
             }
         }
+        .onChange(of: cohabitantRegistrationDataStore.isConfirmedCohabitants) { _, newValue in
+            guard newValue else { return }
+            isPresentedConfirmCohabitantsAlert = true
+        }
+        .alert("以下メンバーで登録を開始しますか？", isPresented: $isPresentedConfirmCohabitantsAlert) {
+            Button("OK") {
+                cohabitantRegistrationDataStore.register()
+            }
+        } message: {
+            ForEach(connectedDeviceNameList, id: \.self) {
+                Text($0)
+            }
+        }
     }
 }
 
 #Preview {
-    CohabitantRegistrationSearchingStateView(
-        cohabitantRegistrationDataStore: .init(
-            provider: P2PServiceProviderMock(),
-            myPeerID: .init()
-        ),
-        connectedDeviceNameList: ["Test"]
-    )
+    CohabitantRegistrationSearchingStateView(connectedDeviceNameList: ["Test"])
 }

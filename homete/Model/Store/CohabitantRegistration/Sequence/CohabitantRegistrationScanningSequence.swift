@@ -1,5 +1,5 @@
 //
-//  CohabitantRegistrationScanningState.swift
+//  CohabitantRegistrationScanningSequence.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/16.
@@ -7,12 +7,14 @@
 
 import MultipeerConnectivity
 
-final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBridge {
+final class CohabitantRegistrationScanningSequence: CohabitantRegistrationP2PSequence, P2PServiceDelegate {
     
     let myPeerID: MCPeerID
     private(set) var connectedPeerIDs: Set<MCPeerID> = []
     private(set) var provider: any P2PServiceProvider
     let stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation
+    
+    private var registrablePeerIDs: Set<MCPeerID> = []
     
     init(
         myPeerID: MCPeerID,
@@ -24,9 +26,6 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
         self.provider = provider
         self.stateContinuation = stateContinuation
         self.provider.delegate = self
-    }
-    
-    func didEnter() {
         
         print("start searching(self id: \(myPeerID))")
         provider.startSearching()
@@ -48,14 +47,18 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
         )
     }
     
-    func next() -> (any CohabitantRegistrationStateBridge)? {
+    func next() -> (any CohabitantRegistrationP2PSequence)? {
         
         provider.finishSearching()
         
-        let firstPeerID = ([myPeerID] + connectedPeerIDs).sorted { $0.displayName < $1.displayName }.first
+        guard let firstPeerID = ([myPeerID] + connectedPeerIDs)
+            .sorted(by: { $0.displayName < $1.displayName }).first else {
+            
+            return nil
+        }
         if firstPeerID == myPeerID {
             
-            return CohabitantRegistrationSenderState(
+            return CohabitantRegistrationSenderSequence(
                 myPeerID: myPeerID,
                 cohabitantPeerIDs: connectedPeerIDs,
                 provider: provider,
@@ -69,7 +72,8 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
                 
                 provider.disconnect(to: .init(disconnectTargets))
             }
-            return CohabitantRegistrationReceiverState(
+            return CohabitantRegistrationReceiverSequence(
+                connectedPeerId: firstPeerID,
                 provider: provider,
                 stateContinuation: stateContinuation
             )
@@ -78,6 +82,29 @@ final class CohabitantRegistrationScanningState: CohabitantRegistrationStateBrid
     
     func sendMessage<Message>(_ message: Message) throws where Message: Encodable {
         
-        preconditionFailure("Unexpected call(message: \(message))")
+        print("\(#file) \(#function)")
+        let encodedData = try JSONEncoder().encode(message)
+        provider.send(encodedData, to: .init(connectedPeerIDs))
+    }
+    
+    func didReceiveData(_ data: Data, from peerID: MCPeerID) {
+        
+        print("\(#file) \(#function)")
+        let decoder = JSONDecoder()
+
+        if let message = try? decoder.decode(CohabitantRegistrationConfirmMessage.self, from: data) {
+            
+            print("received CohabitantRegistrationConfirmMessage: \(message)")
+            
+            if message.response == .ok {
+                
+                registrablePeerIDs.insert(peerID)
+                stateContinuation.yield(.receivedRegistrationRequest(isAllConfirmation: registrablePeerIDs == connectedPeerIDs))
+            }
+            else {
+                
+                stateContinuation.yield(.searching(connectedDeviceNameList: connectedPeerIDs.map(\.displayName)))
+            }
+        }
     }
 }

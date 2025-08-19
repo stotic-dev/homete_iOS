@@ -7,16 +7,15 @@
 
 import MultipeerConnectivity
 
-protocol CohabitantRegistrationStateBridge: P2PServiceDelegate {
+protocol CohabitantRegistrationP2PSequence: P2PServiceDelegate {
             
     var provider: any P2PServiceProvider { get }
     var stateContinuation: AsyncStream<CohabitantRegistrationSessionResponse>.Continuation { get }
-    func didEnter()
-    func next() -> (any CohabitantRegistrationStateBridge)?
+    func next() -> (any CohabitantRegistrationP2PSequence)?
     func sendMessage<Message: Encodable>(_ message: Message) throws
 }
 
-extension CohabitantRegistrationStateBridge {
+extension CohabitantRegistrationP2PSequence {
     
     func didFoundDevice(peerID: MCPeerID) {}
     
