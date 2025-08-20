@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
+import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationRegisteringStateView: View {
@@ -44,4 +45,10 @@ struct CohabitantRegistrationRegisteringStateView: View {
 
 #Preview {
     CohabitantRegistrationRegisteringStateView(myAccountId: "", isLeadDevice: false)
+        .environment(
+            CohabitantRegistrationDataStore(
+                provider: P2PServiceProviderMock(),
+                myPeerID: .init(displayName: "preview")
+            )
+        )
 }
