@@ -16,30 +16,50 @@ struct CohabitantRegistrationRegisteringStateView: View {
     let isLeadDevice: Bool
     
     var body: some View {
-        Text("登録中")
-            .onChange(of: cohabitantRegistrationDataStore.shouldShareAccountId) { _, newValue in
-                guard newValue,
-                      !isLeadDevice else { return }
-                cohabitantRegistrationDataStore.shareAccount(id: myAccountId)
+        VStack(spacing: .zero) {
+            VStack(spacing: DesignSystem.Space.space16) {
+                VStack(spacing: .zero) {
+                    Text("登録はもうすぐ完了します！")
+                    Text("共に家事を頑張るパートナーへ、エールを送り合いませんか？")
+                }
+                .font(with: .headLineM)
+                Image(.cohabitantsHandShake)
+                    .resizable()
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(contentMode: .fit)
+                    .cornerRadius(.radius8)
+                Text("しばらくお待ちください")
+                    .font(with: .caption)
             }
-            .onChange(of: cohabitantRegistrationDataStore.sharedCohabitantAccountIds) { _, cohabitantAccounts in
-                guard !cohabitantAccounts.isEmpty else { return }
-                let cohabitantId = UUID().uuidString
+            Spacer()
+                .frame(height: DesignSystem.Space.space24)
+            Indicator()
+            Spacer()
+        }
+        .padding(.horizontal, DesignSystem.Space.space16)
+        .onChange(of: cohabitantRegistrationDataStore.shouldShareAccountId) { _, newValue in
+            guard newValue,
+                  !isLeadDevice else { return }
+            cohabitantRegistrationDataStore.shareAccount(id: myAccountId)
+        }
+        .onChange(of: cohabitantRegistrationDataStore.sharedCohabitantAccountIds) { _, cohabitantAccounts in
+            guard !cohabitantAccounts.isEmpty else { return }
+            let cohabitantId = UUID().uuidString
+            
+            Task {
                 
-                Task {
+                do {
                     
-                    do {
-                        
-                        try await cohabitantClient.register(
-                            .init(id: cohabitantId, members: [myAccountId] + cohabitantAccounts)
-                        )
-                        cohabitantRegistrationDataStore.shareCohabitantInfo(cohabitantId: cohabitantId)
-                    }
-                    catch {
-                        // TODO: エラーハンドリング
-                    }
+                    try await cohabitantClient.register(
+                        .init(id: cohabitantId, members: [myAccountId] + cohabitantAccounts)
+                    )
+                    cohabitantRegistrationDataStore.shareCohabitantInfo(cohabitantId: cohabitantId)
+                }
+                catch {
+                    // TODO: エラーハンドリング
                 }
             }
+        }
     }
 }
 

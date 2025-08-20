@@ -30,7 +30,7 @@ struct CohabitantRegistrationView: View {
                         )
                         
                     case .waitingForConfirmation:
-                        Text("待機中")
+                        LoadingIndicator()
                         
                     case .registering(let isLead):
                         CohabitantRegistrationRegisteringStateView(
