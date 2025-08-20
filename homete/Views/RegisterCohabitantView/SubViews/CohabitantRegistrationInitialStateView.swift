@@ -14,9 +14,6 @@ struct CohabitantRegistrationInitialStateView: View {
     var body: some View {
         VStack {
             Text("Not Started")
-                .task {
-                    await cohabitantRegistrationDataStore.startLoading()
-                }
         }
     }
 }

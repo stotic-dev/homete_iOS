@@ -51,6 +51,9 @@ struct CohabitantRegistrationView: View {
                         rootNavigationPath.pop()
                     }
                 }
+                .task {
+                    await cohabitantRegistrationDataStore.startLoading()
+                }
             }
         }
         .padding(.horizontal, DesignSystem.Space.space16)
