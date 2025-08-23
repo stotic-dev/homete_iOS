@@ -63,11 +63,6 @@
 			path = hometeTests;
 			sourceTree = "<group>";
 		};
-		BCC8540F2DB74BBF00C9A44B /* hometeUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = hometeUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,7 +108,6 @@
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
 				BCC854052DB74BBF00C9A44B /* hometeTests */,
-				BCC8540F2DB74BBF00C9A44B /* hometeUITests */,
 				BCB8DB162E37B3F900FFB4E1 /* Frameworks */,
 				BCC853F62DB74BBC00C9A44B /* Products */,
 			);
@@ -197,9 +191,6 @@
 			);
 			dependencies = (
 				BCC8540E2DB74BBF00C9A44B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				BCC8540F2DB74BBF00C9A44B /* hometeUITests */,
 			);
 			name = hometeUITests;
 			packageProductDependencies = (
