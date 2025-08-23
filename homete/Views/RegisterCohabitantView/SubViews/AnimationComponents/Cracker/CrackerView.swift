@@ -7,35 +7,13 @@
 
 import SwiftUI
 
-struct Ribbon: Identifiable {
-    let id = UUID()
-    var x: CGFloat
-    var y: CGFloat
-    var color: Color
-    var angle: Angle
-    var speed: CGFloat
-    var opacity: CGFloat
-}
-
-struct ConfettiPiece: Identifiable {
-    let id = UUID()
-    let size: CGFloat
-    var x: CGFloat
-    var y: CGFloat
-    var color: Color
-    var angle: Angle
-    var speed: CGFloat
-    var isShow: Bool
-}
-
 struct CrackerView: View {
     
-    @State var ribbons: [Ribbon] = []
-    @State var confettis: [ConfettiPiece] = []
+    @State var ribbons: [CrackerRibbon] = []
+    @State var confettis: [CrackerConfettiPiece] = []
     @State var launched = false
     
-    let colors: [Color] = [.red, .blue, .green, .yellow, .pink, .orange, .purple]
-    
+    /// アニメーション終了したら呼ばれるクロージャ
     let completion: () -> Void
     
     var body: some View {
@@ -73,8 +51,8 @@ struct CrackerView: View {
                             }
                         Spacer()
                     }
-                    .padding(.leading, 20)
-                    .padding(.bottom, 40)
+                    .padding(.leading, DesignSystem.Space.space24)
+                    .padding(.bottom, DesignSystem.Space.space40)
                 }
             }
         }
@@ -84,86 +62,55 @@ struct CrackerView: View {
 private extension CrackerView {
     
     func fireCracker(screenHeight: CGFloat) {
-        ribbons.removeAll()
-        confettis.removeAll()
+        
         launched = false
         
         let startX: CGFloat = 60
         let startY: CGFloat = screenHeight - 120
         
-        // 紙吹雪
-        confettis = confettis.map {
-            
-            var piece = $0
-            piece.isShow.toggle()
-            return piece
-        }
-        
-        for _ in 0..<100 {
-            let confetti = ConfettiPiece(
-                size: 8,
-                x: startX,
-                y: startY,
-                color: colors.randomElement()!,
-                angle: .degrees(Double.random(in: -50...50)),
-                speed: 0.6,
-                isShow: true
-            )
-            confettis.append(confetti)
-        }
-        
-        // 紙テープ生成（右上方向へランダムに発射）
-        for _ in 0..<25 {
-            let ribbon = Ribbon(
-                x: startX,
-                y: startY,
-                color: colors.randomElement()!,
-                angle: .degrees(Double.random(in: -10...50)),
-                speed: Double.random(in: 0.5...1),
-                opacity: 1
-            )
-            ribbons.append(ribbon)
-        }
+        confettis = CrackerConfettiPiece.makeConfettis(startX: startX, startY: startY)
+        ribbons = CrackerRibbon.makeRibbons(startX: startX, startY: startY)
         
         // アニメーション開始
         launched = true
         
         withAnimation(.default) {
+            
             for i in 0..<confettis.count {
-                // 右上方向に飛ばす
-                let dx = CGFloat.random(in: (startX - 70)...(startX + 120))
-                let dy = CGFloat.random(in: (startY - 150)...(startY + 30))
                 
-                confettis[i].x = dx
-                confettis[i].y = dy
+                confettis[i] = confettis[i].explosion(startX: startX, startY: startY)
             }
         } completion: {
+            
             withAnimation(.linear(duration: 1.5)) {
+                
                 for i in 0..<confettis.count {
-                    confettis[i].y += 50
-                    confettis[i].isShow = false
+                    
+                    confettis[i] = confettis[i].scatter()
                 }
             } completion: {
+                
+                confettis.removeAll()
                 completion()
             }
         }
         
         for i in 0..<ribbons.count {
-            // 右上方向に飛ばす
-            let degrees = ribbons[i].angle.degrees
-            let dx = degrees * 10
-            let dy = 0.0
             
             withAnimation(.easeInOut(duration: ribbons[i].speed)) {
-                ribbons[i].x = dx
-                ribbons[i].y = dy
+                
+                ribbons[i] = ribbons[i].explosion()
             }
             
             Task {
                 
                 try await Task.sleep(for: .seconds(ribbons[i].speed / CGFloat(2)))
                 withAnimation {
-                    ribbons[i].opacity = 0
+                    
+                    ribbons[i] = ribbons[i].scatter()
+                } completion: {
+                    
+                    ribbons.removeAll()
                 }
             }
         }
