@@ -33,7 +33,7 @@ struct CohabitantRegistrationView: View {
                         LoadingIndicator()
                         
                     case .registering(let isLead):
-                        CohabitantRegistrationRegisteringStateView(
+                        CohabitantRegistrationProcessingView(
                             myAccountId: accountStore.account.id,
                             isLeadDevice: isLead
                         )
