@@ -13,19 +13,36 @@ struct CohabitantRegistrationCompleteView: View {
     
     var body: some View {
         ZStack {
-            if isCracked {
-                ConfettiRainView()
-            }
-            else {
-                CrackerView {
-                    withAnimation {
-                        isCracked = true
-                    }
+            VStack(spacing: DesignSystem.Space.space16) {
+                Text("登録が完了しました！")
+                    .font(with: .headLineL)
+                Text("これからは、あなたとパートナーの家事を分担し、協力していくことができます。")
+                    .font(with: .body)
+                Spacer()
+                Button {
+                    
+                } label: {
+                    Text("閉じる")
+                        .frame(maxWidth: .infinity)
                 }
-                .transition(.opacity)
+                .subPrimaryButtonStyle()
             }
+            .padding(.horizontal, DesignSystem.Space.space16)
+            ZStack {
+                if isCracked {
+                    ConfettiRainView()
+                }
+                else {
+                    CrackerView {
+                        withAnimation {
+                            isCracked = true
+                        }
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
     }
 }
 
