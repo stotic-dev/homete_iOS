@@ -1,5 +1,5 @@
 //
-//  CohabitantRegistrationRegisteringStateView.swift
+//  CohabitantRegistrationProcessingView.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/17.
@@ -8,7 +8,7 @@
 import MultipeerConnectivity
 import SwiftUI
 
-struct CohabitantRegistrationRegisteringStateView: View {
+struct CohabitantRegistrationProcessingView: View {
     
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
     @Environment(CohabitantRegistrationDataStore.self) var cohabitantRegistrationDataStore
@@ -64,7 +64,7 @@ struct CohabitantRegistrationRegisteringStateView: View {
 }
 
 #Preview {
-    CohabitantRegistrationRegisteringStateView(myAccountId: "", isLeadDevice: false)
+    CohabitantRegistrationProcessingView(myAccountId: "", isLeadDevice: false)
         .environment(
             CohabitantRegistrationDataStore(
                 provider: P2PServiceProviderMock(),
