@@ -32,7 +32,7 @@ struct CrackerView: View {
                     Capsule()
                         .fill(ribbon.color)
                         .rotationEffect(ribbon.angle)
-                        .frame(width: 6, height: 100)
+                        .frame(width: 6, height: 50)
                         .position(x: ribbon.x, y: ribbon.y)
                         .opacity(ribbon.opacity)
                 }
@@ -59,7 +59,7 @@ struct CrackerView: View {
                                     LinearKeyframe(value.offset, duration: 0.4)
                                     LinearKeyframe(
                                         .init(
-                                            width: -(proxy.size.width / 2 - 60),
+                                            width: -(proxy.size.width / 2 - 40),
                                             height: proxy.size.height / 2 - 60
                                         ),
                                         duration: 1.5
