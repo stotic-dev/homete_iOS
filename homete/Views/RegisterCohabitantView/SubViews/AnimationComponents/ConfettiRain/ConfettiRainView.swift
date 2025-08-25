@@ -8,22 +8,7 @@
 import Combine
 import SwiftUI
 
-struct ConfettiRainPiece: Identifiable {
-    let id = UUID()
-    var x: CGFloat
-    var color: Color
-    var size: CGFloat
-    var speed: Double
-    var angle: Angle
-    var drift: CGFloat
-    var isAnimate: Bool
-    var spinX: Double
-    var spinY: Double
-}
-
 struct ConfettiRainView: View {
-    
-    let colors: [Color] = [.red, .blue, .green, .yellow, .pink, .orange, .purple]
     
     @State private var confettis: [ConfettiRainPiece] = []
     @State var timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()
@@ -44,7 +29,7 @@ struct ConfettiRainView: View {
                     .offset(x: piece.isAnimate ? piece.drift : 0)
             }
             .onReceive(timer) { _ in
-                spawnConfetti(screenSize: proxy.size)
+                spawnConfetti(screenWidth: proxy.size.width)
             }
         }
         .drawingGroup()
@@ -53,21 +38,11 @@ struct ConfettiRainView: View {
 
 private extension ConfettiRainView {
     
-    func spawnConfetti(screenSize: CGSize) {
+    func spawnConfetti(screenWidth: CGFloat) {
         
         for _ in 0..<10 {
             
-            let piece = ConfettiRainPiece(
-                x: CGFloat.random(in: 0...screenSize.width),
-                color: colors.randomElement() ?? .red,
-                size: CGFloat.random(in: 8...16),
-                speed: Double.random(in: 4...8),
-                angle: .degrees(Double.random(in: 0...360)),
-                drift: CGFloat.random(in: -40...40),
-                isAnimate: false,
-                spinX: Double.random(in: -60...60),
-                spinY: Double.random(in: -60...60)
-            )
+            let piece = ConfettiRainPiece(screenWidth: screenWidth)
             confettis.append(piece)
             
             // 画面下まで落ちたら削除
