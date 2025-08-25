@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
+    @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     
     @State var isPresentedLogoutConfirmAlert = false
@@ -18,7 +19,7 @@ struct SettingView: View {
         VStack(spacing: .zero) {
             Spacer()
                 .frame(height: DesignSystem.Space.space24)
-            Text("Display Name")
+            Text(accountStore.account.displayName)
                 .font(with: .headLineM)
             Spacer()
                 .frame(height: DesignSystem.Space.space16)

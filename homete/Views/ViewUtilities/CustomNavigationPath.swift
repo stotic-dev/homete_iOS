@@ -20,4 +20,9 @@ final class CustomNavigationPath<Element: Hashable> {
         
         path.removeAll()
     }
+    
+    func pop() {
+        
+        _ = path.popLast()
+    }
 }

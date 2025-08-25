@@ -39,20 +39,28 @@
 		BCC8540C2DB74BBF00C9A44B /* hometeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BCC853F42DB74BBC00C9A44B /* homete */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BCC853F72DB74BBC00C9A44B /* homete */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */,
+			);
 			path = homete;
 			sourceTree = "<group>";
 		};
 		BCC854052DB74BBF00C9A44B /* hometeTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = hometeTests;
-			sourceTree = "<group>";
-		};
-		BCC8540F2DB74BBF00C9A44B /* hometeUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = hometeUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -100,7 +108,6 @@
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
 				BCC854052DB74BBF00C9A44B /* hometeTests */,
-				BCC8540F2DB74BBF00C9A44B /* hometeUITests */,
 				BCB8DB162E37B3F900FFB4E1 /* Frameworks */,
 				BCC853F62DB74BBC00C9A44B /* Products */,
 			);
@@ -184,9 +191,6 @@
 			);
 			dependencies = (
 				BCC8540E2DB74BBF00C9A44B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				BCC8540F2DB74BBF00C9A44B /* hometeUITests */,
 			);
 			name = hometeUITests;
 			packageProductDependencies = (
@@ -535,13 +539,15 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "パートナーの登録を行うために使用します";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -578,13 +584,15 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "パートナーの登録を行うために使用します";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
