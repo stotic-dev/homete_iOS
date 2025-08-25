@@ -36,23 +36,53 @@ struct CrackerView: View {
                         .position(x: ribbon.x, y: ribbon.y)
                         .opacity(ribbon.opacity)
                 }
-                // クラッカー本体 (左下に配置)
                 VStack {
                     Spacer()
                     HStack {
+                        Spacer()
+                        // クラッカー本体 (左下に配置)
                         Image(systemName: "party.popper.fill")
                             .resizable()
                             .symbolEffect(.bounce, value: launched)
                             .frame(width: 80, height: 80)
                             .foregroundStyle(.orange, .yellow)
-                            .rotationEffect(.degrees(-30)) // 右上に向ける
-                            .onAppear {
-                                fireCracker(screenHeight: proxy.size.height)
+                            .keyframeAnimator(
+                                initialValue: CrackerAnimationValue(),
+                                trigger: launched
+                            ) { content, value in
+                                content
+                                    .opacity(value.opacity)
+                                    .offset(value.offset)
+                                    .scaleEffect(value.scale)
+                            } keyframes: { value in
+                                KeyframeTrack(\.offset) {
+                                    LinearKeyframe(value.offset, duration: 0.4)
+                                    LinearKeyframe(
+                                        .init(
+                                            width: -(proxy.size.width / 2 - 60),
+                                            height: proxy.size.height / 2 - 60
+                                        ),
+                                        duration: 1.5
+                                    )
+                                }
+                                KeyframeTrack(\.opacity) {
+                                    SpringKeyframe(1, duration: 0.2)
+                                }
+                                KeyframeTrack(\.scale) {
+                                    SpringKeyframe(2, duration: 0.2)
+                                    LinearKeyframe(1, duration: 0.2)
+                                }
                             }
                         Spacer()
                     }
-                    .padding(.leading, DesignSystem.Space.space24)
-                    .padding(.bottom, DesignSystem.Space.space40)
+                    Spacer()
+                }
+            }
+            .onAppear {
+                launched = true
+                Task {
+                    try await Task.sleep(for: .seconds(2))
+                    fireCracker(screenHeight: proxy.size.height)
                 }
             }
         }
@@ -62,9 +92,7 @@ struct CrackerView: View {
 private extension CrackerView {
     
     func fireCracker(screenHeight: CGFloat) {
-        
-        launched = false
-        
+                
         let startX: CGFloat = 60
         let startY: CGFloat = screenHeight - 120
         
@@ -72,7 +100,6 @@ private extension CrackerView {
         ribbons = CrackerRibbon.makeRibbons(startX: startX, startY: startY)
         
         // アニメーション開始
-        launched = true
         
         withAnimation(.default) {
             
@@ -114,6 +141,16 @@ private extension CrackerView {
                 }
             }
         }
+    }
+}
+
+private extension CrackerView {
+    
+    struct CrackerAnimationValue {
+        
+        var opacity = 0.0
+        var offset = CGSize.zero
+        var scale = 1.0
     }
 }
 
