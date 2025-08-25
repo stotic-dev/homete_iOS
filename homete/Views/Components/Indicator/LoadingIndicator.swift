@@ -13,11 +13,7 @@ struct LoadingIndicator: View {
             Color(.loadingBg)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
-            ProgressView()
-                .padding(DesignSystem.Space.space16)
-                .tint(.white)
-                .background(.gray)
-                .cornerRadius(.radius8)
+            Indicator()
         }
     }
 }
