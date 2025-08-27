@@ -17,6 +17,5 @@ struct CohabitantRegistrationView: View {
         P2PSession(displayName: accountStore.account.displayName) {
             CohabitantRegistrationSession()
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
     }
 }

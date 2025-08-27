@@ -11,6 +11,11 @@ import SwiftUI
 struct CohabitantRegistrationProcessingView: View {
     
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
+    @Environment(\.p2pSession) var p2pSession
+    @Environment(\.myPeerID) var myPeerID
+    @Environment(\.connectedPeers) var connectedPeers
+    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    
     let myAccountId: String
     let isLeadDevice: Bool
     
