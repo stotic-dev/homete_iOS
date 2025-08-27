@@ -11,7 +11,6 @@ import SwiftUI
 struct CohabitantRegistrationProcessingView: View {
     
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
-    @Environment(CohabitantRegistrationDataStore.self) var cohabitantRegistrationDataStore
     let myAccountId: String
     let isLeadDevice: Bool
     
@@ -37,38 +36,35 @@ struct CohabitantRegistrationProcessingView: View {
             Spacer()
         }
         .padding(.horizontal, DesignSystem.Space.space16)
-        .onChange(of: cohabitantRegistrationDataStore.shouldShareAccountId) { _, newValue in
-            guard newValue,
-                  !isLeadDevice else { return }
-            cohabitantRegistrationDataStore.shareAccount(id: myAccountId)
-        }
-        .onChange(of: cohabitantRegistrationDataStore.sharedCohabitantAccountIds) { _, cohabitantAccounts in
-            guard !cohabitantAccounts.isEmpty else { return }
-            let cohabitantId = UUID().uuidString
-            
-            Task {
-                
-                do {
-                    
-                    try await cohabitantClient.register(
-                        .init(id: cohabitantId, members: [myAccountId] + cohabitantAccounts)
-                    )
-                    cohabitantRegistrationDataStore.shareCohabitantInfo(cohabitantId: cohabitantId)
-                }
-                catch {
-                    // TODO: エラーハンドリング
-                }
-            }
-        }
+//        .onChange(of: cohabitantRegistrationDataStore.shouldShareAccountId) { _, newValue in
+//            guard newValue,
+//                  !isLeadDevice else { return }
+//            cohabitantRegistrationDataStore.shareAccount(id: myAccountId)
+//        }
+//        .onChange(of: cohabitantRegistrationDataStore.sharedCohabitantAccountIds) { _, cohabitantAccounts in
+//            guard !cohabitantAccounts.isEmpty else { return }
+//            let cohabitantId = UUID().uuidString
+//            
+//            Task {
+//                
+//                do {
+//                    
+//                    try await cohabitantClient.register(
+//                        .init(id: cohabitantId, members: [myAccountId] + cohabitantAccounts)
+//                    )
+//                    cohabitantRegistrationDataStore.shareCohabitantInfo(cohabitantId: cohabitantId)
+//                }
+//                catch {
+//                    // TODO: エラーハンドリング
+//                }
+//            }
+//        }
     }
 }
 
 #Preview {
-    CohabitantRegistrationProcessingView(myAccountId: "", isLeadDevice: false)
-        .environment(
-            CohabitantRegistrationDataStore(
-                provider: P2PServiceProviderMock(),
-                myPeerID: .init(displayName: "preview")
-            )
-        )
+    CohabitantRegistrationProcessingView(
+        myAccountId: "",
+        isLeadDevice: false
+    )
 }

@@ -8,21 +8,6 @@
 import MultipeerConnectivity
 import SwiftUI
 
-@MainActor
-enum P2PSessionEvent {
-    
-    case connected(peerID: MCPeerID)
-    case disconnected(peerID: MCPeerID)
-    case received(data: Data, sender: MCPeerID)
-}
-
-@MainActor
-struct P2PSessionReceiveData {
-    
-    let sender: MCPeerID
-    let body: Data
-}
-
 struct P2PSession<Content: View>: View {
     
     @Environment(\.appDependencies.appStorage) var appStorage
@@ -68,6 +53,8 @@ struct P2PSession<Content: View>: View {
                     case .received(let data, let sender):
                         receiveDataContinuation.yield(.init(sender: sender, body: data))
                     }
+                    
+                    print("\(#file) event: \(event), connectedPeers: \(connectedPeers)")
                 }
             }
             .onDisappear {

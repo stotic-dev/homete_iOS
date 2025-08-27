@@ -94,7 +94,7 @@ final class CohabitantRegistrationDataStore {
         else {
             
             state = .waitingForConfirmation
-            sendMessage(CohabitantRegistrationConfirmMessage(response: .ok))
+//            sendMessage(CohabitantRegistrationConfirmMessage(response: .ok))
         }
     }
     

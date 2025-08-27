@@ -7,11 +7,17 @@
 
 struct CohabitantRegistrationConfirmMessage: Codable {
     
+    let type: ConfirmType
     let response: Response
     
     enum Response: Codable {
         
         case ok
         case no
+    }
+    
+    enum ConfirmType: Codable {
+        
+        case readyRegistration
     }
 }

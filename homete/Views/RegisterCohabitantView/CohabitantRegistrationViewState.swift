@@ -7,7 +7,10 @@
 
 enum CohabitantRegistrationViewState {
     
+    /// 同居人となるメンバーを探している状態
     case scanning
-    case processing
+    /// 同居人を登録する処理を行っている状態
+    case processing(isLead: Bool)
+    /// 同居人の登録が完了
     case completed
 }

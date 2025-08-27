@@ -37,7 +37,7 @@ final class CohabitantRegistrationSenderSequence: CohabitantRegistrationP2PSeque
         
         timer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
             
-            try? self?.sendMessage(CohabitantRegistrationConfirmMessage(response: .ok))
+//            try? self?.sendMessage(CohabitantRegistrationConfirmMessage(response: .ok))
         }
     }
     
