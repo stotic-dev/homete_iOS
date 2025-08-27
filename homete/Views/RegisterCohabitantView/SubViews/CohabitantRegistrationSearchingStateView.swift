@@ -10,59 +10,77 @@ import SwiftUI
 
 struct CohabitantRegistrationSearchingStateView: View {
     
-    @Environment(CohabitantRegistrationDataStore.self) var cohabitantRegistrationDataStore
-    @State var isPresentedConfirmCohabitantsAlert = false
-    var connectedDeviceNameList: [String]
+    @Environment(P2PConnectedPeersStore.self) var connectedPeersStore
+    @Binding var registrationState: CohabitantRegistrationViewState
+    let scannerController: any P2PScannerClient
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
-            Text("デバイスの名前を確認してください")
-                .font(with: .headLineM)
-            ForEach(connectedDeviceNameList, id: \.self) { displayName in
-                HStack(spacing: DesignSystem.Space.space24) {
-                    Image(systemName: "iphone")
-                        .frame(width: 24, height: 24)
-                        .padding(DesignSystem.Space.space8)
-                        .background(.primary3)
-                        .cornerRadius(.radius8)
-                    Text(displayName)
-                        .font(with: .body)
+        ZStack {
+            if connectedPeersStore.peers.isEmpty {
+                CohabitantRegistrationInitialStateView()
+            }
+            else {
+                VStack(spacing: DesignSystem.Space.space16) {
+                    Text("デバイスの名前を確認してください")
+                        .font(with: .headLineM)
+                    ForEach(convertToDisplayNameList(connectedPeersStore.peers), id: \.self) { displayName in
+                        HStack(spacing: DesignSystem.Space.space24) {
+                            Image(systemName: "iphone")
+                                .frame(width: 24, height: 24)
+                                .padding(DesignSystem.Space.space8)
+                                .background(.primary3)
+                                .cornerRadius(.radius8)
+                            Text(displayName)
+                                .font(with: .body)
+                            Spacer()
+                        }
+                    }
                     Spacer()
+                    Button {
+                        registrationState = .processing
+                    } label: {
+                        Text("登録を開始する")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .subPrimaryButtonStyle()
                 }
+                .padding(.horizontal, DesignSystem.Space.space16)
             }
-            Spacer()
-            Button {
-                cohabitantRegistrationDataStore.isConfirmedCohabitants = true
-            } label: {
-                Text("登録を開始する")
-                    .frame(maxWidth: .infinity)
-            }
-            .subPrimaryButtonStyle(isDisabled: connectedDeviceNameList.isEmpty)
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
-        .onChange(of: cohabitantRegistrationDataStore.isConfirmedCohabitants) { _, newValue in
-            guard newValue else { return }
-            isPresentedConfirmCohabitantsAlert = true
+        .onAppear {
+            scannerController.startScan()
         }
-        .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentedConfirmCohabitantsAlert) {
-            Button("OK") {
-                cohabitantRegistrationDataStore.register()
-            }
+        .onDisappear {
+            scannerController.finishScan()
         }
     }
 }
 
-#Preview {
+private extension CohabitantRegistrationSearchingStateView {
+    
+    func convertToDisplayNameList(_ peers: Set<MCPeerID>) -> [String] {
+        
+        return peers.compactMap {
+            
+            $0.displayName.components(separatedBy: "_").first
+        }
+    }
+}
+
+#Preview("デバイス未検知ケース") {
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        connectedDeviceNameList: [
-            "Test",
-            "Test2",
-            "Test3"]
+        registrationState: $registrationState,
+        scannerController: P2PScannerClientMock(eventStream: .init { return .error })
     )
-    .environment(
-        CohabitantRegistrationDataStore(
-            provider: P2PServiceProviderMock(),
-            myPeerID: .init(displayName: "preview")
-        )
+    .environment(P2PConnectedPeersStore())
+}
+
+#Preview("デバイス検知済みケース") {
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
+    CohabitantRegistrationSearchingStateView(
+        registrationState: $registrationState,
+        scannerController: P2PScannerClientMock(eventStream: .init { return .error })
     )
+    .environment(P2PConnectedPeersStore(peers: [.init(displayName: "Test_UUID")]))
 }
