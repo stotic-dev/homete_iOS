@@ -10,24 +10,25 @@ import SwiftUI
 
 struct CohabitantRegistrationSearchingStateView: View {
     
-    @Environment(P2PConnectedPeersStore.self) var connectedPeersStore
+    @Environment(\.connectedPeers) var connectedPeers
     @Binding var registrationState: CohabitantRegistrationViewState
     let scannerController: any P2PScannerClient
     
     var body: some View {
         ZStack {
-            if connectedPeersStore.peers.isEmpty {
+            if connectedPeers.isEmpty {
                 CohabitantRegistrationInitialStateView()
             }
             else {
                 VStack(spacing: DesignSystem.Space.space16) {
                     Text("デバイスの名前を確認してください")
                         .font(with: .headLineM)
-                    ForEach(convertToDisplayNameList(connectedPeersStore.peers), id: \.self) { displayName in
+                    ForEach(convertToDisplayNameList(connectedPeers), id: \.self) { displayName in
                         HStack(spacing: DesignSystem.Space.space24) {
                             Image(systemName: "iphone")
                                 .frame(width: 24, height: 24)
                                 .padding(DesignSystem.Space.space8)
+                                .foregroundStyle(.commonBlack)
                                 .background(.primary3)
                                 .cornerRadius(.radius8)
                             Text(displayName)
@@ -48,6 +49,7 @@ struct CohabitantRegistrationSearchingStateView: View {
             }
         }
         .onAppear {
+            print("\(#file) onAppear")
             scannerController.startScan()
         }
         .onDisappear {
@@ -71,16 +73,15 @@ private extension CohabitantRegistrationSearchingStateView {
     @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
         registrationState: $registrationState,
-        scannerController: P2PScannerClientMock(eventStream: .init { return .error })
+        scannerController: P2PScannerClientMock()
     )
-    .environment(P2PConnectedPeersStore())
 }
 
 #Preview("デバイス検知済みケース") {
     @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
         registrationState: $registrationState,
-        scannerController: P2PScannerClientMock(eventStream: .init { return .error })
+        scannerController: P2PScannerClientMock()
     )
-    .environment(P2PConnectedPeersStore(peers: [.init(displayName: "Test_UUID")]))
+    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }

@@ -12,7 +12,6 @@ struct P2PScanner<Content: View>: View {
     
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.p2pSession) var session
-    @Environment(P2PConnectedPeersStore.self) var connectedPeersStore
     
     @State var controller: P2PScannerController?
     
@@ -32,29 +31,26 @@ struct P2PScanner<Content: View>: View {
         ZStack {
             if let controller {
                 content(controller)
-                    .task {
-                        for await event in controller.eventStream {
-                            switch event {
-                            case .connected(let peerID):
-                                connectedPeersStore.peers.insert(peerID)
-                                
-                            case .disconnected(let peerID):
-                                connectedPeersStore.peers.remove(peerID)
-                                
-                            case .error:
-                                connectedPeersStore.hasError = true
-                            }
-                        }
-                    }
             }
             else {
                 EmptyView()
             }
         }
-        .onAppear {
-            guard let myPeerID,
-                  let session else { return }
-            controller = .init(session: session, myPeerID: myPeerID, serviceType: serviceType)
+        .onChange(of: myPeerID) {
+            setupController()
         }
+        .onChange(of: session) {
+            setupController()
+        }
+    }
+}
+
+private extension P2PScanner {
+    
+    func setupController() {
+        
+        guard let myPeerID,
+              let session else { return }
+        controller = .init(session: session, myPeerID: myPeerID, serviceType: serviceType)
     }
 }

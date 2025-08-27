@@ -7,8 +7,6 @@
 
 protocol P2PScannerClient {
     
-    /// デバイススキャンのイベントストリーム
-    var eventStream: AsyncStream<P2PScanningEvent> { get }
     /// スキャンを開始
     func startScan()
     /// スキャンを終了
@@ -16,14 +14,8 @@ protocol P2PScannerClient {
 }
 
 final class P2PScannerClientMock: P2PScannerClient {
-    
-    var eventStream: AsyncStream<P2PScanningEvent>
-    
+        
     func startScan() {}
     
     func finishScan() {}
-    
-    init(eventStream: AsyncStream<P2PScanningEvent>) {
-        self.eventStream = eventStream
-    }
 }
