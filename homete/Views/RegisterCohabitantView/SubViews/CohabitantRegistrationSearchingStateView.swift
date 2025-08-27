@@ -11,7 +11,8 @@ import SwiftUI
 struct CohabitantRegistrationSearchingStateView: View {
     
     @Environment(\.connectedPeers) var connectedPeers
-    @Binding var registrationState: CohabitantRegistrationViewState
+    @State var isWaitingReadyCommunication = false
+    
     let scannerController: any P2PScannerClient
     
     var body: some View {
@@ -38,7 +39,8 @@ struct CohabitantRegistrationSearchingStateView: View {
                     }
                     Spacer()
                     Button {
-                        registrationState = .processing
+                        isWaitingReadyCommunication = true
+                        // TODO: 開始通知を送信する
                     } label: {
                         Text("登録を開始する")
                             .frame(maxWidth: .infinity)
@@ -46,6 +48,10 @@ struct CohabitantRegistrationSearchingStateView: View {
                     .subPrimaryButtonStyle()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
+                if isWaitingReadyCommunication {
+                    LoadingIndicator()
+                        .ignoresSafeArea()
+                }
             }
         }
         .onAppear {
@@ -70,17 +76,21 @@ private extension CohabitantRegistrationSearchingStateView {
 }
 
 #Preview("デバイス未検知ケース") {
-    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        registrationState: $registrationState,
         scannerController: P2PScannerClientMock()
     )
 }
 
 #Preview("デバイス検知済みケース") {
-    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        registrationState: $registrationState,
+        scannerController: P2PScannerClientMock()
+    )
+    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
+}
+
+#Preview("登録開始待ちケース") {
+    CohabitantRegistrationSearchingStateView(
+        isWaitingReadyCommunication: true,
         scannerController: P2PScannerClientMock()
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
