@@ -10,10 +10,15 @@ import SwiftUI
 
 struct CohabitantRegistrationSearchingStateView: View {
     
-    @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSession) var p2pSession
-    @Binding var isConfirmedReadyRegistration: Bool
+    @Environment(\.myPeerID) var myPeerID
+    @Environment(\.connectedPeers) var connectedPeers
+    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    
+    @State var isConfirmedReadyRegistration = false
     @State var isPresentingConfirmReadyRegistrationAlert = false
+    @State var confirmedReadyRegistrationPeers: Set<MCPeerID> = []
+    @Binding var registrationState: CohabitantRegistrationViewState
     
     let scannerController: any P2PScannerClient
     
@@ -78,6 +83,31 @@ struct CohabitantRegistrationSearchingStateView: View {
         .onDisappear {
             scannerController.finishScan()
         }
+        .onChange(of: isConfirmedReadyRegistration) {
+            transitionToProcessingStateIfNeeded()
+        }
+        .onChange(of: confirmedReadyRegistrationPeers) {
+            transitionToProcessingStateIfNeeded()
+        }
+        .task {
+            let decoder = JSONDecoder()
+            
+            for await receiveData in receiveDataStream {
+                
+                if let confirmMessage = try? decoder.decode(
+                    CohabitantRegistrationConfirmMessage.self,
+                    from: receiveData.body
+                ) {
+                    
+                    // 登録開始確認のデータ受信時の処理
+                    if confirmMessage.type == .readyRegistration,
+                       confirmMessage.response == .ok {
+                        
+                        confirmedReadyRegistrationPeers.insert(receiveData.sender)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -111,39 +141,56 @@ private extension CohabitantRegistrationSearchingStateView {
             with: .reliable
         )
     }
+    
+    func transitionToProcessingStateIfNeeded() {
+        
+        // 自分が登録ボタンタップ済みで、かつ全てのメンバーが登録ボタンタップ済みの場合に、
+        // 登録処理に移行する
+        guard isConfirmedReadyRegistration,
+              confirmedReadyRegistrationPeers == connectedPeers,
+              let myPeerID = self.myPeerID else { return }
+        let firstPeerID = ([myPeerID] + connectedPeers)
+            .sorted { $0.displayName < $1.displayName }.first
+        
+        withAnimation {
+            
+            registrationState = .processing(isLead: firstPeerID == myPeerID)
+        }
+    }
 }
 
 #Preview("デバイス未検知ケース") {
-    @Previewable @State var isConfirmedReadyRegistration = false
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration,
+        registrationState: $registrationState,
         scannerController: P2PScannerClientMock()
     )
 }
 
 #Preview("デバイス検知済みケース") {
-    @Previewable @State var isConfirmedReadyRegistration = false
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration,
+        registrationState: $registrationState,
         scannerController: P2PScannerClientMock()
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("確認アラート表示中のケース") {
-    @Previewable @State var isConfirmedReadyRegistration = false
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration,
         isPresentingConfirmReadyRegistrationAlert: true,
+        registrationState: $registrationState,
         scannerController: P2PScannerClientMock()
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("登録開始待ちケース") {
-    @Previewable @State var isConfirmedReadyRegistration = true
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.scanning
     CohabitantRegistrationSearchingStateView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration,
+        isConfirmedReadyRegistration: true,
+        registrationState: $registrationState,
         scannerController: P2PScannerClientMock()
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
