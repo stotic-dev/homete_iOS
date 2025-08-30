@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/30.
 //
 
-
 import MultipeerConnectivity
 import SwiftUI
 

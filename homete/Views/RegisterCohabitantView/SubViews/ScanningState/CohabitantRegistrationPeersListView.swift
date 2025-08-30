@@ -46,14 +46,13 @@ struct CohabitantRegistrationPeersListView: View {
                     .frame(height: DesignSystem.Space.space24)
             }
             .padding(.horizontal, DesignSystem.Space.space16)
-            if isConfirmedReadyRegistration {
-                LoadingIndicator()
-                    .ignoresSafeArea()
-            }
+            LoadingIndicator()
+                .opacity(isConfirmedReadyRegistration ? 1 : 0)
+                .ignoresSafeArea()
         }
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
-                // TODO: まだ登録しない
+                tappedConfirmAlertCancelButton()
             } label: {
                 Text("キャンセル")
             }
@@ -68,7 +67,7 @@ struct CohabitantRegistrationPeersListView: View {
 
 private extension CohabitantRegistrationPeersListView {
     
-    // MARK: ドメイン処理
+    // MARK: プレゼンテーション処理
     
     func convertToDisplayNameList(_ peers: Set<MCPeerID>) -> [String] {
         
@@ -78,8 +77,6 @@ private extension CohabitantRegistrationPeersListView {
         }
     }
     
-    // MARK: プレゼンテーション処理
-    
     func tappedConfirmAlertAcceptButton() {
         
         isConfirmedReadyRegistration = true
@@ -87,6 +84,18 @@ private extension CohabitantRegistrationPeersListView {
         // メンバーが確定したことの通知を送信する
         let data = CohabitantRegistrationMessage(
             type: .fixedMember(isOK: true),
+        )
+        p2pSessionProxy?.send(
+            data.encodedData(),
+            to: connectedPeers,
+        )
+    }
+    
+    func tappedConfirmAlertCancelButton() {
+        
+        // メンバーが確定していないことの通知を送信する
+        let data = CohabitantRegistrationMessage(
+            type: .fixedMember(isOK: false),
         )
         p2pSessionProxy?.send(
             data.encodedData(),

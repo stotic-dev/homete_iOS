@@ -15,6 +15,7 @@ struct CohabitantRegistrationScanningStateView: View {
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
     
     @State var isConfirmedReadyRegistration = false
+    @State var isPresentingRejectRegistrationAlert = false
     @State var confirmedReadyRegistrationPeers: Set<MCPeerID> = []
     @Binding var registrationState: CohabitantRegistrationViewState
     
@@ -33,6 +34,12 @@ struct CohabitantRegistrationScanningStateView: View {
                 .transition(.opacity)
             }
         }
+        .alert(
+            "通信中のメンバーがキャンセルしました",
+            isPresented: $isPresentingRejectRegistrationAlert
+        ) {
+            Button("OK") { tappedRejectAlertButton() }
+        }
         .animation(.spring, value: connectedPeers.isEmpty)
         .onAppear {
             scannerController.startScan()
@@ -47,25 +54,35 @@ struct CohabitantRegistrationScanningStateView: View {
             transitionToProcessingStateIfNeeded()
         }
         .task {
-            
             for await receiveData in receiveDataStream {
-                
                 let data = CohabitantRegistrationMessage(receiveData.body)
-                
-                // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
-                if let isFixedMember = data.isFixedMember,
-                   isFixedMember {
-                    
-                    confirmedReadyRegistrationPeers.insert(receiveData.sender)
-                }
+                dispatchReceivedMessage(data, receiveData.sender)
             }
         }
     }
 }
 
 private extension CohabitantRegistrationScanningStateView {
-        
+    
     // MARK: プレゼンテーション処理
+    
+    func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
+        
+        if let isFixedMember = data.isFixedMember {
+            
+            if isFixedMember {
+                
+                // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
+                confirmedReadyRegistrationPeers.insert(sender)
+            }
+            else {
+                
+                // 登録メンバーが拒否した場合は、再度メンバーを選び直す
+                confirmedReadyRegistrationPeers.removeAll()
+                isPresentingRejectRegistrationAlert = true
+            }
+        }
+    }
     
     func transitionToProcessingStateIfNeeded() {
         
@@ -81,5 +98,10 @@ private extension CohabitantRegistrationScanningStateView {
             
             registrationState = .processing(isLead: firstPeerID == myPeerID)
         }
+    }
+    
+    func tappedRejectAlertButton() {
+        
+        isConfirmedReadyRegistration = false
     }
 }
