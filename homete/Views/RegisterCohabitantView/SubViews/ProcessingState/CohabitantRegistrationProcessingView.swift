@@ -11,7 +11,7 @@ import SwiftUI
 
 struct CohabitantRegistrationProcessingView: View {
     
-    @Environment(\.p2pSession) var p2pSession
+    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(AccountStore.self) var accountStore
     
@@ -53,10 +53,9 @@ struct CohabitantRegistrationProcessingView: View {
                     role: .follower(accountId: accountStore.account.id)
                 )
             )
-            try? p2pSession?.send(
+            p2pSessionProxy?.send(
                 message.encodedData(),
-                toPeers: .init(connectedPeers),
-                with: .reliable
+                to: connectedPeers
             )
         }
         .onChange(of: connectedPeers) {

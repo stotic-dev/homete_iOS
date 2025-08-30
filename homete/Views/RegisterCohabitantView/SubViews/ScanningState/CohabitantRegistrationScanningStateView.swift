@@ -10,7 +10,6 @@ import SwiftUI
 
 struct CohabitantRegistrationScanningStateView: View {
     
-    @Environment(\.p2pSession) var p2pSession
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream

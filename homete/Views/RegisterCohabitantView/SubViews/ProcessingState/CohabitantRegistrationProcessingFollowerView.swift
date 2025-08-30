@@ -11,7 +11,7 @@ import SwiftUI
 struct CohabitantRegistrationProcessingFollower: View {
     
     @Environment(\.appDependencies.appStorage) var appStorage
-    @Environment(\.p2pSession) var p2pSession
+    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
     
     @State var confirmedRolePeers: Set<MCPeerID> = []
@@ -69,18 +69,10 @@ private extension CohabitantRegistrationProcessingFollower {
         }
         
         // TODO: 同居人IDの永続化
-        do {
-            
-            let message = CohabitantRegistrationMessage(type: .complete)
-            try p2pSession?.send(
-                message.encodedData(),
-                toPeers: [leadPeer],
-                with: .reliable
-            )
-        }
-        catch {
-            
-            // TODO: エラーハンドリング
-        }
+        let message = CohabitantRegistrationMessage(type: .complete)
+        p2pSessionProxy?.send(
+            message.encodedData(),
+            to: [leadPeer]
+        )
     }
 }

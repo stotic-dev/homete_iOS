@@ -11,19 +11,21 @@ import SwiftUI
 struct P2PScanner<Content: View>: View {
     
     @Environment(\.myPeerID) var myPeerID
-    @Environment(\.p2pSession) var session
     
     @State var controller: P2PScannerController?
     
     let serviceType: P2PServiceType
+    let session: MCSession?
     let content: (any P2PScannerClient) -> Content
     
     init(
         serviceType: P2PServiceType,
+        session: MCSession?,
         @ViewBuilder content: @escaping (any P2PScannerClient) -> Content
     ) {
         
         self.serviceType = serviceType
+        self.session = session
         self.content = content
     }
     

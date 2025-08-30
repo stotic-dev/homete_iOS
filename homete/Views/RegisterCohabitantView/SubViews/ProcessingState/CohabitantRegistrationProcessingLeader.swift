@@ -12,7 +12,7 @@ struct CohabitantRegistrationProcessingLeader: View {
     
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
     @Environment(\.appDependencies.appStorage) var appStorage
-    @Environment(\.p2pSession) var p2pSession
+    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
@@ -84,10 +84,9 @@ private extension CohabitantRegistrationProcessingLeader {
                 
                 // 同居人IDをメンバーに連携する
                 let message = CohabitantRegistrationMessage(type: .shareCohabitantId(id: cohabitantId))
-                try p2pSession?.send(
+                p2pSessionProxy?.send(
                     message.encodedData(),
-                    toPeers: .init(connectedPeers),
-                    with: .reliable
+                    to: connectedPeers
                 )
             }
             catch {
@@ -99,17 +98,10 @@ private extension CohabitantRegistrationProcessingLeader {
     func onCompletedRegistration() {
         
         let message = CohabitantRegistrationMessage(type: .complete)
-        do {
-            
-            try p2pSession?.send(
-                message.encodedData(),
-                toPeers: .init(connectedPeers),
-                with: .reliable
-            )
-        }
-        catch {
-            // TODO: エラーハンドリング
-        }
+        p2pSessionProxy?.send(
+            message.encodedData(),
+            to: connectedPeers
+        )
         registrationState = .completed
     }
 }

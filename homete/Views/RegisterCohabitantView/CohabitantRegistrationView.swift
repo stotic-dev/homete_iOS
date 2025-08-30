@@ -15,7 +15,7 @@ struct CohabitantRegistrationView: View {
     
     var body: some View {
         P2PSession(displayName: accountStore.account.displayName) {
-            CohabitantRegistrationSession()
+            CohabitantRegistrationSession(session: $0)
         }
     }
 }

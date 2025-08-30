@@ -19,10 +19,10 @@ struct P2PSession<Content: View>: View {
     @State var receiveDataContinuation: AsyncStream<P2PSessionReceiveData>.Continuation
     @State var receiveDataStream: AsyncStream<P2PSessionReceiveData>
     
-    let content: () -> Content
+    let content: (MCSession?) -> Content
     let displayName: String
     
-    init(displayName: String, @ViewBuilder content: @escaping () -> Content) {
+    init(displayName: String, @ViewBuilder content: @escaping (MCSession?) -> Content) {
         
         self.content = content
         self.displayName = displayName
@@ -32,11 +32,11 @@ struct P2PSession<Content: View>: View {
     }
     
     var body: some View {
-        content()
+        content(session)
             .environment(\.myPeerID, myPeerID)
-            .environment(\.p2pSession, session)
             .environment(\.connectedPeers, connectedPeers)
             .environment(\.p2pSessionReceiveDataStream, receiveDataStream)
+            .environment(\.p2pSessionProxy, .init(session: session))
             .task {
                 await onAppear()
                 

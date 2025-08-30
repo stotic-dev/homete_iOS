@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CohabitantRegistrationPeersListView: View {
     
-    @Environment(\.p2pSession) var p2pSession
+    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.connectedPeers) var connectedPeers
     
     @State var isPresentingConfirmReadyRegistrationAlert = false
@@ -88,10 +88,9 @@ private extension CohabitantRegistrationPeersListView {
         let data = CohabitantRegistrationMessage(
             type: .fixedMember(isOK: true),
         )
-        try? p2pSession?.send(
+        p2pSessionProxy?.send(
             data.encodedData(),
-            toPeers: .init(connectedPeers),
-            with: .reliable
+            to: connectedPeers,
         )
     }
 }

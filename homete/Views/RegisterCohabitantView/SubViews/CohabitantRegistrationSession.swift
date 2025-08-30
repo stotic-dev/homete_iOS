@@ -13,12 +13,14 @@ struct CohabitantRegistrationSession: View {
     @Environment(AccountStore.self) var accountStore
     
     @State var registrationState = CohabitantRegistrationViewState.scanning
+    
+    let session: MCSession?
         
     var body: some View {
         ZStack {
             switch registrationState {
             case .scanning:
-                P2PScanner(serviceType: .register) {
+                P2PScanner(serviceType: .register, session: session) {
                     CohabitantRegistrationScanningStateView(
                         registrationState: $registrationState,
                         scannerController: $0
