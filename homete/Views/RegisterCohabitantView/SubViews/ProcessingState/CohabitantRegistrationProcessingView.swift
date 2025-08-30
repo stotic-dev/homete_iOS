@@ -15,8 +15,11 @@ struct CohabitantRegistrationProcessingView: View {
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(AccountStore.self) var accountStore
     
+    @State var isPresentedMemberChangeAlert = false
+    
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @Binding var confirmedRolePeers: Set<MCPeerID>
+    @Binding var registrationState: CohabitantRegistrationViewState
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -56,10 +59,36 @@ struct CohabitantRegistrationProcessingView: View {
                 with: .reliable
             )
         }
+        .onChange(of: connectedPeers) {
+            isPresentedMemberChangeAlert = true
+        }
+        .alert(
+            "接続エラー",
+            isPresented: $isPresentedMemberChangeAlert) {
+                Button("OK") {
+                    registrationState = .scanning
+                }
+            } message: {
+               Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
+            }
     }
 }
 
-#Preview {
+#Preview("通常ケース") {
     @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
-    CohabitantRegistrationProcessingView(confirmedRolePeers: $confirmedRolePeers)
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.processing(isLead: false)
+    CohabitantRegistrationProcessingView(
+        confirmedRolePeers: $confirmedRolePeers,
+        registrationState: $registrationState
+    )
+}
+
+#Preview("切断検知ケース") {
+    @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
+    @Previewable @State var registrationState = CohabitantRegistrationViewState.processing(isLead: false)
+    CohabitantRegistrationProcessingView(
+        isPresentedMemberChangeAlert: true,
+        confirmedRolePeers: $confirmedRolePeers,
+        registrationState: $registrationState
+    )
 }

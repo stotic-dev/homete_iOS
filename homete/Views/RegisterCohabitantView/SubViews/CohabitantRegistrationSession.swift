@@ -19,7 +19,7 @@ struct CohabitantRegistrationSession: View {
             switch registrationState {
             case .scanning:
                 P2PScanner(serviceType: .register) {
-                    CohabitantRegistrationSearchingStateView(
+                    CohabitantRegistrationScanningStateView(
                         registrationState: $registrationState,
                         scannerController: $0
                     )

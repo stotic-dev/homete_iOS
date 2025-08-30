@@ -39,8 +39,7 @@ struct P2PSession<Content: View>: View {
             .environment(\.p2pSessionReceiveDataStream, receiveDataStream)
             .task {
                 await onAppear()
-            }
-            .task {
+                
                 for await event in sessionDelegate.eventStream {
                     
                     switch event {
@@ -88,12 +87,4 @@ private extension P2PSession {
             fatalError("fail set store(error: \(error)).")
         }
     }
-}
-
-extension EnvironmentValues {
-    
-    @Entry var myPeerID: MCPeerID?
-    @Entry var p2pSession: MCSession?
-    @Entry var connectedPeers: Set<MCPeerID> = []
-    @Entry var p2pSessionReceiveDataStream: AsyncStream<P2PSessionReceiveData> = .init { nil }
 }
