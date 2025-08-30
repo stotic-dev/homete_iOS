@@ -63,32 +63,32 @@ final class CohabitantRegistrationSenderSequence: CohabitantRegistrationP2PSeque
     
     func didReceiveData(_ data: Data, from peerID: MCPeerID) {
         
-        print("\(#file) \(#function)")
-        if let decodedData = try? JSONDecoder().decode(CohabitantAccountShareMessage.self, from: data) {
-            
-            didShareAccountIdList.append(decodedData.accountId)
-            didShareAccountPeerList.insert(peerID)
-            
-            if didShareAccountPeerList == connectedPeerIDs {
-                
-                timer?.invalidate()
-                timer = nil
-                stateContinuation.yield(.receivedAccountId(didShareAccountIdList))
-            }
-        }
-        else if let decodedData = try? JSONDecoder().decode(CohabitantRegistrationCompleteMessage.self, from: data),
-           decodedData.response == .ok {
-            
-            didCompletePeerIDs.insert(peerID)
-            if didCompletePeerIDs == connectedPeerIDs {
-                
-                try? sendMessage(CohabitantRegistrationCompleteMessage(response: .ok))
-                stateContinuation.yield(.completed)
-            }
-        }
-        else {
-            
-            preconditionFailure("did receive invalid message.")
-        }
+//        print("\(#file) \(#function)")
+//        if let decodedData = try? JSONDecoder().decode(CohabitantAccountShareMessage.self, from: data) {
+//            
+//            didShareAccountIdList.append(decodedData.accountId)
+//            didShareAccountPeerList.insert(peerID)
+//            
+//            if didShareAccountPeerList == connectedPeerIDs {
+//                
+//                timer?.invalidate()
+//                timer = nil
+//                stateContinuation.yield(.receivedAccountId(didShareAccountIdList))
+//            }
+//        }
+//        else if let decodedData = try? JSONDecoder().decode(CohabitantRegistrationCompleteMessage.self, from: data),
+//           decodedData.response == .ok {
+//            
+//            didCompletePeerIDs.insert(peerID)
+//            if didCompletePeerIDs == connectedPeerIDs {
+//                
+//                try? sendMessage(CohabitantRegistrationCompleteMessage(response: .ok))
+//                stateContinuation.yield(.completed)
+//            }
+//        }
+//        else {
+//            
+//            preconditionFailure("did receive invalid message.")
+//        }
     }
 }

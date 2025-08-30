@@ -47,18 +47,18 @@ final class CohabitantRegistrationReceiverSequence: CohabitantRegistrationP2PSeq
     func didReceiveData(_ data: Data, from peerID: MCPeerID) {
         
         print("\(#file) \(#function)")
-        if let confirmMessage = try? JSONDecoder().decode(CohabitantRegistrationConfirmMessage.self, from: data),
-           confirmMessage.response == .ok {
-            
-            stateContinuation.yield(.readyToShareAccountId)
-        }
-        else if let decodedData = try? JSONDecoder().decode(CohabitantIdShareMessage.self, from: data) {
-            
-            stateContinuation.yield(.receivedId(decodedData))
-        }
-        else {
-            
-            preconditionFailure("did received unexpected data: \(data)")
-        }
+//        if let confirmMessage = try? JSONDecoder().decode(CohabitantRegistrationMessage.self, from: data),
+//           confirmMessage.response == .ok {
+//            
+//            stateContinuation.yield(.readyToShareAccountId)
+//        }
+//        else if let decodedData = try? JSONDecoder().decode(CohabitantIdShareMessage.self, from: data) {
+//            
+//            stateContinuation.yield(.receivedId(decodedData))
+//        }
+//        else {
+//            
+//            preconditionFailure("did received unexpected data: \(data)")
+//        }
     }
 }

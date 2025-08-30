@@ -43,38 +43,38 @@ final class CohabitantRegistrationDataStore {
         for await response in stateStream {
             print("received response: \(response)")
             // イベントディスパッチ
-            switch response {
-            case .searching(let connectedDeviceNameList):
-                state = .searching(connectedDeviceNameList: connectedDeviceNameList)
-                                
-            case .receivedRegistrationRequest(let isAllConfirmation):
-                isConfirmedCohabitants = true
-                self.isAllConfirmation = isAllConfirmation
-                
-                if state == .waitingForConfirmation,
-                   isAllConfirmation {
-                    
-                    sequence = sequence?.next()
-                    state = .registering(isLead: sequence is CohabitantRegistrationSenderSequence)
-                }
-                
-            case .readyToShareAccountId:
-                shouldShareAccountId = true
-                
-            case .receivedAccountId(let accounts):
-                sharedCohabitantAccountIds = accounts
-                
-            case .receivedId(let cohabitantIdMessage):
-                // TODO: 同居人IDの保存
-                sendMessage(CohabitantRegistrationCompleteMessage(response: .ok))
-                state = .completed
-                
-            case .completed:
-                state = .completed
-                
-            case .error:
-                hasError = true
-            }
+//            switch response {
+//            case .searching(let connectedDeviceNameList):
+//                state = .searching(connectedDeviceNameList: connectedDeviceNameList)
+//                                
+//            case .receivedRegistrationRequest(let isAllConfirmation):
+//                isConfirmedCohabitants = true
+//                self.isAllConfirmation = isAllConfirmation
+//                
+//                if state == .waitingForConfirmation,
+//                   isAllConfirmation {
+//                    
+//                    sequence = sequence?.next()
+//                    state = .registering(isLead: sequence is CohabitantRegistrationSenderSequence)
+//                }
+//                
+//            case .readyToShareAccountId:
+//                shouldShareAccountId = true
+//                
+//            case .receivedAccountId(let accounts):
+//                sharedCohabitantAccountIds = accounts
+//                
+//            case .receivedId(let cohabitantIdMessage):
+//                // TODO: 同居人IDの保存
+//                sendMessage(CohabitantRegistrationCompleteMessage(response: .ok))
+//                state = .completed
+//                
+//            case .completed:
+//                state = .completed
+//                
+//            case .error:
+//                hasError = true
+//            }
         }
     }
     
@@ -101,15 +101,15 @@ final class CohabitantRegistrationDataStore {
     func shareAccount(id: String) {
         
         print("shareAccount: \(id)")
-        let message = CohabitantAccountShareMessage(accountId: id)
-        sendMessage(message)
+//        let message = CohabitantAccountShareMessage(accountId: id)
+//        sendMessage(message)
     }
     
     func shareCohabitantInfo(cohabitantId: String) {
         
         print("shareCohabitantInfo cohabitantId: \(cohabitantId)")
-        let message = CohabitantIdShareMessage(value: cohabitantId)
-        sendMessage(message)
+//        let message = CohabitantRegistrationMessage(value: cohabitantId)
+//        sendMessage(message)
     }
 }
 

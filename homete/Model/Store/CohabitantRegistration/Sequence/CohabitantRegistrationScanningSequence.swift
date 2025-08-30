@@ -91,20 +91,20 @@ final class CohabitantRegistrationScanningSequence: CohabitantRegistrationP2PSeq
         
         print("\(#file) \(#function)")
         let decoder = JSONDecoder()
-
-        if let message = try? decoder.decode(CohabitantRegistrationConfirmMessage.self, from: data) {
-            
-            print("received CohabitantRegistrationConfirmMessage: \(message)")
-            
-            if message.response == .ok {
-                
-                registrablePeerIDs.insert(peerID)
-                stateContinuation.yield(.receivedRegistrationRequest(isAllConfirmation: registrablePeerIDs == connectedPeerIDs))
-            }
-            else {
-                
-                stateContinuation.yield(.searching(connectedDeviceNameList: connectedPeerIDs.map(\.displayName)))
-            }
-        }
+//
+//        if let message = try? decoder.decode(CohabitantRegistrationMessage.self, from: data) {
+//            
+//            print("received CohabitantRegistrationConfirmMessage: \(message)")
+//            
+//            if message.response == .ok {
+//                
+//                registrablePeerIDs.insert(peerID)
+//                stateContinuation.yield(.receivedRegistrationRequest(isAllConfirmation: registrablePeerIDs == connectedPeerIDs))
+//            }
+//            else {
+//                
+//                stateContinuation.yield(.searching(connectedDeviceNameList: connectedPeerIDs.map(\.displayName)))
+//            }
+//        }
     }
 }

@@ -16,7 +16,7 @@ enum CohabitantRegistrationSessionResponse {
     /// 同居人として登録するアカウントのIDを受信
     case receivedAccountId([String])
     /// 同居人IDを受信
-    case receivedId(CohabitantIdShareMessage)
+    case receivedId
     /// 登録完了
     case completed
     /// エラー発生

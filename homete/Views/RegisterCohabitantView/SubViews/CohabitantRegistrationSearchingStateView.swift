@@ -90,21 +90,16 @@ struct CohabitantRegistrationSearchingStateView: View {
             transitionToProcessingStateIfNeeded()
         }
         .task {
-            let decoder = JSONDecoder()
             
             for await receiveData in receiveDataStream {
                 
-                if let confirmMessage = try? decoder.decode(
-                    CohabitantRegistrationConfirmMessage.self,
-                    from: receiveData.body
-                ) {
+                let data = CohabitantRegistrationMessage(receiveData.body)
+                
+                // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
+                if let isFixedMember = data.isFixedMember,
+                   isFixedMember {
                     
-                    // 登録開始確認のデータ受信時の処理
-                    if confirmMessage.type == .readyRegistration,
-                       confirmMessage.response == .ok {
-                        
-                        confirmedReadyRegistrationPeers.insert(receiveData.sender)
-                    }
+                    confirmedReadyRegistrationPeers.insert(receiveData.sender)
                 }
             }
         }
@@ -129,14 +124,12 @@ private extension CohabitantRegistrationSearchingStateView {
         
         isConfirmedReadyRegistration = true
         
-        // TODO: 開始通知を送信する
-        let data = CohabitantRegistrationConfirmMessage(
-            type: .readyRegistration,
-            response: .ok
+        // メンバーが確定したことの通知を送信する
+        let data = CohabitantRegistrationMessage(
+            type: .fixedMember(isOK: true),
         )
-        guard let encodedData = try? JSONEncoder().encode(data) else { return }
         try? p2pSession?.send(
-            encodedData,
+            data.encodedData(),
             toPeers: .init(connectedPeers),
             with: .reliable
         )

@@ -12,24 +12,32 @@ struct CohabitantRegistrationSession: View {
     
     @Environment(AccountStore.self) var accountStore
     
-    @State var viewState = CohabitantRegistrationViewState.scanning
+    @State var registrationState = CohabitantRegistrationViewState.scanning
         
     var body: some View {
         ZStack {
-            switch viewState {
+            switch registrationState {
             case .scanning:
                 P2PScanner(serviceType: .register) {
                     CohabitantRegistrationSearchingStateView(
-                        registrationState: $viewState,
+                        registrationState: $registrationState,
                         scannerController: $0
                     )
                 }
                 .transition(.slide)
-            case .processing:
-                CohabitantRegistrationProcessingView(
-                    myAccountId: accountStore.account.id,
-                    isLeadDevice: true
-                )
+            case .processing(let isLead):
+                ZStack {
+                    if isLead {
+                        CohabitantRegistrationProcessingLeader(
+                            registrationState: $registrationState
+                        )
+                    }
+                    else {
+                        CohabitantRegistrationProcessingFollower(
+                            registrationState: $registrationState
+                        )
+                    }
+                }
                 .transition(.slide)
             case .completed:
                 CohabitantRegistrationCompleteView()
