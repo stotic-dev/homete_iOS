@@ -23,7 +23,7 @@ struct CohabitantRegistrationProcessingLeader: View {
     @State var cohabitantsAccountId: Set<String> = []
     // 登録完了したデバイスリスト
     @State var completedRegistrationPeers: Set<MCPeerID> = []
-    @Binding var registrationState: CohabitantRegistrationViewState
+    @Binding var registrationState: CohabitantRegistrationState
     
     var body: some View {
         CohabitantRegistrationProcessingView(

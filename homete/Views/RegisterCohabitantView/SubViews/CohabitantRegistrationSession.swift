@@ -12,7 +12,7 @@ struct CohabitantRegistrationSession: View {
     
     @Environment(AccountStore.self) var accountStore
     
-    @State var registrationState = CohabitantRegistrationViewState.scanning
+    @State var registrationState = CohabitantRegistrationState.scanning
     
     let session: MCSession?
         
@@ -48,5 +48,6 @@ struct CohabitantRegistrationSession: View {
                     )
             }
         }
+        .animation(nil, value: registrationState)
     }
 }

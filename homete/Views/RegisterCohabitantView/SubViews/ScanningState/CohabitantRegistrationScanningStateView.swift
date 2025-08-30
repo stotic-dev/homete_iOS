@@ -16,8 +16,8 @@ struct CohabitantRegistrationScanningStateView: View {
     
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
-    @State var confirmedReadyRegistrationPeers: Set<MCPeerID> = []
-    @Binding var registrationState: CohabitantRegistrationViewState
+    @State var confirmedReadyRegistrationPeers = ConfirmedRegistrationPeers(peers: [])
+    @Binding var registrationState: CohabitantRegistrationState
     
     let scannerController: any P2PScannerClient
     
@@ -73,12 +73,12 @@ private extension CohabitantRegistrationScanningStateView {
             if isFixedMember {
                 
                 // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
-                confirmedReadyRegistrationPeers.insert(sender)
+                confirmedReadyRegistrationPeers.addPeer(sender)
             }
             else {
                 
                 // 登録メンバーが拒否した場合は、再度メンバーを選び直す
-                confirmedReadyRegistrationPeers.removeAll()
+                confirmedReadyRegistrationPeers = .init(peers: [])
                 isPresentingRejectRegistrationAlert = true
             }
         }
@@ -89,15 +89,13 @@ private extension CohabitantRegistrationScanningStateView {
         // 自分が登録ボタンタップ済みで、かつ全てのメンバーが登録ボタンタップ済みの場合に、
         // 登録処理に移行する
         guard isConfirmedReadyRegistration,
-              confirmedReadyRegistrationPeers == connectedPeers,
-              let myPeerID = self.myPeerID else { return }
-        let firstPeerID = ([myPeerID] + connectedPeers)
-            .sorted { $0.displayName < $1.displayName }.first
+              let myPeerID = self.myPeerID,
+        let isLeadPeer = confirmedReadyRegistrationPeers.isLeadPeer(
+            connectedPeers: connectedPeers,
+            myPeerID: myPeerID
+        ) else { return }
         
-        withAnimation {
-            
-            registrationState = .processing(isLead: firstPeerID == myPeerID)
-        }
+        registrationState = .processing(isLead: isLeadPeer)
     }
     
     func tappedRejectAlertButton() {

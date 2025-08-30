@@ -17,7 +17,7 @@ struct CohabitantRegistrationProcessingFollower: View {
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var leadPeer: MCPeerID?
     
-    @Binding var registrationState: CohabitantRegistrationViewState
+    @Binding var registrationState: CohabitantRegistrationState
     
     var body: some View {
         CohabitantRegistrationProcessingView(

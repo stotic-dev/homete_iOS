@@ -19,7 +19,7 @@ struct CohabitantRegistrationProcessingView: View {
     
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @Binding var confirmedRolePeers: Set<MCPeerID>
-    @Binding var registrationState: CohabitantRegistrationViewState
+    @Binding var registrationState: CohabitantRegistrationState
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -75,7 +75,7 @@ struct CohabitantRegistrationProcessingView: View {
 
 #Preview("通常ケース") {
     @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
-    @Previewable @State var registrationState = CohabitantRegistrationViewState.processing(isLead: false)
+    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: false)
     CohabitantRegistrationProcessingView(
         confirmedRolePeers: $confirmedRolePeers,
         registrationState: $registrationState
@@ -84,7 +84,7 @@ struct CohabitantRegistrationProcessingView: View {
 
 #Preview("切断検知ケース") {
     @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
-    @Previewable @State var registrationState = CohabitantRegistrationViewState.processing(isLead: false)
+    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: false)
     CohabitantRegistrationProcessingView(
         isPresentedMemberChangeAlert: true,
         confirmedRolePeers: $confirmedRolePeers,
