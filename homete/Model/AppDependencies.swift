@@ -12,7 +12,6 @@ struct AppDependencies {
     let accountAuthClient: AccountAuthClient
     let analyticsClient: AnalyticsClient
     let accountInfoClient: AccountInfoClient
-    let appStorage: AppStorageClient
     let cohabitantClient: CohabitantClient
     
     init(
@@ -20,7 +19,6 @@ struct AppDependencies {
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue,
-        appStorage: AppStorageClient = .previewValue,
         cohabitantClient: CohabitantClient = .previewValue
     ) {
         
@@ -28,7 +26,6 @@ struct AppDependencies {
         self.accountAuthClient = accountAuthClient
         self.analyticsClient = analyticsClient
         self.accountInfoClient = accountInfoClient
-        self.appStorage = appStorage
         self.cohabitantClient = cohabitantClient
     }
 }
@@ -40,7 +37,6 @@ extension EnvironmentValues {
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
         accountInfoClient: .liveValue,
-        appStorage: .liveValue,
         cohabitantClient: .liveValue
     )
 }

@@ -11,12 +11,13 @@ import SwiftUI
 struct CohabitantRegistrationProcessingLeader: View {
     
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
-    @Environment(\.appDependencies.appStorage) var appStorage
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
     @Environment(AccountStore.self) var accountStore
+    
+    @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @State var confirmedRolePeers: Set<MCPeerID> = []
@@ -28,7 +29,8 @@ struct CohabitantRegistrationProcessingLeader: View {
     var body: some View {
         CohabitantRegistrationProcessingView(
             confirmedRolePeers: $confirmedRolePeers,
-            registrationState: $registrationState
+            registrationState: $registrationState,
+            role: .lead
         )
         .onChange(of: confirmedRolePeers) {
             // 全員の役割が分かった時点で、同居人のレコードを作成する
@@ -69,7 +71,7 @@ private extension CohabitantRegistrationProcessingLeader {
     
     func onReadyRegistration() {
         
-        let cohabitantId = UUID().uuidString
+        cohabitantId = UUID().uuidString
         
         Task {
             

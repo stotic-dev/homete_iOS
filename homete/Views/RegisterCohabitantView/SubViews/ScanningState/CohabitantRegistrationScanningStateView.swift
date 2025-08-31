@@ -34,13 +34,13 @@ struct CohabitantRegistrationScanningStateView: View {
                 .transition(.opacity)
             }
         }
+        .animation(.spring, value: connectedPeers.isEmpty)
         .alert(
             "通信中のメンバーがキャンセルしました",
             isPresented: $isPresentingRejectRegistrationAlert
         ) {
             Button("OK") { tappedRejectAlertButton() }
         }
-        .animation(.spring, value: connectedPeers.isEmpty)
         .onAppear {
             scannerController.startScan()
         }

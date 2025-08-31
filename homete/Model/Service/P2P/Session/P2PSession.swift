@@ -9,8 +9,8 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct P2PSession<Content: View>: View {
-    
-    @Environment(\.appDependencies.appStorage) var appStorage
+        
+    @AppStorage(key: .archivedPeerIDDataKey) var archivedPeerIDDataKey
     
     @State var session: MCSession?
     @State var myPeerID: MCPeerID?
@@ -67,24 +67,18 @@ private extension P2PSession {
     
     func onAppear() async {
         
-        do {
-            
-            let myPeerID = try await MCPeerIDFactoryUseCase.make(
-                appStore: appStorage(),
-                displayName: displayName
-            )
-            self.session = MCSession(
-                peer: myPeerID,
-                securityIdentity: nil,
-                encryptionPreference: .required
-            )
-            self.myPeerID = myPeerID
-            
-            session?.delegate = sessionDelegate
-        }
-        catch {
-            
-            fatalError("fail set store(error: \(error)).")
-        }
+        let myPeerData = MyPeerData.make(
+            archivedData: archivedPeerIDDataKey,
+            displayName: displayName
+        )
+        self.session = MCSession(
+            peer: myPeerData.id,
+            securityIdentity: nil,
+            encryptionPreference: .required
+        )
+        myPeerID = myPeerData.id
+        archivedPeerIDDataKey = myPeerData.archivedData
+        
+        session?.delegate = sessionDelegate
     }
 }

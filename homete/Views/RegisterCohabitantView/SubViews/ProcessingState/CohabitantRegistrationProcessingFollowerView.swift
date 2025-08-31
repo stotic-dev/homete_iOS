@@ -10,9 +10,11 @@ import SwiftUI
 
 struct CohabitantRegistrationProcessingFollower: View {
     
-    @Environment(\.appDependencies.appStorage) var appStorage
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(AccountStore.self) var accountStore
+    
+    @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var leadPeer: MCPeerID?
@@ -22,7 +24,8 @@ struct CohabitantRegistrationProcessingFollower: View {
     var body: some View {
         CohabitantRegistrationProcessingView(
             confirmedRolePeers: $confirmedRolePeers,
-            registrationState: $registrationState
+            registrationState: $registrationState,
+            role: .follower(accountId: accountStore.account.id)
         )
         .task {
             for await receiveData in receiveDataStream {
@@ -68,7 +71,7 @@ private extension CohabitantRegistrationProcessingFollower {
             preconditionFailure("Not found lead peer.")
         }
         
-        // TODO: 同居人IDの永続化
+        self.cohabitantId = cohabitantId
         let message = CohabitantRegistrationMessage(type: .complete)
         p2pSessionProxy?.send(
             message.encodedData(),
