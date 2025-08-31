@@ -124,3 +124,12 @@ private extension CohabitantRegistrationProcessingLeader {
         registrationState = .completed
     }
 }
+
+#Preview("登録失敗時のエラーアラート表示") {
+    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: true)
+    CohabitantRegistrationProcessingLeader(
+        isPresentingFailedRegistrationIdAlert: true,
+        registrationState: $registrationState
+    )
+    .environment(AccountStore(appDependencies: .previewValue))
+}
