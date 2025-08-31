@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CohabitantRegistrationInitialStateView: View {
-    
+        
     var body: some View {
         VStack(spacing: .zero) {
             VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {

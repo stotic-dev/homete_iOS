@@ -22,13 +22,6 @@
 			remoteGlobalIDString = BCC853F42DB74BBC00C9A44B;
 			remoteInfo = homete;
 		};
-		BCC8540D2DB74BBF00C9A44B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BCC853ED2DB74BBC00C9A44B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BCC853F42DB74BBC00C9A44B;
-			remoteInfo = homete;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -36,7 +29,6 @@
 		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BCC854022DB74BBF00C9A44B /* hometeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BCC8540C2DB74BBF00C9A44B /* hometeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -84,13 +76,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BCC854092DB74BBF00C9A44B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -118,7 +103,6 @@
 			children = (
 				BCC853F52DB74BBC00C9A44B /* homete.app */,
 				BCC854022DB74BBF00C9A44B /* hometeTests.xctest */,
-				BCC8540C2DB74BBF00C9A44B /* hometeUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -178,27 +162,6 @@
 			productReference = BCC854022DB74BBF00C9A44B /* hometeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		BCC8540B2DB74BBF00C9A44B /* hometeUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BCC8541C2DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeUITests" */;
-			buildPhases = (
-				BC70E19D2E495D080000C1BD /* Run Swift Lint */,
-				BCC854082DB74BBF00C9A44B /* Sources */,
-				BCC854092DB74BBF00C9A44B /* Frameworks */,
-				BCC8540A2DB74BBF00C9A44B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BCC8540E2DB74BBF00C9A44B /* PBXTargetDependency */,
-			);
-			name = hometeUITests;
-			packageProductDependencies = (
-			);
-			productName = hometeUITests;
-			productReference = BCC8540C2DB74BBF00C9A44B /* hometeUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -215,10 +178,6 @@
 					BCC854012DB74BBF00C9A44B = {
 						CreatedOnToolsVersion = 16.3;
 						LastSwiftMigration = 1640;
-						TestTargetID = BCC853F42DB74BBC00C9A44B;
-					};
-					BCC8540B2DB74BBF00C9A44B = {
-						CreatedOnToolsVersion = 16.3;
 						TestTargetID = BCC853F42DB74BBC00C9A44B;
 					};
 				};
@@ -243,7 +202,6 @@
 			targets = (
 				BCC853F42DB74BBC00C9A44B /* homete */,
 				BCC854012DB74BBF00C9A44B /* hometeTests */,
-				BCC8540B2DB74BBF00C9A44B /* hometeUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,13 +216,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		BCC854002DB74BBF00C9A44B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BCC8540A2DB74BBF00C9A44B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -294,25 +245,6 @@
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
 		};
 		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
-		};
-		BC70E19D2E495D080000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -372,13 +304,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BCC854082DB74BBF00C9A44B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -386,11 +311,6 @@
 			isa = PBXTargetDependency;
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
 			targetProxy = BCC854032DB74BBF00C9A44B /* PBXContainerItemProxy */;
-		};
-		BCC8540E2DB74BBF00C9A44B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BCC853F42DB74BBC00C9A44B /* homete */;
-			targetProxy = BCC8540D2DB74BBF00C9A44B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -658,44 +578,6 @@
 			};
 			name = Release;
 		};
-		BCC8541D2DB74BBF00C9A44B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 56LYVN6DMF;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = homete;
-			};
-			name = Debug;
-		};
-		BCC8541E2DB74BBF00C9A44B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 56LYVN6DMF;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = homete;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -722,15 +604,6 @@
 			buildConfigurations = (
 				BCC8541A2DB74BBF00C9A44B /* Debug */,
 				BCC8541B2DB74BBF00C9A44B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		BCC8541C2DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BCC8541D2DB74BBF00C9A44B /* Debug */,
-				BCC8541E2DB74BBF00C9A44B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
