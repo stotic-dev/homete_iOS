@@ -28,10 +28,9 @@ struct CohabitantRegistrationCompleteView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()
-                Spacer()
-                    .frame(height: DesignSystem.Space.space24)
             }
             .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.vertical, DesignSystem.Space.space24)
             ZStack {
                 if isCracked {
                     ConfettiRainView()
