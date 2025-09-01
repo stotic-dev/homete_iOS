@@ -17,7 +17,6 @@ opt_in_rules:
   - multiline_function_chains
   - multiline_parameters_brackets
   - prefer_key_path
-  - sorted_enum_cases
   - trailing_closure
   - vertical_whitespace_between_cases
 
@@ -43,6 +42,7 @@ disabled_rules:
   - switch_case_on_newline
   - type_contents_order
   - statement_position
+  - identifier_name
 
 # Configurations
 trailing_whitespace:
