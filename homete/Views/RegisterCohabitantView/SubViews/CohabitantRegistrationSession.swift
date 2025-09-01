@@ -26,7 +26,7 @@ struct CohabitantRegistrationSession: View {
                         scannerController: $0
                     )
                 }
-                .transition(.slide)
+                .transition(.push(from: .trailing))
             case .processing(let isLead):
                 ZStack {
                     if isLead {
@@ -40,14 +40,12 @@ struct CohabitantRegistrationSession: View {
                         )
                     }
                 }
-                .transition(.slide)
+                .transition(.push(from: .trailing))
             case .completed:
                 CohabitantRegistrationCompleteView()
-                    .transition(
-                        .asymmetric(insertion: .slide, removal: .scale)
-                    )
+                    .transition(.push(from: .trailing))
             }
         }
-        .animation(nil, value: registrationState)
+        .animation(.spring, value: registrationState)
     }
 }

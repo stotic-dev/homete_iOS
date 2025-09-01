@@ -44,6 +44,9 @@ struct P2PScanner<Content: View>: View {
         .onChange(of: session) {
             setupController()
         }
+        .onAppear {
+            setupController()
+        }
     }
 }
 

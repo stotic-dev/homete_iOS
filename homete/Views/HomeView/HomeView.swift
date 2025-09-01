@@ -11,6 +11,8 @@ struct HomeView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
     
+    @State var isShowCohabitantRegistrationModal = false
+    
     var body: some View {
         VStack(spacing: .zero) {
             Spacer()
@@ -28,8 +30,7 @@ struct HomeView: View {
                         .font(with: .body)
                 }
                 Button("パートナーを登録する") {
-                    print("tapped register")
-                    rootNavigationPath.showRegisterCohabitantView()
+                    isShowCohabitantRegistrationModal = true
                 }
                 .primaryButtonStyle()
                 Spacer()
@@ -44,6 +45,9 @@ struct HomeView: View {
                     rootNavigationPath.showSettingView()
                 }
             }
+        }
+        .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
+            CohabitantRegistrationView()
         }
     }
 }

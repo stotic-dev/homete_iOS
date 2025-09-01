@@ -11,7 +11,7 @@ import SwiftUI
 struct CohabitantRegistrationProcessingFollower: View {
     
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
-    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(AccountStore.self) var accountStore
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
@@ -27,11 +27,10 @@ struct CohabitantRegistrationProcessingFollower: View {
             registrationState: $registrationState,
             role: .follower(accountId: accountStore.account.id)
         )
-        .task {
-            for await receiveData in receiveDataStream {
-                let data = CohabitantRegistrationMessage(receiveData.body)
-                dispatchReceivedMessage(data, sender: receiveData.sender)
-            }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue else { return }
+            let data = CohabitantRegistrationMessage(newValue.body)
+            dispatchReceivedMessage(data, sender: newValue.sender)
         }
     }
 }
@@ -62,16 +61,24 @@ private extension CohabitantRegistrationProcessingFollower {
         
         leadPeer = peerID
         confirmedRolePeers.insert(peerID)
+        
+        // すでに同居人IDを受け取っていたら、完了メッセージを送信する
+        if !cohabitantId.isEmpty {
+            
+            sendCompleteMessageIfNeeded()
+        }
     }
     
     func onReceiveCohabitantId(_ cohabitantId: String) {
         
-        guard let leadPeer else {
-            
-            preconditionFailure("Not found lead peer.")
-        }
-        
         self.cohabitantId = cohabitantId
+        sendCompleteMessageIfNeeded()
+    }
+    
+    func sendCompleteMessageIfNeeded() {
+        
+        guard let leadPeer else { return }
+        
         let message = CohabitantRegistrationMessage(type: .complete)
         p2pSessionProxy?.send(
             message.encodedData(),

@@ -28,4 +28,8 @@ extension NavigationBarContentLabel {
         symbolName: "gearshape",
         assetIcon: nil
     )
+    static let close = NavigationBarContentLabel(
+        symbolName: "xmark",
+        assetIcon: nil
+    )
 }

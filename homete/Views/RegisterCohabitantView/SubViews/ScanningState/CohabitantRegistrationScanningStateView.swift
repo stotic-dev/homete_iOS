@@ -12,7 +12,7 @@ struct CohabitantRegistrationScanningStateView: View {
     
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
-    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(\.p2pSessionReceiveData) var receiveData
     
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
@@ -26,6 +26,9 @@ struct CohabitantRegistrationScanningStateView: View {
             if connectedPeers.isEmpty {
                 CohabitantRegistrationInitialStateView()
                     .transition(.opacity)
+                    .onAppear {
+                        isConfirmedReadyRegistration = false
+                    }
             }
             else {
                 CohabitantRegistrationPeersListView(
@@ -53,11 +56,10 @@ struct CohabitantRegistrationScanningStateView: View {
         .onChange(of: confirmedReadyRegistrationPeers) {
             transitionToProcessingStateIfNeeded()
         }
-        .task {
-            for await receiveData in receiveDataStream {
-                let data = CohabitantRegistrationMessage(receiveData.body)
-                dispatchReceivedMessage(data, receiveData.sender)
-            }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue else { return }
+            let data = CohabitantRegistrationMessage(newValue.body)
+            dispatchReceivedMessage(data, newValue.sender)
         }
     }
 }

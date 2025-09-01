@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CohabitantRegistrationCompleteView: View {
 
+    @Environment(\.dismiss) var dismiss
+    
     @State var isCracked = false
     
     var body: some View {
@@ -20,7 +22,7 @@ struct CohabitantRegistrationCompleteView: View {
                     .font(with: .body)
                 Spacer()
                 Button {
-                    
+                    dismiss()
                 } label: {
                     Text("閉じる")
                         .frame(maxWidth: .infinity)
@@ -28,6 +30,7 @@ struct CohabitantRegistrationCompleteView: View {
                 .subPrimaryButtonStyle()
             }
             .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.vertical, DesignSystem.Space.space24)
             ZStack {
                 if isCracked {
                     ConfettiRainView()
@@ -43,6 +46,7 @@ struct CohabitantRegistrationCompleteView: View {
             }
             .ignoresSafeArea()
         }
+        .automaticToolbarVisibility(visibility: .hidden, for: .navigationBar)
     }
 }
 

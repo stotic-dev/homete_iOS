@@ -10,11 +10,12 @@ import SwiftUI
 
 struct CohabitantRegistrationProcessingLeader: View {
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
-    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(AccountStore.self) var accountStore
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
@@ -24,6 +25,9 @@ struct CohabitantRegistrationProcessingLeader: View {
     @State var cohabitantsAccountId: Set<String> = []
     // 登録完了したデバイスリスト
     @State var completedRegistrationPeers: Set<MCPeerID> = []
+    // 同居人レコードの登録に失敗した時のアラート
+    @State var isPresentingFailedRegistrationIdAlert = false
+    
     @Binding var registrationState: CohabitantRegistrationState
     
     var body: some View {
@@ -32,6 +36,17 @@ struct CohabitantRegistrationProcessingLeader: View {
             registrationState: $registrationState,
             role: .lead
         )
+        .alert(
+            "登録に失敗しました",
+            isPresented: $isPresentingFailedRegistrationIdAlert
+        ) {
+            Button("OK") {
+                cohabitantId = ""
+                dismiss()
+            }
+        } message: {
+            Text("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
+        }
         .onChange(of: confirmedRolePeers) {
             // 全員の役割が分かった時点で、同居人のレコードを作成する
             guard confirmedRolePeers == connectedPeers else { return }
@@ -42,11 +57,10 @@ struct CohabitantRegistrationProcessingLeader: View {
             guard completedRegistrationPeers == connectedPeers else { return }
             onCompletedRegistration()
         }
-        .task {
-            for await receiveData in receiveDataStream {
-                let data = CohabitantRegistrationMessage(receiveData.body)
-                dispatchReceivedMessage(data, receiveData.sender)
-            }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue else { return }
+            let data = CohabitantRegistrationMessage(newValue.body)
+            dispatchReceivedMessage(data, newValue.sender)
         }
     }
 }
@@ -71,8 +85,11 @@ private extension CohabitantRegistrationProcessingLeader {
     
     func onReadyRegistration() {
         
-        cohabitantId = UUID().uuidString
-        
+        if cohabitantId.isEmpty {
+            
+            cohabitantId = UUID().uuidString
+        }
+                
         Task {
             
             do {
@@ -92,7 +109,9 @@ private extension CohabitantRegistrationProcessingLeader {
                 )
             }
             catch {
-                // TODO: エラーハンドリング
+                
+                // エラーアラートを表示
+                isPresentingFailedRegistrationIdAlert = true
             }
         }
     }
@@ -106,4 +125,13 @@ private extension CohabitantRegistrationProcessingLeader {
         )
         registrationState = .completed
     }
+}
+
+#Preview("登録失敗時のエラーアラート表示") {
+    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: true)
+    CohabitantRegistrationProcessingLeader(
+        isPresentingFailedRegistrationIdAlert: true,
+        registrationState: $registrationState
+    )
+    .environment(AccountStore(appDependencies: .previewValue))
 }
