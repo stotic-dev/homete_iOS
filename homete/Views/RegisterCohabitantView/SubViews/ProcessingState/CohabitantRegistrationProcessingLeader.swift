@@ -15,7 +15,7 @@ struct CohabitantRegistrationProcessingLeader: View {
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
-    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(AccountStore.self) var accountStore
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
@@ -57,11 +57,10 @@ struct CohabitantRegistrationProcessingLeader: View {
             guard completedRegistrationPeers == connectedPeers else { return }
             onCompletedRegistration()
         }
-        .task {
-            for await receiveData in receiveDataStream {
-                let data = CohabitantRegistrationMessage(receiveData.body)
-                dispatchReceivedMessage(data, receiveData.sender)
-            }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue else { return }
+            let data = CohabitantRegistrationMessage(newValue.body)
+            dispatchReceivedMessage(data, newValue.sender)
         }
     }
 }

@@ -11,7 +11,7 @@ import SwiftUI
 struct CohabitantRegistrationProcessingFollower: View {
     
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
-    @Environment(\.p2pSessionReceiveDataStream) var receiveDataStream
+    @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(AccountStore.self) var accountStore
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
@@ -27,11 +27,10 @@ struct CohabitantRegistrationProcessingFollower: View {
             registrationState: $registrationState,
             role: .follower(accountId: accountStore.account.id)
         )
-        .task {
-            for await receiveData in receiveDataStream {
-                let data = CohabitantRegistrationMessage(receiveData.body)
-                dispatchReceivedMessage(data, sender: receiveData.sender)
-            }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue else { return }
+            let data = CohabitantRegistrationMessage(newValue.body)
+            dispatchReceivedMessage(data, sender: newValue.sender)
         }
     }
 }

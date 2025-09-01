@@ -7,8 +7,7 @@
 
 import MultipeerConnectivity
 
-@MainActor
-struct P2PSessionReceiveData {
+struct P2PSessionReceiveData: Equatable {
     
     let sender: MCPeerID
     let body: Data

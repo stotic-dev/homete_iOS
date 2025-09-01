@@ -48,6 +48,6 @@ struct CohabitantRegistrationSession: View {
                     )
             }
         }
-        .animation(nil, value: registrationState)
+        .animation(.spring, value: registrationState)
     }
 }
