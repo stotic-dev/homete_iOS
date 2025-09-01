@@ -46,7 +46,7 @@ struct P2PSession<Content: View>: View {
                         connectedPeers.remove(peerID)
                         
                     case .received(let data, let sender):
-                        receivedData = .init(sender: sender, body: data)
+                        receivedData = .init(id: UUID(), sender: sender, body: data)
                     }
                     
                     print("\(#file) event: \(event), connectedPeers: \(connectedPeers)")

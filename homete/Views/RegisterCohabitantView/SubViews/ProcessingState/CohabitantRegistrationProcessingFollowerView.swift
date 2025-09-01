@@ -61,16 +61,24 @@ private extension CohabitantRegistrationProcessingFollower {
         
         leadPeer = peerID
         confirmedRolePeers.insert(peerID)
+        
+        // すでに同居人IDを受け取っていたら、完了メッセージを送信する
+        if !cohabitantId.isEmpty {
+            
+            sendCompleteMessageIfNeeded()
+        }
     }
     
     func onReceiveCohabitantId(_ cohabitantId: String) {
         
-        guard let leadPeer else {
-            
-            preconditionFailure("Not found lead peer.")
-        }
-        
         self.cohabitantId = cohabitantId
+        sendCompleteMessageIfNeeded()
+    }
+    
+    func sendCompleteMessageIfNeeded() {
+        
+        guard let leadPeer else { return }
+        
         let message = CohabitantRegistrationMessage(type: .complete)
         p2pSessionProxy?.send(
             message.encodedData(),

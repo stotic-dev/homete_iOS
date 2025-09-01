@@ -85,8 +85,11 @@ private extension CohabitantRegistrationProcessingLeader {
     
     func onReadyRegistration() {
         
-        cohabitantId = UUID().uuidString
-        
+        if cohabitantId.isEmpty {
+            
+            cohabitantId = UUID().uuidString
+        }
+                
         Task {
             
             do {
