@@ -73,12 +73,12 @@ struct AccountAuthStoreTest {
                 #expect(event == .logout())
             })
         ))
-        store.auth = .init(id: "test", displayName: "test")
+        store.state = .loggedIn(.init(id: "test", displayName: "test"))
         
         store.logOut()
         
         #expect(isCallSignOut.withLock { $0 })
         #expect(isCallAnalyticsLog.withLock { $0 })
-        #expect(store.auth == nil)
+        #expect(store.state == .notLoggedIn)
     }
 }
