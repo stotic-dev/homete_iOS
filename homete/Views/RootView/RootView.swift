@@ -10,14 +10,13 @@ import SwiftUI
 struct RootView: View {
         
     @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
-    @State var launchState: LaunchState = .launching
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
     
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
-            switch launchState {
+            switch accountAuthStore.state {
             case .launching:
                 LaunchScreenView()
             case .loggedIn:
@@ -31,13 +30,9 @@ struct RootView: View {
                     .transition(.scale)
             }
         }
-        .onChange(of: accountAuthStore.auth) { _, newValue in
-            withAnimation {
-                launchState = launchState.next(newValue)
-            }
-        }
-        .onChange(of: launchState) {
-            guard case .loggedIn(let accountAuthResult) = launchState else { return }
+        .animation(.spring, value: accountAuthStore.state)
+        .onChange(of: accountAuthStore.state) {
+            guard case .loggedIn(let accountAuthResult) = accountAuthStore.state else { return }
             Task {
                 await accountStore.setInitialAccountIfNeeded(accountAuthResult)
             }

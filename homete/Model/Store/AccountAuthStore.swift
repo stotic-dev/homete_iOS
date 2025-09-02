@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class AccountAuthStore {
     
-    var auth: AccountAuthResult?
+    var state: LaunchState = .launching
     
     private let accountAuthClient: AccountAuthClient
     private let analyticsClient: AnalyticsClient
@@ -48,7 +48,7 @@ final class AccountAuthStore {
         
         do {
             
-            auth = nil
+            state = .notLoggedIn
             try accountAuthClient.signOut()
             analyticsClient.log(.logout())
         }
@@ -65,7 +65,7 @@ private extension AccountAuthStore {
         
         for await value in listener.values {
             
-            auth = value
+            state = state.next(value)
         }
     }
 }
