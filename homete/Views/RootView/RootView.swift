@@ -19,7 +19,7 @@ struct RootView: View {
         NavigationStack(path: $navigationPath.path) {
             switch launchState {
             case .launching:
-                ProgressView()
+                LaunchScreenView()
             case .loggedIn:
                 HomeView()
                     .navigationDestination(for: RootNavigationPath.self) { path in
