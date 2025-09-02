@@ -8,36 +8,38 @@
 import SwiftUI
 
 struct RootView: View {
-    @Environment(\.appDependencies) var appDependencies
+        
     @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
-    @State var shouldShowHomeView = false
+    @State var launchState: LaunchState = .launching
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
     
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
-            if shouldShowHomeView {
+            switch launchState {
+            case .launching:
+                ProgressView()
+            case .loggedIn:
                 HomeView()
                     .navigationDestination(for: RootNavigationPath.self) { path in
                         path.destination()
                     }
-                    .task {
-                        guard let auth = accountAuthStore.auth else { return }
-                        await accountStore.setAccountOnLogin(auth)
-                    }
-                    .animation(.default, value: accountAuthStore.isLogin)
                     .transition(.scale)
-            }
-            else {
+            case .notLoggedIn:
                 LoginView()
-                    .animation(.default, value: accountAuthStore.isLogin)
                     .transition(.scale)
             }
         }
-        .onChange(of: accountAuthStore.isLogin) { _, newValue in
+        .onChange(of: accountAuthStore.auth) { _, newValue in
             withAnimation {
-                shouldShowHomeView = newValue
+                launchState = launchState.next(newValue)
+            }
+        }
+        .onChange(of: launchState) {
+            guard case .loggedIn(let accountAuthResult) = launchState else { return }
+            Task {
+                await accountStore.setInitialAccountIfNeeded(accountAuthResult)
             }
         }
         .environment(\.rootNavigationPath, navigationPath)

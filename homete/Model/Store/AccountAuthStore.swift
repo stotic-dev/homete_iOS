@@ -12,7 +12,6 @@ import SwiftUI
 final class AccountAuthStore {
     
     var auth: AccountAuthResult?
-    var isLogin: Bool { auth != nil }
     
     private let accountAuthClient: AccountAuthClient
     private let analyticsClient: AnalyticsClient

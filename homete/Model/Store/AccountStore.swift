@@ -20,7 +20,7 @@ final class AccountStore {
         accountInfoClient = appDependencies.accountInfoClient
     }
     
-    func setAccountOnLogin(_ auth: AccountAuthResult) async {
+    func setInitialAccountIfNeeded(_ auth: AccountAuthResult) async {
         
         do {
             
