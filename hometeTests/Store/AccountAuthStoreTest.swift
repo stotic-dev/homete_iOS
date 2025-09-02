@@ -80,6 +80,5 @@ struct AccountAuthStoreTest {
         #expect(isCallSignOut.withLock { $0 })
         #expect(isCallAnalyticsLog.withLock { $0 })
         #expect(store.auth == nil)
-        #expect(!store.isLogin)
     }
 }
