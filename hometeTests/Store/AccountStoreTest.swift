@@ -33,7 +33,7 @@ struct AccountStoreTest {
             }
             let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
             
-            await store.setAccountOnLogin(inputAuthResult)
+            await store.setInitialAccountIfNeeded(inputAuthResult)
         }
     }
 }
