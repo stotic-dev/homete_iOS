@@ -10,23 +10,50 @@ import SwiftUI
 struct HomeView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
-        
+    
+    @AppStorage(key: .cohabitantId) var cohabitantId = ""
+    
     var body: some View {
-        NotRegisteredContent()
-            .navigationTitle("homete")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationBarButton(label: .settings) {
-                        rootNavigationPath.showSettingView()
-                    }
+        ZStack {
+            if cohabitantId.isEmpty {
+                NotRegisteredContent()
+            }
+            else {
+                RegisteredContent()
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationBarButton(label: .settings) {
+                    rootNavigationPath.showSettingView()
                 }
             }
+        }
     }
 }
 
-#Preview {
+#Preview("未登録時") {
+    var userDefaults: UserDefaults {
+        // swiftlint:disable:next force_unwrapping
+        let userDefaults = UserDefaults(suiteName: "preview")!
+        userDefaults.removeObject(forKey: AppStorageStringKey.cohabitantId.rawValue)
+        return userDefaults
+    }
     NavigationStack {
         HomeView()
+            .defaultAppStorage(userDefaults)
+    }
+}
+
+#Preview("登録時") {
+    var userDefaults: UserDefaults {
+        // swiftlint:disable:next force_unwrapping
+        let userDefaults = UserDefaults(suiteName: "preview")!
+        userDefaults.set("test", forKey: AppStorageStringKey.cohabitantId.rawValue)
+        return userDefaults
+    }
+    NavigationStack {
+        HomeView()
+            .defaultAppStorage(userDefaults)
     }
 }
