@@ -17,6 +17,7 @@ struct RegisteredContent: View {
                 // TODO: テンプレート未設定の場合のみ表示する
                 promoteHouseworkTemplateBanner()
                 todayHouseworkListContent()
+                timelineContent()
             }
             .padding(.horizontal, DesignSystem.Space.space16)
         }
@@ -95,6 +96,25 @@ private extension RegisteredContent {
                     // TODO: 家事設定画面へ遷移
                 }
                 .primaryButtonStyle()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, DesignSystem.Space.space56)
+            .overlay {
+                RoundedRectangle(radius: .radius8)
+                    .stroke(style: .init(lineWidth: 2, dash: [8]))
+                    .foregroundStyle(.primary1)
+            }
+        }
+    }
+    
+    func timelineContent() -> some View {
+        VStack(spacing: DesignSystem.Space.space24) {
+            Text("タイムライン")
+                .font(with: .headLineM)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: .zero) {
+                Text("まだアクティビティがありません")
+                    .font(with: .headLineS)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, DesignSystem.Space.space56)
