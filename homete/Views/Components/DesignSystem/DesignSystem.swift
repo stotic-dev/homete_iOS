@@ -74,6 +74,14 @@ extension DesignSystem {
 extension View {
     
     func cornerRadius(_ radius: DesignSystem.Corner) -> some View {
-        self.clipShape(RoundedRectangle(cornerRadius: radius.rawValue))
+        self.clipShape(RoundedRectangle(radius: radius))
+    }
+}
+
+extension RoundedRectangle {
+    
+    init(radius: DesignSystem.Corner) {
+        
+        self.init(cornerRadius: radius.rawValue)
     }
 }
