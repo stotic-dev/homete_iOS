@@ -16,7 +16,10 @@ struct HouseworkBoardView: View {
         ZStack {
             VStack(spacing: DesignSystem.Space.space16) {
                 HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                HouseworkBoardListContent(selectedHouseworkState: selectedHouseworkState, houseworkBoardList: $houseworkBoardList)
+                HouseworkBoardListContent(
+                    selectedHouseworkState: selectedHouseworkState,
+                    houseworkBoardList: $houseworkBoardList
+                )
                 Spacer()
             }
             .padding(.horizontal, DesignSystem.Space.space16)

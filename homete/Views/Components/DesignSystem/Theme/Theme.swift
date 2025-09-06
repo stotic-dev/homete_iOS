@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@MainActor
 struct Theme {
     
     let segmentedControl: SegmentedControl
