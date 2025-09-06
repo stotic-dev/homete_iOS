@@ -9,35 +9,27 @@ import SwiftUI
 
 struct HouseworkBoardSegmentedControl: View {
     
-    @Binding var selectedSegment: Segment
+    @Binding var selectedHouseworkState: HouseworkState
     
     var body: some View {
-        Picker("", selection: $selectedSegment) {
-            ForEach(Segment.allCases) { segment in
-                Text(segment.title).tag(segment)
-                    .foregroundStyle(selectedSegment == segment ? .primaryFg : .primary1)
+        Picker("", selection: $selectedHouseworkState) {
+            ForEach(HouseworkState.allCases) { state in
+                Text(state.segmentTitle).tag(state)
             }
         }
         .pickerStyle(.segmented)
     }
 }
 
-extension HouseworkBoardSegmentedControl {
+extension HouseworkState {
     
-    enum Segment: CaseIterable, Identifiable, Hashable {
+    var segmentTitle: LocalizedStringKey {
         
-        case incomplete
-        case pendingApproval
-        case completed
-        
-        var id: Self { self }
-        
-        var title: LocalizedStringKey {
-            switch self {
-            case .incomplete: "未完了"
-            case .pendingApproval: "承認待ち"
-            case .completed: "完了"
-            }
+        switch self {
+            
+        case .incomplete: "未完了"
+        case .pendingApproval: "承認待ち"
+        case .completed: "完了"
         }
     }
 }

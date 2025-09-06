@@ -9,11 +9,29 @@ import SwiftUI
 
 struct HouseworkBoardView: View {
     
-    @State var selectedSegment: HouseworkBoardSegmentedControl.Segment = .incomplete
+    @State var selectedHouseworkState: HouseworkState = .incomplete
+    @State var houseworkItems: [HouseworkItem] = []
     
     var body: some View {
         VStack(spacing: DesignSystem.Space.space16) {
-            HouseworkBoardSegmentedControl(selectedSegment: $selectedSegment)
+            HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+            List {
+                ForEach(houseworkItems) { item in
+                    Button {
+                        // TODO: 承認依頼を行う
+                    } label: {
+                        HStack {
+                            Text(item.title)
+                                .font(with: .body)
+                            Spacer()
+                        }
+                        .padding(.vertical, DesignSystem.Space.space8)
+                    }
+                }
+                .listRowSpacing(.zero)
+                .listRowSeparator(.hidden)
+            }
+            .listStyle(.plain)
             Spacer()
         }
         .padding(.horizontal, DesignSystem.Space.space16)
@@ -21,6 +39,12 @@ struct HouseworkBoardView: View {
 }
 
 #Preview {
-    HouseworkBoardView()
-        .apply(theme: .init())
+    HouseworkBoardView(
+        houseworkItems: [
+            .init(id: "1", title: "洗濯", state: .incomplete),
+            .init(id: "2", title: "ゴミ捨て", state: .pendingApproval),
+            .init(id: "3", title: "風呂掃除", state: .completed)
+        ]
+    )
+    .apply(theme: .init())
 }
