@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HouseworkBoardSegmentedControl: View {
     
-    @Binding private var selectedSegment: Segment
+    @Binding var selectedSegment: Segment
     
     var body: some View {
         Picker("", selection: $selectedSegment) {
@@ -22,20 +22,21 @@ struct HouseworkBoardSegmentedControl: View {
     }
 }
 
- extension HouseworkBoardSegmentedControl {
+extension HouseworkBoardSegmentedControl {
     
-     enum Segment: CaseIterable, Identifiable {
+    enum Segment: CaseIterable, Identifiable, Hashable {
+        
         case incomplete
         case pendingApproval
         case completed
         
-        var id: String { rawValue }
+        var id: Self { self }
+        
         var title: LocalizedStringKey {
-            
             switch self {
             case .incomplete: "未完了"
             case .pendingApproval: "承認待ち"
-            case completed: "完了"
+            case .completed: "完了"
             }
         }
     }
