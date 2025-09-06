@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    
-    @Environment(\.rootNavigationPath) var rootNavigationPath
-    
+        
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
     var body: some View {
@@ -20,13 +18,6 @@ struct HomeView: View {
             }
             else {
                 RegisteredContent()
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationBarButton(label: .settings) {
-                    rootNavigationPath.showSettingView()
-                }
             }
         }
     }
@@ -39,10 +30,8 @@ struct HomeView: View {
         userDefaults.removeObject(forKey: AppStorageStringKey.cohabitantId.rawValue)
         return userDefaults
     }
-    NavigationStack {
-        HomeView()
-            .defaultAppStorage(userDefaults)
-    }
+    HomeView()
+        .defaultAppStorage(userDefaults)
 }
 
 #Preview("登録時") {
