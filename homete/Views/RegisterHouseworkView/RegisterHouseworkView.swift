@@ -60,6 +60,7 @@ struct RegisterHouseworkView: View {
                 // TODO: 現在の家事リストの中に同じ家事がある場合はアラートを表示
             } label: {
                 Text("登録する")
+                    .font(with: .headLineM)
             }
             .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
