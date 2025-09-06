@@ -19,7 +19,7 @@ on:
 
 env:
   # チェックアウト
-  DEVELOPER_DIR: /Applications/Xcode_16.4.app
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
   TEST_PLAN: homete
