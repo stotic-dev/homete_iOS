@@ -10,6 +10,7 @@ import SwiftUI
 struct RootView: View {
         
     @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
+    @State var theme = Theme()
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
@@ -37,6 +38,7 @@ struct RootView: View {
                 await accountStore.setInitialAccountIfNeeded(accountAuthResult)
             }
         }
+        .apply(theme: theme)
         .environment(\.rootNavigationPath, navigationPath)
         .environment(accountStore)
         .environment(accountAuthStore)
