@@ -45,8 +45,7 @@ struct RegisterHouseworkView: View {
                 List {
                     ForEach(houseworkEntryHistoryList.items, id: \.self) { item in
                         Button(item) {
-                            houseworkTitle = item
-                            // TODO: 入力履歴の一番上になるよう配列の順番を入れ替える
+                            tappedEntryHistoryRow(item)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -69,6 +68,8 @@ struct RegisterHouseworkView: View {
     }
 }
 
+// MARK: - プレゼンテーションロジック
+
 private extension RegisterHouseworkView {
     
     func tappedClearTextFiledButton() {
@@ -77,6 +78,12 @@ private extension RegisterHouseworkView {
             
             houseworkTitle = ""
         }
+    }
+    
+    func tappedEntryHistoryRow(_ item: String) {
+        
+        houseworkTitle = item
+        houseworkEntryHistoryList.moveToFrontIfExists(item)
     }
 }
 
