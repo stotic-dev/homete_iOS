@@ -56,6 +56,9 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      - name: Install ios sdk
+        run: xcodebuild -downloadPlatform iOS
+
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For ProjectTools
         uses: actions/cache@v4.2.2
