@@ -43,31 +43,13 @@ private extension HouseworkBoardView {
     
     @ViewBuilder
     func addHouseworkButton(action: @escaping () -> Void) -> some View {
-        if #available(iOS 26.0, *) {
-            Button {
-                action()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 24))
-                    .padding(DesignSystem.Space.space16)
-                    .foregroundStyle(.commonBlack)
-            }
-            .glassEffect(.regular.tint(.primary1))
-        } else {
-            Button {
-                action()
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 24))
-                    .padding(DesignSystem.Space.space16)
-                    .foregroundStyle(.commonBlack)
-                    .clipShape(Circle())
-                    .background {
-                        Circle()
-                            .foregroundStyle(.primary1)
-                    }
-            }
+        Button {
+            action()
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 24))
         }
+        .floatingButtonStyle()
     }
 }
 
