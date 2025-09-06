@@ -57,10 +57,11 @@ struct RegisterHouseworkView: View {
             .padding(.horizontal, DesignSystem.Space.space16)
             Button {
                 // TODO: 入力した家事を登録する
+                // TODO: 現在の家事リストの中に同じ家事がある場合はアラートを表示
             } label: {
                 Text("登録する")
             }
-            .floatingButtonStyle()
+            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], DesignSystem.Space.space24)
         }
