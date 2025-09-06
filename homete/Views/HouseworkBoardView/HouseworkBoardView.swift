@@ -12,6 +12,7 @@ struct HouseworkBoardView: View {
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
+    @State var isPresentingAddHouseworkView = false
     
     var body: some View {
         ZStack {
@@ -26,11 +27,14 @@ struct HouseworkBoardView: View {
             }
             .padding(.horizontal, DesignSystem.Space.space16)
             addHouseworkButton {
-                // TODO: 家事追加画面へ遷移
+                isPresentingAddHouseworkView = true
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding(.trailing, DesignSystem.Space.space24)
             .padding(.bottom, DesignSystem.Space.space24)
+        }
+        .sheet(isPresented: $isPresentingAddHouseworkView) {
+            RegisterHouseworkView()
         }
     }
 }

@@ -7,52 +7,6 @@
 
 import SwiftUI
 
-struct HouseworkHistoryList: Equatable {
-    
-    var items: [String]
-}
-
-extension HouseworkHistoryList: Codable {
-    
-    enum CodingKeys: String, CodingKey {
-        case items
-    }
-    
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(items, forKey: .items)
-    }
-    
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        items = try container.decode(Array<String>.self, forKey: .items)
-    }
-}
-
-extension HouseworkHistoryList: RawRepresentable {
-    
-    init?(rawValue: String) {
-        
-        guard let data = rawValue.data(using: .utf8),
-              let decoded = try? JSONDecoder().decode(HouseworkHistoryList.self, from: data) else {
-            
-            return nil
-        }
-        self = decoded
-    }
-    
-    var rawValue: String {
-        
-        guard
-            let data = try? JSONEncoder().encode(self),
-            let jsonString = String(data: data, encoding: .utf8) else {
-            
-            return ""
-        }
-        return jsonString
-    }
-}
-
 struct RegisterHouseworkView: View {
     
     @State var houseworkTitle = ""
@@ -61,11 +15,13 @@ struct RegisterHouseworkView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+            Spacer()
+                .frame(height: DesignSystem.Space.space24)
             Text("家事を追加")
                 .font(with: .headLineL)
             ZStack {
                 TextField("家事の名前を入力", text: $houseworkTitle)
-                    .foregroundStyle(.primary1)
+                    .foregroundStyle(.primary2)
                     .padding()
                     .font(with: .body)
                     .background {
@@ -87,9 +43,14 @@ struct RegisterHouseworkView: View {
                 .font(with: .headLineM)
             List {
                 ForEach(houseworkEntryHistoryList.items, id: \.self) { item in
-                    Text(item)
+                    Button(item) {
+                        houseworkTitle = item
+                        // TODO: 入力履歴の一番上になるよう配列の順番を入れ替える
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            .listStyle(.inset)
             Spacer()
         }
         .padding(.horizontal, DesignSystem.Space.space16)

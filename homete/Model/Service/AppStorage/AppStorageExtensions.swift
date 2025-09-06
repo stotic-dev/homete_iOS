@@ -41,7 +41,7 @@ enum AppStorageStringKey: String {
 
 // MARK: - カスタムオブジェクト用の拡張
 
-extension SwiftUI.AppStorage where Value : RawRepresentable, Value.RawValue == String {
+extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {
     
     init(wrappedValue: Value, key: AppStorageCustomTypeKey) {
         
@@ -54,4 +54,3 @@ enum AppStorageCustomTypeKey: String {
     /// 家事入力の履歴
     case houseworkEntryHistoryList
 }
-
