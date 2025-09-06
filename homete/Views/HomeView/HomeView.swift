@@ -11,34 +11,17 @@ struct HomeView: View {
     
     @Environment(\.rootNavigationPath) var rootNavigationPath
     
-    @State var isShowCohabitantRegistrationModal = false
+    @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
     var body: some View {
-        VStack(spacing: .zero) {
-            Spacer()
-                .frame(height: DesignSystem.Space.space24)
-            VStack(spacing: DesignSystem.Space.space24) {
-                Image(.suggestPartner)
-                    .resizable()
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(contentMode: .fit)
-                    .cornerRadius(.radius16)
-                VStack(spacing: DesignSystem.Space.space8) {
-                    Text("まだパートナーが登録されていません")
-                        .font(with: .headLineS)
-                    Text("パートナーを登録して、家事を分担しましょう！")
-                        .font(with: .body)
-                }
-                Button("パートナーを登録する") {
-                    isShowCohabitantRegistrationModal = true
-                }
-                .primaryButtonStyle()
-                Spacer()
+        ZStack {
+            if cohabitantId.isEmpty {
+                NotRegisteredContent()
+            }
+            else {
+                RegisteredContent()
             }
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
-        .navigationTitle("homete")
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationBarButton(label: .settings) {
@@ -46,14 +29,31 @@ struct HomeView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
-            CohabitantRegistrationView()
-        }
     }
 }
 
-#Preview {
+#Preview("未登録時") {
+    var userDefaults: UserDefaults {
+        // swiftlint:disable:next force_unwrapping
+        let userDefaults = UserDefaults(suiteName: "preview")!
+        userDefaults.removeObject(forKey: AppStorageStringKey.cohabitantId.rawValue)
+        return userDefaults
+    }
     NavigationStack {
         HomeView()
+            .defaultAppStorage(userDefaults)
+    }
+}
+
+#Preview("登録時") {
+    var userDefaults: UserDefaults {
+        // swiftlint:disable:next force_unwrapping
+        let userDefaults = UserDefaults(suiteName: "preview")!
+        userDefaults.set("test", forKey: AppStorageStringKey.cohabitantId.rawValue)
+        return userDefaults
+    }
+    NavigationStack {
+        HomeView()
+            .defaultAppStorage(userDefaults)
     }
 }
