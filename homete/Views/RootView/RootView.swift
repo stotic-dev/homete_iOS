@@ -9,22 +9,18 @@ import SwiftUI
 
 struct RootView: View {
         
-    @State var navigationPath = CustomNavigationPath(path: [RootNavigationPath]())
     @State var theme = Theme()
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
     
     var body: some View {
-        NavigationStack(path: $navigationPath.path) {
+        ZStack {
             switch accountAuthStore.state {
             case .launching:
                 LaunchScreenView()
             case .loggedIn:
-                HomeView()
-                    .navigationDestination(for: RootNavigationPath.self) { path in
-                        path.destination()
-                    }
+                AppTabView()
                     .transition(.scale)
             case .notLoggedIn:
                 LoginView()
@@ -39,15 +35,7 @@ struct RootView: View {
             }
         }
         .apply(theme: theme)
-        .environment(\.rootNavigationPath, navigationPath)
         .environment(accountStore)
         .environment(accountAuthStore)
     }
-}
-
-#Preview {
-    RootView(
-        accountAuthStore: .init(appDependencies: .previewValue),
-        accountStore: .init(appDependencies: .previewValue)
-    )
 }
