@@ -16,7 +16,7 @@ struct HouseworkDateHeaderContent: View {
     var body: some View {
         HStack {
             Button {
-                // TODO: 前日の家事を表示する
+                updateSelectedDate(value: -1)
             } label: {
                 Image(systemName: "chevron.left")
                     .foregroundStyle(.primaryFg)
@@ -25,11 +25,22 @@ struct HouseworkDateHeaderContent: View {
             Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
             Spacer()
             Button {
-                // TODO: 次の日の家事を表示する
+                updateSelectedDate(value: 1)
             } label: {
                 Image(systemName: "chevron.right")
                     .foregroundStyle(.primaryFg)
             }
+        }
+    }
+}
+
+private extension HouseworkDateHeaderContent {
+    
+    func updateSelectedDate(value: Int) {
+        
+        withAnimation {
+            
+            selectedDate = calendar.date(byAdding: .day, value: value, to: selectedDate) ?? selectedDate
         }
     }
 }
