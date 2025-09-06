@@ -13,29 +13,66 @@ struct HouseworkBoardView: View {
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
-            HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-            List {
-                ForEach(houseworkBoardList.items(matching: selectedHouseworkState)) { item in
-                    Button {
-                        // TODO: 承認依頼を行う
-                    } label: {
-                        HStack {
-                            Text(item.title)
-                                .font(with: .body)
-                            Spacer()
+        ZStack {
+            VStack(spacing: DesignSystem.Space.space16) {
+                HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+                List {
+                    ForEach(houseworkBoardList.items(matching: selectedHouseworkState)) { item in
+                        Button {
+                            // TODO: 承認依頼を行う
+                        } label: {
+                            HStack {
+                                Text(item.title)
+                                    .font(with: .body)
+                                Spacer()
+                            }
+                            .padding(.vertical, DesignSystem.Space.space8)
                         }
-                        .padding(.vertical, DesignSystem.Space.space8)
                     }
+                    .listRowSpacing(.zero)
+                    .listRowSeparator(.hidden)
+                    // TODO: 左スワイプで家事を削除する
                 }
-                .listRowSpacing(.zero)
-                .listRowSeparator(.hidden)
-                // TODO: 左スワイプで家事を削除する
+                .listStyle(.plain)
+                Spacer()
             }
-            .listStyle(.plain)
-            Spacer()
+            .padding(.horizontal, DesignSystem.Space.space16)
+            addHouseworkButton {
+                // TODO: 家事追加画面へ遷移
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .padding(.trailing, DesignSystem.Space.space24)
+            .padding(.bottom, DesignSystem.Space.space24)
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
+    }
+    
+    @ViewBuilder
+    func addHouseworkButton(action: @escaping () -> Void) -> some View {
+        if #available(iOS 26.0, *) {
+            Button {
+                action()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 24))
+                    .padding(DesignSystem.Space.space16)
+                    .foregroundStyle(.commonBlack)
+            }
+            .glassEffect(.regular.tint(.primary1))
+        } else {
+            Button {
+                action()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 24))
+                    .padding(DesignSystem.Space.space16)
+                    .foregroundStyle(.commonBlack)
+                    .clipShape(Circle())
+                    .background {
+                        Circle()
+                            .foregroundStyle(.primary1)
+                    }
+            }
+        }
     }
 }
 
