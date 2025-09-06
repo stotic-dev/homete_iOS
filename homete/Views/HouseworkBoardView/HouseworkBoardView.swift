@@ -11,10 +11,12 @@ struct HouseworkBoardView: View {
     
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
+    @State var selectedDate = Date.now
     
     var body: some View {
         ZStack {
             VStack(spacing: DesignSystem.Space.space16) {
+                HouseworkDateHeaderContent(selectedDate: $selectedDate)
                 HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                 HouseworkBoardListContent(
                     selectedHouseworkState: selectedHouseworkState,
