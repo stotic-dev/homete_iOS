@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/06.
 //
 
-enum HouseworkState: CaseIterable, Identifiable {
+enum HouseworkState: CaseIterable, Identifiable, Codable {
     
     case incomplete
     case pendingApproval

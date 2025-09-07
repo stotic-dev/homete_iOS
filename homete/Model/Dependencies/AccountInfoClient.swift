@@ -22,13 +22,13 @@ extension AccountInfoClient: DependencyClient {
         
         try await FirestoreService.shared.insertOrUpdate(data: account) {
             
-            $0.collection(collectionPath).document(account.id)
+            return $0.accountRef(id: account.id)
         }
     } fetch: { id in
         
         let result: [Account] = try await FirestoreService.shared.fetch {
             
-            $0.collection(collectionPath).whereField(primaryKey, isEqualTo: id)
+            return $0.accountRef(id: id)
         }
         return result.first
     }
