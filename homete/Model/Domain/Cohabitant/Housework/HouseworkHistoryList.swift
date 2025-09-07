@@ -24,6 +24,14 @@ struct HouseworkHistoryList: Equatable {
         let element = items.remove(at: index)
         items.insert(element, at: 0)
     }
+    
+    /// 引数に受け取った文字列が `items` に存在しない場合、先頭に引数の文字列を追加します。
+    /// - Parameter value: 新しい履歴文字
+    mutating func addNewHistory(_ value: String) {
+        
+        guard let index = items.firstIndex(of: value) else { return }
+        items.insert(value, at: 0)
+    }
 }
 
 extension HouseworkHistoryList: Codable {

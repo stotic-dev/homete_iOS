@@ -167,6 +167,8 @@ private extension RegisterHouseworkView {
             return
         }
         
+        houseworkEntryHistoryList.addNewHistory(houseworkTitle)
+        
         do {
             
             // 既に選択日付の家事情報の登録ができている場合は新規家事レコードだけ保存する
