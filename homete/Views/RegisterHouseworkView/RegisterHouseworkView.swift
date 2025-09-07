@@ -19,6 +19,8 @@ struct RegisterHouseworkView: View {
     @State var domainError: DomainError?
     @State var isLoading = false
     
+    @FocusState var isShowingKeyboard: Bool
+    
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
     
     let dailyHouseworkList: DailyHouseworkList
@@ -44,12 +46,23 @@ struct RegisterHouseworkView: View {
                 Text("登録する")
                     .font(with: .headLineM)
             }
-            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
+            .floatingButtonStyle(
+                isDisable: houseworkTitle.isEmpty,
+                shape: RoundedRectangle(radius: .radius16)
+            )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], DesignSystem.Space.space24)
             LoadingIndicator()
                 .ignoresSafeArea()
                 .opacity(isLoading ? 1 : 0)
+            if isShowingKeyboard {
+                Color.clear
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isShowingKeyboard = false
+                    }
+            }
         }
         .commonError(isPresented: $isPresentingCommonErrorAlert, error: $domainError)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
@@ -71,6 +84,7 @@ private extension RegisterHouseworkView {
     func inputTextField() -> some View {
         ZStack {
             TextField("家事の名前を入力", text: $houseworkTitle)
+                .focused($isShowingKeyboard)
                 .foregroundStyle(.primary2)
                 .padding()
                 .font(with: .body)
@@ -158,7 +172,6 @@ private extension RegisterHouseworkView {
             // 既に選択日付の家事情報の登録ができている場合は新規家事レコードだけ保存する
             // そうでない場合は、家事情報のレコードも保存する
             if dailyHouseworkList.isRegistered {
-                
                 
                 try await houseworkClient.registerNewItem(
                     newItem,
