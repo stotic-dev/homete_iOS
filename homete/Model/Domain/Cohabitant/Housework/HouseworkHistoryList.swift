@@ -11,6 +11,9 @@ struct HouseworkHistoryList: Equatable {
     
     private(set) var items: [String]
     
+    /// 履歴があるかどうか
+    var hasHistory: Bool { !items.isEmpty }
+    
     /// 引数に受け取った文字列が `items` に存在する場合、その要素を先頭へ移動します。
     /// - Parameter value: 先頭へ移動したい要素の文字列
     mutating func moveToFrontIfExists(_ value: String) {

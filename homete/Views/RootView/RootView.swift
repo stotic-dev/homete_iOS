@@ -11,6 +11,8 @@ struct RootView: View {
         
     @State var theme = Theme()
     
+    @AppStorage(key: .cohabitantId) var localStorageCohabitantId = ""
+    
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
     
@@ -37,5 +39,6 @@ struct RootView: View {
         .apply(theme: theme)
         .environment(accountStore)
         .environment(accountAuthStore)
+        .environment(\.cohabitantId, localStorageCohabitantId)
     }
 }

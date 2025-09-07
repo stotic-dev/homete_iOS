@@ -9,6 +9,8 @@ import SwiftUI
 
 struct HouseworkBoardView: View {
     
+    @Environment(\.calendar) var calendar
+    
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
@@ -34,7 +36,13 @@ struct HouseworkBoardView: View {
             .padding(.bottom, DesignSystem.Space.space24)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
-            RegisterHouseworkView()
+            RegisterHouseworkView(
+                dailyHouseworkList: .makeInitialValue(
+                    selectedDate: selectedDate,
+                    items: [],
+                    calendar: calendar
+                )
+            )
         }
     }
 }
