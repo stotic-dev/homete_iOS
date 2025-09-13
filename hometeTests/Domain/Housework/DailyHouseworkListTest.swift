@@ -25,7 +25,7 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         
         // Arrange
         let calendar = Calendar(identifier: .gregorian)
-        let selectedDate = try #require(calendar.date(from: DateComponents(year: 2025, month: 9, day: 8, hour: 15, minute: 42, second: 10)))
+        let selectedDate = Date()
         let items = [
             HouseworkItem(id: "1", title: "洗濯", state: .incomplete),
             HouseworkItem(id: "2", title: "皿洗い", state: .pendingApproval)
@@ -108,4 +108,3 @@ extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
         #expect(result == expected)
     }
 }
-
