@@ -20,9 +20,6 @@ struct AppTabView: View {
                 Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .dashboard) {
                     HouseworkBoardView()
                 }
-                Tab("設定", systemImage: "gear", value: .dashboard) {
-                    SettingView()
-                }
             }
         } else {
             TabView(selection: $type) {
@@ -39,11 +36,6 @@ struct AppTabView: View {
                             systemImage: "person.2.arrow.trianglehead.counterclockwise"
                         )
                     }
-                SettingView()
-                    .tag(TabType.settings)
-                    .tabItem {
-                        Label("設定", systemImage: "gear")
-                    }
             }
         }
     }
@@ -55,7 +47,6 @@ extension AppTabView {
         
         case dashboard
         case homework
-        case settings
     }
 }
 
