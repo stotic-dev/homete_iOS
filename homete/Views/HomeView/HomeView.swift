@@ -11,13 +11,28 @@ struct HomeView: View {
         
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
+    @State var navigationPath = CustomNavigationPath<HomeNavigationPathElement>(path: [])
+    
     var body: some View {
-        ZStack {
-            if cohabitantId.isEmpty {
-                NotRegisteredContent()
+        NavigationStack(path: $navigationPath.path) {
+            ZStack {
+                if cohabitantId.isEmpty {
+                    NotRegisteredContent()
+                }
+                else {
+                    RegisteredContent()
+                }
             }
-            else {
-                RegisteredContent()
+            .environment(\.homeNavigationPath, navigationPath)
+            .navigationDestination(for: HomeNavigationPathElement.self) { element in
+                element.destination()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationBarButton(label: .settings) {
+                        navigationPath.push(.settings)
+                    }
+                }
             }
         }
     }

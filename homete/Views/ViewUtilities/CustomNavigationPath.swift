@@ -25,4 +25,9 @@ final class CustomNavigationPath<Element: Hashable> {
         
         _ = path.popLast()
     }
+    
+    func push(_ element: Element) {
+        
+        path.append(element)
+    }
 }
