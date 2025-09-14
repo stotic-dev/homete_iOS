@@ -45,7 +45,7 @@ ipaを生成
 [bundle exec] fastlane ios update_profile
 ```
 
-指定されたipaでTestFlight配信を行う
+開発用のプロビジョニングプロファイルを更新
 
 ### ios update_profile_prod
 
