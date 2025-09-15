@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class AccountStore {
     
-    var account: Account = .empty
+    private(set) var account: Account = .empty
         
     private let accountInfoClient: AccountInfoClient
     
