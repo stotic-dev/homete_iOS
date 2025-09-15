@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import FirebaseFunctions
 import SwiftUI
 
 struct RegisterHouseworkView: View {
@@ -192,6 +193,14 @@ private extension RegisterHouseworkView {
                     cohabitantId
                 )
             }
+            
+            _ = try? await Functions.functions()
+                .httpsCallable("notifyothercohabitants")
+                .call([
+                    "cohabitantId": cohabitantId,
+                    "title": "新しい家事が登録されました",
+                    "body": houseworkTitle
+                ])
             
             dismiss()
         }
