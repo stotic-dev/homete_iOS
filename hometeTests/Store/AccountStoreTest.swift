@@ -12,7 +12,7 @@ import Testing
 struct AccountStoreTest {
 
     @Test("ログイン時にサーバーにアカウント情報を登録する")
-    func test_setAccountOnLogin() async throws {
+    func test_loadOwnAccountData() async throws {
         
         await confirmation(expectedCount: 2) { confirmation in
             
@@ -22,7 +22,8 @@ struct AccountStoreTest {
                 confirmation()
                 let expectedAccount = try Account(
                     id: inputAuthResult.id,
-                    displayName: #require(inputAuthResult.displayName)
+                    displayName: #require(inputAuthResult.displayName, ""),
+                    fcmToken: nil
                 )
                 #expect($0 == expectedAccount)
             } fetch: {
@@ -33,7 +34,7 @@ struct AccountStoreTest {
             }
             let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
             
-            await store.setInitialAccountIfNeeded(inputAuthResult)
+            await store.loadOwnAccountData(inputAuthResult, fcmToken: nil)
         }
     }
 }
