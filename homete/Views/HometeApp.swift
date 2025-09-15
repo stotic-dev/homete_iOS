@@ -10,9 +10,7 @@ import FirebaseMessaging
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
-    
-    private(set) var fcmToken: String?
-    
+        
     func application(
         _ application: UIApplication,
         // swiftlint:disable:next discouraged_optional_collection
@@ -51,10 +49,7 @@ extension AppDelegate: MessagingDelegate {
     nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         
         print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
-        DispatchQueue.main.async {
-            
-            self.fcmToken = fcmToken
-        }
+        NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
     }
 }
 
@@ -82,12 +77,13 @@ struct HometeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @Environment(\.appDependencies) var appDependencies
     
+    @State var fcmToken: String?
+    
     var body: some Scene {
         WindowGroup {
             RootView(
                 accountAuthStore: .init(appDependencies: appDependencies),
-                accountStore: .init(appDependencies: appDependencies),
-                fcmToken: delegate.fcmToken
+                accountStore: .init(appDependencies: appDependencies)
             )
         }
     }

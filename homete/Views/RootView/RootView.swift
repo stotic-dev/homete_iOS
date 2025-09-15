@@ -5,17 +5,18 @@
 //  Created by 佐藤汰一 on 2025/07/26.
 //
 
+import FirebaseMessaging
 import SwiftUI
 
 struct RootView: View {
         
     @State var theme = Theme()
+    @State var fcmToken: String?
     
     @AppStorage(key: .cohabitantId) var localStorageCohabitantId = ""
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
-    let fcmToken: String?
     
     var body: some View {
         ZStack {
@@ -32,14 +33,34 @@ struct RootView: View {
         }
         .animation(.spring, value: accountAuthStore.state)
         .onChange(of: accountAuthStore.state) {
-            guard case .loggedIn(let accountAuthResult) = accountAuthStore.state else { return }
             Task {
-                await accountStore.loadOwnAccountData(accountAuthResult, fcmToken: fcmToken)
+                await onChangeLaunchState(accountAuthStore.state)
+            }
+        }
+        .task(id: accountStore.account) {
+            guard let fcmToken else { return }
+            await accountStore.updateFcmTokenIfNeeded(fcmToken)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
+            guard let fcmToken = notification.object as? String else { return }
+            self.fcmToken = fcmToken
+            Task {
+                await accountStore.updateFcmTokenIfNeeded(fcmToken)
             }
         }
         .apply(theme: theme)
         .environment(accountStore)
         .environment(accountAuthStore)
         .environment(\.cohabitantId, localStorageCohabitantId)
+    }
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension RootView {
+    
+    func onChangeLaunchState(_ state: LaunchState) async {
+        guard case .loggedIn(let accountAuthResult) = accountAuthStore.state else { return }
+        await accountStore.loadOwnAccountData(accountAuthResult, fcmToken: fcmToken)
     }
 }

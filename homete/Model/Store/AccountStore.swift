@@ -27,6 +27,9 @@ final class AccountStore {
             if let account = try await accountInfoClient.fetch(auth.id) {
                 
                 self.account = account
+                
+                guard let fcmToken else { return }
+                await updateFcmTokenIfNeeded(fcmToken)
                 return
             }
             
@@ -37,6 +40,27 @@ final class AccountStore {
         catch {
             
             print("failed to fetch account info: \(error)")
+        }
+    }
+    
+    func updateFcmTokenIfNeeded(_ fcmToken: String) async {
+        
+        // 保持しているFCMトークンと異なるFCMトークンに変わった場合は、アカウント情報も新しいトークンに更新する
+        guard account != .empty,
+              account.fcmToken != fcmToken else { return }
+        
+        do {
+            
+            let updatedAccount = Account(
+                id: account.id,
+                displayName: account.displayName,
+                fcmToken: fcmToken
+            )
+            try await accountInfoClient.insertOrUpdate(updatedAccount)
+        }
+        catch {
+            
+            print("failed to update fcmToken: \(error)")
         }
     }
 }
