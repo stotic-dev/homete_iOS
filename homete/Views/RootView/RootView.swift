@@ -15,6 +15,7 @@ struct RootView: View {
     
     var accountAuthStore: AccountAuthStore
     var accountStore: AccountStore
+    let fcmToken: String?
     
     var body: some View {
         ZStack {
@@ -33,7 +34,7 @@ struct RootView: View {
         .onChange(of: accountAuthStore.state) {
             guard case .loggedIn(let accountAuthResult) = accountAuthStore.state else { return }
             Task {
-                await accountStore.setInitialAccountIfNeeded(accountAuthResult)
+                await accountStore.loadOwnAccountData(accountAuthResult, fcmToken: fcmToken)
             }
         }
         .apply(theme: theme)

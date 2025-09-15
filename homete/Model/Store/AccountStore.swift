@@ -20,7 +20,7 @@ final class AccountStore {
         accountInfoClient = appDependencies.accountInfoClient
     }
     
-    func setInitialAccountIfNeeded(_ auth: AccountAuthResult) async {
+    func loadOwnAccountData(_ auth: AccountAuthResult, fcmToken: String?) async {
         
         do {
             
@@ -30,7 +30,7 @@ final class AccountStore {
                 return
             }
             
-            let newAccount = Account.initial(auth)
+            let newAccount = Account.initial(auth, fcmToken)
             try await accountInfoClient.insertOrUpdate(newAccount)
             account = newAccount
         }
