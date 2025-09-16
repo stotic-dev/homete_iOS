@@ -81,15 +81,20 @@ private extension RegisterHouseworkView {
     
     func inputTextField() -> some View {
         ZStack {
-            TextField("家事の名前を入力", text: $houseworkTitle)
-                .focused($isShowingKeyboard)
-                .foregroundStyle(.primary2)
-                .padding()
-                .font(with: .body)
-                .background {
-                    RoundedRectangle(radius: .radius8)
-                        .foregroundStyle(.primary3)
-                }
+            TextField(
+                "",
+                text: $houseworkTitle,
+                prompt: Text("家事の名前を入力")
+                    .foregroundStyle(.primary2.opacity(0.7))
+            )
+            .focused($isShowingKeyboard)
+            .foregroundStyle(.primary2)
+            .padding()
+            .font(with: .body)
+            .background {
+                RoundedRectangle(radius: .radius8)
+                    .foregroundStyle(.primary3)
+            }
             Button {
                 tappedClearTextFiledButton()
             } label: {
