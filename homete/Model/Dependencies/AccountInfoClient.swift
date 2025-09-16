@@ -26,13 +26,12 @@ extension AccountInfoClient: DependencyClient {
         }
     } fetch: { id in
         
-        let result: [Account] = try await FirestoreService.shared.fetch {
+        return try await FirestoreService.shared.fetch {
             
             return $0.accountRef(id: id)
         }
-        return result.first
     }
     
     static let previewValue: AccountInfoClient = .init(insertOrUpdate: { _ in },
-                                                       fetch: { _ in .init(id: "", displayName: "") })
+                                                       fetch: { _ in .empty })
 }

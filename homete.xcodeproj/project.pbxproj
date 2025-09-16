@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
 		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
 		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
@@ -64,6 +65,7 @@
 			files = (
 				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
 				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
+				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
 			);
@@ -133,6 +135,7 @@
 				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
 				BC2E372B2E3DE189005BD910 /* FirebaseAuth */,
 				BC47E6A52E47240F00308562 /* FirebaseFirestore */,
+				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -622,6 +625,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		BC2E372B2E3DE189005BD910 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
