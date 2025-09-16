@@ -9,14 +9,15 @@ struct Account: Equatable, Codable {
     
     let id: String
     let displayName: String
+    let fcmToken: String?
 }
 
 extension Account {
     
-    static let empty: Self = .init(id: "", displayName: "")
+    static let empty: Self = .init(id: "", displayName: "", fcmToken: nil)
     
-    static func initial(_ auth: AccountAuthResult) -> Self {
+    static func initial(_ auth: AccountAuthResult, _ fcmToken: String?) -> Self {
         
-        return .init(id: auth.id, displayName: auth.displayName ?? "未設定")
+        return .init(id: auth.id, displayName: auth.displayName ?? "未設定", fcmToken: fcmToken)
     }
 }

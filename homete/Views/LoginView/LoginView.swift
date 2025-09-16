@@ -17,6 +17,8 @@ struct LoginView: View {
     var body: some View {
         ZStack {
             VStack(spacing: DesignSystem.Space.space16) {
+                Text("homete")
+                    .font(with: .headLineM)
                 Text("ようこそ!")
                     .font(with: .headLineL)
                 Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
@@ -41,8 +43,6 @@ struct LoginView: View {
                 .opacity(isLoading ? 1 : 0)
         }
         .commonError(isPresented: $isPresentedErrorAlert, error: $domainError)
-        .navigationTitle("Homete")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -73,10 +73,7 @@ private extension LoginView {
 }
 
 #Preview {
-    NavigationStack {
-        LoginView()
-            .navigationTitle("Homete")
-            .navigationBarTitleDisplayMode(.inline)
-            .environment(AccountAuthStore(appDependencies: .previewValue))
-    }
+    LoginView()
+        .navigationBarTitleDisplayMode(.inline)
+        .environment(AccountAuthStore(appDependencies: .previewValue))
 }

@@ -11,8 +11,8 @@ import Testing
 @MainActor
 struct AccountStoreTest {
 
-    @Test("ログイン時にサーバーにアカウント情報を登録する")
-    func test_setAccountOnLogin() async throws {
+    @Test("初回ログインでサーバーにアカウント情報がない場合、サーバーにアカウント情報を登録する")
+    func loadOwnAccountData() async throws {
         
         await confirmation(expectedCount: 2) { confirmation in
             
@@ -22,7 +22,8 @@ struct AccountStoreTest {
                 confirmation()
                 let expectedAccount = try Account(
                     id: inputAuthResult.id,
-                    displayName: #require(inputAuthResult.displayName)
+                    displayName: #require(inputAuthResult.displayName, ""),
+                    fcmToken: nil
                 )
                 #expect($0 == expectedAccount)
             } fetch: {
@@ -33,7 +34,39 @@ struct AccountStoreTest {
             }
             let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
             
-            await store.setInitialAccountIfNeeded(inputAuthResult)
+            await store.loadOwnAccountData(inputAuthResult, fcmToken: nil)
+        }
+    }
+    
+    @Test("サーバーにログイン情報がありFCMトークンが更新されている場合アカウントに紐づくFCMトークンを更新")
+    func updateFcmTokenIfNeeded() async {
+        
+        await confirmation(expectedCount: 2) { confirmation in
+            
+            let inputFcmToken = "token"
+            let inputAuthResult = AccountAuthResult(id: "test", displayName: "testName")
+            let accountInfoClient = AccountInfoClient {
+                
+                confirmation()
+                let expectedAccount = try Account(
+                    id: inputAuthResult.id,
+                    displayName: #require(inputAuthResult.displayName, ""),
+                    fcmToken: inputFcmToken
+                )
+                #expect($0 == expectedAccount)
+            } fetch: {
+                
+                confirmation()
+                #expect($0 == inputAuthResult.id)
+                return try Account(
+                    id: inputAuthResult.id,
+                    displayName: #require(inputAuthResult.displayName, ""),
+                    fcmToken: nil
+                )
+            }
+            let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
+            
+            await store.loadOwnAccountData(inputAuthResult, fcmToken: inputFcmToken)
         }
     }
 }

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SettingView: View {
     
-    @Environment(\.rootNavigationPath) var rootNavigationPath
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     
@@ -47,16 +46,13 @@ struct SettingView: View {
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
                 accountAuthStore.logOut()
-                rootNavigationPath.popToRoot()
             }
         }
-        
     }
 }
 
 #Preview {
-    NavigationStack {
-        SettingView()
-            .environment(AccountAuthStore(appDependencies: .previewValue))
-    }
+    SettingView()
+        .environment(AccountStore(appDependencies: .previewValue))
+        .environment(AccountAuthStore(appDependencies: .previewValue))
 }
