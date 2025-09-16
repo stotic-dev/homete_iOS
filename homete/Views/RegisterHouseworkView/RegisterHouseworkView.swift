@@ -39,6 +39,14 @@ struct RegisterHouseworkView: View {
                 Spacer()
             }
             .padding(.horizontal, DesignSystem.Space.space16)
+            if isShowingKeyboard {
+                Color.clear
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isShowingKeyboard = false
+                    }
+            }
             Button {
                 Task {
                     await tappedRegisterButton()
@@ -53,14 +61,6 @@ struct RegisterHouseworkView: View {
             LoadingIndicator()
                 .ignoresSafeArea()
                 .opacity(isLoading ? 1 : 0)
-            if isShowingKeyboard {
-                Color.clear
-                    .ignoresSafeArea()
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isShowingKeyboard = false
-                    }
-            }
         }
         .commonError(isPresented: $isPresentingCommonErrorAlert, error: $domainError)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
