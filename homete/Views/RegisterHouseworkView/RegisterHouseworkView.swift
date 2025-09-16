@@ -15,6 +15,7 @@ struct RegisterHouseworkView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var houseworkTitle = ""
+    @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
     @State var isPresentingCommonErrorAlert = false
     @State var domainError: DomainError?
@@ -34,6 +35,7 @@ struct RegisterHouseworkView: View {
                 Text("家事を追加")
                     .font(with: .headLineL)
                 inputTextField()
+                inputPointSlider()
                 entryHistoryContent()
                     .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
                 Spacer()
@@ -105,6 +107,17 @@ private extension RegisterHouseworkView {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, DesignSystem.Space.space8)
             .opacity(houseworkTitle.isEmpty ? 0 : 1)
+        }
+    }
+    
+    func inputPointSlider() -> some View {
+        VStack(spacing: DesignSystem.Space.space8) {
+            Text("完了ポイント")
+                .font(with: .headLineM)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(Int(completePoint).formatted())
+                .font(with: .headLineL)
+            Slider(value: $completePoint, in: 1...100, step: Double.Stride(1))
         }
     }
     
