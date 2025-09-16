@@ -50,19 +50,19 @@ extension Firestore {
     }
     
     /// 指定日付の家事の参照を取得する
-    func houseworkRef(id: String, indexedDate: Date) -> DocumentReference {
+    func houseworkRef(id: String, indexedDate: String) -> DocumentReference {
         
         return self.cohabitantRef(id: id)
             .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate.formatted(date: .numeric, time: .omitted))
+            .document(indexedDate)
     }
     
     /// 指定日付の家事の参照を取得する
-    func dailyHouseworksRef(id: String, indexedDate: Date) -> CollectionReference {
+    func dailyHouseworksRef(id: String, indexedDate: String) -> CollectionReference {
         
         return self.cohabitantRef(id: id)
             .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate.formatted(date: .numeric, time: .omitted))
+            .document(indexedDate)
             .collection(CollectionPath.dailyHouseworks.rawValue)
     }
 }
