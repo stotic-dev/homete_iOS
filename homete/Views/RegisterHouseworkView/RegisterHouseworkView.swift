@@ -47,10 +47,7 @@ struct RegisterHouseworkView: View {
                 Text("登録する")
                     .font(with: .headLineM)
             }
-            .floatingButtonStyle(
-                isDisable: houseworkTitle.isEmpty,
-                shape: RoundedRectangle(radius: .radius16)
-            )
+            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], DesignSystem.Space.space24)
             LoadingIndicator()

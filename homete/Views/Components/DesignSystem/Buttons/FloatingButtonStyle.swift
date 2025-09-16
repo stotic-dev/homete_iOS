@@ -7,32 +7,22 @@
 
 import SwiftUI
 
-struct FloatingButtonStyle<S>: ButtonStyle where S: Shape {
+struct FloatingButtonStyle: ButtonStyle {
     
     let isDisable: Bool
-    let shape: S
     
     func makeBody(configuration: Configuration) -> some View {
-        if #available(iOS 26.0, *) {
-            configuration.label
-                .padding(DesignSystem.Space.space16)
-                .foregroundStyle(.commonBlack)
-                .glassEffect(
-                    .regular.tint(.primary1).interactive(!isDisable)
-                )
-                .opacity(isDisable ? 0.5 : 1)
-                .disabled(isDisable)
-        } else {
-            configuration.label
-                .padding(DesignSystem.Space.space16)
-                .foregroundStyle(.commonBlack)
-                .clipShape(shape)
-                .background {
-                    shape.foregroundStyle(.primary1)
+        configuration.label
+            .padding(DesignSystem.Space.space16)
+            .foregroundStyle(.commonBlack)
+            .background {
+                GeometryReader {
+                    RoundedRectangle(cornerRadius: $0.size.height / 2)
+                        .fill(.primary1)
                 }
-                .opacity(configuration.isPressed || isDisable ? 0.5 : 1)
-                .disabled(isDisable)
-        }
+            }
+            .opacity(configuration.isPressed || isDisable ? 0.5 : 1)
+            .disabled(isDisable)
     }
 }
 
@@ -42,21 +32,27 @@ extension View {
     /// - Parameters:
     ///   - isDisable: ボタンが無効であるかどうか
     /// - Description: iOS26ではLiquid Glassの効果があるボタンになる
-    func floatingButtonStyle<S>(
-        isDisable: Bool = false,
-        shape: S = Circle()
-    ) -> some View where S: Shape {
-        self.buttonStyle(FloatingButtonStyle(isDisable: isDisable, shape: shape))
+    func floatingButtonStyle(isDisable: Bool = false) -> some View {
+        if #available(iOS 26.0, *) {
+            return self.buttonStyle(FloatingButtonStyle(isDisable: isDisable))
+                .glassEffect(.regular.interactive(!isDisable))
+        } else {
+            return self.buttonStyle(FloatingButtonStyle(isDisable: isDisable))
+        }
     }
 }
 
 #Preview("テキストボタン") {
-    Button("Button") {}
-        .floatingButtonStyle(shape: RoundedRectangle(radius: .radius16))
+    Button("Button") {
+        print("tapped")
+    }
+    .floatingButtonStyle()
 }
 
 #Preview("アイコンボタン") {
-    Button {} label: {
+    Button {
+        print("tapped")
+    } label: {
         Image(systemName: "plus")
     }
     .floatingButtonStyle()
