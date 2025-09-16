@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct FloatingButtonStyle: ButtonStyle {
+struct FloatingButtonStyle<S>: ButtonStyle where S: Shape {
     
     let isDisable: Bool
+    let shape: S
     
     func makeBody(configuration: Configuration) -> some View {
         if #available(iOS 26.0, *) {
@@ -25,10 +26,9 @@ struct FloatingButtonStyle: ButtonStyle {
             configuration.label
                 .padding(DesignSystem.Space.space16)
                 .foregroundStyle(.commonBlack)
-                .clipShape(Circle())
+                .clipShape(shape)
                 .background {
-                    Circle()
-                        .foregroundStyle(.primary1)
+                    shape.foregroundStyle(.primary1)
                 }
                 .opacity(configuration.isPressed || isDisable ? 0.5 : 1)
                 .disabled(isDisable)
@@ -42,14 +42,17 @@ extension View {
     /// - Parameters:
     ///   - isDisable: ボタンが無効であるかどうか
     /// - Description: iOS26ではLiquid Glassの効果があるボタンになる
-    func floatingButtonStyle(isDisable: Bool = false) -> some View {
-        self.buttonStyle(FloatingButtonStyle(isDisable: isDisable))
+    func floatingButtonStyle<S>(
+        isDisable: Bool = false,
+        shape: S = Circle()
+    ) -> some View where S: Shape {
+        self.buttonStyle(FloatingButtonStyle(isDisable: isDisable, shape: shape))
     }
 }
 
 #Preview("テキストボタン") {
     Button("Button") {}
-        .floatingButtonStyle()
+        .floatingButtonStyle(shape: RoundedRectangle(radius: .radius16))
 }
 
 #Preview("アイコンボタン") {

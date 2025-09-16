@@ -21,13 +21,12 @@ struct CohabitantClient {
 extension CohabitantClient: DependencyClient {
     
     private static let collectionPath = "Cohabitant"
-    private static let primaryKey = "id"
     
     static let liveValue: CohabitantClient = .init { data in
         
         try await FirestoreService.shared.insertOrUpdate(data: data) {
             
-            $0.collection(collectionPath).document(data.id)
+            return $0.cohabitantRef(id: data.id)
         }
     }
     

@@ -9,7 +9,33 @@ import Foundation
 
 struct HouseworkHistoryList: Equatable {
     
-    var items: [String]
+    private(set) var items: [String]
+    
+    /// 履歴があるかどうか
+    var hasHistory: Bool { !items.isEmpty }
+    
+    /// 引数に受け取った文字列が `items` に存在する場合、その要素を先頭へ移動します。
+    /// - Parameter value: 先頭へ移動したい要素の文字列
+    mutating func moveToFrontIfExists(_ value: String) {
+        
+        guard let index = items.firstIndex(of: value) else { return }
+        // 既に先頭なら何もしない
+        if index == items.startIndex { return }
+        let element = items.remove(at: index)
+        items.insert(element, at: 0)
+    }
+    
+    /// 引数に受け取った文字列を `items`の先頭に追加する
+    /// - Parameter value: 新しい履歴文字
+    mutating func addNewHistory(_ value: String) {
+        
+        guard items.contains(value) else {
+            
+            items.insert(value, at: 0)
+            return
+        }
+        moveToFrontIfExists(value)
+    }
 }
 
 extension HouseworkHistoryList: Codable {

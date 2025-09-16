@@ -9,32 +9,53 @@ import SwiftUI
 
 struct HouseworkBoardView: View {
     
+    @Environment(\.calendar) var calendar
+    
+    @State var navigationPath = CustomNavigationPath<HouseworkBoardNavigationPathElement>(path: [])
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
     @State var isPresentingAddHouseworkView = false
     
     var body: some View {
-        ZStack {
-            VStack(spacing: DesignSystem.Space.space16) {
-                HouseworkDateHeaderContent(selectedDate: $selectedDate)
-                HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                HouseworkBoardListContent(
-                    selectedHouseworkState: selectedHouseworkState,
-                    houseworkBoardList: $houseworkBoardList
-                )
-                Spacer()
+        NavigationStack(path: $navigationPath.path) {
+            ZStack {
+                VStack(spacing: DesignSystem.Space.space16) {
+                    HouseworkDateHeaderContent(selectedDate: $selectedDate)
+                    HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+                    HouseworkBoardListContent(
+                        selectedHouseworkState: selectedHouseworkState,
+                        houseworkBoardList: $houseworkBoardList
+                    )
+                    Spacer()
+                }
+                .padding(.horizontal, DesignSystem.Space.space16)
+                addHouseworkButton {
+                    isPresentingAddHouseworkView = true
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.trailing, DesignSystem.Space.space24)
+                .padding(.bottom, DesignSystem.Space.space24)
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
-            addHouseworkButton {
-                isPresentingAddHouseworkView = true
+            .navigationDestination(for: HouseworkBoardNavigationPathElement.self) { element in
+                element.destination()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(.trailing, DesignSystem.Space.space24)
-            .padding(.bottom, DesignSystem.Space.space24)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationBarButton(label: .settings) {
+                        navigationPath.push(.settings)
+                    }
+                }
+            }
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
-            RegisterHouseworkView()
+            RegisterHouseworkView(
+                dailyHouseworkList: .makeInitialValue(
+                    selectedDate: selectedDate,
+                    items: [],
+                    calendar: calendar
+                )
+            )
         }
     }
 }
