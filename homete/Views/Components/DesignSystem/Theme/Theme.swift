@@ -56,7 +56,7 @@ extension Theme {
             for: .normal
         )
         UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(.primaryFg)],
+            [.foregroundColor: UIColor(.commonBlack)],
             for: .selected
         )
         UISegmentedControl.appearance().backgroundColor = .primary3
