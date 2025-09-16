@@ -49,7 +49,10 @@ extension AppDelegate: MessagingDelegate {
     nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         
         print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
-        NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
+        DispatchQueue.main.async {
+            
+            NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
+        }
     }
 }
 
@@ -57,16 +60,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
-        didReceive response: UNNotificationResponse
-    ) async {
-        print(response.notification.request)
-    }
-    
-    nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        print(notification)
         return [.sound]
     }
 }

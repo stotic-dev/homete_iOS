@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import FirebaseFunctions
 import SwiftUI
 
 struct RegisterHouseworkView: View {
@@ -46,10 +47,7 @@ struct RegisterHouseworkView: View {
                 Text("登録する")
                     .font(with: .headLineM)
             }
-            .floatingButtonStyle(
-                isDisable: houseworkTitle.isEmpty,
-                shape: RoundedRectangle(radius: .radius16)
-            )
+            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], DesignSystem.Space.space24)
             LoadingIndicator()
@@ -192,6 +190,14 @@ private extension RegisterHouseworkView {
                     cohabitantId
                 )
             }
+            
+            _ = try? await Functions.functions()
+                .httpsCallable("notifyothercohabitants")
+                .call([
+                    "cohabitantId": cohabitantId,
+                    "title": "新しい家事が登録されました",
+                    "body": houseworkTitle
+                ])
             
             dismiss()
         }

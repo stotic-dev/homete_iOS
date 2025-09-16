@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NotRegisteredContent: View {
     
-    @State var isShowCohabitantRegistrationModal = false
+    @Binding var isShowCohabitantRegistrationModal: Bool
     
     var body: some View {
         VStack(spacing: .zero) {
@@ -35,12 +35,12 @@ struct NotRegisteredContent: View {
             }
         }
         .padding(.horizontal, DesignSystem.Space.space16)
-        .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
-            CohabitantRegistrationView()
-        }
     }
 }
 
 #Preview {
-    NotRegisteredContent()
+    @Previewable @State var isShowCohabitantRegistrationModal = false
+    NotRegisteredContent(
+        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+    )
 }
