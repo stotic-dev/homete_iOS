@@ -9,5 +9,6 @@ struct HouseworkItem: Identifiable, Equatable, Codable {
     
     let id: String
     let title: String
+    let point: Int
     let state: HouseworkState
 }

@@ -49,14 +49,12 @@ struct RegisterHouseworkView: View {
                         isShowingKeyboard = false
                     }
             }
-            Button {
+            Button("登録する") {
                 Task {
                     await tappedRegisterButton()
                 }
-            } label: {
-                Text("登録する")
-                    .font(with: .headLineM)
             }
+            .font(with: .headLineM)
             .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], DesignSystem.Space.space24)
@@ -174,6 +172,7 @@ private extension RegisterHouseworkView {
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
+            point: Int(completePoint),
             state: .incomplete
         )
         
