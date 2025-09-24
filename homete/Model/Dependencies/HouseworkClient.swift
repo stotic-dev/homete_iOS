@@ -11,6 +11,7 @@ struct HouseworkClient {
     
     let registerNewItem: @Sendable (HouseworkItem, Date, String) async throws -> Void
     let registerDailyHouseworkList: @Sendable (DailyHouseworkList, String) async throws -> Void
+    let snapshotListener: @Sendable (_ id: AnyHashable) -> AsyncStream<DailyHouseworkList>
 }
 
 extension HouseworkClient: DependencyClient {
@@ -44,11 +45,16 @@ extension HouseworkClient: DependencyClient {
                     .document(item.id)
             }
         }
+    } snapshotListener: { id in
+        
+        // TODO: FirebaseのSnapshotListnerからAsyncStreamを返す
+        return .makeStream().stream
     }
     
     static let previewValue = HouseworkClient(
         registerNewItem: { _, _, _ in },
-        registerDailyHouseworkList: { _, _ in }
+        registerDailyHouseworkList: { _, _ in },
+        snapshotListener: { _ in .makeStream().stream }
     )
 }
 

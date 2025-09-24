@@ -5,12 +5,19 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
+import Combine
 import FirebaseFirestore
+
+struct FirestoreListener {
+    let continuation: AsyncStream<Any>.Continuation
+    let listener: ListenerRegistration
+}
 
 final actor FirestoreService {
     
     static let shared = FirestoreService()
     private let firestore = Firestore.firestore()
+    private var listeners: [AnyHashable: FirestoreListener] = [:]
     
     func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
         
@@ -28,6 +35,18 @@ final actor FirestoreService {
     func insertOrUpdate<T: Encodable>(data: T, predicate: (Firestore) -> DocumentReference) throws {
         
         try predicate(firestore).setData(from: data, merge: true)
+    }
+    
+    func addSnapshotListener<T: Encodable>(id: AnyHashable) -> AsyncStream<[T]> {
+        
+        let (stream, continuation) = AsyncStream<[T]>.makeStream(bufferingPolicy: .bufferingNewest(10))
+        
+        firestore.houseworkListRef(id: "")
+            .whereField("indexedDate", arrayContains: ["2025-09-15"])
+            .addSnapshotListener { snapshots, error in
+                
+            }
+        return stream
     }
 }
 
@@ -49,6 +68,13 @@ extension Firestore {
             .document(id)
     }
     
+    /// 家事コレクションの参照を取得する
+    func houseworkListRef(id: String) -> CollectionReference {
+        
+        return self.cohabitantRef(id: id)
+            .collection(CollectionPath.houseworks.rawValue)
+    }
+ 
     /// 指定日付の家事の参照を取得する
     func houseworkRef(id: String, indexedDate: String) -> DocumentReference {
         

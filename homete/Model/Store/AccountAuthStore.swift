@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class AccountAuthStore {
+final class AccountAuthStore: Storable {
     
     var state: LaunchState = .launching
     

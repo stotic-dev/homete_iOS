@@ -9,9 +9,10 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class AccountStore {
+final class AccountStore: Storable {
     
     private(set) var account: Account = .empty
+    var text: String = ""
         
     private let accountInfoClient: AccountInfoClient
     

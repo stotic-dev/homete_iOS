@@ -10,6 +10,8 @@ import FirebaseMessaging
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    
+    let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
         
     func application(
         _ application: UIApplication,
@@ -18,15 +20,18 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         
         #if DEBUG
-        guard let devPlistFilePath = (
-            Bundle.main.url(
-                forResource: "GoogleService-Info-dev",
-                withExtension: "plist"
-            )?
-                .path()
-        ),
-              let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
-        FirebaseApp.configure(options: firebaseOption)
+        if isXcodePreview {
+            
+            guard let devPlistFilePath = (
+                Bundle.main.url(
+                    forResource: "GoogleService-Info-dev",
+                    withExtension: "plist"
+                )?
+                    .path()
+            ),
+                  let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
+            FirebaseApp.configure(options: firebaseOption)
+        }
         #else
         FirebaseApp.configure()
         #endif

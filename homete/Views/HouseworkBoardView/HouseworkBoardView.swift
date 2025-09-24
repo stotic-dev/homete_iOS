@@ -7,6 +7,20 @@
 
 import SwiftUI
 
+@MainActor
+@Observable
+final class HouseworkListStore {
+    
+    var items: [DailyHouseworkList] = []
+    
+    private let houseworkClient: HouseworkClient
+    
+    init(houseworkClient: HouseworkClient) {
+        
+        self.houseworkClient = houseworkClient
+    }
+}
+
 struct HouseworkBoardView: View {
     
     @Environment(\.calendar) var calendar
