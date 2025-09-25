@@ -5,65 +5,44 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import Combine
 import FirebaseFirestore
 
 struct HouseworkClient {
     
-    let registerNewItem: @Sendable (HouseworkItem, Date, String) async throws -> Void
-    let registerDailyHouseworkList: @Sendable (DailyHouseworkList, String) async throws -> Void
-    let snapshotListener: @Sendable (_ id: AnyHashable) -> AsyncStream<DailyHouseworkList>
+    let registerNewItem: @Sendable (HouseworkItem, String) async throws -> Void
+//    let registerDailyHouseworkList: @Sendable (DailyHouseworkList, String) async throws -> Void
+//    let snapshotListener: @Sendable (_ id: AnyHashable, _ cohabitantId: String) -> AnyPublisher<[DailyHouseworkList], any Error>
+//    let removeListener: @Sendable (_ id: AnyHashable) -> Void
 }
 
 extension HouseworkClient: DependencyClient {
         
-    static let liveValue = HouseworkClient { item, indexedDate, cohabitantId in
+    static let liveValue = HouseworkClient { item, cohabitantId in
         
         try await FirestoreService.shared.insertOrUpdate(data: item) {
             
             return $0
-                .dailyHouseworksRef(
-                    id: cohabitantId,
-                    indexedDate: indexedDateFormatter.string(from: indexedDate)
-                )
+                .houseworkListRef(id: cohabitantId)
                 .document(item.id)
         }
-    } registerDailyHouseworkList: { houseworkList, cohabitantId in
-        
-        let indexedDateStr = indexedDateFormatter.string(from: houseworkList.indexedDate)
-        try await FirestoreService.shared.insertOrUpdate(data: houseworkList.metaData) {
-            
-            return $0
-                .houseworkRef(id: cohabitantId, indexedDate: indexedDateStr)
-        }
-        
-        for item in houseworkList.items {
-            
-            try await FirestoreService.shared.insertOrUpdate(data: item) {
-                
-                return $0
-                    .dailyHouseworksRef(id: cohabitantId, indexedDate: indexedDateStr)
-                    .document(item.id)
-            }
-        }
-    } snapshotListener: { id in
-        
-        // TODO: FirebaseのSnapshotListnerからAsyncStreamを返す
-        return .makeStream().stream
     }
+//    } snapshotListener: { id, cohabitantId in
+//        
+//        // TODO: FirebaseのSnapshotListnerからAsyncStreamを返す
+//        return FirestoreService.shared.addSnapshotListener(id: id) {
+//            
+//            return $0.houseworkListRef(id: cohabitantId)
+//                .whereField("indexedDate", in: [])
+//                
+//        }
+//        .map {
+//            $0.documents.compactMap { $0.data(as: HouseworkItem.self) }
+//        }
+//    }
     
     static let previewValue = HouseworkClient(
-        registerNewItem: { _, _, _ in },
-        registerDailyHouseworkList: { _, _ in },
-        snapshotListener: { _ in .makeStream().stream }
+        registerNewItem: { _, _ in },
+//        snapshotListener: { _ in .makeStream().stream }
     )
-}
-
-private extension HouseworkClient {
-    
-    static let indexedDateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.calendar = Calendar.autoupdatingCurrent
-        df.dateFormat = "yyyy-MM-dd"
-        return df
-    }()
 }

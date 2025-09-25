@@ -9,8 +9,7 @@ import Combine
 import FirebaseFirestore
 
 struct FirestoreListener {
-    let continuation: AsyncStream<Any>.Continuation
-    let listener: ListenerRegistration
+    let listener: any ListenerRegistration
 }
 
 final actor FirestoreService {
@@ -37,16 +36,23 @@ final actor FirestoreService {
         try predicate(firestore).setData(from: data, merge: true)
     }
     
-    func addSnapshotListener<T: Encodable>(id: AnyHashable) -> AsyncStream<[T]> {
+    func addSnapshotListener(id: AnyHashable, predicate: (Firestore) -> Query) -> AnyPublisher<QuerySnapshot, any Error> {
         
-        let (stream, continuation) = AsyncStream<[T]>.makeStream(bufferingPolicy: .bufferingNewest(10))
+        let publisher = PassthroughSubject<QuerySnapshot, any Error>()
         
-        firestore.houseworkListRef(id: "")
-            .whereField("indexedDate", arrayContains: ["2025-09-15"])
+        let listener = predicate(firestore)
             .addSnapshotListener { snapshots, error in
                 
+                if let error {
+                    
+                    publisher.send(completion: .failure(error))
+                    return
+                }
+                guard let snapshots else { return }
+                publisher.send(snapshots)
             }
-        return stream
+        listeners[id] = .init(listener: listener)
+        return publisher.eraseToAnyPublisher()
     }
 }
 
@@ -73,23 +79,6 @@ extension Firestore {
         
         return self.cohabitantRef(id: id)
             .collection(CollectionPath.houseworks.rawValue)
-    }
- 
-    /// 指定日付の家事の参照を取得する
-    func houseworkRef(id: String, indexedDate: String) -> DocumentReference {
-        
-        return self.cohabitantRef(id: id)
-            .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate)
-    }
-    
-    /// 指定日付の家事の参照を取得する
-    func dailyHouseworksRef(id: String, indexedDate: String) -> CollectionReference {
-        
-        return self.cohabitantRef(id: id)
-            .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate)
-            .collection(CollectionPath.dailyHouseworks.rawValue)
     }
 }
 

@@ -92,9 +92,9 @@ private extension HouseworkBoardView {
     HouseworkBoardView(
         houseworkBoardList: .init(
             items: [
-                .init(id: "1", title: "洗濯", point: 20, state: .incomplete),
-                .init(id: "2", title: "ゴミ捨て", point: 100, state: .pendingApproval),
-                .init(id: "3", title: "風呂掃除", point: 10, state: .completed)
+                .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
+                .init(id: "2", indexedDate: .now, title: "ゴミ捨て", point: 100, state: .pendingApproval, expiredAt: .now),
+                .init(id: "3", indexedDate: .now, title: "風呂掃除", point: 10, state: .completed, expiredAt: .now)
             ]
         )
     )

@@ -9,20 +9,14 @@ import Foundation
 
 struct DailyHouseworkList: Equatable {
     
-    let indexedDate: Date
-    let metaData: DailyHouseworkMetaData
     let items: [HouseworkItem]
+    let metaData: DailyHouseworkMetaData
     
     static func makeInitialValue(selectedDate: Date, items: [HouseworkItem], calendar: Calendar) -> Self {
         
-        let indexedDate = calendar.startOfDay(for: selectedDate)
-        let metaData = DailyHouseworkMetaData(
-            expiredAt: calendar.date(byAdding: .month, value: 3, to: indexedDate) ?? indexedDate
-        )
         return .init(
-            indexedDate: indexedDate,
-            metaData: metaData,
-            items: items
+            items: items,
+            metaData: .init(selectedDate: selectedDate, calendar: calendar)
         )
     }
     
