@@ -15,6 +15,11 @@ struct HouseworkItem: Identifiable, Equatable {
     let point: Int
     let state: HouseworkState
     let expiredAt: Date
+    
+    var formattedIndexedDate: String {
+        
+        return indexedDate.formatted(Date.FormatStyle.firestoreDateFormatStyle)
+    }
 }
 
 extension HouseworkItem {
@@ -57,7 +62,7 @@ extension HouseworkItem: Codable {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
-        try container.encode(indexedDate.formatted(Date.FormatStyle.firestoreDateFormatStyle), forKey: .indexedDate)
+        try container.encode(formattedIndexedDate, forKey: .indexedDate)
         try container.encode(title, forKey: .title)
         try container.encode(point, forKey: .point)
         try container.encode(state, forKey: .state)

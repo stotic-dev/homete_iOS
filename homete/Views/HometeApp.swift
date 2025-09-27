@@ -75,16 +75,17 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 struct HometeApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @Environment(\.appDependencies) var appDependencies
     
     @State var fcmToken: String?
     
     var body: some Scene {
         WindowGroup {
-            RootView(
-                accountAuthStore: .init(appDependencies: appDependencies),
-                accountStore: .init(appDependencies: appDependencies)
-            )
+            DependenciesInjectLayer {
+                RootView()
+                    .environment(AccountStore(appDependencies: $0))
+                    .environment(AccountAuthStore(appDependencies: $0))
+                    .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+            }
         }
     }
 }

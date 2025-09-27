@@ -20,6 +20,19 @@ struct DailyHouseworkList: Equatable {
         )
     }
     
+    static func makeMultiDateList(items: [HouseworkItem], calendar: Calendar) -> [Self] {
+        
+        Dictionary(grouping: items) { $0.formattedIndexedDate }
+            .compactMap {
+                
+                guard let firstItem = $1.first else { return nil }
+                return .init(
+                    items: $1,
+                    metaData: .init(indexedDate: firstItem.indexedDate, expiredAt: firstItem.expiredAt)
+                )
+            }
+    }
+    
     /// この日付の家事情報がすでに登録済みであること
     var isRegistered: Bool { !items.isEmpty }
     
