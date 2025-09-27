@@ -20,7 +20,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         
         #if DEBUG
-        if isXcodePreview {
+        if !isXcodePreview {
             
             guard let devPlistFilePath = (
                 Bundle.main.url(

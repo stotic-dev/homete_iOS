@@ -38,7 +38,8 @@ extension HouseworkItem: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         let indexedDateString = try container.decode(String.self, forKey: .indexedDate)
-        guard let date = Self.indexedDateFormatter.date(from: indexedDateString) else {
+        
+        guard let date = try? Date.FormatStyle.firestoreDateFormatStyle.parse(indexedDateString) else {
             
             throw DecodingError.dataCorruptedError(
                 forKey: .indexedDate,
@@ -56,7 +57,7 @@ extension HouseworkItem: Codable {
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
-        try container.encode(Self.indexedDateFormatter.string(from: indexedDate), forKey: .indexedDate)
+        try container.encode(indexedDate.formatted(Date.FormatStyle.firestoreDateFormatStyle), forKey: .indexedDate)
         try container.encode(title, forKey: .title)
         try container.encode(point, forKey: .point)
         try container.encode(state, forKey: .state)
@@ -68,12 +69,53 @@ extension HouseworkItem: Codable {
     }
 }
 
-private extension HouseworkItem {
+extension Date.FormatStyle {
     
-    static let indexedDateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.calendar = Calendar.autoupdatingCurrent
-        df.dateFormat = "yyyy-MM-dd"
-        return df
-    }()
+    static let firestoreDateFormatStyle = YearMonthDayDashFormatStyle()
+}
+
+struct YearMonthDayDashFormatStyle: FormatStyle {
+    typealias FormatInput = Date
+    typealias FormatOutput = String
+    
+    private let formatter: DateFormatter
+
+    func format(_ value: Date) -> String {
+        return formatter.string(from: value)
+    }
+}
+
+extension YearMonthDayDashFormatStyle: ParseStrategy {
+    
+    func parse(_ value: String) throws -> Date {
+        if let date = formatter.date(from: value) {
+            return date
+        }
+        throw ParseError()
+    }
+    
+    struct ParseError: Error {}
+}
+
+extension YearMonthDayDashFormatStyle {
+    
+    init() {
+        
+        self.formatter = Self.getFormatter()
+    }
+    
+    init(from decoder: any Decoder) throws {
+        
+        self.formatter = Self.getFormatter()
+    }
+    
+    func encode(to encoder: any Encoder) throws {}
+    
+    private static func getFormatter() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }
 }

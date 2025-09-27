@@ -8,15 +8,29 @@
 import Combine
 import FirebaseFirestore
 
-struct FirestoreListener {
+protocol FirestoreListenerStorerable<Element> {
+    associatedtype Element
+    var continuation: AsyncStream<Element>.Continuation { get }
+    var listener: any ListenerRegistration { get }
+    func remove()
+}
+
+struct FirestoreListener<Element>: FirestoreListenerStorerable {
+    let continuation: AsyncStream<Element>.Continuation
     let listener: any ListenerRegistration
+    
+    func remove() {
+        
+        continuation.finish()
+        listener.remove()
+    }
 }
 
 final actor FirestoreService {
     
     static let shared = FirestoreService()
     private let firestore = Firestore.firestore()
-    private var listeners: [AnyHashable: FirestoreListener] = [:]
+    private var listeners: [String: any FirestoreListenerStorerable] = [:]
     
     func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
         
@@ -36,23 +50,31 @@ final actor FirestoreService {
         try predicate(firestore).setData(from: data, merge: true)
     }
     
-    func addSnapshotListener(id: AnyHashable, predicate: (Firestore) -> Query) -> AnyPublisher<QuerySnapshot, any Error> {
-        
-        let publisher = PassthroughSubject<QuerySnapshot, any Error>()
-        
+    func addSnapshotListener<Output>(
+        id: String,
+        predicate: (Firestore) -> Query
+    ) -> AsyncStream<[Output]> where Output: Decodable {
+        let (stream, continuation) = AsyncStream.makeStream(
+            of: [Output].self,
+            bufferingPolicy: .bufferingNewest(10)
+        )
         let listener = predicate(firestore)
             .addSnapshotListener { snapshots, error in
-                
                 if let error {
-                    
-                    publisher.send(completion: .failure(error))
                     return
                 }
                 guard let snapshots else { return }
-                publisher.send(snapshots)
+                let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
+                continuation.yield(convertedValues)
             }
-        listeners[id] = .init(listener: listener)
-        return publisher.eraseToAnyPublisher()
+        listeners[id] = FirestoreListener(continuation: continuation, listener: listener)
+        return stream
+    }
+    
+    func removeSnapshotListner(id: String) {
+        
+        let listener = listeners[id]
+        listener?.remove()
     }
 }
 
