@@ -12,6 +12,7 @@ import SwiftUI
 final class AppDelegate: NSObject, UIApplicationDelegate {
     
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
+    let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
         
     func application(
         _ application: UIApplication,
@@ -20,7 +21,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         
         #if DEBUG
-        if !isXcodePreview {
+        if !isXcodePreview && !isUnitTestMode {
             
             guard let devPlistFilePath = (
                 Bundle.main.url(
@@ -80,11 +81,15 @@ struct HometeApp: App {
     
     var body: some Scene {
         WindowGroup {
-            DependenciesInjectLayer {
-                RootView()
-                    .environment(AccountStore(appDependencies: $0))
-                    .environment(AccountAuthStore(appDependencies: $0))
-                    .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+            if delegate.isUnitTestMode {
+                EmptyView()
+            } else {
+                DependenciesInjectLayer {
+                    RootView()
+                        .environment(AccountStore(appDependencies: $0))
+                        .environment(AccountAuthStore(appDependencies: $0))
+                        .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+                }
             }
         }
     }

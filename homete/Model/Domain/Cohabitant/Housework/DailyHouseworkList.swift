@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DailyHouseworkList: Equatable {
+struct DailyHouseworkList: Equatable, Sendable {
     
     let items: [HouseworkItem]
     let metaData: DailyHouseworkMetaData

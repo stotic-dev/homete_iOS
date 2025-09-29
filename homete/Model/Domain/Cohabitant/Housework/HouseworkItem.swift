@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct HouseworkItem: Identifiable, Equatable {
+struct HouseworkItem: Identifiable, Equatable, Sendable {
     
     let id: String
     let indexedDate: Date

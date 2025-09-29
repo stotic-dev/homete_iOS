@@ -30,7 +30,8 @@ final class HouseworkListStore {
         let houseworkListStream = await houseworkClient.snapshotListener(
             houseworkObserveKey,
             cohabitantId,
-            currentTime, 3
+            currentTime,
+            3
         )
         for await currentItems in houseworkListStream {
             
