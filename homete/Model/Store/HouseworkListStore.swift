@@ -11,22 +11,27 @@ import SwiftUI
 @Observable
 final class HouseworkListStore {
     
-    var items: [DailyHouseworkList] = []
+    private(set) var items: [DailyHouseworkList]
     
     private let houseworkClient: HouseworkClient
         
     private let houseworkObserveKey = "houseworkObserveKey"
     
-    init(houseworkClient: HouseworkClient) {
+    init(houseworkClient: HouseworkClient, items: [DailyHouseworkList] = []) {
         
         self.houseworkClient = houseworkClient
+        self.items = items
     }
     
     func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
         
         await houseworkClient.removeListener(houseworkObserveKey)
         
-        let houseworkListStream = await houseworkClient.snapshotListener(houseworkObserveKey, cohabitantId, currentTime, 3)
+        let houseworkListStream = await houseworkClient.snapshotListener(
+            houseworkObserveKey,
+            cohabitantId,
+            currentTime, 3
+        )
         for await currentItems in houseworkListStream {
             
             items = DailyHouseworkList.makeMultiDateList(

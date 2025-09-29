@@ -23,7 +23,7 @@ struct AppTabView: View {
                     Tab("ダッシュボード", systemImage: "list.bullet.clipboard.fill", value: .dashboard) {
                         HomeView()
                     }
-                    Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .dashboard) {
+                    Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .homework) {
                         HouseworkBoardView()
                     }
                 }

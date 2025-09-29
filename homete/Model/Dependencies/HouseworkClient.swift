@@ -20,6 +20,22 @@ struct HouseworkClient {
 }
 
 extension HouseworkClient: DependencyClient {
+    
+    init(
+        registerNewItemHandler: @escaping @Sendable (HouseworkItem, String) async throws -> Void = { _, _ in },
+        snapshotListenerHandler: @escaping @Sendable (
+            _ id: String,
+            _ cohabitantId: String,
+            _ anchorDate: Date,
+            _ offset: Int
+        ) async -> AsyncStream<[HouseworkItem]> = { _, _, _, _ in .makeStream().stream },
+        removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in }
+    ) {
+        
+        registerNewItem = registerNewItemHandler
+        snapshotListener = snapshotListenerHandler
+        removeListener = removeListenerHandler
+    }
         
     static let liveValue = HouseworkClient { item, cohabitantId in
         
@@ -31,7 +47,7 @@ extension HouseworkClient: DependencyClient {
         }
     } snapshotListener: { id, cohabitantId, anchorDate, offset in
         
-        let targetDateList = makeSymmetricDateWindow(
+        let targetDateList = calcTargetPeriod(
             anchorDate: anchorDate,
             offsetDays: offset,
             calendar: Calendar.autoupdatingCurrent
@@ -47,13 +63,12 @@ extension HouseworkClient: DependencyClient {
         await FirestoreService.shared.removeSnapshotListner(id: id)
     }
     
-    static let previewValue = HouseworkClient(
-        registerNewItem: { _, _ in },
-        snapshotListener: { _, _, _, _ in .makeStream().stream },
-        removeListener: { _ in }
-    )
+    static let previewValue = HouseworkClient()
+}
+
+private extension HouseworkClient {
     
-    static func makeSymmetricDateWindow(
+    static func calcTargetPeriod(
         anchorDate: Date,
         offsetDays: Int,
         calendar: Calendar
@@ -62,13 +77,13 @@ extension HouseworkClient: DependencyClient {
         let base = calendar.startOfDay(for: anchorDate)
         guard offsetDays >= 0 else {
             
-            return [base.formatted(Date.FormatStyle.firestoreDateFormatStyle)]
+            return [base.formatted(Date.FormatStyle.houseworkDateFormatStyle)]
         }
         // -offset ... +offset の範囲を列挙
         return (-offsetDays...offsetDays).compactMap { delta in
             
             let date = calendar.date(byAdding: .day, value: delta, to: base)
-            return date?.formatted(Date.FormatStyle.firestoreDateFormatStyle)
+            return date?.formatted(Date.FormatStyle.houseworkDateFormatStyle)
         }
     }
 }

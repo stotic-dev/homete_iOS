@@ -18,7 +18,7 @@ struct HouseworkItem: Identifiable, Equatable {
     
     var formattedIndexedDate: String {
         
-        return indexedDate.formatted(Date.FormatStyle.firestoreDateFormatStyle)
+        return indexedDate.formatted(Date.FormatStyle.houseworkDateFormatStyle)
     }
 }
 
@@ -44,7 +44,7 @@ extension HouseworkItem: Codable {
         id = try container.decode(String.self, forKey: .id)
         let indexedDateString = try container.decode(String.self, forKey: .indexedDate)
         
-        guard let date = try? Date.FormatStyle.firestoreDateFormatStyle.parse(indexedDateString) else {
+        guard let date = try? Date.FormatStyle.houseworkDateFormatStyle.parse(indexedDateString) else {
             
             throw DecodingError.dataCorruptedError(
                 forKey: .indexedDate,
@@ -71,56 +71,5 @@ extension HouseworkItem: Codable {
     
     private enum CodingKeys: String, CodingKey {
         case id, indexedDate, title, point, state, expiredAt
-    }
-}
-
-extension Date.FormatStyle {
-    
-    static let firestoreDateFormatStyle = YearMonthDayDashFormatStyle()
-}
-
-struct YearMonthDayDashFormatStyle: FormatStyle {
-    typealias FormatInput = Date
-    typealias FormatOutput = String
-    
-    private let formatter: DateFormatter
-
-    func format(_ value: Date) -> String {
-        return formatter.string(from: value)
-    }
-}
-
-extension YearMonthDayDashFormatStyle: ParseStrategy {
-    
-    func parse(_ value: String) throws -> Date {
-        if let date = formatter.date(from: value) {
-            return date
-        }
-        throw ParseError()
-    }
-    
-    struct ParseError: Error {}
-}
-
-extension YearMonthDayDashFormatStyle {
-    
-    init() {
-        
-        self.formatter = Self.getFormatter()
-    }
-    
-    init(from decoder: any Decoder) throws {
-        
-        self.formatter = Self.getFormatter()
-    }
-    
-    func encode(to encoder: any Encoder) throws {}
-    
-    private static func getFormatter() -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .gregorian)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
     }
 }
