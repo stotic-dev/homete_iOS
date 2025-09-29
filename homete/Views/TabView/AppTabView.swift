@@ -126,4 +126,5 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore(appDependencies: .previewValue))
         .environment(AccountAuthStore(appDependencies: .previewValue))
+        .environment(HouseworkListStore(houseworkClient: .previewValue))
 }
