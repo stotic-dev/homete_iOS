@@ -10,6 +10,7 @@ import SwiftUI
 struct HouseworkBoardView: View {
     
     @Environment(\.calendar) var calendar
+    @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var navigationPath = CustomNavigationPath<HouseworkBoardNavigationPathElement>(path: [])
     @State var selectedHouseworkState = HouseworkState.incomplete
@@ -57,6 +58,15 @@ struct HouseworkBoardView: View {
                 )
             )
         }
+        .onChange(of: houseworkListStore.items) {
+            updateHouseworkBoardList()
+        }
+        .onChange(of: selectedDate) {
+            updateHouseworkBoardList()
+        }
+        .onAppear {
+            updateHouseworkBoardList()
+        }
     }
 }
 
@@ -74,6 +84,17 @@ private extension HouseworkBoardView {
     }
 }
 
+private extension HouseworkBoardView {
+    
+    func updateHouseworkBoardList() {
+        houseworkBoardList = .init(
+            dailyList: houseworkListStore.items,
+            selectedDate: selectedDate,
+            calendar: calendar
+        )
+    }
+}
+
 #Preview {
     HouseworkBoardView(
         houseworkBoardList: .init(
@@ -85,4 +106,5 @@ private extension HouseworkBoardView {
         )
     )
     .apply(theme: .init())
+    .environment(HouseworkListStore(houseworkClient: .previewValue))
 }
