@@ -12,11 +12,12 @@ import Testing
 
 @MainActor
 struct HouseworkListStoreTest {
+    
+    private let inputId = "houseworkObserveKey"
 
     @Test("家事リストのロードを行うと最新の家事リストを常に監視し続ける")
     func loadHouseworkList() async throws {
         
-        let inputId = "houseworkObserveKey"
         let inputCohabitantId = "cohabitantId"
         let now = Date()
         let calendar = Calendar.autoupdatingCurrent
@@ -49,12 +50,12 @@ struct HouseworkListStoreTest {
             }
             
             var inputHouseworkList: [HouseworkItem] = [
-                .init(id: "id1", indexedDate: now, title: "title1", point: 10, state: .incomplete, expiredAt: now)
+                .makeForTest(id: 1, indexedDate: now, expiredAt: now)
             ]
             continuation.yield(inputHouseworkList)
             
             inputHouseworkList.append(
-                .init(id: "id2", indexedDate: now, title: "title2", point: 100, state: .incomplete, expiredAt: now)
+                .makeForTest(id: 2, indexedDate: now, expiredAt: now)
             )
             continuation.yield(inputHouseworkList)
             
@@ -69,6 +70,22 @@ struct HouseworkListStoreTest {
         }
     }
 
+    @Test("家事リストの監視をやめて保持している家事リストのキャッシュも削除する")
+    func clear() async {
+        
+        let store = HouseworkListStore(
+            houseworkClient: .init(removeListenerHandler:  { id in
+                #expect(id == inputId)
+            }),
+            items: [
+                .makeForTest(items: [.makeForTest(id: 1)])
+            ]
+        )
+        
+        await store.clear()
+        
+        #expect(store.items.isEmpty)
+    }
 }
 
 private extension HouseworkListStoreTest {
