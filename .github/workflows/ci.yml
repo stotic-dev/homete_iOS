@@ -31,7 +31,7 @@ env:
 jobs:
   build:
     # 実行環境はmacosに設定
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
       # fetch-depth の計算
@@ -55,10 +55,6 @@ jobs:
       # Xcodeのバージョン出力
       - name: Show Xcode version
         run: xcodebuild -version
-
-      # iOS SDKのインストール
-      - name: Install ios sdk
-        run: xcodebuild -downloadPlatform iOS
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For ProjectTools
@@ -97,7 +93,7 @@ jobs:
           xcodebuild
           -project "${WORKSPACE_DIR}"
           -configuration Debug
-          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16 Pro'
+          -destination 'platform=iOS Simulator,OS=26.0,name=iPhone 16 Pro'
           -scheme "${BUILD_SCHEME}"
           -testPlan "${TEST_PLAN}"
           -skipPackagePluginValidation
