@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 @propertyWrapper
-struct EnvironmentBindableStore<Store: Storable>: DynamicProperty {
+struct EnvironmentBindableStore<Store: Observable & AnyObject>: DynamicProperty {
     
     @Environment(Store.self) private var store
 

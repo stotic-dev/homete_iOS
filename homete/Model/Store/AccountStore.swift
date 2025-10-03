@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class AccountStore: Storable {
+final class AccountStore {
     
     private(set) var account: Account = .empty
     var text: String = ""
