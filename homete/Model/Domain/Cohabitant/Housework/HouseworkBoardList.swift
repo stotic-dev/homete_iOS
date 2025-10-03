@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct HouseworkBoardList {
+struct HouseworkBoardList: Equatable {
     
     private(set) var items: [HouseworkItem]
     
     func items(matching state: HouseworkState) -> [HouseworkItem] {
         
         return items.filter { $0.state == state }
-    }    
+    }
 }
 
 extension HouseworkBoardList {
