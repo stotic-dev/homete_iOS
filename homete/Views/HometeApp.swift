@@ -84,12 +84,7 @@ struct HometeApp: App {
             if delegate.isUnitTestMode {
                 EmptyView()
             } else {
-                DependenciesInjectLayer {
-                    RootView()
-                        .environment(AccountStore(appDependencies: $0))
-                        .environment(AccountAuthStore(appDependencies: $0))
-                        .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
-                }
+                RootView.make()
             }
         }
     }

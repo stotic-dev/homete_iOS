@@ -53,6 +53,18 @@ struct RootView: View {
     }
 }
 
+extension RootView {
+    
+    static func make() -> some View {
+        DependenciesInjectLayer {
+            RootView()
+                .environment(AccountStore(appDependencies: $0))
+                .environment(AccountAuthStore(appDependencies: $0))
+                .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+        }
+    }
+}
+
 // MARK: - プレゼンテーションロジック
 
 private extension RootView {
