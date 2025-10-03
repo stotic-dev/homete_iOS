@@ -74,7 +74,7 @@ struct HouseworkListStoreTest {
     func clear() async {
         
         let store = HouseworkListStore(
-            houseworkClient: .init(removeListenerHandler:  { id in
+            houseworkClient: .init(removeListenerHandler: { id in
                 #expect(id == inputId)
             }),
             items: [
