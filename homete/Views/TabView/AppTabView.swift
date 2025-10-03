@@ -10,6 +10,10 @@ import UserNotifications
 
 struct AppTabView: View {
     
+    @Environment(\.calendar) var calendar
+    @Environment(\.cohabitantId) var cohabitantId
+    @Environment(HouseworkListStore.self) var houseworkListStore
+    
     @State var type: TabType = .dashboard
     
     var body: some View {
@@ -19,7 +23,7 @@ struct AppTabView: View {
                     Tab("ダッシュボード", systemImage: "list.bullet.clipboard.fill", value: .dashboard) {
                         HomeView()
                     }
-                    Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .dashboard) {
+                    Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .homework) {
                         HouseworkBoardView()
                     }
                 }
@@ -42,8 +46,34 @@ struct AppTabView: View {
             }
         }
         .onAppear {
-            requestNotificationPermission()
+           onAppear()
         }
+        .onChange(of: cohabitantId) {
+            Task {
+                await onChangeCohabitantId()
+            }
+        }
+    }
+}
+
+// MARK: プレゼンテーションロジック
+
+private extension AppTabView {
+    
+    func onAppear() {
+        
+        requestNotificationPermission()
+        reloadHouseworkList()
+    }
+    
+    func onChangeCohabitantId() async {
+        
+        guard !cohabitantId.isEmpty else {
+            
+            await houseworkListStore.clear()
+            return
+        }
+        reloadHouseworkList()
     }
 }
 
@@ -71,6 +101,16 @@ private extension AppTabView {
             }
         }
     }
+    
+    func reloadHouseworkList() {
+        Task {
+            await houseworkListStore.loadHouseworkList(
+                currentTime: .now,
+                cohabitantId: cohabitantId,
+                calendar: calendar
+            )
+        }
+    }
 }
 
 extension AppTabView {
@@ -86,4 +126,5 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore(appDependencies: .previewValue))
         .environment(AccountAuthStore(appDependencies: .previewValue))
+        .environment(HouseworkListStore(houseworkClient: .previewValue))
 }

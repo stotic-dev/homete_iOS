@@ -26,23 +26,18 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         // Arrange
         let calendar = Calendar(identifier: .gregorian)
         let selectedDate = Date()
-        let items = [
-            HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete),
-            HouseworkItem(id: "2", title: "皿洗い", point: 1, state: .pendingApproval)
-        ]
-        
         let expectedIndexedDate = calendar.startOfDay(for: selectedDate)
-        let expectedExpiredAt = try #require(calendar.date(byAdding: .month, value: 3, to: expectedIndexedDate))
+        let expectedExpiredAt = try #require(calendar.date(byAdding: .month, value: 1, to: expectedIndexedDate))
+        
         let expectedList = DailyHouseworkList(
-            indexedDate: calendar.startOfDay(for: selectedDate),
-            metaData: .init(expiredAt: expectedExpiredAt),
-            items: items
+            items: [],
+            metaData: .init(indexedDate: expectedIndexedDate, expiredAt: expectedExpiredAt)
         )
         
         // Act
         let list = DailyHouseworkList.makeInitialValue(
             selectedDate: selectedDate,
-            items: items,
+            items: [],
             calendar: calendar
         )
         
@@ -56,7 +51,7 @@ extension DailyHouseworkListTest.IsRegisteredCase {
     @Test(
         "登録されている家事がない場合は、その日付の家事レコードが登録されていない",
         arguments: [
-            [HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete)],
+            [HouseworkItem(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now)],
             []
         ]
     )
@@ -64,9 +59,8 @@ extension DailyHouseworkListTest.IsRegisteredCase {
         
         // Arrange
         let list = DailyHouseworkList(
-            indexedDate: .now,
-            metaData: .init(expiredAt: .now),
-            items: inputItems
+            items: inputItems,
+            metaData: .init(indexedDate: .now, expiredAt: .now)
         )
         
         // Act
@@ -82,22 +76,21 @@ extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
     @Test(
         "同じタイトルの家事が含まれていれば登録済みの家事とみなす",
         arguments: [
-            HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete),
-            HouseworkItem(id: "3", title: "洗濯", point: 1, state: .incomplete),
-            HouseworkItem(id: "1", title: "掃除", point: 1, state: .incomplete)
+            HouseworkItem(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
+            HouseworkItem(id: "3", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
+            HouseworkItem(id: "1", indexedDate: .now, title: "掃除", point: 1, state: .incomplete, expiredAt: .now)
         ]
     )
     func alreadyRegistered_trueWhenSameTitleExists(inputItem: HouseworkItem) {
         
         // Arrange
         let items: [HouseworkItem] = [
-            .init(id: "1", title: "洗濯", point: 1, state: .incomplete),
-            .init(id: "2", title: "ゴミ捨て", point: 1, state: .completed)
+            .init(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
+            .init(id: "2", indexedDate: .now, title: "ゴミ捨て", point: 1, state: .completed, expiredAt: .now)
         ]
         let list = DailyHouseworkList(
-            indexedDate: .now,
-            metaData: .init(expiredAt: .now),
-            items: items
+            items: items,
+            metaData: .init(indexedDate: .now, expiredAt: .now)
         )
         
         // Act

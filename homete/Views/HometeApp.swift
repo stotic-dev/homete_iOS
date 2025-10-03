@@ -10,6 +10,9 @@ import FirebaseMessaging
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    
+    let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
+    let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
         
     func application(
         _ application: UIApplication,
@@ -18,15 +21,18 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         
         #if DEBUG
-        guard let devPlistFilePath = (
-            Bundle.main.url(
-                forResource: "GoogleService-Info-dev",
-                withExtension: "plist"
-            )?
-                .path()
-        ),
-              let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
-        FirebaseApp.configure(options: firebaseOption)
+        if !isXcodePreview && !isUnitTestMode {
+            
+            guard let devPlistFilePath = (
+                Bundle.main.url(
+                    forResource: "GoogleService-Info-dev",
+                    withExtension: "plist"
+                )?
+                    .path()
+            ),
+                  let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
+            FirebaseApp.configure(options: firebaseOption)
+        }
         #else
         FirebaseApp.configure()
         #endif
@@ -70,16 +76,16 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 struct HometeApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @Environment(\.appDependencies) var appDependencies
     
     @State var fcmToken: String?
     
     var body: some Scene {
         WindowGroup {
-            RootView(
-                accountAuthStore: .init(appDependencies: appDependencies),
-                accountStore: .init(appDependencies: appDependencies)
-            )
+            if delegate.isUnitTestMode {
+                EmptyView()
+            } else {
+                RootView.make()
+            }
         }
     }
 }

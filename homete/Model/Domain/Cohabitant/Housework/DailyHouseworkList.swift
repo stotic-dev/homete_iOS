@@ -7,23 +7,30 @@
 
 import Foundation
 
-struct DailyHouseworkList: Equatable {
+struct DailyHouseworkList: Equatable, Sendable {
     
-    let indexedDate: Date
-    let metaData: DailyHouseworkMetaData
     let items: [HouseworkItem]
+    let metaData: DailyHouseworkMetaData
     
     static func makeInitialValue(selectedDate: Date, items: [HouseworkItem], calendar: Calendar) -> Self {
         
-        let indexedDate = calendar.startOfDay(for: selectedDate)
-        let metaData = DailyHouseworkMetaData(
-            expiredAt: calendar.date(byAdding: .month, value: 3, to: indexedDate) ?? indexedDate
-        )
         return .init(
-            indexedDate: indexedDate,
-            metaData: metaData,
-            items: items
+            items: items,
+            metaData: .init(selectedDate: selectedDate, calendar: calendar)
         )
+    }
+    
+    static func makeMultiDateList(items: [HouseworkItem], calendar: Calendar) -> [Self] {
+        
+        Dictionary(grouping: items) { $0.formattedIndexedDate }
+            .compactMap {
+                
+                guard let firstItem = $1.first else { return nil }
+                return .init(
+                    items: $1,
+                    metaData: .init(indexedDate: firstItem.indexedDate, expiredAt: firstItem.expiredAt)
+                )
+            }
     }
     
     /// この日付の家事情報がすでに登録済みであること

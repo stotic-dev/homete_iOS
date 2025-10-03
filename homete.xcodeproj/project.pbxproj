@@ -248,7 +248,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"$ENABLE_PREVIEWS\" = \"NO\" ]; then\n    echo \"run format\"\nelse\n    echo \"skip format\"\nfi\n\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
 		};
 		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
