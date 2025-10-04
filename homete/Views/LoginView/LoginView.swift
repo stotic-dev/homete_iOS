@@ -72,11 +72,17 @@ private extension LoginView {
     }
 }
 
-#Preview {
-    NavigationStack {
-        LoginView()
-            .navigationTitle("Homete")
-            .navigationBarTitleDisplayMode(.inline)
-            .environment(AccountAuthStore(appDependencies: .previewValue))
+struct PreviewLoginView: View {
+    var body: some View {
+        NavigationStack {
+            LoginView()
+                .navigationTitle("Homete")
+                .navigationBarTitleDisplayMode(.inline)
+                .environment(AccountAuthStore(appDependencies: .previewValue))
+        }
     }
+}
+
+#Preview {
+    PreviewLoginView()
 }

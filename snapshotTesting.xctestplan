@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "F090C943-0151-4C72-AEC1-5B5BBFD21480",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-AppleLanguages (ja)"
+      },
+      {
+        "argument" : "isUnitTestMode"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:homete.xcodeproj",
+      "identifier" : "BCC853F42DB74BBC00C9A44B",
+      "name" : "homete"
+    },
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:homete.xcodeproj",
+        "identifier" : "BC1BB2672E909B8C001D168F",
+        "name" : "hometeSnapshotTests"
+      }
+    }
+  ],
+  "version" : 1
+}
