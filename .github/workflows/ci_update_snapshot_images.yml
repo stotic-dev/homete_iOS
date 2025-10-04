@@ -59,6 +59,22 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      # Snapshotのキャッシュを復元
+      - name: Restore snapshot
+        uses: actions/cache/restore@v4
+        with:
+          path: hometeSnapshotTests/__Snapshots__/
+          key: v1-snapshot-images-${{ steps.get_commit.outputs.commit_sha }}
+
+      - name: Check if snapshot folder exists
+        id: check_snapshots
+        run: |
+          if [ -d "hometeSnapshotTests/__Snapshots__/" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For Project
         uses: actions/cache@v4.2.2
@@ -68,6 +84,7 @@ jobs:
           restore-keys: v1-dev-${{ runner.os }}-spm-
 
       - name: Xcode Resolve Package Dependencies
+        if: steps.check_snapshots.outputs.exists == 'false'
         run: set -o pipefail &&
           xcodebuild
           -project "${WORKSPACE_DIR}"
@@ -81,6 +98,7 @@ jobs:
 
       # Snapshotの生成
       - name: Generate snapshot
+        if: steps.check_snapshots.outputs.exists == 'false'
         run: xcodebuild
           -project "${WORKSPACE_DIR}"
           -configuration Debug
@@ -93,6 +111,7 @@ jobs:
 
       # Snapshotのキャッシュを保存
       - name: Cache snapshot
+        if: steps.check_snapshots.outputs.exists == 'false'
         uses: actions/cache/save@v4
         with:
           path: hometeSnapshotTests/__Snapshots__/
