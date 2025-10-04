@@ -34,7 +34,7 @@
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:homete-snapshot-testing.xctestplan">
+            reference = "container:../homete-snapshot-testing.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
@@ -93,6 +93,12 @@
             ReferencedContainer = "container:homete.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-AppleLanguages (ja)"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

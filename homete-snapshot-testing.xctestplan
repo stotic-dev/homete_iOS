@@ -24,6 +24,9 @@
     "commandLineArgumentEntries" : [
       {
         "argument" : "isUnitTestMode"
+      },
+      {
+        "argument" : "-AppleLanguages (ja)"
       }
     ],
     "environmentVariableEntries" : [

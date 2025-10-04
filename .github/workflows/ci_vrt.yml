@@ -114,5 +114,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: snapshot-comparison-result
-          path: Build/VRT/report.html
+          path: Build/VRT
           retention-days: 1
