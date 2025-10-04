@@ -11,7 +11,7 @@ import Testing
 
 @testable import homete
 
-@Suite(.snapshots(record: .failed))
+@Suite(.snapshots(record: .missing))
 @MainActor
 struct HometeViewsSnapshotTests {
     

@@ -22,7 +22,7 @@ env:
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
-  TEST_OUTPUT_PATH: Build/test.xcresult
+  SNAPSHOT_PATH: hometeSnapshotTests/__Snapshots__/hometeSnapshotTests
 
 jobs:
   build:
@@ -63,42 +63,22 @@ jobs:
       - name: Decode Firebase Api Key
         run: echo "${{ secrets.DEV_FIREBASE_API_KEY_BASE64 }}" | base64 --decode > homete/GoogleService-Info-dev.plist
 
-      - name: Xcode Resolve Package Dependencies
-        run: set -o pipefail &&
-          xcodebuild
-          -project "${WORKSPACE_DIR}"
-          -scheme "${BUILD_SCHEME}"
-          -configuration Debug
-          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
-          -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
-          -resolvePackageDependencies
-
       # Snapshotの生成
       - name: Generate snapshot
-        run: xcodebuild
-          -project "${WORKSPACE_DIR}"
-          -configuration Debug
-          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16 Pro'
-          -scheme "${BUILD_SCHEME}"
-          -testPlan "${TEST_PLAN}"
-          -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
-          clean test |
-          xcbeautify --renderer github-actions
+        run: scripts/generate_snapshot.sh
 
       - name: copy current snapshot test results
         run: |
           mkdir -p Build/VRT/current
-          cp -pr hometeSnapshotTests/__Snapshots__/hometeSnapshotTests/* Build/VRT/current
+          cp -pr ${SNAPSHOT_PATH}/* Build/VRT/current
 
       - name: copy base snapshot test results
         run: |
           git checkout hometeSnapshotTests/__Snapshots__/
           git switch main
           mkdir -p Build/VRT/base
-          if [ -d hometeSnapshotTests/__Snapshots__/hometeSnapshotTests ]; then
-            cp -pr hometeSnapshotTests/__Snapshots__/hometeSnapshotTests/* Build/VRT/base
+          if [ -d ${SNAPSHOT_PATH} ]; then
+            cp -pr ${SNAPSHOT_PATH}/* Build/VRT/base
           fi
 
       # VRTの差分を比較
