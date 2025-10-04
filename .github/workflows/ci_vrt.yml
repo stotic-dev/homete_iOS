@@ -18,7 +18,7 @@ env:
   DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
-  TEST_PLAN: homete-snapshot-testing
+  TEST_PLAN: snapshotTesting
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved

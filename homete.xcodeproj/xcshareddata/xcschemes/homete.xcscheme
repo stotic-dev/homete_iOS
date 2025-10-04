@@ -34,7 +34,7 @@
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:../homete-snapshot-testing.xctestplan">
+            reference = "container:snapshotTesting.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>

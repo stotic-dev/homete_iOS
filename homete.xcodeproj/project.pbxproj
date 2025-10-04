@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
+		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
 		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
@@ -34,7 +35,7 @@
 
 /* Begin PBXFileReference section */
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BC1BB45E2E90BF6B001D168F /* homete-snapshot-testing.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "homete-snapshot-testing.xctestplan"; sourceTree = "<group>"; };
+		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
 		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,7 +113,7 @@
 		BCC853EC2DB74BBC00C9A44B = {
 			isa = PBXGroup;
 			children = (
-				BC1BB45E2E90BF6B001D168F /* homete-snapshot-testing.xctestplan */,
+				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
 				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
@@ -275,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */,
+				BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
