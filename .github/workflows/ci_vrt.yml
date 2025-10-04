@@ -96,10 +96,11 @@ jobs:
       - name: copy base snapshot test results
         run: |
           git checkout hometeSnapshotTests/__Snapshots__/
-          git fetch origin main
           git switch main
           mkdir -p Build/VRT/base
-          cp -pr hometeSnapshotTests/__Snapshots__/hometeSnapshotTests/* Build/VRT/base
+          if [ -d hometeSnapshotTests/__Snapshots__/hometeSnapshotTests ]; then
+            cp -pr hometeSnapshotTests/__Snapshots__/hometeSnapshotTests/* Build/VRT/base
+          fi
 
       # VRTの差分を比較
       - name: compare snapshot images
