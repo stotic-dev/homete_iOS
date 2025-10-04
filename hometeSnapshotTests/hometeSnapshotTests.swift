@@ -22,8 +22,7 @@ struct HometeViewsSnapshotTests {
                 .image(on: .iPhoneSe),
                 .image(on: .iPhone13),
                 .image(on: .iPhone13ProMax)
-            ],
-            record: true
+            ]
         )
     }
 }
