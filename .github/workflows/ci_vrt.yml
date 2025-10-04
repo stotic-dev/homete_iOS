@@ -107,7 +107,7 @@ jobs:
         working-directory: Build/VRT
         run: |
           mkdir -p Build/VRT/diff
-          eg-cli current base diff -R report.html
+          reg-cli current base diff -R report.html
 
       - name: Upload snapshot comparison result
         if: always()
@@ -121,5 +121,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-result
-          path: Build/test.xcresult
+          path: Build/VRT/current
           retention-days: 1

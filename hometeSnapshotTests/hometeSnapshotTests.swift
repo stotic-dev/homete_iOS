@@ -17,6 +17,7 @@ struct HometeViewsSnapshotTests {
     
     @Test func loginView() {
         let loginView = UIHostingController(rootView: PreviewLoginView())
+        
         assertSnapshots(
             of: loginView,
             as: [

@@ -14,6 +14,12 @@
         "argument" : "isUnitTestMode"
       }
     ],
+    "environmentVariableEntries" : [
+      {
+        "key" : "SNAPSHOT_ARTIFACTS",
+        "value" : "$(SOURCE_ROOT)\/$(PROJECT_NAME)Tests\/__Snapshots__\/Failure"
+      }
+    ],
     "language" : "ja",
     "locationScenario" : {
       "identifier" : "Tokyo, Japan",
