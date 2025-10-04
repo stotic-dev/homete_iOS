@@ -83,6 +83,9 @@ jobs:
           key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
           restore-keys: v1-dev-${{ runner.os }}-spm-
 
+      - name: Decode Firebase Api Key
+        run: echo "${{ secrets.DEV_FIREBASE_API_KEY_BASE64 }}" | base64 --decode > homete/GoogleService-Info-dev.plist
+
       - name: Xcode Resolve Package Dependencies
         if: steps.check_snapshots.outputs.exists == 'false'
         run: set -o pipefail &&
