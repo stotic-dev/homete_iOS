@@ -17,7 +17,7 @@ env:
   # チェックアウト
   DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
-  BUILD_SCHEME: homete
+  BUILD_SCHEME: hometeSnapshotTests
   TEST_PLAN: homete-snapshot-testing
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
@@ -114,12 +114,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: snapshot-comparison-result
-          path: Build/VRT/diff/report.html
-
-      - name: Upload test result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-result
-          path: Build/VRT/current
+          path: Build/VRT/report.html
           retention-days: 1
