@@ -4,7 +4,19 @@
       "id" : "EA78D823-5787-4FCB-A449-0C957A2371F0",
       "name" : "Configuration 1",
       "options" : {
-
+        "commandLineArgumentEntries" : [
+          {
+            "argument" : "isUnitTestMode"
+          },
+          {
+            "argument" : "-AppleLanguages (ja)"
+          }
+        ],
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:homete.xcodeproj",
+          "identifier" : "BC1BB2672E909B8C001D168F",
+          "name" : "hometeSnapshotTests"
+        }
       }
     }
   ],
