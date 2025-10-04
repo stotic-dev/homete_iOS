@@ -13,7 +13,13 @@
       {
         "argument" : "isUnitTestMode"
       }
-    ]
+    ],
+    "language" : "ja",
+    "locationScenario" : {
+      "identifier" : "Tokyo, Japan",
+      "referenceType" : "built-in"
+    },
+    "region" : "JP"
   },
   "testTargets" : [
     {
