@@ -109,6 +109,8 @@ jobs:
           clean test |
           xcbeautify --renderer github-actions
 
+      - run: ls -la hometeSnapshotTests/__Snapshots__/hometeSnapshotTests
+
       # Snapshotのキャッシュを保存
       - name: Cache snapshot
         if: steps.check_snapshots.outputs.exists == 'false'
