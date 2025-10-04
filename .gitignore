@@ -73,6 +73,9 @@ GoogleService-Info.plist
 GoogleService-Info-dev.plist
 .env
 
+# snapshot test
+hometeSnapshotTests/__Snapshots__/*
+
 # other
 
 Build/

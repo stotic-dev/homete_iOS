@@ -33,6 +33,9 @@
             reference = "container:homete.xctestplan"
             default = "YES">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:../homete-snapshot-testing.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference
@@ -54,6 +57,17 @@
                BlueprintIdentifier = "BCC8540B2DB74BBF00C9A44B"
                BuildableName = "hometeUITests.xctest"
                BlueprintName = "hometeUITests"
+               ReferencedContainer = "container:homete.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BC1BB2672E909B8C001D168F"
+               BuildableName = "hometeSnapshotTests.xctest"
+               BlueprintName = "hometeSnapshotTests"
                ReferencedContainer = "container:homete.xcodeproj">
             </BuildableReference>
          </TestableReference>

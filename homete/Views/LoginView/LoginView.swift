@@ -72,6 +72,7 @@ private extension LoginView {
     }
 }
 
+<<<<<<< Updated upstream
 #Preview {
     NavigationStack {
         LoginView()
@@ -79,4 +80,16 @@ private extension LoginView {
             .navigationBarTitleDisplayMode(.inline)
             .environment(AccountAuthStore(appDependencies: .previewValue))
     }
+=======
+struct PreviewLoginView: View {
+    var body: some View {
+        LoginView()
+            .navigationBarTitleDisplayMode(.inline)
+            .environment(AccountAuthStore(appDependencies: .previewValue))
+    }
+}
+
+#Preview {
+    PreviewLoginView()
+>>>>>>> Stashed changes
 }
