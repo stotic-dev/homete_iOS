@@ -60,13 +60,6 @@ jobs:
           key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
           restore-keys: v1-dev-${{ runner.os }}-spm-
 
-      # Snapshotのキャッシュ
-      - name: Cache snapshot
-        uses: actions/cache@v4
-        with:
-          path: hometeSnapshotTests/__Snapshots__/
-          key: v1-snapshot-images
-
       - name: Xcode Resolve Package Dependencies
         run: set -o pipefail &&
           xcodebuild
@@ -90,3 +83,10 @@ jobs:
           -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           clean test |
           xcbeautify --renderer github-actions
+
+      # Snapshotのキャッシュを保存
+      - name: Cache snapshot
+        uses: actions/cache/save@v4
+        with:
+          path: hometeSnapshotTests/__Snapshots__/
+          key: v1-snapshot-images
