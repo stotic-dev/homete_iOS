@@ -37,7 +37,12 @@
       "identifier" : "Tokyo, Japan",
       "referenceType" : "built-in"
     },
-    "region" : "JP"
+    "region" : "JP",
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:homete.xcodeproj",
+      "identifier" : "BCC853F42DB74BBC00C9A44B",
+      "name" : "homete"
+    }
   },
   "testTargets" : [
     {
