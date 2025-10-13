@@ -58,5 +58,6 @@ struct SettingView: View {
     NavigationStack {
         SettingView()
             .environment(AccountAuthStore(appDependencies: .previewValue))
+            .environment(AccountStore(appDependencies: .previewValue))
     }
 }

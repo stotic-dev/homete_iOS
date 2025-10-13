@@ -58,8 +58,3 @@ private extension ConfettiRainView {
         }
     }
 }
-
-#Preview("ConfettiRain") {
-    ConfettiRainView()
-        .ignoresSafeArea()
-}

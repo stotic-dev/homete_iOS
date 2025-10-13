@@ -66,7 +66,7 @@ private extension SignInUpWithAppleButton {
     }
 }
 
-#Preview("light scheme") {
+#Preview("SignInUpWithAppleButton_light scheme") {
     SignInUpWithAppleButton { _ in }
         .frame(height: 48)
         .padding()
@@ -74,7 +74,7 @@ private extension SignInUpWithAppleButton {
         .environment(\.appDependencies, .previewValue)
 }
 
-#Preview("dark scheme") {
+#Preview("SignInUpWithAppleButton_dark scheme") {
     SignInUpWithAppleButton { _ in }
         .frame(height: 48)
         .padding()

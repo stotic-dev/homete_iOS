@@ -32,28 +32,16 @@ struct HomeView: View {
     }
 }
 
-#Preview("未登録時") {
-    var userDefaults: UserDefaults {
-        // swiftlint:disable:next force_unwrapping
-        let userDefaults = UserDefaults(suiteName: "preview")!
-        userDefaults.removeObject(forKey: AppStorageStringKey.cohabitantId.rawValue)
-        return userDefaults
-    }
+#Preview("HomeView_未登録時") {
     NavigationStack {
         HomeView()
-            .defaultAppStorage(userDefaults)
+            .injectAppStorageWithPreview("HomeView_未登録時")
     }
 }
 
-#Preview("登録時") {
-    var userDefaults: UserDefaults {
-        // swiftlint:disable:next force_unwrapping
-        let userDefaults = UserDefaults(suiteName: "preview")!
-        userDefaults.set("test", forKey: AppStorageStringKey.cohabitantId.rawValue)
-        return userDefaults
-    }
+#Preview("HomeView_登録時") {
     NavigationStack {
         HomeView()
-            .defaultAppStorage(userDefaults)
+            .injectAppStorageWithPreview("HomeView_登録時")
     }
 }

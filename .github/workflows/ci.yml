@@ -22,7 +22,7 @@ env:
   DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
-  TEST_PLAN: homete
+  TEST_PLAN: CI
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
@@ -97,12 +97,10 @@ jobs:
           xcodebuild
           -project "${WORKSPACE_DIR}"
           -configuration Debug
-          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16 Pro'
+          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16'
           -scheme "${BUILD_SCHEME}"
           -testPlan "${TEST_PLAN}"
           -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
           -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           -resultBundlePath "${TEST_OUTPUT_PATH}"
           clean test |
