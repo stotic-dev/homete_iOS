@@ -27,12 +27,12 @@ extension View {
     }
 }
 
-#Preview("Enabled") {
+#Preview("SubPrimaryButtonStyle_Enabled") {
     Button("Button") {}
         .subPrimaryButtonStyle()
 }
 
-#Preview("Disabled") {
+#Preview("SubPrimaryButtonStyle_Disabled") {
     Button("Button") {}
         .subPrimaryButtonStyle(isDisabled: true)
 }

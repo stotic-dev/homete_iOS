@@ -10,6 +10,7 @@
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
+		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
 		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
@@ -78,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */,
 				BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +150,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */,
 				BC1BB26D2E909B8C001D168F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -156,6 +159,7 @@
 			name = hometeSnapshotTests;
 			packageProductDependencies = (
 				BC1BB2712E909B99001D168F /* SnapshotTesting */,
+				BC4701FA2E9A0F3D006CC530 /* Prefire */,
 			);
 			productName = hometeSnapshotTests;
 			productReference = BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */;
@@ -250,6 +254,7 @@
 			packageReferences = (
 				BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
@@ -383,6 +388,10 @@
 			isa = PBXTargetDependency;
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
 			targetProxy = BC1BB26C2E909B8C001D168F /* PBXContainerItemProxy */;
+		};
+		BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */;
 		};
 		BCC854042DB74BBF00C9A44B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -765,6 +774,14 @@
 				version = 1.18.7;
 			};
 		};
+		BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BarredEwe/Prefire.git";
+			requirement = {
+				kind = exactVersion;
+				version = 5.1.0;
+			};
+		};
 		BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -785,6 +802,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
+		};
+		BC4701FA2E9A0F3D006CC530 /* Prefire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
+			productName = Prefire;
+		};
+		BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
+			productName = "plugin:PrefireTestsPlugin";
 		};
 		BC47E6A52E47240F00308562 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
