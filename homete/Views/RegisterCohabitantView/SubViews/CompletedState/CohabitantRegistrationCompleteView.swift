@@ -49,7 +49,3 @@ struct CohabitantRegistrationCompleteView: View {
         .automaticToolbarVisibility(visibility: .hidden, for: .navigationBar)
     }
 }
-
-#Preview {
-    CohabitantRegistrationCompleteView()
-}

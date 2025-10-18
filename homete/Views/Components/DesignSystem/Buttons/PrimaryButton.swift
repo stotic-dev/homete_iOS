@@ -32,12 +32,12 @@ extension View {
     }
 }
 
-#Preview("Enabled") {
+#Preview("PrimaryButtonStyle_Enabled") {
     Button("Button") {}
         .primaryButtonStyle()
 }
 
-#Preview("Disabled") {
+#Preview("PrimaryButtonStyle_Disabled") {
     Button("Button") {}
         .primaryButtonStyle(isDisabled: true)
 }

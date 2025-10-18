@@ -74,6 +74,5 @@ private extension LoginView {
 
 #Preview {
     LoginView()
-        .navigationBarTitleDisplayMode(.inline)
         .environment(AccountAuthStore(appDependencies: .previewValue))
 }
