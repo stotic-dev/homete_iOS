@@ -1,0 +1,17 @@
+test_configuration:
+  target: homete
+  test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
+  simulator_device: "iPhone17,3"
+  required_os: 18
+  preview_default_enabled: true
+  use_grouped_snapshots: true
+  sources:
+    - ${PROJECT_DIR}/homete/Views
+  snapshot_devices:
+    - iPhone 16 Pro Max
+    - iPhone 16
+    - iPhone SE (2nd generation)
+  imports:
+    - UIKit
+    - SwiftUI
+    - MultipeerConnectivity

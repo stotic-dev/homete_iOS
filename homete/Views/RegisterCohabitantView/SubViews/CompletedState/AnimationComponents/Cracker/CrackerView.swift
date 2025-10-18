@@ -153,9 +153,3 @@ private extension CrackerView {
         var scale = 1.0
     }
 }
-
-#Preview {
-    CrackerView {
-        print("finish")
-    }
-}
