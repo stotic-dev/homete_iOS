@@ -6,10 +6,11 @@
 //
 
 import FirebaseCore
+import FirebaseMessaging
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
-    
+        
     func application(
         _ application: UIApplication,
         // swiftlint:disable:next discouraged_optional_collection
@@ -30,14 +31,48 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         FirebaseApp.configure()
         #endif
         
+        UNUserNotificationCenter.current().delegate = self
+        Messaging.messaging().delegate = self
+        
         return true
+    }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        
+        guard Messaging.messaging().apnsToken != deviceToken else { return }
+        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+    }
+}
+
+extension AppDelegate: MessagingDelegate {
+    
+    nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        
+        print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
+        DispatchQueue.main.async {
+            
+            NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
+        }
+    }
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification
+    ) async -> UNNotificationPresentationOptions {
+        return [.sound]
     }
 }
 
 @main
 struct HometeApp: App {
+    
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @Environment(\.appDependencies) var appDependencies
+    
+    @State var fcmToken: String?
     
     var body: some Scene {
         WindowGroup {

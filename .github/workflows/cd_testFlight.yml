@@ -8,7 +8,7 @@ on:
 
 env:
   # チェックアウト
-  DEVELOPER_DIR: /Applications/Xcode_16.4.app
+  DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
   TEST_FLIGHT_EXPORT_OPTION_PATH: deploy/config/ExportOptions_TestFlight.plist
@@ -46,6 +46,10 @@ jobs:
       # Xcodeのバージョン出力
       - name: Show Xcode version
         run: xcodebuild -version
+
+      # iOS SDKのインストール
+      - name: Install ios sdk
+        run: xcodebuild -downloadPlatform iOS
 
       # ASC_API_KEYのファイルを生成
       - name: Setup api key

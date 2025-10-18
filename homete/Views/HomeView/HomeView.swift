@@ -8,24 +8,36 @@
 import SwiftUI
 
 struct HomeView: View {
-    
-    @Environment(\.rootNavigationPath) var rootNavigationPath
-    
+        
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
+    @State var navigationPath = CustomNavigationPath<HomeNavigationPathElement>(path: [])
+    @State var isShowCohabitantRegistrationModal = false
+    
     var body: some View {
-        ZStack {
-            if cohabitantId.isEmpty {
-                NotRegisteredContent()
+        NavigationStack(path: $navigationPath.path) {
+            ZStack {
+                if cohabitantId.isEmpty {
+                    NotRegisteredContent(
+                        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                    )
+                }
+                else {
+                    RegisteredContent()
+                }
             }
-            else {
-                RegisteredContent()
+            .environment(\.homeNavigationPath, navigationPath)
+            .navigationDestination(for: HomeNavigationPathElement.self) { element in
+                element.destination()
             }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationBarButton(label: .settings) {
-                    rootNavigationPath.showSettingView()
+            .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
+                CohabitantRegistrationView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationBarButton(label: .settings) {
+                        navigationPath.push(.settings)
+                    }
                 }
             }
         }

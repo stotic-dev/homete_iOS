@@ -39,6 +39,22 @@ enum AppStorageStringKey: String {
     case cohabitantId
 }
 
+// MARK: - カスタムオブジェクト用の拡張
+
+extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {
+    
+    init(wrappedValue: Value, key: AppStorageCustomTypeKey) {
+        
+        self.init(wrappedValue: wrappedValue, key.rawValue)
+    }
+}
+
+enum AppStorageCustomTypeKey: String {
+    
+    /// 家事入力の履歴
+    case houseworkEntryHistoryList
+}
+
 // MARK: - Preview用のDIヘルパー
 
 struct InjectAppStorageWithPreviewModifier: ViewModifier {

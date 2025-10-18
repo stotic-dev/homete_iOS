@@ -76,7 +76,7 @@ platform :ios do
     )
   end
 
-  desc "指定されたipaでTestFlight配信を行う"
+  desc "開発用のプロビジョニングプロファイルを更新"
   lane :update_profile do |options|
     api_key = generate_api_key
     match(
