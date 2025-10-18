@@ -209,21 +209,7 @@ private extension RegisterHouseworkView {
     }
 }
 
-#Preview {
-    var userDefaults: UserDefaults {
-        // swiftlint:disable:next force_unwrapping
-        let userDefaults = UserDefaults(suiteName: "preview")!
-        let data = HouseworkHistoryList(items: [
-            "洗濯",
-            "洗い物",
-            "掃除"
-        ])
-        userDefaults.set(
-            data.rawValue,
-            forKey: AppStorageCustomTypeKey.houseworkEntryHistoryList.rawValue
-        )
-        return userDefaults
-    }
+#Preview("RegisterHouseworkView") {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
             indexedDate: .now,
@@ -231,10 +217,10 @@ private extension RegisterHouseworkView {
             items: []
         )
     )
-    .defaultAppStorage(userDefaults)
+    .injectAppStorageWithPreview("RegisterHouseworkView")
 }
 
-#Preview("重複アラート表示") {
+#Preview("RegisterHouseworkView_重複アラート表示") {
     RegisterHouseworkView(
         houseworkTitle: "洗濯",
         isPresentingDuplicationAlert: true,
@@ -246,7 +232,7 @@ private extension RegisterHouseworkView {
     )
 }
 
-#Preview("通信中") {
+#Preview("RegisterHouseworkView_通信中") {
     RegisterHouseworkView(
         isLoading: true,
         dailyHouseworkList: .init(
