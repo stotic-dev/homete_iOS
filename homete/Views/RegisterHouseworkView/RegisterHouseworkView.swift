@@ -234,7 +234,12 @@ private extension RegisterHouseworkView {
             items: []
         )
     )
-    .injectAppStorageWithPreview("RegisterHouseworkView")
+    .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
+        let historyList = HouseworkHistoryList(items: [
+            "洗濯", "掃除"
+        ])
+        userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
+    }
 }
 
 #Preview("RegisterHouseworkView_重複アラート表示") {
