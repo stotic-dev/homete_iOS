@@ -18,7 +18,8 @@ struct HouseworkBoardListContent: View {
                 Button {
                     // TODO: 承認依頼を行う
                 } label: {
-                    HStack {
+                    HStack(spacing: DesignSystem.Space.space16) {
+                        pointLabel(item.point)
                         Text(item.title)
                             .font(with: .body)
                         Spacer()
@@ -32,4 +33,32 @@ struct HouseworkBoardListContent: View {
         }
         .listStyle(.plain)
     }
+}
+
+private extension HouseworkBoardListContent {
+    
+    func pointLabel(_ point: Int) -> some View {
+        Text(point.formatted())
+            .font(with: .headLineM)
+            .foregroundStyle(.commonWhite)
+            .padding(DesignSystem.Space.space8)
+            .frame(minWidth: 45)
+            .background {
+                GeometryReader {
+                    RoundedRectangle(cornerRadius: $0.size.height / 2)
+                        .fill(.primary2)
+                }
+            }
+    }
+}
+
+#Preview {
+    HouseworkBoardListContent(
+        selectedHouseworkState: .incomplete,
+        houseworkBoardList: .constant(.init(items: [
+            .init(id: "1", title: "洗濯", point: 20, state: .incomplete),
+            .init(id: "2", title: "掃除", point: 100, state: .incomplete),
+            .init(id: "3", title: "料理", point: 1, state: .incomplete)
+        ]))
+    )
 }

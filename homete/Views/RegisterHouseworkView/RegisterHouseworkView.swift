@@ -15,6 +15,7 @@ struct RegisterHouseworkView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var houseworkTitle = ""
+    @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
     @State var isPresentingCommonErrorAlert = false
     @State var domainError: DomainError?
@@ -34,25 +35,12 @@ struct RegisterHouseworkView: View {
                 Text("家事を追加")
                     .font(with: .headLineL)
                 inputTextField()
+                inputPointSlider()
                 entryHistoryContent()
                     .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
                 Spacer()
             }
             .padding(.horizontal, DesignSystem.Space.space16)
-            Button {
-                Task {
-                    await tappedRegisterButton()
-                }
-            } label: {
-                Text("登録する")
-                    .font(with: .headLineM)
-            }
-            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding([.trailing, .bottom], DesignSystem.Space.space24)
-            LoadingIndicator()
-                .ignoresSafeArea()
-                .opacity(isLoading ? 1 : 0)
             if isShowingKeyboard {
                 Color.clear
                     .ignoresSafeArea()
@@ -61,6 +49,18 @@ struct RegisterHouseworkView: View {
                         isShowingKeyboard = false
                     }
             }
+            Button("登録する") {
+                Task {
+                    await tappedRegisterButton()
+                }
+            }
+            .font(with: .headLineM)
+            .floatingButtonStyle(isDisable: houseworkTitle.isEmpty)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .padding([.trailing, .bottom], DesignSystem.Space.space24)
+            LoadingIndicator()
+                .ignoresSafeArea()
+                .opacity(isLoading ? 1 : 0)
         }
         .commonError(isPresented: $isPresentingCommonErrorAlert, error: $domainError)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
@@ -81,15 +81,20 @@ private extension RegisterHouseworkView {
     
     func inputTextField() -> some View {
         ZStack {
-            TextField("家事の名前を入力", text: $houseworkTitle)
-                .focused($isShowingKeyboard)
-                .foregroundStyle(.primary2)
-                .padding()
-                .font(with: .body)
-                .background {
-                    RoundedRectangle(radius: .radius8)
-                        .foregroundStyle(.primary3)
-                }
+            TextField(
+                "",
+                text: $houseworkTitle,
+                prompt: Text("家事の名前を入力")
+                    .foregroundStyle(.primary2.opacity(0.7))
+            )
+            .focused($isShowingKeyboard)
+            .foregroundStyle(.primary2)
+            .padding()
+            .font(with: .body)
+            .background {
+                RoundedRectangle(radius: .radius8)
+                    .foregroundStyle(.primary3)
+            }
             Button {
                 tappedClearTextFiledButton()
             } label: {
@@ -100,6 +105,17 @@ private extension RegisterHouseworkView {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.trailing, DesignSystem.Space.space8)
             .opacity(houseworkTitle.isEmpty ? 0 : 1)
+        }
+    }
+    
+    func inputPointSlider() -> some View {
+        VStack(spacing: DesignSystem.Space.space8) {
+            Text("完了ポイント")
+                .font(with: .headLineM)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(Int(completePoint).formatted())
+                .font(with: .headLineL)
+            Slider(value: $completePoint, in: 1...100, step: Double.Stride(1))
         }
     }
     
@@ -156,6 +172,7 @@ private extension RegisterHouseworkView {
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
+            point: Int(completePoint),
             state: .incomplete
         )
         
@@ -217,7 +234,12 @@ private extension RegisterHouseworkView {
             items: []
         )
     )
-    .injectAppStorageWithPreview("RegisterHouseworkView")
+    .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
+        let historyList = HouseworkHistoryList(items: [
+            "洗濯", "掃除"
+        ])
+        userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
+    }
 }
 
 #Preview("RegisterHouseworkView_重複アラート表示") {
