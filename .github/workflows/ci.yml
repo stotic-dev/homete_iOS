@@ -32,6 +32,8 @@ jobs:
   build:
     # 実行環境はmacosに設定
     runs-on: macos-26
+    env:
+      SNAPSHOT_ARTIFACTS: Build/SnapshotsFailures
 
     steps:
       # チェックアウト(リポジトリからソースコードを取得)
@@ -124,6 +126,14 @@ jobs:
         working-directory: ProjectTools
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: artifacts
+          path: ${{ env.SNAPSHOT_ARTIFACTS }}
+          retention-days: 1
 
   # Deploy(TestFlight)
   call_deploy:
