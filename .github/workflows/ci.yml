@@ -127,6 +127,10 @@ jobs:
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
 
+      - name: Generate Snapshot Test Reports directory
+        if: always()
+        run: mkdir -p ${{ env.SNAPSHOT_ARTIFACTS }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
