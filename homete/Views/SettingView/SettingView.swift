@@ -52,7 +52,9 @@ struct SettingView: View {
 }
 
 #Preview {
-    SettingView()
-        .environment(AccountStore(appDependencies: .previewValue))
-        .environment(AccountAuthStore(appDependencies: .previewValue))
+    NavigationStack {
+        SettingView()
+            .environment(AccountAuthStore(appDependencies: .previewValue))
+            .environment(AccountStore(appDependencies: .previewValue))
+    }
 }

@@ -22,7 +22,7 @@ env:
   DEVELOPER_DIR: /Applications/Xcode_26.0.app
   WORKSPACE_DIR: homete.xcodeproj
   BUILD_SCHEME: homete
-  TEST_PLAN: homete
+  TEST_PLAN: CI
   SPM_CLONE_PATH: SourcePackages
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
@@ -34,15 +34,19 @@ jobs:
     runs-on: macos-26
 
     steps:
-      # fetch-depth の計算
-      - run: echo "fetch_depth=$(( commits + 1 ))" >> $GITHUB_ENV
-        env:
-          commits: ${{ github.event.pull_request.commits }}
-
       # チェックアウト(リポジトリからソースコードを取得)
       - uses: actions/checkout@v4.2.2
         with:
-          fetch-depth: ${{ env.fetch_depth }}
+          fetch-depth: 0
+
+      - name: Get latest commit of default branch
+        id: get_commit
+        run: |
+          DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
+          git fetch origin $DEFAULT_BRANCH
+          LATEST_COMMIT=$(git rev-parse origin/$DEFAULT_BRANCH)
+          echo "LATEST_COMMIT=$LATEST_COMMIT"
+          echo "commit_sha=$LATEST_COMMIT" >> $GITHUB_OUTPUT
 
       # Xcodeの一覧出力
       - name: Show Xcode list
@@ -93,12 +97,10 @@ jobs:
           xcodebuild
           -project "${WORKSPACE_DIR}"
           -configuration Debug
-          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16 Pro'
+          -destination 'platform=iOS Simulator,OS=18.6,name=iPhone 16'
           -scheme "${BUILD_SCHEME}"
           -testPlan "${TEST_PLAN}"
           -skipPackagePluginValidation
-          -skipMacroValidation
-          -scmProvider xcode
           -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}"
           -resultBundlePath "${TEST_OUTPUT_PATH}"
           clean test |

@@ -104,27 +104,24 @@ private extension CohabitantRegistrationPeersListView {
     }
 }
 
-#Preview("デバイス検知済みケース") {
-    @Previewable @State var isConfirmedReadyRegistration = false
+#Preview("CohabitantRegistrationPeersListView_デバイス検知済みケース") {
     CohabitantRegistrationPeersListView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration
+        isConfirmedReadyRegistration: .constant(false)
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
-#Preview("確認アラート表示中のケース") {
-    @Previewable @State var isConfirmedReadyRegistration = false
+#Preview("CohabitantRegistrationPeersListView_確認アラート表示中のケース") {
     CohabitantRegistrationPeersListView(
         isPresentingConfirmReadyRegistrationAlert: true,
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration
+        isConfirmedReadyRegistration: .constant(false)
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
-#Preview("登録開始待ちケース") {
-    @Previewable @State var isConfirmedReadyRegistration = true
+#Preview("CohabitantRegistrationPeersListView_登録開始待ちケース") {
     CohabitantRegistrationPeersListView(
-        isConfirmedReadyRegistration: $isConfirmedReadyRegistration
+        isConfirmedReadyRegistration: .constant(true)
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }

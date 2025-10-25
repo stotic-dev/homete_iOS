@@ -73,23 +73,19 @@ struct CohabitantRegistrationProcessingView: View {
     }
 }
 
-#Preview("通常ケース") {
-    @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
-    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: false)
+#Preview("CohabitantRegistrationProcessingView_通常ケース") {
     CohabitantRegistrationProcessingView(
-        confirmedRolePeers: $confirmedRolePeers,
-        registrationState: $registrationState,
+        confirmedRolePeers: .constant([]),
+        registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
 }
 
-#Preview("切断検知ケース") {
-    @Previewable @State var confirmedRolePeers: Set<MCPeerID> = []
-    @Previewable @State var registrationState = CohabitantRegistrationState.processing(isLead: false)
+#Preview("CohabitantRegistrationProcessingView_切断検知ケース") {
     CohabitantRegistrationProcessingView(
         isPresentedMemberChangeAlert: true,
-        confirmedRolePeers: $confirmedRolePeers,
-        registrationState: $registrationState,
+        confirmedRolePeers: .constant([]),
+        registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
 }

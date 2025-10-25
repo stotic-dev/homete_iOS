@@ -54,3 +54,32 @@ enum AppStorageCustomTypeKey: String {
     /// 家事入力の履歴
     case houseworkEntryHistoryList
 }
+
+// MARK: - Preview用のDIヘルパー
+
+struct InjectAppStorageWithPreviewModifier: ViewModifier {
+    private let userDefaults: UserDefaults
+    
+    init(_ suiteName: String, _ registerHandler: @escaping (UserDefaults) -> Void) {
+                
+        // swiftlint:disable:next force_unwrapping
+        userDefaults = UserDefaults(suiteName: suiteName)!
+        userDefaults.removePersistentDomain(forName: suiteName)
+        registerHandler(userDefaults)
+    }
+    
+    func body(content: Content) -> some View {
+        content
+            .defaultAppStorage(userDefaults)
+    }
+}
+
+extension View {
+    
+    func injectAppStorageWithPreview(
+        _ suiteName: String,
+        registerHandler: @escaping (UserDefaults) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(InjectAppStorageWithPreviewModifier(suiteName, registerHandler))
+    }
+}

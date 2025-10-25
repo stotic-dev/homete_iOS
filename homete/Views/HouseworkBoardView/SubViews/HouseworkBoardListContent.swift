@@ -53,13 +53,12 @@ private extension HouseworkBoardListContent {
 }
 
 #Preview {
-    @Previewable @State var list = HouseworkBoardList(items: [
-        .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
-        .init(id: "2", indexedDate: .now, title: "掃除", point: 100, state: .incomplete, expiredAt: .now),
-        .init(id: "3", indexedDate: .now, title: "料理", point: 1, state: .incomplete, expiredAt: .now)
-    ])
     HouseworkBoardListContent(
         selectedHouseworkState: .incomplete,
-        houseworkBoardList: $list
+        houseworkBoardList: .constant(.init(items: [
+            .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
+            .init(id: "2", indexedDate: .now, title: "掃除", point: 100, state: .incomplete, expiredAt: .now),
+            .init(id: "3", indexedDate: .now, title: "料理", point: 1, state: .incomplete, expiredAt: .now)
+        ]))
     )
 }
