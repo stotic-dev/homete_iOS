@@ -6,6 +6,7 @@
 //
 
 import FirebaseFunctions
+import Prefire
 import SwiftUI
 
 struct RegisterHouseworkView: View {
@@ -240,18 +241,6 @@ private extension RegisterHouseworkView {
         ])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
-}
-
-#Preview("RegisterHouseworkView_重複アラート表示") {
-    RegisterHouseworkView(
-        houseworkTitle: "洗濯",
-        isPresentingDuplicationAlert: true,
-        dailyHouseworkList: .init(
-            indexedDate: .now,
-            metaData: .init(expiredAt: .now),
-            items: []
-        )
-    )
 }
 
 #Preview("RegisterHouseworkView_通信中") {
