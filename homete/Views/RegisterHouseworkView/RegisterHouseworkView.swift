@@ -130,6 +130,7 @@ private extension RegisterHouseworkView {
                         tappedEntryHistoryRow(item)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(with: .body)
                 }
             }
             .listStyle(.inset)
