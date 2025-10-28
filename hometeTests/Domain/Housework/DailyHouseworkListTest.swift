@@ -27,8 +27,8 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         let calendar = Calendar(identifier: .gregorian)
         let selectedDate = Date()
         let items = [
-            HouseworkItem(id: "1", title: "洗濯", state: .incomplete),
-            HouseworkItem(id: "2", title: "皿洗い", state: .pendingApproval)
+            HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete),
+            HouseworkItem(id: "2", title: "皿洗い", point: 1, state: .pendingApproval)
         ]
         
         let expectedIndexedDate = calendar.startOfDay(for: selectedDate)
@@ -56,7 +56,7 @@ extension DailyHouseworkListTest.IsRegisteredCase {
     @Test(
         "登録されている家事がない場合は、その日付の家事レコードが登録されていない",
         arguments: [
-            [HouseworkItem(id: "1", title: "洗濯", state: .incomplete)],
+            [HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete)],
             []
         ]
     )
@@ -82,17 +82,17 @@ extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
     @Test(
         "同じタイトルの家事が含まれていれば登録済みの家事とみなす",
         arguments: [
-            HouseworkItem(id: "1", title: "洗濯", state: .incomplete),
-            HouseworkItem(id: "3", title: "洗濯", state: .incomplete),
-            HouseworkItem(id: "1", title: "掃除", state: .incomplete)
+            HouseworkItem(id: "1", title: "洗濯", point: 1, state: .incomplete),
+            HouseworkItem(id: "3", title: "洗濯", point: 1, state: .incomplete),
+            HouseworkItem(id: "1", title: "掃除", point: 1, state: .incomplete)
         ]
     )
     func alreadyRegistered_trueWhenSameTitleExists(inputItem: HouseworkItem) {
         
         // Arrange
         let items: [HouseworkItem] = [
-            .init(id: "1", title: "洗濯", state: .incomplete),
-            .init(id: "2", title: "ゴミ捨て", state: .completed)
+            .init(id: "1", title: "洗濯", point: 1, state: .incomplete),
+            .init(id: "2", title: "ゴミ捨て", point: 1, state: .completed)
         ]
         let list = DailyHouseworkList(
             indexedDate: .now,

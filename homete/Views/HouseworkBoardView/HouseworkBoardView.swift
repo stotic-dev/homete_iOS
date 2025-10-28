@@ -78,11 +78,13 @@ private extension HouseworkBoardView {
     HouseworkBoardView(
         houseworkBoardList: .init(
             items: [
-                .init(id: "1", title: "洗濯", state: .incomplete),
-                .init(id: "2", title: "ゴミ捨て", state: .pendingApproval),
-                .init(id: "3", title: "風呂掃除", state: .completed)
+                .init(id: "1", title: "洗濯", point: 20, state: .incomplete),
+                .init(id: "2", title: "ゴミ捨て", point: 100, state: .pendingApproval),
+                .init(id: "3", title: "風呂掃除", point: 10, state: .completed)
             ]
-        )
+        ),
+        selectedDate: .distantPast
     )
     .apply(theme: .init())
+    .environment(\.locale, .init(identifier: "ja_JP"))
 }

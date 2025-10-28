@@ -54,6 +54,8 @@ struct HomeView: View {
 #Preview("HomeView_登録時") {
     NavigationStack {
         HomeView()
-            .injectAppStorageWithPreview("HomeView_登録時")
+            .injectAppStorageWithPreview("HomeView_登録時") {
+                $0.set("testId", forKey: "cohabitantId")
+            }
     }
 }
