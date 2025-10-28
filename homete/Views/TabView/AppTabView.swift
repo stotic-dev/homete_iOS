@@ -20,10 +20,18 @@ struct AppTabView: View {
         ZStack {
             if #available(iOS 18.0, *) {
                 TabView(selection: $type) {
-                    Tab("ダッシュボード", systemImage: "list.bullet.clipboard.fill", value: .dashboard) {
+                    Tab(
+                        "ダッシュボード",
+                        systemImage: "list.bullet.clipboard.fill",
+                        value: .dashboard
+                    ) {
                         HomeView()
                     }
-                    Tab("家事", systemImage: "person.2.arrow.trianglehead.counterclockwise", value: .homework) {
+                    Tab(
+                        "家事",
+                        systemImage: "person.2.arrow.trianglehead.counterclockwise",
+                        value: .homework
+                    ) {
                         HouseworkBoardView()
                     }
                 }
@@ -32,7 +40,10 @@ struct AppTabView: View {
                     HomeView()
                         .tag(TabType.dashboard)
                         .tabItem {
-                            Label("ダッシュボード", systemImage: "ダッシュボード")
+                            Label(
+                                "ダッシュボード",
+                                systemImage: "list.bullet.clipboard.fill"
+                            )
                         }
                     HouseworkBoardView()
                         .tag(TabType.homework)
