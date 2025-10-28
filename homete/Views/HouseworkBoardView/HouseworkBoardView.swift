@@ -25,9 +25,12 @@ struct HouseworkBoardView: View {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
-                        selectedHouseworkState: selectedHouseworkState,
-                        houseworkBoardList: $houseworkBoardList
-                    )
+                        houseworkList: houseworkBoardList.items(matching: selectedHouseworkState)
+                    ) { _ in
+                        // TODO: 承認依頼
+                    } onDelete: { _ in
+                        // TODO: 削除
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)

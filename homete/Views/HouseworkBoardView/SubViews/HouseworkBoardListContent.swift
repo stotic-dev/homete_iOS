@@ -9,27 +9,18 @@ import SwiftUI
 
 struct HouseworkBoardListContent: View {
     
-    let selectedHouseworkState: HouseworkState
-    @Binding var houseworkBoardList: HouseworkBoardList
+    let houseworkList: [HouseworkItem]
+    let onApproveRequest: (HouseworkItem) async -> Void
+    let onDelete: (HouseworkItem) async -> Void
     
     var body: some View {
         List {
-            ForEach(houseworkBoardList.items(matching: selectedHouseworkState)) { item in
-                Button {
-                    // TODO: 承認依頼を行う
-                } label: {
-                    HStack(spacing: DesignSystem.Space.space16) {
-                        pointLabel(item.point)
-                        Text(item.title)
-                            .font(with: .body)
-                        Spacer()
-                    }
+            ForEach(houseworkList) { item in
+                houseworkItemRow(item)
                     .padding(.vertical, DesignSystem.Space.space8)
-                }
             }
             .listRowSpacing(.zero)
             .listRowSeparator(.hidden)
-            // TODO: 左スワイプで家事を削除する
         }
         .listStyle(.plain)
     }
@@ -37,28 +28,32 @@ struct HouseworkBoardListContent: View {
 
 private extension HouseworkBoardListContent {
     
-    func pointLabel(_ point: Int) -> some View {
-        Text(point.formatted())
-            .font(with: .headLineM)
-            .foregroundStyle(.commonWhite)
-            .padding(DesignSystem.Space.space8)
-            .frame(minWidth: 45)
-            .background {
-                GeometryReader {
-                    RoundedRectangle(cornerRadius: $0.size.height / 2)
-                        .fill(.primary2)
+    func houseworkItemRow(_ item: HouseworkItem) -> some View {
+        HouseBoardListRow(
+            houseworkItem: item,
+            onDelete: onDelete
+        )
+        .swipeActions(edge: .trailing) {
+            Button {
+                Task {
+                    await onApproveRequest(item)
                 }
+            } label: {
+                Label("完了", systemImage: "checkmark.seal.fill")
             }
+            .tint(.primary1)
+        }
     }
 }
 
 #Preview {
     HouseworkBoardListContent(
-        selectedHouseworkState: .incomplete,
-        houseworkBoardList: .constant(.init(items: [
+        houseworkList: [
             .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
             .init(id: "2", indexedDate: .now, title: "掃除", point: 100, state: .incomplete, expiredAt: .now),
             .init(id: "3", indexedDate: .now, title: "料理", point: 1, state: .incomplete, expiredAt: .now)
-        ]))
+        ],
+        onApproveRequest: { _ in },
+        onDelete: { _ in }
     )
 }
