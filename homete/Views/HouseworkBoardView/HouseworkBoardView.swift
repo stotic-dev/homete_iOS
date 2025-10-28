@@ -103,8 +103,10 @@ private extension HouseworkBoardView {
                 .init(id: "2", indexedDate: .now, title: "ゴミ捨て", point: 100, state: .pendingApproval, expiredAt: .now),
                 .init(id: "3", indexedDate: .now, title: "風呂掃除", point: 10, state: .completed, expiredAt: .now)
             ]
-        )
+        ),
+        selectedDate: .distantPast
     )
     .apply(theme: .init())
     .environment(HouseworkListStore(houseworkClient: .previewValue))
+    .environment(\.locale, .init(identifier: "ja_JP"))
 }
