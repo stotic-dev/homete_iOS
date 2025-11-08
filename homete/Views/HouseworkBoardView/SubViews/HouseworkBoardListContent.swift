@@ -32,8 +32,7 @@ private extension HouseworkBoardListContent {
     
     func houseworkItemRow(_ item: HouseworkItem) -> some View {
         Button {
-            // TODO: 家事詳細画面に遷移する
-            navigationPath.push(.houseworkDetail)
+            navigationPath.push(.houseworkDetail(item: item))
         } label: {
             HouseBoardListRow(
                 houseworkItem: item,
@@ -41,14 +40,18 @@ private extension HouseworkBoardListContent {
             )
         }
         .swipeActions(edge: .trailing) {
-            Button {
-                Task {
-                    await onApproveRequest(item)
-                }
-            } label: {
-                Label("完了", systemImage: "checkmark.seal.fill")
+            completeButton(item)
+                .tint(.primary1)
+        }
+    }
+    
+    func completeButton(_ item: HouseworkItem) -> some View {
+        Button {
+            Task {
+                await onApproveRequest(item)
             }
-            .tint(.primary1)
+        } label: {
+            Label("完了", systemImage: "checkmark.seal.fill")
         }
     }
 }

@@ -44,6 +44,7 @@ struct HouseworkBoardView: View {
             .navigationDestination(for: AppNavigationElement.self) { element in
                 navigationHandler(element)
             }
+            .environment(\.appNavigationPath, navigationPath)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
             RegisterHouseworkView(
@@ -93,8 +94,8 @@ private extension HouseworkBoardView {
     @ViewBuilder
     func navigationHandler(_ element: AppNavigationElement) -> some View {
         switch element {
-        case .houseworkDetail:
-            Text("Detail View")
+        case .houseworkDetail(let item):
+            HouseworkDetailView(item: item)
         }
     }
 }
