@@ -20,7 +20,7 @@ env:
 jobs:
   deploy_testFlight:
     # 実行環境はmacosに設定
-    runs-on: macos-15
+    runs-on: macos-26
     env:
       API_KEY_PATH: "private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8"
 

@@ -12,6 +12,7 @@ import SwiftUI
 final class AccountStore {
     
     private(set) var account: Account = .empty
+    var text: String = ""
         
     private let accountInfoClient: AccountInfoClient
     

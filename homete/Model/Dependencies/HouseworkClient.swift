@@ -9,55 +9,81 @@ import FirebaseFirestore
 
 struct HouseworkClient {
     
-    let registerNewItem: @Sendable (HouseworkItem, Date, String) async throws -> Void
-    let registerDailyHouseworkList: @Sendable (DailyHouseworkList, String) async throws -> Void
+    let registerNewItem: @Sendable (HouseworkItem, String) async throws -> Void
+    let snapshotListener: @Sendable (
+        _ id: String,
+        _ cohabitantId: String,
+        _ anchorDate: Date,
+        _ offset: Int
+    ) async -> AsyncStream<[HouseworkItem]>
+    let removeListener: @Sendable (_ id: String) async -> Void
 }
 
 extension HouseworkClient: DependencyClient {
+    
+    init(
+        registerNewItemHandler: @escaping @Sendable (HouseworkItem, String) async throws -> Void = { _, _ in },
+        snapshotListenerHandler: @escaping @Sendable (
+            _ id: String,
+            _ cohabitantId: String,
+            _ anchorDate: Date,
+            _ offset: Int
+        ) async -> AsyncStream<[HouseworkItem]> = { _, _, _, _ in .makeStream().stream },
+        removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in }
+    ) {
         
-    static let liveValue = HouseworkClient { item, indexedDate, cohabitantId in
+        registerNewItem = registerNewItemHandler
+        snapshotListener = snapshotListenerHandler
+        removeListener = removeListenerHandler
+    }
+        
+    static let liveValue = HouseworkClient { item, cohabitantId in
         
         try await FirestoreService.shared.insertOrUpdate(data: item) {
             
             return $0
-                .dailyHouseworksRef(
-                    id: cohabitantId,
-                    indexedDate: indexedDateFormatter.string(from: indexedDate)
-                )
+                .houseworkListRef(id: cohabitantId)
                 .document(item.id)
         }
-    } registerDailyHouseworkList: { houseworkList, cohabitantId in
+    } snapshotListener: { id, cohabitantId, anchorDate, offset in
         
-        let indexedDateStr = indexedDateFormatter.string(from: houseworkList.indexedDate)
-        try await FirestoreService.shared.insertOrUpdate(data: houseworkList.metaData) {
-            
-            return $0
-                .houseworkRef(id: cohabitantId, indexedDate: indexedDateStr)
-        }
+        let targetDateList = calcTargetPeriod(
+            anchorDate: anchorDate,
+            offsetDays: offset,
+            calendar: Calendar.autoupdatingCurrent
+        )
         
-        for item in houseworkList.items {
+        return await FirestoreService.shared.addSnapshotListener(id: id) {
             
-            try await FirestoreService.shared.insertOrUpdate(data: item) {
-                
-                return $0
-                    .dailyHouseworksRef(id: cohabitantId, indexedDate: indexedDateStr)
-                    .document(item.id)
-            }
+            return $0.houseworkListRef(id: cohabitantId)
+                .whereField("indexedDate", in: targetDateList)
         }
+    } removeListener: { id in
+        
+        await FirestoreService.shared.removeSnapshotListner(id: id)
     }
     
-    static let previewValue = HouseworkClient(
-        registerNewItem: { _, _, _ in },
-        registerDailyHouseworkList: { _, _ in }
-    )
+    static let previewValue = HouseworkClient()
 }
 
 private extension HouseworkClient {
     
-    static let indexedDateFormatter: DateFormatter = {
-        let df = DateFormatter()
-        df.calendar = Calendar.autoupdatingCurrent
-        df.dateFormat = "yyyy-MM-dd"
-        return df
-    }()
+    static func calcTargetPeriod(
+        anchorDate: Date,
+        offsetDays: Int,
+        calendar: Calendar
+    ) -> [String] {
+        
+        let base = calendar.startOfDay(for: anchorDate)
+        guard offsetDays >= 0 else {
+            
+            return [base.formatted(Date.FormatStyle.houseworkDateFormatStyle)]
+        }
+        // -offset ... +offset の範囲を列挙
+        return (-offsetDays...offsetDays).compactMap { delta in
+            
+            let date = calendar.date(byAdding: .day, value: delta, to: base)
+            return date?.formatted(Date.FormatStyle.houseworkDateFormatStyle)
+        }
+    }
 }

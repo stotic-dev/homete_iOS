@@ -11,6 +11,7 @@ final actor FirestoreService {
     
     static let shared = FirestoreService()
     private let firestore = Firestore.firestore()
+    private var listeners: [String: any FirestoreListenerStorerable] = [:]
     
     func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
         
@@ -29,48 +30,37 @@ final actor FirestoreService {
         
         try predicate(firestore).setData(from: data, merge: true)
     }
-}
-
-extension Firestore {
     
-    /// アカウントの参照を取得する
-    func accountRef(id: String) -> DocumentReference {
+    func addSnapshotListener<Output>(
+        id: String,
+        predicate: (Firestore) -> Query
+    ) -> AsyncStream<[Output]> where Output: Decodable {
         
-        return self
-            .collection(CollectionPath.account.rawValue)
-            .document(id)
+        let (stream, continuation) = AsyncStream.makeStream(
+            of: [Output].self,
+            bufferingPolicy: .bufferingNewest(10)
+        )
+        let listener = predicate(firestore)
+            .addSnapshotListener { snapshots, error in
+                
+                if let error {
+                    
+                    print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
+                    return
+                }
+                
+                guard let snapshots else { return }
+                let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
+                continuation.yield(convertedValues)
+            }
+        
+        listeners[id] = FirestoreListener(continuation: continuation, listener: listener)
+        return stream
     }
     
-    /// 同居人の参照を取得する
-    func cohabitantRef(id: String) -> DocumentReference {
+    func removeSnapshotListner(id: String) {
         
-        return self
-            .collection(CollectionPath.cohabitant.rawValue)
-            .document(id)
+        let listener = listeners[id]
+        listener?.remove()
     }
-    
-    /// 指定日付の家事の参照を取得する
-    func houseworkRef(id: String, indexedDate: String) -> DocumentReference {
-        
-        return self.cohabitantRef(id: id)
-            .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate)
-    }
-    
-    /// 指定日付の家事の参照を取得する
-    func dailyHouseworksRef(id: String, indexedDate: String) -> CollectionReference {
-        
-        return self.cohabitantRef(id: id)
-            .collection(CollectionPath.houseworks.rawValue)
-            .document(indexedDate)
-            .collection(CollectionPath.dailyHouseworks.rawValue)
-    }
-}
-
-enum CollectionPath: String {
-    
-    case account = "Account"
-    case cohabitant = "Cohabitant"
-    case houseworks = "Houseworks"
-    case dailyHouseworks = "DailyHouseworks"
 }

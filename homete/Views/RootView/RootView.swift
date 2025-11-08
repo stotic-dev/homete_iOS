@@ -15,8 +15,8 @@ struct RootView: View {
     
     @AppStorage(key: .cohabitantId) var localStorageCohabitantId = ""
     
-    var accountAuthStore: AccountAuthStore
-    var accountStore: AccountStore
+    @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(AccountStore.self) var accountStore
     
     var body: some View {
         ZStack {
@@ -49,9 +49,19 @@ struct RootView: View {
             }
         }
         .apply(theme: theme)
-        .environment(accountStore)
-        .environment(accountAuthStore)
         .environment(\.cohabitantId, localStorageCohabitantId)
+    }
+}
+
+extension RootView {
+    
+    static func make() -> some View {
+        DependenciesInjectLayer {
+            RootView()
+                .environment(AccountStore(appDependencies: $0))
+                .environment(AccountAuthStore(appDependencies: $0))
+                .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+        }
     }
 }
 

@@ -10,6 +10,7 @@ import SwiftUI
 struct HouseworkBoardView: View {
     
     @Environment(\.calendar) var calendar
+    @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var navigationPath = CustomNavigationPath<HouseworkBoardNavigationPathElement>(path: [])
     @State var selectedHouseworkState = HouseworkState.incomplete
@@ -57,6 +58,15 @@ struct HouseworkBoardView: View {
                 )
             )
         }
+        .onChange(of: houseworkListStore.items) {
+            updateHouseworkBoardList()
+        }
+        .onChange(of: selectedDate) {
+            updateHouseworkBoardList()
+        }
+        .onAppear {
+            updateHouseworkBoardList()
+        }
     }
 }
 
@@ -74,17 +84,42 @@ private extension HouseworkBoardView {
     }
 }
 
+private extension HouseworkBoardView {
+    
+    func updateHouseworkBoardList() {
+        houseworkBoardList = .init(
+            dailyList: houseworkListStore.items,
+            selectedDate: selectedDate,
+            calendar: calendar
+        )
+    }
+}
+
 #Preview {
     HouseworkBoardView(
-        houseworkBoardList: .init(
-            items: [
-                .init(id: "1", title: "洗濯", point: 20, state: .incomplete),
-                .init(id: "2", title: "ゴミ捨て", point: 100, state: .pendingApproval),
-                .init(id: "3", title: "風呂掃除", point: 10, state: .completed)
-            ]
-        ),
         selectedDate: .distantPast
     )
     .apply(theme: .init())
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        items: [
+            .init(
+                items: [
+                    .init(
+                        id: "1",
+                        indexedDate: .distantPast,
+                        title: "洗濯",
+                        point: 20,
+                        state: .incomplete,
+                        expiredAt: .now
+                    )
+                ],
+                metaData: .init(
+                    indexedDate: .distantPast,
+                    expiredAt: .now
+                )
+            )
+        ]
+    ))
     .environment(\.locale, .init(identifier: "ja_JP"))
 }

@@ -56,9 +56,9 @@ private extension HouseworkBoardListContent {
     HouseworkBoardListContent(
         selectedHouseworkState: .incomplete,
         houseworkBoardList: .constant(.init(items: [
-            .init(id: "1", title: "洗濯", point: 20, state: .incomplete),
-            .init(id: "2", title: "掃除", point: 100, state: .incomplete),
-            .init(id: "3", title: "料理", point: 1, state: .incomplete)
+            .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
+            .init(id: "2", indexedDate: .now, title: "掃除", point: 100, state: .incomplete, expiredAt: .now),
+            .init(id: "3", indexedDate: .now, title: "料理", point: 1, state: .incomplete, expiredAt: .now)
         ]))
     )
 }

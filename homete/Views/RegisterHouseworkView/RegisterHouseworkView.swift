@@ -175,7 +175,7 @@ private extension RegisterHouseworkView {
             id: UUID().uuidString,
             title: houseworkTitle,
             point: Int(completePoint),
-            state: .incomplete
+            metaData: dailyHouseworkList.metaData
         )
         
         guard !dailyHouseworkList.isAlreadyRegistered(newItem) else {
@@ -188,27 +188,7 @@ private extension RegisterHouseworkView {
         
         do {
             
-            // 既に選択日付の家事情報の登録ができている場合は新規家事レコードだけ保存する
-            // そうでない場合は、家事情報のレコードも保存する
-            if dailyHouseworkList.isRegistered {
-                
-                try await houseworkClient.registerNewItem(
-                    newItem,
-                    dailyHouseworkList.indexedDate,
-                    cohabitantId
-                )
-            }
-            else {
-                
-                try await houseworkClient.registerDailyHouseworkList(
-                    .init(
-                        indexedDate: dailyHouseworkList.indexedDate,
-                        metaData: dailyHouseworkList.metaData,
-                        items: [newItem]
-                    ),
-                    cohabitantId
-                )
-            }
+            try await houseworkClient.registerNewItem(newItem, cohabitantId)
             
             _ = try? await Functions.functions()
                 .httpsCallable("notifyothercohabitants")
@@ -231,9 +211,8 @@ private extension RegisterHouseworkView {
 #Preview("RegisterHouseworkView") {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
-            indexedDate: .now,
-            metaData: .init(expiredAt: .now),
-            items: []
+            items: [],
+            metaData: .init(indexedDate: .now, expiredAt: .now)
         )
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
@@ -248,9 +227,8 @@ private extension RegisterHouseworkView {
     RegisterHouseworkView(
         isLoading: true,
         dailyHouseworkList: .init(
-            indexedDate: .now,
-            metaData: .init(expiredAt: .now),
-            items: []
+            items: [],
+            metaData: .init(indexedDate: .now, expiredAt: .now)
         )
     )
 }
