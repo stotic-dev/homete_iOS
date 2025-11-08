@@ -32,12 +32,12 @@ extension View {
     }
 }
 
-#Preview("PrimaryButtonStyle_Enabled") {
+#Preview("PrimaryButtonStyle_Enabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .primaryButtonStyle()
 }
 
-#Preview("PrimaryButtonStyle_Disabled") {
+#Preview("PrimaryButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .primaryButtonStyle(isDisabled: true)
 }

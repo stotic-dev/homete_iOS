@@ -41,6 +41,6 @@ struct TodayHouseworkListContent: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     TodayHouseworkListContent()
 }

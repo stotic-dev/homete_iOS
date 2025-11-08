@@ -28,7 +28,7 @@ struct TimelineContent: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     TimelineContent()
         .padding()
 }
