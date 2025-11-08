@@ -1,5 +1,5 @@
 //
-//  CustomNavigationPath.swift
+//  AppNavigationPath.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/07/26.
@@ -8,11 +8,11 @@
 import SwiftUI
 
 @Observable
-final class CustomNavigationPath<Element: Hashable> {
+final class AppNavigationPath {
     
-    var path: [Element]
+    var path: [AppNavigationElement]
     
-    init(path: [Element]) {
+    init(path: [AppNavigationElement]) {
         self.path = path
     }
     
@@ -26,8 +26,12 @@ final class CustomNavigationPath<Element: Hashable> {
         _ = path.popLast()
     }
     
-    func push(_ element: Element) {
+    func push(_ element: AppNavigationElement) {
         
         path.append(element)
     }
+}
+
+extension EnvironmentValues {
+    @Entry var appNavigationPath = AppNavigationPath(path: [])
 }

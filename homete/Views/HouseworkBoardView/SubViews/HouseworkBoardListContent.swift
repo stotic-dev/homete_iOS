@@ -9,6 +9,8 @@ import SwiftUI
 
 struct HouseworkBoardListContent: View {
     
+    @Environment(\.appNavigationPath) var navigationPath
+    
     let houseworkList: [HouseworkItem]
     let onApproveRequest: (HouseworkItem) async -> Void
     let onDelete: (HouseworkItem) async -> Void
@@ -29,10 +31,15 @@ struct HouseworkBoardListContent: View {
 private extension HouseworkBoardListContent {
     
     func houseworkItemRow(_ item: HouseworkItem) -> some View {
-        HouseBoardListRow(
-            houseworkItem: item,
-            onDelete: onDelete
-        )
+        Button {
+            // TODO: 家事詳細画面に遷移する
+            navigationPath.push(.houseworkDetail)
+        } label: {
+            HouseBoardListRow(
+                houseworkItem: item,
+                onDelete: onDelete
+            )
+        }
         .swipeActions(edge: .trailing) {
             Button {
                 Task {

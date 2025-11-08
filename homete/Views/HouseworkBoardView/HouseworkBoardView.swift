@@ -12,7 +12,7 @@ struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(HouseworkListStore.self) var houseworkListStore
     
-    @State var navigationPath = CustomNavigationPath<HouseworkBoardNavigationPathElement>(path: [])
+    @State var navigationPath = AppNavigationPath(path: [])
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
@@ -41,15 +41,8 @@ struct HouseworkBoardView: View {
                 .padding(.trailing, DesignSystem.Space.space24)
                 .padding(.bottom, DesignSystem.Space.space24)
             }
-            .navigationDestination(for: HouseworkBoardNavigationPathElement.self) { element in
-                element.destination()
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationBarButton(label: .settings) {
-                        navigationPath.push(.settings)
-                    }
-                }
+            .navigationDestination(for: AppNavigationElement.self) { element in
+                navigationHandler(element)
             }
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
@@ -95,6 +88,14 @@ private extension HouseworkBoardView {
             selectedDate: selectedDate,
             calendar: calendar
         )
+    }
+    
+    @ViewBuilder
+    func navigationHandler(_ element: AppNavigationElement) -> some View {
+        switch element {
+        case .houseworkDetail:
+            Text("Detail View")
+        }
     }
 }
 
