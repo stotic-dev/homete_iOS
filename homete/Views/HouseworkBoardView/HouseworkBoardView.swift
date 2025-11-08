@@ -97,16 +97,29 @@ private extension HouseworkBoardView {
 
 #Preview {
     HouseworkBoardView(
-        houseworkBoardList: .init(
-            items: [
-                .init(id: "1", indexedDate: .now, title: "洗濯", point: 20, state: .incomplete, expiredAt: .now),
-                .init(id: "2", indexedDate: .now, title: "ゴミ捨て", point: 100, state: .pendingApproval, expiredAt: .now),
-                .init(id: "3", indexedDate: .now, title: "風呂掃除", point: 10, state: .completed, expiredAt: .now)
-            ]
-        ),
         selectedDate: .distantPast
     )
     .apply(theme: .init())
-    .environment(HouseworkListStore(houseworkClient: .previewValue))
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        items: [
+            .init(
+                items: [
+                    .init(
+                        id: "1",
+                        indexedDate: .distantPast,
+                        title: "洗濯",
+                        point: 20,
+                        state: .incomplete,
+                        expiredAt: .now
+                    )
+                ],
+                metaData: .init(
+                    indexedDate: .distantPast,
+                    expiredAt: .now
+                )
+            )
+        ]
+    ))
     .environment(\.locale, .init(identifier: "ja_JP"))
 }
