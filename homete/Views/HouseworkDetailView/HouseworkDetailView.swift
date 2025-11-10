@@ -8,12 +8,40 @@
 import SwiftUI
 
 struct HouseworkDetailView: View {
+        
     @Environment(\.dismiss) var dismiss
     
     let item: HouseworkItem
     
     var body: some View {
-        VStack(spacing: .zero) {
+        mainContent()
+            .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.bottom, DesignSystem.Space.space24)
+            .navigationTitle(item.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                trailingNavigationBarContent()
+            }
+    }
+}
+
+private extension HouseworkDetailView {
+    
+    func mainContent() -> some View {
+        VStack(spacing: DesignSystem.Space.space24) {
+            detailItemRow("実施予定日付") {
+                Text(item.formattedIndexedDate)
+                    .font(with: .body)
+                    .foregroundStyle(.primary2)
+            }
+            detailItemRow("ステータス") {
+                Text(item.state.segmentTitle)
+                    .font(with: .body)
+                    .foregroundStyle(.primary2)
+            }
+            detailItemRow("ポイント") {
+                PointLabel(point: item.point)
+            }
             Spacer()
             Button {
                 // TODO: 承認依頼
@@ -23,15 +51,16 @@ struct HouseworkDetailView: View {
             }
             .subPrimaryButtonStyle()
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
-        .padding(.bottom, DesignSystem.Space.space24)
-        .toolbar {
-            trailingNavigationBarContent()
+    }
+    
+    func detailItemRow(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+            Text(title)
+                .font(with: .headLineM)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            content()
         }
     }
-}
-
-private extension HouseworkDetailView {
     
     func trailingNavigationBarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {

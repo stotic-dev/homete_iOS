@@ -14,7 +14,7 @@ struct HouseBoardListRow: View {
     
     var body: some View {
         HStack(spacing: DesignSystem.Space.space16) {
-            pointLabel(houseworkItem.point)
+            PointLabel(point: houseworkItem.point)
             Text(houseworkItem.title)
                 .font(with: .body)
             Spacer()
@@ -30,23 +30,6 @@ struct HouseBoardListRow: View {
             }
             .tint(.red)
         }
-    }
-}
-
-private extension HouseBoardListRow {
-    
-    func pointLabel(_ point: Int) -> some View {
-        Text(point.formatted())
-            .font(with: .headLineM)
-            .foregroundStyle(.commonWhite)
-            .padding(DesignSystem.Space.space8)
-            .frame(minWidth: 45)
-            .background {
-                GeometryReader {
-                    RoundedRectangle(cornerRadius: $0.size.height / 2)
-                        .fill(.primary2)
-                }
-            }
     }
 }
 
