@@ -18,10 +18,10 @@ struct RegisterHouseworkView: View {
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
-    @State var commonErrorContent: DomainErrorAlertContent = .initial
     @State var isLoading = false
     
     @FocusState var isShowingKeyboard: Bool
+    @CommonError var commonErrorContent
     
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
     

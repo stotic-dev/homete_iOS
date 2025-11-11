@@ -10,7 +10,7 @@ import SwiftUI
 struct LoginView: View {
     
     @Environment(AccountAuthStore.self) var accountAuthStore
-    @State var commonErrorContent: DomainErrorAlertContent = .initial
+    @CommonError var commonErrorContent
     @State var isLoading = false
     
     var body: some View {

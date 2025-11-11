@@ -12,7 +12,7 @@ struct HouseworkDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
     
-    @State var commonErrorContent: DomainErrorAlertContent = .initial
+    @CommonError var commonErrorContent
     
     let item: HouseworkItem
     
