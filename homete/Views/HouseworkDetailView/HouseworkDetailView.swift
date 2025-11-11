@@ -10,6 +10,9 @@ import SwiftUI
 struct HouseworkDetailView: View {
         
     @Environment(\.dismiss) var dismiss
+    @Environment(HouseworkListStore.self) var houseworkListStore
+    
+    @State var isPresentingOperationErrorAlert = false
     
     let item: HouseworkItem
     
@@ -75,6 +78,17 @@ private extension HouseworkDetailView {
 
 private extension HouseworkDetailView {
     
+    func tappedRequestConfirmButton() {
+        Task {
+            do {
+                try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
+            }
+            catch {
+                // TODO: エラーハンドリング
+            }
+        }
+    }
+    
     func tappedDeleteHouseworkItem() {
         // TODO: 家事削除
         dismiss()
@@ -92,4 +106,5 @@ private extension HouseworkDetailView {
             )
         )
     }
+    .environment(HouseworkListStore(houseworkClient: .previewValue))
 }

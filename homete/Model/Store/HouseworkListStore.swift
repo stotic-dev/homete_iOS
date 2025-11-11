@@ -11,6 +11,8 @@ import SwiftUI
 @Observable
 final class HouseworkListStore {
     
+    var cohabitantId = ""
+    
     private(set) var items: [DailyHouseworkList]
     
     private let houseworkClient: HouseworkClient
@@ -46,5 +48,19 @@ final class HouseworkListStore {
         
         await houseworkClient.removeListener(houseworkObserveKey)
         items.removeAll()
+    }
+    
+    func requestReview(id: String, indexedDate: Date) async throws {
+        
+        guard let targetDateGroup = items.first(where: { $0.metaData.indexedDate == indexedDate }),
+              let targetItem = targetDateGroup.items.first(where: { $0.id == id }) else {
+            
+            preconditionFailure("Not found target item(id: \(id), indexedDate: \(indexedDate))")
+        }
+        
+        let updatedItem = targetItem.updateState(.pendingApproval)
+        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+        
+        // TODO: パートナーに承認依頼したことを通知する
     }
 }

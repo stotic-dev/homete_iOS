@@ -9,7 +9,7 @@ import FirebaseFirestore
 
 struct HouseworkClient {
     
-    let registerNewItem: @Sendable (HouseworkItem, String) async throws -> Void
+    let insertOrUpdateItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
     let snapshotListener: @Sendable (
         _ id: String,
         _ cohabitantId: String,
@@ -22,7 +22,7 @@ struct HouseworkClient {
 extension HouseworkClient: DependencyClient {
     
     init(
-        registerNewItemHandler: @escaping @Sendable (HouseworkItem, String) async throws -> Void = { _, _ in },
+        insertOrUpdateItemHandler: @escaping @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void = { _, _ in },
         snapshotListenerHandler: @escaping @Sendable (
             _ id: String,
             _ cohabitantId: String,
@@ -32,7 +32,7 @@ extension HouseworkClient: DependencyClient {
         removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in }
     ) {
         
-        registerNewItem = registerNewItemHandler
+        insertOrUpdateItem = insertOrUpdateItemHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler
     }

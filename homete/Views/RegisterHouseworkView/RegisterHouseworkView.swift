@@ -188,7 +188,7 @@ private extension RegisterHouseworkView {
         
         do {
             
-            try await houseworkClient.registerNewItem(newItem, cohabitantId)
+            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
             
             _ = try? await Functions.functions()
                 .httpsCallable("notifyothercohabitants")
