@@ -18,8 +18,7 @@ struct RegisterHouseworkView: View {
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
-    @State var isPresentingCommonErrorAlert = false
-    @State var domainError: DomainError?
+    @State var commonErrorContent: DomainErrorAlertContent = .initial
     @State var isLoading = false
     
     @FocusState var isShowingKeyboard: Bool
@@ -63,7 +62,7 @@ struct RegisterHouseworkView: View {
                 .ignoresSafeArea()
                 .opacity(isLoading ? 1 : 0)
         }
-        .commonError(isPresented: $isPresentingCommonErrorAlert, error: $domainError)
+        .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
             Button(
                 role: .cancel,
@@ -203,7 +202,7 @@ private extension RegisterHouseworkView {
         catch {
             
             print("Failed registering a new housework item: \(error)")
-            domainError = .other
+            commonErrorContent = .init(error: error)
         }
     }
 }

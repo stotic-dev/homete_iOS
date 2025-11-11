@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct HouseworkDetailView: View {
-        
+    
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
     
-    @State var isPresentingOperationErrorAlert = false
+    @State var commonErrorContent: DomainErrorAlertContent = .initial
     
     let item: HouseworkItem
     
@@ -25,6 +25,7 @@ struct HouseworkDetailView: View {
             .toolbar {
                 trailingNavigationBarContent()
             }
+            .commonError(content: $commonErrorContent)
     }
 }
 
@@ -84,7 +85,7 @@ private extension HouseworkDetailView {
                 try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
             }
             catch {
-                // TODO: エラーハンドリング
+                commonErrorContent = .init(error: error)
             }
         }
     }

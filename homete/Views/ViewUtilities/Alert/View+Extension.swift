@@ -10,27 +10,18 @@ import SwiftUI
 extension View {
     
     func commonError(
-        isPresented: Binding<Bool>,
-        error: Binding<DomainError?>,
+        content: Binding<DomainErrorAlertContent>,
         onDismiss: @escaping () -> Void = {}
     ) -> some View {
         self
-            .onChange(of: error.wrappedValue) { _, newValue in
-                if newValue != nil {
-                    print("occurred domain error: \(String(describing: newValue))")
-                    isPresented.wrappedValue = true
-                }
-            }
             .alert("操作が完了しませんでした",
-                   isPresented: isPresented,
+                   isPresented: content.wrappedValue.hasError ? content.isPresenting : .constant(false),
                    actions: {
                 Button("OK") {
-                    error.wrappedValue = nil
                     onDismiss()
                 }
             }, message: {
-                let error = error.wrappedValue ?? .other
-                Text(error.message)
+                Text(content.wrappedValue.errorMessage ?? "")
             })
     }
 }
