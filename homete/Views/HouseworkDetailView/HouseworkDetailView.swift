@@ -48,7 +48,7 @@ private extension HouseworkDetailView {
             }
             Spacer()
             Button {
-                // TODO: 承認依頼
+                tappedRequestConfirmButton()
             } label: {
                 Label("確認してもらう", image: "paperplane.fill")
                     .frame(maxWidth: .infinity)
@@ -107,5 +107,8 @@ private extension HouseworkDetailView {
             )
         )
     }
-    .environment(HouseworkListStore(houseworkClient: .previewValue))
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
 }

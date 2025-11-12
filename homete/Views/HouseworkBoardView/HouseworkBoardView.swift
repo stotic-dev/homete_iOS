@@ -107,6 +107,7 @@ private extension HouseworkBoardView {
     .apply(theme: .init())
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue,
         items: [
             .init(
                 items: [

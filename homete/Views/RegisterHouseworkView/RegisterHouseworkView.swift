@@ -6,14 +6,12 @@
 //
 
 import FirebaseFunctions
-import Prefire
 import SwiftUI
 
 struct RegisterHouseworkView: View {
     
-    @Environment(\.appDependencies.houseworkClient) var houseworkClient
-    @Environment(\.cohabitantId) var cohabitantId
     @Environment(\.dismiss) var dismiss
+    @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
@@ -143,10 +141,7 @@ private extension RegisterHouseworkView {
     
     func tappedClearTextFiledButton() {
         
-        withAnimation {
-            
-            houseworkTitle = ""
-        }
+        houseworkTitle = ""
     }
     
     func tappedEntryHistoryRow(_ item: String) {
@@ -187,16 +182,7 @@ private extension RegisterHouseworkView {
         
         do {
             
-            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
-            
-            _ = try? await Functions.functions()
-                .httpsCallable("notifyothercohabitants")
-                .call([
-                    "cohabitantId": cohabitantId,
-                    "title": "新しい家事が登録されました",
-                    "body": houseworkTitle
-                ])
-            
+            try await houseworkListStore.register(newItem)
             dismiss()
         }
         catch {
@@ -220,6 +206,10 @@ private extension RegisterHouseworkView {
         ])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -230,4 +220,8 @@ private extension RegisterHouseworkView {
             metaData: .init(indexedDate: .now, expiredAt: .now)
         )
     )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
 }

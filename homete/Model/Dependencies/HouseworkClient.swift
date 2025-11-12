@@ -22,7 +22,10 @@ struct HouseworkClient {
 extension HouseworkClient: DependencyClient {
     
     init(
-        insertOrUpdateItemHandler: @escaping @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void = { _, _ in },
+        insertOrUpdateItemHandler: @escaping @Sendable (
+            _ item: HouseworkItem,
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _ in },
         snapshotListenerHandler: @escaping @Sendable (
             _ id: String,
             _ cohabitantId: String,
