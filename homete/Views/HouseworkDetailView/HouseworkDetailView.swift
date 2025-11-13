@@ -12,43 +12,38 @@ struct HouseworkDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
     
+    @State var isLoading = false
     @CommonError var commonErrorContent
     
     let item: HouseworkItem
     
     var body: some View {
-        mainContent()
-            .padding(.horizontal, DesignSystem.Space.space16)
-            .padding(.bottom, DesignSystem.Space.space24)
-            .navigationTitle(item.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                trailingNavigationBarContent()
-            }
-            .commonError(content: $commonErrorContent)
+        ZStack {
+            mainContent()
+                .padding(.horizontal, DesignSystem.Space.space16)
+                .padding(.bottom, DesignSystem.Space.space24)
+            LoadingIndicator()
+                .opacity(isLoading ? 1 : 0)
+        }
+        .navigationTitle(item.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            trailingNavigationBarContent()
+        }
+        .commonError(content: $commonErrorContent)
     }
 }
 
 private extension HouseworkDetailView {
     
     func mainContent() -> some View {
-        VStack(spacing: DesignSystem.Space.space24) {
-            detailItemRow("実施予定日付") {
-                Text(item.formattedIndexedDate)
-                    .font(with: .body)
-                    .foregroundStyle(.primary2)
-            }
-            detailItemRow("ステータス") {
-                Text(item.state.segmentTitle)
-                    .font(with: .body)
-                    .foregroundStyle(.primary2)
-            }
-            detailItemRow("ポイント") {
-                PointLabel(point: item.point)
-            }
+        VStack(spacing: .zero) {
+            detailItemList()
             Spacer()
             Button {
-                tappedRequestConfirmButton()
+                Task {
+                    await tappedRequestConfirmButton()
+                }
             } label: {
                 Label("確認してもらう", image: "paperplane.fill")
                     .frame(maxWidth: .infinity)
@@ -57,12 +52,21 @@ private extension HouseworkDetailView {
         }
     }
     
-    func detailItemRow(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
-            Text(title)
-                .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            content()
+    func detailItemList() -> some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Space.space24) {
+            HouseworkDetailItemRow(title: "実施予定日付") {
+                Text(item.formattedIndexedDate)
+                    .font(with: .body)
+                    .foregroundStyle(.primary2)
+            }
+            HouseworkDetailItemRow(title: "ステータス") {
+                Text(item.state.segmentTitle)
+                    .font(with: .body)
+                    .foregroundStyle(.primary2)
+            }
+            HouseworkDetailItemRow(title: "ポイント") {
+                PointLabel(point: item.point)
+            }
         }
     }
     
@@ -79,15 +83,18 @@ private extension HouseworkDetailView {
 
 private extension HouseworkDetailView {
     
-    func tappedRequestConfirmButton() {
-        Task {
-            do {
-                try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
-            }
-            catch {
-                commonErrorContent = .init(error: error)
-            }
+    func tappedRequestConfirmButton() async {
+        
+        isLoading = true
+        
+        do {
+            try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
         }
+        catch {
+            commonErrorContent = .init(error: error)
+        }
+        
+        isLoading = false
     }
     
     func tappedDeleteHouseworkItem() {
@@ -99,6 +106,24 @@ private extension HouseworkDetailView {
 #Preview {
     NavigationStack {
         HouseworkDetailView(
+            item: .init(
+                id: "",
+                title: "洗濯",
+                point: 10,
+                metaData: .init(indexedDate: .distantPast, expiredAt: .distantFuture)
+            )
+        )
+    }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+}
+
+#Preview("HouseworkDetailView_通信中") {
+    NavigationStack {
+        HouseworkDetailView(
+            isLoading: true,
             item: .init(
                 id: "",
                 title: "洗濯",

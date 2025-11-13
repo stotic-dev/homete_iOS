@@ -11,9 +11,8 @@ import SwiftUI
 @Observable
 final class HouseworkListStore {
     
-    var cohabitantId = ""
-    
     private(set) var items: [DailyHouseworkList]
+    private var cohabitantId: String
     
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
@@ -23,15 +22,25 @@ final class HouseworkListStore {
     init(
         houseworkClient: HouseworkClient,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient,
-        items: [DailyHouseworkList] = []
+        items: [DailyHouseworkList] = [],
+        cohabitantId: String = ""
     ) {
         
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.items = items
+        self.cohabitantId = cohabitantId
     }
     
     func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
+        
+        self.cohabitantId = cohabitantId
+        
+        guard !cohabitantId.isEmpty else {
+            
+            await clear()
+            return
+        }
         
         await houseworkClient.removeListener(houseworkObserveKey)
         
@@ -48,12 +57,6 @@ final class HouseworkListStore {
                 calendar: calendar
             )
         }
-    }
-    
-    func clear() async {
-        
-        await houseworkClient.removeListener(houseworkObserveKey)
-        items.removeAll()
     }
     
     func register(_ newItem: HouseworkItem) async throws {
@@ -83,5 +86,14 @@ final class HouseworkListStore {
             message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
         )
         try await cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
+    }
+}
+
+private extension HouseworkListStore {
+    
+    func clear() async {
+        
+        await houseworkClient.removeListener(houseworkObserveKey)
+        items.removeAll()
     }
 }
