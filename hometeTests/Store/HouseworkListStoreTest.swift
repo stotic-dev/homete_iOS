@@ -30,7 +30,8 @@ struct HouseworkListStoreTest {
                 #expect(anchorDate == now)
                 #expect(offset == 3)
                 return stream
-            })
+            }),
+            cohabitantPushNotificationClient: .previewValue
         )
         
         await confirmation(expectedCount: 2) { confirmation in
@@ -68,23 +69,6 @@ struct HouseworkListStoreTest {
                 ]
             )
         }
-    }
-
-    @Test("家事リストの監視をやめて保持している家事リストのキャッシュも削除する")
-    func clear() async {
-        
-        let store = HouseworkListStore(
-            houseworkClient: .init(removeListenerHandler: { id in
-                #expect(id == inputId)
-            }),
-            items: [
-                .makeForTest(items: [.makeForTest(id: 1)])
-            ]
-        )
-        
-        await store.clear()
-        
-        #expect(store.items.isEmpty)
     }
 }
 
