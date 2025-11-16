@@ -88,8 +88,10 @@ extension HouseworkItem: Codable {
         title = try container.decode(String.self, forKey: .title)
         point = try container.decode(Int.self, forKey: .point)
         state = try container.decode(HouseworkState.self, forKey: .state)
-        executorId = try container.decode(String.self, forKey: .executorId)
-        executedAt = try container.decode(Date.self, forKey: .executedAt)
+
+        executorId = try? container.decode(String.self, forKey: .executorId)
+        executedAt = try? container.decode(Date.self, forKey: .executedAt)
+        
         expiredAt = try container.decode(Date.self, forKey: .expiredAt)
     }
     
@@ -101,8 +103,14 @@ extension HouseworkItem: Codable {
         try container.encode(title, forKey: .title)
         try container.encode(point, forKey: .point)
         try container.encode(state, forKey: .state)
-        try container.encode(executorId, forKey: .executorId)
-        try container.encode(executedAt, forKey: .executedAt)
+        
+        if let executorId,
+           let executedAt {
+            
+            try container.encode(executorId, forKey: .executorId)
+            try container.encode(executedAt, forKey: .executedAt)
+        }
+        
         try container.encode(expiredAt, forKey: .expiredAt)
     }
     

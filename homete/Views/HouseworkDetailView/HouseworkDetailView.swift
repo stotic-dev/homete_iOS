@@ -31,6 +31,9 @@ struct HouseworkDetailView: View {
             trailingNavigationBarContent()
         }
         .commonError(content: $commonErrorContent)
+        .onChange(of: houseworkListStore.items) {
+            didChangeItems()
+        }
     }
 }
 
@@ -93,6 +96,16 @@ private extension HouseworkDetailView {
         catch {
             
             commonErrorContent = .init(error: error)
+        }
+    }
+    
+    func didChangeItems() {
+        
+        guard let targetItem = houseworkListStore.items.item(item.id, item.indexedDate) else { return }
+        
+        withAnimation {
+            
+            item = targetItem
         }
     }
 }

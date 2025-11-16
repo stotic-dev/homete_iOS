@@ -54,13 +54,19 @@ struct HouseworkBoardView: View {
             )
         }
         .onChange(of: houseworkListStore.items) {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
         .onChange(of: selectedDate) {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
         .onAppear {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
     }
 }
@@ -90,8 +96,9 @@ private extension HouseworkBoardView {
 private extension HouseworkBoardView {
     
     func updateHouseworkBoardList() {
+        
         houseworkBoardList = .init(
-            dailyList: houseworkListStore.items,
+            dailyList: houseworkListStore.items.value,
             selectedDate: selectedDate,
             calendar: calendar
         )

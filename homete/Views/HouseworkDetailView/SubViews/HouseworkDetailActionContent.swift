@@ -124,19 +124,18 @@ private extension HouseworkDetailActionContent {
 }
 
 #Preview("HouseworkDetailActionContent_承認待ち_実施者アカウント", traits: .sizeThatFitsLayout) {
-    let ownUserId = "dummy"
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
         houseworkListStore: .init(houseworkClient: .previewValue, cohabitantPushNotificationClient: .previewValue),
-        account: .init(id: ownUserId, displayName: "", fcmToken: nil),
+        account: .init(id: "dummy", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
             indexedDate: .distantPast,
             title: "洗濯",
             point: 10,
             state: .pendingApproval,
-            executorId: ownUserId,
+            executorId: "dummy",
             executedAt: nil,
             expiredAt: .distantPast
         )

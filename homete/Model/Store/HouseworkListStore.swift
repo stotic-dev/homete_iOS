@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class HouseworkListStore {
     
-    private(set) var items: [DailyHouseworkList]
+    private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
     
     private let houseworkClient: HouseworkClient
@@ -28,7 +28,7 @@ final class HouseworkListStore {
         
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
-        self.items = items
+        self.items = .init(value: items)
         self.cohabitantId = cohabitantId
     }
     
@@ -52,7 +52,7 @@ final class HouseworkListStore {
         )
         for await currentItems in houseworkListStream {
             
-            items = DailyHouseworkList.makeMultiDateList(
+            items = StoredAllHouseworkList.makeMultiDateList(
                 items: currentItems,
                 calendar: calendar
             )
@@ -78,8 +78,7 @@ final class HouseworkListStore {
         let targetIndexedDate = target.indexedDate
         let targetId = target.id
         
-        guard let targetDateGroup = items.first(where: { $0.metaData.indexedDate == targetIndexedDate }),
-              let targetItem = targetDateGroup.items.first(where: { $0.id == targetId }) else {
+        guard let targetItem = items.item(targetId, targetIndexedDate) else {
             
             preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
         }
