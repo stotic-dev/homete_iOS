@@ -73,15 +73,18 @@ final class HouseworkListStore {
         }
     }
     
-    func requestReview(id: String, indexedDate: Date) async throws {
+    func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
         
-        guard let targetDateGroup = items.first(where: { $0.metaData.indexedDate == indexedDate }),
-              let targetItem = targetDateGroup.items.first(where: { $0.id == id }) else {
+        let targetIndexedDate = target.indexedDate
+        let targetId = target.id
+        
+        guard let targetDateGroup = items.first(where: { $0.metaData.indexedDate == targetIndexedDate }),
+              let targetItem = targetDateGroup.items.first(where: { $0.id == targetId }) else {
             
-            preconditionFailure("Not found target item(id: \(id), indexedDate: \(indexedDate))")
+            preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
         }
         
-        let updatedItem = targetItem.updateState(.pendingApproval)
+        let updatedItem = targetItem.updateState(.pendingApproval, at: now, changer: executor)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         
         Task.detached {

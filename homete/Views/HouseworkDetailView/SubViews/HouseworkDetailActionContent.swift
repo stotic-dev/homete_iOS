@@ -94,7 +94,11 @@ private extension HouseworkDetailActionContent {
         isLoading = true
         
         do {
-            try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
+            try await houseworkListStore.requestReview(
+                target: item,
+                now: .now,
+                executor: account.id
+            )
         }
         catch {
             commonErrorContent = .init(error: error)
@@ -133,6 +137,7 @@ private extension HouseworkDetailActionContent {
             point: 10,
             state: .pendingApproval,
             executorId: ownUserId,
+            executedAt: nil,
             expiredAt: .distantPast
         )
     )
@@ -151,6 +156,7 @@ private extension HouseworkDetailActionContent {
             point: 10,
             state: .pendingApproval,
             executorId: "",
+            executedAt: nil,
             expiredAt: .distantPast
         )
     )

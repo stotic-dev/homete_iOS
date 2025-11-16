@@ -26,12 +26,9 @@ struct HouseBoardListRow: View {
     HouseBoardListRow(
         houseworkItem: .init(
             id: "1",
-            indexedDate: .now,
             title: "洗濯",
             point: 20,
-            state: .incomplete,
-            executorId: nil,
-            expiredAt: .now
+            metaData: .init(indexedDate: .distantFuture, expiredAt: .distantPast)
         )
     )
 }
