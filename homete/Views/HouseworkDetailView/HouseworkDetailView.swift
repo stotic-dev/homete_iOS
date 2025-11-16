@@ -11,11 +11,11 @@ struct HouseworkDetailView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(AccountStore.self) var accountStore
     
     @State var isLoading = false
+    @State var item: HouseworkItem
     @CommonError var commonErrorContent
-    
-    let item: HouseworkItem
     
     var body: some View {
         ZStack {
@@ -40,15 +40,13 @@ private extension HouseworkDetailView {
         VStack(spacing: .zero) {
             detailItemList()
             Spacer()
-            Button {
-                Task {
-                    await tappedRequestConfirmButton()
-                }
-            } label: {
-                Label("確認してもらう", image: "paperplane.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .subPrimaryButtonStyle()
+            HouseworkDetailActionContent(
+                isLoading: $isLoading,
+                commonErrorContent: $commonErrorContent,
+                houseworkListStore: houseworkListStore,
+                account: accountStore.account,
+                item: item
+            )
         }
     }
     
@@ -83,20 +81,6 @@ private extension HouseworkDetailView {
 
 private extension HouseworkDetailView {
     
-    func tappedRequestConfirmButton() async {
-        
-        isLoading = true
-        
-        do {
-            try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
-        }
-        catch {
-            commonErrorContent = .init(error: error)
-        }
-        
-        isLoading = false
-    }
-    
     func tappedDeleteHouseworkItem() {
         // TODO: 家事削除
         dismiss()
@@ -118,6 +102,7 @@ private extension HouseworkDetailView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .environment(AccountStore(appDependencies: .previewValue))
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -136,4 +121,5 @@ private extension HouseworkDetailView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .environment(AccountStore(appDependencies: .previewValue))
 }

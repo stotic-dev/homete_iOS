@@ -25,12 +25,9 @@ struct HouseworkBoardView: View {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
-                        houseworkList: houseworkBoardList.items(matching: selectedHouseworkState)
-                    ) { _ in
-                        // TODO: 承認依頼
-                    } onDelete: { _ in
-                        // TODO: 削除
-                    }
+                        state: selectedHouseworkState,
+                        list: houseworkBoardList
+                    )
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -79,6 +76,14 @@ private extension HouseworkBoardView {
         }
         .floatingButtonStyle()
     }
+    
+    @ViewBuilder
+    func navigationHandler(_ element: AppNavigationElement) -> some View {
+        switch element {
+        case .houseworkDetail(let item):
+            HouseworkDetailView(item: item)
+        }
+    }
 }
 
 private extension HouseworkBoardView {
@@ -89,14 +94,6 @@ private extension HouseworkBoardView {
             selectedDate: selectedDate,
             calendar: calendar
         )
-    }
-    
-    @ViewBuilder
-    func navigationHandler(_ element: AppNavigationElement) -> some View {
-        switch element {
-        case .houseworkDetail(let item):
-            HouseworkDetailView(item: item)
-        }
     }
 }
 
@@ -113,11 +110,12 @@ private extension HouseworkBoardView {
                 items: [
                     .init(
                         id: "1",
-                        indexedDate: .distantPast,
                         title: "洗濯",
                         point: 20,
-                        state: .incomplete,
-                        expiredAt: .now
+                        metaData: .init(
+                            indexedDate: .distantPast,
+                            expiredAt: .distantPast
+                        )
                     )
                 ],
                 metaData: .init(

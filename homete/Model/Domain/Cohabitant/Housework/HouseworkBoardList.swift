@@ -12,7 +12,7 @@ struct HouseworkBoardList: Equatable {
     private(set) var items: [HouseworkItem]
     
     func items(matching state: HouseworkState) -> [HouseworkItem] {
-        
+        print("HouseworkBoardList filtering(state: \(state), items: \(items))")
         return items.filter { $0.state == state }
     }
 }

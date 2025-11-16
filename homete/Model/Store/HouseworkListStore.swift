@@ -63,11 +63,14 @@ final class HouseworkListStore {
         
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
         
-        let notificationContent = PushNotificationContent(
-            title: "新しい家事が登録されました",
-            message: newItem.title
-        )
-        try await cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
+        Task.detached {
+            
+            let notificationContent = PushNotificationContent(
+                title: "新しい家事が登録されました",
+                message: newItem.title
+            )
+            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+        }
     }
     
     func requestReview(id: String, indexedDate: Date) async throws {
@@ -81,11 +84,14 @@ final class HouseworkListStore {
         let updatedItem = targetItem.updateState(.pendingApproval)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         
-        let notificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
-        )
-        try await cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
+        Task.detached {
+            
+            let notificationContent = PushNotificationContent(
+                title: "確認が必要な家事があります",
+                message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
+            )
+            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+        }
     }
 }
 
