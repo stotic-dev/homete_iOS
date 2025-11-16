@@ -25,6 +25,7 @@ struct HouseworkBoardView: View {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
+                        houseworkListStore: houseworkListStore,
                         state: selectedHouseworkState,
                         list: houseworkBoardList
                     )

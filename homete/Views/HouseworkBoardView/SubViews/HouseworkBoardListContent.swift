@@ -11,6 +11,7 @@ struct HouseworkBoardListContent: View {
     
     @Environment(\.appNavigationPath) var navigationPath
     
+    var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
     
@@ -40,7 +41,9 @@ private extension HouseworkBoardListContent {
         }
         .swipeActions(edge: .trailing) {
             Button {
-                // TODO: 削除処理
+                Task {
+                    await didSwipeDeleteItemAction(item)
+                }
             } label: {
                 Text("削除")
             }
@@ -49,8 +52,29 @@ private extension HouseworkBoardListContent {
     }
 }
 
+// プレゼンテーションロジック
+
+private extension HouseworkBoardListContent {
+    
+    func didSwipeDeleteItemAction(_ item: HouseworkItem) async {
+        
+        do {
+            
+            try await houseworkListStore.remove(item)
+        }
+        catch {
+            
+            commonError = .init(error: error)
+        }
+    }
+}
+
 #Preview {
     HouseworkBoardListContent(
+        houseworkListStore: .init(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ),
         state: .incomplete,
         list: .init(items: [
             .init(id: "1", title: "洗濯", point: 20, metaData: .init(indexedDate: .now, expiredAt: .now)),

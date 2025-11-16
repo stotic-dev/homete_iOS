@@ -96,6 +96,11 @@ final class HouseworkListStore {
             try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
         }
     }
+    
+    func remove(_ target: HouseworkItem) async throws {
+        
+        try await houseworkClient.removeItem(target, cohabitantId)
+    }
 }
 
 private extension HouseworkListStore {

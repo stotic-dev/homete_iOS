@@ -10,6 +10,7 @@ import FirebaseFirestore
 struct HouseworkClient {
     
     let insertOrUpdateItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
+    let removeItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
     let snapshotListener: @Sendable (
         _ id: String,
         _ cohabitantId: String,
@@ -26,6 +27,10 @@ extension HouseworkClient: DependencyClient {
             _ item: HouseworkItem,
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
+        removeItemHandler: @escaping @Sendable (
+            _ item: HouseworkItem,
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _ in },
         snapshotListenerHandler: @escaping @Sendable (
             _ id: String,
             _ cohabitantId: String,
@@ -36,6 +41,7 @@ extension HouseworkClient: DependencyClient {
     ) {
         
         insertOrUpdateItem = insertOrUpdateItemHandler
+        removeItem = removeItemHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler
     }
@@ -43,6 +49,14 @@ extension HouseworkClient: DependencyClient {
     static let liveValue = HouseworkClient { item, cohabitantId in
         
         try await FirestoreService.shared.insertOrUpdate(data: item) {
+            
+            return $0
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
+    } removeItem: { item, cohabitantId in
+        
+        try await FirestoreService.shared.delete {
             
             return $0
                 .houseworkListRef(id: cohabitantId)

@@ -71,7 +71,9 @@ private extension HouseworkDetailView {
     func trailingNavigationBarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationBarButton(label: .delete) {
-                tappedDeleteHouseworkItem()
+                Task {
+                    await tappedDeleteHouseworkItem()
+                }
             }
         }
     }
@@ -81,9 +83,17 @@ private extension HouseworkDetailView {
 
 private extension HouseworkDetailView {
     
-    func tappedDeleteHouseworkItem() {
-        // TODO: 家事削除
-        dismiss()
+    func tappedDeleteHouseworkItem() async {
+        
+        do {
+            
+            try await houseworkListStore.remove(item)
+            dismiss()
+        }
+        catch {
+            
+            commonErrorContent = .init(error: error)
+        }
     }
 }
 
