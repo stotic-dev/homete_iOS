@@ -64,9 +64,9 @@ struct HouseworkListStoreTest {
             await loadHouseworkListTask
             
             #expect(
-                store.items == [
+                store.items == .init(value: [
                     .init(items: inputHouseworkList, metaData: .init(indexedDate: now, expiredAt: now))
-                ]
+                ])
             )
         }
     }
