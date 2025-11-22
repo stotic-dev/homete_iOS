@@ -209,7 +209,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854192DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeTests" */;
 			buildPhases = (
-				BC70E19C2E48DC220000C1BD /* Run Swift Lint */,
 				BCC853FE2DB74BBF00C9A44B /* Sources */,
 				BCC853FF2DB74BBF00C9A44B /* Frameworks */,
 				BCC854002DB74BBF00C9A44B /* Resources */,
@@ -309,25 +308,6 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"$ENABLE_PREVIEWS\" = \"NO\" ]; then\n    echo \"run format\"\nelse\n    echo \"skip format\"\nfi\n\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
-		};
-		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
