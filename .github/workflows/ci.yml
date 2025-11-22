@@ -27,6 +27,7 @@ env:
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
   TEST_OUTPUT_PATH: Build/test.xcresult
+  ARTIFACTS_PATH: Artifacts
 
 jobs:
   build:
@@ -135,12 +136,18 @@ jobs:
           mkdir -p ${{ env.DIFF_PATH }}
           reg-cli ${{ env.ACTUAL_PATH }} ${{ env.EXPECTED_PATH }} ${{ env.DIFF_PATH }} -R ${{ env.RESULT_FILE_PATH }}
 
+      - name: Compress Test Result
+        if: always()
+        run: |
+          mkdir -p ${{ env.ARTIFACTS_PATH }}
+          zip -r ${{ env.ARTIFACTS_PATH }}/test_result.zip ${{ env.TEST_OUTPUT_PATH }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: artifacts
-          path: Build/VRT
+          path: ${{ env.ARTIFACTS_PATH }}
           retention-days: 1
 
   # Deploy(TestFlight)
