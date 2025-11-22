@@ -16,19 +16,22 @@ struct HouseworkItemTest {
         
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
         return encoder
     }
     
     var decoder: JSONDecoder {
         
-        return JSONDecoder()
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
     }
     
     let fullItemEncodedString = """
         {
-          "executedAt" : 757350000,
+          "executedAt" : "2024-12-31T15:00:00Z",
           "executorId" : "dummy",
-          "expiredAt" : 757350000,
+          "expiredAt" : "2024-12-31T15:00:00Z",
           "id" : "id1",
           "indexedDate" : "2025-01-01",
           "point" : 10,
