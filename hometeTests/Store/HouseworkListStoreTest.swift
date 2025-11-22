@@ -122,6 +122,67 @@ struct HouseworkListStoreTest {
             }
         }
     }
+    
+    @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
+    func requestReview() async throws {
+        
+        // Arrange
+        
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        let expectedNotificationContent = PushNotificationContent(
+            title: "確認が必要な家事があります",
+            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        )
+        let requestedAt = Date()
+        let inputExecutor = "dummyExecutor"
+        let updatedHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: inputHouseworkItem.indexedDate,
+            state: .pendingApproval,
+            executorId: inputExecutor,
+            executedAt: requestedAt,
+            expiredAt: inputHouseworkItem.expiredAt
+        )
+        
+        await confirmation(expectedCount: 2) { confirmation in
+            
+            let _: Void = await withCheckedContinuation { continuation in
+                
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                        
+                        // Assert
+                        
+                        #expect(item == updatedHouseworkItem)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        
+                        // Assert
+                        
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedNotificationContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    items: [.makeForTest(items: [inputHouseworkItem])],
+                    cohabitantId: inputCohabitantId
+                )
+                
+                // Act
+                
+                Task {
+                    
+                    try await store.requestReview(
+                        target: inputHouseworkItem,
+                        now: requestedAt,
+                        executor: inputExecutor
+                    )
+                }
+            }
+        }
+    }
 }
 
 private extension HouseworkListStoreTest {
