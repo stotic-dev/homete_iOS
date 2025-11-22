@@ -44,9 +44,9 @@ struct HouseworkItemTest {
     @Test("全ての項目が入力された家事オブジェクトをエンコードできること")
     func init_encode() async throws {
         
-        let inputIndexedDate = try Date.dateComponents(year: 2025, month: 1, day: 1)
-        let inputExecutedAt = try Date.dateComponents(year: 2025, month: 1, day: 1)
-        let inputExpiredAt = try Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputIndexedDate = Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputExecutedAt = Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputExpiredAt = Date.dateComponents(year: 2025, month: 1, day: 1)
         
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -71,9 +71,9 @@ struct HouseworkItemTest {
         
         let actual = try decoder.decode(HouseworkItem.self, from: inputData)
         
-        let inputIndexedDate = try Date.dateComponents(year: 2025, month: 1, day: 1)
-        let inputExecutedAt = try Date.dateComponents(year: 2025, month: 1, day: 1)
-        let inputExpiredAt = try Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputIndexedDate = Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputExecutedAt = Date.dateComponents(year: 2025, month: 1, day: 1)
+        let inputExpiredAt = Date.dateComponents(year: 2025, month: 1, day: 1)
         let expected = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: inputIndexedDate,
@@ -85,30 +85,5 @@ struct HouseworkItemTest {
             expiredAt: inputExpiredAt
         )
         #expect(actual == expected)
-    }
-}
-
-extension Date {
-    static func dateComponents(
-        year: Int,
-        month: Int,
-        day: Int,
-        hour: Int = .zero,
-        minute: Int = .zero,
-        second: Int = .zero,
-        calendar: Calendar = .current
-    ) throws -> Date {
-        try #require(
-            DateComponents(
-                calendar: calendar,
-                year: year,
-                month: month,
-                day: day,
-                hour: hour,
-                minute: minute,
-                second: second
-            )
-            .date
-        )
     }
 }

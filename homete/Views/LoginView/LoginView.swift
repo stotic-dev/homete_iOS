@@ -43,6 +43,10 @@ struct LoginView: View {
         }
         .commonError(content: $commonErrorContent)
     }
+    
+    var view: any View {
+        EmptyView()
+    }
 }
 
 private extension LoginView {
