@@ -183,6 +183,35 @@ struct HouseworkListStoreTest {
             }
         }
     }
+    
+    @Test("家事削除時は家事を削除するAPIを実行する")
+    func remove() async throws {
+        
+        // Arrange
+        
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        
+        try await confirmation { confirmation in
+            
+            let store = HouseworkListStore(
+                houseworkClient: .init(removeItemHandler: { item, cohabitantId in
+                    
+                    // Assert
+                    
+                    #expect(item == inputHouseworkItem)
+                    #expect(cohabitantId == inputCohabitantId)
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .previewValue,
+                items: [.makeForTest(items: [inputHouseworkItem])],
+                cohabitantId: inputCohabitantId
+            )
+            
+            // Act
+            
+            try await store.remove(inputHouseworkItem)
+        }
+    }
 }
 
 private extension HouseworkListStoreTest {
