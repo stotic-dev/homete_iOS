@@ -17,7 +17,7 @@ extension Date {
         second: Int = .zero
     ) -> Date {
         DateComponents(
-            calendar: .current,
+            calendar: Calendar.init(identifier: .gregorian),
             timeZone: .init(identifier: "Asia/Tokyo"),
             year: year,
             month: month,
