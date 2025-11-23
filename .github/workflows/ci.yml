@@ -65,7 +65,7 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For ProjectTools
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
           path: ProjectTools/.build
           key: v1-project-tools-${{ runner.os }}-spm-${{ hashFiles(env.PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH) }}
@@ -73,7 +73,7 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For Project
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
           path: ${{ env.SPM_CLONE_PATH }}
           key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
