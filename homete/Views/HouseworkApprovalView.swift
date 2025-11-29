@@ -17,6 +17,7 @@ struct HouseworkApprovalView: View {
             ScrollView {
                 VStack(spacing: DesignSystem.Space.space24) {
                     notificationSection()
+                    houseworkPropertySection()
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -51,8 +52,41 @@ private extension HouseworkApprovalView {
                     .font(with: .body)
             }
             .frame(maxWidth: .infinity)
+            .padding(.vertical, DesignSystem.Space.space16)
         }
-        .padding(.vertical, DesignSystem.Space.space16)
+    }
+    
+    func houseworkPropertySection() -> some View {
+        section {
+            VStack(spacing: .zero) {
+                houseworkPropertyRow("日付") {
+                    Text(item.indexedDate, style: .date)
+                        .font(with: .headLineS)
+                }
+                Divider()
+                houseworkPropertyRow("ポイント") {
+                    Text("\(item.point)pt")
+                        .font(with: .headLineS)
+                }
+                Divider()
+                houseworkPropertyRow("完了時間") {
+                    Text(item.executedAt ?? .now, style: .time)
+                        .font(with: .headLineS)
+                }
+            }
+            .padding(.vertical, DesignSystem.Space.space8)
+        }
+    }
+    
+    func houseworkPropertyRow(_ title: String, detailContent: () -> some View) -> some View {
+        HStack(spacing: .zero) {
+            Text(title)
+                .font(with: .body)
+                .foregroundStyle(.primary2)
+            Spacer()
+            detailContent()
+        }
+        .padding(DesignSystem.Space.space24)
     }
     
     func section(@ViewBuilder content: () -> some View) -> some View {
@@ -70,6 +104,10 @@ private extension HouseworkApprovalView {
         id: "",
         title: "洗濯",
         point: 10,
-        metaData: .init(indexedDate: .distantPast, expiredAt: .distantPast)
+        metaData: .init(
+            indexedDate: .init(timeIntervalSince1970: 0),
+            expiredAt: .init(timeIntervalSince1970: 0)
+        )
     ))
+    .environment(\.locale, .init(identifier: "ja_JP"))
 }
