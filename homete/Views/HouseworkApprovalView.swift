@@ -16,19 +16,7 @@ struct HouseworkApprovalView: View {
         AppNavigationStackView { _ in
             ScrollView {
                 VStack(spacing: DesignSystem.Space.space24) {
-                    VStack(spacing: DesignSystem.Space.space8) {
-                        Text("完了報告")
-                            .font(with: .headLineM)
-                        Text("〇〇さんから\n「\(item.title)」の完了報告が届きました！")
-                            .multilineTextAlignment(.center)
-                            .font(with: .body)
-                    }
-                    .padding(.vertical, DesignSystem.Space.space16)
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        RoundedRectangle(radius: .radius8)
-                            .fill(.secondaryBg)
-                    }
+                    notificationSection()
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -51,6 +39,20 @@ private extension HouseworkApprovalView {
                 dismiss()
             }
         }
+    }
+    
+    func notificationSection() -> some View {
+        section {
+            VStack(spacing: DesignSystem.Space.space8) {
+                Text("完了報告")
+                    .font(with: .headLineM)
+                Text("〇〇さんから\n「\(item.title)」の\n完了報告が届きました！")
+                    .multilineTextAlignment(.center)
+                    .font(with: .body)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .padding(.vertical, DesignSystem.Space.space16)
     }
     
     func section(@ViewBuilder content: () -> some View) -> some View {
