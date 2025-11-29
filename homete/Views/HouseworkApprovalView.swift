@@ -23,7 +23,15 @@ struct HouseworkApprovalView: View {
                             .multilineTextAlignment(.center)
                             .font(with: .body)
                     }
+                    .padding(.vertical, DesignSystem.Space.space16)
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        RoundedRectangle(radius: .radius8)
+                            .fill(.secondaryBg)
+                    }
+                    Spacer()
                 }
+                .padding(.horizontal, DesignSystem.Space.space16)
             }
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("家事の確認")
@@ -43,6 +51,15 @@ private extension HouseworkApprovalView {
                 dismiss()
             }
         }
+    }
+    
+    func section(@ViewBuilder content: () -> some View) -> some View {
+        content()
+            .frame(maxWidth: .infinity)
+            .background {
+                RoundedRectangle(radius: .radius8)
+                    .fill(.secondaryBg)
+            }
     }
 }
 
