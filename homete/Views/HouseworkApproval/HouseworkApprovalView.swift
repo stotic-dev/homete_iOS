@@ -63,35 +63,9 @@ private extension HouseworkApprovalView {
     
     func houseworkPropertySection() -> some View {
         section {
-            VStack(spacing: .zero) {
-                houseworkPropertyRow("日付") {
-                    Text(item.indexedDate, style: .date)
-                        .font(with: .headLineS)
-                }
-                Divider()
-                houseworkPropertyRow("ポイント") {
-                    Text("\(item.point)pt")
-                        .font(with: .headLineS)
-                }
-                Divider()
-                houseworkPropertyRow("完了時間") {
-                    Text(item.executedAt ?? .now, style: .time)
-                        .font(with: .headLineS)
-                }
-            }
-            .padding(.vertical, DesignSystem.Space.space8)
+            HouseworkItemPropertyListContent(item: item)
+                .padding(.vertical, DesignSystem.Space.space8)
         }
-    }
-    
-    func houseworkPropertyRow(_ title: String, detailContent: () -> some View) -> some View {
-        HStack(spacing: .zero) {
-            Text(title)
-                .font(with: .body)
-                .foregroundStyle(.primary2)
-            Spacer()
-            detailContent()
-        }
-        .padding(DesignSystem.Space.space24)
     }
     
     func inputMessageSection() -> some View {
