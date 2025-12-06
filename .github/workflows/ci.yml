@@ -124,18 +124,6 @@ jobs:
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
 
-      - name: Analyze Snapshots Differences
-        if: always()
-        env:
-          ACTUAL_PATH: ${{ env.SNAPSHOT_FAILURES_PATH }}/PreviewTests.generated
-          EXPECTED_PATH: hometeSnapshotTests/__Snapshots__/PreviewTests.generated
-          DIFF_PATH: Build/VRT/Diff
-          RESULT_FILE_PATH: Build/VRT/snapshot_test_result.html
-        run: |
-          npm install -g reg-cli
-          mkdir -p ${{ env.DIFF_PATH }}
-          reg-cli ${{ env.ACTUAL_PATH }} ${{ env.EXPECTED_PATH }} ${{ env.DIFF_PATH }} -R ${{ env.RESULT_FILE_PATH }}
-
       - name: Compress Test Result
         if: always()
         run: |
