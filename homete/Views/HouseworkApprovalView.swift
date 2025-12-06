@@ -10,6 +10,8 @@ import SwiftUI
 struct HouseworkApprovalView: View {
     @Environment(\.dismiss) var dismiss
     
+    @State var inputMessage = ""
+    
     let item: HouseworkItem
     
     var body: some View {
@@ -18,6 +20,7 @@ struct HouseworkApprovalView: View {
                 VStack(spacing: DesignSystem.Space.space24) {
                     notificationSection()
                     houseworkPropertySection()
+                    inputMessageSection()
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -87,6 +90,20 @@ private extension HouseworkApprovalView {
             detailContent()
         }
         .padding(DesignSystem.Space.space24)
+    }
+    
+    func inputMessageSection() -> some View {
+        VStack(spacing: DesignSystem.Space.space16) {
+            Text("メッセージ（任意）")
+                .font(with: .headLineS)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            section {
+                TextField("感謝を伝えましょう！", text: $inputMessage, axis: .vertical)
+                    .font(with: .body)
+                    .padding(DesignSystem.Space.space16)
+                    .frame(minHeight: 150, alignment: .topLeading)
+            }
+        }
     }
     
     func section(@ViewBuilder content: () -> some View) -> some View {
