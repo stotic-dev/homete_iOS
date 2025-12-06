@@ -26,6 +26,6 @@ extension Date {
             minute: minute,
             second: second
         )
-        .date!
+        .date! // swiftlint:disable:this force_unwrapping
     }
 }
