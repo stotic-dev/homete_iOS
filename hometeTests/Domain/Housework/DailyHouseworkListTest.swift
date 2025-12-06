@@ -39,7 +39,7 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
             selectedDate: selectedDate,
             items: [],
             calendar: calendar,
-            locale: .init(identifier: "ja_JP")
+            locale: .jp
         )
         
         // Assert
