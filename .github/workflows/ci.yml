@@ -27,6 +27,7 @@ env:
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
   TEST_OUTPUT_PATH: Build/test.xcresult
+  ARTIFACTS_PATH: Artifacts
 
 jobs:
   build:
@@ -64,7 +65,7 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For ProjectTools
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
           path: ProjectTools/.build
           key: v1-project-tools-${{ runner.os }}-spm-${{ hashFiles(env.PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH) }}
@@ -72,7 +73,7 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For Project
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
           path: ${{ env.SPM_CLONE_PATH }}
           key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
@@ -123,24 +124,18 @@ jobs:
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
 
-      - name: Analyze Snapshots Differences
+      - name: Compress Test Result
         if: always()
-        env:
-          ACTUAL_PATH: ${{ env.SNAPSHOT_FAILURES_PATH }}/PreviewTests.generated
-          EXPECTED_PATH: hometeSnapshotTests/__Snapshots__/PreviewTests.generated
-          DIFF_PATH: Build/VRT/Diff
-          RESULT_FILE_PATH: Build/VRT/snapshot_test_result.html
         run: |
-          npm install -g reg-cli
-          mkdir -p ${{ env.DIFF_PATH }}
-          reg-cli ${{ env.ACTUAL_PATH }} ${{ env.EXPECTED_PATH }} ${{ env.DIFF_PATH }} -R ${{ env.RESULT_FILE_PATH }}
+          mkdir -p ${{ env.ARTIFACTS_PATH }}
+          zip -r ${{ env.ARTIFACTS_PATH }}/test_result.zip ${{ env.TEST_OUTPUT_PATH }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: artifacts
-          path: Build/VRT
+          path: ${{ env.ARTIFACTS_PATH }}
           retention-days: 1
 
   # Deploy(TestFlight)

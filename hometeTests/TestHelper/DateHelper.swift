@@ -14,11 +14,11 @@ extension Date {
         day: Int,
         hour: Int = .zero,
         minute: Int = .zero,
-        second: Int = .zero,
-        calendar: Calendar = .current
+        second: Int = .zero
     ) -> Date {
         DateComponents(
-            calendar: calendar,
+            calendar: Calendar.init(identifier: .gregorian),
+            timeZone: .init(identifier: "Asia/Tokyo"),
             year: year,
             month: month,
             day: day,

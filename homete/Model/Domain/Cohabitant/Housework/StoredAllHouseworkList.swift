@@ -25,7 +25,7 @@ struct StoredAllHouseworkList: Equatable, Sendable {
         return .init(value: items)
     }
     
-    func item(_ id: String, _ indexedDate: Date) -> HouseworkItem? {
+    func item(_ id: String, _ indexedDate: HouseworkIndexedDate) -> HouseworkItem? {
         
         guard let targetDayList = value.first(
             where: { $0.metaData.indexedDate == indexedDate }

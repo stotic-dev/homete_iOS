@@ -77,9 +77,9 @@ private extension HouseworkBoardListContent {
         ),
         state: .incomplete,
         list: .init(items: [
-            .init(id: "1", title: "洗濯", point: 20, metaData: .init(indexedDate: .now, expiredAt: .now)),
-            .init(id: "2", title: "掃除", point: 100, metaData: .init(indexedDate: .now, expiredAt: .now)),
-            .init(id: "3", title: "料理", point: 1, metaData: .init(indexedDate: .now, expiredAt: .now))
+            .init(id: "1", title: "洗濯", point: 20, metaData: .init(indexedDate: .init(.now), expiredAt: .now)),
+            .init(id: "2", title: "掃除", point: 100, metaData: .init(indexedDate: .init(.now), expiredAt: .now)),
+            .init(id: "3", title: "料理", point: 1, metaData: .init(indexedDate: .init(.now), expiredAt: .now))
         ])
     )
 }
