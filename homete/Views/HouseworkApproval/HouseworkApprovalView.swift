@@ -120,7 +120,8 @@ private extension HouseworkApprovalView {
         metaData: .init(
             indexedDate: .init(timeIntervalSince1970: 0),
             expiredAt: .init(timeIntervalSince1970: 0)
-        )
+        ),
+        executedAt: .distantFuture
     ))
     .environment(\.locale, .init(identifier: "ja_JP"))
 }

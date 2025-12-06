@@ -22,10 +22,12 @@ struct HouseworkItemPropertyListContent: View {
                 Text("\(item.point)pt")
                     .font(with: .headLineS)
             }
-            Divider()
-            houseworkPropertyRow("完了時間") {
-                Text(item.executedAt ?? .now, style: .time)
-                    .font(with: .headLineS)
+            if let executedAt = item.executedAt {
+                Divider()
+                houseworkPropertyRow("完了時間") {
+                    Text(executedAt, style: .time)
+                        .font(with: .headLineS)
+                }
             }
         }
     }
@@ -53,7 +55,8 @@ private extension HouseworkItemPropertyListContent {
         metaData: .init(
             indexedDate: .init(timeIntervalSince1970: 0),
             expiredAt: .init(timeIntervalSince1970: 0)
-        )
+        ),
+        executedAt: .distantFuture
     ))
     .environment(\.locale, .init(identifier: "ja_JP"))
 }
