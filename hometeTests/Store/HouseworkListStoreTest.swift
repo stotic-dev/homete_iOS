@@ -146,14 +146,16 @@ struct HouseworkListStoreTest {
             let _: Void = await withCheckedContinuation { continuation in
                 
                 let store = HouseworkListStore(
-                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-                        
-                        // Assert
-                        
-                        #expect(item == updatedHouseworkItem)
-                        #expect(cohabitantId == inputCohabitantId)
-                        confirmation()
-                    }),
+                    houseworkClient: .init(
+                        insertOrUpdateItemHandler: { item, cohabitantId in
+                            
+                            // Assert
+                            
+                            #expect(item == updatedHouseworkItem)
+                            #expect(cohabitantId == inputCohabitantId)
+                            confirmation()
+                        }
+                    ),
                     cohabitantPushNotificationClient: .init { id, content in
                         
                         // Assert

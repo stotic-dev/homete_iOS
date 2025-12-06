@@ -1,5 +1,5 @@
 {
-  "originHash" : "0ce5e599b73aa1c45f0fbe4a790a552c0abcdabb470d1092c7726e34097b64b0",
+  "originHash" : "227ab4fff747a25f483c0af83d6c5aa33a944d6b86145dcc9025fa14d4f69616",
   "pins" : [
     {
       "identity" : "collectionconcurrencykit",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/danger/swift.git",
       "state" : {
-        "revision" : "7e8470aa67b3096c132fa45d3e0ee5488b992f0f",
-        "version" : "3.21.2"
+        "revision" : "2dc204311befdf33eae93dec92a1f059ca673425",
+        "version" : "3.22.0"
       }
     },
     {
