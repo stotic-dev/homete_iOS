@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct HouseworkItem: Identifiable, Equatable, Sendable {
+struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable {
     
     let id: String
     let indexedDate: Date
@@ -24,13 +24,13 @@ struct HouseworkItem: Identifiable, Equatable, Sendable {
 
 extension HouseworkItem {
     
-    init(id: String, title: String, point: Int, metaData: DailyHouseworkMetaData) {
+    init(id: String, title: String, point: Int, metaData: DailyHouseworkMetaData, state: HouseworkState = .incomplete) {
         self.init(
             id: id,
             indexedDate: metaData.indexedDate,
             title: title,
             point: point,
-            state: .incomplete,
+            state: state,
             expiredAt: metaData.expiredAt
         )
     }

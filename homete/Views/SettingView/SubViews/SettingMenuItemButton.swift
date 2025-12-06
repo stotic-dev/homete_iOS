@@ -35,6 +35,6 @@ struct SettingMenuItemButton: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     SettingMenuItemButton(item: .taskTemplate) {}
 }

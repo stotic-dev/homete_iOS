@@ -27,12 +27,12 @@ extension View {
     }
 }
 
-#Preview("SubPrimaryButtonStyle_Enabled") {
+#Preview("SubPrimaryButtonStyle_Enabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .subPrimaryButtonStyle()
 }
 
-#Preview("SubPrimaryButtonStyle_Disabled") {
+#Preview("SubPrimaryButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .subPrimaryButtonStyle(isDisabled: true)
 }

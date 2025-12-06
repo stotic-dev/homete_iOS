@@ -43,8 +43,3 @@ struct CohabitantRegistrationView: View {
             }
     }
 }
-
-#Preview("CohabitantRegistrationView_登録終了確認アラート表示") {
-    CohabitantRegistrationView(isPresentingConfirmCancelAlert: true)
-        .environment(AccountStore(appDependencies: .previewValue))
-}

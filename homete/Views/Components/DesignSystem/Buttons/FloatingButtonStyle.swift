@@ -42,14 +42,14 @@ extension View {
     }
 }
 
-#Preview("テキストボタン") {
+#Preview("FloatingButtonStyle_テキストボタン", traits: .sizeThatFitsLayout) {
     Button("Button") {
         print("tapped")
     }
     .floatingButtonStyle()
 }
 
-#Preview("アイコンボタン") {
+#Preview("FloatingButtonStyle_アイコンボタン", traits: .sizeThatFitsLayout) {
     Button {
         print("tapped")
     } label: {
@@ -58,7 +58,7 @@ extension View {
     .floatingButtonStyle()
 }
 
-#Preview("無効状態") {
+#Preview("FloatingButtonStyle_無効状態", traits: .sizeThatFitsLayout) {
     Button {} label: {
         Image(systemName: "plus")
     }

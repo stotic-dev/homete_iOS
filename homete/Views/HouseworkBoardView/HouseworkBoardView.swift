@@ -12,7 +12,7 @@ struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(HouseworkListStore.self) var houseworkListStore
     
-    @State var navigationPath = CustomNavigationPath<HouseworkBoardNavigationPathElement>(path: [])
+    @State var navigationPath = AppNavigationPath(path: [])
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
@@ -25,9 +25,12 @@ struct HouseworkBoardView: View {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
-                        selectedHouseworkState: selectedHouseworkState,
-                        houseworkBoardList: $houseworkBoardList
-                    )
+                        houseworkList: houseworkBoardList.items(matching: selectedHouseworkState)
+                    ) { _ in
+                        // TODO: 承認依頼
+                    } onDelete: { _ in
+                        // TODO: 削除
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -38,16 +41,10 @@ struct HouseworkBoardView: View {
                 .padding(.trailing, DesignSystem.Space.space24)
                 .padding(.bottom, DesignSystem.Space.space24)
             }
-            .navigationDestination(for: HouseworkBoardNavigationPathElement.self) { element in
-                element.destination()
+            .navigationDestination(for: AppNavigationElement.self) { element in
+                navigationHandler(element)
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationBarButton(label: .settings) {
-                        navigationPath.push(.settings)
-                    }
-                }
-            }
+            .environment(\.appNavigationPath, navigationPath)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
             RegisterHouseworkView(
@@ -92,6 +89,14 @@ private extension HouseworkBoardView {
             selectedDate: selectedDate,
             calendar: calendar
         )
+    }
+    
+    @ViewBuilder
+    func navigationHandler(_ element: AppNavigationElement) -> some View {
+        switch element {
+        case .houseworkDetail(let item):
+            HouseworkDetailView(item: item)
+        }
     }
 }
 

@@ -11,11 +11,11 @@ struct HomeView: View {
         
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
-    @State var navigationPath = CustomNavigationPath<HomeNavigationPathElement>(path: [])
     @State var isShowCohabitantRegistrationModal = false
+    @State var isShowSetting = false
     
     var body: some View {
-        NavigationStack(path: $navigationPath.path) {
+        NavigationStack {
             ZStack {
                 if cohabitantId.isEmpty {
                     NotRegisteredContent(
@@ -26,17 +26,16 @@ struct HomeView: View {
                     RegisteredContent()
                 }
             }
-            .environment(\.homeNavigationPath, navigationPath)
-            .navigationDestination(for: HomeNavigationPathElement.self) { element in
-                element.destination()
-            }
             .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
                 CohabitantRegistrationView()
+            }
+            .sheet(isPresented: $isShowSetting) {
+                SettingView()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationBarButton(label: .settings) {
-                        navigationPath.push(.settings)
+                        isShowSetting = true
                     }
                 }
             }
