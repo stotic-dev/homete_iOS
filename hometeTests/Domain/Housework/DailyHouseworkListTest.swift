@@ -51,7 +51,7 @@ extension DailyHouseworkListTest.IsRegisteredCase {
     @Test(
         "登録されている家事がない場合は、その日付の家事レコードが登録されていない",
         arguments: [
-            [HouseworkItem(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now)],
+            [HouseworkItem.makeForTest(id: 1, title: "洗濯", point: 1)],
             []
         ]
     )
@@ -76,17 +76,17 @@ extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
     @Test(
         "同じタイトルの家事が含まれていれば登録済みの家事とみなす",
         arguments: [
-            HouseworkItem(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
-            HouseworkItem(id: "3", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
-            HouseworkItem(id: "1", indexedDate: .now, title: "掃除", point: 1, state: .incomplete, expiredAt: .now)
+            HouseworkItem.makeForTest(id: 1, title: "洗濯", point: 1),
+            .makeForTest(id: 3, title: "洗濯", point: 1),
+            .makeForTest(id: 1, title: "掃除", point: 1)
         ]
     )
     func alreadyRegistered_trueWhenSameTitleExists(inputItem: HouseworkItem) {
         
         // Arrange
         let items: [HouseworkItem] = [
-            .init(id: "1", indexedDate: .now, title: "洗濯", point: 1, state: .incomplete, expiredAt: .now),
-            .init(id: "2", indexedDate: .now, title: "ゴミ捨て", point: 1, state: .completed, expiredAt: .now)
+            .makeForTest(id: 1, title: "洗濯", point: 1),
+            .makeForTest(id: 2, title: "ゴミ捨て", point: 1, state: .completed)
         ]
         let list = DailyHouseworkList(
             items: items,

@@ -10,7 +10,6 @@ import SwiftUI
 struct HouseBoardListRow: View {
     
     let houseworkItem: HouseworkItem
-    let onDelete: (HouseworkItem) async -> Void
     
     var body: some View {
         HStack(spacing: DesignSystem.Space.space16) {
@@ -20,16 +19,6 @@ struct HouseBoardListRow: View {
             Spacer()
         }
         .tag(houseworkItem.id)
-        .swipeActions(edge: .trailing) {
-            Button {
-                Task {
-                    await onDelete(houseworkItem)
-                }
-            } label: {
-                Text("削除")
-            }
-            .tint(.red)
-        }
     }
 }
 
@@ -37,11 +26,9 @@ struct HouseBoardListRow: View {
     HouseBoardListRow(
         houseworkItem: .init(
             id: "1",
-            indexedDate: .now,
             title: "洗濯",
             point: 20,
-            state: .incomplete,
-            expiredAt: .now
+            metaData: .init(indexedDate: .distantFuture, expiredAt: .distantPast)
         )
-    ) { _ in }
+    )
 }

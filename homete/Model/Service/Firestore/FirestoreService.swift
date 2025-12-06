@@ -31,6 +31,11 @@ final actor FirestoreService {
         try predicate(firestore).setData(from: data, merge: false)
     }
     
+    func delete(predicate: (Firestore) -> DocumentReference) async throws {
+        
+        try await predicate(firestore).delete()
+    }
+    
     func addSnapshotListener<Output>(
         id: String,
         predicate: (Firestore) -> Query

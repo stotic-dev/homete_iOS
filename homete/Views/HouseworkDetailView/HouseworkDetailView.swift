@@ -11,11 +11,11 @@ struct HouseworkDetailView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(AccountStore.self) var accountStore
     
     @State var isLoading = false
+    @State var item: HouseworkItem
     @CommonError var commonErrorContent
-    
-    let item: HouseworkItem
     
     var body: some View {
         ZStack {
@@ -31,6 +31,9 @@ struct HouseworkDetailView: View {
             trailingNavigationBarContent()
         }
         .commonError(content: $commonErrorContent)
+        .onChange(of: houseworkListStore.items) {
+            didChangeItems()
+        }
     }
 }
 
@@ -40,15 +43,13 @@ private extension HouseworkDetailView {
         VStack(spacing: .zero) {
             detailItemList()
             Spacer()
-            Button {
-                Task {
-                    await tappedRequestConfirmButton()
-                }
-            } label: {
-                Label("確認してもらう", image: "paperplane.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .subPrimaryButtonStyle()
+            HouseworkDetailActionContent(
+                isLoading: $isLoading,
+                commonErrorContent: $commonErrorContent,
+                houseworkListStore: houseworkListStore,
+                account: accountStore.account,
+                item: item
+            )
         }
     }
     
@@ -73,7 +74,9 @@ private extension HouseworkDetailView {
     func trailingNavigationBarContent() -> some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             NavigationBarButton(label: .delete) {
-                tappedDeleteHouseworkItem()
+                Task {
+                    await tappedDeleteHouseworkItem()
+                }
             }
         }
     }
@@ -83,23 +86,27 @@ private extension HouseworkDetailView {
 
 private extension HouseworkDetailView {
     
-    func tappedRequestConfirmButton() async {
-        
-        isLoading = true
+    func tappedDeleteHouseworkItem() async {
         
         do {
-            try await houseworkListStore.requestReview(id: item.id, indexedDate: item.indexedDate)
+            
+            try await houseworkListStore.remove(item)
+            dismiss()
         }
         catch {
+            
             commonErrorContent = .init(error: error)
         }
-        
-        isLoading = false
     }
     
-    func tappedDeleteHouseworkItem() {
-        // TODO: 家事削除
-        dismiss()
+    func didChangeItems() {
+        
+        guard let targetItem = houseworkListStore.items.item(item.id, item.indexedDate) else { return }
+        
+        withAnimation {
+            
+            item = targetItem
+        }
     }
 }
 
@@ -118,6 +125,7 @@ private extension HouseworkDetailView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .environment(AccountStore(appDependencies: .previewValue))
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -136,4 +144,5 @@ private extension HouseworkDetailView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .environment(AccountStore(appDependencies: .previewValue))
 }

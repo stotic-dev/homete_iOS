@@ -16,6 +16,8 @@ extension HouseworkItem {
         title: String = "title",
         point: Int = 100,
         state: HouseworkState = .incomplete,
+        executorId: String? = nil,
+        executedAt: Date? = nil,
         expiredAt: Date = .now
     ) -> Self {
         
@@ -25,6 +27,8 @@ extension HouseworkItem {
             title: title,
             point: point,
             state: state,
+            executorId: executorId,
+            executedAt: executedAt,
             expiredAt: expiredAt
         )
     }

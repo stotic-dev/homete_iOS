@@ -25,12 +25,10 @@ struct HouseworkBoardView: View {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
-                        houseworkList: houseworkBoardList.items(matching: selectedHouseworkState)
-                    ) { _ in
-                        // TODO: 承認依頼
-                    } onDelete: { _ in
-                        // TODO: 削除
-                    }
+                        houseworkListStore: houseworkListStore,
+                        state: selectedHouseworkState,
+                        list: houseworkBoardList
+                    )
                     Spacer()
                 }
                 .padding(.horizontal, DesignSystem.Space.space16)
@@ -56,13 +54,19 @@ struct HouseworkBoardView: View {
             )
         }
         .onChange(of: houseworkListStore.items) {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
         .onChange(of: selectedDate) {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
         .onAppear {
-            updateHouseworkBoardList()
+            withAnimation {
+                updateHouseworkBoardList()
+            }
         }
     }
 }
@@ -79,17 +83,6 @@ private extension HouseworkBoardView {
         }
         .floatingButtonStyle()
     }
-}
-
-private extension HouseworkBoardView {
-    
-    func updateHouseworkBoardList() {
-        houseworkBoardList = .init(
-            dailyList: houseworkListStore.items,
-            selectedDate: selectedDate,
-            calendar: calendar
-        )
-    }
     
     @ViewBuilder
     func navigationHandler(_ element: AppNavigationElement) -> some View {
@@ -97,6 +90,18 @@ private extension HouseworkBoardView {
         case .houseworkDetail(let item):
             HouseworkDetailView(item: item)
         }
+    }
+}
+
+private extension HouseworkBoardView {
+    
+    func updateHouseworkBoardList() {
+        
+        houseworkBoardList = .init(
+            dailyList: houseworkListStore.items.value,
+            selectedDate: selectedDate,
+            calendar: calendar
+        )
     }
 }
 
@@ -113,11 +118,12 @@ private extension HouseworkBoardView {
                 items: [
                     .init(
                         id: "1",
-                        indexedDate: .distantPast,
                         title: "洗濯",
                         point: 20,
-                        state: .incomplete,
-                        expiredAt: .now
+                        metaData: .init(
+                            indexedDate: .distantPast,
+                            expiredAt: .distantPast
+                        )
                     )
                 ],
                 metaData: .init(

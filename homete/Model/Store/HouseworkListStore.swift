@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class HouseworkListStore {
     
-    private(set) var items: [DailyHouseworkList]
+    private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
     
     private let houseworkClient: HouseworkClient
@@ -28,7 +28,7 @@ final class HouseworkListStore {
         
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
-        self.items = items
+        self.items = .init(value: items)
         self.cohabitantId = cohabitantId
     }
     
@@ -52,7 +52,7 @@ final class HouseworkListStore {
         )
         for await currentItems in houseworkListStream {
             
-            items = DailyHouseworkList.makeMultiDateList(
+            items = StoredAllHouseworkList.makeMultiDateList(
                 items: currentItems,
                 calendar: calendar
             )
@@ -63,29 +63,42 @@ final class HouseworkListStore {
         
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
         
-        let notificationContent = PushNotificationContent(
-            title: "新しい家事が登録されました",
-            message: newItem.title
-        )
-        try await cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
+        Task.detached {
+            
+            let notificationContent = PushNotificationContent(
+                title: "新しい家事が登録されました",
+                message: newItem.title
+            )
+            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+        }
     }
     
-    func requestReview(id: String, indexedDate: Date) async throws {
+    func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
         
-        guard let targetDateGroup = items.first(where: { $0.metaData.indexedDate == indexedDate }),
-              let targetItem = targetDateGroup.items.first(where: { $0.id == id }) else {
+        let targetIndexedDate = target.indexedDate
+        let targetId = target.id
+        
+        guard let targetItem = items.item(targetId, targetIndexedDate) else {
             
-            preconditionFailure("Not found target item(id: \(id), indexedDate: \(indexedDate))")
+            preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
         }
         
-        let updatedItem = targetItem.updateState(.pendingApproval)
+        let updatedItem = targetItem.updateState(.pendingApproval, at: now, changer: executor)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         
-        let notificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
-        )
-        try await cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
+        Task.detached {
+            
+            let notificationContent = PushNotificationContent(
+                title: "確認が必要な家事があります",
+                message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
+            )
+            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+        }
+    }
+    
+    func remove(_ target: HouseworkItem) async throws {
+        
+        try await houseworkClient.removeItem(target, cohabitantId)
     }
 }
 

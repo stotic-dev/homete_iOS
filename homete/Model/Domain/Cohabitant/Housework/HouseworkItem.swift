@@ -14,6 +14,8 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable {
     let title: String
     let point: Int
     let state: HouseworkState
+    let executorId: String?
+    let executedAt: Date?
     let expiredAt: Date
     
     var formattedIndexedDate: String {
@@ -21,7 +23,7 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable {
         return indexedDate.formatted(Date.FormatStyle.houseworkDateFormatStyle)
     }
     
-    func updateState(_ nextState: HouseworkState) -> Self {
+    func updateState(_ nextState: HouseworkState, at now: Date, changer: String) -> Self {
         
         return .init(
             id: id,
@@ -29,20 +31,38 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable {
             title: title,
             point: point,
             state: nextState,
+            executorId: nextState == .pendingApproval ? changer : executorId,
+            executedAt: nextState == .pendingApproval ? now : executedAt,
             expiredAt: expiredAt
         )
+    }
+    
+    func isApprovable(_ userId: String) -> Bool {
+        
+        guard let executorId else { return false }
+        return executorId != userId
     }
 }
 
 extension HouseworkItem {
     
-    init(id: String, title: String, point: Int, metaData: DailyHouseworkMetaData, state: HouseworkState = .incomplete) {
+    init(
+        id: String,
+        title: String,
+        point: Int,
+        metaData: DailyHouseworkMetaData,
+        state: HouseworkState = .incomplete,
+        executedAt: Date? = nil
+    ) {
+        
         self.init(
             id: id,
             indexedDate: metaData.indexedDate,
             title: title,
             point: point,
             state: state,
+            executorId: nil,
+            executedAt: executedAt,
             expiredAt: metaData.expiredAt
         )
     }
@@ -68,20 +88,33 @@ extension HouseworkItem: Codable {
         title = try container.decode(String.self, forKey: .title)
         point = try container.decode(Int.self, forKey: .point)
         state = try container.decode(HouseworkState.self, forKey: .state)
+
+        executorId = try? container.decode(String.self, forKey: .executorId)
+        executedAt = try? container.decode(Date.self, forKey: .executedAt)
+        
         expiredAt = try container.decode(Date.self, forKey: .expiredAt)
     }
     
     func encode(to encoder: any Encoder) throws {
+        
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(formattedIndexedDate, forKey: .indexedDate)
         try container.encode(title, forKey: .title)
         try container.encode(point, forKey: .point)
         try container.encode(state, forKey: .state)
+        
+        if let executorId,
+           let executedAt {
+            
+            try container.encode(executorId, forKey: .executorId)
+            try container.encode(executedAt, forKey: .executedAt)
+        }
+        
         try container.encode(expiredAt, forKey: .expiredAt)
     }
     
     private enum CodingKeys: String, CodingKey {
-        case id, indexedDate, title, point, state, expiredAt
+        case id, indexedDate, title, point, state, executorId, executedAt, expiredAt
     }
 }
