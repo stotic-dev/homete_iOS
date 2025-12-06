@@ -9,21 +9,20 @@ import SwiftUI
 
 struct SubPrimaryButtonStyle: ButtonStyle {
     
-    let isDisabled: Bool
+    @Environment(\.isEnabled) var isEnabled
     
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .commonStyle()
             .background(.primary1)
             .cornerRadius(.radius16)
-            .opacity(isDisabled ? 0.5 : 1)
-            .disabled(isDisabled)
+            .opacity(isEnabled ? 1 : 0.5)
     }
 }
 extension View {
     
-    func subPrimaryButtonStyle(isDisabled: Bool = false) -> some View {
-        self.buttonStyle(SubPrimaryButtonStyle(isDisabled: isDisabled))
+    func subPrimaryButtonStyle() -> some View {
+        self.buttonStyle(SubPrimaryButtonStyle())
     }
 }
 
@@ -34,5 +33,6 @@ extension View {
 
 #Preview("SubPrimaryButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
-        .subPrimaryButtonStyle(isDisabled: true)
+        .subPrimaryButtonStyle()
+        .disabled(true)
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FloatingButtonStyle: ButtonStyle {
     
-    let isDisable: Bool
+    @Environment(\.isEnabled) var isEnabled
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -21,24 +21,28 @@ struct FloatingButtonStyle: ButtonStyle {
                         .fill(.primary1)
                 }
             }
-            .opacity(configuration.isPressed || isDisable ? 0.5 : 1)
-            .disabled(isDisable)
+            .opacity(configuration.isPressed || !isEnabled ? 0.5 : 1)
+            .addGlassEffect(!isEnabled)
+    }
+}
+
+private extension View {
+    
+    func addGlassEffect(_ isDisable: Bool) -> some View {
+        if #available(iOS 26.0, *) {
+            return self.glassEffect(.regular.interactive(!isDisable))
+        } else {
+            return self
+        }
     }
 }
 
 extension View {
     
     /// 宙に浮いたようなボタンのスタイル
-    /// - Parameters:
-    ///   - isDisable: ボタンが無効であるかどうか
     /// - Description: iOS26ではLiquid Glassの効果があるボタンになる
-    func floatingButtonStyle(isDisable: Bool = false) -> some View {
-        if #available(iOS 26.0, *) {
-            return self.buttonStyle(FloatingButtonStyle(isDisable: isDisable))
-                .glassEffect(.regular.interactive(!isDisable))
-        } else {
-            return self.buttonStyle(FloatingButtonStyle(isDisable: isDisable))
-        }
+    func floatingButtonStyle() -> some View {
+        self.buttonStyle(FloatingButtonStyle())
     }
 }
 
@@ -62,5 +66,6 @@ extension View {
     Button {} label: {
         Image(systemName: "plus")
     }
-    .floatingButtonStyle(isDisable: true)
+    .floatingButtonStyle()
+    .disabled(true)
 }
