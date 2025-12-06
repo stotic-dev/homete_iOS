@@ -19,6 +19,7 @@ struct SubPrimaryButtonStyle: ButtonStyle {
             .opacity(isEnabled ? 1 : 0.5)
     }
 }
+
 extension View {
     
     func subPrimaryButtonStyle() -> some View {

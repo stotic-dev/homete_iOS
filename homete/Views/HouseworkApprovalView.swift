@@ -131,12 +131,8 @@ private extension HouseworkApprovalView {
             } label: {
                 Text("未完了に戻す")
                     .frame(maxWidth: .infinity)
-                    .font(with: .headLineS)
-                    .padding(.vertical, DesignSystem.Space.space8)
-                    .foregroundStyle(.commonWhite)
-                    .background(.destructive)
-                    .cornerRadius(.radius16)
             }
+            .destructiveButtonStyle()
         }
         .disabled(inputMessage.isEmpty)
     }
