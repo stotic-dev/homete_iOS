@@ -20,6 +20,18 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable {
         
         return indexedDate.formatted(Date.FormatStyle.houseworkDateFormatStyle)
     }
+    
+    func updateState(_ nextState: HouseworkState) -> Self {
+        
+        return .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: nextState,
+            expiredAt: expiredAt
+        )
+    }
 }
 
 extension HouseworkItem {

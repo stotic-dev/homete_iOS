@@ -56,8 +56,8 @@ struct AppTabView: View {
                 }
             }
         }
-        .onAppear {
-           onAppear()
+        .task {
+           await onAppear()
         }
         .onChange(of: cohabitantId) {
             Task {
@@ -71,20 +71,23 @@ struct AppTabView: View {
 
 private extension AppTabView {
     
-    func onAppear() {
+    func onAppear() async {
         
         requestNotificationPermission()
-        reloadHouseworkList()
+        await houseworkListStore.loadHouseworkList(
+            currentTime: .now,
+            cohabitantId: cohabitantId,
+            calendar: calendar
+        )
     }
     
     func onChangeCohabitantId() async {
         
-        guard !cohabitantId.isEmpty else {
-            
-            await houseworkListStore.clear()
-            return
-        }
-        reloadHouseworkList()
+        await houseworkListStore.loadHouseworkList(
+            currentTime: .now,
+            cohabitantId: cohabitantId,
+            calendar: calendar
+        )
     }
 }
 
@@ -112,16 +115,6 @@ private extension AppTabView {
             }
         }
     }
-    
-    func reloadHouseworkList() {
-        Task {
-            await houseworkListStore.loadHouseworkList(
-                currentTime: .now,
-                cohabitantId: cohabitantId,
-                calendar: calendar
-            )
-        }
-    }
 }
 
 extension AppTabView {
@@ -137,5 +130,8 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore(appDependencies: .previewValue))
         .environment(AccountAuthStore(appDependencies: .previewValue))
-        .environment(HouseworkListStore(houseworkClient: .previewValue))
+        .environment(HouseworkListStore(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ))
 }

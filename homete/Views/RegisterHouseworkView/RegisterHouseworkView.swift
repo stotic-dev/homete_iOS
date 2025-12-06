@@ -6,23 +6,20 @@
 //
 
 import FirebaseFunctions
-import Prefire
 import SwiftUI
 
 struct RegisterHouseworkView: View {
     
-    @Environment(\.appDependencies.houseworkClient) var houseworkClient
-    @Environment(\.cohabitantId) var cohabitantId
     @Environment(\.dismiss) var dismiss
+    @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
-    @State var isPresentingCommonErrorAlert = false
-    @State var domainError: DomainError?
     @State var isLoading = false
     
     @FocusState var isShowingKeyboard: Bool
+    @CommonError var commonErrorContent
     
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
     
@@ -63,7 +60,7 @@ struct RegisterHouseworkView: View {
                 .ignoresSafeArea()
                 .opacity(isLoading ? 1 : 0)
         }
-        .commonError(isPresented: $isPresentingCommonErrorAlert, error: $domainError)
+        .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
             Button(
                 role: .cancel,
@@ -144,10 +141,7 @@ private extension RegisterHouseworkView {
     
     func tappedClearTextFiledButton() {
         
-        withAnimation {
-            
-            houseworkTitle = ""
-        }
+        houseworkTitle = ""
     }
     
     func tappedEntryHistoryRow(_ item: String) {
@@ -188,22 +182,13 @@ private extension RegisterHouseworkView {
         
         do {
             
-            try await houseworkClient.registerNewItem(newItem, cohabitantId)
-            
-            _ = try? await Functions.functions()
-                .httpsCallable("notifyothercohabitants")
-                .call([
-                    "cohabitantId": cohabitantId,
-                    "title": "新しい家事が登録されました",
-                    "body": houseworkTitle
-                ])
-            
+            try await houseworkListStore.register(newItem)
             dismiss()
         }
         catch {
             
             print("Failed registering a new housework item: \(error)")
-            domainError = .other
+            commonErrorContent = .init(error: error)
         }
     }
 }
@@ -221,6 +206,10 @@ private extension RegisterHouseworkView {
         ])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -231,4 +220,8 @@ private extension RegisterHouseworkView {
             metaData: .init(indexedDate: .now, expiredAt: .now)
         )
     )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
 }

@@ -10,8 +10,7 @@ import SwiftUI
 struct LoginView: View {
     
     @Environment(AccountAuthStore.self) var accountAuthStore
-    @State var isPresentedErrorAlert = false
-    @State var domainError: DomainError?
+    @CommonError var commonErrorContent
     @State var isLoading = false
     
     var body: some View {
@@ -42,7 +41,7 @@ struct LoginView: View {
             LoadingIndicator()
                 .opacity(isLoading ? 1 : 0)
         }
-        .commonError(isPresented: $isPresentedErrorAlert, error: $domainError)
+        .commonError(content: $commonErrorContent)
     }
 }
 
@@ -68,7 +67,7 @@ private extension LoginView {
     
     func handleError(_ error: any Error) {
         
-        domainError = .make(error)
+        commonErrorContent = .init(error: error)
     }
 }
 

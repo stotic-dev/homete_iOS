@@ -60,7 +60,10 @@ extension RootView {
             RootView()
                 .environment(AccountStore(appDependencies: $0))
                 .environment(AccountAuthStore(appDependencies: $0))
-                .environment(HouseworkListStore(houseworkClient: $0.houseworkClient))
+                .environment(HouseworkListStore(
+                    houseworkClient: $0.houseworkClient,
+                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
+                ))
         }
     }
 }

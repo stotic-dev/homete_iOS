@@ -28,7 +28,7 @@ final actor FirestoreService {
     
     func insertOrUpdate<T: Encodable>(data: T, predicate: (Firestore) -> DocumentReference) throws {
         
-        try predicate(firestore).setData(from: data, merge: true)
+        try predicate(firestore).setData(from: data, merge: false)
     }
     
     func addSnapshotListener<Output>(
