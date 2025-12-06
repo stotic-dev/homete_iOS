@@ -32,7 +32,7 @@ struct StoredAllHouseworkListTest {
             calendar: .current
         )
         
-        let sortedActualValue = actual.value.sorted { $0.metaData.indexedDate < $1.metaData.indexedDate }
+        let sortedActualValue = actual.value.sorted { $0.metaData.indexedDate.value < $1.metaData.indexedDate.value }
         let sortedActual = StoredAllHouseworkList(value: sortedActualValue)
         let expected = StoredAllHouseworkList(value: [
             .makeForTest(items: inputFirstHouseworkGroup),

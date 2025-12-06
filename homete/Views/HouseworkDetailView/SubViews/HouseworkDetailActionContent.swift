@@ -118,7 +118,7 @@ private extension HouseworkDetailActionContent {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .distantPast, expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(.distantPast), expiredAt: .distantFuture)
         )
     )
 }
@@ -131,7 +131,7 @@ private extension HouseworkDetailActionContent {
         account: .init(id: "dummy", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
-            indexedDate: .distantPast,
+            indexedDate: .init(.distantPast),
             title: "洗濯",
             point: 10,
             state: .pendingApproval,
@@ -150,7 +150,7 @@ private extension HouseworkDetailActionContent {
         account: .init(id: "dummy", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
-            indexedDate: .distantPast,
+            indexedDate: .init(.distantPast),
             title: "洗濯",
             point: 10,
             state: .pendingApproval,

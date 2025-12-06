@@ -71,7 +71,7 @@ struct HouseworkListStoreTest {
             
             #expect(
                 store.items == .init(value: [
-                    .init(items: inputHouseworkList, metaData: .init(indexedDate: now, expiredAt: now))
+                    .init(items: inputHouseworkList, metaData: .init(indexedDate: .init(.now), expiredAt: now))
                 ])
             )
         }
@@ -135,13 +135,10 @@ struct HouseworkListStoreTest {
         )
         let requestedAt = Date()
         let inputExecutor = "dummyExecutor"
-        let updatedHouseworkItem = HouseworkItem.makeForTest(
-            id: 1,
-            indexedDate: inputHouseworkItem.indexedDate,
+        let updatedHouseworkItem = inputHouseworkItem.updateProperties(
             state: .pendingApproval,
             executorId: inputExecutor,
-            executedAt: requestedAt,
-            expiredAt: inputHouseworkItem.expiredAt
+            executedAt: requestedAt
         )
         
         await confirmation(expectedCount: 2) { confirmation in

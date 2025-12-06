@@ -9,16 +9,16 @@ import Foundation
 
 struct DailyHouseworkMetaData: Equatable {
     
-    let indexedDate: Date
+    let indexedDate: HouseworkIndexedDate
     let expiredAt: Date
 }
 
 extension DailyHouseworkMetaData {
     
-    init(selectedDate: Date, calendar: Calendar) {
+    init(selectedDate: Date, calendar: Calendar, locale: Locale) {
         
-        let indexedDate = calendar.startOfDay(for: selectedDate)
-        let expiredAt = calendar.date(byAdding: .month, value: 1, to: indexedDate) ?? indexedDate
+        let indexedDate = HouseworkIndexedDate(selectedDate, locale: locale)
+        let expiredAt = calendar.date(byAdding: .month, value: 1, to: selectedDate) ?? selectedDate
         self.init(indexedDate: indexedDate, expiredAt: expiredAt)
     }
 }
