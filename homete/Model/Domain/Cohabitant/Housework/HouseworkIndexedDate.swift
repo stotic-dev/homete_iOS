@@ -12,7 +12,12 @@ struct HouseworkIndexedDate: Equatable, Codable, Hashable {
 }
 
 extension HouseworkIndexedDate {
+    
     private static let formatStyle = Date.FormatStyle(date: .numeric, time: .omitted)
+        .year(.extended(minimumLength: 4))
+        .month(.twoDigits)
+        .day(.twoDigits)
+    
     init(_ date: Date, locale: Locale = .init(identifier: "ja_JP")) {
         value = date.formatted(
             Self.formatStyle
