@@ -14,7 +14,7 @@ struct HouseworkItemPropertyListContent: View {
     var body: some View {
         VStack(spacing: .zero) {
             houseworkPropertyRow("日付") {
-                Text(item.indexedDate, style: .date)
+                Text(item.formattedIndexedDate)
                     .font(with: .headLineS)
             }
             Divider()
@@ -53,7 +53,7 @@ private extension HouseworkItemPropertyListContent {
         title: "洗濯",
         point: 10,
         metaData: .init(
-            indexedDate: .init(timeIntervalSince1970: 0),
+            indexedDate: .init(.init(timeIntervalSince1970: 0)),
             expiredAt: .init(timeIntervalSince1970: 0)
         ),
         executedAt: .distantFuture
