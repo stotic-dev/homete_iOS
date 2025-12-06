@@ -12,11 +12,16 @@ struct DailyHouseworkList: Equatable, Sendable {
     let items: [HouseworkItem]
     let metaData: DailyHouseworkMetaData
     
-    static func makeInitialValue(selectedDate: Date, items: [HouseworkItem], calendar: Calendar) -> Self {
+    static func makeInitialValue(
+        selectedDate: Date,
+        items: [HouseworkItem],
+        calendar: Calendar,
+        locale: Locale
+    ) -> Self {
         
         return .init(
             items: items,
-            metaData: .init(selectedDate: selectedDate, calendar: calendar)
+            metaData: .init(selectedDate: selectedDate, calendar: calendar, locale: locale)
         )
     }
     

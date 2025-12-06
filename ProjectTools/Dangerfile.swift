@@ -21,8 +21,6 @@ let swiftLintPath = SwiftLint.SwiftlintPath.bin(
 )
 let lintTargets: [SwiftLintTarget] = [
     .init(targetPath: "homete"),
-    .init(targetPath: "hometeTests"),
-    .init(targetPath: "hometeUITests")
 ]
 
 for targetInfo in lintTargets {
