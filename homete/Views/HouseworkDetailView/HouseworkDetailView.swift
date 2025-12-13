@@ -15,6 +15,7 @@ struct HouseworkDetailView: View {
     
     @State var isLoading = false
     @State var item: HouseworkItem
+    
     @CommonError var commonErrorContent
     
     var body: some View {
@@ -46,7 +47,6 @@ private extension HouseworkDetailView {
             HouseworkDetailActionContent(
                 isLoading: $isLoading,
                 commonErrorContent: $commonErrorContent,
-                houseworkListStore: houseworkListStore,
                 account: accountStore.account,
                 item: item
             )
@@ -121,10 +121,7 @@ private extension HouseworkDetailView {
             )
         )
     }
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
+    .environment(HouseworkListStore())
     .environment(AccountStore(appDependencies: .previewValue))
 }
 
@@ -140,9 +137,6 @@ private extension HouseworkDetailView {
             )
         )
     }
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
+    .environment(HouseworkListStore())
     .environment(AccountStore(appDependencies: .previewValue))
 }
