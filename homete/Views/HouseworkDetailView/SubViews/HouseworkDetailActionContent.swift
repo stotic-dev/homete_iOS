@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct HouseworkDetailActionContent: View {
+    @Environment(HouseworkListStore.self) var houseworkListStore
+    @State var isPresentedApprovalView = false
     
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
     
-    var houseworkListStore: HouseworkListStore
     let account: Account
     let item: HouseworkItem
     
@@ -24,7 +25,6 @@ struct HouseworkDetailActionContent: View {
             case .pendingApproval:
                 if item.isApprovable(account.id) {
                     approvalButton()
-                    rejectButton()
                 }
                 else {
                     undoChangeStateButton()
@@ -32,6 +32,9 @@ struct HouseworkDetailActionContent: View {
             case .completed:
                 undoChangeStateButton()
             }
+        }
+        .fullScreenCover(isPresented: $isPresentedApprovalView) {
+            HouseworkApprovalView(item: item)
         }
     }
 }
@@ -62,26 +65,12 @@ private extension HouseworkDetailActionContent {
     
     func approvalButton() -> some View {
         Button {
-            Task {
-                // TODO: 承認する
-            }
+            isPresentedApprovalView = true
         } label: {
-            Label("「ありがとう」を伝える", systemImage: "checkmark.circle.fill")
+            Label("確認する", systemImage: "checkmark.circle.fill")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
-    }
-    
-    func rejectButton() -> some View {
-        Button {
-            Task {
-                // TODO: 拒否する
-            }
-        } label: {
-            Text("やり直してもらう")
-                .frame(maxWidth: .infinity)
-        }
-        .primaryButtonStyle()
     }
 }
 
@@ -112,7 +101,6 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        houseworkListStore: .init(houseworkClient: .previewValue, cohabitantPushNotificationClient: .previewValue),
         account: .init(id: "", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
@@ -121,13 +109,13 @@ private extension HouseworkDetailActionContent {
             metaData: .init(indexedDate: .init(.distantPast), expiredAt: .distantFuture)
         )
     )
+    .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkDetailActionContent_承認待ち_実施者アカウント", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        houseworkListStore: .init(houseworkClient: .previewValue, cohabitantPushNotificationClient: .previewValue),
         account: .init(id: "dummy", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
@@ -140,13 +128,13 @@ private extension HouseworkDetailActionContent {
             expiredAt: .distantPast
         )
     )
+    .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkDetailActionContent_承認待ち_確認者アカウント", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        houseworkListStore: .init(houseworkClient: .previewValue, cohabitantPushNotificationClient: .previewValue),
         account: .init(id: "dummy", displayName: "", fcmToken: nil),
         item: .init(
             id: "",
@@ -159,4 +147,5 @@ private extension HouseworkDetailActionContent {
             expiredAt: .distantPast
         )
     )
+    .environment(HouseworkListStore())
 }

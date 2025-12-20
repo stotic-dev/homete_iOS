@@ -20,8 +20,8 @@ final class HouseworkListStore {
     private let houseworkObserveKey = "houseworkObserveKey"
     
     init(
-        houseworkClient: HouseworkClient,
-        cohabitantPushNotificationClient: CohabitantPushNotificationClient,
+        houseworkClient: HouseworkClient = .previewValue,
+        cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         items: [DailyHouseworkList] = [],
         cohabitantId: String = ""
     ) {

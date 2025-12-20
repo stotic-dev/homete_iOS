@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
     
-    let isDisabled: Bool
+    @Environment(\.isEnabled) var isEnabled
     
     func makeBody(configuration: Configuration) -> some View {
         configuration
@@ -20,15 +20,15 @@ struct PrimaryButtonStyle: ButtonStyle {
                         .fill(.primary3)
                 }
             }
-            .opacity(isDisabled ? 0.5 : 1)
-            .disabled(isDisabled)
+            .opacity(isEnabled ? 1 : 0.5)
+            .disabled(!isEnabled)
     }
 }
 
 extension View {
     
-    func primaryButtonStyle(isDisabled: Bool = false) -> some View {
-        self.buttonStyle(PrimaryButtonStyle(isDisabled: isDisabled))
+    func primaryButtonStyle() -> some View {
+        self.buttonStyle(PrimaryButtonStyle())
     }
 }
 
@@ -39,5 +39,6 @@ extension View {
 
 #Preview("PrimaryButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
-        .primaryButtonStyle(isDisabled: true)
+        .primaryButtonStyle()
+        .disabled(true)
 }
