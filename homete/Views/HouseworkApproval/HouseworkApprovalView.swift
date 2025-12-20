@@ -124,4 +124,5 @@ private extension HouseworkApprovalView {
         executedAt: .distantFuture
     ))
     .environment(\.locale, .init(identifier: "ja_JP"))
+    .environment(\.timeZone, .init(identifier: "Asia/Tokyo")!)
 }
