@@ -58,5 +58,5 @@ private extension HouseworkItemPropertyListContent {
         ),
         executedAt: .distantFuture
     ))
-    .setupForPreview()
+    .setupEnvironmentForPreview()
 }

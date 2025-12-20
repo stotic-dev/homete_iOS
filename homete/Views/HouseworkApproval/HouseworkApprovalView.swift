@@ -123,5 +123,5 @@ private extension HouseworkApprovalView {
         ),
         executedAt: .distantFuture
     ))
-    .setupForPreview()
+    .setupEnvironmentForPreview()
 }
