@@ -10,13 +10,14 @@ import SwiftUI
 struct LoginView: View {
     
     @Environment(AccountAuthStore.self) var accountAuthStore
-    @State var isPresentedErrorAlert = false
-    @State var domainError: DomainError?
+    @CommonError var commonErrorContent
     @State var isLoading = false
     
     var body: some View {
         ZStack {
             VStack(spacing: DesignSystem.Space.space16) {
+                Text("homete")
+                    .font(with: .headLineM)
                 Text("ようこそ!")
                     .font(with: .headLineL)
                 Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
@@ -40,9 +41,11 @@ struct LoginView: View {
             LoadingIndicator()
                 .opacity(isLoading ? 1 : 0)
         }
-        .commonError(isPresented: $isPresentedErrorAlert, error: $domainError)
-        .navigationTitle("Homete")
-        .navigationBarTitleDisplayMode(.inline)
+        .commonError(content: $commonErrorContent)
+    }
+    
+    var view: any View {
+        EmptyView()
     }
 }
 
@@ -68,21 +71,11 @@ private extension LoginView {
     
     func handleError(_ error: any Error) {
         
-        domainError = .make(error)
-    }
-}
-
-struct PreviewLoginView: View {
-    var body: some View {
-        NavigationStack {
-            LoginView()
-                .navigationTitle("Homete")
-                .navigationBarTitleDisplayMode(.inline)
-                .environment(AccountAuthStore(appDependencies: .previewValue))
-        }
+        commonErrorContent = .init(error: error)
     }
 }
 
 #Preview {
-    PreviewLoginView()
+    LoginView()
+        .environment(AccountAuthStore(appDependencies: .previewValue))
 }

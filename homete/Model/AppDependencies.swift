@@ -13,13 +13,17 @@ struct AppDependencies {
     let analyticsClient: AnalyticsClient
     let accountInfoClient: AccountInfoClient
     let cohabitantClient: CohabitantClient
+    let houseworkClient: HouseworkClient
+    let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     
     init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue,
-        cohabitantClient: CohabitantClient = .previewValue
+        cohabitantClient: CohabitantClient = .previewValue,
+        houseworkClient: HouseworkClient = .previewValue,
+        cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue
     ) {
         
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -27,6 +31,8 @@ struct AppDependencies {
         self.analyticsClient = analyticsClient
         self.accountInfoClient = accountInfoClient
         self.cohabitantClient = cohabitantClient
+        self.houseworkClient = houseworkClient
+        self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
     }
 }
 
@@ -37,7 +43,9 @@ extension EnvironmentValues {
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
         accountInfoClient: .liveValue,
-        cohabitantClient: .liveValue
+        cohabitantClient: .liveValue,
+        houseworkClient: .liveValue,
+        cohabitantPushNotificationClient: .liveValue
     )
 }
 

@@ -31,6 +31,6 @@ struct PromoteHouseworkTemplateBanner: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     PromoteHouseworkTemplateBanner()
 }

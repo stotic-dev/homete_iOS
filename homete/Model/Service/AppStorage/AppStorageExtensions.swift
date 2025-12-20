@@ -39,16 +39,33 @@ enum AppStorageStringKey: String {
     case cohabitantId
 }
 
+// MARK: - カスタムオブジェクト用の拡張
+
+extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {
+    
+    init(wrappedValue: Value, key: AppStorageCustomTypeKey) {
+        
+        self.init(wrappedValue: wrappedValue, key.rawValue)
+    }
+}
+
+enum AppStorageCustomTypeKey: String {
+    
+    /// 家事入力の履歴
+    case houseworkEntryHistoryList
+}
+
 // MARK: - Preview用のDIヘルパー
 
 struct InjectAppStorageWithPreviewModifier: ViewModifier {
     private let userDefaults: UserDefaults
     
-    init(_ suiteName: String) {
-        
+    init(_ suiteName: String, _ registerHandler: @escaping (UserDefaults) -> Void) {
+                
         // swiftlint:disable:next force_unwrapping
         userDefaults = UserDefaults(suiteName: suiteName)!
         userDefaults.removePersistentDomain(forName: suiteName)
+        registerHandler(userDefaults)
     }
     
     func body(content: Content) -> some View {
@@ -59,7 +76,10 @@ struct InjectAppStorageWithPreviewModifier: ViewModifier {
 
 extension View {
     
-    func injectAppStorageWithPreview(_ suiteName: String) -> some View {
-        self.modifier(InjectAppStorageWithPreviewModifier(suiteName))
+    func injectAppStorageWithPreview(
+        _ suiteName: String,
+        registerHandler: @escaping (UserDefaults) -> Void = { _ in }
+    ) -> some View {
+        self.modifier(InjectAppStorageWithPreviewModifier(suiteName, registerHandler))
     }
 }

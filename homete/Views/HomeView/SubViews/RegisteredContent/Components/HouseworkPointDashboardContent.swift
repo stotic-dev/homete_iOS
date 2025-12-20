@@ -46,13 +46,13 @@ private extension HouseworkPointDashboardContent {
     }
 }
 
-#Preview("HouseworkPointDashboardContent_各ポイントが1桁") {
+#Preview("HouseworkPointDashboardContent_各ポイントが1桁", traits: .sizeThatFitsLayout) {
     HouseworkPointDashboardContent(monthlyPoint: 0, thanksPoint: 0)
         .frame(height: 136)
         .padding()
 }
 
-#Preview("HouseworkPointDashboardContent_各ポイントが10桁") {
+#Preview("HouseworkPointDashboardContent_各ポイントが10桁", traits: .sizeThatFitsLayout) {
     HouseworkPointDashboardContent(
         monthlyPoint: 1000000000,
         thanksPoint: 1000000000

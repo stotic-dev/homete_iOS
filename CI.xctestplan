@@ -9,6 +9,12 @@
     }
   ],
   "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "SNAPSHOT_ARTIFACTS",
+        "value" : "\/Users\/runner\/work\/homete_iOS\/homete_iOS\/Build\/VRT\/SnapshotsFailures"
+      }
+    ],
     "language" : "ja",
     "locationScenario" : {
       "identifier" : "Tokyo, Japan",

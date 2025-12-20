@@ -8,24 +8,35 @@
 import SwiftUI
 
 struct HomeView: View {
-    
-    @Environment(\.rootNavigationPath) var rootNavigationPath
-    
+        
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
+    @State var isShowCohabitantRegistrationModal = false
+    @State var isShowSetting = false
+    
     var body: some View {
-        ZStack {
-            if cohabitantId.isEmpty {
-                NotRegisteredContent()
+        NavigationStack {
+            ZStack {
+                if cohabitantId.isEmpty {
+                    NotRegisteredContent(
+                        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                    )
+                }
+                else {
+                    RegisteredContent()
+                }
             }
-            else {
-                RegisteredContent()
+            .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
+                CohabitantRegistrationView()
             }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationBarButton(label: .settings) {
-                    rootNavigationPath.showSettingView()
+            .sheet(isPresented: $isShowSetting) {
+                SettingView()
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationBarButton(label: .settings) {
+                        isShowSetting = true
+                    }
                 }
             }
         }
@@ -42,6 +53,8 @@ struct HomeView: View {
 #Preview("HomeView_登録時") {
     NavigationStack {
         HomeView()
-            .injectAppStorageWithPreview("HomeView_登録時")
+            .injectAppStorageWithPreview("HomeView_登録時") {
+                $0.set("testId", forKey: "cohabitantId")
+            }
     }
 }

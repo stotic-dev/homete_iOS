@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
+		BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF7112E7863B500DC31CA /* FirebaseFunctions */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
@@ -14,6 +16,7 @@
 		BC4703642E9CF66E006CC530 /* CI.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC4703632E9CF66D006CC530 /* CI.xctestplan */; };
 		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
+		BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BCADFE1C2EACB62E00DF4AAA /* Prefire */; };
 		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
 		BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
@@ -92,6 +95,9 @@
 			files = (
 				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
 				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
+				BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */,
+				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
+				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
 			);
@@ -191,6 +197,9 @@
 				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
 				BC2E372B2E3DE189005BD910 /* FirebaseAuth */,
 				BC47E6A52E47240F00308562 /* FirebaseFirestore */,
+				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
+				BC0CF7112E7863B500DC31CA /* FirebaseFunctions */,
+				BCADFE1C2EACB62E00DF4AAA /* Prefire */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -200,7 +209,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854192DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeTests" */;
 			buildPhases = (
-				BC70E19C2E48DC220000C1BD /* Run Swift Lint */,
 				BCC853FE2DB74BBF00C9A44B /* Sources */,
 				BCC853FF2DB74BBF00C9A44B /* Frameworks */,
 				BCC854002DB74BBF00C9A44B /* Resources */,
@@ -300,25 +308,6 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
-		};
-		BC70E19C2E48DC220000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -797,6 +786,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		BC0CF7112E7863B500DC31CA /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
 		BC1BB2712E909B99001D168F /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
@@ -821,6 +820,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		BCADFE1C2EACB62E00DF4AAA /* Prefire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
+			productName = Prefire;
 		};
 		BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

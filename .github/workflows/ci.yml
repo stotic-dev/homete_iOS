@@ -27,11 +27,14 @@ env:
   SPM_PACKAGE_RESOLVED_FILE_PATH: homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH: ProjectTools/Package.resolved
   TEST_OUTPUT_PATH: Build/test.xcresult
+  ARTIFACTS_PATH: Artifacts
 
 jobs:
   build:
     # 実行環境はmacosに設定
     runs-on: macos-26
+    env:
+      SNAPSHOT_FAILURES_PATH: Build/VRT/SnapshotsFailures
 
     steps:
       # チェックアウト(リポジトリからソースコードを取得)
@@ -62,7 +65,7 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For ProjectTools
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
           path: ProjectTools/.build
           key: v1-project-tools-${{ runner.os }}-spm-${{ hashFiles(env.PROJECT_TOOLS_SPM_PACKAGE_RESOLVED_FILE_PATH) }}
@@ -70,9 +73,9 @@ jobs:
 
       # SPMのライブラリのキャッシュ
       - name: Cache Swift Packages For Project
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4
         with:
-          path: SourcePackages
+          path: ${{ env.SPM_CLONE_PATH }}
           key: v1-dev-${{ runner.os }}-spm-${{ hashFiles(env.SPM_PACKAGE_RESOLVED_FILE_PATH) }}
           restore-keys: v1-dev-${{ runner.os }}-spm-
 
@@ -120,6 +123,20 @@ jobs:
         working-directory: ProjectTools
         env:
           DANGER_GITHUB_API_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
+
+      - name: Compress Test Result
+        if: always()
+        run: |
+          mkdir -p ${{ env.ARTIFACTS_PATH }}
+          zip -r ${{ env.ARTIFACTS_PATH }}/test_result.zip ${{ env.TEST_OUTPUT_PATH }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: artifacts
+          path: ${{ env.ARTIFACTS_PATH }}
+          retention-days: 1
 
   # Deploy(TestFlight)
   call_deploy:

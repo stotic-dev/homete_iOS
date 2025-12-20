@@ -32,4 +32,8 @@ extension NavigationBarContentLabel {
         symbolName: "xmark",
         assetIcon: nil
     )
+    static let delete = NavigationBarContentLabel(
+        symbolName: "trash",
+        assetIcon: nil
+    )
 }

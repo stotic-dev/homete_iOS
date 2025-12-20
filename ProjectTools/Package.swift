@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/realm/SwiftLint.git", exact: "0.59.1"),
-        .package(url: "https://github.com/danger/swift.git", exact: "3.21.2"),
+        .package(url: "https://github.com/danger/swift.git", exact: "3.22.0"),
         .package(url: "https://github.com/f-meloni/danger-swift-coverage", from: "1.2.1")
     ],
     targets: [

@@ -9,55 +9,67 @@ import SwiftUI
 
 struct SettingView: View {
     
-    @Environment(\.rootNavigationPath) var rootNavigationPath
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(\.dismiss) var dismiss
     
     @State var isPresentedLogoutConfirmAlert = false
     
     var body: some View {
-        VStack(spacing: .zero) {
-            Spacer()
-                .frame(height: DesignSystem.Space.space24)
-            Text(accountStore.account.displayName)
-                .font(with: .headLineM)
-            Spacer()
-                .frame(height: DesignSystem.Space.space16)
+        NavigationStack {
             VStack(spacing: .zero) {
-                ForEach(SettingMenuItem.allCases, id: \.self) { item in
-                    SettingMenuItemButton(item: item) {
-                        // TODO: メニューボタンタップ時の処理
+                Spacer()
+                    .frame(height: DesignSystem.Space.space24)
+                Text(accountStore.account.displayName)
+                    .font(with: .headLineM)
+                Spacer()
+                    .frame(height: DesignSystem.Space.space16)
+                VStack(spacing: .zero) {
+                    ForEach(SettingMenuItem.allCases, id: \.self) { item in
+                        SettingMenuItemButton(item: item) {
+                            // TODO: メニューボタンタップ時の処理
+                        }
                     }
                 }
+                Spacer()
+                    .frame(height: DesignSystem.Space.space32)
+                Button {
+                    isPresentedLogoutConfirmAlert = true
+                } label: {
+                    Text("ログアウト")
+                        .frame(maxWidth: .infinity)
+                }
+                .primaryButtonStyle()
+                Spacer(minLength: DesignSystem.Space.space16)
             }
-            Spacer()
-                .frame(height: DesignSystem.Space.space32)
-            Button {
-                isPresentedLogoutConfirmAlert = true
-            } label: {
-                Text("ログアウト")
-                    .frame(maxWidth: .infinity)
+            .padding(.horizontal, DesignSystem.Space.space16)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("設定")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    leadingNavigationBarContent()
+                }
             }
-            .primaryButtonStyle()
-            Spacer(minLength: DesignSystem.Space.space16)
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle("設定")
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
                 accountAuthStore.logOut()
-                rootNavigationPath.popToRoot()
             }
         }
-        
+    }
+}
+
+private extension SettingView {
+    @ViewBuilder
+    func leadingNavigationBarContent() -> some View {
+        NavigationBarButton(label: .close) {
+            dismiss()
+        }
     }
 }
 
 #Preview {
-    NavigationStack {
-        SettingView()
-            .environment(AccountAuthStore(appDependencies: .previewValue))
-            .environment(AccountStore(appDependencies: .previewValue))
-    }
+    SettingView()
+        .environment(AccountAuthStore(appDependencies: .previewValue))
+        .environment(AccountStore(appDependencies: .previewValue))
 }
