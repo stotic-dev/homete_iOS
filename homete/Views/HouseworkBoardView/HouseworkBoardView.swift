@@ -135,5 +135,5 @@ private extension HouseworkBoardView {
             )
         ]
     ))
-    .environment(\.locale, .init(identifier: "ja_JP"))
+    .setupEnvironmentForPreview()
 }
