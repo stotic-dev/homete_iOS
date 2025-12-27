@@ -87,7 +87,7 @@ private extension HouseworkApprovalView {
             .frame(maxWidth: .infinity)
             .background {
                 RoundedRectangle(radius: .radius8)
-                    .fill(.secondaryBg)
+                    .fill(.subSurface)
             }
     }
     

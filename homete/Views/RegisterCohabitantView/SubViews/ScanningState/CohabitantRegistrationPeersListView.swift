@@ -25,7 +25,7 @@ struct CohabitantRegistrationPeersListView: View {
                     Image(systemName: "iphone")
                         .frame(width: 24, height: 24)
                         .padding(.space8)
-                        .foregroundStyle(.commonBlack)
+                        .foregroundStyle(.onSurface)
                         .background(.primary3)
                         .cornerRadius(.radius8)
                     Text(displayName)

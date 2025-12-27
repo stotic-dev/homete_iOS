@@ -11,7 +11,7 @@ struct Indicator: View {
     var body: some View {
         ProgressView()
             .padding(.space16)
-            .tint(.commonBlack)
+            .tint(.onSurface)
             .background(.primary3)
             .cornerRadius(.radius8)
     }

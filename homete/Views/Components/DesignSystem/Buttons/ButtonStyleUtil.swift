@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 extension ButtonStyleConfiguration {
     
-    func commonStyle(_ foregroundColor: Color = .commonBlack) -> some View {
+    func commonStyle(_ foregroundColor: Color = .onSurface) -> some View {
         self.label
             .font(with: .headLineS)
             .padding(.horizontal, .space16)

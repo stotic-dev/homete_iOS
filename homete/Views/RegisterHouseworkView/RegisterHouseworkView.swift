@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import Prefire
 import FirebaseFunctions
 import SwiftUI
 
@@ -26,36 +27,38 @@ struct RegisterHouseworkView: View {
     let dailyHouseworkList: DailyHouseworkList
     
     var body: some View {
-        VStack(alignment: .leading, spacing: .space16) {
-            Spacer()
-                .frame(height: .space24)
-            Text("家事を追加")
-                .font(with: .headLineL)
-            inputTextField()
-            inputPointSlider()
-            entryHistoryContent()
-                .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
-            Spacer()
-        }
-        .padding(.horizontal, .space16)
-        if isShowingKeyboard {
-            Color.clear
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    isShowingKeyboard = false
-                }
-        }
-        Button("登録する") {
-            Task {
-                await tappedRegisterButton()
+        ZStack {
+            VStack(alignment: .leading, spacing: .space16) {
+                Spacer()
+                    .frame(height: .space24)
+                Text("家事を追加")
+                    .font(with: .headLineL)
+                inputTextField()
+                inputPointSlider()
+                entryHistoryContent()
+                    .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
+                Spacer()
             }
+            .padding(.horizontal, .space16)
+            if isShowingKeyboard {
+                Color.clear
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isShowingKeyboard = false
+                    }
+            }
+            Button("登録する") {
+                Task {
+                    await tappedRegisterButton()
+                }
+            }
+            .font(with: .headLineM)
+            .floatingButtonStyle()
+            .disabled(houseworkTitle.isEmpty)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .padding([.trailing, .bottom], .space24)
         }
-        .font(with: .headLineM)
-        .floatingButtonStyle()
-        .disabled(houseworkTitle.isEmpty)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        .padding([.trailing, .bottom], .space24)
         .fullScreenLoadingIndicator(isLoading)
         .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
@@ -207,6 +210,7 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .snapshot(delay: 1)
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -221,4 +225,5 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .snapshot(delay: 1)
 }

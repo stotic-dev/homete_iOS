@@ -21,14 +21,14 @@ struct SettingMenuItemButton: View {
                     .resizable()
                     .frame(width: 24, height: 24)
                     .padding(.space8)
-                    .foregroundStyle(.commonBlack)
+                    .foregroundStyle(.onSurface)
                     .background(.primary3)
                     .cornerRadius(.radius8)
                 Text(item.title)
                     .font(with: .body)
                 Spacer()
             }
-            .foregroundStyle(.primaryFg)
+            .foregroundStyle(.onSurface)
             .frame(maxWidth: .infinity)
             .padding(.vertical, .space8)
         }

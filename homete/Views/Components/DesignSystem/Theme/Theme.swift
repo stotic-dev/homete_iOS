@@ -39,8 +39,8 @@ extension Theme {
         
         init(
             backgroundColor: ColorResource = .primary3,
-            selectedForegroundColor: ColorResource = .primaryFg,
-            foregroundColor: ColorResource = .primary2
+            selectedForegroundColor: ColorResource = .onSurface,
+            foregroundColor: ColorResource = .onPrimary3
         ) {
             
             self.backgroundColor = backgroundColor
@@ -56,7 +56,7 @@ extension Theme {
             for: .normal
         )
         UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(.commonBlack)],
+            [.foregroundColor: UIColor(.onSurface)],
             for: .selected
         )
         UISegmentedControl.appearance().backgroundColor = .primary3
