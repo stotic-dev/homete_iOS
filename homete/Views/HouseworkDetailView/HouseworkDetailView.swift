@@ -20,8 +20,8 @@ struct HouseworkDetailView: View {
     
     var body: some View {
         mainContent()
-            .padding(.horizontal, DesignSystem.Space.space16)
-            .padding(.bottom, DesignSystem.Space.space24)
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
             .fullScreenLoadingIndicator(isLoading)
             .navigationTitle(item.title)
             .navigationBarTitleDisplayMode(.inline)
@@ -51,7 +51,7 @@ private extension HouseworkDetailView {
     }
     
     func detailItemList() -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Space.space24) {
+        VStack(alignment: .leading, spacing: .space24) {
             HouseworkDetailItemRow(title: "実施予定日付") {
                 Text(item.formattedIndexedDate)
                     .font(with: .body)

@@ -10,7 +10,7 @@ import SwiftUI
 struct Indicator: View {
     var body: some View {
         ProgressView()
-            .padding(DesignSystem.Space.space16)
+            .padding(.space16)
             .tint(.commonBlack)
             .background(.primary3)
             .cornerRadius(.radius8)

@@ -16,11 +16,11 @@ struct SettingMenuItemButton: View {
         Button {
             action()
         } label: {
-            HStack(spacing: DesignSystem.Space.space16) {
+            HStack(spacing: .space16) {
                 Image(systemName: item.iconName)
                     .resizable()
                     .frame(width: 24, height: 24)
-                    .padding(DesignSystem.Space.space8)
+                    .padding(.space8)
                     .foregroundStyle(.commonBlack)
                     .background(.primary3)
                     .cornerRadius(.radius8)
@@ -30,7 +30,7 @@ struct SettingMenuItemButton: View {
             }
             .foregroundStyle(.primaryFg)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Space.space8)
+            .padding(.vertical, .space8)
         }
     }
 }

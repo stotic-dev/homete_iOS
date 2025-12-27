@@ -43,7 +43,7 @@ private extension HouseworkItemPropertyListContent {
             Spacer()
             detailContent()
         }
-        .padding(DesignSystem.Space.space24)
+        .padding(.space24)
     }
 }
 

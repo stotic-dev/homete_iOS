@@ -15,7 +15,7 @@ struct CohabitantRegistrationCompleteView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: DesignSystem.Space.space16) {
+            VStack(spacing: .space16) {
                 Text("登録が完了しました！")
                     .font(with: .headLineL)
                 Text("これからは、あなたとパートナーの家事を分担し、協力していくことができます。")
@@ -29,8 +29,8 @@ struct CohabitantRegistrationCompleteView: View {
                 }
                 .subPrimaryButtonStyle()
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
-            .padding(.vertical, DesignSystem.Space.space24)
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space24)
             ZStack {
                 if isCracked {
                     ConfettiRainView()

@@ -12,7 +12,7 @@ struct HouseBoardListRow: View {
     let houseworkItem: HouseworkItem
     
     var body: some View {
-        HStack(spacing: DesignSystem.Space.space16) {
+        HStack(spacing: .space16) {
             PointLabel(point: houseworkItem.point)
             Text(houseworkItem.title)
                 .font(with: .body)

@@ -10,13 +10,13 @@ import SwiftUI
 struct PromoteHouseworkTemplateBanner: View {
     
     var body: some View {
-        VStack(alignment: .center, spacing: DesignSystem.Space.space24) {
+        VStack(alignment: .center, spacing: .space24) {
             Image(.promoteHouseworkTemplateBannerIcon)
                 .resizable()
                 .frame(maxWidth: .infinity)
                 .aspectRatio(contentMode: .fit)
                 .cornerRadius(.radius8)
-            VStack(spacing: DesignSystem.Space.space8) {
+            VStack(spacing: .space8) {
                 Text("家事のテンプレートが設定されていません")
                     .font(with: .headLineS)
                 Text("家事のテンプレートを設定して、家事を分担しましょう！")

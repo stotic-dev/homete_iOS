@@ -14,8 +14,8 @@ struct LoginView: View {
     @State var isLoading = false
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
-            Text("homete")
+        VStack(spacing: .space16) {
+            Text(Constants.appName)
                 .font(with: .headLineM)
             Text("ようこそ!")
                 .font(with: .headLineL)
@@ -26,16 +26,16 @@ struct LoginView: View {
                 await onSignInWithApple($0)
                 isLoading = false
             }
-            .frame(height: DesignSystem.Space.space48)
-            .clipShape(RoundedRectangle(cornerRadius: DesignSystem.Space.space16 / 2))
+            .frame(height: .space48)
+            .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
             Spacer()
             Text("続行すると、利用規約とプライバシーポリシーに同意したことになります。")
                 .font(with: .caption)
                 .foregroundStyle(.primary2)
             Spacer()
-                .frame(height: DesignSystem.Space.space32)
+                .frame(height: .space32)
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
+        .padding(.horizontal, .space16)
         .ignoresSafeArea(edges: [.bottom])
         .fullScreenLoadingIndicator(isLoading)
         .commonError(content: $commonErrorContent)
@@ -54,17 +54,12 @@ private extension LoginView {
             }
             catch {
                 
-                handleError(error)
+                commonErrorContent = .init(error: error)
             }
             
         case .failure(let failure):
-            handleError(failure)
+            commonErrorContent = .init(error: failure)
         }
-    }
-    
-    func handleError(_ error: any Error) {
-        
-        commonErrorContent = .init(error: error)
     }
 }
 

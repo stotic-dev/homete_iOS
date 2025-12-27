@@ -13,7 +13,7 @@ struct FloatingButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(DesignSystem.Space.space16)
+            .padding(.space16)
             .foregroundStyle(.commonBlack)
             .background {
                 GeometryReader {

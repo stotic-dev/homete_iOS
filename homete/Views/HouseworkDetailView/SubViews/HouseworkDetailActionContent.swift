@@ -18,7 +18,7 @@ struct HouseworkDetailActionContent: View {
     let item: HouseworkItem
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             switch item.state {
             case .incomplete:
                 requestReviewButton()

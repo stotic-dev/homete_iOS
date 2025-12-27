@@ -11,15 +11,15 @@ struct RegisteredContent: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: DesignSystem.Space.space24) {
+            VStack(spacing: .space24) {
                 HouseworkPointDashboardContent(monthlyPoint: 0, thanksPoint: 0)
-                    .padding(.vertical, DesignSystem.Space.space16)
+                    .padding(.vertical, .space16)
                 // TODO: テンプレート未設定の場合のみ表示する
                 PromoteHouseworkTemplateBanner()
                 TodayHouseworkListContent()
                 TimelineContent()
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.horizontal, .space16)
         }
     }
 }

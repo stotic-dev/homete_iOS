@@ -15,7 +15,7 @@ struct PointLabel: View {
         Text(point.formatted())
             .font(with: .headLineM)
             .foregroundStyle(.commonWhite)
-            .padding(DesignSystem.Space.space8)
+            .padding(.space8)
             .frame(minWidth: 45)
             .background {
                 GeometryReader {

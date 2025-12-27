@@ -27,7 +27,7 @@ struct CohabitantRegistrationProcessingView: View {
     
     var body: some View {
         VStack(spacing: .zero) {
-            VStack(spacing: DesignSystem.Space.space16) {
+            VStack(spacing: .space16) {
                 VStack(spacing: .zero) {
                     Text("登録はもうすぐ完了します！")
                     Text("共に家事を頑張るパートナーへ、エールを送り合いませんか？")
@@ -42,11 +42,11 @@ struct CohabitantRegistrationProcessingView: View {
                     .font(with: .caption)
             }
             Spacer()
-                .frame(height: DesignSystem.Space.space24)
+                .frame(height: .space24)
             Indicator()
             Spacer()
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
+        .padding(.horizontal, .space16)
         .onReceive(timer) { _ in
             guard confirmedRolePeers != connectedPeers else { return }
             

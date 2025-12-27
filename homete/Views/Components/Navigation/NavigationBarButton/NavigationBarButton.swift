@@ -17,7 +17,7 @@ struct NavigationBarButton: View {
             action()
         } label: {
             label.icon
-                .padding(DesignSystem.Space.space8)
+                .padding(.space8)
                 .foregroundStyle(.primaryFg)
         }
     }

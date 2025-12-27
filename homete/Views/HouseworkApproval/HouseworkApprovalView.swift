@@ -17,16 +17,16 @@ struct HouseworkApprovalView: View {
     var body: some View {
         AppNavigationStackView { _ in
             ScrollView {
-                VStack(spacing: DesignSystem.Space.space40) {
-                    VStack(spacing: DesignSystem.Space.space24) {
+                VStack(spacing: .space40) {
+                    VStack(spacing: .space24) {
                         notificationSection()
                         houseworkPropertySection()
                         inputMessageSection()
                     }
                     actionButtonContent()
                 }
-                .padding(.horizontal, DesignSystem.Space.space16)
-                .padding(.bottom, DesignSystem.Space.space24)
+                .padding(.horizontal, .space16)
+                .padding(.bottom, .space24)
             }
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("家事の確認")
@@ -57,26 +57,26 @@ private extension HouseworkApprovalView {
             }
             .font(with: .body)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Space.space16)
+            .padding(.vertical, .space16)
         }
     }
     
     func houseworkPropertySection() -> some View {
         section {
             HouseworkItemPropertyListContent(item: item)
-                .padding(.vertical, DesignSystem.Space.space8)
+                .padding(.vertical, .space8)
         }
     }
     
     func inputMessageSection() -> some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             Text("メッセージ")
                 .font(with: .headLineS)
                 .frame(maxWidth: .infinity, alignment: .leading)
             section {
                 TextField("感謝を伝えましょう！", text: $inputMessage, axis: .vertical)
                     .font(with: .body)
-                    .padding(DesignSystem.Space.space16)
+                    .padding(.space16)
                     .frame(minHeight: 150, alignment: .topLeading)
             }
         }
@@ -92,7 +92,7 @@ private extension HouseworkApprovalView {
     }
     
     func actionButtonContent() -> some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             Button {
                 // TODO: 家事を完了にする
             } label: {

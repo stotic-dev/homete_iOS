@@ -17,14 +17,14 @@ struct CohabitantRegistrationPeersListView: View {
     @Binding var isConfirmedReadyRegistration: Bool
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             Text("デバイスの名前を確認してください")
                 .font(with: .headLineM)
             ForEach(convertToDisplayNameList(connectedPeers), id: \.self) { displayName in
-                HStack(spacing: DesignSystem.Space.space24) {
+                HStack(spacing: .space24) {
                     Image(systemName: "iphone")
                         .frame(width: 24, height: 24)
-                        .padding(DesignSystem.Space.space8)
+                        .padding(.space8)
                         .foregroundStyle(.commonBlack)
                         .background(.primary3)
                         .cornerRadius(.radius8)
@@ -42,9 +42,9 @@ struct CohabitantRegistrationPeersListView: View {
             }
             .subPrimaryButtonStyle()
             Spacer()
-                .frame(height: DesignSystem.Space.space24)
+                .frame(height: .space24)
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
+        .padding(.horizontal, .space16)
         .ignoresSafeArea()
         .fullScreenLoadingIndicator(isConfirmedReadyRegistration)
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {

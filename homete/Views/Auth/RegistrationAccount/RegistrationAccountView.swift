@@ -8,8 +8,21 @@
 import SwiftUI
 
 struct RegistrationAccountView: View {
+    @State var inputUserName = ""
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        AppNavigationStackView { _ in
+            VStack(spacing: .zero) {
+                Text("まずはあなたのニックネームを教えてください")
+                    .font(with: .body)
+                    .foregroundStyle(.primary2)
+                TextField("例：たろう", text: $inputUserName)
+                Spacer()
+            }
+            .padding(.horizontal, .space16)
+            .navigationTitle("アカウント登録")
+            .navigationBarTitleDisplayMode(.inline)
+        }
     }
 }
 

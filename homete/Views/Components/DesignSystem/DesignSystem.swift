@@ -11,19 +11,16 @@ enum DesignSystem {}
 
 // MARK: Spaceの定義
 
-extension DesignSystem {
-    
-    enum Space {
-                
-        static let space8: CGFloat = 8
-        static let space16: CGFloat = 16
-        static let space24: CGFloat = 24
-        static let space32: CGFloat = 32
-        static let space40: CGFloat = 40
-        static let space48: CGFloat = 48
-        static let space56: CGFloat = 56
-        static let space64: CGFloat = 64
-    }
+extension CGFloat {
+            
+    static let space8: CGFloat = 8
+    static let space16: CGFloat = 16
+    static let space24: CGFloat = 24
+    static let space32: CGFloat = 32
+    static let space40: CGFloat = 40
+    static let space48: CGFloat = 48
+    static let space56: CGFloat = 56
+    static let space64: CGFloat = 64
 }
 
 // MARK: Fontの定義
