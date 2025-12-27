@@ -17,39 +17,36 @@ struct CohabitantRegistrationPeersListView: View {
     @Binding var isConfirmedReadyRegistration: Bool
     
     var body: some View {
-        ZStack {
-            VStack(spacing: DesignSystem.Space.space16) {
-                Text("デバイスの名前を確認してください")
-                    .font(with: .headLineM)
-                ForEach(convertToDisplayNameList(connectedPeers), id: \.self) { displayName in
-                    HStack(spacing: DesignSystem.Space.space24) {
-                        Image(systemName: "iphone")
-                            .frame(width: 24, height: 24)
-                            .padding(DesignSystem.Space.space8)
-                            .foregroundStyle(.commonBlack)
-                            .background(.primary3)
-                            .cornerRadius(.radius8)
-                        Text(displayName)
-                            .font(with: .body)
-                        Spacer()
-                    }
+        VStack(spacing: DesignSystem.Space.space16) {
+            Text("デバイスの名前を確認してください")
+                .font(with: .headLineM)
+            ForEach(convertToDisplayNameList(connectedPeers), id: \.self) { displayName in
+                HStack(spacing: DesignSystem.Space.space24) {
+                    Image(systemName: "iphone")
+                        .frame(width: 24, height: 24)
+                        .padding(DesignSystem.Space.space8)
+                        .foregroundStyle(.commonBlack)
+                        .background(.primary3)
+                        .cornerRadius(.radius8)
+                    Text(displayName)
+                        .font(with: .body)
+                    Spacer()
                 }
-                Spacer()
-                Button {
-                    isPresentingConfirmReadyRegistrationAlert = true
-                } label: {
-                    Text("登録を開始する")
-                        .frame(maxWidth: .infinity)
-                }
-                .subPrimaryButtonStyle()
-                Spacer()
-                    .frame(height: DesignSystem.Space.space24)
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
-            LoadingIndicator()
-                .opacity(isConfirmedReadyRegistration ? 1 : 0)
-                .ignoresSafeArea()
+            Spacer()
+            Button {
+                isPresentingConfirmReadyRegistrationAlert = true
+            } label: {
+                Text("登録を開始する")
+                    .frame(maxWidth: .infinity)
+            }
+            .subPrimaryButtonStyle()
+            Spacer()
+                .frame(height: DesignSystem.Space.space24)
         }
+        .padding(.horizontal, DesignSystem.Space.space16)
+        .ignoresSafeArea()
+        .fullScreenLoadingIndicator(isConfirmedReadyRegistration)
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
                 tappedConfirmAlertCancelButton()

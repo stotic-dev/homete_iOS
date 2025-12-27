@@ -15,6 +15,18 @@ struct LoadingIndicator: View {
                 .ignoresSafeArea()
             Indicator()
         }
+        .ignoresSafeArea()
+    }
+}
+
+extension View {
+    func fullScreenLoadingIndicator(_ isLoading: Bool) -> some View {
+        ZStack {
+            self
+            if isLoading {
+                LoadingIndicator()
+            }
+        }
     }
 }
 

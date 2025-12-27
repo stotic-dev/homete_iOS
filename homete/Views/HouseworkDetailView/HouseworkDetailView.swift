@@ -19,22 +19,19 @@ struct HouseworkDetailView: View {
     @CommonError var commonErrorContent
     
     var body: some View {
-        ZStack {
-            mainContent()
-                .padding(.horizontal, DesignSystem.Space.space16)
-                .padding(.bottom, DesignSystem.Space.space24)
-            LoadingIndicator()
-                .opacity(isLoading ? 1 : 0)
-        }
-        .navigationTitle(item.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            trailingNavigationBarContent()
-        }
-        .commonError(content: $commonErrorContent)
-        .onChange(of: houseworkListStore.items) {
-            didChangeItems()
-        }
+        mainContent()
+            .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.bottom, DesignSystem.Space.space24)
+            .fullScreenLoadingIndicator(isLoading)
+            .navigationTitle(item.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                trailingNavigationBarContent()
+            }
+            .commonError(content: $commonErrorContent)
+            .onChange(of: houseworkListStore.items) {
+                didChangeItems()
+            }
     }
 }
 

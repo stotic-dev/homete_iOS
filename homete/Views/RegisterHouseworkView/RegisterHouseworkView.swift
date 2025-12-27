@@ -26,41 +26,37 @@ struct RegisterHouseworkView: View {
     let dailyHouseworkList: DailyHouseworkList
     
     var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
-                Spacer()
-                    .frame(height: DesignSystem.Space.space24)
-                Text("家事を追加")
-                    .font(with: .headLineL)
-                inputTextField()
-                inputPointSlider()
-                entryHistoryContent()
-                    .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
-                Spacer()
-            }
-            .padding(.horizontal, DesignSystem.Space.space16)
-            if isShowingKeyboard {
-                Color.clear
-                    .ignoresSafeArea()
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isShowingKeyboard = false
-                    }
-            }
-            Button("登録する") {
-                Task {
-                    await tappedRegisterButton()
-                }
-            }
-            .font(with: .headLineM)
-            .floatingButtonStyle()
-            .disabled(houseworkTitle.isEmpty)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding([.trailing, .bottom], DesignSystem.Space.space24)
-            LoadingIndicator()
-                .ignoresSafeArea()
-                .opacity(isLoading ? 1 : 0)
+        VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+            Spacer()
+                .frame(height: DesignSystem.Space.space24)
+            Text("家事を追加")
+                .font(with: .headLineL)
+            inputTextField()
+            inputPointSlider()
+            entryHistoryContent()
+                .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
+            Spacer()
         }
+        .padding(.horizontal, DesignSystem.Space.space16)
+        if isShowingKeyboard {
+            Color.clear
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isShowingKeyboard = false
+                }
+        }
+        Button("登録する") {
+            Task {
+                await tappedRegisterButton()
+            }
+        }
+        .font(with: .headLineM)
+        .floatingButtonStyle()
+        .disabled(houseworkTitle.isEmpty)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        .padding([.trailing, .bottom], DesignSystem.Space.space24)
+        .fullScreenLoadingIndicator(isLoading)
         .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
             Button(
