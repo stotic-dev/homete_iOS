@@ -86,8 +86,8 @@ private extension RootView {
             return
         }
         
-        if await accountStore.load(auth) {
-            launchState = .loggedIn(context: .init(account: accountStore.account))
+        if let account = await accountStore.load(auth) {
+            launchState = .loggedIn(context: .init(account: account))
         } else {
             launchState = .preLoggedIn(auth: auth)
         }

@@ -34,7 +34,10 @@ struct RegistrationAccountView: View {
                 }
                 Spacer()
                 Button {
-                    // TODO: 登録処理
+                    Task {
+                        isLoading = true
+                        await tappedRegistrationButton()
+                    }
                 } label: {
                     Text("登録")
                         .padding(.vertical, .space8)
@@ -73,12 +76,14 @@ private extension RegistrationAccountView {
         
         do {
             
-            try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
-            launchStateProxy(.loggedIn(context: .init(account: accountStore.account)))
+            let account = try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
+            launchStateProxy(.loggedIn(context: .init(account: account)))
         } catch {
             
             print("occurred error: \(error)")
         }
+        
+        isLoading = false
     }
 }
 

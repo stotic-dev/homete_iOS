@@ -11,6 +11,7 @@ struct SettingView: View {
     
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     
     @State var isPresentedLogoutConfirmAlert = false
@@ -20,7 +21,7 @@ struct SettingView: View {
             VStack(spacing: .zero) {
                 Spacer()
                     .frame(height: .space24)
-                Text(accountStore.account.userName)
+                Text(userName)
                     .font(with: .headLineM)
                 Spacer()
                     .frame(height: .space16)

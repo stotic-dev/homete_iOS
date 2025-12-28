@@ -10,8 +10,8 @@ import SwiftUI
 struct HouseworkDetailView: View {
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
-    @Environment(AccountStore.self) var accountStore
     
     @State var isLoading = false
     @State var item: HouseworkItem
@@ -44,7 +44,7 @@ private extension HouseworkDetailView {
             HouseworkDetailActionContent(
                 isLoading: $isLoading,
                 commonErrorContent: $commonErrorContent,
-                account: accountStore.account,
+                account: account,
                 item: item
             )
         }
@@ -119,7 +119,6 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
-    .environment(AccountStore(appDependencies: .previewValue))
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -135,5 +134,4 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
-    .environment(AccountStore(appDependencies: .previewValue))
 }

@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class AccountStore {
     
-    private(set) var account: Account = .empty
+    private(set) var account: Account?
         
     private let accountInfoClient: AccountInfoClient
         
@@ -20,34 +20,35 @@ final class AccountStore {
         accountInfoClient = appDependencies.accountInfoClient
     }
     
-    /// アカウント情報をロードする
-    /// - Returns: アカウント作成済みかどうかを返す
+    /// アカウント情報をロードし、オンメモリにキャッシュする
+    /// - Returns: ロードしたアカウント情報を返す（アカウントがない場合はnilを返す）
     @discardableResult
-    func load(_ auth: AccountAuthResult) async -> Bool {
+    func load(_ auth: AccountAuthResult) async -> Account? {
         
         do {
             
-            account = try await accountInfoClient.fetch(auth.id) ?? .empty
+            account = try await accountInfoClient.fetch(auth.id)
         }
         catch {
             
             print("failed to fetch account info: \(error)")
         }
         
-        return account != .empty
+        return account
     }
     
-    func registerAccount(auth: AccountAuthResult, userName: UserName) async throws {
+    func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
         
         let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil)
         try await accountInfoClient.insertOrUpdate(newAccount)
         account = newAccount
+        return newAccount
     }
     
     func updateFcmTokenIfNeeded(_ fcmToken: String) async {
         
         // 保持しているFCMトークンと異なるFCMトークンに変わった場合は、アカウント情報も新しいトークンに更新する
-        guard account != .empty,
+        guard let account,
               account.fcmToken != fcmToken else { return }
         
         do {

@@ -11,6 +11,14 @@ struct AccountInfoClient {
     
     let insertOrUpdate: @Sendable (Account) async throws -> Void
     let fetch: @Sendable (String) async throws -> Account?
+    
+    init(
+        insertOrUpdate: @Sendable @escaping (Account) async throws -> Void = { _ in },
+        fetch: @Sendable @escaping (String) async throws -> Account? = { _ in nil }
+    ) {
+        self.insertOrUpdate = insertOrUpdate
+        self.fetch = fetch
+    }
 }
 
 extension AccountInfoClient: DependencyClient {
@@ -32,6 +40,5 @@ extension AccountInfoClient: DependencyClient {
         }
     }
     
-    static let previewValue: AccountInfoClient = .init(insertOrUpdate: { _ in },
-                                                       fetch: { _ in .empty })
+    static let previewValue: AccountInfoClient = .init()
 }
