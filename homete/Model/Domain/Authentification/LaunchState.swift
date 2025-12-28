@@ -9,14 +9,10 @@ enum LaunchState: Equatable {
     
     /// 起動中
     case launching
+    /// 仮ログイン（アカウント未作成）
+    case preLoggedIn(auth: AccountAuthResult)
     /// ログイン済み
-    case loggedIn(AccountAuthResult)
+    case loggedIn(context: LoginContext)
     /// 未ログイン
     case notLoggedIn
-    
-    func next(_ authInfo: AccountAuthResult?) -> Self {
-        
-        guard let authInfo else { return .notLoggedIn }
-        return .loggedIn(authInfo)
-    }
 }

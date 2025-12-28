@@ -20,7 +20,7 @@ struct SettingView: View {
             VStack(spacing: .zero) {
                 Spacer()
                     .frame(height: .space24)
-                Text(accountStore.account.displayName)
+                Text(accountStore.account.userName)
                     .font(with: .headLineM)
                 Spacer()
                     .frame(height: .space16)

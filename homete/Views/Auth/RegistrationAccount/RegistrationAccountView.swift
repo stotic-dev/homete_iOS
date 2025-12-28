@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct RegistrationAccountView: View {
+    @Environment(AccountStore.self) var accountStore
+    @Environment(\.launchStateProxy) var launchStateProxy
+    
     @State var inputUserName = UserName()
     @State var isLoading = false
+    let authInfo: AccountAuthResult
     
     var body: some View {
         AppNavigationStackView { _ in
@@ -61,6 +65,24 @@ private extension RegistrationAccountView {
     }
 }
 
+// MARK: プレゼンテーションロジック
+
+private extension RegistrationAccountView {
+    
+    func tappedRegistrationButton() async {
+        
+        do {
+            
+            try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
+            launchStateProxy(.loggedIn(context: .init(account: accountStore.account)))
+        } catch {
+            
+            print("occurred error: \(error)")
+        }
+    }
+}
+
 #Preview {
-    RegistrationAccountView()
+    RegistrationAccountView(authInfo: .init(id: ""))
+        .environment(AccountStore(appDependencies: .previewValue))
 }

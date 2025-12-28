@@ -18,7 +18,7 @@ struct CohabitantRegistrationView: View {
     
     var body: some View {
         NavigationStack {
-            P2PSession(displayName: accountStore.account.displayName) {
+            P2PSession(displayName: accountStore.account.userName) {
                 CohabitantRegistrationSession(session: $0)
             }
             .navigationBarTitleDisplayMode(.inline)

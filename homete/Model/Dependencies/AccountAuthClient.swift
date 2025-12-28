@@ -28,7 +28,7 @@ extension AccountAuthClient: DependencyClient {
     })
     
     static let previewValue: AccountAuthClient = .init(
-        signIn: { _, _ in .init(id: "id", displayName: "name") },
+        signIn: { _, _ in .init(id: "id") },
         signOut: {},
         makeListener: {
             
@@ -50,14 +50,7 @@ private extension AccountAuthClient {
             rawNonce: nonce
         )
         let authInfo = try await Auth.auth().signIn(with: credential)
-        
-        if Auth.auth().currentUser?.displayName == nil,
-           authInfo.user.displayName != nil {
-            
-            try await Auth.auth().updateCurrentUser(authInfo.user)
-        }
-        
-        return .init(id: authInfo.user.uid, displayName: Auth.auth().currentUser?.displayName)
+        return .init(id: authInfo.user.uid)
     }
     
     static func makeListener() -> AccountListenerStream {
@@ -69,7 +62,7 @@ private extension AccountAuthClient {
                 return
             }
             
-            continuation.yield(.init(id: user.uid, displayName: user.displayName))
+            continuation.yield(.init(id: user.uid))
         }
         return .init(values: stream, listenerToken: token, continuation: continuation)
     }
