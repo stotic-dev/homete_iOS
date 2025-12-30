@@ -17,7 +17,7 @@ struct AccountAuthStoreTest {
         
         let inputTokenId = "testId"
         let inputNonce = "testNonce"
-        let outputAccount = AccountAuthResult(id: "testAccountId", displayName: "testDisplayName")
+        let outputAccount = AccountAuthResult(id: "testAccountId")
         
         try await confirmation(expectedCount: 4) { confirmation in
             
@@ -56,29 +56,36 @@ struct AccountAuthStoreTest {
         let isCallSignOut = OSAllocatedUnfairLock(initialState: false)
         let isCallAnalyticsLog = OSAllocatedUnfairLock(initialState: false)
         
-        let store = AccountAuthStore(appDependencies: .init(
-            accountAuthClient: .init(signIn: { _, _ in
-                
-                Issue.record()
-                return .init(id: "", displayName: "")
-            },
-                                     signOut: { isCallSignOut.withLock { $0 = true } },
-                                 makeListener: { .defaultValue() }),
-            analyticsClient: .init(setId: { _ in
-                
-                Issue.record()
-            }, log: { event in
-                
-                isCallAnalyticsLog.withLock { $0 = true }
-                #expect(event == .logout())
-            })
-        ))
-        store.state = .loggedIn(.init(id: "test", displayName: "test"))
-        
+        let store = AccountAuthStore(
+            currentAuth: .init(id: "test"),
+            appDependencies: .init(
+                accountAuthClient: .init(
+                    signIn: { _, _ in
+                        
+                        Issue.record()
+                        return .init(id: "")
+                    },
+                    signOut: { isCallSignOut.withLock { $0 = true } },
+                    makeListener: { .defaultValue() }
+                ),
+                analyticsClient: .init(
+                    setId: { _ in
+                        
+                        Issue.record()
+                    },
+                    log: { event in
+                        
+                        isCallAnalyticsLog.withLock { $0 = true }
+                        #expect(event == .logout())
+                    }
+                )
+            )
+        )
+            
         store.logOut()
         
         #expect(isCallSignOut.withLock { $0 })
         #expect(isCallAnalyticsLog.withLock { $0 })
-        #expect(store.state == .notLoggedIn)
+        #expect(store.currentAuth == nil)
     }
 }

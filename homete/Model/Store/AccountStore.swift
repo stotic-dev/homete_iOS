@@ -15,8 +15,12 @@ final class AccountStore {
         
     private let accountInfoClient: AccountInfoClient
         
-    init(appDependencies: AppDependencies) {
+    init(
+        account: Account? = nil,
+        appDependencies: AppDependencies
+    ) {
         
+        self.account = account
         accountInfoClient = appDependencies.accountInfoClient
     }
     
@@ -59,6 +63,7 @@ final class AccountStore {
                 fcmToken: fcmToken
             )
             try await accountInfoClient.insertOrUpdate(updatedAccount)
+            self.account = updatedAccount
         }
         catch {
             

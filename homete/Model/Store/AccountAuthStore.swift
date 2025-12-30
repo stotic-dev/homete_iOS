@@ -11,14 +11,18 @@ import SwiftUI
 @Observable
 final class AccountAuthStore {
     
-    var currentAuth: AccountAuthResult?
+    private(set) var currentAuth: AccountAuthResult?
     
     private let accountAuthClient: AccountAuthClient
     private let analyticsClient: AnalyticsClient
     private let listener: AccountListenerStream
     
-    init(appDependencies: AppDependencies) {
-        
+    init(
+        currentAuth: AccountAuthResult? = nil,
+        appDependencies: AppDependencies
+    ) {
+       
+        self.currentAuth = currentAuth
         accountAuthClient = appDependencies.accountAuthClient
         analyticsClient = appDependencies.analyticsClient
         listener = accountAuthClient.makeListener()
