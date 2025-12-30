@@ -19,6 +19,6 @@ struct UserName {
     }
     
     var canRegistration: Bool {
-        return !value.isEmpty && isOverLimitCharacters
+        return !value.isEmpty && !isOverLimitCharacters
     }
 }

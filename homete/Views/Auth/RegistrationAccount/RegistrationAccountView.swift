@@ -32,7 +32,7 @@ struct RegistrationAccountView: View {
                     UserNameInputTextField(userName: $inputUserName)
                     userNameCautionMessage()
                 }
-                Spacer()
+                Spacer(minLength: .space24)
                 Button {
                     Task {
                         isLoading = true
@@ -65,6 +65,7 @@ private extension RegistrationAccountView {
                 .font(with: .caption)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -87,7 +88,15 @@ private extension RegistrationAccountView {
     }
 }
 
-#Preview {
+#Preview("RegistrationAccountView_未入力") {
     RegistrationAccountView(authInfo: .init(id: ""))
         .environment(AccountStore(appDependencies: .previewValue))
+}
+
+#Preview("RegistrationAccountView_入力済み") {
+    RegistrationAccountView(
+        isLoading: true,
+        authInfo: .init(id: "Test")
+    )
+    .environment(AccountStore(appDependencies: .previewValue))
 }

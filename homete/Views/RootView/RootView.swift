@@ -80,16 +80,16 @@ extension RootView {
 
 private extension RootView {
     
-    func onChangeAuth(_ auth: AccountAuthResult?) async {
-        guard let auth else {
+    func onChangeAuth(_ auth: AccountAuthInfo) async {
+        guard let authResult = auth.result else {
             launchState = .notLoggedIn
             return
         }
         
-        if let account = await accountStore.load(auth) {
+        if let account = await accountStore.load(authResult) {
             launchState = .loggedIn(context: .init(account: account))
         } else {
-            launchState = .preLoggedIn(auth: auth)
+            launchState = .preLoggedIn(auth: authResult)
         }
     }
 }
