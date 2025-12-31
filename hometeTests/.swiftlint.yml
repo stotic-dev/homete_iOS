@@ -1,4 +1,0 @@
-disabled_rules:
-  - trailing_closure
-
-child_config: ../.swiftlint.yml

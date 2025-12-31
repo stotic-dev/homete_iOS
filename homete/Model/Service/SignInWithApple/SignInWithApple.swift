@@ -2,7 +2,7 @@ import AuthenticationServices
 
 final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
     
-    private var continuation : CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
+    private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
     
     func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
         
@@ -10,7 +10,9 @@ final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
             
             self.continuation = continuation
             
-            let authorizationController = ASAuthorizationController(authorizationRequests: [SignInWithAppleRequestFactory.make(nonce)])
+            let authorizationController = ASAuthorizationController(
+                authorizationRequests: [SignInWithAppleRequestFactory.make(nonce)]
+            )
             authorizationController.delegate = self
             authorizationController.performRequests()
         }

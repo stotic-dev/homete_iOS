@@ -47,3 +47,5 @@ disabled_rules:
 # Configurations
 trailing_whitespace:
   ignores_empty_lines: true
+trailing_closure:
+  only_single_muted_parameter: true
