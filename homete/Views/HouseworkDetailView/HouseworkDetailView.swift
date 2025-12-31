@@ -10,8 +10,8 @@ import SwiftUI
 struct HouseworkDetailView: View {
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
-    @Environment(AccountStore.self) var accountStore
     
     @State var isLoading = false
     @State var item: HouseworkItem
@@ -19,22 +19,19 @@ struct HouseworkDetailView: View {
     @CommonError var commonErrorContent
     
     var body: some View {
-        ZStack {
-            mainContent()
-                .padding(.horizontal, DesignSystem.Space.space16)
-                .padding(.bottom, DesignSystem.Space.space24)
-            LoadingIndicator()
-                .opacity(isLoading ? 1 : 0)
-        }
-        .navigationTitle(item.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            trailingNavigationBarContent()
-        }
-        .commonError(content: $commonErrorContent)
-        .onChange(of: houseworkListStore.items) {
-            didChangeItems()
-        }
+        mainContent()
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
+            .fullScreenLoadingIndicator(isLoading)
+            .navigationTitle(item.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                trailingNavigationBarContent()
+            }
+            .commonError(content: $commonErrorContent)
+            .onChange(of: houseworkListStore.items) {
+                didChangeItems()
+            }
     }
 }
 
@@ -47,14 +44,14 @@ private extension HouseworkDetailView {
             HouseworkDetailActionContent(
                 isLoading: $isLoading,
                 commonErrorContent: $commonErrorContent,
-                account: accountStore.account,
+                account: account,
                 item: item
             )
         }
     }
     
     func detailItemList() -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Space.space24) {
+        VStack(alignment: .leading, spacing: .space24) {
             HouseworkDetailItemRow(title: "実施予定日付") {
                 Text(item.formattedIndexedDate)
                     .font(with: .body)
@@ -122,7 +119,6 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
-    .environment(AccountStore(appDependencies: .previewValue))
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -138,5 +134,4 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
-    .environment(AccountStore(appDependencies: .previewValue))
 }

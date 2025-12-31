@@ -17,33 +17,37 @@ struct AccountAuthStoreTest {
         
         let inputTokenId = "testId"
         let inputNonce = "testNonce"
-        let outputAccount = AccountAuthResult(id: "testAccountId", displayName: "testDisplayName")
+        let outputAccount = AccountAuthResult(id: "testAccountId")
         
         try await confirmation(expectedCount: 4) { confirmation in
             
             let store = AccountAuthStore(appDependencies: .init(
-                accountAuthClient: .init(signIn: { tokenId, nonce in
-                    
-                    confirmation()
-                    #expect(tokenId == inputTokenId)
-                    #expect(nonce == inputNonce)
-                    return outputAccount
-                },
-                                     signOut: { confirmation() },
-                                     makeListener: {
-                                         
-                                         confirmation()
-                                         return .defaultValue()
-                                     }),
-                analyticsClient: .init(setId: { id in
-                    
-                    confirmation()
-                    #expect(id == outputAccount.id)
-                }, log: { event in
-                    
-                    confirmation()
-                    #expect(event == .login(isSuccess: true))
-                })
+                accountAuthClient: .init(
+                    signIn: { tokenId, nonce in
+                        
+                        confirmation()
+                        #expect(tokenId == inputTokenId)
+                        #expect(nonce == inputNonce)
+                        return outputAccount
+                    },
+                    signOut: { confirmation() },
+                    makeListener: {
+                        
+                        confirmation()
+                        return .defaultValue()
+                    }
+                ),
+                analyticsClient: .init(
+                    setId: { id in
+                        
+                        confirmation()
+                        #expect(id == outputAccount.id)
+                    }, log: { event in
+                        
+                        confirmation()
+                        #expect(event == .login(isSuccess: true))
+                    }
+                )
             ))
             
             try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce))
@@ -56,29 +60,36 @@ struct AccountAuthStoreTest {
         let isCallSignOut = OSAllocatedUnfairLock(initialState: false)
         let isCallAnalyticsLog = OSAllocatedUnfairLock(initialState: false)
         
-        let store = AccountAuthStore(appDependencies: .init(
-            accountAuthClient: .init(signIn: { _, _ in
-                
-                Issue.record()
-                return .init(id: "", displayName: "")
-            },
-                                     signOut: { isCallSignOut.withLock { $0 = true } },
-                                 makeListener: { .defaultValue() }),
-            analyticsClient: .init(setId: { _ in
-                
-                Issue.record()
-            }, log: { event in
-                
-                isCallAnalyticsLog.withLock { $0 = true }
-                #expect(event == .logout())
-            })
-        ))
-        store.state = .loggedIn(.init(id: "test", displayName: "test"))
-        
+        let store = AccountAuthStore(
+            appDependencies: .init(
+                accountAuthClient: .init(
+                    signIn: { _, _ in
+                        
+                        Issue.record()
+                        return .init(id: "")
+                    },
+                    signOut: { isCallSignOut.withLock { $0 = true } },
+                    makeListener: { .defaultValue() }
+                ),
+                analyticsClient: .init(
+                    setId: { _ in
+                        
+                        Issue.record()
+                    },
+                    log: { event in
+                        
+                        isCallAnalyticsLog.withLock { $0 = true }
+                        #expect(event == .logout())
+                    }
+                )
+            ),
+            currentAuth: .init(result: .init(id: "test"), alreadyLoadedAtInitiate: true)
+        )
+            
         store.logOut()
         
         #expect(isCallSignOut.withLock { $0 })
         #expect(isCallAnalyticsLog.withLock { $0 })
-        #expect(store.state == .notLoggedIn)
+        #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
     }
 }

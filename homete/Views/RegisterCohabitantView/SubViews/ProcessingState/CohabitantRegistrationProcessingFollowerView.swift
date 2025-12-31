@@ -12,7 +12,7 @@ struct CohabitantRegistrationProcessingFollower: View {
     
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.p2pSessionReceiveData) var receiveData
-    @Environment(AccountStore.self) var accountStore
+    @Environment(\.loginContext.account.id) var accountId
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
@@ -25,7 +25,7 @@ struct CohabitantRegistrationProcessingFollower: View {
         CohabitantRegistrationProcessingView(
             confirmedRolePeers: $confirmedRolePeers,
             registrationState: $registrationState,
-            role: .follower(accountId: accountStore.account.id)
+            role: .follower(accountId: accountId)
         )
         .onChange(of: receiveData) { _, newValue in
             guard let newValue else { return }

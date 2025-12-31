@@ -15,8 +15,8 @@ struct AppNavigationStackView<Content: View>: View {
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
             content(navigationPath)
-                .background(.primaryBg)
-                .foregroundStyle(.primaryFg)
+                .background(.surface)
+                .foregroundStyle(.onSurface)
         }
         .environment(\.appNavigationPath, navigationPath)
     }

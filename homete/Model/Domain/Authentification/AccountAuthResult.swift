@@ -8,5 +8,4 @@
 struct AccountAuthResult: Equatable {
     
     let id: String
-    let displayName: String?
 }

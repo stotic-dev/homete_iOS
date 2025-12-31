@@ -13,8 +13,8 @@ struct FloatingButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(DesignSystem.Space.space16)
-            .foregroundStyle(.commonBlack)
+            .padding(.space16)
+            .foregroundStyle(.onSurface)
             .background {
                 GeometryReader {
                     RoundedRectangle(cornerRadius: $0.size.height / 2)

@@ -10,11 +10,11 @@ import SwiftUI
 @MainActor
 extension ButtonStyleConfiguration {
     
-    func commonStyle(_ foregroundColor: Color = .commonBlack) -> some View {
+    func commonStyle(_ foregroundColor: Color = .onSurface) -> some View {
         self.label
             .font(with: .headLineS)
-            .padding(.horizontal, DesignSystem.Space.space16)
-            .padding(.vertical, DesignSystem.Space.space8)
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space8)
             .foregroundStyle(
                 Color(foregroundColor).opacity(isPressed ? 0.3 : 1)
             )

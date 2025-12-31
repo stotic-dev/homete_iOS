@@ -14,14 +14,14 @@ struct NotRegisteredContent: View {
     var body: some View {
         VStack(spacing: .zero) {
             Spacer()
-                .frame(height: DesignSystem.Space.space24)
-            VStack(spacing: DesignSystem.Space.space24) {
+                .frame(height: .space24)
+            VStack(spacing: .space24) {
                 Image(.suggestPartner)
                     .resizable()
                     .frame(maxWidth: .infinity)
                     .aspectRatio(contentMode: .fit)
                     .cornerRadius(.radius16)
-                VStack(spacing: DesignSystem.Space.space8) {
+                VStack(spacing: .space8) {
                     Text("まだパートナーが登録されていません")
                         .font(with: .headLineS)
                     Text("パートナーを登録して、家事を分担しましょう！")
@@ -34,7 +34,7 @@ struct NotRegisteredContent: View {
                 Spacer()
             }
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
+        .padding(.horizontal, .space16)
     }
 }
 

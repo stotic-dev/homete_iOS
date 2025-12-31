@@ -10,7 +10,7 @@ import SwiftUI
 
 struct CohabitantRegistrationView: View {
     
-    @Environment(AccountStore.self) var accountStore
+    @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     
     // 登録処理を中断するかどうかを確認するアラート
@@ -18,7 +18,7 @@ struct CohabitantRegistrationView: View {
     
     var body: some View {
         NavigationStack {
-            P2PSession(displayName: accountStore.account.displayName) {
+            P2PSession(displayName: userName) {
                 CohabitantRegistrationSession(session: $0)
             }
             .navigationBarTitleDisplayMode(.inline)

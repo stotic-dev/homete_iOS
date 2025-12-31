@@ -11,62 +11,60 @@ import Testing
 @MainActor
 struct AccountStoreTest {
 
-    @Test("初回ログインでサーバーにアカウント情報がない場合、サーバーにアカウント情報を登録する")
-    func loadOwnAccountData() async throws {
+    @Test("アカウント情報をロードし、アカウントがある場合はアカウント情報を返す")
+    func load() async throws {
         
-        await confirmation(expectedCount: 2) { confirmation in
+        // Arrange
+        let inputAccountId = "test"
+        let inputAccount = Account(id: inputAccountId, userName: "testUserName", fcmToken: "testToken")
+        
+        await confirmation(expectedCount: 1) { confirmation in
             
-            let inputAuthResult = AccountAuthResult(id: "test", displayName: "testName")
-            let accountInfoClient = AccountInfoClient {
-                
-                confirmation()
-                let expectedAccount = try Account(
-                    id: inputAuthResult.id,
-                    displayName: #require(inputAuthResult.displayName, ""),
-                    fcmToken: nil
-                )
-                #expect($0 == expectedAccount)
-            } fetch: {
+            let inputAuthResult = AccountAuthResult(id: "test")
+            let accountInfoClient = AccountInfoClient(fetch: {
                 
                 confirmation()
                 #expect($0 == inputAuthResult.id)
-                return nil
-            }
+                return inputAccount
+            })
             let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
             
-            await store.loadOwnAccountData(inputAuthResult, fcmToken: nil)
+            // Act
+            let actual = await store.load(inputAuthResult)
+            
+            // Assert
+            #expect(actual == inputAccount)
         }
     }
     
     @Test("サーバーにログイン情報がありFCMトークンが更新されている場合アカウントに紐づくFCMトークンを更新")
     func updateFcmTokenIfNeeded() async {
         
-        await confirmation(expectedCount: 2) { confirmation in
+        await confirmation(expectedCount: 1) { confirmation in
             
+            // Arrange
             let inputFcmToken = "token"
-            let inputAuthResult = AccountAuthResult(id: "test", displayName: "testName")
-            let accountInfoClient = AccountInfoClient {
+            let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil)
+            let expectedAccount = Account(
+                id: initialAccount.id,
+                userName: initialAccount.userName,
+                fcmToken: inputFcmToken
+            )
+            let accountInfoClient = AccountInfoClient(insertOrUpdate: {
                 
                 confirmation()
-                let expectedAccount = try Account(
-                    id: inputAuthResult.id,
-                    displayName: #require(inputAuthResult.displayName, ""),
-                    fcmToken: inputFcmToken
-                )
                 #expect($0 == expectedAccount)
-            } fetch: {
-                
-                confirmation()
-                #expect($0 == inputAuthResult.id)
-                return try Account(
-                    id: inputAuthResult.id,
-                    displayName: #require(inputAuthResult.displayName, ""),
-                    fcmToken: nil
-                )
-            }
-            let store = AccountStore(appDependencies: .init(accountInfoClient: accountInfoClient))
+            })
+            let store = AccountStore(
+                account: initialAccount,
+                appDependencies: .init(accountInfoClient: accountInfoClient)
+            )
             
-            await store.loadOwnAccountData(inputAuthResult, fcmToken: inputFcmToken)
+            // Act
+            await store.updateFcmTokenIfNeeded(inputFcmToken)
+            
+            // Assert
+            #expect(store.account == expectedAccount)
         }
     }
 }

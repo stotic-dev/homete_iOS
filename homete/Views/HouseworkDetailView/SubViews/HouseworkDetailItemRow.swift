@@ -13,7 +13,7 @@ struct HouseworkDetailItemRow<Content: View>: View {
     @ViewBuilder let content: () -> Content
     
     var body: some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+        VStack(alignment: .leading, spacing: .space16) {
             Text(title)
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -11,16 +11,21 @@ import SwiftUI
 @Observable
 final class AccountAuthStore {
     
-    var state: LaunchState = .launching
+    private(set) var currentAuth: AccountAuthInfo
     
     private let accountAuthClient: AccountAuthClient
     private let analyticsClient: AnalyticsClient
     private let listener: AccountListenerStream
     
-    init(appDependencies: AppDependencies) {
-        
+    init(
+        appDependencies: AppDependencies,
+        currentAuth: AccountAuthInfo = .initial
+    ) {
+       
         accountAuthClient = appDependencies.accountAuthClient
         analyticsClient = appDependencies.analyticsClient
+        self.currentAuth = currentAuth
+        
         listener = accountAuthClient.makeListener()
         
         Task {
@@ -48,7 +53,7 @@ final class AccountAuthStore {
         
         do {
             
-            state = .notLoggedIn
+            currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
             try accountAuthClient.signOut()
             analyticsClient.log(.logout())
         }
@@ -65,7 +70,8 @@ private extension AccountAuthStore {
         
         for await value in listener.values {
             
-            state = state.next(value)
+            currentAuth = .init(result: value, alreadyLoadedAtInitiate: true)
+            print("currentAuth snapshot: \(String(describing: currentAuth))")
         }
     }
 }

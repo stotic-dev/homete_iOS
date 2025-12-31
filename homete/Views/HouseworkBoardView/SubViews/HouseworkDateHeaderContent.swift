@@ -19,7 +19,7 @@ struct HouseworkDateHeaderContent: View {
                 updateSelectedDate(value: -1)
             } label: {
                 Image(systemName: "chevron.left")
-                    .foregroundStyle(.primaryFg)
+                    .foregroundStyle(.onSurface)
             }
             Spacer()
             Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
@@ -28,7 +28,7 @@ struct HouseworkDateHeaderContent: View {
                 updateSelectedDate(value: 1)
             } label: {
                 Image(systemName: "chevron.right")
-                    .foregroundStyle(.primaryFg)
+                    .foregroundStyle(.onSurface)
             }
         }
     }

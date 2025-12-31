@@ -6,6 +6,6 @@
 //
 
 enum AppNavigationElement: Hashable {
-    // 家事詳細画面
+    /// 家事詳細画面
     case houseworkDetail(item: HouseworkItem)
 }

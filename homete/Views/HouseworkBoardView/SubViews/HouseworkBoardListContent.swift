@@ -21,7 +21,7 @@ struct HouseworkBoardListContent: View {
         List {
             ForEach(list.items(matching: state)) { item in
                 houseworkItemRow(item)
-                    .padding(.vertical, DesignSystem.Space.space8)
+                    .padding(.vertical, .space8)
             }
             .listRowSpacing(.zero)
             .listRowSeparator(.hidden)

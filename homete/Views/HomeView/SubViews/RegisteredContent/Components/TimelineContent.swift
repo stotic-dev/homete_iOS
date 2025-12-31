@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TimelineContent: View {
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space24) {
+        VStack(spacing: .space24) {
             Text("タイムライン")
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -18,7 +18,7 @@ struct TimelineContent: View {
                     .font(with: .headLineS)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignSystem.Space.space56)
+            .padding(.vertical, .space56)
             .overlay {
                 RoundedRectangle(radius: .radius8)
                     .stroke(style: .init(lineWidth: 2, dash: [8]))

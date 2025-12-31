@@ -22,7 +22,7 @@ struct HouseworkBoardView: View {
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
-                VStack(spacing: DesignSystem.Space.space16) {
+                VStack(spacing: .space16) {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     HouseworkBoardListContent(
@@ -32,13 +32,13 @@ struct HouseworkBoardView: View {
                     )
                     Spacer()
                 }
-                .padding(.horizontal, DesignSystem.Space.space16)
+                .padding(.horizontal, .space16)
                 addHouseworkButton {
                     isPresentingAddHouseworkView = true
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .padding(.trailing, DesignSystem.Space.space24)
-                .padding(.bottom, DesignSystem.Space.space24)
+                .padding(.trailing, .space24)
+                .padding(.bottom, .space24)
             }
             .navigationDestination(for: AppNavigationElement.self) { element in
                 navigationHandler(element)

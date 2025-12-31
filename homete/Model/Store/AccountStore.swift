@@ -11,53 +11,59 @@ import SwiftUI
 @Observable
 final class AccountStore {
     
-    private(set) var account: Account = .empty
-    var text: String = ""
+    private(set) var account: Account?
         
     private let accountInfoClient: AccountInfoClient
-    
-    init(appDependencies: AppDependencies) {
         
+    init(
+        account: Account? = nil,
+        appDependencies: AppDependencies
+    ) {
+        
+        self.account = account
         accountInfoClient = appDependencies.accountInfoClient
     }
     
-    func loadOwnAccountData(_ auth: AccountAuthResult, fcmToken: String?) async {
+    /// アカウント情報をロードし、オンメモリにキャッシュする
+    /// - Returns: ロードしたアカウント情報を返す（アカウントがない場合はnilを返す）
+    @discardableResult
+    func load(_ auth: AccountAuthResult) async -> Account? {
         
         do {
             
-            if let account = try await accountInfoClient.fetch(auth.id) {
-                
-                self.account = account
-                
-                guard let fcmToken else { return }
-                await updateFcmTokenIfNeeded(fcmToken)
-                return
-            }
-            
-            let newAccount = Account.initial(auth, fcmToken)
-            try await accountInfoClient.insertOrUpdate(newAccount)
-            account = newAccount
+            account = try await accountInfoClient.fetch(auth.id)
         }
         catch {
             
             print("failed to fetch account info: \(error)")
         }
+        
+        return account
+    }
+    
+    func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
+        
+        let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil)
+        try await accountInfoClient.insertOrUpdate(newAccount)
+        account = newAccount
+        return newAccount
     }
     
     func updateFcmTokenIfNeeded(_ fcmToken: String) async {
         
         // 保持しているFCMトークンと異なるFCMトークンに変わった場合は、アカウント情報も新しいトークンに更新する
-        guard account != .empty,
+        guard let account,
               account.fcmToken != fcmToken else { return }
         
         do {
             
             let updatedAccount = Account(
                 id: account.id,
-                displayName: account.displayName,
+                userName: account.userName,
                 fcmToken: fcmToken
             )
             try await accountInfoClient.insertOrUpdate(updatedAccount)
+            self.account = updatedAccount
         }
         catch {
             

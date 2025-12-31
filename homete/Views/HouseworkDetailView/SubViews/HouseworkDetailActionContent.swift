@@ -18,7 +18,7 @@ struct HouseworkDetailActionContent: View {
     let item: HouseworkItem
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             switch item.state {
             case .incomplete:
                 requestReviewButton()
@@ -101,7 +101,7 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        account: .init(id: "", displayName: "", fcmToken: nil),
+        account: .init(id: "", userName: "", fcmToken: nil),
         item: .init(
             id: "",
             title: "洗濯",
@@ -116,7 +116,7 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        account: .init(id: "dummy", displayName: "", fcmToken: nil),
+        account: .init(id: "dummy", userName: "", fcmToken: nil),
         item: .init(
             id: "",
             indexedDate: .init(.distantPast),
@@ -135,7 +135,7 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        account: .init(id: "dummy", displayName: "", fcmToken: nil),
+        account: .init(id: "dummy", userName: "", fcmToken: nil),
         item: .init(
             id: "",
             indexedDate: .init(.distantPast),

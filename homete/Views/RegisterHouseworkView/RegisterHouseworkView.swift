@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import Prefire
 import FirebaseFunctions
 import SwiftUI
 
@@ -27,9 +28,9 @@ struct RegisterHouseworkView: View {
     
     var body: some View {
         ZStack {
-            VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+            VStack(alignment: .leading, spacing: .space16) {
                 Spacer()
-                    .frame(height: DesignSystem.Space.space24)
+                    .frame(height: .space24)
                 Text("家事を追加")
                     .font(with: .headLineL)
                 inputTextField()
@@ -38,7 +39,7 @@ struct RegisterHouseworkView: View {
                     .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
                 Spacer()
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.horizontal, .space16)
             if isShowingKeyboard {
                 Color.clear
                     .ignoresSafeArea()
@@ -56,11 +57,9 @@ struct RegisterHouseworkView: View {
             .floatingButtonStyle()
             .disabled(houseworkTitle.isEmpty)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding([.trailing, .bottom], DesignSystem.Space.space24)
-            LoadingIndicator()
-                .ignoresSafeArea()
-                .opacity(isLoading ? 1 : 0)
+            .padding([.trailing, .bottom], .space24)
         }
+        .fullScreenLoadingIndicator(isLoading)
         .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
             Button(
@@ -99,16 +98,16 @@ private extension RegisterHouseworkView {
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.primary2)
-                    .padding(DesignSystem.Space.space8)
+                    .padding(.space8)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, DesignSystem.Space.space8)
+            .padding(.trailing, .space8)
             .opacity(houseworkTitle.isEmpty ? 0 : 1)
         }
     }
     
     func inputPointSlider() -> some View {
-        VStack(spacing: DesignSystem.Space.space8) {
+        VStack(spacing: .space8) {
             Text("完了ポイント")
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,7 +118,7 @@ private extension RegisterHouseworkView {
     }
     
     func entryHistoryContent() -> some View {
-        VStack(alignment: .leading, spacing: DesignSystem.Space.space16) {
+        VStack(alignment: .leading, spacing: .space16) {
             Text("入力履歴")
                 .font(with: .headLineM)
             List {
@@ -211,6 +210,7 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .snapshot(delay: 1)
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -225,4 +225,5 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .snapshot(delay: 1)
 }

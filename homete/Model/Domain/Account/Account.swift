@@ -8,16 +8,16 @@
 struct Account: Equatable, Codable {
     
     let id: String
-    let displayName: String
+    let userName: String
     let fcmToken: String?
 }
 
 extension Account {
     
-    static let empty: Self = .init(id: "", displayName: "", fcmToken: nil)
+    static let empty: Self = .init(id: "", userName: "", fcmToken: nil)
     
-    static func initial(_ auth: AccountAuthResult, _ fcmToken: String?) -> Self {
+    static func initial(auth: AccountAuthResult, userName: UserName, fcmToken: String?) -> Self {
         
-        return .init(id: auth.id, displayName: auth.displayName ?? "未設定", fcmToken: fcmToken)
+        return .init(id: auth.id, userName: userName.value, fcmToken: fcmToken)
     }
 }

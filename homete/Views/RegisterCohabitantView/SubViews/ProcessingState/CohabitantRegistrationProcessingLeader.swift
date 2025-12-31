@@ -16,7 +16,7 @@ struct CohabitantRegistrationProcessingLeader: View {
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
-    @Environment(AccountStore.self) var accountStore
+    @Environment(\.loginContext.account.id) var accountId
     
     @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
@@ -97,7 +97,7 @@ private extension CohabitantRegistrationProcessingLeader {
                 try await cohabitantClient.register(
                     .init(
                         id: cohabitantId,
-                        members: [accountStore.account.id] + .init(cohabitantsAccountId)
+                        members: [accountId] + .init(cohabitantsAccountId)
                     )
                 )
                 

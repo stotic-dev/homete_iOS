@@ -12,6 +12,7 @@ struct RootView: View {
         
     @State var theme = Theme()
     @State var fcmToken: String?
+    @State var launchState = LaunchState.launching
     
     @AppStorage(key: .cohabitantId) var localStorageCohabitantId = ""
     
@@ -20,21 +21,27 @@ struct RootView: View {
     
     var body: some View {
         ZStack {
-            switch accountAuthStore.state {
+            switch launchState {
             case .launching:
                 LaunchScreenView()
-            case .loggedIn:
+            case .preLoggedIn(let auth):
+                RegistrationAccountView(authInfo: auth)
+                    .transition(.asymmetric(
+                        insertion: .push(from: .leading),
+                        removal: .opacity
+                    ))
+            case .loggedIn(let context):
                 AppTabView()
+                    .environment(\.loginContext, context)
                     .transition(.scale)
             case .notLoggedIn:
                 LoginView()
-                    .transition(.scale)
             }
         }
-        .animation(.spring, value: accountAuthStore.state)
-        .onChange(of: accountAuthStore.state) {
+        .animation(.spring, value: launchState)
+        .onChange(of: accountAuthStore.currentAuth) {
             Task {
-                await onChangeLaunchState(accountAuthStore.state)
+                await onChangeAuth(accountAuthStore.currentAuth)
             }
         }
         .task(id: accountStore.account) {
@@ -50,6 +57,7 @@ struct RootView: View {
         }
         .apply(theme: theme)
         .environment(\.cohabitantId, localStorageCohabitantId)
+        .environment(\.launchStateProxy, .init(launchState: $launchState))
     }
 }
 
@@ -72,8 +80,16 @@ extension RootView {
 
 private extension RootView {
     
-    func onChangeLaunchState(_ state: LaunchState) async {
-        guard case .loggedIn(let accountAuthResult) = accountAuthStore.state else { return }
-        await accountStore.loadOwnAccountData(accountAuthResult, fcmToken: fcmToken)
+    func onChangeAuth(_ auth: AccountAuthInfo) async {
+        guard let authResult = auth.result else {
+            launchState = .notLoggedIn
+            return
+        }
+        
+        if let account = await accountStore.load(authResult) {
+            launchState = .loggedIn(context: .init(account: account))
+        } else {
+            launchState = .preLoggedIn(auth: authResult)
+        }
     }
 }

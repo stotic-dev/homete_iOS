@@ -11,6 +11,7 @@ struct SettingView: View {
     
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     
     @State var isPresentedLogoutConfirmAlert = false
@@ -19,11 +20,11 @@ struct SettingView: View {
         NavigationStack {
             VStack(spacing: .zero) {
                 Spacer()
-                    .frame(height: DesignSystem.Space.space24)
-                Text(accountStore.account.displayName)
+                    .frame(height: .space24)
+                Text(userName)
                     .font(with: .headLineM)
                 Spacer()
-                    .frame(height: DesignSystem.Space.space16)
+                    .frame(height: .space16)
                 VStack(spacing: .zero) {
                     ForEach(SettingMenuItem.allCases, id: \.self) { item in
                         SettingMenuItemButton(item: item) {
@@ -32,7 +33,7 @@ struct SettingView: View {
                     }
                 }
                 Spacer()
-                    .frame(height: DesignSystem.Space.space32)
+                    .frame(height: .space32)
                 Button {
                     isPresentedLogoutConfirmAlert = true
                 } label: {
@@ -40,9 +41,9 @@ struct SettingView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .primaryButtonStyle()
-                Spacer(minLength: DesignSystem.Space.space16)
+                Spacer(minLength: .space16)
             }
-            .padding(.horizontal, DesignSystem.Space.space16)
+            .padding(.horizontal, .space16)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("設定")
             .toolbar {

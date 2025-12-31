@@ -10,7 +10,7 @@ import SwiftUI
 struct LaunchScreenView: View {
     
     var body: some View {
-        VStack(spacing: DesignSystem.Space.space16) {
+        VStack(spacing: .space16) {
             Text("Homete")
                 .font(with: .headLineL)
             Image(.launchScreenIcon)
@@ -20,8 +20,8 @@ struct LaunchScreenView: View {
                 .cornerRadius(.radius8)
             Spacer()
         }
-        .padding(.horizontal, DesignSystem.Space.space16)
-        .padding(.vertical, DesignSystem.Space.space24)
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space24)
     }
 }
 

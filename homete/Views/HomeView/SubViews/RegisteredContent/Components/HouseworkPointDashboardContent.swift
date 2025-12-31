@@ -13,7 +13,7 @@ struct HouseworkPointDashboardContent: View {
     let thanksPoint: Int
     
     var body: some View {
-        HStack(spacing: DesignSystem.Space.space16) {
+        HStack(spacing: .space16) {
             pointBox {
                 Text("今月の獲得ポイント")
                     .font(with: .body)
@@ -34,7 +34,7 @@ struct HouseworkPointDashboardContent: View {
 private extension HouseworkPointDashboardContent {
     
     func pointBox<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(spacing: DesignSystem.Space.space8) {
+        VStack(spacing: .space8) {
             content()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
