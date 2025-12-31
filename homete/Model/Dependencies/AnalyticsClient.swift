@@ -12,6 +12,15 @@ struct AnalyticsClient {
     
     let setId: @Sendable (String) -> Void
     let log: @Sendable (AnalyticsEvent) -> Void
+    
+    init(
+        setId: @Sendable @escaping (String) -> Void = { _ in },
+        log: @Sendable @escaping (AnalyticsEvent) -> Void = { _ in }
+    ) {
+        
+        self.setId = setId
+        self.log = log
+    }
 }
 
 extension AnalyticsClient: DependencyClient {
@@ -25,5 +34,5 @@ extension AnalyticsClient: DependencyClient {
         Analytics.logEvent(event.name, parameters: event.parameters)
     }
     
-    static let previewValue: AnalyticsClient = .init(setId: { _ in }, log: { _ in })
+    static let previewValue = AnalyticsClient()
 }
