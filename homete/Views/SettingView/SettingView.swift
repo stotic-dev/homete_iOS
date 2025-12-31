@@ -16,6 +16,7 @@ struct SettingView: View {
     
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
+    @State var isLoading = false
     
     var body: some View {
         NavigationStack {
@@ -68,6 +69,7 @@ struct SettingView: View {
         }
         .alert("退会しますか？", isPresented: $isPresentedAccountDeletionConfirmAlert) {
             Button("退会する", role: .destructive) {
+                isLoading = true
                 Task {
                     await tappedAccountDeletionAlertOkButton()
                 }
@@ -116,6 +118,8 @@ private extension SettingView {
             // TODO: エラーハンドリング
             print("occurred error: \(error)")
         }
+        
+        isLoading = false
     }
 }
 
