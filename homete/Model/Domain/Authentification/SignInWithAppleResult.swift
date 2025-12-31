@@ -9,4 +9,5 @@ struct SignInWithAppleResult {
     
     let tokenId: String
     let nonce: String
+    let authorizationCode: String
 }

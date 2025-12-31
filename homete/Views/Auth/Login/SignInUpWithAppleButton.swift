@@ -51,7 +51,18 @@ private extension SignInUpWithAppleButton {
                     return
                 }
                 
-                let result = SignInWithAppleResult(tokenId: idTokenString, nonce: currentNonce.original)
+                guard let authorizationCode = appleIDCredential.authorizationCode,
+                      let authorizationCodeString = String(data: authorizationCode, encoding: .utf8) else {
+                    
+                    await onSignIn(.failure(DomainError.failAuth))
+                    return
+                }
+                
+                let result = SignInWithAppleResult(
+                    tokenId: idTokenString,
+                    nonce: currentNonce.original,
+                    authorizationCode: authorizationCodeString
+                )
                 await onSignIn(.success(result))
                 
             case .failure(let error):
