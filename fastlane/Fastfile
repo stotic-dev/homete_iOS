@@ -19,6 +19,10 @@ platform :ios do
 
   before_all do
     setup_ci if ENV['CI']
+    
+    # Xcode26でビルドのアップロードを行うときに、新しいバージョンのaltoolだと、エラーがあってもエラーを吐かずハングしてしまうため、古いバージョンを使うようにする
+    # https://github.com/fastlane/fastlane/issues/29725
+    ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"] = "--use-old-altool"
   end
 
   desc "ipaを生成"
