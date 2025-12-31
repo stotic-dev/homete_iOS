@@ -56,8 +56,8 @@ struct AccountStoreTest {
                 #expect($0 == expectedAccount)
             })
             let store = AccountStore(
-                account: initialAccount,
-                appDependencies: .init(accountInfoClient: accountInfoClient)
+                appDependencies: .init(accountInfoClient: accountInfoClient),
+                account: initialAccount
             )
             
             // Act

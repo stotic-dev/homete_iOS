@@ -28,4 +28,12 @@ extension AnalyticsEvent {
             parameters: [:]
         )
     }
+    
+    static func deleteAccount() -> Self {
+        
+        return .init(
+            name: "delete_account",
+            parameters: [:]
+        )
+    }
 }

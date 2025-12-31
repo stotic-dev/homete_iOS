@@ -50,7 +50,7 @@ struct AccountAuthStoreTest {
                 )
             ))
             
-            try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce))
+            try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce, authorizationCode: "code"))
         }
     }
     
@@ -91,5 +91,66 @@ struct AccountAuthStoreTest {
         #expect(isCallSignOut.withLock { $0 })
         #expect(isCallAnalyticsLog.withLock { $0 })
         #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+    }
+    
+    @Test("再認証を行った後にアカウントを削除し認証トークンの無効化を行いログアウト状態にすることで、退会処理を完了させる")
+    func deleteAccount() async throws {
+        
+        // Arrange
+        let inputNonce = SignInWithAppleNonce(original: "originalTestNonce", sha256: "sha256TestNonce")
+        let inputSignInWithAppleResult = SignInWithAppleResult(
+            tokenId: "testToken",
+            nonce: inputNonce.sha256,
+            authorizationCode: "testCode"
+        )
+        
+        try await confirmation(expectedCount: 6) { confirmation in
+            
+            let store = AccountAuthStore(
+                appDependencies: .init(
+                    nonceGeneratorClient: .init {
+                        
+                        confirmation()
+                        return inputNonce
+                    },
+                    accountAuthClient: .init(
+                        reauthenticateWithApple: { result in
+                            
+                            confirmation()
+                            #expect(result == inputSignInWithAppleResult)
+                        },
+                        revokeAppleToken: { code in
+                            
+                            confirmation()
+                            #expect(code == inputSignInWithAppleResult.authorizationCode)
+                        },
+                        deleteAccount: {
+                            
+                            confirmation()
+                        },
+                    ),
+                    analyticsClient: .init(
+                        log: { event in
+                            
+                            confirmation()
+                            #expect(event == .deleteAccount())
+                        }
+                    ),
+                    signInWithAppleClient: .init { nonce in
+                        
+                        confirmation()
+                        #expect(nonce == inputNonce)
+                        return inputSignInWithAppleResult
+                    }
+                ),
+                currentAuth: .init(result: .init(id: "test"), alreadyLoadedAtInitiate: true)
+            )
+            
+            // Act
+            try await store.deleteAccount()
+            
+            // Assert
+            #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+        }
     }
 }

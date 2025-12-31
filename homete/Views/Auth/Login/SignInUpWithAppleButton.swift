@@ -30,8 +30,7 @@ private extension SignInUpWithAppleButton {
     
     func handleRequest(request: ASAuthorizationAppleIDRequest) {
         let nonce = nonceGenerationClient()
-        request.requestedScopes = [.fullName]
-        request.nonce = nonce.sha256
+        request.build(nonce)
         currentNonce = nonce
     }
    
@@ -44,15 +43,15 @@ private extension SignInUpWithAppleButton {
                     
                     preconditionFailure("No sent sign in request.")
                 }
-                guard let appleIDToken = appleIDCredential.identityToken,
-                      let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-                    
-                    await onSignIn(.failure(DomainError.failAuth))
-                    return
-                }
                 
-                let result = SignInWithAppleResult(tokenId: idTokenString, nonce: currentNonce.original)
-                await onSignIn(.success(result))
+                do {
+                    
+                    let result = try SignInWithAppleResultFactory.make(appleIDCredential, currentNonce)
+                    await onSignIn(.success(result))
+                } catch {
+                    
+                    await onSignIn(.failure(error))
+                }
                 
             case .failure(let error):
                 print("failed sign in with apple: \(error)")

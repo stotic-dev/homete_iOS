@@ -16,12 +16,12 @@ final class AccountStore {
     private let accountInfoClient: AccountInfoClient
         
     init(
-        account: Account? = nil,
-        appDependencies: AppDependencies
+        appDependencies: AppDependencies,
+        account: Account? = nil
     ) {
         
-        self.account = account
         accountInfoClient = appDependencies.accountInfoClient
+        self.account = account
     }
     
     /// アカウント情報をロードし、オンメモリにキャッシュする

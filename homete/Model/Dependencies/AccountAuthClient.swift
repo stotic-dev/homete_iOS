@@ -12,32 +12,76 @@ struct AccountAuthClient {
     let signIn: @Sendable (String, String) async throws -> AccountAuthResult
     let signOut: @Sendable () throws -> Void
     let makeListener: @Sendable () -> AccountListenerStream
-}
-
-extension AccountAuthClient: DependencyClient {
+    let reauthenticateWithApple: @Sendable (_ signInWithAppleResult: SignInWithAppleResult) async throws -> Void
+    let revokeAppleToken: @Sendable (_ authorizationCode: String) async throws -> Void
+    let deleteAccount: @Sendable () async throws -> Void
     
-    static let liveValue: AccountAuthClient = .init(signIn: { tokenId, nonce in
-        
-        try await signInWithApple(tokenId: tokenId, nonce: nonce)
-    }, signOut: {
-        
-        try Auth.auth().signOut()
-    }, makeListener: {
-        
-        return Self.makeListener()
-    })
-    
-    static let previewValue: AccountAuthClient = .init(
-        signIn: { _, _ in .init(id: "id") },
-        signOut: {},
-        makeListener: {
+    init(
+        signIn: @Sendable @escaping (String, String) async throws -> AccountAuthResult = { _, _ in .init(id: "id") },
+        signOut: @Sendable @escaping () throws -> Void = {},
+        makeListener: @Sendable @escaping () -> AccountListenerStream = {
             
             let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
             return AccountListenerStream(values: stream,
                                          listenerToken: NSObject(),
                                          continuation: continuation)
+        },
+        reauthenticateWithApple: @Sendable @escaping (_: SignInWithAppleResult) async throws -> Void = { _ in },
+        revokeAppleToken: @Sendable @escaping (_: String) async throws -> Void = { _ in },
+        deleteAccount: @Sendable @escaping () async throws -> Void = {}
+    ) {
+        
+        self.signIn = signIn
+        self.signOut = signOut
+        self.makeListener = makeListener
+        self.reauthenticateWithApple = reauthenticateWithApple
+        self.revokeAppleToken = revokeAppleToken
+        self.deleteAccount = deleteAccount
+    }
+}
+
+extension AccountAuthClient: DependencyClient {
+    
+    static let liveValue: AccountAuthClient = .init(
+        signIn: { tokenId, nonce in
+            
+            try await signInWithApple(tokenId: tokenId, nonce: nonce)
+        },
+        signOut: {
+            
+            try Auth.auth().signOut()
+        },
+        makeListener: {
+            
+            return Self.makeListener()
+        },
+        reauthenticateWithApple: { signInWithAppleResult in
+            
+            let credential = OAuthProvider.credential(
+                providerID: .apple,
+                idToken: signInWithAppleResult.tokenId,
+                rawNonce: signInWithAppleResult.nonce
+            )
+            guard let user = Auth.auth().currentUser else {
+                
+                throw DomainError.failAuth
+            }
+            try await user.reauthenticate(with: credential)
+        },
+        revokeAppleToken: { authorizationCode in
+            
+            try await Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
+        },
+        deleteAccount: {
+            
+            guard let user = Auth.auth().currentUser else {
+                throw DomainError.failAuth
+            }
+            try await user.delete()
         }
     )
+    
+    static let previewValue = AccountAuthClient()
 }
 
 private extension AccountAuthClient {
