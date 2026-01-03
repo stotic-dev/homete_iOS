@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { FirestoreCollections } from "./models/FirestoreCollections";
 
 export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
     const userId = user.uid;
@@ -11,7 +12,7 @@ export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
     try {
         // Step 1: Accountドキュメントの検索と取得
         const accountSnapshot = await db
-            .collection("Account")
+            .collection(FirestoreCollections.ACCOUNT)
             .where("id", "==", userId)
             .limit(1)
             .get();
@@ -37,7 +38,9 @@ export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
             return;
         }
 
-        const cohabitantRef = db.collection("Cohabitant").doc(linkedCohabitantId);
+        const cohabitantRef = db
+            .collection(FirestoreCollections.COHABITANT)
+            .doc(linkedCohabitantId);
         const cohabitantSnapshot = await cohabitantRef.get();
 
         if (!cohabitantSnapshot.exists) {
@@ -81,14 +84,17 @@ async function removeCohabitantSubcollections(
     db: FirebaseFirestore.Firestore,
     cohabitantId: string
 ): Promise<void> {
-    const subcollectionNames = ["Housework", "HouseworkHistory"];
+    const subcollections = [
+        FirestoreCollections.HOUSEWORK,
+        FirestoreCollections.HOUSEWORK_HISTORY,
+    ];
 
-    for (const name of subcollectionNames) {
-        await batchDeleteCollection(
-            db,
-            `Cohabitant/${cohabitantId}/${name}`,
-            500
+    for (const subcollection of subcollections) {
+        const path = FirestoreCollections.getCohabitantSubcollection(
+            cohabitantId,
+            subcollection
         );
+        await batchDeleteCollection(db, path, 500);
     }
 }
 

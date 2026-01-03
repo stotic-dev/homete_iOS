@@ -1,7 +1,8 @@
 import * as logger from "firebase-functions/logger";
-import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {getFirestore} from "firebase-admin/firestore";
-import {getMessaging} from "firebase-admin/messaging";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { getFirestore } from "firebase-admin/firestore";
+import { getMessaging } from "firebase-admin/messaging";
+import { FirestoreCollections } from "./models/FirestoreCollections";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
@@ -27,7 +28,7 @@ export const notifyothercohabitants = onCall(
     }
 
     const senderId = request.auth.uid;
-    const {cohabitantId, title, body} = request.data;
+    const { cohabitantId, title, body } = request.data;
 
     if (!cohabitantId || !title || !body) {
       logger.error("Invalid argument: Missing required parameters.", {
@@ -44,7 +45,9 @@ export const notifyothercohabitants = onCall(
 
     try {
       // 1. Get the cohabitant group document
-      const cohabitantDocRef = db.collection("Cohabitant").doc(cohabitantId);
+      const cohabitantDocRef = db
+        .collection(FirestoreCollections.COHABITANT)
+        .doc(cohabitantId);
       const cohabitantDoc = await cohabitantDocRef.get();
 
       if (!cohabitantDoc.exists) {
@@ -58,7 +61,7 @@ export const notifyothercohabitants = onCall(
       const cohabitantData = cohabitantDoc.data();
       if (!cohabitantData || !cohabitantData.members) {
         logger.error(`Cohabitant group ${cohabitantId} has no members field.`);
-        return {success: true, message: "No members found in the group."};
+        return { success: true, message: "No members found in the group." };
       }
 
       // 2. Filter out the sender to get recipient IDs
@@ -68,13 +71,13 @@ export const notifyothercohabitants = onCall(
 
       if (recipientIds.length === 0) {
         logger.info("No other members in the group to notify.");
-        return {success: true, message: "No other members to notify."};
+        return { success: true, message: "No other members to notify." };
       }
 
       // 3. Get FCM tokens for the recipients
       const tokens: string[] = [];
       const accountsQuery = await db
-        .collection("Account")
+        .collection(FirestoreCollections.ACCOUNT)
         .where("id", "in", recipientIds)
         .get();
 
@@ -87,7 +90,7 @@ export const notifyothercohabitants = onCall(
 
       if (tokens.length === 0) {
         logger.info("No FCM tokens found for any of the recipients.");
-        return {success: true, message: "No recipient tokens found."};
+        return { success: true, message: "No recipient tokens found." };
       }
 
       // 4. Send notifications
@@ -112,7 +115,7 @@ export const notifyothercohabitants = onCall(
             failedTokens.push(tokens[idx]);
           }
         });
-        logger.warn("List of tokens that caused failures:", {failedTokens});
+        logger.warn("List of tokens that caused failures:", { failedTokens });
       }
 
       return {
@@ -120,7 +123,7 @@ export const notifyothercohabitants = onCall(
         message: `Notifications sent to ${batchResponse.successCount} devices.`,
       };
     } catch (error) {
-      logger.error("An unexpected error occurred:", {error});
+      logger.error("An unexpected error occurred:", { error });
       throw new HttpsError(
         "internal",
         "An unexpected error occurred.",
