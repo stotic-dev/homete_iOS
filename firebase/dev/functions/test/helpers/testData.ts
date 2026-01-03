@@ -1,15 +1,12 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { FirestoreCollections } from '../../src/models/FirestoreCollections';
+import { Account } from '../../src/models/Account';
+import { Cohabitant } from '../../src/models/Cohabitant';
 
 export interface TestUser {
     uid: string;
     email: string;
-}
-
-export interface TestCohabitant {
-    id: string;
-    members: string[];
 }
 
 /**
@@ -23,6 +20,7 @@ export async function createTestUser(uid: string, email: string): Promise<TestUs
 
 /**
  * テスト用Accountドキュメントを作成
+ * プロダクションコードのAccountモデルを使用
  */
 export async function createTestAccount(
     userId: string,
@@ -30,44 +28,64 @@ export async function createTestAccount(
     fcmToken?: string
 ): Promise<void> {
     const db = getFirestore();
-    const data: any = {
+
+    // Accountモデルに準拠したデータを作成
+    const account: Account = {
         id: userId,
+        cohabitantId,
+        fcmToken,
     };
 
-    // undefinedの場合はフィールド自体を追加しない
-    if (cohabitantId !== undefined) {
-        data.cohabitantId = cohabitantId;
-    }
-    if (fcmToken !== undefined) {
-        data.fcmToken = fcmToken;
-    }
+    // undefinedフィールドを除外してFirestoreに保存
+    const accountData = removeUndefinedFields(account);
 
-    await db.collection(FirestoreCollections.ACCOUNT).add(data);
+    await db.collection(FirestoreCollections.ACCOUNT).add(accountData);
 }
 
 /**
  * テストCohabitantドキュメントを作成
+ * プロダクションコードのCohabitantモデルを使用
  */
 export async function createTestCohabitant(
     cohabitantId: string,
     members: string[]
-): Promise<TestCohabitant> {
+): Promise<void> {
     const db = getFirestore();
-    await db.collection(FirestoreCollections.COHABITANT).doc(cohabitantId).set({
+
+    // Cohabitantモデルに準拠したデータを作成
+    const cohabitant: Cohabitant = {
         members,
-    });
-    return { id: cohabitantId, members };
+    };
+
+    await db
+        .collection(FirestoreCollections.COHABITANT)
+        .doc(cohabitantId)
+        .set(cohabitant);
 }
 
 /**
  * Cohabitantのサブコレクションにテストデータを追加
+ * Houseworkモデルはまだ定義されていないため、汎用的なRecord型を使用
  */
 export async function createTestHousework(
     cohabitantId: string,
     houseworkId: string,
-    data: any
+    data: Record<string, any>
 ): Promise<void> {
     const db = getFirestore();
     const path = FirestoreCollections.getHouseworkPath(cohabitantId);
     await db.collection(path).doc(houseworkId).set(data);
+}
+
+/**
+ * undefinedフィールドを除外するヘルパー関数
+ */
+function removeUndefinedFields<T extends Record<string, any>>(obj: T): Partial<T> {
+    const result: Partial<T> = {};
+    for (const key in obj) {
+        if (obj[key] !== undefined) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
 }
