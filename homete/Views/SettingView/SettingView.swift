@@ -62,6 +62,7 @@ struct SettingView: View {
                 }
             }
         }
+        .fullScreenLoadingIndicator(isLoading)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
                 tappedLogoutAlertOkButton()
@@ -75,7 +76,7 @@ struct SettingView: View {
                 }
             }
         } message: {
-            Text("あなたのデータは全て削除され、復元することはできませんがよろしいですか？")
+            Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
         }
     }
 }
