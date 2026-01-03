@@ -16,7 +16,12 @@ struct AccountStoreTest {
         
         // Arrange
         let inputAccountId = "test"
-        let inputAccount = Account(id: inputAccountId, userName: "testUserName", fcmToken: "testToken")
+        let inputAccount = Account(
+            id: inputAccountId,
+            userName: "testUserName",
+            fcmToken: "testToken",
+            cohabitantId: nil
+        )
         
         await confirmation(expectedCount: 1) { confirmation in
             
@@ -44,11 +49,12 @@ struct AccountStoreTest {
             
             // Arrange
             let inputFcmToken = "token"
-            let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil)
+            let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
             let expectedAccount = Account(
                 id: initialAccount.id,
                 userName: initialAccount.userName,
-                fcmToken: inputFcmToken
+                fcmToken: inputFcmToken,
+                cohabitantId: nil
             )
             let accountInfoClient = AccountInfoClient(insertOrUpdate: {
                 
@@ -62,6 +68,43 @@ struct AccountStoreTest {
             
             // Act
             await store.updateFcmTokenIfNeeded(inputFcmToken)
+            
+            // Assert
+            #expect(store.account == expectedAccount)
+        }
+    }
+    
+    @Test("パートナーの登録で保持しているアカウントにパートナーグループIDの情報を更新する")
+    func registerCohabitantId() async throws {
+        
+        try await confirmation(expectedCount: 1) { confirmation in
+            
+            // Arrange
+            let inputCohabitantId = "testCohabitantId"
+            let initialAccount = Account(
+                id: "testId",
+                userName: "testUser",
+                fcmToken: nil,
+                cohabitantId: nil
+            )
+            let expectedAccount = Account(
+                id: initialAccount.id,
+                userName: initialAccount.userName,
+                fcmToken: nil,
+                cohabitantId: inputCohabitantId
+            )
+            let accountInfoClient = AccountInfoClient(insertOrUpdate: {
+                
+                confirmation()
+                #expect($0 == expectedAccount)
+            })
+            let store = AccountStore(
+                appDependencies: .init(accountInfoClient: accountInfoClient),
+                account: initialAccount
+            )
+            
+            // Act
+            try await store.registerCohabitantId(inputCohabitantId)
             
             // Assert
             #expect(store.account == expectedAccount)

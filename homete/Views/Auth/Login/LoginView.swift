@@ -24,7 +24,6 @@ struct LoginView: View {
             SignInUpWithAppleButton {
                 isLoading = true
                 await onSignInWithApple($0)
-                isLoading = false
             }
             .frame(height: .space48)
             .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))

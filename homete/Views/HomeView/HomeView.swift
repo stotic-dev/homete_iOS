@@ -8,22 +8,21 @@
 import SwiftUI
 
 struct HomeView: View {
-        
-    @AppStorage(key: .cohabitantId) var cohabitantId = ""
     
+    @Environment(\.loginContext.hasCohabitant) var hasCohabitant
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     
     var body: some View {
         NavigationStack {
             ZStack {
-                if cohabitantId.isEmpty {
+                if hasCohabitant {
+                    RegisteredContent()
+                }
+                else {
                     NotRegisteredContent(
                         isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
                     )
-                }
-                else {
-                    RegisteredContent()
                 }
             }
             .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
@@ -53,8 +52,11 @@ struct HomeView: View {
 #Preview("HomeView_登録時") {
     NavigationStack {
         HomeView()
-            .injectAppStorageWithPreview("HomeView_登録時") {
-                $0.set("testId", forKey: "cohabitantId")
-            }
+            .environment(\.loginContext, .init(account: .init(
+                id: "",
+                userName: "",
+                fcmToken: nil,
+                cohabitantId: "dummy"
+            )))
     }
 }

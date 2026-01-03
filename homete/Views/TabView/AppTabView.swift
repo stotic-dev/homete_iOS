@@ -11,7 +11,7 @@ import UserNotifications
 struct AppTabView: View {
     
     @Environment(\.calendar) var calendar
-    @Environment(\.cohabitantId) var cohabitantId
+    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
     @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var type: TabType = .dashboard
@@ -59,11 +59,6 @@ struct AppTabView: View {
         .task {
            await onAppear()
         }
-        .onChange(of: cohabitantId) {
-            Task {
-                await onChangeCohabitantId()
-            }
-        }
     }
 }
 
@@ -74,15 +69,8 @@ private extension AppTabView {
     func onAppear() async {
         
         requestNotificationPermission()
-        await houseworkListStore.loadHouseworkList(
-            currentTime: .now,
-            cohabitantId: cohabitantId,
-            calendar: calendar
-        )
-    }
-    
-    func onChangeCohabitantId() async {
         
+        guard let cohabitantId else { return }
         await houseworkListStore.loadHouseworkList(
             currentTime: .now,
             cohabitantId: cohabitantId,

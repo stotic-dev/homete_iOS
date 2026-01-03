@@ -15,4 +15,10 @@ enum LaunchState: Equatable {
     case loggedIn(context: LoginContext)
     /// 未ログイン
     case notLoggedIn
+    
+    var isLoggedIn: Bool {
+        
+        if case .loggedIn = self { return true }
+        return false
+    }
 }

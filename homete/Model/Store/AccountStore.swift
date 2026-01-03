@@ -43,7 +43,7 @@ final class AccountStore {
     
     func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
         
-        let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil)
+        let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil, cohabitantId: nil)
         try await accountInfoClient.insertOrUpdate(newAccount)
         account = newAccount
         return newAccount
@@ -60,7 +60,8 @@ final class AccountStore {
             let updatedAccount = Account(
                 id: account.id,
                 userName: account.userName,
-                fcmToken: fcmToken
+                fcmToken: fcmToken,
+                cohabitantId: account.cohabitantId
             )
             try await accountInfoClient.insertOrUpdate(updatedAccount)
             self.account = updatedAccount
@@ -69,5 +70,22 @@ final class AccountStore {
             
             print("failed to update fcmToken: \(error)")
         }
+    }
+    
+    func registerCohabitantId(_ cohabitantId: String) async throws {
+        
+        guard let account else {
+            
+            preconditionFailure("Not found account.")
+        }
+        
+        let updatedAccount = Account(
+            id: account.id,
+            userName: account.userName,
+            fcmToken: account.fcmToken,
+            cohabitantId: cohabitantId
+        )
+        try await accountInfoClient.insertOrUpdate(updatedAccount)
+        self.account = updatedAccount
     }
 }

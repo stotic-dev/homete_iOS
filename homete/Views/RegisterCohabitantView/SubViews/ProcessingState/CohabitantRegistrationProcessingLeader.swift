@@ -17,9 +17,8 @@ struct CohabitantRegistrationProcessingLeader: View {
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(\.loginContext.account.id) var accountId
-    
-    @AppStorage(key: .cohabitantId) var cohabitantId = ""
-    
+    @Environment(\.onCompleteCohabitantRegistration) var onCompleteCohabitantRegistration
+        
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var cohabitantsAccountId: Set<String> = []
@@ -27,6 +26,7 @@ struct CohabitantRegistrationProcessingLeader: View {
     @State var completedRegistrationPeers: Set<MCPeerID> = []
     // 同居人レコードの登録に失敗した時のアラート
     @State var isPresentingFailedRegistrationIdAlert = false
+    @State var cohabitantId: String?
     
     @Binding var registrationState: CohabitantRegistrationState
     
@@ -41,7 +41,7 @@ struct CohabitantRegistrationProcessingLeader: View {
             isPresented: $isPresentingFailedRegistrationIdAlert
         ) {
             Button("OK") {
-                cohabitantId = ""
+                cohabitantId = nil
                 dismiss()
             }
         } message: {
@@ -73,6 +73,7 @@ private extension CohabitantRegistrationProcessingLeader {
         // 登録時に使用するアカウントIDをオンメモリに保持しておく
         if let accountId = data.memberRole?.accountId {
             
+            print("dispatchReceivedMessage share accountId")
             cohabitantsAccountId.insert(accountId)
             confirmedRolePeers.insert(sender)
         }
@@ -85,10 +86,9 @@ private extension CohabitantRegistrationProcessingLeader {
     
     func onReadyRegistration() {
         
-        if cohabitantId.isEmpty {
-            
-            cohabitantId = UUID().uuidString
-        }
+        print("call onReadyRegistration")
+        let cohabitantId = UUID().uuidString
+        self.cohabitantId = cohabitantId
                 
         Task {
             
@@ -118,6 +118,11 @@ private extension CohabitantRegistrationProcessingLeader {
     
     func onCompletedRegistration() {
         
+        guard let cohabitantId else {
+            preconditionFailure("Not found required param(cohabitantId)")
+        }
+        
+        onCompleteCohabitantRegistration(cohabitantId)
         let message = CohabitantRegistrationMessage(type: .complete)
         p2pSessionProxy?.send(
             message.encodedData(),

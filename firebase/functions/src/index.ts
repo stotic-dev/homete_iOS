@@ -31,3 +31,4 @@ initializeApp();
 setGlobalOptions({maxInstances: 10});
 
 export * from "./notifyCohabitants";
+export * from "./deleteUserData";
