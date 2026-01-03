@@ -13,9 +13,9 @@ struct CohabitantRegistrationProcessingFollower: View {
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(\.loginContext.account.id) var accountId
+    @Environment(\.onCompleteCohabitantRegistration) var onCompleteCohabitantRegistration
     
-    @AppStorage(key: .cohabitantId) var cohabitantId = ""
-    
+    @State var cohabitantId: String?
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var leadPeer: MCPeerID?
     
@@ -63,7 +63,7 @@ private extension CohabitantRegistrationProcessingFollower {
         confirmedRolePeers.insert(peerID)
         
         // すでに同居人IDを受け取っていたら、完了メッセージを送信する
-        if !cohabitantId.isEmpty {
+        if cohabitantId != nil {
             
             sendCompleteMessageIfNeeded()
         }
@@ -72,6 +72,7 @@ private extension CohabitantRegistrationProcessingFollower {
     func onReceiveCohabitantId(_ cohabitantId: String) {
         
         self.cohabitantId = cohabitantId
+        onCompleteCohabitantRegistration(cohabitantId)
         sendCompleteMessageIfNeeded()
     }
     

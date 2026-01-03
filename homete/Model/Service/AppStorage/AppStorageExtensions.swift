@@ -23,22 +23,6 @@ enum AppStorageOptionalDataKey: String {
     case archivedPeerIDDataKey
 }
 
-// MARK: - String型の拡張
-
-extension SwiftUI.AppStorage where Value == String {
-    
-    init(wrappedValue: String, key: AppStorageStringKey) {
-        
-        self.init(wrappedValue: wrappedValue, key.rawValue)
-    }
-}
-
-enum AppStorageStringKey: String {
-    
-    /// 同居人ID
-    case cohabitantId
-}
-
 // MARK: - カスタムオブジェクト用の拡張
 
 extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {

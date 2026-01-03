@@ -10,8 +10,11 @@ import SwiftUI
 
 struct CohabitantRegistrationView: View {
     
+    @Environment(\.calendar) var calendar
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
+    @Environment(AccountStore.self) var accountStore
+    @Environment(HouseworkListStore.self) var houseworkListStore
     
     // 登録処理を中断するかどうかを確認するアラート
     @State var isPresentingConfirmCancelAlert = false
@@ -32,14 +35,41 @@ struct CohabitantRegistrationView: View {
         }
         .alert(
             "登録処理を終了しますか？",
-            isPresented: $isPresentingConfirmCancelAlert) {
-                Button(role: .destructive) {
-                    dismiss()
-                } label: {
-                    Text("終了する")
-                }
-            } message: {
-                Text("登録を終了すると、また初めから登録し直す必要があります。")
+            isPresented: $isPresentingConfirmCancelAlert
+        ) {
+            Button(role: .destructive) {
+                dismiss()
+            } label: {
+                Text("終了する")
             }
+        } message: {
+            Text("登録を終了すると、また初めから登録し直す必要があります。")
+        }
+        .onCompleteCohabitantRegistration { cohabitantId in
+            Task {
+                await onCompleteCohabitantRegistration(cohabitantId)
+            }
+        }
+    }
+}
+
+// MARK: プレゼンテーションロジック
+
+private extension CohabitantRegistrationView {
+    
+    func onCompleteCohabitantRegistration(_ cohabitantId: String) async {
+        
+        do {
+            
+            try await accountStore.registerCohabitantId(cohabitantId)
+            await houseworkListStore.loadHouseworkList(
+                currentTime: .now,
+                cohabitantId: cohabitantId,
+                calendar: calendar
+            )
+        } catch {
+            
+            print("error occurred: \(error)")
+        }
     }
 }

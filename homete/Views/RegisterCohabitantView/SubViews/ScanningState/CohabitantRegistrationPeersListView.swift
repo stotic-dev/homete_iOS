@@ -45,7 +45,6 @@ struct CohabitantRegistrationPeersListView: View {
                 .frame(height: .space24)
         }
         .padding(.horizontal, .space16)
-        .ignoresSafeArea()
         .fullScreenLoadingIndicator(isConfirmedReadyRegistration)
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
