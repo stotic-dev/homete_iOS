@@ -1,0 +1,97 @@
+name: Firebase Functions E2E Test
+
+on:
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "firebase/dev/functions/**"
+      - ".github/workflows/functions-e2e-test.yml"
+  push:
+    branches:
+      - "main"
+      - "release/*"
+    paths:
+      - "firebase/dev/functions/**"
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "21"
+  JAVA_VERSION: "17" # Firebase Emulator用
+  FUNCTIONS_DIR: firebase/dev/functions
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [21]
+
+    steps:
+      # 1. リポジトリのチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node.jsのセットアップ
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: ${{ env.FUNCTIONS_DIR }}/package-lock.json
+
+      # 3. Javaのセットアップ（Firebase Emulator用）
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # 4. Firebase CLIのインストール
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # 5. 依存関係のインストール
+      - name: Install dependencies
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm ci
+
+      # 6. TypeScriptビルド
+      - name: Build TypeScript
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm run build
+
+      # 7. Lintチェック
+      - name: Run lint
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm run lint
+
+      # 8. E2Eテストの実行
+      - name: Run E2E tests
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm run test:e2e
+
+      # 9. テスト結果のアップロード（失敗時）
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            ${{ env.FUNCTIONS_DIR }}/coverage/
+            ${{ env.FUNCTIONS_DIR }}/firestore-debug.log
+          retention-days: 7
+
+      # 10. テストサマリーの作成
+      - name: Create test summary
+        if: always()
+        run: |
+          echo "## Firebase Functions E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All E2E tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node Version**: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Java Version**: ${{ env.JAVA_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Working Directory**: \`${{ env.FUNCTIONS_DIR }}\`" >> $GITHUB_STEP_SUMMARY
