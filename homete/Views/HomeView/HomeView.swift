@@ -52,8 +52,11 @@ struct HomeView: View {
 #Preview("HomeView_登録時") {
     NavigationStack {
         HomeView()
-            .injectAppStorageWithPreview("HomeView_登録時") {
-                $0.set("testId", forKey: "cohabitantId")
-            }
+            .environment(\.loginContext, .init(account: .init(
+                id: "",
+                userName: "",
+                fcmToken: nil,
+                cohabitantId: "dummy"
+            )))
     }
 }
