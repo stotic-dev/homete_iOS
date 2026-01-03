@@ -1,7 +1,7 @@
 import * as logger from "firebase-functions/logger";
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { getMessaging } from "firebase-admin/messaging";
-import { FirestoreHelper } from "./models/FirestoreHelper";
+import {onCall, HttpsError} from "firebase-functions/v2/https";
+import {getMessaging} from "firebase-admin/messaging";
+import {FirestoreHelper} from "./models/FirestoreHelper";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
@@ -27,7 +27,7 @@ export const notifyothercohabitants = onCall(
     }
 
     const senderId = request.auth.uid;
-    const { cohabitantId, title, body } = request.data;
+    const {cohabitantId, title, body} = request.data;
 
     if (!cohabitantId || !title || !body) {
       logger.error("Invalid argument: Missing required parameters.", {
@@ -56,12 +56,12 @@ export const notifyothercohabitants = onCall(
         );
       }
 
-      const { cohabitant } = cohabitantResult;
+      const {cohabitant} = cohabitantResult;
       const members = cohabitant.members;
 
       if (members.length === 0) {
         logger.error(`Cohabitant group ${cohabitantId} has no members.`);
-        return { success: true, message: "No members found in the group." };
+        return {success: true, message: "No members found in the group."};
       }
 
       // 2. Filter out the sender to get recipient IDs
@@ -71,7 +71,7 @@ export const notifyothercohabitants = onCall(
 
       if (recipientIds.length === 0) {
         logger.info("No other members in the group to notify.");
-        return { success: true, message: "No other members to notify." };
+        return {success: true, message: "No other members to notify."};
       }
 
       // 3. Get FCM tokens for the recipients
@@ -82,7 +82,7 @@ export const notifyothercohabitants = onCall(
 
       if (tokens.length === 0) {
         logger.info("No FCM tokens found for any of the recipients.");
-        return { success: true, message: "No recipient tokens found." };
+        return {success: true, message: "No recipient tokens found."};
       }
 
       // 4. Send notifications
@@ -107,7 +107,7 @@ export const notifyothercohabitants = onCall(
             failedTokens.push(tokens[idx]);
           }
         });
-        logger.warn("List of tokens that caused failures:", { failedTokens });
+        logger.warn("List of tokens that caused failures:", {failedTokens});
       }
 
       return {
@@ -115,7 +115,7 @@ export const notifyothercohabitants = onCall(
         message: `Notifications sent to ${batchResponse.successCount} devices.`,
       };
     } catch (error) {
-      logger.error("An unexpected error occurred:", { error });
+      logger.error("An unexpected error occurred:", {error});
       throw new HttpsError(
         "internal",
         "An unexpected error occurred.",
