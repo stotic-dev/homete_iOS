@@ -104,7 +104,7 @@ export async function expectCohabitantMembers(
 
   // タイムアウト
   const errorMsg = `Cohabitant ${cohabitantId} members did not match ` +
-    `expected after ${timeoutMs}ms`;
+        `expected after ${timeoutMs}ms`;
   throw new Error(errorMsg);
 }
 
@@ -139,7 +139,7 @@ export async function expectSubcollectionEmpty(
 
   // タイムアウト
   const errorMsg = `Subcollection ${subcollection} for ${cohabitantId} ` +
-    `is not empty after ${timeoutMs}ms`;
+        `is not empty after ${timeoutMs}ms`;
   throw new Error(errorMsg);
 }
 
