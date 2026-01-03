@@ -2,34 +2,32 @@ import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { FirestoreCollections } from "./models/FirestoreCollections";
+import { FirestoreHelper } from "./models/FirestoreHelper";
+import { CohabitantFields } from "./models/Cohabitant";
 
 export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
     const userId = user.uid;
     logger.info(`Starting user data deletion for: ${userId}`);
 
+    const firestoreHelper = new FirestoreHelper();
     const db = getFirestore();
 
     try {
         // Step 1: Accountドキュメントの検索と取得
-        const accountSnapshot = await db
-            .collection(FirestoreCollections.ACCOUNT)
-            .where("id", "==", userId)
-            .limit(1)
-            .get();
+        const result = await firestoreHelper.findAccountByUserId(userId);
 
-        if (accountSnapshot.empty) {
+        if (!result) {
             logger.warn(`Account not found for user: ${userId}`);
             return;
         }
 
-        const accountDoc = accountSnapshot.docs[0];
-        const accountInfo = accountDoc.data();
-        const linkedCohabitantId = accountInfo.cohabitantId;
+        const { snapshot: accountSnapshot, account } = result;
+        const linkedCohabitantId = account.cohabitantId;
 
         logger.info(`Account found. Linked cohabitant: ${linkedCohabitantId}`);
 
         // Step 2: Accountドキュメントの削除
-        await accountDoc.ref.delete();
+        await accountSnapshot.ref.delete();
         logger.info(`Account removed for: ${userId}`);
 
         // Step 3: Cohabitantグループの処理
@@ -38,33 +36,32 @@ export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
             return;
         }
 
-        const cohabitantRef = db
-            .collection(FirestoreCollections.COHABITANT)
-            .doc(linkedCohabitantId);
-        const cohabitantSnapshot = await cohabitantRef.get();
+        const cohabitantResult = await firestoreHelper.getCohabitant(
+            linkedCohabitantId
+        );
 
-        if (!cohabitantSnapshot.exists) {
+        if (!cohabitantResult) {
             logger.warn(`Cohabitant ${linkedCohabitantId} does not exist.`);
             return;
         }
 
-        const cohabitantInfo = cohabitantSnapshot.data();
-        const memberList = cohabitantInfo?.members || [];
+        const { snapshot: cohabitantSnapshot, cohabitant } = cohabitantResult;
+        const memberList = cohabitant.members;
 
         // Step 4: メンバー数に応じた処理
         // メンバーが2人以下の場合はグループごと削除
         if (memberList.length <= 2) {
             // グループ全体を削除
             await removeCohabitantSubcollections(db, linkedCohabitantId);
-            await cohabitantRef.delete();
+            await cohabitantSnapshot.ref.delete();
             logger.info(
                 `Cohabitant group ${linkedCohabitantId} fully removed. ` +
                 `Reason: Insufficient members (${memberList.length} members).`
             );
         } else {
             // 3人以上のグループの場合は、メンバーリストから削除のみ
-            await cohabitantRef.update({
-                members: FieldValue.arrayRemove(userId),
+            await cohabitantSnapshot.ref.update({
+                [CohabitantFields.MEMBERS]: FieldValue.arrayRemove(userId),
             });
             logger.info(
                 `User ${userId} removed from cohabitant ${linkedCohabitantId}. ` +

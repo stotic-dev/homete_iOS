@@ -1,8 +1,7 @@
 import * as logger from "firebase-functions/logger";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
-import { FirestoreCollections } from "./models/FirestoreCollections";
+import { FirestoreHelper } from "./models/FirestoreHelper";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
@@ -41,16 +40,15 @@ export const notifyothercohabitants = onCall(
       );
     }
 
-    const db = getFirestore();
+    const firestoreHelper = new FirestoreHelper();
 
     try {
       // 1. Get the cohabitant group document
-      const cohabitantDocRef = db
-        .collection(FirestoreCollections.COHABITANT)
-        .doc(cohabitantId);
-      const cohabitantDoc = await cohabitantDocRef.get();
+      const cohabitantResult = await firestoreHelper.getCohabitant(
+        cohabitantId
+      );
 
-      if (!cohabitantDoc.exists) {
+      if (!cohabitantResult) {
         logger.error(`Cohabitant group with id ${cohabitantId} not found.`);
         throw new HttpsError(
           "not-found",
@@ -58,14 +56,16 @@ export const notifyothercohabitants = onCall(
         );
       }
 
-      const cohabitantData = cohabitantDoc.data();
-      if (!cohabitantData || !cohabitantData.members) {
-        logger.error(`Cohabitant group ${cohabitantId} has no members field.`);
+      const { cohabitant } = cohabitantResult;
+      const members = cohabitant.members;
+
+      if (members.length === 0) {
+        logger.error(`Cohabitant group ${cohabitantId} has no members.`);
         return { success: true, message: "No members found in the group." };
       }
 
       // 2. Filter out the sender to get recipient IDs
-      const recipientIds = cohabitantData.members.filter(
+      const recipientIds = members.filter(
         (memberId: string) => memberId !== senderId
       );
 
@@ -75,18 +75,10 @@ export const notifyothercohabitants = onCall(
       }
 
       // 3. Get FCM tokens for the recipients
-      const tokens: string[] = [];
-      const accountsQuery = await db
-        .collection(FirestoreCollections.ACCOUNT)
-        .where("id", "in", recipientIds)
-        .get();
-
-      accountsQuery.forEach((doc) => {
-        const accountData = doc.data();
-        if (accountData && accountData.fcmToken) {
-          tokens.push(accountData.fcmToken);
-        }
-      });
+      const accounts = await firestoreHelper.getAccountsByUserIds(recipientIds);
+      const tokens: string[] = accounts
+        .map((account) => account.fcmToken)
+        .filter((token): token is string => !!token);
 
       if (tokens.length === 0) {
         logger.info("No FCM tokens found for any of the recipients.");
