@@ -7,12 +7,12 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {setGlobalOptions} from "firebase-functions";
+import { setGlobalOptions } from "firebase-functions";
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and triggers.
 
 // The Firebase Admin SDK to access Firestore.
-import {initializeApp} from "firebase-admin/app";
+import { initializeApp } from "firebase-admin/app";
 
 initializeApp();
 // Start writing functions
@@ -28,6 +28,7 @@ initializeApp();
 // functions should each use functions.runWith({ maxInstances: 10 }) instead.
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
-setGlobalOptions({maxInstances: 10});
+setGlobalOptions({ maxInstances: 10 });
 
 export * from "./notifyCohabitants";
+export * from "./deleteUserData";
