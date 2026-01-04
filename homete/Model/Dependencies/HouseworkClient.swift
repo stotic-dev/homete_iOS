@@ -78,7 +78,7 @@ extension HouseworkClient: DependencyClient {
         }
     } removeListener: { id in
         
-        await FirestoreService.shared.removeSnapshotListner(id: id)
+        await FirestoreService.shared.removeSnapshotListener(id: id)
     }
     
     static let previewValue = HouseworkClient()

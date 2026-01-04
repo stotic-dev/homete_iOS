@@ -67,6 +67,7 @@ extension RootView {
                     houseworkClient: $0.houseworkClient,
                     cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
                 ))
+                .environment(CohabitantStore(appDependencies: $0))
         }
     }
 }
