@@ -12,6 +12,7 @@ struct HouseworkDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(CohabitantStore.self) var cohabitantStore
     
     @State var isLoading = false
     @State var item: HouseworkItem
@@ -64,6 +65,14 @@ private extension HouseworkDetailView {
             }
             HouseworkDetailItemRow(title: "ポイント") {
                 PointLabel(point: item.point)
+            }
+            if let executorId = item.executorId,
+               let executorUserName = cohabitantStore.members.userName(executorId) {
+                HouseworkDetailItemRow(title: "実施者") {
+                    Text(executorUserName)
+                        .font(with: .body)
+                        .foregroundStyle(.primary2)
+                }
             }
         }
     }

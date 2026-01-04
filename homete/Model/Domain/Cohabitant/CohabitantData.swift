@@ -9,6 +9,8 @@ struct CohabitantData: Codable {
     
     static let idField = "id"
     
+    /// 家族グループのID
     let id: String
+    /// 参加しているメンバーのユーザーID
     let members: [String]
 }

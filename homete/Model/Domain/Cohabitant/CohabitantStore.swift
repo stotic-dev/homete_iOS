@@ -11,7 +11,7 @@ import SwiftUI
 @Observable
 final class CohabitantStore {
     
-    private(set) var members: Set<CohabitantMember>
+    private(set) var members: CohabitantMemberList
     private var listenerTask: Task<Void, Never>?
     
     private let cohabitantListenerKey = "cohabitantListenerKey"
@@ -22,7 +22,7 @@ final class CohabitantStore {
     private let accountInfoClient: AccountInfoClient
     
     init(
-        members: Set<CohabitantMember> = [],
+        members: CohabitantMemberList = .init(value: []),
         appDependencies: AppDependencies = .previewValue
     ) {
         self.members = members
@@ -33,7 +33,7 @@ final class CohabitantStore {
     func addSnapshotListenerIfNeeded(_ cohabitantId: String) async {
         
         // すでに監視中の場合は何もしない
-        if let listenerTask { return }
+        if listenerTask != nil { return }
         
         let stream = await cohabitantClient.addSnapshotListener(
             cohabitantListenerKey,
@@ -45,11 +45,8 @@ final class CohabitantStore {
             for await cohabitantDataList in stream {
                 
                 guard let cohabitantData = cohabitantDataList.first else { return }
-                let filteredMembers = cohabitantData.members.filter { member in
-                    return members.contains { $0.id == member }
-                }
                 
-                for member in filteredMembers {
+                for member in self.members.missingMemberIds(from: cohabitantData.members) {
                     
                     do {
                         
@@ -63,6 +60,8 @@ final class CohabitantStore {
                         
                         print("error occurred: \(error)")
                     }
+                    
+                    print("finish listening cohabitant snapshot.")
                 }
             }
         }

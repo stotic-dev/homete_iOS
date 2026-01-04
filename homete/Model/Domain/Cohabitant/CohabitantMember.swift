@@ -7,6 +7,8 @@
 
 struct CohabitantMember: Equatable, Hashable {
     
+    /// メンバーのユーザーID
     let id: String
+    /// メンバーのユーザー名
     let userName: String
 }
