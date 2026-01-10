@@ -1,4 +1,6 @@
-.PHONY: help lint deploy emulator test-e2e
+.PHONY: help lint deploy emulator test-e2e setup-project
+
+.DEFAULT_GOAL := setup-project
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z0-9_-]+:.*## .*' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -15,3 +17,5 @@ emulator: ## エミュレーターを起動
 test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
+setup-project: ## iOSプロジェクトのセットアップ
+	swift build --package-path ProjectTools --scratch-path ProjectTools/.build
