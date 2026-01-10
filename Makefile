@@ -18,13 +18,14 @@ test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
 setup-project: ## iOSプロジェクトのセットアップ
+	@bash scripts/setup_ruby.sh
 	@echo "Bundler依存関係をインストール中..."
-	bundle config set --local path 'vendor/bundle'
-	bundle install
+	rbenv exec bundle config set --local path 'vendor/bundle'
+	rbenv exec bundle install
 	@echo "ProjectToolsをビルド中..."
 	swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 	@echo "開発用プロビジョニングプロファイルを取得中..."
-	bundle exec fastlane install_dev_profile
+	rbenv exec bundle exec fastlane install_dev_profile
 	@echo "本番用プロビジョニングプロファイルを取得中..."
-	bundle exec fastlane install_prod_profile
-	@echo "セットアップ完了！"
+	rbenv exec bundle exec fastlane install_prod_profile
+	@echo "✅ セットアップ完了！"
