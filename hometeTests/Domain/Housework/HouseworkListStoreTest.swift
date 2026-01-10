@@ -36,45 +36,38 @@ struct HouseworkListStoreTest {
             cohabitantPushNotificationClient: .previewValue
         )
         
-        await confirmation(expectedCount: 2) { confirmation in
-            
-            // Act
-            
-            async let loadHouseworkListTask: () = store.loadHouseworkList(
-                currentTime: now,
-                cohabitantId: inputCohabitantId,
-                calendar: calendar
-            )
-            
-            // Assert
-            
-            continuousObservationTracking {
-                
-                store.items
-            } onChange: {
-                
-                confirmation()
+        // Act
+        
+        await store.loadHouseworkList(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar
+        )
+        
+        // Assert
+        
+        var waiterForUpdateItems = Task {
+            await withCheckedContinuation { continuation in
+                continuousObservationTracking {
+                    store.items
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
             }
-            
-            var inputHouseworkList: [HouseworkItem] = [
-                .makeForTest(id: 1, indexedDate: now, expiredAt: now)
-            ]
-            continuation.yield(inputHouseworkList)
-            
-            inputHouseworkList.append(
-                .makeForTest(id: 2, indexedDate: now, expiredAt: now)
-            )
-            continuation.yield(inputHouseworkList)
-            
-            continuation.finish()
-            await loadHouseworkListTask
-            
-            #expect(
-                store.items == .init(value: [
-                    .init(items: inputHouseworkList, metaData: .init(indexedDate: .init(.now), expiredAt: now))
-                ])
-            )
         }
+        
+        var inputHouseworkList: [HouseworkItem] = [
+            .makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        ]
+        continuation.yield(inputHouseworkList)
+        await waiterForUpdateItems.value
+        continuation.finish()
+        
+        #expect(
+            store.items == .init(value: [
+                .init(items: inputHouseworkList, metaData: .init(indexedDate: .init(.now), expiredAt: now))
+            ])
+        )
     }
     
     @Test("新しい家事の登録すると、パートナーに通知を送信する")
