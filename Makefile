@@ -18,4 +18,10 @@ test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
 setup-project: ## iOSプロジェクトのセットアップ
+	@echo "ProjectToolsをビルド中..."
 	swift build --package-path ProjectTools --scratch-path ProjectTools/.build
+	@echo "開発用プロビジョニングプロファイルを取得中..."
+	bundle exec fastlane install_dev_profile
+	@echo "本番用プロビジョニングプロファイルを取得中..."
+	bundle exec fastlane install_prod_profile
+	@echo "セットアップ完了！"
