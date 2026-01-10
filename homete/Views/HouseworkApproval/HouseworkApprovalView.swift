@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct HouseworkApprovalView: View {
+    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.dismiss) var dismiss
     
     @State var inputMessage = ""
@@ -19,7 +20,10 @@ struct HouseworkApprovalView: View {
             ScrollView {
                 VStack(spacing: .space40) {
                     VStack(spacing: .space24) {
-                        notificationSection()
+                        if let executorId = item.executorId,
+                           let executorUserName = cohabitantStore.members.userName(executorId) {
+                            notificationSection(executorUserName)
+                        }
                         houseworkPropertySection()
                         inputMessageSection()
                     }
@@ -48,10 +52,10 @@ private extension HouseworkApprovalView {
         }
     }
     
-    func notificationSection() -> some View {
+    func notificationSection(_ executorName: String) -> some View {
         section {
             VStack(spacing: .zero) {
-                Text("〇〇さんから")
+                Text("\(executorName)さんから")
                 Text("「\(item.title)」の")
                 Text("完了報告が届きました")
             }
@@ -121,7 +125,9 @@ private extension HouseworkApprovalView {
             indexedDate: .init(.init(timeIntervalSince1970: 0)),
             expiredAt: .init(timeIntervalSince1970: 0)
         ),
-        executedAt: .distantFuture
+        executorId: "test",
+        executedAt: .distantFuture,
     ))
     .setupEnvironmentForPreview()
+    .environment(CohabitantStore(members: .init(value: [.init(id: "test", userName: "hogehoge")])))
 }
