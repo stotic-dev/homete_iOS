@@ -18,6 +18,9 @@ test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
 setup-project: ## iOSプロジェクトのセットアップ
+	@echo "Bundler依存関係をインストール中..."
+	bundle config set --local path 'vendor/bundle'
+	bundle install
 	@echo "ProjectToolsをビルド中..."
 	swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 	@echo "開発用プロビジョニングプロファイルを取得中..."
