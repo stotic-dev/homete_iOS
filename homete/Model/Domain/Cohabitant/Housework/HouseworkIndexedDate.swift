@@ -9,11 +9,6 @@ import Foundation
 
 struct HouseworkIndexedDate: Equatable, Codable, Hashable {
     let value: String
-    
-    var mapValue: [String: String] {
-        
-        return ["value": value]
-    }
 }
 
 extension HouseworkIndexedDate {

@@ -96,13 +96,13 @@ private extension HouseworkClient {
         let base = calendar.startOfDay(for: anchorDate)
         guard offsetDays >= 0 else {
             
-            return [HouseworkIndexedDate(base, locale: locale).mapValue]
+            return [["value": HouseworkIndexedDate(base, locale: locale).value]]
         }
         // -offset ... +offset の範囲を列挙
         return (-offsetDays...offsetDays).compactMap { delta in
             
             guard let date = calendar.date(byAdding: .day, value: delta, to: base) else { return nil }
-            return HouseworkIndexedDate(date, locale: locale).mapValue
+            return ["value": HouseworkIndexedDate(base, locale: locale).value]
         }
     }
 }
