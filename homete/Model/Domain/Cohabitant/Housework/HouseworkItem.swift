@@ -23,16 +23,30 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codable {
         return indexedDate.value
     }
     
-    func updateState(_ nextState: HouseworkState, at now: Date, changer: String) -> Self {
+    func updatePendingApproval(at now: Date, changer: String) -> Self {
         
         return .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
             point: point,
-            state: nextState,
-            executorId: nextState == .pendingApproval ? changer : executorId,
-            executedAt: nextState == .pendingApproval ? now : executedAt,
+            state: .pendingApproval,
+            executorId: changer,
+            executedAt: now,
+            expiredAt: expiredAt
+        )
+    }
+    
+    func updateIncomplete() -> Self {
+        
+        return .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .incomplete,
+            executorId: nil,
+            executedAt: nil,
             expiredAt: expiredAt
         )
     }
