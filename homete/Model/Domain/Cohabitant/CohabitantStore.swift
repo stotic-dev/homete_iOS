@@ -60,9 +60,8 @@ final class CohabitantStore {
                         
                         print("error occurred: \(error)")
                     }
-                    
-                    print("finish listening cohabitant snapshot.")
                 }
+                print("finish listening cohabitant snapshot.")
             }
         }
     }
