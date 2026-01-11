@@ -52,6 +52,7 @@ extension HouseworkItem {
         point: Int,
         metaData: DailyHouseworkMetaData,
         state: HouseworkState = .incomplete,
+        executorId: String? = nil,
         executedAt: Date? = nil
     ) {
         
@@ -61,7 +62,7 @@ extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executorId: nil,
+            executorId: executorId,
             executedAt: executedAt,
             expiredAt: metaData.expiredAt
         )

@@ -63,7 +63,7 @@ final actor FirestoreService {
         return stream
     }
     
-    func removeSnapshotListner(id: String) {
+    func removeSnapshotListener(id: String) {
         
         let listener = listeners[id]
         listener?.remove()

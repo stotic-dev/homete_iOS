@@ -37,19 +37,18 @@ struct RootView: View {
             }
         }
         .animation(.spring, value: launchState)
-        .task(id: accountAuthStore.currentAuth) {
-            await onChangeAuth()
+        .onChange(of: accountAuthStore.currentAuth) {
+            Task {
+                await onChangeAuth()
+            }
         }
-        .task(id: accountStore.account) {
-            await onChangeAccount()
+        .onChange(of: accountStore.account) {
+            Task {
+                await onChangeAccount()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
-            guard let fcmToken = notification.object as? String else { return }
-            self.fcmToken = fcmToken
-            Task {
-                await accountStore.updateFcmTokenIfNeeded(fcmToken)
-                self.fcmToken = nil
-            }
+            onReceiveFcmToken(notification)
         }
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init(launchState: $launchState))
@@ -67,6 +66,7 @@ extension RootView {
                     houseworkClient: $0.houseworkClient,
                     cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
                 ))
+                .environment(CohabitantStore(appDependencies: $0))
         }
     }
 }
@@ -75,6 +75,12 @@ extension RootView {
 
 private extension RootView {
     
+    func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
+        
+        guard let fcmToken = notification.object as? String else { return }
+        self.fcmToken = fcmToken
+    }
+    
     func onChangeAuth() async {
         guard let authResult = accountAuthStore.currentAuth.result else {
             launchState = .notLoggedIn
@@ -82,8 +88,11 @@ private extension RootView {
         }
         
         if let account = await accountStore.load(authResult) {
+            
+            await updateFcmTokenIfNeeded()
             launchState = .loggedIn(context: .init(account: account))
         } else {
+            
             launchState = .preLoggedIn(auth: authResult)
         }
     }
@@ -93,10 +102,14 @@ private extension RootView {
         guard launchState.isLoggedIn,
               let account = accountStore.account else { return }
         
-        if let fcmToken {
-            await accountStore.updateFcmTokenIfNeeded(fcmToken)
-            self.fcmToken = nil
-        }
+        await updateFcmTokenIfNeeded()
         launchState = .loggedIn(context: .init(account: account))
+    }
+    
+    func updateFcmTokenIfNeeded() async {
+        
+        guard let fcmToken else { return }
+        await accountStore.updateFcmTokenIfNeeded(fcmToken)
+        self.fcmToken = nil
     }
 }

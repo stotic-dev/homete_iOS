@@ -122,4 +122,5 @@ extension AppTabView {
             houseworkClient: .previewValue,
             cohabitantPushNotificationClient: .previewValue
         ))
+        .environment(CohabitantStore())
 }

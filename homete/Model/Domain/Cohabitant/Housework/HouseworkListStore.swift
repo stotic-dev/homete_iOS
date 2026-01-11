@@ -50,12 +50,16 @@ final class HouseworkListStore {
             currentTime,
             3
         )
-        for await currentItems in houseworkListStream {
+        
+        Task {
             
-            items = StoredAllHouseworkList.makeMultiDateList(
-                items: currentItems,
-                calendar: calendar
-            )
+            for await currentItems in houseworkListStream {
+                
+                items = StoredAllHouseworkList.makeMultiDateList(
+                    items: currentItems,
+                    calendar: calendar
+                )
+            }
         }
     }
     

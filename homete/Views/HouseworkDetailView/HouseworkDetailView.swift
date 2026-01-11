@@ -12,6 +12,7 @@ struct HouseworkDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(CohabitantStore.self) var cohabitantStore
     
     @State var isLoading = false
     @State var item: HouseworkItem
@@ -39,7 +40,10 @@ private extension HouseworkDetailView {
     
     func mainContent() -> some View {
         VStack(spacing: .zero) {
-            detailItemList()
+            HouseworkDetailItemListContent(
+                cohabitantMemberList: cohabitantStore.members,
+                item: item
+            )
             Spacer()
             HouseworkDetailActionContent(
                 isLoading: $isLoading,
@@ -47,24 +51,6 @@ private extension HouseworkDetailView {
                 account: account,
                 item: item
             )
-        }
-    }
-    
-    func detailItemList() -> some View {
-        VStack(alignment: .leading, spacing: .space24) {
-            HouseworkDetailItemRow(title: "実施予定日付") {
-                Text(item.formattedIndexedDate)
-                    .font(with: .body)
-                    .foregroundStyle(.primary2)
-            }
-            HouseworkDetailItemRow(title: "ステータス") {
-                Text(item.state.segmentTitle)
-                    .font(with: .body)
-                    .foregroundStyle(.primary2)
-            }
-            HouseworkDetailItemRow(title: "ポイント") {
-                PointLabel(point: item.point)
-            }
         }
     }
     
@@ -119,6 +105,7 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
+    .environment(CohabitantStore())
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -134,4 +121,5 @@ private extension HouseworkDetailView {
         )
     }
     .environment(HouseworkListStore())
+    .environment(CohabitantStore())
 }

@@ -241,6 +241,22 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 
 ビルド: `swift build --package-path ProjectTools --scratch-path ProjectTools/.build`
 
+## エージェント
+
+プロジェクトでは特定のタスクに特化したエージェントを活用します。
+
+### ios-code-reviewer
+
+Swiftコードの実装完了後に使用する専用のコードレビューエージェントです。
+
+**使用タイミング:**
+- 新しい機能の実装完了後（View、Store、Client、Service、Domainモデルなど）
+- 既存コードのリファクタリング完了後
+- バグ修正完了後
+- テストコード作成・更新後
+
+**重要:** Swiftコードのレビューが必要な場合は、このエージェントに任せてください。
+
 ## ファイル整理の規約
 
 新機能を追加する際:
