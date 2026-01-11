@@ -13,6 +13,7 @@ struct CohabitantRegistrationScanningStateView: View {
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
+    @LoadingState var loadingState
     
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
@@ -38,6 +39,7 @@ struct CohabitantRegistrationScanningStateView: View {
             }
         }
         .animation(.spring, value: connectedPeers.isEmpty)
+        .fullScreenLoadingIndicator(loadingState)
         .alert(
             "通信中のメンバーがキャンセルしました",
             isPresented: $isPresentingRejectRegistrationAlert
@@ -87,6 +89,8 @@ private extension CohabitantRegistrationScanningStateView {
     }
     
     func transitionToProcessingStateIfNeeded() {
+        
+        loadingState.isLoading = true
         
         // 自分が登録ボタンタップ済みで、かつ全てのメンバーが登録ボタンタップ済みの場合に、
         // 登録処理に移行する

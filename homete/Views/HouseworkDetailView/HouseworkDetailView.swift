@@ -13,8 +13,8 @@ struct HouseworkDetailView: View {
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @LoadingState var loadingState
     
-    @State var isLoading = false
     @State var item: HouseworkItem
     
     @CommonError var commonErrorContent
@@ -23,7 +23,7 @@ struct HouseworkDetailView: View {
         mainContent()
             .padding(.horizontal, .space16)
             .padding(.bottom, .space24)
-            .fullScreenLoadingIndicator(isLoading)
+            .fullScreenLoadingIndicator(loadingState)
             .navigationTitle(item.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -46,7 +46,7 @@ private extension HouseworkDetailView {
             )
             Spacer()
             HouseworkDetailActionContent(
-                isLoading: $isLoading,
+                isLoading: $loadingState.isLoading,
                 commonErrorContent: $commonErrorContent,
                 account: account,
                 item: item
@@ -111,7 +111,7 @@ private extension HouseworkDetailView {
 #Preview("HouseworkDetailView_通信中") {
     NavigationStack {
         HouseworkDetailView(
-            isLoading: true,
+            loadingState: .init(store: .init(isLoading: true)),
             item: .init(
                 id: "",
                 title: "洗濯",

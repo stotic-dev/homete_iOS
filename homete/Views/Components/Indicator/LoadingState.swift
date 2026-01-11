@@ -15,12 +15,21 @@ struct LoadingState: DynamicProperty {
     var wrappedValue: LoadingStateStore {
         return store
     }
+    
+    var projectedValue: Binding<LoadingStateStore> {
+        return $store
+    }
 }
 
 @MainActor
 @Observable
 final class LoadingStateStore {
-    var isLoading = false
+    var isLoading: Bool
+    
+    init(isLoading: Bool = false) {
+        
+        self.isLoading = isLoading
+    }
     
     func task(_ operation: @MainActor @escaping () async -> Void) {
         

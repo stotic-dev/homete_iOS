@@ -10,9 +10,9 @@ import SwiftUI
 struct RegistrationAccountView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(\.launchStateProxy) var launchStateProxy
+    @LoadingState var loadingState
     
     @State var inputUserName = UserName()
-    @State var isLoading = false
     let authInfo: AccountAuthResult
     
     var body: some View {
@@ -34,8 +34,7 @@ struct RegistrationAccountView: View {
                 }
                 Spacer(minLength: .space24)
                 Button {
-                    Task {
-                        isLoading = true
+                    loadingState.task {
                         await tappedRegistrationButton()
                     }
                 } label: {
@@ -52,7 +51,7 @@ struct RegistrationAccountView: View {
             .navigationTitle("アカウント登録")
             .navigationBarTitleDisplayMode(.inline)
         }
-        .fullScreenLoadingIndicator(isLoading)
+        .fullScreenLoadingIndicator(loadingState)
     }
 }
 
@@ -83,8 +82,6 @@ private extension RegistrationAccountView {
             
             print("occurred error: \(error)")
         }
-        
-        isLoading = false
     }
 }
 
@@ -95,7 +92,7 @@ private extension RegistrationAccountView {
 
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
-        isLoading: true,
+        loadingState: .init(store: .init(isLoading: true)),
         authInfo: .init(id: "Test")
     )
     .environment(AccountStore(appDependencies: .previewValue))
