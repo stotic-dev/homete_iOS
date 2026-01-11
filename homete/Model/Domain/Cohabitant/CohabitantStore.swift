@@ -46,7 +46,7 @@ final class CohabitantStore {
                 
                 guard let cohabitantData = cohabitantDataList.first else { continue }
                 
-                for member in self.members.missingMemberIds(from: cohabitantData.members) {
+                for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
                     
                     do {
                         
