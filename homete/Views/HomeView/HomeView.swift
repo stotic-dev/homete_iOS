@@ -56,7 +56,9 @@ private extension HomeView {
     func didAppearRegisteredContent() async {
         
         guard let cohabitantId = loginContext.account.cohabitantId else {
-            preconditionFailure("Required param is nil(cohabitantId)")
+            // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
+            assertionFailure("Required param is nil(cohabitantId)")
+            return
         }
         await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId)
     }
