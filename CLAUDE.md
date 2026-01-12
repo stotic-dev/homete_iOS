@@ -16,15 +16,6 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 ### iOS開発
 
 ```bash
-# Xcodeでプロジェクトを開く
-open homete.xcodeproj
-
-# テスト実行（ユニット + スナップショット）
-xcodebuild test -project homete.xcodeproj -scheme homete -testPlan CI.xctestplan -destination 'platform=iOS Simulator,name=iPhone 16'
-
-# スナップショットテストのみ実行
-xcodebuild test -project homete.xcodeproj -scheme homete -testPlan snapshotTesting.xctestplan -destination 'platform=iOS Simulator,name=iPhone 16'
-
 # SwiftLint（CIでDanger経由で実行、スタンドアロンでは実行しない）
 swift run --package-path ProjectTools swiftlint lint --config .swiftlint.yml
 

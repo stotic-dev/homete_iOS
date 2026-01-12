@@ -44,9 +44,9 @@ final class CohabitantStore {
             
             for await cohabitantDataList in stream {
                 
-                guard let cohabitantData = cohabitantDataList.first else { return }
+                guard let cohabitantData = cohabitantDataList.first else { continue }
                 
-                for member in self.members.missingMemberIds(from: cohabitantData.members) {
+                for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
                     
                     do {
                         
@@ -61,8 +61,9 @@ final class CohabitantStore {
                         print("error occurred: \(error)")
                     }
                 }
-                print("finish listening cohabitant snapshot.")
             }
+            
+            print("finish listening cohabitant snapshot.")
         }
     }
     

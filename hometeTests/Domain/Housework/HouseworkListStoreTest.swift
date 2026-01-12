@@ -46,9 +46,9 @@ struct HouseworkListStoreTest {
         
         // Assert
         
-        var waiterForUpdateItems = Task {
+        let waiterForUpdateItems = Task {
             await withCheckedContinuation { continuation in
-                continuousObservationTracking {
+                ObservationHelper.continuousObservationTracking {
                     store.items
                 } onChange: {
                     continuation.resume(returning: ())
@@ -56,7 +56,7 @@ struct HouseworkListStoreTest {
             }
         }
         
-        var inputHouseworkList: [HouseworkItem] = [
+        let inputHouseworkList: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: now, expiredAt: now)
         ]
         continuation.yield(inputHouseworkList)
@@ -176,6 +176,54 @@ struct HouseworkListStoreTest {
         }
     }
     
+    @Test("実施者、実施日をクリアして家事のステータスを未完了に戻す")
+    func returnToIncomplete() async throws {
+        
+        // Arrange
+        
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .pendingApproval,
+            executorId: "dummyExecutor",
+            executedAt: .distantPast
+        )
+        let requestedAt = Date()
+        let updatedHouseworkItem = inputHouseworkItem.updateProperties(
+            state: .incomplete,
+            executorId: nil,
+            executedAt: nil
+        )
+        
+        try await confirmation(expectedCount: 1) { confirmation in
+            
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, cohabitantId in
+                        
+                        // Assert
+                        
+                        #expect(item == updatedHouseworkItem)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    
+                    Issue.record()
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])],
+                cohabitantId: inputCohabitantId
+            )
+            
+            // Act
+            
+            try await store.returnToIncomplete(
+                target: inputHouseworkItem,
+                now: requestedAt
+            )
+        }
+    }
+    
     @Test("家事削除時は家事を削除するAPIを実行する")
     func remove() async throws {
         
@@ -202,21 +250,6 @@ struct HouseworkListStoreTest {
             // Act
             
             try await store.remove(inputHouseworkItem)
-        }
-    }
-}
-
-private extension HouseworkListStoreTest {
-    
-    nonisolated func continuousObservationTracking<T>(
-        _ apply: @escaping () -> T,
-        onChange: @escaping (@Sendable () -> Void)
-    ) {
-        
-        _ = withObservationTracking(apply) {
-            
-            onChange()
-            continuousObservationTracking(apply, onChange: onChange)
         }
     }
 }

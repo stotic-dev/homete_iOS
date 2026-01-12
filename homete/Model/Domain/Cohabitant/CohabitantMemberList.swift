@@ -17,7 +17,7 @@ struct CohabitantMemberList {
     /// 与えられたユーザーID配列の中から、まだvalueに存在しないユーザーIDのみを返します。
     /// - Parameter userIds: 追加するユーザーIDの候補の配列
     /// - Returns: 追加が必要なユーザーIDの配列
-    func missingMemberIds(from userIds: [String]) -> [String] {
+    func missingMemberIds(from userIds: Set<String>) -> Set<String> {
         
         let existingIds = value.map(\.id)
         return userIds.filter { !existingIds.contains($0) }
