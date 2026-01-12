@@ -48,7 +48,7 @@ struct HouseworkListStoreTest {
         
         let waiterForUpdateItems = Task {
             await withCheckedContinuation { continuation in
-                continuousObservationTracking {
+                ObservationHelper.continuousObservationTracking {
                     store.items
                 } onChange: {
                     continuation.resume(returning: ())
@@ -250,21 +250,6 @@ struct HouseworkListStoreTest {
             // Act
             
             try await store.remove(inputHouseworkItem)
-        }
-    }
-}
-
-private extension HouseworkListStoreTest {
-    
-    nonisolated func continuousObservationTracking<T>(
-        _ apply: @escaping () -> T,
-        onChange: @escaping (@Sendable () -> Void)
-    ) {
-        
-        _ = withObservationTracking(apply) {
-            
-            onChange()
-            continuousObservationTracking(apply, onChange: onChange)
         }
     }
 }
