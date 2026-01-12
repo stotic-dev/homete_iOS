@@ -100,6 +100,30 @@ final class HouseworkListStore {
         }
     }
     
+    func approved(target: HouseworkItem, now: Date, reviwer: CohabitantMember, comment: String) async throws {
+        
+        let targetIndexedDate = target.indexedDate
+        let targetId = target.id
+        
+        guard let targetItem = items.item(targetId, targetIndexedDate) else {
+            
+            preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
+        }
+        
+        let updatedItem = targetItem.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
+        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+        
+        Task.detached {
+            
+            let notificationContent = PushNotificationContent.approvedMessage(
+                reviwerName: reviwer.userName,
+                houseworkTitle: target.title,
+                comment: comment
+            )
+            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+        }
+    }
+    
     func returnToIncomplete(target: HouseworkItem, now: Date) async throws {
         
         let targetIndexedDate = target.indexedDate
