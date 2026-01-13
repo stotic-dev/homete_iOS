@@ -69,6 +69,7 @@ final class HouseworkListStore {
         
         Task.detached {
             
+            // TODO: PushNotificationContentにファクトリーメソッドを定義する
             let notificationContent = PushNotificationContent(
                 title: "新しい家事が登録されました",
                 message: newItem.title
@@ -100,7 +101,7 @@ final class HouseworkListStore {
         }
     }
     
-    func approved(target: HouseworkItem, now: Date, reviwer: CohabitantMember, comment: String) async throws {
+    func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
         
         let targetIndexedDate = target.indexedDate
         let targetId = target.id

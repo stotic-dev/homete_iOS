@@ -9,7 +9,10 @@ import SwiftUI
 
 struct HouseworkApprovalView: View {
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
+    @CommonError var commonError
     
     @State var inputMessage = ""
     
@@ -98,7 +101,9 @@ private extension HouseworkApprovalView {
     func actionButtonContent() -> some View {
         VStack(spacing: .space16) {
             Button {
-                // TODO: 家事を完了にする
+                Task {
+                    await tappedApproveButton()
+                }
             } label: {
                 Text("完了にする")
                     .frame(maxWidth: .infinity)
@@ -113,6 +118,26 @@ private extension HouseworkApprovalView {
             .destructiveButtonStyle()
         }
         .disabled(inputMessage.isEmpty)
+    }
+}
+
+// MARK: プレゼンテーションロジック
+
+private extension HouseworkApprovalView {
+    
+    func tappedApproveButton() async {
+        
+        do {
+            try await houseworkListStore.approved(
+                target: item,
+                now: .now,
+                reviwer: account,
+                comment: inputMessage
+            )
+        } catch {
+            
+            commonError = .init(error: error)
+        }
     }
 }
 
