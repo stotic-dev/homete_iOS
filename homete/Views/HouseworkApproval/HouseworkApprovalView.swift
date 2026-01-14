@@ -128,12 +128,14 @@ private extension HouseworkApprovalView {
     func tappedApproveButton() async {
         
         do {
+            
             try await houseworkListStore.approved(
                 target: item,
                 now: .now,
                 reviwer: account,
                 comment: inputMessage
             )
+            dismiss()
         } catch {
             
             commonError = .init(error: error)
