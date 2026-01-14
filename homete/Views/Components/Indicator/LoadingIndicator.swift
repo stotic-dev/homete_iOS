@@ -20,10 +20,10 @@ struct LoadingIndicator: View {
 }
 
 extension View {
-    func fullScreenLoadingIndicator(_ isLoading: Bool) -> some View {
+    func fullScreenLoadingIndicator(_ loadingState: LoadingStateStore) -> some View {
         ZStack {
             self
-            if isLoading {
+            if loadingState.isLoading {
                 LoadingIndicator()
             }
         }

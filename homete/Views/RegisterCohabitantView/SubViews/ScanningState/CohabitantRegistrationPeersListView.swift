@@ -45,7 +45,6 @@ struct CohabitantRegistrationPeersListView: View {
                 .frame(height: .space24)
         }
         .padding(.horizontal, .space16)
-        .fullScreenLoadingIndicator(isConfirmedReadyRegistration)
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
                 tappedConfirmAlertCancelButton()
@@ -111,13 +110,6 @@ private extension CohabitantRegistrationPeersListView {
     CohabitantRegistrationPeersListView(
         isPresentingConfirmReadyRegistrationAlert: true,
         isConfirmedReadyRegistration: .constant(false)
-    )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
-}
-
-#Preview("CohabitantRegistrationPeersListView_登録開始待ちケース") {
-    CohabitantRegistrationPeersListView(
-        isConfirmedReadyRegistration: .constant(true)
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
