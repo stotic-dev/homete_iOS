@@ -18,6 +18,9 @@ extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
+        reviewerId: String? = nil,
+        approvedAt: Date? = nil,
+        reviewerComment: String? = nil,
         expiredAt: Date = .now
     ) -> Self {
         
@@ -29,6 +32,9 @@ extension HouseworkItem {
             state: state,
             executorId: executorId,
             executedAt: executedAt,
+            reviewerId: reviewerId,
+            approvedAt: approvedAt,
+            reviewerComment: reviewerComment,
             expiredAt: expiredAt
         )
     }
@@ -40,6 +46,9 @@ extension HouseworkItem {
         state: HouseworkState? = nil,
         executorId: String? = nil,
         executedAt: Date? = nil,
+        reviewerId: String? = nil,
+        approvedAt: Date? = nil,
+        reviewerComment: String? = nil,
         expiredAt: Date? = nil
     ) -> HouseworkItem {
         
@@ -49,6 +58,9 @@ extension HouseworkItem {
         let inputState = state ?? self.state
         let inputExecutorId = executorId
         let inputExecutedAt = executedAt
+        let inputReviewerId = reviewerId
+        let inputApprovedAt = approvedAt
+        let inputReviewerComment = reviewerComment
         let inputExpiredAt = expiredAt ?? self.expiredAt
         
         return .init(
@@ -59,6 +71,9 @@ extension HouseworkItem {
             state: inputState,
             executorId: inputExecutorId,
             executedAt: inputExecutedAt,
+            reviewerId: inputReviewerId,
+            approvedAt: inputApprovedAt,
+            reviewerComment: inputReviewerComment,
             expiredAt: inputExpiredAt
         )
     }
