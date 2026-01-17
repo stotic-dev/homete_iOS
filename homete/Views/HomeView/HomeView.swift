@@ -9,20 +9,27 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @Environment(\.loginContext.hasCohabitant) var hasCohabitant
+    @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(\.loginContext) var loginContext
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     
     var body: some View {
         NavigationStack {
             ZStack {
-                if hasCohabitant {
+                if loginContext.hasCohabitant {
                     RegisteredContent()
+                        .task {
+                            await didAppearRegisteredContent()
+                        }
                 }
                 else {
                     NotRegisteredContent(
                         isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
                     )
+                    .task {
+                        await didAppearNotRegisteredContent()
+                    }
                 }
             }
             .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
@@ -42,11 +49,32 @@ struct HomeView: View {
     }
 }
 
+// MARK: プレゼンテーションロジック
+
+private extension HomeView {
+    
+    func didAppearRegisteredContent() async {
+        
+        guard let cohabitantId = loginContext.account.cohabitantId else {
+            // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
+            assertionFailure("Required param is nil(cohabitantId)")
+            return
+        }
+        await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId)
+    }
+    
+    func didAppearNotRegisteredContent() async {
+        
+        await cohabitantStore.removeSnapshotListener()
+    }
+}
+
 #Preview("HomeView_未登録時") {
     NavigationStack {
         HomeView()
             .injectAppStorageWithPreview("HomeView_未登録時")
     }
+    .environment(CohabitantStore())
 }
 
 #Preview("HomeView_登録時") {
@@ -59,4 +87,5 @@ struct HomeView: View {
                 cohabitantId: "dummy"
             )))
     }
+    .environment(CohabitantStore())
 }

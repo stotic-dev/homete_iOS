@@ -47,8 +47,8 @@ extension HouseworkItem {
         let inputTitle = title ?? self.title
         let inputPoint = point ?? self.point
         let inputState = state ?? self.state
-        let inputExecutorId = executorId ?? self.executorId
-        let inputExecutedAt = executedAt ?? self.executedAt
+        let inputExecutorId = executorId
+        let inputExecutedAt = executedAt
         let inputExpiredAt = expiredAt ?? self.expiredAt
         
         return .init(

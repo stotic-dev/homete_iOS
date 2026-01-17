@@ -50,12 +50,16 @@ final class HouseworkListStore {
             currentTime,
             3
         )
-        for await currentItems in houseworkListStream {
+        
+        Task {
             
-            items = StoredAllHouseworkList.makeMultiDateList(
-                items: currentItems,
-                calendar: calendar
-            )
+            for await currentItems in houseworkListStream {
+                
+                items = StoredAllHouseworkList.makeMultiDateList(
+                    items: currentItems,
+                    calendar: calendar
+                )
+            }
         }
     }
     
@@ -83,7 +87,7 @@ final class HouseworkListStore {
             preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
         }
         
-        let updatedItem = targetItem.updateState(.pendingApproval, at: now, changer: executor)
+        let updatedItem = targetItem.updatePendingApproval(at: now, changer: executor)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         
         Task.detached {
@@ -94,6 +98,20 @@ final class HouseworkListStore {
             )
             try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
         }
+    }
+    
+    func returnToIncomplete(target: HouseworkItem, now: Date) async throws {
+        
+        let targetIndexedDate = target.indexedDate
+        let targetId = target.id
+        
+        guard let targetItem = items.item(targetId, targetIndexedDate) else {
+            
+            preconditionFailure("Not found target item(id: \(targetId), indexedDate: \(targetIndexedDate))")
+        }
+        
+        let updatedItem = targetItem.updateIncomplete()
+        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
     }
     
     func remove(_ target: HouseworkItem) async throws {

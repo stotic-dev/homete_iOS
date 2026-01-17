@@ -16,15 +16,6 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 ### iOS開発
 
 ```bash
-# Xcodeでプロジェクトを開く
-open homete.xcodeproj
-
-# テスト実行（ユニット + スナップショット）
-xcodebuild test -project homete.xcodeproj -scheme homete -testPlan CI.xctestplan -destination 'platform=iOS Simulator,name=iPhone 16'
-
-# スナップショットテストのみ実行
-xcodebuild test -project homete.xcodeproj -scheme homete -testPlan snapshotTesting.xctestplan -destination 'platform=iOS Simulator,name=iPhone 16'
-
 # SwiftLint（CIでDanger経由で実行、スタンドアロンでは実行しない）
 swift run --package-path ProjectTools swiftlint lint --config .swiftlint.yml
 
@@ -241,8 +232,6 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 
 ビルド: `swift build --package-path ProjectTools --scratch-path ProjectTools/.build`
 
-<<<<<<< Updated upstream
-=======
 ## エージェント
 
 プロジェクトでは特定のタスクに特化したエージェントを活用します。
@@ -271,7 +260,6 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 **注意:** pdmエージェントとは独立して実行します。pdmはビジネス観点、ios-code-reviewerは技術観点のレビューを担当します。
 
->>>>>>> Stashed changes
 ## ファイル整理の規約
 
 新機能を追加する際:

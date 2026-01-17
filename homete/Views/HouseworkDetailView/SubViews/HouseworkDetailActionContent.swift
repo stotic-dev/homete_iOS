@@ -33,6 +33,7 @@ struct HouseworkDetailActionContent: View {
                 undoChangeStateButton()
             }
         }
+        .disabled(isLoading)
         .fullScreenCover(isPresented: $isPresentedApprovalView) {
             HouseworkApprovalView(item: item)
         }
@@ -43,8 +44,10 @@ private extension HouseworkDetailActionContent {
     
     func requestReviewButton() -> some View {
         Button {
+            isLoading = true
             Task {
                 await tappedRequestConfirmButton()
+                isLoading = false
             }
         } label: {
             Label("確認してもらう", systemImage: "paperplane.fill")
@@ -55,7 +58,11 @@ private extension HouseworkDetailActionContent {
     
     func undoChangeStateButton() -> some View {
         Button {
-            // TODO: 未完了に戻す
+            isLoading = true
+            Task {
+                await tappedUndoStateButton()
+                isLoading = false
+            }
         } label: {
             Label("未完了に戻す", systemImage: "arrow.uturn.backward")
                 .frame(maxWidth: .infinity)
@@ -80,8 +87,6 @@ private extension HouseworkDetailActionContent {
     
     func tappedRequestConfirmButton() async {
         
-        isLoading = true
-        
         do {
             try await houseworkListStore.requestReview(
                 target: item,
@@ -92,8 +97,17 @@ private extension HouseworkDetailActionContent {
         catch {
             commonErrorContent = .init(error: error)
         }
+    }
+    
+    func tappedUndoStateButton() async {
         
-        isLoading = false
+        do {
+            
+            try await houseworkListStore.returnToIncomplete(target: item, now: .now)
+        } catch {
+            
+            commonErrorContent = .init(error: error)
+        }
     }
 }
 
