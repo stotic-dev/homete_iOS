@@ -47,15 +47,14 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
     func calcTargetPeriod() {
 
         // Arrange
-        let calendar = Calendar(identifier: .gregorian)
-        let locale = Locale(identifier: "ja_JP")
+        let calendar = Calendar.japanese
 
         // Act
         let result = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: .dateComponents(year: 2026, month: 2, day: 1),
             offsetDays: 2,
             calendar: calendar,
-            locale: locale
+            locale: .jp
         )
 
         // Assert
@@ -73,15 +72,14 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
     func calcTargetPeriod_zero_offset() {
 
         // Arrange
-        let calendar = Calendar(identifier: .gregorian)
-        let locale = Locale(identifier: "ja_JP")
+        let calendar = Calendar.japanese
 
         // Act
         let result = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: .dateComponents(year: 2026, month: 1, day: 15),
             offsetDays: 0,
             calendar: calendar,
-            locale: locale
+            locale: .jp
         )
 
         // Assert
