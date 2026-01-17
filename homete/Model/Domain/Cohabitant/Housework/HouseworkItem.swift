@@ -60,7 +60,7 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codable {
             indexedDate: indexedDate,
             title: title,
             point: point,
-            state: .pendingApproval,
+            state: .completed,
             executorId: executorId,
             executedAt: executedAt,
             reviewerId: reviewer,
