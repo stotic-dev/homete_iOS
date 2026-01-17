@@ -23,7 +23,7 @@ struct HouseworkDetailActionContent: View {
             case .incomplete:
                 requestReviewButton()
             case .pendingApproval:
-                if item.isApprovable(account.id) {
+                if item.canReview(ownUserId: account.id) {
                     approvalButton()
                 }
                 else {

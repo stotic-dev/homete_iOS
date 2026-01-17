@@ -36,6 +36,12 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codable {
         return indexedDate.value
     }
     
+    /// レビュー可能かどうか
+    func canReview(ownUserId: String) -> Bool {
+        
+        return executorId != ownUserId && state != .completed
+    }
+    
     func updatePendingApproval(at now: Date, changer: String) -> Self {
         
         return .init(
@@ -85,12 +91,6 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codable {
             reviewerComment: nil,
             expiredAt: expiredAt
         )
-    }
-    
-    func isApprovable(_ userId: String) -> Bool {
-        
-        guard let executorId else { return false }
-        return executorId != userId
     }
 }
 
