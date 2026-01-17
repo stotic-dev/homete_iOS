@@ -146,13 +146,13 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        account: .init(id: "dummy", userName: "", fcmToken: nil, cohabitantId: nil),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
             indexedDate: .init(.distantPast),
             state: .pendingApproval,
-            executorId: "dummy"
+            executorId: "executorAccount"
         )
     )
     .environment(HouseworkListStore())

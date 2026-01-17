@@ -157,4 +157,5 @@ private extension HouseworkApprovalView {
     ))
     .setupEnvironmentForPreview()
     .environment(CohabitantStore(members: .init(value: [.init(id: "test", userName: "hogehoge")])))
+    .environment(HouseworkListStore())
 }
