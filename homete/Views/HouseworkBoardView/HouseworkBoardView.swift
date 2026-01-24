@@ -121,13 +121,13 @@ private extension HouseworkBoardView {
                         title: "洗濯",
                         point: 20,
                         metaData: .init(
-                            indexedDate: .init(value: "2026/1/1"),
+                            indexedDate: .init(value: "0001/01/01"),
                             expiredAt: .distantPast
                         )
                     )
                 ],
                 metaData: .init(
-                    indexedDate: .init(value: "2026/1/1"),
+                    indexedDate: .init(value: "0001/01/01"),
                     expiredAt: .now
                 )
             )

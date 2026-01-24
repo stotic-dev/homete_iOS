@@ -46,7 +46,7 @@ struct HouseworkDetailItemListContent: View {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
         )
     )
 }
@@ -58,7 +58,7 @@ struct HouseworkDetailItemListContent: View {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .distantFuture),
+            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture),
             executorId: "test",
             executedAt: .distantPast
         )
