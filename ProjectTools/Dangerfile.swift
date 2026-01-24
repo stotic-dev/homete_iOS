@@ -12,6 +12,48 @@ if let github = danger.github {
         
         warn("PRの変更行が多すぎます。500行以内にしてね！理想は400行！")
     }
+    
+    // VRTのsnapshotから画像の差分を表示する
+    let repoSlug = danger.github.pullRequest.base.repo.fullName // 例: "owner/repo"
+    let headCommitSha = danger.github.pullRequest.head.sha // 変更後
+    let baseCommitSha = danger.github.pullRequest.base.sha // 変更前
+    let vrtSnapshotDir = "hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+    let changedSnapshotFiles = danger.git.modifiedFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
+    })
+    
+    if !changedSnapshotFiles.isEmpty {
+        markdown("## snapshotの変更")
+        for imagePath in changedSnapshotFiles {
+            // GitHubのraw URLを構築
+            let beforeImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(baseCommitSha)/\(imagePath)"
+            let afterImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
+            
+            markdown("""
+            ### 更新ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
+            | before | after |
+            | ------ | ----- |
+            | ![image](\(beforeImageUrl)) | ![image](\(afterImageUrl)) |
+            """)
+        }
+    }
+    
+    let addedSnapshotFiles = danger.git.createdFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
+    })
+    if !addedSnapshotFiles.isEmpty {
+        markdown("## snapshotの追加")
+        
+        for imagePath in addedSnapshotFiles {
+            // GitHubのraw URLを構築
+            let addedImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
+            
+            markdown("""
+            ### 追加ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
+            | current |
+            | ------ |
+            | ![image](\(addedImageUrl)) |
+            """)
+        }
+    }
 }
 
 // SwiftLintのレビュー
@@ -33,9 +75,10 @@ for targetInfo in lintTargets {
     )
 }
 
+let resultBundlePath = "Build/test.xcresult"
+
 // Code Coverageの確認
 
-let resultBundlePath = "Build/test.xcresult"
 Coverage.xcodeBuildCoverage(
     .xcresultBundle(resultBundlePath),
     minimumCoverage: .zero
@@ -52,5 +95,17 @@ struct SwiftLintTarget {
          configPath: String = ".swiftlint.yml") {
         self.targetPath = targetPath
         self.configPath = configPath
+    }
+}
+
+extension String {
+    func relativeImagePath(basePath: String) -> String {
+        if let range = self.range(of: basePath) {
+            var suffix = String(self[range.upperBound...])
+            if suffix.hasPrefix("/") { suffix.removeFirst() }
+            return suffix
+        } else {
+            return self
+        }
     }
 }
