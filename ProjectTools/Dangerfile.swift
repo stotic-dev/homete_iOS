@@ -18,34 +18,41 @@ if let github = danger.github {
     let headCommitSha = danger.github.pullRequest.head.sha // 変更後
     let baseCommitSha = danger.github.pullRequest.base.sha // 変更前
     let vrtSnapshotDir = "hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
-
-    markdown("## snapshotの変更")
-    for imagePath in danger.git.modifiedFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
-    }) {
-        // GitHubのraw URLを構築
-        let beforeImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(baseCommitSha)/\(imagePath)"
-        let afterImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
-        
-        markdown("""
-        ### 更新ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
-        | before | after |
-        | ------ | ----- |
-        | ![image](\(beforeImageUrl)) | ![image](\(afterImageUrl)) |
-        """)
+    let changedSnapshotFiles = danger.git.modifiedFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
+    })
+    
+    if !changedSnapshotFiles.isEmpty {
+        markdown("## snapshotの変更")
+        for imagePath in changedSnapshotFiles {
+            // GitHubのraw URLを構築
+            let beforeImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(baseCommitSha)/\(imagePath)"
+            let afterImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
+            
+            markdown("""
+            ### 更新ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
+            | before | after |
+            | ------ | ----- |
+            | ![image](\(beforeImageUrl)) | ![image](\(afterImageUrl)) |
+            """)
+        }
     }
     
-    markdown("## snapshotの追加")
-    for imagePath in danger.git.createdFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
-    }) {
-        // GitHubのraw URLを構築
-        let addedImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
+    let addedSnapshotFiles = danger.git.createdFiles.filter({ $0.contains(vrtSnapshotDir) && $0.lowercased().hasSuffix(".png")
+    })
+    if !addedSnapshotFiles.isEmpty {
+        markdown("## snapshotの追加")
         
-        markdown("""
-        ### 追加ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
-        | current |
-        | ------ |
-        | ![image](\(addedImageUrl)) |
-        """)
+        for imagePath in addedSnapshotFiles {
+            // GitHubのraw URLを構築
+            let addedImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
+            
+            markdown("""
+            ### 追加ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
+            | current |
+            | ------ |
+            | ![image](\(addedImageUrl)) |
+            """)
+        }
     }
 }
 
