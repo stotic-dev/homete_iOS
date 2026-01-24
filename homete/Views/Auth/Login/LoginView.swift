@@ -11,7 +11,7 @@ struct LoginView: View {
     
     @Environment(AccountAuthStore.self) var accountAuthStore
     @CommonError var commonErrorContent
-    @State var isLoading = false
+    @LoadingState var loadingState
     
     var body: some View {
         VStack(spacing: .space16) {
@@ -21,9 +21,10 @@ struct LoginView: View {
                 .font(with: .headLineL)
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)
-            SignInUpWithAppleButton {
-                isLoading = true
-                await onSignInWithApple($0)
+            SignInUpWithAppleButton { result in
+                loadingState.task {
+                    await onSignInWithApple(result)
+                }
             }
             .frame(height: .space48)
             .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
@@ -36,7 +37,7 @@ struct LoginView: View {
         }
         .padding(.horizontal, .space16)
         .ignoresSafeArea(edges: [.bottom])
-        .fullScreenLoadingIndicator(isLoading)
+        .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonErrorContent)
     }
 }

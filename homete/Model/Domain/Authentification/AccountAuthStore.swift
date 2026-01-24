@@ -55,11 +55,12 @@ final class AccountAuthStore {
     
     func logOut() {
         
+        currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
+        analyticsClient.log(.logout())
+        
         do {
             
-            currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
             try accountAuthClient.signOut()
-            analyticsClient.log(.logout())
         }
         catch {
             
