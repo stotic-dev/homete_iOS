@@ -27,7 +27,7 @@ if let github = danger.github {
         let afterImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
         
         markdown("""
-        ### 更新ファイル: `\(imagePath)`
+        ### 更新ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
         | before | after |
         | ------ | ----- |
         | ![image](\(beforeImageUrl)) | ![image](\(afterImageUrl)) |
@@ -41,7 +41,7 @@ if let github = danger.github {
         let addedImageUrl = "https://raw.githubusercontent.com/\(repoSlug)/\(headCommitSha)/\(imagePath)"
         
         markdown("""
-        ### 追加ファイル: `\(imagePath)`
+        ### 追加ファイル: `\(imagePath.relativeImagePath(basePath: vrtSnapshotDir))`
         | current |
         | ------ |
         | ![image](\(addedImageUrl)) |
@@ -88,5 +88,17 @@ struct SwiftLintTarget {
          configPath: String = ".swiftlint.yml") {
         self.targetPath = targetPath
         self.configPath = configPath
+    }
+}
+
+extension String {
+    func relativeImagePath(basePath: String) -> String {
+        if let range = self.range(of: basePath) {
+            var suffix = String(self[range.upperBound...])
+            if suffix.hasPrefix("/") { suffix.removeFirst() }
+            return suffix
+        } else {
+            return self
+        }
     }
 }
