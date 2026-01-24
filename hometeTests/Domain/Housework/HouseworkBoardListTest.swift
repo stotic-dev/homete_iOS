@@ -44,7 +44,7 @@ struct HouseworkBoardListTest {
         let actual = HouseworkBoardList(
             dailyList: inputList,
             selectedDate: selectTime,
-            locale: .jp
+            calendar: .japanese
         )
         
         // Assert
@@ -63,7 +63,7 @@ struct HouseworkBoardListTest {
         let houseworkBoardList = HouseworkBoardList(
             dailyList: [.makeForTest(items: inputHouseworkItem)],
             selectedDate: .now,
-            locale: .jp
+            calendar: .japanese
         )
         
         // Act

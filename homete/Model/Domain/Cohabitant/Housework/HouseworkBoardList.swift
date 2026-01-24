@@ -22,12 +22,12 @@ extension HouseworkBoardList {
     init(
         dailyList: [DailyHouseworkList],
         selectedDate: Date,
-        locale: Locale
+        calendar: Calendar
     ) {
         
         items = dailyList
             .first {
-                $0.metaData.indexedDate == .init(selectedDate, locale: locale)
+                $0.metaData.indexedDate == .init(selectedDate, calendar: calendar)
             }?.items ?? []
     }
 }
