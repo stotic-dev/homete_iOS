@@ -29,7 +29,7 @@ struct HouseBoardListRow: View {
             title: "洗濯",
             point: 20,
             metaData: .init(
-                indexedDate: .init(.distantFuture),
+                indexedDate: .init(value: "2026/1/1"),
                 expiredAt: .distantPast
             )
         )

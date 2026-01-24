@@ -67,8 +67,7 @@ extension HouseworkClient: DependencyClient {
         let targetDateList = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: anchorDate,
             offsetDays: offset,
-            calendar: Calendar.autoupdatingCurrent,
-            locale: .current
+            calendar: .autoupdatingCurrent
         )
         
         return await FirestoreService.shared.addSnapshotListener(id: id) {

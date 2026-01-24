@@ -26,7 +26,7 @@ extension HouseworkIndexedDateTest.InitCase {
         .distantFuture
     ])
     func init_parse_date(inputDate: Date) async throws {
-        let indexedDate = HouseworkIndexedDate(inputDate)
+        let indexedDate = HouseworkIndexedDate(inputDate, calendar: .japanese)
         
         let expected = inputDate.formatted(
             Date.FormatStyle(date: .numeric, time: .omitted)
@@ -53,8 +53,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
         let result = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: .dateComponents(year: 2026, month: 2, day: 1),
             offsetDays: 2,
-            calendar: calendar,
-            locale: .jp
+            calendar: calendar
         )
 
         // Assert
@@ -78,8 +77,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
         let result = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: .dateComponents(year: 2026, month: 1, day: 15),
             offsetDays: 0,
-            calendar: calendar,
-            locale: .jp
+            calendar: calendar
         )
 
         // Assert

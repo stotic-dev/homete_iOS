@@ -65,7 +65,13 @@ struct HouseworkListStoreTest {
         
         #expect(
             store.items == .init(value: [
-                .init(items: inputHouseworkList, metaData: .init(indexedDate: .init(.now), expiredAt: now))
+                .init(
+                    items: inputHouseworkList,
+                    metaData: .init(
+                        indexedDate: .init(.now, calendar: .japanese),
+                        expiredAt: now
+                    )
+                )
             ])
         )
     }
@@ -254,6 +260,7 @@ struct HouseworkListStoreTest {
     }
 
     @Test("家事を承認すると、承認情報を更新しパートナーに通知を送信する")
+    // swiftlint:disable:next function_body_length
     func approved() async throws {
 
         // Arrange

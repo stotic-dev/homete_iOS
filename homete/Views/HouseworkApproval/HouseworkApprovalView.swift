@@ -149,7 +149,7 @@ private extension HouseworkApprovalView {
         title: "洗濯",
         point: 10,
         metaData: .init(
-            indexedDate: .init(.init(timeIntervalSince1970: 0)),
+            indexedDate: .init(value: "2026/1/1"),
             expiredAt: .init(timeIntervalSince1970: 0)
         ),
         executorId: "test",

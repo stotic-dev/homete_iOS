@@ -26,7 +26,7 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         // Arrange
         let calendar = Calendar(identifier: .gregorian)
         let selectedDate = Date()
-        let expectedIndexedDate = HouseworkIndexedDate(selectedDate)
+        let expectedIndexedDate = HouseworkIndexedDate(selectedDate, calendar: .japanese)
         let expectedExpiredAt = try #require(calendar.date(byAdding: .month, value: 1, to: selectedDate))
         
         let expectedList = DailyHouseworkList(
@@ -38,8 +38,7 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         let list = DailyHouseworkList.makeInitialValue(
             selectedDate: selectedDate,
             items: [],
-            calendar: calendar,
-            locale: .jp
+            calendar: calendar
         )
         
         // Assert
@@ -61,7 +60,7 @@ extension DailyHouseworkListTest.IsRegisteredCase {
         // Arrange
         let list = DailyHouseworkList(
             items: inputItems,
-            metaData: .init(indexedDate: .init(.now), expiredAt: .now)
+            metaData: .init(indexedDate: .init(.now, calendar: .japanese), expiredAt: .now)
         )
         
         // Act
@@ -91,7 +90,7 @@ extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
         ]
         let list = DailyHouseworkList(
             items: items,
-            metaData: .init(indexedDate: .init(.now), expiredAt: .now)
+            metaData: .init(indexedDate: .init(.now, calendar: .japanese), expiredAt: .now)
         )
         
         // Act

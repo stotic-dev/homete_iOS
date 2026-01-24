@@ -26,7 +26,7 @@ extension HouseworkItem {
         
         return .init(
             id: "id\(id.formatted())",
-            indexedDate: .init(indexedDate),
+            indexedDate: .init(indexedDate, calendar: .japanese),
             title: title,
             point: point,
             state: state,
