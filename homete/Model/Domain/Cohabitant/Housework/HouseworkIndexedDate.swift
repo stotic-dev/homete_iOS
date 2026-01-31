@@ -34,7 +34,12 @@ struct HouseworkIndexedDate: Equatable, Codable, Hashable {
 extension HouseworkIndexedDate {
     
     init(_ date: Date, calendar: Calendar) {
-        let formatStyle = Date.FormatStyle(date: .numeric, time: .omitted, calendar: calendar)
+        let formatStyle = Date.FormatStyle(
+            date: .numeric,
+            time: .omitted,
+            calendar: calendar,
+            timeZone: calendar.timeZone
+        )
             .year(.extended(minimumLength: 4))
             .month(.twoDigits)
             .day(.twoDigits)
