@@ -150,8 +150,7 @@ private extension HouseworkApprovalView {
         
         do {
             
-            // TODO: ステータスを未完了に更新させる
-            try await houseworkListStore.approved(
+            try await houseworkListStore.rejected(
                 target: item,
                 now: .now,
                 reviwer: account,

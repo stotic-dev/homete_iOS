@@ -18,4 +18,11 @@ extension PushNotificationContent {
             message: comment
         )
     }
+    
+    static func rejectedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
+        return .init(
+            title: "「\(houseworkTitle)」を再確認してください",
+            message: comment
+        )
+    }
 }
