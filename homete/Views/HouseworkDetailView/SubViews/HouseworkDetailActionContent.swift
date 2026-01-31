@@ -23,7 +23,7 @@ struct HouseworkDetailActionContent: View {
             case .incomplete:
                 requestReviewButton()
             case .pendingApproval:
-                if item.isApprovable(account.id) {
+                if item.canReview(ownUserId: account.id) {
                     approvalButton()
                 }
                 else {
@@ -120,7 +120,7 @@ private extension HouseworkDetailActionContent {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(.distantPast), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .distantFuture)
         )
     )
     .environment(HouseworkListStore())
@@ -131,15 +131,12 @@ private extension HouseworkDetailActionContent {
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
         account: .init(id: "dummy", userName: "", fcmToken: nil, cohabitantId: nil),
-        item: .init(
-            id: "",
-            indexedDate: .init(.distantPast),
+        item: .makeForPreview(
             title: "洗濯",
             point: 10,
+            indexedDate: .init(value: "2026/1/1"),
             state: .pendingApproval,
-            executorId: "dummy",
-            executedAt: nil,
-            expiredAt: .distantPast
+            executorId: "dummy"
         )
     )
     .environment(HouseworkListStore())
@@ -149,16 +146,13 @@ private extension HouseworkDetailActionContent {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
-        account: .init(id: "dummy", userName: "", fcmToken: nil, cohabitantId: nil),
-        item: .init(
-            id: "",
-            indexedDate: .init(.distantPast),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
             title: "洗濯",
             point: 10,
+            indexedDate: .init(value: "2026/1/1"),
             state: .pendingApproval,
-            executorId: "",
-            executedAt: nil,
-            expiredAt: .distantPast
+            executorId: "executorAccount"
         )
     )
     .environment(HouseworkListStore())

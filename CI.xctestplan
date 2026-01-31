@@ -21,7 +21,8 @@
       "referenceType" : "built-in"
     },
     "region" : "JP",
-    "testTimeoutsEnabled" : true
+    "testTimeoutsEnabled" : true,
+    "timeZone" : "Asia\/Tokyo"
   },
   "testTargets" : [
     {

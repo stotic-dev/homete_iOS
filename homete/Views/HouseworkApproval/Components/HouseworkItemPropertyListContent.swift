@@ -53,7 +53,7 @@ private extension HouseworkItemPropertyListContent {
         title: "洗濯",
         point: 10,
         metaData: .init(
-            indexedDate: .init(.init(timeIntervalSince1970: 0)),
+            indexedDate: .init(value: "1970/01/01"),
             expiredAt: .init(timeIntervalSince1970: 0)
         ),
         executedAt: .distantFuture

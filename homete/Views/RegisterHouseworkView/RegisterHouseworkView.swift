@@ -13,11 +13,11 @@ struct RegisterHouseworkView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @LoadingState var loadingState
     
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
-    @State var isLoading = false
     
     @FocusState var isShowingKeyboard: Bool
     @CommonError var commonErrorContent
@@ -49,7 +49,7 @@ struct RegisterHouseworkView: View {
                     }
             }
             Button("登録する") {
-                Task {
+                loadingState.task {
                     await tappedRegisterButton()
                 }
             }
@@ -59,7 +59,7 @@ struct RegisterHouseworkView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .padding([.trailing, .bottom], .space24)
         }
-        .fullScreenLoadingIndicator(isLoading)
+        .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonErrorContent)
         .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
             Button(
@@ -152,19 +152,6 @@ private extension RegisterHouseworkView {
     
     func tappedRegisterButton() async {
         
-        withAnimation {
-            
-            isLoading = true
-        }
-        
-        defer {
-            
-            withAnimation {
-                
-                isLoading = false
-            }
-        }
-        
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
@@ -197,7 +184,7 @@ private extension RegisterHouseworkView {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(.now), expiredAt: .now)
+            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
         )
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
@@ -215,10 +202,10 @@ private extension RegisterHouseworkView {
 
 #Preview("RegisterHouseworkView_通信中") {
     RegisterHouseworkView(
-        isLoading: true,
+        loadingState: .init(store: .init(isLoading: true)),
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(.now), expiredAt: .now)
+            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
         )
     )
     .environment(HouseworkListStore(

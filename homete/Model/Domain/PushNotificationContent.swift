@@ -9,3 +9,13 @@ struct PushNotificationContent: Equatable {
     let title: String
     let message: String
 }
+
+extension PushNotificationContent {
+    
+    static func approvedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
+        return .init(
+            title: "\(reviwerName)が「\(houseworkTitle)」を承認しました！",
+            message: comment
+        )
+    }
+}

@@ -13,10 +13,10 @@ struct SettingView: View {
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
+    @LoadingState var loadingState
     
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
-    @State var isLoading = false
     
     var body: some View {
         NavigationStack {
@@ -62,7 +62,7 @@ struct SettingView: View {
                 }
             }
         }
-        .fullScreenLoadingIndicator(isLoading)
+        .fullScreenLoadingIndicator(loadingState)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
                 tappedLogoutAlertOkButton()
@@ -70,8 +70,7 @@ struct SettingView: View {
         }
         .alert("退会しますか？", isPresented: $isPresentedAccountDeletionConfirmAlert) {
             Button("退会する", role: .destructive) {
-                isLoading = true
-                Task {
+                loadingState.task {
                     await tappedAccountDeletionAlertOkButton()
                 }
             }
@@ -119,8 +118,6 @@ private extension SettingView {
             // TODO: エラーハンドリング
             print("occurred error: \(error)")
         }
-        
-        isLoading = false
     }
 }
 
