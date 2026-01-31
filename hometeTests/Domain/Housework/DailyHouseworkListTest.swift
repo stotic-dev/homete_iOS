@@ -24,9 +24,9 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
     func makeInitialValue() throws {
         
         // Arrange
-        let calendar = Calendar(identifier: .gregorian)
+        let calendar = Calendar.japanese
         let selectedDate = Date()
-        let expectedIndexedDate = HouseworkIndexedDate(selectedDate, calendar: .japanese)
+        let expectedIndexedDate = HouseworkIndexedDate(selectedDate, calendar: calendar)
         let expectedExpiredAt = try #require(calendar.date(byAdding: .month, value: 1, to: selectedDate))
         
         let expectedList = DailyHouseworkList(

@@ -37,6 +37,7 @@ extension HouseworkIndexedDate {
         let formatStyle = Date.FormatStyle(
             date: .numeric,
             time: .omitted,
+            locale: calendar.locale ?? .autoupdatingCurrent,
             calendar: calendar,
             timeZone: calendar.timeZone
         )
