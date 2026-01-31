@@ -10,7 +10,6 @@ import SwiftUI
 struct HouseworkBoardView: View {
     
     @Environment(\.calendar) var calendar
-    @Environment(\.locale) var locale
     @Environment(HouseworkListStore.self) var houseworkListStore
     
     @State var navigationPath = AppNavigationPath(path: [])
@@ -50,8 +49,7 @@ struct HouseworkBoardView: View {
                 dailyHouseworkList: .makeInitialValue(
                     selectedDate: selectedDate,
                     items: [],
-                    calendar: calendar,
-                    locale: locale
+                    calendar: calendar
                 )
             )
         }
@@ -102,7 +100,7 @@ private extension HouseworkBoardView {
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
             selectedDate: selectedDate,
-            locale: locale
+            calendar: calendar
         )
     }
 }
@@ -123,13 +121,13 @@ private extension HouseworkBoardView {
                         title: "洗濯",
                         point: 20,
                         metaData: .init(
-                            indexedDate: .init(.distantPast),
+                            indexedDate: .init(value: "0001/01/01"),
                             expiredAt: .distantPast
                         )
                     )
                 ],
                 metaData: .init(
-                    indexedDate: .init(.distantPast),
+                    indexedDate: .init(value: "0001/01/01"),
                     expiredAt: .now
                 )
             )

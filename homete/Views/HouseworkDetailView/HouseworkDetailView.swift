@@ -100,7 +100,7 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(.distantPast), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
             )
         )
     }
@@ -116,7 +116,7 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(.distantPast), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
             )
         )
     }
