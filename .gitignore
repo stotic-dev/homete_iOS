@@ -80,3 +80,7 @@ GoogleService-Info-dev.plist
 # other
 
 Build/
+
+# VS Code
+
+.vscode/
