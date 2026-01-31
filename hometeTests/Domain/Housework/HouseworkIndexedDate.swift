@@ -29,7 +29,7 @@ extension HouseworkIndexedDateTest.InitCase {
         let indexedDate = HouseworkIndexedDate(inputDate, calendar: .japanese)
         
         let expected = inputDate.formatted(
-            Date.FormatStyle(date: .numeric, time: .omitted)
+            Date.FormatStyle(date: .numeric, time: .omitted, calendar: .japanese, timeZone: .tokyo)
                 .year(.extended(minimumLength: 4))
                 .month(.twoDigits)
                 .day(.twoDigits)
