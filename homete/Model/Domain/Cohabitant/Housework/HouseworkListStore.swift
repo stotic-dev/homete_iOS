@@ -75,76 +75,37 @@ final class HouseworkListStore {
     }
     
     func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
-        
-        guard let targetItem = items.item(target) else {
-            
-            preconditionFailure("Not found target item(\(target))")
-        }
-        
-        let updatedItem = targetItem.updatePendingApproval(at: now, changer: executor)
-        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-        
-        Task.detached {
-            
-            let notificationContent = PushNotificationContent(
-                title: "確認が必要な家事があります",
-                message: "問題なければ「\(updatedItem.title)」の完了に感謝を伝えましょう！"
-            )
-            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+
+        try await updateAndSave(target: target) {
+            $0.updatePendingApproval(at: now, changer: executor)
+        } notification: {
+            .requestReviewMessage(houseworkTitle: target.title)
         }
     }
     
     func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
-        
-        guard let targetItem = items.item(target) else {
-            
-            preconditionFailure("Not found target item(\(target))")
-        }
-        
-        let updatedItem = targetItem.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
-        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-        
-        Task.detached {
-            
-            let notificationContent = PushNotificationContent.approvedMessage(
-                reviwerName: reviwer.userName,
-                houseworkTitle: target.title,
-                comment: comment
-            )
-            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+
+        try await updateAndSave(target: target) {
+            $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
+        } notification: {
+            .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
-    
+
     func rejected(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
-        
-        guard let targetItem = items.item(target) else {
-            
-            preconditionFailure("Not found target item(\(target))")
-        }
-        
-        let updatedItem = targetItem.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
-        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-        
-        Task.detached {
-            
-            let notificationContent = PushNotificationContent.rejectedMessage(
-                reviwerName: reviwer.userName,
-                houseworkTitle: target.title,
-                comment: comment
-            )
-            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+
+        try await updateAndSave(target: target) {
+            $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
+        } notification: {
+            .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
-    
-    func returnToIncomplete(target: HouseworkItem, now: Date) async throws {
-        
-        guard let targetItem = items.item(target) else {
-            
-            preconditionFailure("Not found target item(\(target))")
+
+    func returnToIncomplete(target: HouseworkItem) async throws {
+
+        try await updateAndSave(target: target) {
+            $0.updateIncomplete()
         }
-        
-        let updatedItem = targetItem.updateIncomplete()
-        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
     }
     
     func remove(_ target: HouseworkItem) async throws {
@@ -154,10 +115,34 @@ final class HouseworkListStore {
 }
 
 private extension HouseworkListStore {
-    
+
     func clear() async {
-        
+
         await houseworkClient.removeListener(houseworkObserveKey)
         items.removeAll()
+    }
+
+    func updateAndSave(
+        target: HouseworkItem,
+        transform: (HouseworkItem) -> HouseworkItem,
+        notification: (() -> PushNotificationContent)? = nil
+    ) async throws {
+
+        guard let targetItem = items.item(target) else {
+            preconditionFailure("Not found target item(\(target))")
+        }
+
+        let updatedItem = transform(targetItem)
+        try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+
+        if let notification {
+            let content = notification()
+            Task.detached {
+                try await self.cohabitantPushNotificationClient.send(
+                    self.cohabitantId,
+                    content
+                )
+            }
+        }
     }
 }

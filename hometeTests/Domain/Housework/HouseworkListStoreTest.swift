@@ -223,10 +223,7 @@ struct HouseworkListStoreTest {
             
             // Act
             
-            try await store.returnToIncomplete(
-                target: inputHouseworkItem,
-                now: requestedAt
-            )
+            try await store.returnToIncomplete(target: inputHouseworkItem)
         }
     }
     

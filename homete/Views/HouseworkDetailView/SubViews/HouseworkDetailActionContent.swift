@@ -103,7 +103,7 @@ private extension HouseworkDetailActionContent {
         
         do {
             
-            try await houseworkListStore.returnToIncomplete(target: item, now: .now)
+            try await houseworkListStore.returnToIncomplete(target: item)
         } catch {
             
             commonErrorContent = .init(error: error)
