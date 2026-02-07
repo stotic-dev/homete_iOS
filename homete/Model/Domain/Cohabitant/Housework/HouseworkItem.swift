@@ -76,6 +76,23 @@ struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codable {
         )
     }
     
+    func updateRejected(at now: Date, reviewer: String, comment: String) -> Self {
+        
+        return .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .incomplete,
+            executorId: executorId,
+            executedAt: executedAt,
+            reviewerId: reviewer,
+            approvedAt: now,
+            reviewerComment: comment,
+            expiredAt: expiredAt
+        )
+    }
+    
     func updateIncomplete() -> Self {
         
         return .init(

@@ -59,7 +59,7 @@ struct StoredAllHouseworkListTest {
             calendar: .current
         )
         
-        let actual = list.item(expectedItem.id, expectedItem.indexedDate)
+        let actual = list.item(expectedItem)
         
         #expect(actual == expectedItem)
     }

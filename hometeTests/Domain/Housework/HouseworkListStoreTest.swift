@@ -15,6 +15,13 @@ struct HouseworkListStoreTest {
     
     private let inputId = "houseworkObserveKey"
     private let inputCohabitantId = "cohabitantId"
+    
+    @MainActor
+    struct UpdateStatusCase {
+        
+        private let inputId = "houseworkObserveKey"
+        private let inputCohabitantId = "cohabitantId"
+    }
 
     @Test("家事リストのロードを行うと最新の家事リストを常に監視し続ける")
     func loadHouseworkList() async throws {
@@ -121,6 +128,9 @@ struct HouseworkListStoreTest {
             }
         }
     }
+}
+
+extension HouseworkListStoreTest.UpdateStatusCase {
     
     @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
     func requestReview() async throws {
@@ -193,7 +203,6 @@ struct HouseworkListStoreTest {
             executorId: "dummyExecutor",
             executedAt: .distantPast
         )
-        let requestedAt = Date()
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
             state: .incomplete,
             executorId: nil,
@@ -223,10 +232,7 @@ struct HouseworkListStoreTest {
             
             // Act
             
-            try await store.returnToIncomplete(
-                target: inputHouseworkItem,
-                now: requestedAt
-            )
+            try await store.returnToIncomplete(target: inputHouseworkItem)
         }
     }
     
@@ -325,6 +331,80 @@ struct HouseworkListStoreTest {
                     try await store.approved(
                         target: inputHouseworkItem,
                         now: approvedAt,
+                        reviwer: inputReviewer,
+                        comment: inputComment
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("家事を却下すると、却下情報を更新しパートナーに通知を送信する")
+    // swiftlint:disable:next function_body_length
+    func rejected() async throws {
+
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .pendingApproval,
+            executorId: "executorId",
+            executedAt: .distantPast
+        )
+        let rejectedAt = Date()
+        let inputReviewer = Account(
+            id: "reviewerId",
+            userName: "レビュアー",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let inputComment = "もう一度確認してください"
+        let updatedHouseworkItem = inputHouseworkItem.updateRejected(
+            at: rejectedAt,
+            reviewer: inputReviewer.id,
+            comment: inputComment
+        )
+        let expectedNotificationContent = PushNotificationContent.rejectedMessage(
+            reviwerName: inputReviewer.userName,
+            houseworkTitle: inputHouseworkItem.title,
+            comment: inputComment
+        )
+
+        await confirmation(expectedCount: 2) { confirmation in
+
+            let _: Void = await withCheckedContinuation { continuation in
+
+                let store = HouseworkListStore(
+                    houseworkClient: .init(
+                        insertOrUpdateItemHandler: { item, cohabitantId in
+
+                            // Assert
+
+                            #expect(item == updatedHouseworkItem)
+                            #expect(cohabitantId == inputCohabitantId)
+                            confirmation()
+                        }
+                    ),
+                    cohabitantPushNotificationClient: .init { id, content in
+
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedNotificationContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    items: [.makeForTest(items: [inputHouseworkItem])],
+                    cohabitantId: inputCohabitantId
+                )
+
+                // Act
+
+                Task {
+
+                    try await store.rejected(
+                        target: inputHouseworkItem,
+                        now: rejectedAt,
                         reviwer: inputReviewer,
                         comment: inputComment
                     )
