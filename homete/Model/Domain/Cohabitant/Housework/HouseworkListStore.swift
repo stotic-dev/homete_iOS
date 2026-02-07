@@ -69,11 +69,7 @@ final class HouseworkListStore {
         
         Task.detached {
             
-            // TODO: PushNotificationContentにファクトリーメソッドを定義する
-            let notificationContent = PushNotificationContent(
-                title: "新しい家事が登録されました",
-                message: newItem.title
-            )
+            let notificationContent = PushNotificationContent.addNewHouseworkItem(newItem.title)
             try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
         }
     }
