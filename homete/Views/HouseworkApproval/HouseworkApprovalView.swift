@@ -13,6 +13,7 @@ struct HouseworkApprovalView: View {
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
     @CommonError var commonError
+    @LoadingState var loadingState
     
     @State var inputMessage = ""
     
@@ -41,6 +42,7 @@ struct HouseworkApprovalView: View {
             .toolbar {
                 navigationLeadingItem()
             }
+            .fullScreenLoadingIndicator(loadingState)
         }
     }
 }
@@ -101,7 +103,7 @@ private extension HouseworkApprovalView {
     func actionButtonContent() -> some View {
         VStack(spacing: .space16) {
             Button {
-                Task {
+                loadingState.task {
                     await tappedApproveButton()
                 }
             } label: {
@@ -110,12 +112,14 @@ private extension HouseworkApprovalView {
             }
             .subPrimaryButtonStyle()
             Button {
-                // TODO: 家事を未完了に戻す
+                loadingState.task {
+                    await tappedReconfirmationButton()
+                }
             } label: {
-                Text("未完了に戻す")
+                Text("再確認してもらう")
                     .frame(maxWidth: .infinity)
             }
-            .destructiveButtonStyle()
+            .primaryButtonStyle()
         }
         .disabled(inputMessage.isEmpty)
     }
@@ -130,6 +134,23 @@ private extension HouseworkApprovalView {
         do {
             
             try await houseworkListStore.approved(
+                target: item,
+                now: .now,
+                reviwer: account,
+                comment: inputMessage
+            )
+            dismiss()
+        } catch {
+            
+            commonError = .init(error: error)
+        }
+    }
+    
+    func tappedReconfirmationButton() async {
+        
+        do {
+            
+            try await houseworkListStore.rejected(
                 target: item,
                 now: .now,
                 reviwer: account,

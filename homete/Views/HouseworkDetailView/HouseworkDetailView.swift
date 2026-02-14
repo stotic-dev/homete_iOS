@@ -84,7 +84,7 @@ private extension HouseworkDetailView {
     
     func didChangeItems() {
         
-        guard let targetItem = houseworkListStore.items.item(item.id, item.indexedDate) else { return }
+        guard let targetItem = houseworkListStore.items.item(item) else { return }
         
         withAnimation {
             
