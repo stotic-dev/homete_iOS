@@ -88,17 +88,58 @@ EOF
 --label "enhancement,UI,P1"
 ```
 
-### 5. オプション設定
+### 5. GitHub Projectへの追加
+
+Issue作成後、必ずGitHub Project（stotic-dev/projects/2）にTodoとして追加する：
+
+```bash
+# 1. IssueをProjectに追加
+gh project item-add 2 --owner stotic-dev --url https://github.com/stotic-dev/homete_iOS/issues/XX
+
+# 2. 追加されたアイテムのIDを取得
+ITEM_ID=$(gh project item-list 2 --owner stotic-dev --format json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for item in data.get('items', []):
+    if item.get('content', {}).get('number') == XX:
+        print(item['id'])
+        break
+")
+
+# 3. ProjectのIDを取得
+PROJECT_ID=$(gh project list --owner stotic-dev --format json | python3 -c "
+import json, sys
+[print(p['id']) for p in json.load(sys.stdin)['projects'] if p['number']==2]
+")
+
+# 4. ステータスをTodoに設定
+gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
+  --field-id "PVTSSF_lAHOBvNiZc4A3Tsrzgsd3-I" \
+  --single-select-option-id "f75ad846"
+```
+
+**Project フィールドID参照:**
+- Status field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd3-I`
+  - Todo: `f75ad846`
+  - In Progress: `47fc9ee4`
+  - Done: `98236657`
+- Priority field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd4Io`
+  - P0: `dd8406d5`
+  - P1: `9214bf1b`
+  - P2: `29f5b4c6`
+- Size field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd4Is`
+  - XS: `17bc645d`, S: `e9152bb0`, M: `1df61cad`, L: `6cec2fd3`, XL: `ae9ee069`
+
+### 6. オプション設定
 
 必要に応じて以下のオプションを使用：
 
 ```bash
 --assignee @username       # 担当者の設定
 --milestone "マイルストーン名"  # マイルストーンの設定
---project "プロジェクト名"     # プロジェクトへの追加
 ```
 
-### 6. ユーザーへの報告
+### 7. ユーザーへの報告
 
 Issue作成後、以下の情報をユーザーに報告：
 
@@ -108,6 +149,7 @@ Issue #XXを作成しました！
 タイトル: [タイトル]
 URL: https://github.com/stotic-dev/homete_iOS/issues/XX
 ラベル: [ラベル一覧]
+Project: Todo として追加済み
 
 このIssueの実装を開始する場合は、/issue-start XX コマンドを実行してください。
 ```
