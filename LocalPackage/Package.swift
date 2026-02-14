@@ -7,17 +7,17 @@ let package = Package(
     name: "LocalPackage",
     products: [
         .library(
-            name: "LocalPackage",
-            targets: ["LocalPackage"]
+            name: "HometeDomain",
+            targets: ["HometeDomain"]
         ),
     ],
     targets: [
         .target(
-            name: "LocalPackage"
+            name: "HometeDomain"
         ),
         .testTarget(
-            name: "LocalPackageTests",
-            dependencies: ["LocalPackage"]
+            name: "HometeDomainTests",
+            dependencies: ["HometeDomain"]
         ),
     ]
 )
