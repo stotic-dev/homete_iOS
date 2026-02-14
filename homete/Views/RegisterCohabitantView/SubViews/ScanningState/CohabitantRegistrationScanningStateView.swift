@@ -6,6 +6,7 @@
 //
 
 import MultipeerConnectivity
+import HometeDomain
 import SwiftUI
 
 struct CohabitantRegistrationScanningStateView: View {

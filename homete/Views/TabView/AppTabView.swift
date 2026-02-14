@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/06.
 //
 
+import HometeDomain
 import SwiftUI
 import UserNotifications
 
@@ -116,8 +117,8 @@ extension AppTabView {
 
 #Preview {
     AppTabView()
-        .environment(AccountStore(appDependencies: .previewValue))
-        .environment(AccountAuthStore(appDependencies: .previewValue))
+        .environment(AccountStore())
+        .environment(AccountAuthStore())
         .environment(HouseworkListStore(
             houseworkClient: .previewValue,
             cohabitantPushNotificationClient: .previewValue

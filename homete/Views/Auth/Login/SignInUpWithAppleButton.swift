@@ -7,6 +7,7 @@
 
 import AuthenticationServices
 import SwiftUI
+import HometeDomain
 
 struct SignInUpWithAppleButton: View {
     @Environment(\.colorScheme) var colorScheme

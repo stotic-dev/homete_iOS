@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2026/01/04.
 //
 
+import HometeDomain
 import SwiftUI
 
 struct HouseworkDetailItemListContent: View {

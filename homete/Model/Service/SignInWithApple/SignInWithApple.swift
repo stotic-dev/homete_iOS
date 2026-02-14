@@ -1,4 +1,5 @@
 import AuthenticationServices
+import HometeDomain
 
 final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
     

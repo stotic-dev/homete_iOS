@@ -7,6 +7,7 @@
 
 import Combine
 import MultipeerConnectivity
+import HometeDomain
 import SwiftUI
 
 struct CohabitantRegistrationProcessingView: View {

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/11/23.
 //
 
+import HometeDomain
 import SwiftUI
 
 struct HouseworkApprovalView: View {
