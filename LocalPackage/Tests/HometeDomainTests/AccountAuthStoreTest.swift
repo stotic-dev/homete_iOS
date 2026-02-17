@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
-import os
 import Testing
 @testable import HometeDomain
 
@@ -55,40 +54,42 @@ struct AccountAuthStoreTest {
     }
     
     @Test("ログアウト時はローカルのログイン状態をログアウトにしてログアウト処理を行い、イベントログを送信する")
-    func test_logout() throws {
-        
-        let isCallSignOut = OSAllocatedUnfairLock(initialState: false)
-        let isCallAnalyticsLog = OSAllocatedUnfairLock(initialState: false)
-        
-        let store = AccountAuthStore(
-            accountAuthClient: .init(
-                signIn: { _, _ in
-                    
-                    Issue.record()
-                    return .init(id: "")
-                },
-                signOut: { isCallSignOut.withLock { $0 = true } },
-                makeListener: { .defaultValue() }
-            ),
-            analyticsClient: .init(
-                setId: { _ in
-                    
-                    Issue.record()
-                },
-                log: { event in
-                    
-                    isCallAnalyticsLog.withLock { $0 = true }
-                    #expect(event == .logout())
-                }
-            ),
-            currentAuth: .init(result: .init(id: "test"), alreadyLoadedAtInitiate: true)
-        )
-            
-        store.logOut()
-        
-        #expect(isCallSignOut.withLock { $0 })
-        #expect(isCallAnalyticsLog.withLock { $0 })
-        #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+    func test_logout() async throws {
+
+        try await confirmation(expectedCount: 3) { confirmation in
+
+            let store = AccountAuthStore(
+                accountAuthClient: .init(
+                    signIn: { _, _ in
+
+                        Issue.record()
+                        return .init(id: "")
+                    },
+                    signOut: { confirmation() },
+                    makeListener: {
+
+                        confirmation()
+                        return .defaultValue()
+                    }
+                ),
+                analyticsClient: .init(
+                    setId: { _ in
+
+                        Issue.record()
+                    },
+                    log: { event in
+
+                        confirmation()
+                        #expect(event == .logout())
+                    }
+                ),
+                currentAuth: .init(result: .init(id: "test"), alreadyLoadedAtInitiate: true)
+            )
+
+            store.logOut()
+
+            #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+        }
     }
     
     @Test("再認証を行った後にアカウントを削除し認証トークンの無効化を行いログアウト状態にすることで、退会処理を完了させる")
