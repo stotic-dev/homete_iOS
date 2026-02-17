@@ -31,11 +31,10 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : true,
       "target" : {
-        "containerPath" : "container:homete.xcodeproj",
-        "identifier" : "BCC854012DB74BBF00C9A44B",
-        "name" : "hometeTests"
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "HometeDomainTests",
+        "name" : "HometeDomainTests"
       }
     }
   ],
