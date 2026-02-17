@@ -1,0 +1,29 @@
+name: local_package_test
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "LocalPackage/**"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "LocalPackage/**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Install Swift via swiftly
+        uses: swiftlang/swiftly-action@v1
+        with:
+          toolchain: 6.2-snapshot
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Run tests
+        run: swift test --package-path LocalPackage
