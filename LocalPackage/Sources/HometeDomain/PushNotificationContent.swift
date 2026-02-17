@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/11/12.
 //
 
-public struct PushNotificationContent: Equatable {
+public struct PushNotificationContent: Equatable, Sendable {
     public let title: String
     public let message: String
 

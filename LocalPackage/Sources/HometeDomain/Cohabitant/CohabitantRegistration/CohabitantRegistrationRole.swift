@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/30.
 //
 
-public enum CohabitantRegistrationRole: Codable, Equatable {
+public enum CohabitantRegistrationRole: Codable, Equatable, Sendable {
 
     /// フォロワーはアカウントIDを渡す
     case follower(accountId: String)

@@ -14,6 +14,8 @@ public final class HouseworkListStore {
     public private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
 
+    private var observeTask: Task<Void, Never>?
+
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
 
@@ -42,6 +44,7 @@ public final class HouseworkListStore {
             return
         }
 
+        observeTask?.cancel()
         await houseworkClient.removeListener(houseworkObserveKey)
 
         let houseworkListStream = await houseworkClient.snapshotListener(
@@ -51,7 +54,7 @@ public final class HouseworkListStore {
             3
         )
 
-        Task {
+        observeTask = Task {
 
             for await currentItems in houseworkListStream {
 
@@ -112,12 +115,20 @@ public final class HouseworkListStore {
 
         try await houseworkClient.removeItem(target, cohabitantId)
     }
+
+    public func stopObserving() async {
+
+        observeTask?.cancel()
+        await observeTask?.value
+        observeTask = nil
+    }
 }
 
 private extension HouseworkListStore {
 
     func clear() async {
 
+        await stopObserving()
         await houseworkClient.removeListener(houseworkObserveKey)
         items.removeAll()
     }

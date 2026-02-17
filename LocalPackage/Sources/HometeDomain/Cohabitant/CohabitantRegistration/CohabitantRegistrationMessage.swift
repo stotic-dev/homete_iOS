@@ -7,11 +7,11 @@
 
 import Foundation
 
-public struct CohabitantRegistrationMessage: Codable, Equatable {
+public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
     public let type: CommunicateType
 
-    public enum CommunicateType: Codable, Equatable {
+    public enum CommunicateType: Codable, Equatable, Sendable {
 
         /// 登録を行うメンバーが確定したかどうかの確認
         case fixedMember(isOK: Bool)

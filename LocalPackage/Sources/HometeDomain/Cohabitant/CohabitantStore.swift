@@ -71,6 +71,8 @@ public final class CohabitantStore {
 
     public func removeSnapshotListener() async {
 
+        listenerTask?.cancel()
+        await listenerTask?.value
         listenerTask = nil
         await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
     }
