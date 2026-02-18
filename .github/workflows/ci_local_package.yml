@@ -16,8 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SWIFT_VERSION: "6.2"
-      SWIFTLY_HOME_DIR: ${{ github.workspace }}/.swiftly
-      SWIFTLY_BIN_DIR: ${{ github.workspace }}/.swiftly/bin
+      SWIFT_TOOLCHAIN_DIR: /opt/hostedtoolcache/swift-Ubuntu
     steps:
       - uses: actions/checkout@v4.2.2
 
@@ -25,7 +24,7 @@ jobs:
         id: cache-swift
         uses: actions/cache@v4
         with:
-          path: ${{ env.SWIFTLY_HOME_DIR }}
+          path: ${{ env.SWIFT_TOOLCHAIN_DIR }}
           key: swift-toolchain-${{ runner.os }}-${{ env.SWIFT_VERSION }}
 
       - name: Setup Swift
@@ -36,7 +35,9 @@ jobs:
 
       - name: Restore Swift PATH from cache
         if: steps.cache-swift.outputs.cache-hit == 'true'
-        run: echo "${{ env.SWIFTLY_BIN_DIR }}" >> $GITHUB_PATH
+        run: |
+          SWIFT_BIN=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name swift -type f -path "*/usr/bin/swift" | head -1)
+          echo "$(dirname "$SWIFT_BIN")" >> $GITHUB_PATH
 
       - name: Show Swift version
         run: swift --version
