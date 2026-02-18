@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/03.
 //
 
+// TODO: ダミー
 public struct Account: Equatable, Codable, Sendable {
 
     public let id: String

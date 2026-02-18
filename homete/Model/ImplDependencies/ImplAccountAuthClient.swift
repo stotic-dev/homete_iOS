@@ -47,7 +47,7 @@ extension AccountAuthClient {
             }
             try await user.delete()
         }
-    )    
+    )
 }
 
 private extension AccountAuthClient {
