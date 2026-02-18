@@ -31,13 +31,6 @@
         "identifier" : "BC1BB2672E909B8C001D168F",
         "name" : "hometeSnapshotTests"
       }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:homete.xcodeproj",
-        "identifier" : "BCC854012DB74BBF00C9A44B",
-        "name" : "hometeTests"
-      }
     }
   ],
   "version" : 1

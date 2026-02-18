@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import HometeDomain
 
 struct RegistrationAccountView: View {
     @Environment(AccountStore.self) var accountStore
@@ -86,14 +87,14 @@ private extension RegistrationAccountView {
 }
 
 #Preview("RegistrationAccountView_未入力") {
-    RegistrationAccountView(authInfo: .init(id: ""))
-        .environment(AccountStore(appDependencies: .previewValue))
+    RegistrationAccountView(authInfo: AccountAuthResult(id: ""))
+        .environment(AccountStore())
 }
 
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
         loadingState: .init(store: .init(isLoading: true)),
-        authInfo: .init(id: "Test")
+        authInfo: AccountAuthResult(id: "Test")
     )
-    .environment(AccountStore(appDependencies: .previewValue))
+    .environment(AccountStore())
 }

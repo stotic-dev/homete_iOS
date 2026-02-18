@@ -5,19 +5,20 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
+    platforms: [.iOS(.v17), .macOS(.v15)],
     products: [
         .library(
-            name: "LocalPackage",
-            targets: ["LocalPackage"]
+            name: "HometeDomain",
+            targets: ["HometeDomain"]
         ),
     ],
     targets: [
         .target(
-            name: "LocalPackage"
+            name: "HometeDomain"
         ),
         .testTarget(
-            name: "LocalPackageTests",
-            dependencies: ["LocalPackage"]
+            name: "HometeDomainTests",
+            dependencies: ["HometeDomain"]
         ),
     ]
 )

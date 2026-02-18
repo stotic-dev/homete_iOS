@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
+import HometeDomain
 import SwiftUI
 
 struct SettingView: View {
@@ -123,6 +124,6 @@ private extension SettingView {
 
 #Preview {
     SettingView()
-        .environment(AccountAuthStore(appDependencies: .previewValue))
-        .environment(AccountStore(appDependencies: .previewValue))
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
 }

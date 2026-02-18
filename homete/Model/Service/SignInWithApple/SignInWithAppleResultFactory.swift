@@ -6,6 +6,7 @@
 //
 
 import AuthenticationServices
+import HometeDomain
 
 enum SignInWithAppleResultFactory {
     static func make(

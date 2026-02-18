@@ -6,6 +6,7 @@
 //
 
 import FirebaseMessaging
+import HometeDomain
 import SwiftUI
 
 struct RootView: View {
@@ -60,13 +61,21 @@ extension RootView {
     static func make() -> some View {
         DependenciesInjectLayer {
             RootView()
-                .environment(AccountStore(appDependencies: $0))
-                .environment(AccountAuthStore(appDependencies: $0))
+                .environment(AccountStore(accountInfoClient: $0.accountInfoClient))
+                .environment(AccountAuthStore(
+                    accountAuthClient: $0.accountAuthClient,
+                    analyticsClient: $0.analyticsClient,
+                    signInWithAppleClient: $0.signInWithAppleClient,
+                    nonceGenerationClient: $0.nonceGeneratorClient
+                ))
                 .environment(HouseworkListStore(
                     houseworkClient: $0.houseworkClient,
                     cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
                 ))
-                .environment(CohabitantStore(appDependencies: $0))
+                .environment(CohabitantStore(
+                    cohabitantClient: $0.cohabitantClient,
+                    accountInfoClient: $0.accountInfoClient
+                ))
         }
     }
 }
