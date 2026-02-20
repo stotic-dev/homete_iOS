@@ -2,7 +2,7 @@ test_configuration:
   target: homete
   test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
   simulator_device: "iPhone17,3"
-  required_os: 18
+  required_os: 17
   preview_default_enabled: true
   use_grouped_snapshots: true
   sources:
