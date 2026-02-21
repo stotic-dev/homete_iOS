@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# testアクションの後のみ実行する（build/archiveの後はスキップ）
+if [ "$CI_XCODEBUILD_ACTION" != "test" ]; then
+    echo "testアクションではないためスキップします（CI_XCODEBUILD_ACTION=${CI_XCODEBUILD_ACTION}）"
+    exit 0
+fi
+
 # DANGER_ENABLEDが設定されていない場合はスキップ（Xcode Cloudの環境変数で制御）
 if [ "$DANGER_ENABLED" != "YES" ]; then
     echo "DANGER_ENABLED=YES が設定されていないためDangerをスキップします"
