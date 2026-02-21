@@ -9,6 +9,14 @@
     }
   ],
   "defaultOptions" : {
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-AppleLanguages (ja)"
+      },
+      {
+        "argument" : "isUnitTestMode"
+      }
+    ],
     "environmentVariableEntries" : [
       {
         "key" : "SNAPSHOT_ARTIFACTS",
