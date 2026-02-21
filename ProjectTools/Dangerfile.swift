@@ -75,7 +75,8 @@ for targetInfo in lintTargets {
     )
 }
 
-let resultBundlePath = "Build/test.xcresult"
+// Xcode Cloudでは CI_RESULT_BUNDLE_PATH 環境変数にxcresultのパスが入る
+let resultBundlePath = ProcessInfo.processInfo.environment["CI_RESULT_BUNDLE_PATH"] ?? "Build/test.xcresult"
 
 // Code Coverageの確認
 
