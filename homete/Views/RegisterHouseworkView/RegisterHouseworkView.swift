@@ -213,5 +213,5 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
-    .snapshot(delay: 1)
+    .prefireIgnored()
 }
