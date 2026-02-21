@@ -4,7 +4,9 @@
 name: deploy_test_flight
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - "main"
 
 env:
   # チェックアウト
