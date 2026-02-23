@@ -4,6 +4,7 @@ test_configuration:
   simulator_device: "iPhone17,3"
   required_os: 26
   preview_default_enabled: true
+  template_file_path: generateTestTemplate.stencil 
   use_grouped_snapshots: true
   sources:
     - ${PROJECT_DIR}/homete/Views

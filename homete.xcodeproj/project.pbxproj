@@ -33,6 +33,7 @@
 
 /* Begin PBXFileReference section */
 		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
+		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
@@ -106,6 +107,7 @@
 			children = (
 				04B371962F404CBF00820C62 /* LocalPackage */,
 				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
+				04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */,
 				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
