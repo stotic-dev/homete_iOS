@@ -81,6 +81,9 @@ GoogleService-Info-dev.plist
 
 Build/
 
+# Prefire generated test file
+hometeSnapshotTests/PreviewTests.generated.swift
+
 # VS Code
 
 .vscode/

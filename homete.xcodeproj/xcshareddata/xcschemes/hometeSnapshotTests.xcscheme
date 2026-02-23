@@ -30,6 +30,17 @@
                ReferencedContainer = "container:homete.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "04B783662F4996770080EFAC"
+               BuildableName = "hometeSnapshotTestsForCI.xctest"
+               BlueprintName = "hometeSnapshotTestsForCI"
+               ReferencedContainer = "container:homete.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
