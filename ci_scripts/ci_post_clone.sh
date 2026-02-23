@@ -5,11 +5,11 @@
 defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
 
 # スナップショット参照ファイルの確認
-SNAPSHOT_DIR="$CI_WORKSPACE/hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
-CI_SCRIPTS_SNAPSHOT_DIR="$CI_WORKSPACE/ci_scripts/__Snapshots__"
+SNAPSHOT_DIR="$CI_PRIMARY_REPOSITORY_PATH/hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+CI_SCRIPTS_SNAPSHOT_DIR="$CI_PRIMARY_REPOSITORY_PATH/ci_scripts/__Snapshots__"
 
 echo "=== Snapshot files check ==="
-echo "CI_WORKSPACE: $CI_WORKSPACE"
+echo "CI_PRIMARY_REPOSITORY_PATH: $CI_PRIMARY_REPOSITORY_PATH"
 
 if [ -d "$SNAPSHOT_DIR" ]; then
     FILE_COUNT=$(ls "$SNAPSHOT_DIR" | wc -l)

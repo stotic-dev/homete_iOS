@@ -34,7 +34,13 @@
     }
   },
   "testTargets" : [
-
+    {
+      "target" : {
+        "containerPath" : "container:homete.xcodeproj",
+        "identifier" : "BC1BB2672E909B8C001D168F",
+        "name" : "hometeSnapshotTests"
+      }
+    }
   ],
   "version" : 1
 }

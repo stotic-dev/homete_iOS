@@ -28,7 +28,7 @@ import SnapshotTesting
     private let deviceConfig: DeviceConfig = ViewImageConfig.tv.deviceConfig
 #endif
 
-    /// Xcode Cloud では CI_WORKSPACE 配下の ci_scripts/__Snapshots__ を参照する。
+    /// Xcode Cloud では CI_PRIMARY_REPOSITORY_PATH 配下の ci_scripts/__Snapshots__ を参照する。
     /// ローカル開発では nil を返し、verifySnapshot のデフォルト（#file 基準）を使用する。
     private var snapshotDirectoryOverride: String? {
         guard ProcessInfo.processInfo.environment["CI_XCODE_CLOUD"] == "TRUE",
