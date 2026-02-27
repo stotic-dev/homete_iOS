@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/12/27.
 //
 
+#if canImport(UIKit)
 import HometeDomain
 import SwiftUI
 
@@ -12,3 +13,4 @@ public extension EnvironmentValues {
 
     @Entry var loginContext = LoginContext(account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil))
 }
+#endif

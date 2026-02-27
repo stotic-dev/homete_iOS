@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/11/11.
 //
 
+#if canImport(UIKit)
 import SwiftUI
 
 @propertyWrapper
@@ -27,3 +28,4 @@ public struct CommonError: DynamicProperty {
         return $_content
     }
 }
+#endif

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/12/20.
 //
 
+#if canImport(UIKit)
 import SwiftUI
 
 public extension TimeZone {
@@ -23,3 +24,4 @@ public extension View {
             .environment(\.timeZone, .tokyo)
     }
 }
+#endif
