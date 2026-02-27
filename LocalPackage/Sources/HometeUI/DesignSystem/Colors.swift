@@ -12,39 +12,42 @@ import UIKit
 // MARK: - Color Definitions
 
 public extension ShapeStyle where Self == Color {
-    static var alert: Color { .adaptive(light: .p3(0xC0, 0x48, 0x48), dark: .p3(0xB7, 0x5C, 0x5D)) }
-    static var destructive: Color { .adaptive(light: .p3(0xC0, 0x48, 0x48), dark: .p3(0xB7, 0x5C, 0x5D)) }
+    static var alert: Color { .adaptive(light: .srgb(0xC04848), dark: .srgb(0xB75C5D)) }
+    static var destructive: Color { .adaptive(light: .srgb(0xC04848), dark: .srgb(0xB75C5D)) }
     static var loadingBg: Color { Color(white: 1, opacity: 0.3) }
 
-    static var onDestructive: Color { .adaptive(light: .srgb(0xF7, 0xFC, 0xF7), dark: .srgb(0xF7, 0xFC, 0xF7)) }
-    static var onPrimary1: Color { .adaptive(light: .srgb(0x0D, 0x1C, 0x0D), dark: .srgb(0xF7, 0xFC, 0xF7)) }
-    static var onPrimary2: Color { .adaptive(light: .srgb(0xF7, 0xFC, 0xF7), dark: .srgb(0xF7, 0xFC, 0xF7)) }
-    static var onPrimary3: Color { .adaptive(light: .srgb(0x0D, 0x1C, 0x0D), dark: .srgb(0xF7, 0xFC, 0xF7)) }
-    static var onSubSurface: Color { .adaptive(light: .srgb(0x0D, 0x1C, 0x0D), dark: .srgb(0xF7, 0xFC, 0xF7)) }
-    static var onSurface: Color { .adaptive(light: .srgb(0x0D, 0x1C, 0x0D), dark: .srgb(0xF7, 0xFC, 0xF7)) }
+    static var onDestructive: Color { .adaptive(light: .srgb(0xF7FCF7), dark: .srgb(0xF7FCF7)) }
+    static var onPrimary1: Color { .adaptive(light: .srgb(0x0D1C0D), dark: .srgb(0xF7FCF7)) }
+    static var onPrimary2: Color { .adaptive(light: .srgb(0xF7FCF7), dark: .srgb(0xF7FCF7)) }
+    static var onPrimary3: Color { .adaptive(light: .srgb(0x0D1C0D), dark: .srgb(0xF7FCF7)) }
+    static var onSubSurface: Color { .adaptive(light: .srgb(0x0D1C0D), dark: .srgb(0xF7FCF7)) }
+    static var onSurface: Color { .adaptive(light: .srgb(0x0D1C0D), dark: .srgb(0xF7FCF7)) }
 
-    static var primary1: Color { .adaptive(light: .srgb(0x47, 0xEB, 0x7D), dark: .p3(0x2A, 0x51, 0x2F)) }
-    static var primary2: Color { .adaptive(light: .srgb(0x4D, 0x99, 0x4D), dark: .p3(0x20, 0x32, 0x1C)) }
-    static var primary3: Color { .adaptive(light: .srgb(0xE8, 0xF2, 0xE8), dark: .p3(0x63, 0x65, 0x62)) }
-    static var subSurface: Color { .adaptive(light: .srgb(0xFE, 0xFF, 0xFF), dark: .p3(0x44, 0x44, 0x44)) }
-    static var surface: Color { .adaptive(light: .srgb(0xF7, 0xFA, 0xF7), dark: .srgb(0x0D, 0x1C, 0x0D)) }
+    static var primary1: Color { .adaptive(light: .srgb(0x47EB7D), dark: .srgb(0x2A512F)) }
+    static var primary2: Color { .adaptive(light: .srgb(0x4D994D), dark: .srgb(0x20321C)) }
+    static var primary3: Color { .adaptive(light: .srgb(0xE8F2E8), dark: .srgb(0x636562)) }
+    static var subSurface: Color { .adaptive(light: .srgb(0xFEFFFF), dark: .srgb(0x444444)) }
+    static var surface: Color { .adaptive(light: .srgb(0xF7FAF7), dark: .srgb(0x0D1C0D)) }
 }
 
 // MARK: - Private Helpers
 
 private extension Color {
+    /// ライト/ダークモードで色を切り替える `Color` を返す。
     static func adaptive(light: UIColor, dark: UIColor) -> Color {
         Color(UIColor { $0.userInterfaceStyle == .dark ? dark : light })
     }
 }
 
 private extension UIColor {
-    static func srgb(_ r: Int, _ g: Int, _ b: Int, alpha: CGFloat = 1) -> UIColor {
-        UIColor(red: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: alpha)
-    }
-
-    static func p3(_ r: Int, _ g: Int, _ b: Int, alpha: CGFloat = 1) -> UIColor {
-        UIColor(displayP3Red: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: alpha)
+    /// sRGB色空間で `0xRRGGBB` 形式の16進数から `UIColor` を生成する。
+    static func srgb(_ hex: Int, alpha: CGFloat = 1) -> UIColor {
+        .init(
+            red: CGFloat((hex >> 16) & 0xFF) / 255,
+            green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255,
+            alpha: alpha
+        )
     }
 }
 
