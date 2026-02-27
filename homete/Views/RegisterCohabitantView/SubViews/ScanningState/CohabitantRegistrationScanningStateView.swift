@@ -5,8 +5,9 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
-import MultipeerConnectivity
 import HometeDomain
+import HometeUI
+import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationScanningStateView: View {

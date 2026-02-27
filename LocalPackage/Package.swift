@@ -11,10 +11,18 @@ let package = Package(
             name: "HometeDomain",
             targets: ["HometeDomain"]
         ),
+        .library(
+            name: "HometeUI",
+            targets: ["HometeUI"]
+        ),
     ],
     targets: [
         .target(
             name: "HometeDomain"
+        ),
+        .target(
+            name: "HometeUI",
+            dependencies: ["HometeDomain"]
         ),
         .testTarget(
             name: "HometeDomainTests",

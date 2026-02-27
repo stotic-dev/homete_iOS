@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
+import HometeUI
 import SwiftUI
 
 struct CohabitantRegistrationInitialStateView: View {

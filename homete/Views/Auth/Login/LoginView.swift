@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import HometeUI
 import SwiftUI
 
 struct LoginView: View {
@@ -18,7 +19,7 @@ struct LoginView: View {
         VStack(spacing: .space16) {
             Text(Constants.appName)
                 .font(with: .headLineM)
-            Text("ようこそ!")
+            Text("ようこそ!") 
                 .font(with: .headLineL)
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)

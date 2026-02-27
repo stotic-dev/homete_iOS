@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
+		04D371992F40526F00820C62 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 04D371982F40526F00820C62 /* HometeUI */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
 		BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF7112E7863B500DC31CA /* FirebaseFunctions */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
@@ -33,7 +34,7 @@
 
 /* Begin PBXFileReference section */
 		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
-		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
+		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
@@ -88,6 +89,7 @@
 				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
+				04D371992F40526F00820C62 /* HometeUI in Frameworks */,
 				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -182,6 +184,7 @@
 				BC0CF7112E7863B500DC31CA /* FirebaseFunctions */,
 				BCADFE1C2EACB62E00DF4AAA /* Prefire */,
 				04B371982F40526F00820C62 /* HometeDomain */,
+				04D371982F40526F00820C62 /* HometeUI */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -675,6 +678,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = "plugin:PrefireTestsPlugin";
+		};
+		04D371982F40526F00820C62 /* HometeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeUI;
 		};
 		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
