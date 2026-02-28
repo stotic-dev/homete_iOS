@@ -60,6 +60,7 @@ jobs:
         run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 
       - name: Run Danger
-        run: swift run --package-path ProjectTools danger-swift ci --dangerfile ProjectTools/Dangerfile.swift --cwd .
+        working-directory: ProjectTools
+        run: swift run danger-swift ci --dangerfile Dangerfile.swift --cwd ..
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

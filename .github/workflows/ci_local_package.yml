@@ -74,6 +74,7 @@ jobs:
 
       - name: Run Danger (Coverage)
         if: github.event_name == 'pull_request'
-        run: swift run --package-path ProjectTools danger-swift ci --dangerfile ProjectTools/DangerfileCoverage.swift --cwd .
+        working-directory: ProjectTools
+        run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd ..
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
