@@ -1,0 +1,65 @@
+name: danger
+
+on:
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  danger:
+    runs-on: ubuntu-latest
+    env:
+      SWIFT_VERSION: "6.2"
+      SWIFT_TOOLCHAIN_DIR: /opt/hostedtoolcache/swift-Ubuntu
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Cache Swift toolchain
+        id: cache-swift
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SWIFT_TOOLCHAIN_DIR }}
+          key: swift-toolchain-${{ runner.os }}-${{ env.SWIFT_VERSION }}
+
+      - name: Setup Swift
+        if: steps.cache-swift.outputs.cache-hit != 'true'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ env.SWIFT_VERSION }}
+
+      - name: Restore Swift PATH from cache
+        if: steps.cache-swift.outputs.cache-hit == 'true'
+        run: |
+          SWIFT_BIN=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name swift -type f -path "*/usr/bin/swift" | head -1)
+          echo "$(dirname "$SWIFT_BIN")" >> $GITHUB_PATH
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Danger
+        run: npm install -g danger
+
+      - name: Cache ProjectTools build
+        uses: actions/cache@v4
+        with:
+          path: ProjectTools/.build
+          key: project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('ProjectTools/Package.resolved') }}
+          restore-keys: |
+            project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+
+      - name: Build ProjectTools
+        run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
+
+      - name: Run Danger
+        run: swift run --package-path ProjectTools danger-swift ci --dangerfile ProjectTools/Dangerfile.swift --cwd .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
