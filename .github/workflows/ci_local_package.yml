@@ -52,7 +52,7 @@ jobs:
       - name: Regenerate coverage JSON for production targets only
         if: github.event_name == 'pull_request'
         run: |
-          BINARY=$(find LocalPackage/.build/debug -maxdepth 1 -name "*PackageTests" -type f | head -1)
+          BINARY=$(find LocalPackage/.build/debug -name "*PackageTests.xctest" -type f | head -1)
           PROFDATA=$(find LocalPackage/.build/debug/codecov -name "*.profdata" | head -1)
           JSON_PATH=$(find LocalPackage/.build/debug/codecov -name "*.json" | head -1)
           LLVM_COV=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name llvm-cov -type f | head -1)
