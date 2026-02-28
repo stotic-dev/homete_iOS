@@ -58,7 +58,6 @@ jobs:
           LLVM_COV=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name llvm-cov -type f | head -1)
           "$LLVM_COV" export "$BINARY" \
             -instr-profile="$PROFDATA" \
-            -format=json \
             -ignore-filename-regex=".*Tests.*" \
             > "$JSON_PATH"
 
