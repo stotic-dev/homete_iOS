@@ -49,18 +49,6 @@ jobs:
       - name: Run tests with coverage
         run: swift test --package-path LocalPackage --enable-code-coverage
 
-      - name: Regenerate coverage JSON for production targets only
-        if: github.event_name == 'pull_request'
-        run: |
-          BINARY=$(find LocalPackage/.build/debug -name "*PackageTests.xctest" -type f | head -1)
-          PROFDATA=$(find LocalPackage/.build/debug/codecov -name "*.profdata" | head -1)
-          JSON_PATH=$(find LocalPackage/.build/debug/codecov -name "*.json" | head -1)
-          LLVM_COV=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name llvm-cov -type f | head -1)
-          "$LLVM_COV" export "$BINARY" \
-            -instr-profile="$PROFDATA" \
-            -ignore-filename-regex=".*Tests.*" \
-            > "$JSON_PATH"
-
       - name: Setup Node.js
         if: github.event_name == 'pull_request'
         uses: actions/setup-node@v4
