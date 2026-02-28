@@ -77,4 +77,4 @@ jobs:
         working-directory: ProjectTools
         run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd .. --id "danger-coverage"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
