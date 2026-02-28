@@ -47,7 +47,11 @@ homete（メインターゲット）/
 
 ```mermaid
 graph TD
-    homete["homete\n（メインターゲット）"]
+    subgraph ExternalLibs["外部ライブラリ（サードパーティ）"]
+        Firebase["Firebase SDK\n（Auth / Firestore / Messaging）"]
+    end
+
+    homete["homete\n（メインターゲット）\nClient liveValue / Services / RouteResolver"]
 
     subgraph Features["Feature Modules"]
         AuthFeature
@@ -57,12 +61,14 @@ graph TD
     end
 
     HometeUI["HometeUI\n（デザインシステム・共通 UI）"]
-    HometeDomain["HometeDomain\n（ドメインモデル・Client・Store・AppRoute）"]
+    HometeDomain["HometeDomain\n（ドメインモデル・Client Protocol・Store・AppRoute）"]
 
-    homete --> AuthFeature
-    homete --> HouseworkFeature
-    homete --> SettingFeature
-    homete --> HomeFeature
+    Firebase --> homete
+
+    homete -->|DI \n Client liveValue| AuthFeature
+    homete -->|DI \n Client liveValue| HouseworkFeature
+    homete -->|DI \n Client liveValue| SettingFeature
+    homete -->|DI \n Client liveValue| HomeFeature
     homete --> HometeUI
     homete --> HometeDomain
 
@@ -79,7 +85,10 @@ graph TD
     HometeUI --> HometeDomain
 ```
 
-> **ルール:** Feature モジュール間の直接依存は禁止。Feature 間の画面遷移は必ず RouteResolver パターンを使用する。
+> **ルール:**
+> - 外部ライブラリへの依存はメインターゲットのみが持つ。Feature モジュールは外部ライブラリに直接依存しない
+> - メインターゲットは Client の `liveValue` を実装し、Environment 経由で各 Feature に DI する
+> - Feature モジュール間の直接依存は禁止。Feature 間の画面遷移は必ず RouteResolver パターンを使用する
 
 ## Feature 間の画面遷移（RouteResolver パターン）
 
