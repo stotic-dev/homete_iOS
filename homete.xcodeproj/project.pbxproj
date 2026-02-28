@@ -14,7 +14,6 @@
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
-		BC4703642E9CF66E006CC530 /* CI.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC4703632E9CF66D006CC530 /* CI.xctestplan */; };
 		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 		BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BCADFE1C2EACB62E00DF4AAA /* Prefire */; };
@@ -34,15 +33,22 @@
 
 /* Begin PBXFileReference section */
 		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
+		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
-		BC4703632E9CF66D006CC530 /* CI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CI.xctestplan; sourceTree = "<group>"; };
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
 		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		04B7923F2F525C2D0080EFAC /* Exceptions for "hometeSnapshotTests" folder in "hometeSnapshotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BC1BB2672E909B8C001D168F /* hometeSnapshotTests */;
+		};
 		BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -55,6 +61,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BC1BB2692E909B8C001D168F /* hometeSnapshotTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04B7923F2F525C2D0080EFAC /* Exceptions for "hometeSnapshotTests" folder in "hometeSnapshotTests" target */,
+			);
 			path = hometeSnapshotTests;
 			sourceTree = "<group>";
 		};
@@ -107,8 +116,8 @@
 			isa = PBXGroup;
 			children = (
 				04B371962F404CBF00820C62 /* LocalPackage */,
-				BC4703632E9CF66D006CC530 /* CI.xctestplan */,
 				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
+				04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */,
 				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
@@ -137,11 +146,12 @@
 				BC1BB2642E909B8C001D168F /* Sources */,
 				BC1BB2652E909B8C001D168F /* Frameworks */,
 				BC1BB2662E909B8C001D168F /* Resources */,
+				04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */,
+				04B783712F4996860080EFAC /* PBXTargetDependency */,
 				BC1BB26D2E909B8C001D168F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -195,7 +205,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					BC1BB2672E909B8C001D168F = {
@@ -247,7 +257,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */,
-				BC4703642E9CF66E006CC530 /* CI.xctestplan in Resources */,
 				BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -255,6 +264,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Set UIDesignRequiresCompatibility";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/libexec/PlistBuddy -c \"Set :UIDesignRequiresCompatibility YES\" \"${BUILT_PRODUCTS_DIR}/homete.app/Info.plist\"\n";
+		};
 		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -318,14 +346,14 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		04B783712F4996860080EFAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 04B783702F4996860080EFAC /* PrefireTestsPlugin */;
+		};
 		BC1BB26D2E909B8C001D168F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
 			targetProxy = BC1BB26C2E909B8C001D168F /* PBXContainerItemProxy */;
-		};
-		BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */;
 		};
 /* End PBXTargetDependency section */
 
@@ -337,7 +365,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
@@ -363,7 +393,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
@@ -673,6 +705,11 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeDomain;
 		};
+		04B783702F4996860080EFAC /* PrefireTestsPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
+			productName = "plugin:PrefireTestsPlugin";
+		};
 		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
@@ -697,11 +734,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = Prefire;
-		};
-		BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
-			productName = "plugin:PrefireTestsPlugin";
 		};
 		BC47E6A52E47240F00308562 /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;

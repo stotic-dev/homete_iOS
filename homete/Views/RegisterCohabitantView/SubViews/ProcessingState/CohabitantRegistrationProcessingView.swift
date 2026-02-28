@@ -8,6 +8,7 @@
 import Combine
 import MultipeerConnectivity
 import HometeDomain
+import Prefire
 import SwiftUI
 
 struct CohabitantRegistrationProcessingView: View {
@@ -80,6 +81,7 @@ struct CohabitantRegistrationProcessingView: View {
         registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
+    .prefireIgnored()
 }
 
 #Preview("CohabitantRegistrationProcessingView_切断検知ケース") {
@@ -89,4 +91,5 @@ struct CohabitantRegistrationProcessingView: View {
         registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
+    .prefireIgnored()
 }

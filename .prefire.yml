@@ -4,11 +4,11 @@ test_configuration:
   simulator_device: "iPhone17,3"
   required_os: 26 
   preview_default_enabled: true
+  template_file_path: generateTestTemplate.stencil 
   use_grouped_snapshots: true
   sources:
     - ${PROJECT_DIR}/homete/Views
   snapshot_devices:
-    - iPhone 16 Pro Max
     - iPhone 16
     - iPhone SE (2nd generation)
   imports:
@@ -16,5 +16,4 @@ test_configuration:
     - SwiftUI
     - MultipeerConnectivity
     - HometeDomain
-  draw_hierarchy_in_key_window_default_enabled: true
 

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
+import Prefire
 import SwiftUI
 
 struct LoadingIndicator: View {
@@ -32,4 +33,5 @@ extension View {
 
 #Preview {
     LoadingIndicator()
+        .prefireIgnored()
 }

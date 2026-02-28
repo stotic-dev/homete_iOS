@@ -1,14 +1,8 @@
-name: local_package_test
+name: danger
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "LocalPackage/**"
   pull_request:
     branches: ["**"]
-    paths:
-      - "LocalPackage/**"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  danger:
     runs-on: ubuntu-latest
     env:
       SWIFT_VERSION: "6.2"
@@ -46,21 +40,15 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Run tests with coverage
-        run: swift test --package-path LocalPackage --enable-code-coverage
-
       - name: Setup Node.js
-        if: github.event_name == 'pull_request'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Danger
-        if: github.event_name == 'pull_request'
         run: npm install -g danger
 
       - name: Cache ProjectTools build
-        if: github.event_name == 'pull_request'
         uses: actions/cache@v4
         with:
           path: ProjectTools/.build
@@ -69,12 +57,10 @@ jobs:
             project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
 
       - name: Build ProjectTools
-        if: github.event_name == 'pull_request'
         run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 
-      - name: Run Danger (Coverage)
-        if: github.event_name == 'pull_request'
+      - name: Run Danger
         working-directory: ProjectTools
-        run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd ..
+        run: swift run danger-swift ci --dangerfile Dangerfile.swift --cwd ..
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

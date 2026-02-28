@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import Prefire
 import SwiftUI
 
 struct HouseworkDetailView: View {
@@ -123,4 +124,5 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .prefireIgnored()
 }

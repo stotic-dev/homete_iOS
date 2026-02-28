@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "2BE647CF-9924-49FA-B2F4-B848628CC8AD",
+      "id" : "089CBDC1-94A2-424B-999D-B47631B502B4",
       "name" : "Configuration 1",
       "options" : {
 
@@ -19,18 +19,19 @@
     ],
     "environmentVariableEntries" : [
       {
-        "key" : "SNAPSHOT_ARTIFACTS",
-        "value" : "\/Users\/runner\/work\/homete_iOS\/homete_iOS\/Build\/VRT\/SnapshotsFailures"
+        "key" : "CI_XCODE_CLOUD",
+        "value" : "$(CI_XCODE_CLOUD)"
+      },
+      {
+        "key" : "CI_PRIMARY_REPOSITORY_PATH",
+        "value" : "$(CI_PRIMARY_REPOSITORY_PATH)"
       }
     ],
-    "language" : "ja",
-    "locationScenario" : {
-      "identifier" : "Tokyo, Japan",
-      "referenceType" : "built-in"
-    },
-    "region" : "JP",
-    "testTimeoutsEnabled" : true,
-    "timeZone" : "Asia\/Tokyo"
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:homete.xcodeproj",
+      "identifier" : "BCC853F42DB74BBC00C9A44B",
+      "name" : "homete"
+    }
   },
   "testTargets" : [
     {

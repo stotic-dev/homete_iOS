@@ -93,7 +93,6 @@ private extension RegistrationAccountView {
 
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
-        loadingState: .init(store: .init(isLoading: true)),
         authInfo: AccountAuthResult(id: "Test")
     )
     .environment(AccountStore())
