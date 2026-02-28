@@ -20,10 +20,13 @@ fi
 
 echo "Dangerを実行します (PR #${CI_PULL_REQUEST_NUMBER})"
 
+# Node.js / npmをインストール（Xcode Cloud環境にはデフォルトでnpmがない）
+brew install node
+
 # DangerJS（danger-swiftが依存）をインストール
 npm install -g danger
 
 # ProjectToolsディレクトリでビルドして実行（ci.ymlと同じ方法）
-cd "$CI_WORKSPACE/ProjectTools"
+cd "$CI_PRIMARY_REPOSITORY_PATH/ProjectTools"
 swift build
 swift run danger-swift ci --cwd ../
