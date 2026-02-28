@@ -8,6 +8,6 @@ let danger = Danger()
 // spmCoverageFolder にLocalPackage相対パスを指定
 // SPMCoverageParser は currentDirectoryPath + "/" + spmCoverageFolder でパス解決する
 Coverage.spmCoverage(
-    spmCoverageFolder: "../LocalPackage/.build/debug/codecov",
+    spmCoverageFolder: "LocalPackage/.build/debug/codecov",
     minimumCoverage: .zero
 )
