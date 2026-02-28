@@ -63,7 +63,7 @@ graph TD
     HometeUI["HometeUI\n（デザインシステム・共通 UI）"]
     HometeDomain["HometeDomain\n（ドメインモデル・Client Protocol・Store・AppRoute）"]
 
-    Firebase --> homete
+    homete --> Firebase
 
     homete -->|DI \n Client liveValue| AuthFeature
     homete -->|DI \n Client liveValue| HouseworkFeature
