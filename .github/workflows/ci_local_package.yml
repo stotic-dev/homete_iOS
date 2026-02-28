@@ -55,7 +55,8 @@ jobs:
           BINARY=$(find LocalPackage/.build/debug -maxdepth 1 -name "*PackageTests" -type f | head -1)
           PROFDATA=$(find LocalPackage/.build/debug/codecov -name "*.profdata" | head -1)
           JSON_PATH=$(find LocalPackage/.build/debug/codecov -name "*.json" | head -1)
-          llvm-cov export "$BINARY" \
+          LLVM_COV=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name llvm-cov -type f | head -1)
+          "$LLVM_COV" export "$BINARY" \
             -instr-profile="$PROFDATA" \
             -format=json \
             -ignore-filename-regex=".*Tests.*" \
