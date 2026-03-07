@@ -245,15 +245,6 @@
       }
     },
     {
-      "identity" : "swiftlint",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/realm/SwiftLint.git",
-      "state" : {
-        "revision" : "625792423014cc49b0a1e5a1a5c0d6b8b3de10f9",
-        "version" : "0.59.1"
-      }
-    },
-    {
       "identity" : "swiftytexttable",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scottrhoyt/SwiftyTextTable.git",
