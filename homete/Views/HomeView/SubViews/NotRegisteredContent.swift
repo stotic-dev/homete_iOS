@@ -5,8 +5,9 @@
 //  Created by 佐藤汰一 on 2025/09/04.
 //
 
-import SwiftUI
+import HometeResources
 import HometeUI
+import SwiftUI
 
 struct NotRegisteredContent: View {
     
@@ -17,7 +18,7 @@ struct NotRegisteredContent: View {
             Spacer()
                 .frame(height: .space24)
             VStack(spacing: .space24) {
-                Image(.suggestPartner)
+                Image(.suggest_partner)
                     .resizable()
                     .frame(maxWidth: .infinity)
                     .aspectRatio(contentMode: .fit)

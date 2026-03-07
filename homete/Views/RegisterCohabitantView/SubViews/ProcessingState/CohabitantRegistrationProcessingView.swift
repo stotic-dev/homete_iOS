@@ -7,6 +7,7 @@
 
 import Combine
 import HometeDomain
+import HometeResources
 import HometeUI
 import MultipeerConnectivity
 import Prefire
