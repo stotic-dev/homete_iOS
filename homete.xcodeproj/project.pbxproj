@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 04185D2C2F5BF84F00ECBEED /* HometeResources */; };
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
 		04D371992F40526F00820C62 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 04D371982F40526F00820C62 /* HometeUI */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
@@ -88,6 +89,7 @@
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
 				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
+				04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */,
 				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
 				04D371992F40526F00820C62 /* HometeUI in Frameworks */,
 				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
@@ -185,6 +187,7 @@
 				BCADFE1C2EACB62E00DF4AAA /* Prefire */,
 				04B371982F40526F00820C62 /* HometeDomain */,
 				04D371982F40526F00820C62 /* HometeUI */,
+				04185D2C2F5BF84F00ECBEED /* HometeResources */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -516,6 +519,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = homete/hometeDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -562,6 +567,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = homete/hometeRelease.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
@@ -670,6 +677,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		04185D2C2F5BF84F00ECBEED /* HometeResources */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeResources;
+		};
 		04B371982F40526F00820C62 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeDomain;
