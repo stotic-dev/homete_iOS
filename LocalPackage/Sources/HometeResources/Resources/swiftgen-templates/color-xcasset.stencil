@@ -1,0 +1,97 @@
+// swiftlint:disable all
+// Generated using SwiftGen — https://github.com/SwiftGen/SwiftGen
+
+{% if catalogs %}
+#if canImport(SwiftUI)
+import SwiftUI
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
+
+// MARK: - Colors
+
+{% macro casesBlock assets %}
+  {%- for asset in assets %}
+    {%- if asset.type == "color" %}
+  public static let {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} = HometeColor(name: "{{ asset.value }}")
+    {%- elif asset.items and asset.isNamespaced == "true" %}
+  public enum {{ asset.name|swiftIdentifier:"pretty"|escapeReservedKeywords }} {
+    {% filter indent:2," ",true %}{% call casesBlock asset.items %}{% endfilter %}
+  }
+    {%- elif asset.items %}
+    {%- call casesBlock asset.items %}
+    {%- endif %}
+  {%- endfor %}
+{% endmacro %}
+public extension HometeColor {
+{% if catalogs.count > 1 %}
+  {% for catalog in catalogs %}
+  public enum {{ catalog.name|swiftIdentifier:"pretty"|escapeReservedKeywords }} {
+    {% filter indent:2," ",true %}{% call casesBlock catalog.assets %}{% endfilter %}
+  }
+  {% endfor %}
+{% else %}
+  {%- call casesBlock catalogs.first.assets %}
+{% endif %}
+}
+
+// MARK: - Implementation Details
+
+public struct HometeColor: Hashable, Sendable {
+  public fileprivate(set) var name: String
+}
+
+#if canImport(SwiftUI)
+@available(iOS 11.0, tvOS 11.0, watchOS 4.0, macOS 10.13, *)
+public extension SwiftUI.Color {
+  init(_ hometeColor: HometeColor) {
+    self.init(hometeColor.name, bundle: .module)
+  }
+}
+#endif
+
+#if canImport(UIKit)
+@available(iOS 11.0, tvOS 11.0, watchOS 4.0, *)
+public extension UIColor {
+  convenience init(_ hometeColor: HometeColor) {
+    self.init(named: hometeColor.name, in: .module, compatibleWith: nil)!
+  }
+}
+#endif
+
+// MARK: - SwiftUI ShapeStyle shortcuts
+
+{% macro shapeStyleCases assets %}
+public extension ShapeStyle where Self == Color {
+  {%- for asset in assets %}
+    {%- if asset.type == "color" %}
+  @MainActor static var {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} : Color { .init("{{ asset.value }}", bundle: .module) }
+    {%- elif asset.items %}
+      {%- call shapeStyleCases asset.items %}
+    {%- endif %}
+  {%- endfor %}
+}
+{% endmacro %}
+
+{% if catalogs.count > 1 %}
+  {%- for catalog in catalogs %}
+    {%- call shapeStyleCases catalog.assets %}
+  {%- endfor %}
+{% else %}
+  {%- call shapeStyleCases catalogs.first.assets %}
+{% endif %}
+
+{% else %}
+// No colors found
+{% endif %}
+
+{% macro casesBlock assets %}
+public extension ShapeStyle where Self == Color {
+  {%- for asset in assets %}
+    {%- if asset.type == "color" %}
+    static let {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} = Color("{{ asset.value }}", bundle: .module)
+    {%- endif %}
+  {%- endfor %}
+}
+{% endmacro %}

@@ -15,6 +15,13 @@ let package = Package(
             name: "HometeUI",
             targets: ["HometeUI"]
         ),
+        .library(
+            name: "HometeResources",
+            targets: ["HometeResources"]
+        ),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2")
     ],
     targets: [
         .target(
@@ -22,7 +29,16 @@ let package = Package(
         ),
         .target(
             name: "HometeUI",
-            dependencies: ["HometeDomain"]
+            dependencies: [
+                "HometeDomain",
+                "HometeResources",
+            ]
+        ),
+        .target(
+            name: "HometeResources",
+            plugins: [
+                .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin")
+            ]
         ),
         .testTarget(
             name: "HometeDomainTests",

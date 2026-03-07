@@ -7,6 +7,7 @@
 
 #if canImport(UIKit)
 import SwiftUI
+import HometeResources
 
 public struct PointLabel: View {
 

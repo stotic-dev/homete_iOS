@@ -1,0 +1,9 @@
+input_dir: Resources/
+output_dir: ${DERIVED_SOURCES_DIR}
+
+xcassets:
+  inputs:
+    - Color.xcassets
+  outputs:
+    templatePath: Resources/swiftgen-templates/color-xcasset.stencil
+    output: Assets.swift
