@@ -23,9 +23,15 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2")
     ],
+    dependencies: [
+        .package(path: "../ProjectTools"),
+    ],
     targets: [
         .target(
-            name: "HometeDomain"
+            name: "HometeDomain",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
         ),
         .target(
             name: "HometeUI",
@@ -42,7 +48,10 @@ let package = Package(
         ),
         .testTarget(
             name: "HometeDomainTests",
-            dependencies: ["HometeDomain"]
+            dependencies: ["HometeDomain"],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
         ),
     ]
 )

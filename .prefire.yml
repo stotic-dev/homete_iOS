@@ -20,5 +20,5 @@ test_configuration:
     - HometeResources
   - testable_imports:
     - HometeUI
-  - draw_hierarchy_in_key_window_default_enabled: true
+
 

@@ -1,5 +1,4 @@
 import Danger
-import DangerSwiftCoverage
 
 let danger = Danger()
 
@@ -59,7 +58,7 @@ if let github = danger.github {
 // SwiftLintのレビュー
 
 let swiftLintPath = SwiftLint.SwiftlintPath.bin(
-    "ProjectTools/.build/artifacts/swiftlint/SwiftLintBinary/SwiftLintBinary.artifactbundle/swiftlint-0.59.1-macos/bin/swiftlint"
+    "../ProjectTools/.build/artifacts/projecttools/SwiftLintPluginBinary/SwiftLintBinary.artifactbundle/swiftlint-0.59.1-linux-gnu/bin/swiftlint"
 )
 let lintTargets: [SwiftLintTarget] = [
     .init(targetPath: "homete"),
@@ -74,16 +73,6 @@ for targetInfo in lintTargets {
         swiftlintPath: swiftLintPath
     )
 }
-
-// Xcode Cloudでは CI_RESULT_BUNDLE_PATH 環境変数にxcresultのパスが入る
-let resultBundlePath = ProcessInfo.processInfo.environment["CI_RESULT_BUNDLE_PATH"] ?? "Build/test.xcresult"
-
-// Code Coverageの確認
-
-Coverage.xcodeBuildCoverage(
-    .xcresultBundle(resultBundlePath),
-    minimumCoverage: .zero
-)
 
 // MARK: - Definition
 
