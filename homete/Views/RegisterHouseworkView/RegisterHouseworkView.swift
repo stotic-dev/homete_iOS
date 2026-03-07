@@ -7,6 +7,7 @@
 
 import FirebaseFunctions
 import HometeDomain
+import HometeResources
 import HometeUI
 import Prefire
 import SwiftUI

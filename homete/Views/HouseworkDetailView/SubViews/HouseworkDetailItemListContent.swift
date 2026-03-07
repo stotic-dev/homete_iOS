@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import HometeResources
 import HometeUI
 import SwiftUI
 

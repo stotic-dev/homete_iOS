@@ -6,6 +6,7 @@
 //
 
 import HometeUI
+import HometeResources
 import SwiftUI
 
 struct HouseworkPointDashboardContent: View {
