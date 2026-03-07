@@ -12,13 +12,22 @@ let package = Package(
             targets: ["HometeDomain"]
         ),
     ],
+    dependencies: [
+        .package(path: "../ProjectTools"),
+    ],
     targets: [
         .target(
-            name: "HometeDomain"
+            name: "HometeDomain",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
         ),
         .testTarget(
             name: "HometeDomainTests",
-            dependencies: ["HometeDomain"]
+            dependencies: ["HometeDomain"],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
         ),
     ]
 )
