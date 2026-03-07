@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import HometeUI
 import SwiftUI
 
 struct HouseworkDetailActionContent: View {

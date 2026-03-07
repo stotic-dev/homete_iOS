@@ -1,19 +1,24 @@
 test_configuration:
-  target: homete
-  test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
-  simulator_device: "iPhone17,3"
-  required_os: 26 
-  preview_default_enabled: true
-  template_file_path: generateTestTemplate.stencil 
-  use_grouped_snapshots: true
-  sources:
+  - target: homete
+  - test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
+  - simulator_device: "iPhone17,3"
+  - required_os: 26
+  - preview_default_enabled: true
+  - template_file_path: generateTestTemplate.stencil 
+  - use_grouped_snapshots: true
+  - sources:
     - ${PROJECT_DIR}/homete/Views
-  snapshot_devices:
+    - ${PROJECT_DIR}/LocalPackage/Sources
+  - snapshot_devices:
     - iPhone 16
     - iPhone SE (2nd generation)
-  imports:
+  - imports:
     - UIKit
     - SwiftUI
     - MultipeerConnectivity
     - HometeDomain
+    - HometeResources
+  - testable_imports:
+    - HometeUI
+
 

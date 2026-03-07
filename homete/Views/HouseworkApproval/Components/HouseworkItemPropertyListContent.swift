@@ -6,6 +6,8 @@
 //
 
 import HometeDomain
+import HometeResources
+import HometeUI
 import SwiftUI
 
 struct HouseworkItemPropertyListContent: View {

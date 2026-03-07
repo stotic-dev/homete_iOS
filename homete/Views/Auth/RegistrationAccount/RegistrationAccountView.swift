@@ -5,8 +5,10 @@
 //  Created by 佐藤汰一 on 2025/12/20.
 //
 
-import SwiftUI
 import HometeDomain
+import HometeResources
+import HometeUI
+import SwiftUI
 
 struct RegistrationAccountView: View {
     @Environment(AccountStore.self) var accountStore

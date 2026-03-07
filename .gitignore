@@ -87,3 +87,6 @@ hometeSnapshotTests/PreviewTests.generated.swift
 # VS Code
 
 .vscode/
+
+# Claude Code
+.claude/settings.local.json

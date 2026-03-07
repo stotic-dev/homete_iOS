@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/11/13.
 //
 
+import HometeUI
 import SwiftUI
 
 struct HouseworkDetailItemRow<Content: View>: View {

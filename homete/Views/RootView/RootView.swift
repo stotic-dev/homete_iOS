@@ -7,6 +7,7 @@
 
 import FirebaseMessaging
 import HometeDomain
+import HometeUI
 import SwiftUI
 
 struct RootView: View {
