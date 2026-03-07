@@ -59,8 +59,19 @@ jobs:
       - name: Build ProjectTools
         run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 
+      - name: Cache DangerTools build
+        uses: actions/cache@v4
+        with:
+          path: DangerTools/.build
+          key: danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('DangerTools/Package.resolved') }}
+          restore-keys: |
+            danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+
+      - name: Build DangerTools
+        run: swift build --package-path DangerTools --scratch-path DangerTools/.build
+
       - name: Run Danger
-        working-directory: ProjectTools
+        working-directory: DangerTools
         run: swift run danger-swift ci --dangerfile Dangerfile.swift --cwd .. --id "danger"
         env:
           GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}

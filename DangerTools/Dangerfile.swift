@@ -58,7 +58,7 @@ if let github = danger.github {
 // SwiftLintのレビュー
 
 let swiftLintPath = SwiftLint.SwiftlintPath.bin(
-    ".build/artifacts/swiftlint/SwiftLintBinary/SwiftLintBinary.artifactbundle/swiftlint-0.59.1-linux-gnu/bin/swiftlint"
+    "../ProjectTools/.build/artifacts/projecttools/SwiftLintPluginBinary/SwiftLintBinary.artifactbundle/swiftlint-0.59.1-linux-gnu/bin/swiftlint"
 )
 let lintTargets: [SwiftLintTarget] = [
     .init(targetPath: "homete"),

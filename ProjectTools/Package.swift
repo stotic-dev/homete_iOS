@@ -7,27 +7,18 @@ let package = Package(
     name: "ProjectTools",
     platforms: [.macOS(.v10_15)],
     products: [
-        .library(
-            name: "DangerDeps",
-            type: .dynamic,
-            targets: ["DangerDeps"]
-        ),
         .plugin(
             name: "SwiftLintPlugin",
             targets: ["SwiftLintPlugin"]
         ),
-    ],
-    dependencies: [
-        .package(url: "https://github.com/danger/swift.git", exact: "3.22.0"),
-        .package(url: "https://github.com/f-meloni/danger-swift-coverage", from: "1.2.1"),
+        .library(
+            name: "ProjectToolsDummy",
+            targets: ["ProjectToolsDummy"]
+        ),
     ],
     targets: [
         .target(
-            name: "DangerDeps",
-            dependencies: [
-                .product(name: "Danger", package: "swift"),
-                .product(name: "DangerSwiftCoverage", package: "danger-swift-coverage"),
-            ]
+            name: "ProjectToolsDummy"
         ),
         .plugin(
             name: "SwiftLintPlugin",
