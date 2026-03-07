@@ -33,11 +33,11 @@ let package = Package(
             name: "SwiftLintPlugin",
             capability: .buildTool(),
             dependencies: [
-                .target(name: "SwiftLintBinary"),
+                .target(name: "SwiftLintPluginBinary"),
             ]
         ),
         .binaryTarget(
-            name: "SwiftLintBinary",
+            name: "SwiftLintPluginBinary",
             url: "https://github.com/realm/SwiftLint/releases/download/0.59.1/SwiftLintBinary.artifactbundle.zip",
             checksum: "b9f915a58a818afcc66846740d272d5e73f37baf874e7809ff6f246ea98ad8a2"
         ),
