@@ -2,7 +2,7 @@ test_configuration:
   target: homete
   test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
   simulator_device: "iPhone17,3"
-  required_os: 26
+  required_os: 26 
   preview_default_enabled: true
   template_file_path: generateTestTemplate.stencil 
   use_grouped_snapshots: true
@@ -16,5 +16,4 @@ test_configuration:
     - SwiftUI
     - MultipeerConnectivity
     - HometeDomain
-  draw_hierarchy_in_key_window_default_enabled: true
 

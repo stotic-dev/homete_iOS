@@ -11,6 +11,10 @@ on:
       - "LocalPackage/**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -42,5 +46,48 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
-      - name: Run tests
-        run: swift test --package-path LocalPackage
+      - name: Run tests with coverage
+        run: swift test --package-path LocalPackage --enable-code-coverage
+
+      - name: Setup Node.js
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Danger
+        if: github.event_name == 'pull_request'
+        run: npm install -g danger
+
+      - name: Cache ProjectTools build
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: ProjectTools/.build
+          key: project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('ProjectTools/Package.resolved') }}
+          restore-keys: |
+            project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+
+      - name: Build ProjectTools
+        if: github.event_name == 'pull_request'
+        run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
+
+      - name: Cache DangerTools build
+        if: github.event_name == 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: DangerTools/.build
+          key: danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('DangerTools/Package.resolved') }}
+          restore-keys: |
+            danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+
+      - name: Build DangerTools
+        if: github.event_name == 'pull_request'
+        run: swift build --package-path DangerTools --scratch-path DangerTools/.build
+
+      - name: Run Danger (Coverage)
+        if: github.event_name == 'pull_request'
+        working-directory: DangerTools
+        run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd .. --id "danger-coverage"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_API_TOKEN }}
