@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/11/11.
 //
 
-#if canImport(UIKit)
 import HometeDomain
 import SwiftUI
 
@@ -50,4 +49,3 @@ public extension DomainErrorAlertContent {
         self.error = .make(error)
     }
 }
-#endif

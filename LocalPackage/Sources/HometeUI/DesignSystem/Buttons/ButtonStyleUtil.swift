@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/20.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 @MainActor
@@ -21,4 +20,3 @@ extension ButtonStyleConfiguration {
             )
     }
 }
-#endif

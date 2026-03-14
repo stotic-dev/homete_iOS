@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/20.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 public struct Indicator: View {
@@ -19,4 +18,3 @@ public struct Indicator: View {
             .cornerRadius(.radius8)
     }
 }
-#endif

@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/20.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 struct SubPrimaryButtonStyle: ButtonStyle {
@@ -38,4 +37,3 @@ public extension View {
         .subPrimaryButtonStyle()
         .disabled(true)
 }
-#endif

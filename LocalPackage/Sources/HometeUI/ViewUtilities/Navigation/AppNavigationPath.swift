@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/07/26.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 @Observable
@@ -36,4 +35,3 @@ public final class AppNavigationPath {
 public extension EnvironmentValues {
     @Entry var appNavigationPath = AppNavigationPath(path: [])
 }
-#endif
