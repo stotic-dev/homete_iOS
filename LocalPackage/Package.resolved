@@ -1,6 +1,15 @@
 {
-  "originHash" : "43afb3c7822dd7a26e59fc56a01a820eed710252d7172e679af23e0d2353585a",
+  "originHash" : "acd9400ccbdd9c22cfbe67b211f1d71f9247b08d269099abaf4419724d76c643",
   "pins" : [
+    {
+      "identity" : "prefire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/BarredEwe/Prefire.git",
+      "state" : {
+        "revision" : "6986d001061e5a41e31cc1f9ea70e427c8435568",
+        "version" : "5.4.1"
+      }
+    },
     {
       "identity" : "swiftgenplugin",
       "kind" : "remoteSourceControl",

@@ -22,5 +22,6 @@ test_configuration:
     - HometeUI
     - AuthFeature
     - SettingFeature
+    - HomeFeature
 
 

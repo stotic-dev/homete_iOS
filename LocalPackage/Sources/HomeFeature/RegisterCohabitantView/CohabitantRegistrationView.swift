@@ -10,7 +10,7 @@ import HometeUI
 import MultipeerConnectivity
 import SwiftUI
 
-struct CohabitantRegistrationView: View {
+public struct CohabitantRegistrationView: View {
     
     @Environment(\.calendar) var calendar
     @Environment(\.loginContext.account.userName) var userName
@@ -18,20 +18,20 @@ struct CohabitantRegistrationView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     
+    public init() {}
+
     // 登録処理を中断するかどうかを確認するアラート
     @State var isPresentingConfirmCancelAlert = false
     
-    var body: some View {
+    public var body: some View {
         NavigationStack {
             P2PSession(displayName: userName) {
                 CohabitantRegistrationSession(session: $0)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationBarButton(label: .close) {
-                        isPresentingConfirmCancelAlert = true
-                    }
+            .inlineNavigationBarTitleDisplayMode()
+            .leadingToolbarItem {
+                NavigationBarButton(label: .close) {
+                    isPresentingConfirmCancelAlert = true
                 }
             }
         }

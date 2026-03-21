@@ -12,6 +12,7 @@
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
 		04D371992F40526F00820C62 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 04D371982F40526F00820C62 /* HometeUI */; };
 		04F371992F40526F00820C62 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 04F371982F40526F00820C62 /* AuthFeature */; };
+		21169B6F6C6143DEB352BC81 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 40F1F5721A854AD8BE02E959 /* HomeFeature */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
 		BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF7112E7863B500DC31CA /* FirebaseFunctions */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
@@ -100,6 +101,7 @@
 				BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */,
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
 				041871852F6E6ACC002E13F6 /* SettingFeature in Frameworks */,
+				21169B6F6C6143DEB352BC81 /* HomeFeature in Frameworks */,
 				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */,
@@ -205,6 +207,7 @@
 				04185D2C2F5BF84F00ECBEED /* HometeResources */,
 				04F371982F40526F00820C62 /* AuthFeature */,
 				041871842F6E6ACC002E13F6 /* SettingFeature */,
+				40F1F5721A854AD8BE02E959 /* HomeFeature */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -741,6 +744,10 @@
 		04F371982F40526F00820C62 /* AuthFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuthFeature;
+		};
+		40F1F5721A854AD8BE02E959 /* HomeFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HomeFeature;
 		};
 		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;

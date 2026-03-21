@@ -27,10 +27,15 @@ let package = Package(
             name: "SettingFeature",
             targets: ["SettingFeature"]
         ),
+        .library(
+            name: "HomeFeature",
+            targets: ["HomeFeature"]
+        ),
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1")
     ],
     targets: [
         .target(
@@ -83,6 +88,18 @@ let package = Package(
                 "HometeDomain",
                 "HometeUI",
                 "HometeResources",
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
+            name: "HomeFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
