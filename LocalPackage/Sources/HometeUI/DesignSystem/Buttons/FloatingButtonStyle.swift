@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 struct FloatingButtonStyle: ButtonStyle {
@@ -71,4 +70,3 @@ public extension View {
     .floatingButtonStyle()
     .disabled(true)
 }
-#endif

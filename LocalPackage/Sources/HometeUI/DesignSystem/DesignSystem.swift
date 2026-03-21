@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/05.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 public enum DesignSystem {}
@@ -83,4 +82,3 @@ public extension RoundedRectangle {
         self.init(cornerRadius: radius.rawValue)
     }
 }
-#endif

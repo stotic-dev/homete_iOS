@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 public struct NavigationBarContentLabel: Sendable {
@@ -38,4 +37,3 @@ public extension NavigationBarContentLabel {
         assetIcon: nil
     )
 }
-#endif

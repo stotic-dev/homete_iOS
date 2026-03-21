@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/12/06.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 struct DestructiveButtonStyle: ButtonStyle {
@@ -38,4 +37,3 @@ public extension View {
         .destructiveButtonStyle()
         .disabled(true)
 }
-#endif

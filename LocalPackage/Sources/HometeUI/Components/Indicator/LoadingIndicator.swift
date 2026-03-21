@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 struct LoadingIndicator: View {
@@ -34,4 +33,3 @@ public extension View {
 #Preview {
     LoadingIndicator()
 }
-#endif

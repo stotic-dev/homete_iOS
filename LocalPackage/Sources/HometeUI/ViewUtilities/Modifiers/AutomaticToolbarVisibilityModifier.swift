@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/31.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 struct AutomaticToolbarVisibilityModifier: ViewModifier {
@@ -35,4 +34,3 @@ public extension View {
         )
     }
 }
-#endif

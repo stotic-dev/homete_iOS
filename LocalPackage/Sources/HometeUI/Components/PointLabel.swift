@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/11/11.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 import HometeResources
 
@@ -43,4 +42,3 @@ public struct PointLabel: View {
 #Preview("PointLabel_3桁", traits: .sizeThatFitsLayout) {
     PointLabel(point: 100)
 }
-#endif

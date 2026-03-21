@@ -5,7 +5,6 @@
 //  Created by Taichi Sato on 2026/01/11.
 //
 
-#if canImport(UIKit)
 import SwiftUI
 
 @MainActor
@@ -50,4 +49,3 @@ public final class LoadingStateStore {
         }
     }
 }
-#endif
