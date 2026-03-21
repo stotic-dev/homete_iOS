@@ -59,14 +59,10 @@ public struct SettingView: View {
             .padding(.horizontal, .space16)
             .padding(.bottom, .space16)
             .navigationTitle("設定")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    leadingNavigationBarContent()
-                }
+            .inlineNavigationBarTitleDisplayMode()
+            .trailingToolbarItem {
+                leadingNavigationBarContent()
             }
-            #endif
         }
         .fullScreenLoadingIndicator(loadingState)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {

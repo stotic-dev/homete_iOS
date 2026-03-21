@@ -56,9 +56,7 @@ public struct RegistrationAccountView: View {
             }
             .padding(.horizontal, .space16)
             .navigationTitle("アカウント登録")
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
+            .inlineNavigationBarTitleDisplayMode()
         }
         .fullScreenLoadingIndicator(loadingState)
     }
