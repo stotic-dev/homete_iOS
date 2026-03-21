@@ -77,7 +77,6 @@ extension RootView {
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient
                 ))
-                .routeResolverInjection()
         }
     }
 }
