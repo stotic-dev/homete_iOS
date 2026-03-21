@@ -10,9 +10,10 @@ import HometeUI
 import SwiftUI
 
 struct HomeView: View {
-    
+
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.loginContext) var loginContext
+    @Environment(\.routeResolver) var router
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     
@@ -35,10 +36,10 @@ struct HomeView: View {
                 }
             }
             .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
-                CohabitantRegistrationView()
+                router.resolve(.cohabitantRegistration)
             }
             .sheet(isPresented: $isShowSetting) {
-                SettingView()
+                router.resolve(.setting)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

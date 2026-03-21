@@ -23,7 +23,7 @@ struct HouseworkApprovalView: View {
     let item: HouseworkItem
     
     var body: some View {
-        AppNavigationStackView { _ in
+        AppNavigationStackView {
             ScrollView {
                 VStack(spacing: .space40) {
                     VStack(spacing: .space24) {

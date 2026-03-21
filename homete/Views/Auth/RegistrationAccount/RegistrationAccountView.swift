@@ -19,7 +19,7 @@ struct RegistrationAccountView: View {
     let authInfo: AccountAuthResult
     
     var body: some View {
-        AppNavigationStackView { _ in
+        AppNavigationStackView {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
                     Text("はじめまして！")

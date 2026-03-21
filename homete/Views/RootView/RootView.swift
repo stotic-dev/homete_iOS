@@ -58,7 +58,7 @@ struct RootView: View {
 }
 
 extension RootView {
-    
+
     static func make() -> some View {
         DependenciesInjectLayer {
             RootView()
@@ -77,6 +77,7 @@ extension RootView {
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient
                 ))
+                .routeResolverInjection()
         }
     }
 }

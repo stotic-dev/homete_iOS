@@ -8,11 +8,11 @@
 import SwiftUI
 
 @Observable
-public final class AppNavigationPath {
+public final class AppNavigationPath<Route: Hashable> {
 
-    public var path: [AppNavigationElement]
+    public var path: [Route]
 
-    public init(path: [AppNavigationElement]) {
+    public init(path: [Route] = []) {
         self.path = path
     }
 
@@ -26,12 +26,8 @@ public final class AppNavigationPath {
         _ = path.popLast()
     }
 
-    public func push(_ element: AppNavigationElement) {
+    public func push(_ route: Route) {
 
-        path.append(element)
+        path.append(route)
     }
-}
-
-public extension EnvironmentValues {
-    @Entry var appNavigationPath = AppNavigationPath(path: [])
 }

@@ -14,12 +14,12 @@ struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(HouseworkListStore.self) var houseworkListStore
     
-    @State var navigationPath = AppNavigationPath(path: [])
+    @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var selectedDate = Date.now
     @State var isPresentingAddHouseworkView = false
-    
+
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
@@ -41,10 +41,10 @@ struct HouseworkBoardView: View {
                 .padding(.trailing, .space24)
                 .padding(.bottom, .space24)
             }
-            .navigationDestination(for: AppNavigationElement.self) { element in
-                navigationHandler(element)
+            .navigationDestination(for: HouseworkBoardRoute.self) { route in
+                navigationHandler(route)
             }
-            .environment(\.appNavigationPath, navigationPath)
+            .environment(\.houseworkBoardNavigationPath, navigationPath)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
             RegisterHouseworkView(
@@ -87,8 +87,8 @@ private extension HouseworkBoardView {
     }
     
     @ViewBuilder
-    func navigationHandler(_ element: AppNavigationElement) -> some View {
-        switch element {
+    func navigationHandler(_ route: HouseworkBoardRoute) -> some View {
+        switch route {
         case .houseworkDetail(let item):
             HouseworkDetailView(item: item)
         }
