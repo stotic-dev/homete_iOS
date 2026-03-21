@@ -7,6 +7,7 @@
 
 import HomeFeature
 import HometeDomain
+import HouseworkFeature
 import HometeUI
 import SwiftUI
 import UserNotifications
