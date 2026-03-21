@@ -38,7 +38,7 @@ struct HouseworkDetailActionContent: View {
         }
         .disabled(isLoading)
         .fullScreenCover(isPresented: $isPresentedApprovalView) {
-            router.resolve(.houseworkApproval(item))
+            HouseworkApprovalView(item: item)
         }
     }
 }
