@@ -36,7 +36,7 @@ struct AppTabView: View {
                         systemImage: "person.2.arrow.trianglehead.counterclockwise",
                         value: .homework
                     ) {
-                        HouseworkBoardView()
+                        HouseworkBoardView.instantiate()
                     }
                 }
             } else {
@@ -49,7 +49,7 @@ struct AppTabView: View {
                                 systemImage: "list.bullet.clipboard.fill"
                             )
                         }
-                    HouseworkBoardView()
+                    HouseworkBoardView.instantiate()
                         .tag(TabType.homework)
                         .tabItem {
                             Label(

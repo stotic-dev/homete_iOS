@@ -10,17 +10,18 @@ import HometeUI
 import SwiftUI
 
 public struct HouseworkBoardView: View {
-
-    public init() {}
-
     @Environment(\.calendar) var calendar
     @Environment(HouseworkListStore.self) var houseworkListStore
-    
+
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
-    @State var selectedDate = Date.now
+    @State var selectedDate: Date = .now
     @State var isPresentingAddHouseworkView = false
+    
+    public static func instantiate() -> Self {
+        HouseworkBoardView()
+    }
 
     public var body: some View {
         NavigationStack(path: $navigationPath.path) {
@@ -110,7 +111,7 @@ private extension HouseworkBoardView {
 }
 
 #Preview {
-    HouseworkBoardView()
+    HouseworkBoardView(selectedDate: .distantPast)
     .apply(theme: .init())
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
