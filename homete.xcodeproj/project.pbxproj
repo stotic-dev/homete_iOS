@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 04185D2C2F5BF84F00ECBEED /* HometeResources */; };
+		041871852F6E6ACC002E13F6 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 041871842F6E6ACC002E13F6 /* SettingFeature */; };
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
 		04D371992F40526F00820C62 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 04D371982F40526F00820C62 /* HometeUI */; };
 		04F371992F40526F00820C62 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 04F371982F40526F00820C62 /* AuthFeature */; };
@@ -98,6 +99,7 @@
 				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
 				BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */,
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
+				041871852F6E6ACC002E13F6 /* SettingFeature in Frameworks */,
 				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
 				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
 				04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */,
@@ -202,6 +204,7 @@
 				04D371982F40526F00820C62 /* HometeUI */,
 				04185D2C2F5BF84F00ECBEED /* HometeResources */,
 				04F371982F40526F00820C62 /* AuthFeature */,
+				041871842F6E6ACC002E13F6 /* SettingFeature */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -717,6 +720,10 @@
 		04185D2C2F5BF84F00ECBEED /* HometeResources */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeResources;
+		};
+		041871842F6E6ACC002E13F6 /* SettingFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SettingFeature;
 		};
 		04B371982F40526F00820C62 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;
