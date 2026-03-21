@@ -29,7 +29,7 @@ struct FloatingButtonStyle: ButtonStyle {
 private extension View {
     
     func addGlassEffect(_ isDisable: Bool) -> some View {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, macOS 26.0, *) {
             return self.glassEffect(.regular.interactive(!isDisable))
         }
         else {

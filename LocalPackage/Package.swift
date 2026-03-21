@@ -54,6 +54,10 @@ let package = Package(
         ),
         .target(
             name: "HometeResources",
+            resources: [
+                .process("Resources/Colors.xcassets"),
+                .process("Resources/Image.xcassets"),
+            ],
             plugins: [
                 .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin")
             ]
