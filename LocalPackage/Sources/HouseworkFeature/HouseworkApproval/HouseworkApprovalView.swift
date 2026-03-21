@@ -10,7 +10,7 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-struct HouseworkApprovalView: View {
+public struct HouseworkApprovalView: View {
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
@@ -21,8 +21,12 @@ struct HouseworkApprovalView: View {
     @State var inputMessage = ""
     
     let item: HouseworkItem
-    
-    var body: some View {
+
+    public init(item: HouseworkItem) {
+        self.item = item
+    }
+
+    public var body: some View {
         AppNavigationStackView {
             ScrollView {
                 VStack(spacing: .space40) {
@@ -41,9 +45,11 @@ struct HouseworkApprovalView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("家事の確認")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                navigationLeadingItem()
+            .inlineNavigationBarTitleDisplayMode()
+            .leadingToolbarItem {
+                NavigationBarButton(label: .close) {
+                    dismiss()
+                }
             }
             .fullScreenLoadingIndicator(loadingState)
         }
@@ -51,15 +57,7 @@ struct HouseworkApprovalView: View {
 }
 
 private extension HouseworkApprovalView {
-    
-    func navigationLeadingItem() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            NavigationBarButton(label: .close) {
-                dismiss()
-            }
-        }
-    }
-    
+
     func notificationSection(_ executorName: String) -> some View {
         section {
             VStack(spacing: .zero) {

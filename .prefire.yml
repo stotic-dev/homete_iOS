@@ -23,5 +23,6 @@ test_configuration:
     - AuthFeature
     - SettingFeature
     - HomeFeature
+    - HouseworkFeature
 
 

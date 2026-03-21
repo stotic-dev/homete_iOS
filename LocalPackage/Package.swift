@@ -31,6 +31,10 @@ let package = Package(
             name: "HomeFeature",
             targets: ["HomeFeature"]
         ),
+        .library(
+            name: "HouseworkFeature",
+            targets: ["HouseworkFeature"]
+        ),
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
@@ -95,6 +99,18 @@ let package = Package(
         ),
         .target(
             name: "HomeFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
+            name: "HouseworkFeature",
             dependencies: [
                 "HometeDomain",
                 "HometeUI",

@@ -25,8 +25,10 @@ struct HouseworkBoardListContent: View {
                 houseworkItemRow(item)
                     .padding(.vertical, .space8)
             }
+            #if os(iOS)
             .listRowSpacing(.zero)
             .listRowSeparator(.hidden)
+            #endif
         }
         .listStyle(.plain)
         .commonError(content: $commonError)
@@ -41,6 +43,7 @@ private extension HouseworkBoardListContent {
         } label: {
             HouseBoardListRow(houseworkItem: item)
         }
+        #if os(iOS)
         .swipeActions(edge: .trailing) {
             Button {
                 Task {
@@ -51,6 +54,7 @@ private extension HouseworkBoardListContent {
             }
             .tint(.red)
         }
+        #endif
     }
 }
 

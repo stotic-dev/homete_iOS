@@ -7,8 +7,10 @@
 
 import HometeDomain
 import HometeUI
-import Prefire
 import SwiftUI
+#if canImport(UIKit)
+import Prefire
+#endif
 
 struct HouseworkDetailView: View {
     
@@ -28,9 +30,13 @@ struct HouseworkDetailView: View {
             .padding(.bottom, .space24)
             .fullScreenLoadingIndicator(loadingState)
             .navigationTitle(item.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                trailingNavigationBarContent()
+            .inlineNavigationBarTitleDisplayMode()
+            .trailingToolbarItem {
+                NavigationBarButton(label: .delete) {
+                    Task {
+                        await tappedDeleteHouseworkItem()
+                    }
+                }
             }
             .commonError(content: $commonErrorContent)
             .onChange(of: houseworkListStore.items) {
@@ -40,7 +46,7 @@ struct HouseworkDetailView: View {
 }
 
 private extension HouseworkDetailView {
-    
+
     func mainContent() -> some View {
         VStack(spacing: .zero) {
             HouseworkDetailItemListContent(
@@ -54,16 +60,6 @@ private extension HouseworkDetailView {
                 account: account,
                 item: item
             )
-        }
-    }
-    
-    func trailingNavigationBarContent() -> some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            NavigationBarButton(label: .delete) {
-                Task {
-                    await tappedDeleteHouseworkItem()
-                }
-            }
         }
     }
 }
@@ -125,5 +121,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    #if canImport(UIKit)
     .prefireIgnored()
+    #endif
 }

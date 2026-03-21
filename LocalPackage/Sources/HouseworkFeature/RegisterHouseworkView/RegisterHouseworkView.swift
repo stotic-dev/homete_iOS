@@ -5,12 +5,13 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
-import FirebaseFunctions
 import HometeDomain
 import HometeResources
 import HometeUI
-import Prefire
 import SwiftUI
+#if canImport(UIKit)
+import Prefire
+#endif
 
 struct RegisterHouseworkView: View {
     
@@ -200,7 +201,9 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    #if canImport(UIKit)
     .snapshot(delay: 1)
+    #endif
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -215,5 +218,7 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    #if canImport(UIKit)
     .prefireIgnored()
+    #endif
 }
