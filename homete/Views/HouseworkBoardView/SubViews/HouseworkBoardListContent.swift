@@ -11,7 +11,7 @@ import SwiftUI
 
 struct HouseworkBoardListContent: View {
     
-    @Environment(\.appNavigationPath) var navigationPath
+    @Environment(\.houseworkBoardNavigationPath) var navigationPath
     
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState

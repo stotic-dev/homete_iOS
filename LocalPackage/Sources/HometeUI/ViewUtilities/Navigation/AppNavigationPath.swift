@@ -5,15 +5,14 @@
 //  Created by 佐藤汰一 on 2025/07/26.
 //
 
-import HometeDomain
 import SwiftUI
 
 @Observable
-public final class AppNavigationPath {
+public final class AppNavigationPath<Route: Hashable> {
 
-    public var path: [AppRoute]
+    public var path: [Route]
 
-    public init(path: [AppRoute]) {
+    public init(path: [Route] = []) {
         self.path = path
     }
 
@@ -27,12 +26,8 @@ public final class AppNavigationPath {
         _ = path.popLast()
     }
 
-    public func push(_ route: AppRoute) {
+    public func push(_ route: Route) {
 
         path.append(route)
     }
-}
-
-public extension EnvironmentValues {
-    @Entry var appNavigationPath = AppNavigationPath(path: [])
 }
