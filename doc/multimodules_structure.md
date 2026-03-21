@@ -170,13 +170,16 @@ Store は `HometeDomain` に配置する。理由:
 | Phase | 内容 | 状態 |
 |---|---|---|
 | Phase 1 | HometeDomain パッケージの切り出し（Domain Models・Client Protocols・Stores・AppRoute） | 完了 |
-| Phase 2 | HometeUI パッケージの切り出し（デザインシステム・共通コンポーネント） | 未着手 |
-| Phase 3 | Feature パッケージの切り出し（AuthFeature・HouseworkFeature・SettingFeature・HomeFeature） | 未着手 |
-| Phase 4 | メインターゲットの整理（Services・liveValue 実装・RouteResolver 実態・RootView） | 未着手 |
-| Phase 5 | テストターゲットの整理（モジュールごとのテストターゲット追加 or 既存の `hometeTests/` を更新） | 未着手 |
-| Phase 6 | CI ビルド時間・テスト実行時間の計測・比較 | 未着手 |
+| Phase 2 | HometeUI パッケージの切り出し（デザインシステム・共通コンポーネント） | 完了 |
+| Phase 3 | RouteResolver 基盤実装（`HometeDomain` に `AppRoute` + `RouteResolver` を定義し、メインターゲットの既存画面遷移を RouteResolver 経由に置き換える） | 未着手 |
+| Phase 4 | Feature パッケージの切り出し（AuthFeature・HouseworkFeature・SettingFeature・HomeFeature） | 未着手 |
+| Phase 5 | メインターゲットの整理（Services・liveValue 実装・RouteResolver 実態・RootView） | 未着手 |
+| Phase 6 | テストターゲットの整理（モジュールごとのテストターゲット追加 or 既存の `hometeTests/` を更新） | 未着手 |
+| Phase 7 | CI ビルド時間・テスト実行時間の計測・比較 | 未着手 |
 
 > **推奨:** 段階的移行（Phase 1 から順に PR を分けてマージ）。1 PR での全移行はリスクが高い。
+>
+> **Phase 3 の必要性:** Feature パッケージを切り出す前に RouteResolver 基盤を整備する必要がある。`HomeView` → `SettingView`・`CohabitantRegistrationView` のような Feature 間の直接 View 参照が残った状態でパッケージを分割すると、依存禁止ルール違反でコンパイルエラーになる。先に RouteResolver をメインターゲットで動かした状態にしてから Feature を切り出すことでリスクを低減できる。
 
 ## 補足・制約事項
 
