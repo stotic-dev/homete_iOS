@@ -23,6 +23,10 @@ let package = Package(
             name: "AuthFeature",
             targets: ["AuthFeature"]
         ),
+        .library(
+            name: "SettingFeature",
+            targets: ["SettingFeature"]
+        ),
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
@@ -64,6 +68,17 @@ let package = Package(
         ),
         .target(
             name: "AuthFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
+            name: "SettingFeature",
             dependencies: [
                 "HometeDomain",
                 "HometeUI",

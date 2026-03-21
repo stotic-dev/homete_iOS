@@ -9,18 +9,20 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct SettingView: View {
-    
+public struct SettingView: View {
+
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     @LoadingState var loadingState
-    
+
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
-    
-    var body: some View {
+
+    public init() {}
+
+    public var body: some View {
         NavigationStack {
             VStack(spacing: .space32) {
                 VStack(spacing: .space24) {
@@ -56,12 +58,10 @@ struct SettingView: View {
             }
             .padding(.horizontal, .space16)
             .padding(.bottom, .space16)
-            .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("設定")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    leadingNavigationBarContent()
-                }
+            .inlineNavigationBarTitleDisplayMode()
+            .trailingToolbarItem {
+                leadingNavigationBarContent()
             }
         }
         .fullScreenLoadingIndicator(loadingState)
@@ -94,29 +94,29 @@ private extension SettingView {
 // MARK: プレゼンテーションロジック
 
 private extension SettingView {
-    
+
     func tappedLogoutRowButton() {
-        
+
         isPresentedLogoutConfirmAlert = true
     }
-    
+
     func tappedLogoutAlertOkButton() {
-        
+
         accountAuthStore.logOut()
     }
-    
+
     func tappedAccountDeletionRowButton() {
-        
+
         isPresentedAccountDeletionConfirmAlert = true
     }
-    
+
     func tappedAccountDeletionAlertOkButton() async {
-        
+
         do {
-            
+
             try await accountAuthStore.deleteAccount()
         } catch {
-            
+
             // TODO: エラーハンドリング
             print("occurred error: \(error)")
         }

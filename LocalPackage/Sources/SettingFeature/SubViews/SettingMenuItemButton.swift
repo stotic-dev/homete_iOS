@@ -10,12 +10,17 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-struct SettingMenuItemButton: View {
-    
+public struct SettingMenuItemButton: View {
+
     let item: SettingMenuItem
     let action: () -> Void
-    
-    var body: some View {
+
+    public init(item: SettingMenuItem, action: @escaping () -> Void) {
+        self.item = item
+        self.action = action
+    }
+
+    public var body: some View {
         Button {
             action()
         } label: {
