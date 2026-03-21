@@ -9,23 +9,13 @@ import AuthenticationServices
 import HometeDomain
 
 enum SignInWithAppleRequestFactory {
-    
+
     static func make(_ nonce: SignInWithAppleNonce) -> ASAuthorizationAppleIDRequest {
-        
+
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
-        request.build(nonce)
+        request.requestedScopes = [.fullName]
+        request.nonce = nonce.sha256
         return request
-    }
-}
-
-extension ASAuthorizationAppleIDRequest {
-    
-    func build(
-        _ nonce: SignInWithAppleNonce
-    ) {
-        
-        requestedScopes = [.fullName]
-        self.nonce = nonce.sha256
     }
 }

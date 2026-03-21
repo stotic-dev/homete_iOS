@@ -12,7 +12,7 @@ import SwiftUI
 
 struct UserNameInputTextField: View {
     @Binding var userName: UserName
-    
+
     var body: some View {
         VStack(spacing: .space16) {
             HStack(spacing: .space8) {

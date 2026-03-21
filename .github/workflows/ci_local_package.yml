@@ -17,34 +17,27 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     env:
-      SWIFT_VERSION: "6.2"
-      SWIFT_TOOLCHAIN_DIR: /opt/hostedtoolcache/swift-Ubuntu
+      DEVELOPER_DIR: /Applications/Xcode_26.1.1.app
     steps:
       - uses: actions/checkout@v4.2.2
 
-      - name: Cache Swift toolchain
-        id: cache-swift
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.SWIFT_TOOLCHAIN_DIR }}
-          key: swift-toolchain-${{ runner.os }}-${{ env.SWIFT_VERSION }}
-
-      - name: Setup Swift
-        if: steps.cache-swift.outputs.cache-hit != 'true'
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ env.SWIFT_VERSION }}
-
-      - name: Restore Swift PATH from cache
-        if: steps.cache-swift.outputs.cache-hit == 'true'
-        run: |
-          SWIFT_BIN=$(find ${{ env.SWIFT_TOOLCHAIN_DIR }} -name swift -type f -path "*/usr/bin/swift" | head -1)
-          echo "$(dirname "$SWIFT_BIN")" >> $GITHUB_PATH
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
 
       - name: Show Swift version
         run: swift --version
+
+      - name: Cache LocalPackage
+        uses: actions/cache@v4
+        with:
+          path: |
+            LocalPackage/.build/checkouts
+            LocalPackage/.build/repositories
+          key: local-package-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.resolved') }}
+          restore-keys: |
+            local-package-${{ runner.os }}-
 
       - name: Run tests with coverage
         run: swift test --package-path LocalPackage --enable-code-coverage
@@ -64,9 +57,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ProjectTools/.build
-          key: project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('ProjectTools/Package.resolved') }}
+          key: project-tools-${{ runner.os }}-${{ hashFiles('ProjectTools/Package.resolved') }}
           restore-keys: |
-            project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+            project-tools-${{ runner.os }}-
 
       - name: Build ProjectTools
         if: github.event_name == 'pull_request'
@@ -77,9 +70,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: DangerTools/.build
-          key: danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('DangerTools/Package.resolved') }}
+          key: danger-tools-${{ runner.os }}-${{ hashFiles('DangerTools/Package.resolved') }}
           restore-keys: |
-            danger-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+            danger-tools-${{ runner.os }}-
 
       - name: Build DangerTools
         if: github.event_name == 'pull_request'

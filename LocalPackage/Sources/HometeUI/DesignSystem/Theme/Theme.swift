@@ -56,6 +56,7 @@ public extension Theme {
 
     func applySegmentedControl() {
 
+        #if canImport(UIKit)
         UISegmentedControl.appearance().setTitleTextAttributes(
             [.foregroundColor: UIColor(Color.primary2)],
             for: .normal
@@ -65,5 +66,6 @@ public extension Theme {
             for: .selected
         )
         UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
+        #endif
     }
 }

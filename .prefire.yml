@@ -20,5 +20,6 @@ test_configuration:
     - HometeResources
   - testable_imports:
     - HometeUI
+    - AuthFeature
 
 

@@ -5,21 +5,20 @@
 //  Created by 佐藤汰一 on 2025/12/27.
 //
 
-import HometeDomain
 import SwiftUI
 
-struct LaunchStateProxy {
+public struct LaunchStateProxy {
     @Binding private var launchState: LaunchState
-    
-    init(launchState: Binding<LaunchState>) {
+
+    public init(launchState: Binding<LaunchState>) {
         _launchState = launchState
     }
-    
-    func callAsFunction(_ next: LaunchState) {
+
+    public func callAsFunction(_ next: LaunchState) {
         launchState = next
     }
 }
 
 extension EnvironmentValues {
-    @Entry var launchStateProxy = LaunchStateProxy(launchState: .constant(.notLoggedIn))
+    @Entry public var launchStateProxy = LaunchStateProxy(launchState: .constant(.notLoggedIn))
 }

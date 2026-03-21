@@ -13,9 +13,9 @@ struct SignInUpWithAppleButton: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.appDependencies.nonceGeneratorClient) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
-    
+
     let onSignIn: (Result<SignInWithAppleResult, any Error>) async -> Void
-    
+
     var body: some View {
         SignInWithAppleButton {
             handleRequest(request: $0)
@@ -28,37 +28,37 @@ struct SignInUpWithAppleButton: View {
 }
 
 private extension SignInUpWithAppleButton {
-    
+
     func handleRequest(request: ASAuthorizationAppleIDRequest) {
         let nonce = nonceGenerationClient()
         request.build(nonce)
         currentNonce = nonce
     }
-   
+
     func handleCompletion(result: Result<ASAuthorization, any Error>) {
         Task {
             switch result {
             case .success(let authorization):
                 guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
                       let currentNonce else {
-                    
+
                     preconditionFailure("No sent sign in request.")
                 }
-                
+
                 do {
-                    
+
                     let result = try SignInWithAppleResultFactory.make(appleIDCredential, currentNonce)
                     await onSignIn(.success(result))
                 } catch {
-                    
+
                     await onSignIn(.failure(error))
                 }
-                
+
             case .failure(let error):
                 print("failed sign in with apple: \(error)")
                 if let error = error as? ASAuthorizationError,
                    error.code != .canceled {
-                    
+
                     await onSignIn(.failure(DomainError.failAuth))
                 }
             }

@@ -5,9 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
-#if canImport(SwiftUI)
 import SwiftUI
-#endif
 
 public enum SettingMenuItem: Equatable, CaseIterable {
 
@@ -15,7 +13,6 @@ public enum SettingMenuItem: Equatable, CaseIterable {
     case privacyPolicy
     case license
 
-    #if canImport(SwiftUI)
     public var title: LocalizedStringKey {
 
         switch self {
@@ -29,7 +26,6 @@ public enum SettingMenuItem: Equatable, CaseIterable {
             return "ライセンス"
         }
     }
-    #endif
 
     public var iconName: String {
 

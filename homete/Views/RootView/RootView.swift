@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/07/26.
 //
 
+import AuthFeature
 import FirebaseMessaging
 import HometeDomain
 import HometeUI
@@ -79,6 +80,7 @@ extension RootView {
                 ))
                 .routeResolverInjection()
         }
+        .environment(\.appDependencies, .liveValue)
     }
 }
 
