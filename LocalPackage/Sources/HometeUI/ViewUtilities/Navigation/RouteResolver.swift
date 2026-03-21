@@ -8,10 +8,17 @@ import SwiftUI
 
 public struct RouteResolver: Sendable {
 
-    public var resolve: @MainActor @Sendable (AppRoute) -> AnyView
+    private var _resolve: @MainActor @Sendable (AppRoute) -> AnyView
 
-    public init(resolve: @escaping @MainActor @Sendable (AppRoute) -> AnyView) {
-        self.resolve = resolve
+    public init<V: View>(
+        @ViewBuilder resolve: @escaping @MainActor @Sendable (AppRoute) -> V
+    ) {
+        _resolve = { AnyView(resolve($0)) }
+    }
+
+    @MainActor
+    public func resolve(_ route: AppRoute) -> some View {
+        _resolve(route)
     }
 }
 
@@ -21,6 +28,6 @@ public extension EnvironmentValues {
 
 public extension RouteResolver {
     static let preview = RouteResolver { route in
-        AnyView(Text("Preview: \(String(describing: route))"))
+        Text("Preview: \(String(describing: route))")
     }
 }

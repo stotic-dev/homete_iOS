@@ -11,16 +11,16 @@ private struct RouteResolverInjectionModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .environment(\.routeResolver, .init { route in
+            .environment(\.routeResolver, RouteResolver { route in
                 switch route {
                 case .houseworkDetail(let item):
-                    return AnyView(HouseworkDetailView(item: item))
+                    HouseworkDetailView(item: item)
                 case .houseworkApproval(let item):
-                    return AnyView(HouseworkApprovalView(item: item))
+                    HouseworkApprovalView(item: item)
                 case .cohabitantRegistration:
-                    return AnyView(CohabitantRegistrationView())
+                    CohabitantRegistrationView()
                 case .setting:
-                    return AnyView(SettingView())
+                    SettingView()
                 }
             })
     }
