@@ -37,7 +37,7 @@ struct HouseworkDetailActionContent: View {
             }
         }
         .disabled(isLoading)
-        .fullScreenCover(isPresented: $isPresentedApprovalView) {
+        .fullScreenCoverOnIOS(isPresented: $isPresentedApprovalView) {
             HouseworkApprovalView(item: item)
         }
     }
