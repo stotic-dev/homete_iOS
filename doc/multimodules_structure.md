@@ -216,7 +216,7 @@ Store は `HometeDomain` に配置する。理由:
 | Phase 1 | HometeDomain パッケージの切り出し（Domain Models・Client Protocols・Stores・AppRoute） | 完了 |
 | Phase 2 | HometeUI パッケージの切り出し（デザインシステム・共通コンポーネント） | 完了 |
 | Phase 3 | RouteResolver 基盤実装（`HometeDomain` に `AppRoute`、`HometeUI` に `RouteResolver` を定義し、メインターゲットの既存画面遷移を RouteResolver 経由に置き換える） | 完了 |
-| Phase 4 | Feature パッケージの切り出し（AuthFeature・HouseworkFeature・SettingFeature・HomeFeature） | 未着手 |
+| Phase 4 | Feature パッケージの切り出し（AuthFeature・HouseworkFeature・SettingFeature・HomeFeature） | 一部完了（AuthFeature・SettingFeature・HomeFeature 完了、HouseworkFeature 未着手） |
 | Phase 5 | メインターゲットの整理（Services・liveValue 実装・RouteResolver 実態・RootView） | 未着手 |
 | Phase 6 | テストターゲットの整理（モジュールごとのテストターゲット追加 or 既存の `hometeTests/` を更新） | 未着手 |
 | Phase 7 | CI ビルド時間・テスト実行時間の計測・比較 | 未着手 |
