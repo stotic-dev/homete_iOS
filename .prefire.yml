@@ -21,5 +21,6 @@ test_configuration:
   - testable_imports:
     - HometeUI
     - AuthFeature
+    - SettingFeature
 
 

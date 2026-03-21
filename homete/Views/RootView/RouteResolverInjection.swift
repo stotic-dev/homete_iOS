@@ -5,6 +5,7 @@
 
 import HometeDomain
 import HometeUI
+import SettingFeature
 import SwiftUI
 
 private struct RouteResolverInjectionModifier: ViewModifier {
