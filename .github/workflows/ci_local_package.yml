@@ -29,6 +29,16 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
+      - name: Cache LocalPackage
+        uses: actions/cache@v4
+        with:
+          path: |
+            LocalPackage/.build/checkouts
+            LocalPackage/.build/repositories
+          key: local-package-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.resolved') }}
+          restore-keys: |
+            local-package-${{ runner.os }}-
+
       - name: Run tests with coverage
         run: swift test --package-path LocalPackage --enable-code-coverage
 
