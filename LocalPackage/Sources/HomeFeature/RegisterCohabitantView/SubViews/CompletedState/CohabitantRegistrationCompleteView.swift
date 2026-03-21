@@ -47,6 +47,6 @@ struct CohabitantRegistrationCompleteView: View {
             }
             .ignoresSafeArea()
         }
-        .automaticToolbarVisibility(visibility: .hidden, for: .navigationBar)
+        .hideNavigationBar()
     }
 }

@@ -9,7 +9,9 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HomeView: View {
+public struct HomeView: View {
+
+    public init() {}
 
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.loginContext) var loginContext
@@ -17,7 +19,7 @@ struct HomeView: View {
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     
-    var body: some View {
+    public var body: some View {
         NavigationStack {
             ZStack {
                 if loginContext.hasCohabitant {
@@ -35,17 +37,15 @@ struct HomeView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $isShowCohabitantRegistrationModal) {
+            .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
                 router.resolve(.cohabitantRegistration)
             }
             .sheet(isPresented: $isShowSetting) {
                 router.resolve(.setting)
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationBarButton(label: .settings) {
-                        isShowSetting = true
-                    }
+            .trailingToolbarItem {
+                NavigationBarButton(label: .settings) {
+                    isShowSetting = true
                 }
             }
         }
