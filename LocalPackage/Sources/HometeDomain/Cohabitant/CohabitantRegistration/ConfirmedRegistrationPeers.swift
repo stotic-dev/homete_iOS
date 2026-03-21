@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/30.
 //
 
-#if canImport(MultipeerConnectivity)
 import MultipeerConnectivity
 
 public struct ConfirmedRegistrationPeers: Equatable {
@@ -30,4 +29,3 @@ public struct ConfirmedRegistrationPeers: Equatable {
         return firstPeerID == myPeerID
     }
 }
-#endif

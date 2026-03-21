@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/03.
 //
 
-#if canImport(SwiftUI)
 import SwiftUI
 
 public struct AppDependencies: Sendable {
@@ -50,4 +49,3 @@ extension EnvironmentValues {
 
     @Entry public var appDependencies: AppDependencies = .init()
 }
-#endif

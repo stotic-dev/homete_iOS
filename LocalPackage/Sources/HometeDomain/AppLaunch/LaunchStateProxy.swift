@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/12/27.
 //
 
-#if canImport(SwiftUI)
 import SwiftUI
 
 public struct LaunchStateProxy {
@@ -23,4 +22,3 @@ public struct LaunchStateProxy {
 extension EnvironmentValues {
     @Entry public var launchStateProxy = LaunchStateProxy(launchState: .constant(.notLoggedIn))
 }
-#endif
