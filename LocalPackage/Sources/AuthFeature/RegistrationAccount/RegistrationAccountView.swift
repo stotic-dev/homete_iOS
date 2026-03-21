@@ -10,15 +10,19 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-struct RegistrationAccountView: View {
+public struct RegistrationAccountView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(\.launchStateProxy) var launchStateProxy
     @LoadingState var loadingState
-    
+
     @State var inputUserName = UserName()
     let authInfo: AccountAuthResult
-    
-    var body: some View {
+
+    public init(authInfo: AccountAuthResult) {
+        self.authInfo = authInfo
+    }
+
+    public var body: some View {
         AppNavigationStackView {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
@@ -74,15 +78,15 @@ private extension RegistrationAccountView {
 // MARK: プレゼンテーションロジック
 
 private extension RegistrationAccountView {
-    
+
     func tappedRegistrationButton() async {
-        
+
         do {
-            
+
             let account = try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
             launchStateProxy(.loggedIn(context: .init(account: account)))
         } catch {
-            
+
             print("occurred error: \(error)")
         }
     }

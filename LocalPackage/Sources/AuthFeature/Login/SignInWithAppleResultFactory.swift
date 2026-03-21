@@ -8,27 +8,27 @@
 import AuthenticationServices
 import HometeDomain
 
-enum SignInWithAppleResultFactory {
-    static func make(
+public enum SignInWithAppleResultFactory {
+    public static func make(
         _ credential: ASAuthorizationAppleIDCredential,
         _ nonce: SignInWithAppleNonce
     ) throws -> SignInWithAppleResult {
-        
+
         guard let appleIDToken = credential.identityToken else {
             print("Unable to fetdch identify token.")
             throw DomainError.failAuth
         }
-        
+
         guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
             print("Unable to serialise token string from data: \(appleIDToken.debugDescription)")
             throw DomainError.failAuth
         }
-        
+
         guard let authorizationCode = credential.authorizationCode,
               let authCodeString = String(data: authorizationCode, encoding: .utf8) else {
             throw DomainError.failAuth
         }
-        
+
         return .init(
             tokenId: idTokenString,
             nonce: nonce.original,

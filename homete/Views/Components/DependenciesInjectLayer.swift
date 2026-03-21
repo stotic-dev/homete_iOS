@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/27.
 //
 
+import HometeDomain
 import SwiftUI
 
 struct DependenciesInjectLayer<Content: View>: View {

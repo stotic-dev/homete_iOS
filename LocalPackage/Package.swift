@@ -17,6 +17,10 @@ let iosOnlyProducts: [Product] = [
         name: "HometeResources",
         targets: ["HometeResources"]
     ),
+    .library(
+        name: "AuthFeature",
+        targets: ["AuthFeature"]
+    ),
 ]
 let iosOnlyTargets: [Target] = [
     .target(
@@ -33,6 +37,17 @@ let iosOnlyTargets: [Target] = [
         name: "HometeResources",
         plugins: [
             .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin")
+        ]
+    ),
+    .target(
+        name: "AuthFeature",
+        dependencies: [
+            "HometeDomain",
+            "HometeUI",
+            "HometeResources",
+        ],
+        plugins: [
+            .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
         ]
     ),
 ]

@@ -10,17 +10,19 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-struct LoginView: View {
-    
+public struct LoginView: View {
+
     @Environment(AccountAuthStore.self) var accountAuthStore
     @CommonError var commonErrorContent
     @LoadingState var loadingState
-    
-    var body: some View {
+
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Text(Constants.appName)
                 .font(with: .headLineM)
-            Text("ようこそ!") 
+            Text("ようこそ!")
                 .font(with: .headLineL)
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)
@@ -46,20 +48,20 @@ struct LoginView: View {
 }
 
 private extension LoginView {
-    
+
     func onSignInWithApple(_ result: Result<SignInWithAppleResult, any Error>) async {
-        
+
         switch result {
         case .success(let success):
             do {
-                
+
                 try await accountAuthStore.login(success)
             }
             catch {
-                
+
                 commonErrorContent = .init(error: error)
             }
-            
+
         case .failure(let failure):
             commonErrorContent = .init(error: failure)
         }

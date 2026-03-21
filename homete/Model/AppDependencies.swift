@@ -6,43 +6,12 @@
 //
 
 import HometeDomain
-import SwiftUI
 
-struct AppDependencies {
-    let nonceGeneratorClient: NonceGenerationClient
-    let accountAuthClient: AccountAuthClient
-    let analyticsClient: AnalyticsClient
-    let accountInfoClient: AccountInfoClient
-    let cohabitantClient: CohabitantClient
-    let houseworkClient: HouseworkClient
-    let cohabitantPushNotificationClient: CohabitantPushNotificationClient
-    let signInWithAppleClient: SignInWithAppleClient
-    
-    init(
-        nonceGeneratorClient: NonceGenerationClient = .previewValue,
-        accountAuthClient: AccountAuthClient = .previewValue,
-        analyticsClient: AnalyticsClient = .previewValue,
-        accountInfoClient: AccountInfoClient = .previewValue,
-        cohabitantClient: CohabitantClient = .previewValue,
-        houseworkClient: HouseworkClient = .previewValue,
-        cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
-        signInWithAppleClient: SignInWithAppleClient = .previewValue
-    ) {
-        
-        self.nonceGeneratorClient = nonceGeneratorClient
-        self.accountAuthClient = accountAuthClient
-        self.analyticsClient = analyticsClient
-        self.accountInfoClient = accountInfoClient
-        self.cohabitantClient = cohabitantClient
-        self.houseworkClient = houseworkClient
-        self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
-        self.signInWithAppleClient = signInWithAppleClient
-    }
-}
+// MARK: Live用の定義
 
-extension EnvironmentValues {
-    
-    @Entry var appDependencies: AppDependencies = .init(
+extension AppDependencies {
+
+    static let liveValue: Self = .init(
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
@@ -52,11 +21,4 @@ extension EnvironmentValues {
         cohabitantPushNotificationClient: .liveValue,
         signInWithAppleClient: .liveValue
     )
-}
-
-// MARK: Preview用の定義
-
-extension AppDependencies {
-    
-    static let previewValue: Self = .init()
 }
