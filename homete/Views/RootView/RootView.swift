@@ -60,19 +60,7 @@ struct RootView: View {
 extension RootView {
 
     static func make() -> some View {
-        let resolver = RouteResolver { route in
-            switch route {
-            case .houseworkDetail(let item):
-                AnyView(HouseworkDetailView(item: item))
-            case .houseworkApproval(let item):
-                AnyView(HouseworkApprovalView(item: item))
-            case .cohabitantRegistration:
-                AnyView(CohabitantRegistrationView())
-            case .setting:
-                AnyView(SettingView())
-            }
-        }
-        return DependenciesInjectLayer {
+        DependenciesInjectLayer {
             RootView()
                 .environment(AccountStore(accountInfoClient: $0.accountInfoClient))
                 .environment(AccountAuthStore(
@@ -89,7 +77,7 @@ extension RootView {
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient
                 ))
-                .environment(\.routeResolver, resolver)
+                .routeResolverInjection()
         }
     }
 }
