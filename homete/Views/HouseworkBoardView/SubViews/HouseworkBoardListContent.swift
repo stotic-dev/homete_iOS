@@ -37,7 +37,7 @@ private extension HouseworkBoardListContent {
     
     func houseworkItemRow(_ item: HouseworkItem) -> some View {
         Button {
-            navigationPath.push(.houseworkDetail(item: item))
+            navigationPath.push(.houseworkDetail(item))
         } label: {
             HouseBoardListRow(houseworkItem: item)
         }

@@ -41,8 +41,8 @@ struct HouseworkBoardView: View {
                 .padding(.trailing, .space24)
                 .padding(.bottom, .space24)
             }
-            .navigationDestination(for: AppNavigationElement.self) { element in
-                navigationHandler(element)
+            .navigationDestination(for: AppRoute.self) { route in
+                navigationHandler(route)
             }
             .environment(\.appNavigationPath, navigationPath)
         }
@@ -87,10 +87,12 @@ private extension HouseworkBoardView {
     }
     
     @ViewBuilder
-    func navigationHandler(_ element: AppNavigationElement) -> some View {
-        switch element {
+    func navigationHandler(_ route: AppRoute) -> some View {
+        switch route {
         case .houseworkDetail(let item):
             HouseworkDetailView(item: item)
+        default:
+            EmptyView()
         }
     }
 }

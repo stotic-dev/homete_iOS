@@ -11,6 +11,7 @@ import SwiftUI
 
 struct HouseworkDetailActionContent: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.routeResolver) var router
     @State var isPresentedApprovalView = false
     
     @Binding var isLoading: Bool
@@ -37,7 +38,7 @@ struct HouseworkDetailActionContent: View {
         }
         .disabled(isLoading)
         .fullScreenCover(isPresented: $isPresentedApprovalView) {
-            HouseworkApprovalView(item: item)
+            router.resolve(.houseworkApproval(item))
         }
     }
 }
