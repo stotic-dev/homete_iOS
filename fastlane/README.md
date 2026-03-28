@@ -71,6 +71,14 @@ ipaを生成
 
 本番用のプロビジョニングプロファイルをインストール
 
+### ios nuke_certificates
+
+```sh
+[bundle exec] fastlane ios nuke_certificates
+```
+
+全ての証明書・プロビジョニングプロファイルを削除
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
