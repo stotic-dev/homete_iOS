@@ -20,6 +20,7 @@ test_configuration:
     - HometeResources
   - testable_imports:
     - HometeUI
+    - AppRoot
     - AuthFeature
     - SettingFeature
     - HomeFeature
