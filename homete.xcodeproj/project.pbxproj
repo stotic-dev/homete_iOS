@@ -393,8 +393,6 @@
 		};
 		BCC854142DB74BBF00C9A44B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -461,8 +459,6 @@
 		};
 		BCC854152DB74BBF00C9A44B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
