@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
+		04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */ = {isa = PBXBuildFile; productRef = 04FD07782F77AEA500BEC61C /* ProjectToolsDummy */; };
 		2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */ = {isa = PBXBuildFile; productRef = 5735E0CC5DF34B1AADF7A805 /* AppRoot */; };
 		7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
@@ -91,6 +92,7 @@
 				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
 				7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */,
 				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
+				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,7 +164,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854162DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "homete" */;
 			buildPhases = (
-				BC70E19B2E4869090000C1BD /* Run Swift Lint */,
 				BCC853F12DB74BBC00C9A44B /* Sources */,
 				BCC853F22DB74BBC00C9A44B /* Frameworks */,
 				BCC853F32DB74BBC00C9A44B /* Resources */,
@@ -171,6 +172,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				04FD077B2F77AEAF00BEC61C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BCC853F72DB74BBC00C9A44B /* homete */,
@@ -181,6 +183,7 @@
 				04B371982F40526F00820C62 /* HometeDomain */,
 				02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */,
 				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
+				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -220,6 +223,7 @@
 				BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */,
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+				04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
@@ -271,25 +275,6 @@
 			shellPath = /bin/sh;
 			shellScript = "/usr/libexec/PlistBuddy -c \"Set :UIDesignRequiresCompatibility YES\" \"${BUILT_PRODUCTS_DIR}/homete.app/Info.plist\"\n";
 		};
-		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Swift Lint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
-		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -337,6 +322,10 @@
 		04B783712F4996860080EFAC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			productRef = 04B783702F4996860080EFAC /* PrefireTestsPlugin */;
+		};
+		04FD077B2F77AEAF00BEC61C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 04FD077A2F77AEAF00BEC61C /* SwiftLintPlugin */;
 		};
 		BC1BB26D2E909B8C001D168F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -546,7 +535,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -593,7 +582,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -663,6 +652,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = LocalPackage;
 		};
+		04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ProjectTools;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -705,6 +698,15 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = "plugin:PrefireTestsPlugin";
+		};
+		04FD07782F77AEA500BEC61C /* ProjectToolsDummy */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ProjectToolsDummy;
+		};
+		04FD077A2F77AEAF00BEC61C /* SwiftLintPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */;
+			productName = "plugin:SwiftLintPlugin";
 		};
 		5735E0CC5DF34B1AADF7A805 /* AppRoot */ = {
 			isa = XCSwiftPackageProductDependency;
