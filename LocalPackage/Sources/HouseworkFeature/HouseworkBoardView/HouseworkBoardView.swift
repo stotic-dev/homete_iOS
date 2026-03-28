@@ -24,7 +24,7 @@ public struct HouseworkBoardView: View {
     }
 
     public var body: some View {
-        NavigationStack(path: $navigationPath.path) {
+        AppNavigationStackView(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
