@@ -9,12 +9,15 @@
 | モジュール | 役割 | 依存先 |
 |---|---|---|
 | `HometeDomain` | ドメインモデル・Client プロトコル・Store・AppRoute | なし（最下層） |
-| `HometeUI` | デザインシステム・共通コンポーネント・View ユーティリティ | `HometeDomain` |
-| `AuthFeature` | 認証関連 View | `HometeDomain`, `HometeUI` |
-| `HouseworkFeature` | 家事ボード関連 View | `HometeDomain`, `HometeUI` |
-| `SettingFeature` | 設定関連 View | `HometeDomain`, `HometeUI` |
-| `HomeFeature` | ホーム画面・同居人管理関連 View | `HometeDomain`, `HometeUI` |
-| `homete`（メインターゲット） | Client liveValue 実装・Services・RouteResolver 実態・RootView | 全モジュール |
+| `HometeResources` | アセット（色・画像）・SwiftGen 生成コード | なし |
+| `HometeUI` | デザインシステム・共通コンポーネント・View ユーティリティ | `HometeDomain`, `HometeResources` |
+| `AuthFeature` | 認証関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `HouseworkFeature` | 家事ボード関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `SettingFeature` | 設定関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `HomeFeature` | ホーム画面・同居人管理関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・Firebase 依存 | `HometeDomain`, Firebase SDK |
+| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature |
+| `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
 
 ### ディレクトリ構成
 
@@ -25,22 +28,32 @@ HometeDomain/
   ├── Stores (AccountStore, HouseworkListStore, CohabitantStore, AccountAuthStore)
   └── AppRoute + RouteResolver
 
+HometeResources/
+  └── Assets（Colors.xcassets, Image.xcassets）+ SwiftGen 生成コード
+
 HometeUI/
   ├── DesignSystem（色、フォント、共通スタイル）
   ├── 共通コンポーネント（ボタン、カード等）
   └── ViewUtilities（Alert、Navigation 等）
 
-AuthFeature/
-HouseworkFeature/
-SettingFeature/
-HomeFeature/          ← 同居人管理 View を含む
+Features/
+  ├── AuthFeature/
+  ├── HouseworkFeature/
+  ├── SettingFeature/
+  └── HomeFeature/          ← 同居人管理 View を含む
+
+HometeInfrastructure/
+  ├── Client liveValue 実装（Impl*.swift）
+  ├── Services（FirestoreService, SignInWithAppleService...）
+  └── AppDependencies+liveValue
+
+AppRoot/
+  ├── RootView / AppTabView / LaunchScreenView
+  ├── DependenciesInjectLayer
+  └── RouteResolverInjection
 
 homete（メインターゲット）/
-  ├── Client liveValue 実装
-  ├── Services（FirestoreService, SignInWithAppleService...）
-  ├── RouteResolver 実態
-  ├── RootView / AppTabView / DependenciesInjectLayer
-  └── Store の初期化・Environment 注入
+  └── HometeApp.swift（アプリエントリーポイント）
 ```
 
 ## モジュール間の依存関係
@@ -51,7 +64,11 @@ graph TD
         Firebase["Firebase SDK\n（Auth / Firestore / Messaging）"]
     end
 
-    homete["homete\n（メインターゲット）\nClient liveValue / Services / RouteResolver"]
+    homete["homete\n（メインターゲット）\nHometeApp.swift のみ"]
+
+    AppRoot["AppRoot\nRootView / AppTabView\nDependenciesInjectLayer\nRouteResolverInjection"]
+
+    HometeInfrastructure["HometeInfrastructure\nClient liveValue / Services\nAppDependencies+liveValue"]
 
     subgraph Features["Feature Modules"]
         AuthFeature
@@ -61,21 +78,31 @@ graph TD
     end
 
     HometeUI["HometeUI\n（デザインシステム・共通 UI）"]
+    HometeResources["HometeResources\n（アセット・SwiftGen）"]
     HometeDomain["HometeDomain\n（ドメインモデル・Client Protocol・Store・AppRoute）"]
 
-    homete --> Firebase
+    homete --> AppRoot
+    homete --> HometeInfrastructure
 
-    homete -->|DI \n Client liveValue| AuthFeature
-    homete -->|DI \n Client liveValue| HouseworkFeature
-    homete -->|DI \n Client liveValue| SettingFeature
-    homete -->|DI \n Client liveValue| HomeFeature
-    homete --> HometeUI
-    homete --> HometeDomain
+    HometeInfrastructure --> Firebase
+    HometeInfrastructure --> HometeDomain
+
+    AppRoot -->|DI \n Client liveValue| AuthFeature
+    AppRoot -->|DI \n Client liveValue| HouseworkFeature
+    AppRoot -->|DI \n Client liveValue| SettingFeature
+    AppRoot -->|DI \n Client liveValue| HomeFeature
+    AppRoot --> HometeUI
+    AppRoot --> HometeDomain
 
     AuthFeature --> HometeUI
     HouseworkFeature --> HometeUI
     SettingFeature --> HometeUI
     HomeFeature --> HometeUI
+
+    AuthFeature --> HometeResources
+    HouseworkFeature --> HometeResources
+    SettingFeature --> HometeResources
+    HomeFeature --> HometeResources
 
     AuthFeature --> HometeDomain
     HouseworkFeature --> HometeDomain
@@ -83,11 +110,12 @@ graph TD
     HomeFeature --> HometeDomain
 
     HometeUI --> HometeDomain
+    HometeUI --> HometeResources
 ```
 
 > **ルール:**
-> - 外部ライブラリへの依存はメインターゲットのみが持つ。Feature モジュールは外部ライブラリに直接依存しない
-> - メインターゲットは Client の `liveValue` を実装し、Environment 経由で各 Feature に DI する
+> - 外部ライブラリへの依存は `HometeInfrastructure` のみが持つ。Feature モジュールは外部ライブラリに直接依存しない
+> - `HometeInfrastructure` が Client の `liveValue` を実装し、`AppRoot` の `DependenciesInjectLayer` が Environment 経由で各 Feature に DI する
 > - Feature モジュール間の直接依存は禁止。Feature 間の画面遷移は必ず RouteResolver パターンを使用する
 > - Feature 内部の画面遷移は RouteResolver を使用しない。Feature 専用のルート enum を定義して管理する
 
