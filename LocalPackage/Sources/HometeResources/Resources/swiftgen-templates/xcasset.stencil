@@ -15,7 +15,7 @@ import UIKit
 {% macro colorCases assets %}
   {%- for asset in assets %}
     {%- if asset.type == "color" %}
-  public static let {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} = HometeColor(name: "{{ asset.value }}")
+  static let {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} = HometeColor(name: "{{ asset.value }}")
     {%- elif asset.items and asset.isNamespaced == "true" %}
   public enum {{ asset.name|swiftIdentifier:"pretty"|escapeReservedKeywords }} {
     {% filter indent:2," ",true %}{% call colorCases asset.items %}{% endfilter %}
@@ -83,7 +83,7 @@ public extension ShapeStyle where Self == Color {
 {% macro imageCases assets %}
   {%- for asset in assets %}
     {%- if asset.type == "image" %}
-  public static let {{ asset.name|swiftIdentifier:"valid"|lowerFirstWord|escapeReservedKeywords }} = HometeImage(name: "{{ asset.value }}")
+  static let {{ asset.name|swiftIdentifier:"valid"|lowerFirstWord|escapeReservedKeywords }} = HometeImage(name: "{{ asset.value }}")
     {%- elif asset.items and asset.isNamespaced == "true" %}
   public enum {{ asset.name|swiftIdentifier:"pretty"|escapeReservedKeywords }} {
     {% filter indent:2," ",true %}{% call imageCases asset.items %}{% endfilter %}

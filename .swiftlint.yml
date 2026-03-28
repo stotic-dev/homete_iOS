@@ -1,11 +1,9 @@
 # Directory and file filters
-included:
-  - homete
-  - hometeTests
-  - hometeUITests
-
 excluded:
   - ProjectTools
+  - DangerTools
+  - LocalPackage/.build
+  - vendor
 
 # Enabled/disabled rules
 opt_in_rules:
