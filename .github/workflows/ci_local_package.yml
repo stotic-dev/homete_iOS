@@ -39,8 +39,11 @@ jobs:
           restore-keys: |
             local-package-${{ runner.os }}-
 
+      - name: Build LocalPackage for iOS Simulator
+        run: make build-local-package
+
       - name: Run tests with coverage
-        run: swift test --package-path LocalPackage --enable-code-coverage
+        run: make test-packages
 
       - name: Setup Node.js
         if: github.event_name == 'pull_request'

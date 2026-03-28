@@ -35,11 +35,20 @@ let package = Package(
             name: "HouseworkFeature",
             targets: ["HouseworkFeature"]
         ),
+        .library(
+            name: "HometeInfrastructure",
+            targets: ["HometeInfrastructure"]
+        ),
+        .library(
+            name: "AppRoot",
+            targets: ["AppRoot"]
+        ),
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1")
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1"),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
     ],
     targets: [
         .target(
@@ -82,6 +91,7 @@ let package = Package(
                 "HometeUI",
                 "HometeResources",
             ],
+            path: "./Sources/Features/AuthFeature",
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
@@ -93,6 +103,7 @@ let package = Package(
                 "HometeUI",
                 "HometeResources",
             ],
+            path: "./Sources/Features/SettingFeature",
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
@@ -105,6 +116,7 @@ let package = Package(
                 "HometeResources",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
+            path: "./Sources/Features/HomeFeature",
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
@@ -115,6 +127,36 @@ let package = Package(
                 "HometeDomain",
                 "HometeUI",
                 "HometeResources",
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
+            ],
+            path: "./Sources/Features/HouseworkFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
+            name: "HometeInfrastructure",
+            dependencies: [
+                "HometeDomain",
+                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
+                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
+            name: "AppRoot",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "AuthFeature",
+                "SettingFeature",
+                "HomeFeature",
+                "HouseworkFeature",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             plugins: [

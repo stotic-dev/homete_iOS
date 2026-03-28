@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "Homete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -10,9 +11,6 @@
           }
         }
       }
-    },
-    "list.bullet.clipboard.fill" : {
-
     },
     "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
       "extractionState" : "stale",
@@ -25,9 +23,6 @@
         }
       }
     },
-    "ダッシュボード" : {
-
-    },
     "ようこそ!" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -38,9 +33,6 @@
           }
         }
       }
-    },
-    "家事" : {
-
     },
     "続行すると、利用規約とプライバシーポリシーに同意したことになります。" : {
       "extractionState" : "stale",
