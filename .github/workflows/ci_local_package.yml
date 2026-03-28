@@ -39,6 +39,9 @@ jobs:
           restore-keys: |
             local-package-${{ runner.os }}-
 
+      - name: Build LocalPackage for iOS Simulator
+        run: make build-local-package
+
       - name: Run tests with coverage
         run: make test-packages
 
