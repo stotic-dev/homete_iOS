@@ -50,7 +50,7 @@ struct AppTabView: View {
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
-                                "list.bullet.clipboard.fill",
+                                "家事",
                                 systemImage: "person.2.arrow.trianglehead.counterclockwise"
                             )
                         }
