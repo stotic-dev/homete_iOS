@@ -91,9 +91,11 @@ private extension AppTabView {
                 print("[Notifications] Authorization not granted.")
                 return
             }
+            #if os(iOS)
             await MainActor.run {
                 UIApplication.shared.registerForRemoteNotifications()
             }
+            #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")
         }

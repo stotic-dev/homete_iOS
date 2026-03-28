@@ -3,6 +3,8 @@
 //
 
 import HometeDomain
+
+#if os(iOS)
 import FirebaseAnalytics
 import FirebaseCrashlytics
 
@@ -17,3 +19,9 @@ extension AnalyticsClient {
         Analytics.logEvent(event.name, parameters: event.parameters)
     }
 }
+#else
+extension AnalyticsClient {
+
+    static let liveValue: AnalyticsClient = .init { _ in } log: { _ in }
+}
+#endif

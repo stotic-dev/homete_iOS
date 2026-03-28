@@ -26,8 +26,10 @@ struct HouseworkBoardListContent: View {
                     .padding(.vertical, .space8)
             }
             .listRowBackground(Color.clear)
+            #if os(iOS)
             .listRowSpacing(.zero)
             .listRowSeparator(.hidden)
+            #endif
         }
         .listStyle(.plain)
         .commonError(content: $commonError)
