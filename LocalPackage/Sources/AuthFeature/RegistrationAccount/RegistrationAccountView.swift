@@ -23,7 +23,7 @@ public struct RegistrationAccountView: View {
     }
 
     public var body: some View {
-        AppNavigationStackView {
+        NavigationStack {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
                     Text("はじめまして！")

@@ -27,7 +27,7 @@ public struct HouseworkApprovalView: View {
     }
 
     public var body: some View {
-        AppNavigationStackView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: .space40) {
                     VStack(spacing: .space24) {
