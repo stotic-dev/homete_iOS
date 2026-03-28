@@ -3,6 +3,7 @@ excluded:
   - ProjectTools
   - DangerTools
   - LocalPackage/.build
+  - LocalPackage/Package.swift
   - vendor
 
 # Enabled/disabled rules
