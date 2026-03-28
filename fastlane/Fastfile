@@ -127,6 +127,18 @@ platform :ios do
     )
   end
 
+  desc "全ての証明書・プロビジョニングプロファイルを削除"
+  lane :nuke_certificates do
+    api_key = generate_api_key
+    ["development", "appstore"].each do |type|
+      match_nuke(
+        api_key: api_key,
+        type: type,
+        skip_confirmation: true
+      )
+    end
+  end
+
   private_lane :generate_api_key do
     app_store_connect_api_key(
       key_id: ENV['ASC_KEY_ID'],
