@@ -1,0 +1,46 @@
+{
+  "configurations" : [
+    {
+      "id" : "089CBDC1-94A2-424B-999D-B47631B502B4",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "commandLineArgumentEntries" : [
+      {
+        "argument" : "-AppleLanguages (ja)"
+      },
+      {
+        "argument" : "isUnitTestMode"
+      }
+    ],
+    "environmentVariableEntries" : [
+      {
+        "key" : "CI_XCODE_CLOUD",
+        "value" : "$(CI_XCODE_CLOUD)"
+      },
+      {
+        "key" : "CI_PRIMARY_REPOSITORY_PATH",
+        "value" : "$(CI_PRIMARY_REPOSITORY_PATH)"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:homete.xcodeproj",
+      "identifier" : "BCC853F42DB74BBC00C9A44B",
+      "name" : "homete"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:homete.xcodeproj",
+        "identifier" : "BC1BB2672E909B8C001D168F",
+        "name" : "hometeSnapshotTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e setup-project
+.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project
 
 .DEFAULT_GOAL := setup-project
 
@@ -16,6 +16,12 @@ emulator: ## エミュレーターを起動
 
 test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
+
+build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド
+	swift build --package-path LocalPackage --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+
+test-packages: ## LocalPackageのテストを実行
+	swift test --package-path LocalPackage --enable-code-coverage
 
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh

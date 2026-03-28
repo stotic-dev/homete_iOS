@@ -5,8 +5,11 @@
 //  Created by 佐藤汰一 on 2025/04/22.
 //
 
+import AppRoot
 import FirebaseCore
 import FirebaseMessaging
+import HometeDomain
+import HometeInfrastructure
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
@@ -84,7 +87,7 @@ struct HometeApp: App {
             if delegate.isUnitTestMode {
                 EmptyView()
             } else {
-                RootView.make()
+                RootView.make(dependencies: .liveValue)
             }
         }
     }

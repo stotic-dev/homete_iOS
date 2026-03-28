@@ -14,5 +14,7 @@
 		<string>remote-notification</string>
 		<string>fetch</string>
 	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<false/>
 </dict>
 </plist>

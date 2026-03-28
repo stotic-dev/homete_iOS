@@ -7,18 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
+		04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */ = {isa = PBXBuildFile; productRef = 04FD07782F77AEA500BEC61C /* ProjectToolsDummy */; };
+		2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */ = {isa = PBXBuildFile; productRef = 5735E0CC5DF34B1AADF7A805 /* AppRoot */; };
+		7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
-		BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF7112E7863B500DC31CA /* FirebaseFunctions */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
-		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
-		BC4703642E9CF66E006CC530 /* CI.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC4703632E9CF66D006CC530 /* CI.xctestplan */; };
-		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
-		BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BCADFE1C2EACB62E00DF4AAA /* Prefire */; };
-		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
-		BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,26 +26,26 @@
 			remoteGlobalIDString = BCC853F42DB74BBC00C9A44B;
 			remoteInfo = homete;
 		};
-		BCC854032DB74BBF00C9A44B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BCC853ED2DB74BBC00C9A44B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BCC853F42DB74BBC00C9A44B;
-			remoteInfo = homete;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
+		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
-		BC4703632E9CF66D006CC530 /* CI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = CI.xctestplan; sourceTree = "<group>"; };
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
 		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BCC854022DB74BBF00C9A44B /* hometeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		04B7923F2F525C2D0080EFAC /* Exceptions for "hometeSnapshotTests" folder in "hometeSnapshotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BC1BB2672E909B8C001D168F /* hometeSnapshotTests */;
+		};
 		BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -61,6 +58,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BC1BB2692E909B8C001D168F /* hometeSnapshotTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04B7923F2F525C2D0080EFAC /* Exceptions for "hometeSnapshotTests" folder in "hometeSnapshotTests" target */,
+			);
 			path = hometeSnapshotTests;
 			sourceTree = "<group>";
 		};
@@ -70,11 +70,6 @@
 				BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */,
 			);
 			path = homete;
-			sourceTree = "<group>";
-		};
-		BCC854052DB74BBF00C9A44B /* hometeTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = hometeTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -93,20 +88,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
-				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
-				BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */,
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
-				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
-				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
-				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BCC853FF2DB74BBF00C9A44B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
+				7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */,
+				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
+				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,12 +109,12 @@
 		BCC853EC2DB74BBC00C9A44B = {
 			isa = PBXGroup;
 			children = (
-				BC4703632E9CF66D006CC530 /* CI.xctestplan */,
+				04B371962F404CBF00820C62 /* LocalPackage */,
 				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
+				04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */,
 				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
-				BCC854052DB74BBF00C9A44B /* hometeTests */,
 				BC1BB2692E909B8C001D168F /* hometeSnapshotTests */,
 				BCB8DB162E37B3F900FFB4E1 /* Frameworks */,
 				BCC853F62DB74BBC00C9A44B /* Products */,
@@ -139,7 +125,6 @@
 			isa = PBXGroup;
 			children = (
 				BCC853F52DB74BBC00C9A44B /* homete.app */,
-				BCC854022DB74BBF00C9A44B /* hometeTests.xctest */,
 				BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */,
 			);
 			name = Products;
@@ -155,11 +140,12 @@
 				BC1BB2642E909B8C001D168F /* Sources */,
 				BC1BB2652E909B8C001D168F /* Frameworks */,
 				BC1BB2662E909B8C001D168F /* Resources */,
+				04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */,
+				04B783712F4996860080EFAC /* PBXTargetDependency */,
 				BC1BB26D2E909B8C001D168F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -178,7 +164,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BCC854162DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "homete" */;
 			buildPhases = (
-				BC70E19B2E4869090000C1BD /* Run Swift Lint */,
 				BCC853F12DB74BBC00C9A44B /* Sources */,
 				BCC853F22DB74BBC00C9A44B /* Frameworks */,
 				BCC853F32DB74BBC00C9A44B /* Resources */,
@@ -187,46 +172,22 @@
 			buildRules = (
 			);
 			dependencies = (
+				04FD077B2F77AEAF00BEC61C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BCC853F72DB74BBC00C9A44B /* homete */,
 			);
 			name = homete;
 			packageProductDependencies = (
-				BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */,
-				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
-				BC2E372B2E3DE189005BD910 /* FirebaseAuth */,
-				BC47E6A52E47240F00308562 /* FirebaseFirestore */,
 				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
-				BC0CF7112E7863B500DC31CA /* FirebaseFunctions */,
-				BCADFE1C2EACB62E00DF4AAA /* Prefire */,
+				04B371982F40526F00820C62 /* HometeDomain */,
+				02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */,
+				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
+				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
 			productType = "com.apple.product-type.application";
-		};
-		BCC854012DB74BBF00C9A44B /* hometeTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = BCC854192DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeTests" */;
-			buildPhases = (
-				BCC853FE2DB74BBF00C9A44B /* Sources */,
-				BCC853FF2DB74BBF00C9A44B /* Frameworks */,
-				BCC854002DB74BBF00C9A44B /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				BCC854042DB74BBF00C9A44B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				BCC854052DB74BBF00C9A44B /* hometeTests */,
-			);
-			name = hometeTests;
-			packageProductDependencies = (
-			);
-			productName = hometeTests;
-			productReference = BCC854022DB74BBF00C9A44B /* hometeTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -235,7 +196,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					BC1BB2672E909B8C001D168F = {
@@ -244,11 +205,6 @@
 					};
 					BCC853F42DB74BBC00C9A44B = {
 						CreatedOnToolsVersion = 16.3;
-					};
-					BCC854012DB74BBF00C9A44B = {
-						CreatedOnToolsVersion = 16.3;
-						LastSwiftMigration = 1640;
-						TestTargetID = BCC853F42DB74BBC00C9A44B;
 					};
 				};
 			};
@@ -266,6 +222,8 @@
 				BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */,
+				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+				04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
@@ -273,7 +231,6 @@
 			projectRoot = "";
 			targets = (
 				BCC853F42DB74BBC00C9A44B /* homete */,
-				BCC854012DB74BBF00C9A44B /* hometeTests */,
 				BC1BB2672E909B8C001D168F /* hometeSnapshotTests */,
 			);
 		};
@@ -292,22 +249,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */,
-				BC4703642E9CF66E006CC530 /* CI.xctestplan in Resources */,
 				BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		BCC854002DB74BBF00C9A44B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BC70E19B2E4869090000C1BD /* Run Swift Lint */ = {
+		04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -317,14 +266,14 @@
 			);
 			inputPaths = (
 			);
-			name = "Run Swift Lint";
+			name = "Set UIDesignRequiresCompatibility";
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ -z \"$CI\" ]; then\n    $SWIFT_LINT_CMD\nfi\n";
+			shellScript = "/usr/libexec/PlistBuddy -c \"Set :UIDesignRequiresCompatibility YES\" \"${BUILT_PRODUCTS_DIR}/homete.app/Info.plist\"\n";
 		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -367,29 +316,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		BCC853FE2DB74BBF00C9A44B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		04B783712F4996860080EFAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 04B783702F4996860080EFAC /* PrefireTestsPlugin */;
+		};
+		04FD077B2F77AEAF00BEC61C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 04FD077A2F77AEAF00BEC61C /* SwiftLintPlugin */;
+		};
 		BC1BB26D2E909B8C001D168F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
 			targetProxy = BC1BB26C2E909B8C001D168F /* PBXContainerItemProxy */;
-		};
-		BC4701FD2E9A0F49006CC530 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */;
-		};
-		BCC854042DB74BBF00C9A44B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BCC853F42DB74BBC00C9A44B /* homete */;
-			targetProxy = BCC854032DB74BBF00C9A44B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -401,7 +342,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
@@ -427,7 +370,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
@@ -448,8 +393,6 @@
 		};
 		BCC854142DB74BBF00C9A44B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -516,8 +459,6 @@
 		};
 		BCC854152DB74BBF00C9A44B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/config/Common.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -579,6 +520,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = homete/hometeDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -588,7 +531,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -625,6 +568,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = homete/hometeRelease.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
@@ -633,7 +578,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 56LYVN6DMF;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
@@ -663,57 +608,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		BCC8541A2DB74BBF00C9A44B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 56LYVN6DMF;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/homete.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/homete";
-			};
-			name = Debug;
-		};
-		BCC8541B2DB74BBF00C9A44B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 56LYVN6DMF;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/homete.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/homete";
 			};
 			name = Release;
 		};
@@ -747,16 +641,18 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BCC854192DB74BBF00C9A44B /* Build configuration list for PBXNativeTarget "hometeTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BCC8541A2DB74BBF00C9A44B /* Debug */,
-				BCC8541B2DB74BBF00C9A44B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackage;
+		};
+		04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ProjectTools;
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
 		BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
@@ -772,7 +668,7 @@
 			repositoryURL = "https://github.com/BarredEwe/Prefire.git";
 			requirement = {
 				kind = exactVersion;
-				version = 5.3.0;
+				version = 5.4.1;
 			};
 		};
 		BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -786,55 +682,46 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeInfrastructure;
+		};
+		04B371982F40526F00820C62 /* HometeDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeDomain;
+		};
+		04B783702F4996860080EFAC /* PrefireTestsPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
+			productName = "plugin:PrefireTestsPlugin";
+		};
+		04FD07782F77AEA500BEC61C /* ProjectToolsDummy */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ProjectToolsDummy;
+		};
+		04FD077A2F77AEAF00BEC61C /* SwiftLintPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */;
+			productName = "plugin:SwiftLintPlugin";
+		};
+		5735E0CC5DF34B1AADF7A805 /* AppRoot */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppRoot;
+		};
 		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
-		};
-		BC0CF7112E7863B500DC31CA /* FirebaseFunctions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFunctions;
 		};
 		BC1BB2712E909B99001D168F /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
 		};
-		BC2E372B2E3DE189005BD910 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
 		BC4701FA2E9A0F3D006CC530 /* Prefire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = Prefire;
-		};
-		BC4701FC2E9A0F49006CC530 /* PrefireTestsPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
-			productName = "plugin:PrefireTestsPlugin";
-		};
-		BC47E6A52E47240F00308562 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		BCADFE1C2EACB62E00DF4AAA /* Prefire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
-			productName = Prefire;
-		};
-		BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
-		};
-		BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
