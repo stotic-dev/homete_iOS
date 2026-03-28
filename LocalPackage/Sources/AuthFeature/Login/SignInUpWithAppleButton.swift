@@ -31,7 +31,8 @@ private extension SignInUpWithAppleButton {
 
     func handleRequest(request: ASAuthorizationAppleIDRequest) {
         let nonce = nonceGenerationClient()
-        request.build(nonce)
+        request.requestedScopes = [.fullName]
+        request.nonce = nonce.sha256
         currentNonce = nonce
     }
 
