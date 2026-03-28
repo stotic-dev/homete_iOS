@@ -209,22 +209,6 @@ Store は `HometeDomain` に配置する。理由:
 - Client Protocol に依存するが、これも `HometeDomain` 内にあるため整合性が取れる
 - メインターゲットで Store を初期化し、Environment 経由で各 Feature に注入
 
-## 実装フェーズ
-
-| Phase | 内容 | 状態 |
-|---|---|---|
-| Phase 1 | HometeDomain パッケージの切り出し（Domain Models・Client Protocols・Stores・AppRoute） | 完了 |
-| Phase 2 | HometeUI パッケージの切り出し（デザインシステム・共通コンポーネント） | 完了 |
-| Phase 3 | RouteResolver 基盤実装（`HometeDomain` に `AppRoute`、`HometeUI` に `RouteResolver` を定義し、メインターゲットの既存画面遷移を RouteResolver 経由に置き換える） | 完了 |
-| Phase 4 | Feature パッケージの切り出し（AuthFeature・HouseworkFeature・SettingFeature・HomeFeature） | 完了 |
-| Phase 5 | メインターゲットの整理（Services・liveValue 実装・RouteResolver 実態・RootView） | 未着手 |
-| Phase 6 | テストターゲットの整理（モジュールごとのテストターゲット追加 or 既存の `hometeTests/` を更新） | 未着手 |
-| Phase 7 | CI ビルド時間・テスト実行時間の計測・比較 | 未着手 |
-
-> **推奨:** 段階的移行（Phase 1 から順に PR を分けてマージ）。1 PR での全移行はリスクが高い。
->
-> **Phase 3 の必要性:** Feature パッケージを切り出す前に RouteResolver 基盤を整備する必要がある。`HomeView` → `SettingView`・`CohabitantRegistrationView` のような Feature 間の直接 View 参照が残った状態でパッケージを分割すると、依存禁止ルール違反でコンパイルエラーになる。先に RouteResolver をメインターゲットで動かした状態にしてから Feature を切り出すことでリスクを低減できる。
-
 ## 補足・制約事項
 
 - **ProjectTools**（SwiftLint / Danger）は現行のローカルパッケージ形式のまま変更不要
