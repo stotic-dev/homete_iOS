@@ -38,7 +38,8 @@ platform :ios do
       scheme: "homete",
       output_directory: "Build/app",
       cloned_source_packages_path: "SourcePackages",
-      export_method: "app-store"
+      export_method: "app-store",
+      xcargs: "-skipPackagePluginValidation"
     )
   end
 
