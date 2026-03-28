@@ -7,24 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 04185D2C2F5BF84F00ECBEED /* HometeResources */; };
-		041871852F6E6ACC002E13F6 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 041871842F6E6ACC002E13F6 /* SettingFeature */; };
 		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
-		04D371992F40526F00820C62 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 04D371982F40526F00820C62 /* HometeUI */; };
-		04F371992F40526F00820C62 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 04F371982F40526F00820C62 /* AuthFeature */; };
-		21169B6F6C6143DEB352BC81 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 40F1F5721A854AD8BE02E959 /* HomeFeature */; };
-		A1B2C3D4E5F6789012345678 /* HouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = B2C3D4E5F6789012345678A1 /* HouseworkFeature */; };
+		2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */ = {isa = PBXBuildFile; productRef = 5735E0CC5DF34B1AADF7A805 /* AppRoot */; };
+		7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
-		BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF7112E7863B500DC31CA /* FirebaseFunctions */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
-		BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BC2E372B2E3DE189005BD910 /* FirebaseAuth */; };
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
-		BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = BC47E6A52E47240F00308562 /* FirebaseFirestore */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
-		BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BCADFE1C2EACB62E00DF4AAA /* Prefire */; };
-		BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */; };
-		BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,20 +87,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BCB8DAFE2E36FC7200FFB4E1 /* FirebaseAnalytics in Frameworks */,
-				BC47E6A62E47240F00308562 /* FirebaseFirestore in Frameworks */,
-				BCADFE1D2EACB62E00DF4AAA /* Prefire in Frameworks */,
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
-				041871852F6E6ACC002E13F6 /* SettingFeature in Frameworks */,
-				21169B6F6C6143DEB352BC81 /* HomeFeature in Frameworks */,
-				A1B2C3D4E5F6789012345678 /* HouseworkFeature in Frameworks */,
-				BC0CF7122E7863B500DC31CA /* FirebaseFunctions in Frameworks */,
-				BC2E372C2E3DE189005BD910 /* FirebaseAuth in Frameworks */,
-				04185D2D2F5BF84F00ECBEED /* HometeResources in Frameworks */,
 				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
-				04D371992F40526F00820C62 /* HometeUI in Frameworks */,
-				04F371992F40526F00820C62 /* AuthFeature in Frameworks */,
-				BCB8DB182E37B3F900FFB4E1 /* FirebaseCrashlytics in Frameworks */,
+				7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */,
+				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -197,20 +177,10 @@
 			);
 			name = homete;
 			packageProductDependencies = (
-				BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */,
-				BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */,
-				BC2E372B2E3DE189005BD910 /* FirebaseAuth */,
-				BC47E6A52E47240F00308562 /* FirebaseFirestore */,
 				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
-				BC0CF7112E7863B500DC31CA /* FirebaseFunctions */,
-				BCADFE1C2EACB62E00DF4AAA /* Prefire */,
 				04B371982F40526F00820C62 /* HometeDomain */,
-				04D371982F40526F00820C62 /* HometeUI */,
-				04185D2C2F5BF84F00ECBEED /* HometeResources */,
-				04F371982F40526F00820C62 /* AuthFeature */,
-				041871842F6E6ACC002E13F6 /* SettingFeature */,
-				40F1F5721A854AD8BE02E959 /* HomeFeature */,
-				B2C3D4E5F6789012345678A1 /* HouseworkFeature */,
+				02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */,
+				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
 			);
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
@@ -723,13 +693,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		04185D2C2F5BF84F00ECBEED /* HometeResources */ = {
+		02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HometeResources;
-		};
-		041871842F6E6ACC002E13F6 /* SettingFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SettingFeature;
+			productName = HometeInfrastructure;
 		};
 		04B371982F40526F00820C62 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -740,66 +706,24 @@
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = "plugin:PrefireTestsPlugin";
 		};
-		04D371982F40526F00820C62 /* HometeUI */ = {
+		5735E0CC5DF34B1AADF7A805 /* AppRoot */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HometeUI;
-		};
-		04F371982F40526F00820C62 /* AuthFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = AuthFeature;
-		};
-		40F1F5721A854AD8BE02E959 /* HomeFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HomeFeature;
-		};
-		B2C3D4E5F6789012345678A1 /* HouseworkFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HouseworkFeature;
+			productName = AppRoot;
 		};
 		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
 		};
-		BC0CF7112E7863B500DC31CA /* FirebaseFunctions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFunctions;
-		};
 		BC1BB2712E909B99001D168F /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
 		};
-		BC2E372B2E3DE189005BD910 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
 		BC4701FA2E9A0F3D006CC530 /* Prefire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = Prefire;
-		};
-		BC47E6A52E47240F00308562 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
-		};
-		BCADFE1C2EACB62E00DF4AAA /* Prefire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
-			productName = Prefire;
-		};
-		BCB8DAFD2E36FC7200FFB4E1 /* FirebaseAnalytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalytics;
-		};
-		BCB8DB172E37B3F900FFB4E1 /* FirebaseCrashlytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

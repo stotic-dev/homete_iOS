@@ -1,6 +1,5 @@
 //
 //  RouteResolverInjection.swift
-//  homete
 //
 
 import HomeFeature

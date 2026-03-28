@@ -1,22 +1,27 @@
 //
-//  AnalyticsClient.swift
-//  homete
-//
-//  Created by 佐藤汰一 on 2025/08/09.
+//  ImplAnalyticsClient.swift
 //
 
-import FirebaseAnalytics
-import FirebaseCrashlytics
 import HometeDomain
 
+#if os(iOS)
+import FirebaseAnalytics
+import FirebaseCrashlytics
+
 extension AnalyticsClient {
-    
+
     static let liveValue: AnalyticsClient = .init { userId in
-        
+
         Analytics.setUserID(userId)
         Crashlytics.crashlytics().setUserID(userId)
     } log: { event in
-        
+
         Analytics.logEvent(event.name, parameters: event.parameters)
     }
 }
+#else
+extension AnalyticsClient {
+
+    static let liveValue: AnalyticsClient = .init { _ in } log: { _ in }
+}
+#endif

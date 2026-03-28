@@ -1,8 +1,5 @@
 //
-//  AppDependencies.swift
-//  homete
-//
-//  Created by 佐藤汰一 on 2025/08/03.
+//  AppDependencies+liveValue.swift
 //
 
 import HometeDomain
@@ -11,7 +8,7 @@ import HometeDomain
 
 extension AppDependencies {
 
-    static let liveValue: Self = .init(
+    public static let liveValue: Self = .init(
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
