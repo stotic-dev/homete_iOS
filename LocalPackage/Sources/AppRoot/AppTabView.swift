@@ -69,7 +69,7 @@ private extension AppTabView {
 
     func onAppear() async {
 
-        requestNotificationPermission()
+        await requestNotificationPermission()
 
         guard let cohabitantId else { return }
         await houseworkListStore.loadHouseworkList(
@@ -82,27 +82,22 @@ private extension AppTabView {
 
 private extension AppTabView {
 
-    func requestNotificationPermission() {
+    func requestNotificationPermission() async {
 
         let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-
-            if let error = error {
-
-                print("[Notifications] Authorization error: \(error)")
-                return
-            }
+        do {
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
             guard granted else {
-
                 print("[Notifications] Authorization not granted.")
                 return
             }
-
             #if os(iOS)
-            DispatchQueue.main.async {
+            await MainActor.run {
                 UIApplication.shared.registerForRemoteNotifications()
             }
             #endif
+        } catch {
+            print("[Notifications] Authorization error: \(error)")
         }
     }
 }
