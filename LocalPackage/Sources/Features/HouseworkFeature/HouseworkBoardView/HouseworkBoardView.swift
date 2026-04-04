@@ -122,12 +122,24 @@ private extension HouseworkBoardView {
 }
 
 #Preview {
+    let list = HouseworkBoardList(items: [
+        .init(
+            id: "1",
+            title: "洗濯",
+            point: 20,
+            metaData: .init(
+                indexedDate: .init(value: "0001/01/01"),
+                expiredAt: .distantPast
+            )
+        )
+    ])
     HouseworkBoardView(
         dateList: .init(
             anchorDate: .distantPast,
             selectedDate: .distantPast,
             calendar: .japanese
-        )
+        ),
+        houseworkBoardList: list
     )
     .apply(theme: .init())
     .environment(HouseworkListStore(
@@ -135,17 +147,7 @@ private extension HouseworkBoardView {
         cohabitantPushNotificationClient: .previewValue,
         items: [
             .init(
-                items: [
-                    .init(
-                        id: "1",
-                        title: "洗濯",
-                        point: 20,
-                        metaData: .init(
-                            indexedDate: .init(value: "0001/01/01"),
-                            expiredAt: .distantPast
-                        )
-                    )
-                ],
+                items: list.items,
                 metaData: .init(
                     indexedDate: .init(value: "0001/01/01"),
                     expiredAt: .now

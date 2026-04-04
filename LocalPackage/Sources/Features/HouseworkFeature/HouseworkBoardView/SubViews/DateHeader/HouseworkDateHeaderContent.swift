@@ -45,7 +45,7 @@ struct HouseworkDateHeaderContent: View {
     }
 }
 
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     HouseworkDateHeaderContent(
         dateList: .constant(.init(
             anchorDate: .previewDate(year: 2026, month: 1, day: 1),
