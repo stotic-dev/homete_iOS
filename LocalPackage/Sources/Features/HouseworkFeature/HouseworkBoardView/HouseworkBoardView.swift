@@ -29,25 +29,27 @@ public struct HouseworkBoardView: View {
             ZStack {
                 VStack(spacing: .space16) {
                     HouseworkDateHeaderContent(dateList: $dateList)
-                    HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                    TabView(selection: $selectedHouseworkState) {
-                        ForEach(HouseworkState.allCases) { state in
-                            HouseworkBoardListContent(
-                                houseworkListStore: houseworkListStore,
-                                state: state,
-                                list: houseworkBoardList,
-                                selectedHouseworkState: $selectedHouseworkState,
-                                onCreateTapped: { isPresentingAddHouseworkView = true }
-                            )
-                            .tag(state)
+                    VStack(spacing: .space16) {
+                        HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+                        TabView(selection: $selectedHouseworkState) {
+                            ForEach(HouseworkState.allCases) { state in
+                                HouseworkBoardListContent(
+                                    houseworkListStore: houseworkListStore,
+                                    state: state,
+                                    list: houseworkBoardList,
+                                    selectedHouseworkState: $selectedHouseworkState,
+                                    onCreateTapped: { isPresentingAddHouseworkView = true }
+                                )
+                                .tag(state)
+                            }
                         }
+                        #if os(iOS)
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        #endif
+                        Spacer()
                     }
-                    #if os(iOS)
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    #endif
-                    Spacer()
+                    .padding(.horizontal, .space16)
                 }
-                .padding(.horizontal, .space16)
                 addHouseworkButton {
                     isPresentingAddHouseworkView = true
                 }
@@ -156,4 +158,6 @@ private extension HouseworkBoardView {
         ]
     ))
     .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .snapshotForPreview(delay: 2)
 }

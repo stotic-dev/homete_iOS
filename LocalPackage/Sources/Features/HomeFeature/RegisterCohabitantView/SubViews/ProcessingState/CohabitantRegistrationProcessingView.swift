@@ -10,9 +10,6 @@ import HometeDomain
 import HometeResources
 import HometeUI
 import MultipeerConnectivity
-#if canImport(UIKit)
-import Prefire
-#endif
 import SwiftUI
 
 struct CohabitantRegistrationProcessingView: View {
@@ -85,7 +82,7 @@ struct CohabitantRegistrationProcessingView: View {
         registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
-    #if canImport(UIKit)
+    #if canImport(Prefire)
     .prefireIgnored()
     #endif
 }
@@ -97,7 +94,7 @@ struct CohabitantRegistrationProcessingView: View {
         registrationState: .constant(.processing(isLead: false)),
         role: .lead
     )
-    #if canImport(UIKit)
+    #if canImport(Prefire)
     .prefireIgnored()
     #endif
 }

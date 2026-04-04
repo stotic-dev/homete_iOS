@@ -35,7 +35,9 @@ struct HouseworkDateHeaderContent: View {
                 .scrollTargetLayout()
             }
             .scrollTargetBehavior(.viewAligned)
-            .defaultScrollAnchor(.center)
+            .onAppear {
+                proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
+            }
             .onChange(of: dateList.selectedDate) {
                 withAnimation {
                     proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
@@ -54,4 +56,6 @@ struct HouseworkDateHeaderContent: View {
         ))
     )
     .setupEnvironmentForPreview()
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
+    .snapshotForPreview(delay: 2)
 }

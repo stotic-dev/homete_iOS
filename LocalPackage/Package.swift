@@ -69,6 +69,7 @@ let package = Package(
             dependencies: [
                 "HometeDomain",
                 "HometeResources",
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
@@ -114,7 +115,6 @@ let package = Package(
                 "HometeDomain",
                 "HometeUI",
                 "HometeResources",
-                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             path: "./Sources/Features/HomeFeature",
             plugins: [
@@ -127,7 +127,6 @@ let package = Package(
                 "HometeDomain",
                 "HometeUI",
                 "HometeResources",
-                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             path: "./Sources/Features/HouseworkFeature",
             plugins: [
@@ -157,7 +156,6 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
-                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),

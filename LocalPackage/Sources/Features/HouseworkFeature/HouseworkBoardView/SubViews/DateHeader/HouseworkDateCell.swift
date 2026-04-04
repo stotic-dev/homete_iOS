@@ -25,8 +25,9 @@ struct HouseworkDateCell: View {
         } label: {
             Text(dateLabel())
             .font(with: .headLineS)
-            .padding(.space16)
+            .padding(.space8)
             .foregroundStyle(.onPrimary2)
+            .frame(width: 60, height: 60)
             .background {
                 Circle()
                     .fill(state == .unselectable ? .primary3 : .primary2)
@@ -45,38 +46,37 @@ struct HouseworkDateCell: View {
 
 private extension HouseworkDateCell {
     func dateLabel() -> String {
-        if calendar.dateComponents([.year, .month, .day], from: date) == calendar.dateComponents([.year, .month, .day], from: now) {
+        if calendar.dateComponents(
+            [.year, .month, .day],
+            from: date
+        ) == calendar.dateComponents(
+            [.year, .month, .day],
+            from: now
+        ) {
             return "今日"
         } else {
-            return date.formatted(
-                Date.FormatStyle(
-                    locale: locale,
-                    calendar: calendar,
-                    timeZone: timeZone
-                )
-                .day(.defaultDigits)
-            )
+            return String(calendar.component(.day, from: date))
         }
     }
 }
 
-#Preview("今日の日付", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDateCell_今日の日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
         .setupEnvironmentForPreview()
         .environment(\.now, .distantPast)
 }
 
-#Preview("選択中の日付", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDateCell_選択中の日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
         .setupEnvironmentForPreview()
 }
 
-#Preview("選択可能な日付", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDateCell_選択可能な日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .selectable) { _ in }
         .setupEnvironmentForPreview()
 }
 
-#Preview("選択不可な日付", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDateCell_選択不可な日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .unselectable) { _ in }
         .setupEnvironmentForPreview()
 }

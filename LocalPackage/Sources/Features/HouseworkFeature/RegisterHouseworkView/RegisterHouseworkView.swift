@@ -9,9 +9,6 @@ import HometeDomain
 import HometeResources
 import HometeUI
 import SwiftUI
-#if canImport(UIKit)
-import Prefire
-#endif
 
 struct RegisterHouseworkView: View {
     
@@ -201,9 +198,7 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
-    #if canImport(UIKit)
-    .snapshot(delay: 1)
-    #endif
+    .snapshotForPreview(delay: 1)
 }
 
 #Preview("RegisterHouseworkView_通信中") {
@@ -218,7 +213,7 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
-    #if canImport(UIKit)
+    #if canImport(Prefire)
     .prefireIgnored()
     #endif
 }
