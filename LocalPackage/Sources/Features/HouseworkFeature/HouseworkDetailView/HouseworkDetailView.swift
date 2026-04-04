@@ -8,9 +8,6 @@
 import HometeDomain
 import HometeUI
 import SwiftUI
-#if canImport(UIKit)
-import Prefire
-#endif
 
 struct HouseworkDetailView: View {
     
@@ -121,7 +118,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
-    #if canImport(UIKit)
+    #if canImport(Prefire)
     .prefireIgnored()
     #endif
 }

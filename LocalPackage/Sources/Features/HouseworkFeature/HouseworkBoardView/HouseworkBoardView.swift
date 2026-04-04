@@ -11,12 +11,13 @@ import SwiftUI
 
 public struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var anchorDate
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
+    @State var dateList = HouseworkDateList()
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
-    @State var selectedDate: Date = .now
     @State var isPresentingAddHouseworkView = false
     
     public static func instantiate() -> Self {
@@ -27,26 +28,28 @@ public struct HouseworkBoardView: View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    HouseworkDateHeaderContent(selectedDate: $selectedDate)
-                    HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                    TabView(selection: $selectedHouseworkState) {
-                        ForEach(HouseworkState.allCases) { state in
-                            HouseworkBoardListContent(
-                                houseworkListStore: houseworkListStore,
-                                state: state,
-                                list: houseworkBoardList,
-                                selectedHouseworkState: $selectedHouseworkState,
-                                onCreateTapped: { isPresentingAddHouseworkView = true }
-                            )
-                            .tag(state)
+                    HouseworkDateHeaderContent(dateList: $dateList)
+                    VStack(spacing: .space16) {
+                        HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+                        TabView(selection: $selectedHouseworkState) {
+                            ForEach(HouseworkState.allCases) { state in
+                                HouseworkBoardListContent(
+                                    houseworkListStore: houseworkListStore,
+                                    state: state,
+                                    list: houseworkBoardList,
+                                    selectedHouseworkState: $selectedHouseworkState,
+                                    onCreateTapped: { isPresentingAddHouseworkView = true }
+                                )
+                                .tag(state)
+                            }
                         }
+                        #if os(iOS)
+                        .tabViewStyle(.page(indexDisplayMode: .never))
+                        #endif
+                        Spacer()
                     }
-                    #if os(iOS)
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    #endif
-                    Spacer()
+                    .padding(.horizontal, .space16)
                 }
-                .padding(.horizontal, .space16)
                 addHouseworkButton {
                     isPresentingAddHouseworkView = true
                 }
@@ -62,7 +65,7 @@ public struct HouseworkBoardView: View {
         .sheet(isPresented: $isPresentingAddHouseworkView) {
             RegisterHouseworkView(
                 dailyHouseworkList: .makeInitialValue(
-                    selectedDate: selectedDate,
+                    selectedDate: dateList.selectedDate,
                     items: [],
                     calendar: calendar
                 )
@@ -73,7 +76,7 @@ public struct HouseworkBoardView: View {
                 updateHouseworkBoardList()
             }
         }
-        .onChange(of: selectedDate) {
+        .onChange(of: dateList.selectedDate) {
             withAnimation {
                 updateHouseworkBoardList()
             }
@@ -114,7 +117,7 @@ private extension HouseworkBoardView {
         
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
-            selectedDate: selectedDate,
+            selectedDate: dateList.selectedDate,
             calendar: calendar
         )
     }
@@ -133,8 +136,12 @@ private extension HouseworkBoardView {
         )
     ])
     HouseworkBoardView(
-        houseworkBoardList: list,
-        selectedDate: .distantPast
+        dateList: .init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        ),
+        houseworkBoardList: list
     )
     .apply(theme: .init())
     .environment(HouseworkListStore(
@@ -151,4 +158,6 @@ private extension HouseworkBoardView {
         ]
     ))
     .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .snapshotForPreview(delay: 2)
 }
