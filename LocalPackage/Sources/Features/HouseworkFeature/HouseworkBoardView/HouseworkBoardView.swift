@@ -34,7 +34,9 @@ public struct HouseworkBoardView: View {
                             HouseworkBoardListContent(
                                 houseworkListStore: houseworkListStore,
                                 state: state,
-                                list: houseworkBoardList
+                                list: houseworkBoardList,
+                                selectedHouseworkState: $selectedHouseworkState,
+                                onCreateTapped: { isPresentingAddHouseworkView = true }
                             )
                             .tag(state)
                         }
