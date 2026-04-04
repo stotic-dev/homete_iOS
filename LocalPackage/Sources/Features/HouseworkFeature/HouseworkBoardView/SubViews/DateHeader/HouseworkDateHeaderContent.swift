@@ -20,16 +20,7 @@ struct HouseworkDateHeaderContent: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: .space8) {
                     ForEach(dateList.items, id: \.date) { item in
-                        HouseworkDateCell(
-                            date: item.date,
-                            state: item.state,
-                            onTap: { tappedDate in
-                                withAnimation {
-                                    dateList.selectDate(tappedDate, calendar: calendar)
-                                }
-                            }
-                        )
-                        .id(item.date)
+                        createDateCell(item)
                     }
                 }
                 .scrollTargetLayout()
@@ -43,6 +34,34 @@ struct HouseworkDateHeaderContent: View {
                     proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
                 }
             }
+        }
+    }
+}
+
+private extension HouseworkDateHeaderContent {
+    
+    func createDateCell(_ item: HouseworkDateList.Item) -> some View {
+        HouseworkDateCell(
+            date: item.date,
+            state: item.state,
+            onTap: { tappedDate in
+                withAnimation {
+                    dateList.selectDate(tappedDate, calendar: calendar)
+                }
+            }
+        )
+        .id(item.date)
+        .visualEffect { content, proxy in
+            let frame = proxy.frame(in: .scrollView(axis: .horizontal))
+            let scrollWidth = proxy.bounds(of: .scrollView(axis: .horizontal))?.width ?? 0
+            let distanceFromLeft = frame.minX
+            let distanceFromRight = scrollWidth - frame.maxX
+            let edgeDistance = min(distanceFromLeft, distanceFromRight)
+            let threshold: CGFloat = 60
+            let progress = max(0, min(1, edgeDistance / threshold))
+            return content
+                .scaleEffect(0.7 + 0.3 * progress)
+                .opacity(progress)
         }
     }
 }
