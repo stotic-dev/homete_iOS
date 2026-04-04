@@ -15,9 +15,9 @@ public struct HouseworkBoardView: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
+    @State var dateList = HouseworkDateList()
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
-    @State var selectedDate: Date = .now
     @State var isPresentingAddHouseworkView = false
     
     public static func instantiate() -> Self {
@@ -28,13 +28,7 @@ public struct HouseworkBoardView: View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    HouseworkDateHeaderContent(
-                        dateScrollList: .init(
-                            anchorDate: anchorDate,
-                            selectedDate: selectedDate
-                        ),
-                        selectedDate: $selectedDate
-                    )
+                    HouseworkDateHeaderContent(dateList: $dateList)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     TabView(selection: $selectedHouseworkState) {
                         ForEach(HouseworkState.allCases) { state in
@@ -69,7 +63,7 @@ public struct HouseworkBoardView: View {
         .sheet(isPresented: $isPresentingAddHouseworkView) {
             RegisterHouseworkView(
                 dailyHouseworkList: .makeInitialValue(
-                    selectedDate: selectedDate,
+                    selectedDate: dateList.selectedDate,
                     items: [],
                     calendar: calendar
                 )
@@ -80,7 +74,7 @@ public struct HouseworkBoardView: View {
                 updateHouseworkBoardList()
             }
         }
-        .onChange(of: selectedDate) {
+        .onChange(of: dateList.selectedDate) {
             withAnimation {
                 updateHouseworkBoardList()
             }
@@ -121,14 +115,20 @@ private extension HouseworkBoardView {
         
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
-            selectedDate: selectedDate,
+            selectedDate: dateList.selectedDate,
             calendar: calendar
         )
     }
 }
 
 #Preview {
-    HouseworkBoardView(selectedDate: .distantPast)
+    HouseworkBoardView(
+        dateList: .init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )
+    )
     .apply(theme: .init())
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,

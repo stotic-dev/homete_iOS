@@ -13,34 +13,31 @@ struct HouseworkDateHeaderContent: View {
 
     @Environment(\.calendar) var calendar
 
-    @State var dateScrollList: HouseworkDateScrollList
-    
-    @Binding var selectedDate: Date
+    @Binding var dateList: HouseworkDateList
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: .space8) {
-                    ForEach(dateScrollList.dates(calendar: calendar), id: \.self) { date in
+                    ForEach(dateList.items, id: \.date) { item in
                         HouseworkDateCell(
-                            date: date,
-                            state: dateScrollList.state(for: date, calendar: calendar),
+                            date: item.date,
+                            state: item.state,
                             onTap: { tappedDate in
-                                let updated = dateScrollList.selecting(tappedDate, calendar: calendar)
-                                withAnimation { selectedDate = updated.selectedDate }
+                                withAnimation {
+                                    dateList.selectDate(tappedDate, calendar: calendar)
+                                }
                             }
                         )
-                        .id(date)
+                        .id(item.date)
                     }
                 }
             }
-            .onChange(of: selectedDate) {
+            .defaultScrollAnchor(.center)
+            .onChange(of: dateList.selectedDate) {
                 withAnimation {
-                    proxy.scrollTo(calendar.startOfDay(for: selectedDate), anchor: .center)
+                    proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
                 }
-            }
-            .onAppear {
-                proxy.scrollTo(calendar.startOfDay(for: selectedDate), anchor: .center)
             }
         }
     }
@@ -48,11 +45,11 @@ struct HouseworkDateHeaderContent: View {
 
 #Preview {
     HouseworkDateHeaderContent(
-        dateScrollList: .init(
+        dateList: .constant(.init(
             anchorDate: .previewDate(year: 2026, month: 1, day: 1),
-            selectedDate: .previewDate(year: 2026, month: 1, day: 1)
-        ),
-        selectedDate: .constant(.previewDate(year: 2026, month: 1, day: 1))
+            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+            calendar: .japanese
+        ))
     )
     .setupEnvironmentForPreview()
 }

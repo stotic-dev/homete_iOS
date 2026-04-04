@@ -13,10 +13,10 @@ struct HouseworkDateCell: View {
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
     @Environment(\.timeZone) var timeZone
+    @Environment(\.now) var now
         
     let date: Date
     let state: HouseworkDateState
-    var today: Date = .now
     let onTap: (Date) -> Void
     
     var body: some View {
@@ -45,7 +45,7 @@ struct HouseworkDateCell: View {
 
 private extension HouseworkDateCell {
     func dateLabel() -> String {
-        if calendar.dateComponents([.year, .month, .day], from: date) == calendar.dateComponents([.year, .month, .day], from: today) {
+        if calendar.dateComponents([.year, .month, .day], from: date) == calendar.dateComponents([.year, .month, .day], from: now) {
             return "今日"
         } else {
             return date.formatted(
@@ -61,8 +61,9 @@ private extension HouseworkDateCell {
 }
 
 #Preview("今日の日付", traits: .sizeThatFitsLayout) {
-    HouseworkDateCell(date: .distantPast, state: .selected, today: .distantPast) { _ in }
+    HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
         .setupEnvironmentForPreview()
+        .environment(\.now, .distantPast)
 }
 
 #Preview("選択中の日付", traits: .sizeThatFitsLayout) {
