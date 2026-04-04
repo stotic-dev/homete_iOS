@@ -11,6 +11,7 @@ import SwiftUI
 
 public struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var anchorDate
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
@@ -27,7 +28,13 @@ public struct HouseworkBoardView: View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    HouseworkDateHeaderContent(selectedDate: $selectedDate)
+                    HouseworkDateHeaderContent(
+                        dateScrollList: .init(
+                            anchorDate: anchorDate,
+                            selectedDate: selectedDate
+                        ),
+                        selectedDate: $selectedDate
+                    )
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                     TabView(selection: $selectedHouseworkState) {
                         ForEach(HouseworkState.allCases) { state in
