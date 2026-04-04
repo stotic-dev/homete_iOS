@@ -12,7 +12,7 @@ import SwiftUI
 struct HouseworkDateHeaderContent: View {
     
     @Environment(\.calendar) var calendar
-    
+
     @Binding var selectedDate: Date
     
     var body: some View {
@@ -24,7 +24,7 @@ struct HouseworkDateHeaderContent: View {
                     .foregroundStyle(.onSurface)
             }
             Spacer()
-            Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+            Text(selectedDate, format: .dateTime.day().month(.abbreviated).year())
             Spacer()
             Button {
                 updateSelectedDate(value: 1)
@@ -37,11 +37,11 @@ struct HouseworkDateHeaderContent: View {
 }
 
 private extension HouseworkDateHeaderContent {
-    
+
     func updateSelectedDate(value: Int) {
-        
+
         withAnimation {
-            
+
             selectedDate = calendar.date(byAdding: .day, value: value, to: selectedDate) ?? selectedDate
         }
     }

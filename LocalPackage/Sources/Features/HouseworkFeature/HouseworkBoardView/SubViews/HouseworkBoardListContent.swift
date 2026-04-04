@@ -10,29 +10,44 @@ import HometeUI
 import SwiftUI
 
 struct HouseworkBoardListContent: View {
-    
+
     @Environment(\.houseworkBoardNavigationPath) var navigationPath
-    
+    @Environment(\.loginContext) var loginContext
+
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
-    
+    @Binding var selectedHouseworkState: HouseworkState
+    let onCreateTapped: () -> Void
+
     @CommonError var commonError
-    
+
     var body: some View {
-        List {
-            ForEach(list.items(matching: state)) { item in
-                houseworkItemRow(item)
-                    .padding(.vertical, .space8)
+        if let emptyReason = HouseworkBoardEmptyReason(
+            list: list,
+            state: state,
+            ownUserId: loginContext.account.id
+        ) {
+            HouseworkBoardEmptyView(
+                reason: emptyReason,
+                onCreateTapped: onCreateTapped,
+                onSwitchTab: { selectedHouseworkState = $0 }
+            )
+        } else {
+            List {
+                ForEach(list.items(matching: state)) { item in
+                    houseworkItemRow(item)
+                        .padding(.vertical, .space8)
+                }
+                .listRowBackground(Color.clear)
+                #if os(iOS)
+                .listRowSpacing(.zero)
+                .listRowSeparator(.hidden)
+                #endif
             }
-            .listRowBackground(Color.clear)
-            #if os(iOS)
-            .listRowSpacing(.zero)
-            .listRowSeparator(.hidden)
-            #endif
+            .listStyle(.plain)
+            .commonError(content: $commonError)
         }
-        .listStyle(.plain)
-        .commonError(content: $commonError)
     }
 }
 
@@ -77,6 +92,7 @@ private extension HouseworkBoardListContent {
 }
 
 #Preview {
+    @Previewable @State var selectedState = HouseworkState.incomplete
     HouseworkBoardListContent(
         houseworkListStore: .init(
             houseworkClient: .previewValue,
@@ -102,6 +118,8 @@ private extension HouseworkBoardListContent {
                 point: 1,
                 metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
             )
-        ])
+        ]),
+        selectedHouseworkState: $selectedState,
+        onCreateTapped: {}
     )
 }

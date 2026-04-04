@@ -1,8 +1,13 @@
+---
+applyTo: "**/*.swift"
+---
+
 # Swiftコード変更後の検証ルール
 
 ## 対象タイミング
 
 Swiftファイルを編集・作成・削除した後は、必ず以下の検証を順番に実行する。
+**ユニットテスト（手順3）は省略不可。必ず実行すること。**
 
 ## 検証手順
 
@@ -30,7 +35,7 @@ xcodebuild build \
 ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 ```
 
-### 3. ユニットテスト実行
+### 3. ユニットテスト実行（省略不可）
 
 ```bash
 swift test --package-path LocalPackage --enable-code-coverage

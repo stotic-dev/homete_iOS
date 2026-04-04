@@ -29,11 +29,21 @@ public struct HouseworkBoardView: View {
                 VStack(spacing: .space16) {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                    HouseworkBoardListContent(
-                        houseworkListStore: houseworkListStore,
-                        state: selectedHouseworkState,
-                        list: houseworkBoardList
-                    )
+                    TabView(selection: $selectedHouseworkState) {
+                        ForEach(HouseworkState.allCases) { state in
+                            HouseworkBoardListContent(
+                                houseworkListStore: houseworkListStore,
+                                state: state,
+                                list: houseworkBoardList,
+                                selectedHouseworkState: $selectedHouseworkState,
+                                onCreateTapped: { isPresentingAddHouseworkView = true }
+                            )
+                            .tag(state)
+                        }
+                    }
+                    #if os(iOS)
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    #endif
                     Spacer()
                 }
                 .padding(.horizontal, .space16)
@@ -111,24 +121,28 @@ private extension HouseworkBoardView {
 }
 
 #Preview {
-    HouseworkBoardView(selectedDate: .distantPast)
+    let list = HouseworkBoardList(items: [
+        .init(
+            id: "1",
+            title: "洗濯",
+            point: 20,
+            metaData: .init(
+                indexedDate: .init(value: "0001/01/01"),
+                expiredAt: .distantPast
+            )
+        )
+    ])
+    HouseworkBoardView(
+        houseworkBoardList: list,
+        selectedDate: .distantPast
+    )
     .apply(theme: .init())
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue,
         items: [
             .init(
-                items: [
-                    .init(
-                        id: "1",
-                        title: "洗濯",
-                        point: 20,
-                        metaData: .init(
-                            indexedDate: .init(value: "0001/01/01"),
-                            expiredAt: .distantPast
-                        )
-                    )
-                ],
+                items: list.items,
                 metaData: .init(
                     indexedDate: .init(value: "0001/01/01"),
                     expiredAt: .now
