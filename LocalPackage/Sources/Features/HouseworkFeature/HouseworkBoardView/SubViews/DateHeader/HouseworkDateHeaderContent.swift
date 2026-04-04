@@ -32,7 +32,9 @@ struct HouseworkDateHeaderContent: View {
                         .id(item.date)
                     }
                 }
+                .scrollTargetLayout()
             }
+            .scrollTargetBehavior(.viewAligned)
             .defaultScrollAnchor(.center)
             .onChange(of: dateList.selectedDate) {
                 withAnimation {
