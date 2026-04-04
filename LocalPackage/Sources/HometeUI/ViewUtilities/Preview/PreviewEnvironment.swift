@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+public extension Calendar {
+    static var japanese: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .tokyo
+        calendar.locale = .ja
+        return calendar
+    }
+}
+
 public extension TimeZone {
     // swiftlint:disable:next force_unwrapping
     static let tokyo = TimeZone(identifier: "Asia/Tokyo")!
@@ -21,5 +30,6 @@ public extension View {
         self
             .environment(\.locale, .ja)
             .environment(\.timeZone, .tokyo)
+            .environment(\.calendar, .japanese)
     }
 }
