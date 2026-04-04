@@ -26,18 +26,18 @@ struct HouseworkDateCell: View {
             Text(dateLabel())
             .font(with: .headLineS)
             .padding(.space8)
-            .foregroundStyle(.onPrimary2)
+            .foregroundStyle(foreground)
             .frame(width: 60, height: 60)
             .background {
                 Circle()
-                    .fill(state == .unselectable ? .primary3 : .primary2)
+                    .fill(background)
             }
             .padding(2)
             .background {
-                if state == .selected {
+                if let borderColor {
                     Circle()
                         .stroke(lineWidth: 1.5)
-                        .fill(.primary1)
+                        .fill(borderColor)
                 }
             }
         }
@@ -56,6 +56,35 @@ private extension HouseworkDateCell {
             return "今日"
         } else {
             return String(calendar.component(.day, from: date))
+        }
+    }
+    
+    struct CellContent {
+        let foreground: Color
+        let background: Color
+        let borderColor: Color?
+    }
+    
+    var foreground: Color {
+        switch state {
+        case .selected: .onPrimary1
+        case .selectable: .onPrimary2
+        case .unselectable: .onPrimary3
+        }
+    }
+    
+    var background: Color {
+        switch state {
+        case .selected: .primary1
+        case .selectable: .primary2
+        case .unselectable: .primary3
+        }
+    }
+    
+    var borderColor: Color? {
+        switch state {
+        case .selected: .primary2
+        case .selectable, .unselectable: nil
         }
     }
 }
