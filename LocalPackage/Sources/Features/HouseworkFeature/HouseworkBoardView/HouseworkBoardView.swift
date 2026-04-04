@@ -41,7 +41,9 @@ public struct HouseworkBoardView: View {
                             .tag(state)
                         }
                     }
+                    #if os(iOS)
                     .tabViewStyle(.page(indexDisplayMode: .never))
+                    #endif
                     Spacer()
                 }
                 .padding(.horizontal, .space16)
