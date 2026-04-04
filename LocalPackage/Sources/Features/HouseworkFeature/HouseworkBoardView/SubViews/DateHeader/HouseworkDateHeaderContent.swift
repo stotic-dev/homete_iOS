@@ -12,26 +12,34 @@ import SwiftUI
 struct HouseworkDateHeaderContent: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.locale) var locale
+    @Environment(\.timeZone) var timeZone
 
     @Binding var dateList: HouseworkDateList
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: .space8) {
-                    ForEach(dateList.items, id: \.date) { item in
-                        createDateCell(item)
+        VStack(alignment: .leading, spacing: .space4) {
+            Text(yearMonthText)
+                .font(with: .headLineS)
+                .foregroundStyle(.onSurface)
+                .padding(.horizontal, .space8)
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: .space8) {
+                        ForEach(dateList.items, id: \.date) { item in
+                            createDateCell(item)
+                        }
                     }
+                    .scrollTargetLayout()
                 }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.viewAligned)
-            .onAppear {
-                proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
-            }
-            .onChange(of: dateList.selectedDate) {
-                withAnimation {
+                .scrollTargetBehavior(.viewAligned)
+                .onAppear {
                     proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
+                }
+                .onChange(of: dateList.selectedDate) {
+                    withAnimation {
+                        proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
+                    }
                 }
             }
         }
@@ -39,7 +47,18 @@ struct HouseworkDateHeaderContent: View {
 }
 
 private extension HouseworkDateHeaderContent {
-    
+
+    var yearMonthText: String {
+        let format = Date.FormatStyle(
+            locale: locale,
+            calendar: calendar,
+            timeZone: timeZone
+        )
+            .year()
+            .month()
+        return dateList.selectedDate.formatted(format)
+    }
+
     func createDateCell(_ item: HouseworkDateList.Item) -> some View {
         HouseworkDateCell(
             date: item.date,
