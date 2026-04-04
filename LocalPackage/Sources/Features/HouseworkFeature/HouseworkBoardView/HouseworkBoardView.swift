@@ -29,11 +29,17 @@ public struct HouseworkBoardView: View {
                 VStack(spacing: .space16) {
                     HouseworkDateHeaderContent(selectedDate: $selectedDate)
                     HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                    HouseworkBoardListContent(
-                        houseworkListStore: houseworkListStore,
-                        state: selectedHouseworkState,
-                        list: houseworkBoardList
-                    )
+                    TabView(selection: $selectedHouseworkState) {
+                        ForEach(HouseworkState.allCases) { state in
+                            HouseworkBoardListContent(
+                                houseworkListStore: houseworkListStore,
+                                state: state,
+                                list: houseworkBoardList
+                            )
+                            .tag(state)
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
                     Spacer()
                 }
                 .padding(.horizontal, .space16)
