@@ -6,9 +6,6 @@ on:
       - main
     paths:
       - 'firebase/firestore.indexes.json'
-  pull_request:
-    paths:
-      - 'firebase/firestore.indexes.json'
   workflow_dispatch:
 
 jobs:
