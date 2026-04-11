@@ -20,14 +20,14 @@ struct DailyHouseworkListTest {
 
 extension DailyHouseworkListTest.MakeInitialValueCase {
     
-    @Test("一日の家事情報の保持期限は3か月後になる")
+    @Test("一日の家事情報の保持期限は1年後になる")
     func makeInitialValue() throws {
-        
+
         // Arrange
         let calendar = Calendar.japanese
         let selectedDate = Date()
         let expectedIndexedDate = HouseworkIndexedDate(selectedDate, calendar: calendar)
-        let expectedExpiredAt = try #require(calendar.date(byAdding: .month, value: 1, to: selectedDate))
+        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 1, to: selectedDate))
         
         let expectedList = DailyHouseworkList(
             items: [],
