@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkListStoreTest.swift
 //  hometeTests
@@ -12,22 +13,22 @@ import Testing
 
 @MainActor
 struct HouseworkListStoreTest {
-    
+
     private let inputId = "houseworkObserveKey"
     private let inputCohabitantId = "cohabitantId"
-    
+
     @MainActor
     struct UpdateStatusCase {
-        
+
         private let inputId = "houseworkObserveKey"
         private let inputCohabitantId = "cohabitantId"
     }
 
     @Test("家事リストのロードを行うと最新の家事リストを常に監視し続ける")
     func loadHouseworkList() async throws {
-        
+
         // Arrange
-        
+
         let now = Date()
         let calendar = Calendar.autoupdatingCurrent
         let (stream, continuation) = AsyncStream<[HouseworkItem]>.makeStream()
@@ -35,42 +36,45 @@ struct HouseworkListStoreTest {
             houseworkClient: .previewValue,
             cohabitantPushNotificationClient: .previewValue,
             houseworkManager: .init(
-                houseworkClient: .init(snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-                    
-                    #expect(id == inputId)
-                    #expect(cohabitantId == inputCohabitantId)
-                    #expect(anchorDate == now)
-                    #expect(offset == 3)
-                    return stream
-                })
+                houseworkClient: .init(
+                    snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
+
+                        #expect(id == inputId)
+                        #expect(cohabitantId == inputCohabitantId)
+                        #expect(anchorDate == now)
+                        #expect(offset == 3)
+                        return stream
+                    },
+                    fetchItemsHandler: { _, _, _ in [] }
+                )
             )
         )
-        
+
         // Act
-        
+
         await store.loadHouseworkList(
             currentTime: now,
             cohabitantId: inputCohabitantId,
             calendar: calendar
         )
-        
+
         // Assert
-        
+
         let waiterForUpdateItems = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking({ store.items }) {
+                ObservationHelper.continuousObservationTracking({ store.items }, onChange: {
                     continuation.resume(returning: ())
-                }
+                })
             }
         }
-        
+
         let inputHouseworkList: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: now, expiredAt: now)
         ]
         continuation.yield(inputHouseworkList)
         await waiterForUpdateItems.value
         continuation.finish()
-        
+
         #expect(
             store.items == .init(value: [
                 .init(
@@ -83,35 +87,35 @@ struct HouseworkListStoreTest {
             ])
         )
     }
-    
+
     @Test("新しい家事の登録すると、パートナーに通知を送信する")
     func register() async throws {
-        
+
         // Arrange
-        
+
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
         let expectedNotificationContent = PushNotificationContent(
             title: "新しい家事が登録されました",
             message: inputHouseworkItem.title
         )
-        
+
         await confirmation(expectedCount: 2) { confirmation in
-            
+
             let _: Void = await withCheckedContinuation { continuation in
-                
+
                 let store = HouseworkListStore(
                     houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-                        
+
                         // Assert
-                        
+
                         #expect(item == inputHouseworkItem)
                         #expect(cohabitantId == inputCohabitantId)
                         confirmation()
                     }),
                     cohabitantPushNotificationClient: .init { id, content in
-                        
+
                         // Assert
-                        
+
                         #expect(id == inputCohabitantId)
                         #expect(content == expectedNotificationContent)
                         confirmation()
@@ -119,11 +123,11 @@ struct HouseworkListStoreTest {
                     },
                     cohabitantId: inputCohabitantId
                 )
-                
+
                 // Act
-                
+
                 Task {
-                    
+
                     try await store.register(inputHouseworkItem)
                 }
             }
@@ -132,12 +136,12 @@ struct HouseworkListStoreTest {
 }
 
 extension HouseworkListStoreTest.UpdateStatusCase {
-    
+
     @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
     func requestReview() async throws {
-        
+
         // Arrange
-        
+
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
         let expectedNotificationContent = PushNotificationContent(
             title: "確認が必要な家事があります",
@@ -150,26 +154,26 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: inputExecutor,
             executedAt: requestedAt
         )
-        
+
         await confirmation(expectedCount: 2) { confirmation in
-            
+
             let _: Void = await withCheckedContinuation { continuation in
-                
+
                 let store = HouseworkListStore(
                     houseworkClient: .init(
                         insertOrUpdateItemHandler: { item, cohabitantId in
-                            
+
                             // Assert
-                            
+
                             #expect(item == updatedHouseworkItem)
                             #expect(cohabitantId == inputCohabitantId)
                             confirmation()
                         }
                     ),
                     cohabitantPushNotificationClient: .init { id, content in
-                        
+
                         // Assert
-                        
+
                         #expect(id == inputCohabitantId)
                         #expect(content == expectedNotificationContent)
                         confirmation()
@@ -178,11 +182,11 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     items: [.makeForTest(items: [inputHouseworkItem])],
                     cohabitantId: inputCohabitantId
                 )
-                
+
                 // Act
-                
+
                 Task {
-                    
+
                     try await store.requestReview(
                         target: inputHouseworkItem,
                         now: requestedAt,
@@ -192,12 +196,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             }
         }
     }
-    
+
     @Test("実施者、実施日をクリアして家事のステータスを未完了に戻す")
     func returnToIncomplete() async throws {
-        
+
         // Arrange
-        
+
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
             state: .pendingApproval,
@@ -209,34 +213,34 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: nil,
             executedAt: nil
         )
-        
+
         try await confirmation(expectedCount: 1) { confirmation in
-            
+
             let store = HouseworkListStore(
                 houseworkClient: .init(
                     insertOrUpdateItemHandler: { item, cohabitantId in
-                        
+
                         // Assert
-                        
+
                         #expect(item == updatedHouseworkItem)
                         #expect(cohabitantId == inputCohabitantId)
                         confirmation()
                     }
                 ),
                 cohabitantPushNotificationClient: .init { _, _ in
-                    
+
                     Issue.record()
                 },
                 items: [.makeForTest(items: [inputHouseworkItem])],
                 cohabitantId: inputCohabitantId
             )
-            
+
             // Act
-            
+
             try await store.returnToIncomplete(target: inputHouseworkItem)
         }
     }
-    
+
     @Test("家事削除時は家事を削除するAPIを実行する")
     func remove() async throws {
 

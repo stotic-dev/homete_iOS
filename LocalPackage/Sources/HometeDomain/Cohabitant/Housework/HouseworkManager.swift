@@ -8,41 +8,54 @@
 import Foundation
 
 public final actor HouseworkManager {
-        
-    // MARK: Dependencies
-    
-    private let houseworkClient: HouseworkClient
-    
+
     // MARK: state
-    
-    private var list: StoredAllHouseworkList
-    private var streamContinuationDic: [String: AsyncStream<StoredAllHouseworkList>.Continuation] = [:]
+
+    public private(set) var allItems: [HouseworkItem] = []
+    private var streamContinuationDic: [String: AsyncStream<[HouseworkItem]>.Continuation] = [:]
     private var observeTask: Task<Void, Never>?
-    
+
+    // MARK: Dependencies
+
+    private let houseworkClient: HouseworkClient
+
     // MARK: constant
-    
+
     private let houseworkObserveKey = "houseworkObserveKey"
-        
+
     // MARK: initialize
-    
-    public init(houseworkClient: HouseworkClient, list: StoredAllHouseworkList = .init(value: [])) {
+
+    public init(houseworkClient: HouseworkClient) {
         self.houseworkClient = houseworkClient
-        self.list = list
     }
-    
+
+    /// テスト用：allItems を初期値で設定する
+    public init(houseworkClient: HouseworkClient, allItems: [HouseworkItem]) {
+        self.houseworkClient = houseworkClient
+        self.allItems = allItems
+    }
+
     // MARK: public method
-    
-    /// 家事情報監視用のObesrver生成
-    public func createListObserver(_ key: String) -> AsyncStream<StoredAllHouseworkList> {
-        let (stream, continuation) = AsyncStream<StoredAllHouseworkList>.makeStream()
+
+    /// allItems 変化を通知する AsyncStream を生成して返す
+    public func createObserver(_ key: String) -> AsyncStream<[HouseworkItem]> {
+        let (stream, continuation) = AsyncStream<[HouseworkItem]>.makeStream()
         streamContinuationDic.updateValue(continuation, forKey: key)
         return stream
     }
-    
+
     public func setupObserver(currentTime: Date, cohabitantId: String, calendar: Calendar, offset: Int) async {
         observeTask?.cancel()
         await houseworkClient.removeListener(houseworkObserveKey)
 
+        // 1. 直近1年分をワンショットフェッチして allItems を初期化
+        let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: currentTime) ?? currentTime
+        if let fetchedItems = try? await houseworkClient.fetchItems(cohabitantId, oneYearAgo, currentTime) {
+            allItems = fetchedItems
+            notifyObservers()
+        }
+
+        // 2. ±N日のリアルタイムリスナー起動
         let houseworkListStream = await houseworkClient.snapshotListener(
             houseworkObserveKey,
             cohabitantId,
@@ -51,18 +64,30 @@ public final actor HouseworkManager {
         )
 
         observeTask = Task {
-
             for await currentItems in houseworkListStream {
-
-                let currentList = StoredAllHouseworkList.makeMultiDateList(
-                    items: currentItems,
-                    calendar: calendar
-                )
-                // 監視中のオブザーバー全てに更新内容を通知
-                streamContinuationDic.forEach { _, continuation in
-                    continuation.yield(currentList)
-                }
+                // 3. allItems に upsert マージして通知
+                upsert(currentItems)
+                notifyObservers()
             }
+        }
+    }
+}
+
+// MARK: private
+
+private extension HouseworkManager {
+
+    func upsert(_ updatedItems: [HouseworkItem]) {
+        var itemsDict = Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
+        for item in updatedItems {
+            itemsDict[item.id] = item
+        }
+        allItems = Array(itemsDict.values)
+    }
+
+    func notifyObservers() {
+        streamContinuationDic.forEach { _, continuation in
+            continuation.yield(allItems)
         }
     }
 }

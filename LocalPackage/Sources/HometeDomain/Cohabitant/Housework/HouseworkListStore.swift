@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/09/27.
 //
 
-import Combine
 import Foundation
 import Observation
 
@@ -15,11 +14,12 @@ public final class HouseworkListStore {
 
     public private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
+    private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     private let houseworkManager: HouseworkManager
-    
+
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
     public init(
@@ -35,7 +35,7 @@ public final class HouseworkListStore {
         self.houseworkManager = houseworkManager
         self.items = .init(value: items)
         self.cohabitantId = cohabitantId
-        
+
         Task {
             await startObserving()
         }
@@ -44,10 +44,11 @@ public final class HouseworkListStore {
     public func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
 
         self.cohabitantId = cohabitantId
+        self.calendar = calendar
 
         // すでに監視処理のセットアップ済みなら、後続の処理は行わない
         guard !cohabitantId.isEmpty else { return }
-        
+
         await houseworkManager.setupObserver(
             currentTime: currentTime,
             cohabitantId: cohabitantId,
@@ -108,12 +109,12 @@ public final class HouseworkListStore {
 }
 
 private extension HouseworkListStore {
-    
+
     func startObserving() async {
-        
-        let stream = await houseworkManager.createListObserver(houseworkListObserveKey)
-        for await newList in stream {
-            items = newList
+
+        let stream = await houseworkManager.createObserver(houseworkListObserveKey)
+        for await newItems in stream {
+            items = StoredAllHouseworkList.makeMultiDateList(items: newItems, calendar: calendar)
         }
     }
 

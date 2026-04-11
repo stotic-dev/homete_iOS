@@ -147,15 +147,10 @@ private extension HouseworkBoardView {
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue,
-        items: [
-            .init(
-                items: list.items,
-                metaData: .init(
-                    indexedDate: .init(value: "0001/01/01"),
-                    expiredAt: .now
-                )
-            )
-        ]
+        houseworkManager: .init(
+            houseworkClient: .previewValue,
+            allItems: list.items
+        )
     ))
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
