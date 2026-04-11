@@ -15,98 +15,32 @@ struct HouseworkManagerTest {
 
     private let inputCohabitantId = "cohabitantId"
 
-    @Test("setupObserverを呼び出すと直近1年分の家事をワンショットフェッチする")
-    func setupObserverFetchesOneYear() async throws {
+    @Test("setupObserverを呼び出すと直近1年分をフェッチしリスナーを起動してallItemsに反映する")
+    func setupObserver() async throws {
 
         // Arrange
 
         let now = Date()
-        let calendar = Calendar.autoupdatingCurrent
+        let calendar = Calendar.japanese
         let expectedFrom = calendar.date(byAdding: .year, value: -1, to: now) ?? now
-
-        try await confirmation { confirmation in
-
-            let manager = HouseworkManager(
-                houseworkClient: .init(
-                    snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
-                    fetchItemsHandler: { cohabitantId, from, to in
-
-                        // Assert
-
-                        #expect(cohabitantId == inputCohabitantId)
-                        #expect(from == expectedFrom)
-                        #expect(to == now)
-                        confirmation()
-                        return []
-                    }
-                )
-            )
-
-            // Act
-
-            await manager.setupObserver(
-                currentTime: now,
-                cohabitantId: inputCohabitantId,
-                calendar: calendar,
-                offset: 3
-            )
-        }
-    }
-
-    @Test("setupObserverを呼び出すとリアルタイムリスナーを起動する")
-    func setupObserverStartsSnapshotListener() async throws {
-
-        // Arrange
-
-        let now = Date()
-        let calendar = Calendar.autoupdatingCurrent
-
-        try await confirmation { confirmation in
-
-            let manager = HouseworkManager(
-                houseworkClient: .init(
-                    snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-
-                        // Assert
-
-                        #expect(id == "houseworkObserveKey")
-                        #expect(cohabitantId == inputCohabitantId)
-                        #expect(anchorDate == now)
-                        #expect(offset == 3)
-                        confirmation()
-                        return .makeStream().stream
-                    },
-                    fetchItemsHandler: { _, _, _ in [] }
-                )
-            )
-
-            // Act
-
-            await manager.setupObserver(
-                currentTime: now,
-                cohabitantId: inputCohabitantId,
-                calendar: calendar,
-                offset: 3
-            )
-        }
-    }
-
-    @Test("setupObserverのフェッチ結果がallItemsとオブザーバーに反映される")
-    func fetchedItemsAreReflectedInAllItemsAndObserver() async throws {
-
-        // Arrange
-
-        let now = Date()
-        let calendar = Calendar.autoupdatingCurrent
-        let fetchedItems: [HouseworkItem] = [
-            .makeForTest(id: 1, indexedDate: now, expiredAt: now),
-            .makeForTest(id: 2, indexedDate: now, expiredAt: now)
-        ]
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let (stream, _) = AsyncStream<[HouseworkItem]>.makeStream()
 
         let manager = HouseworkManager(
             houseworkClient: .init(
-                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
-                fetchItemsHandler: { _, _, _ in fetchedItems }
+                snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
+                    #expect(id == "houseworkObserveKey")
+                    #expect(cohabitantId == self.inputCohabitantId)
+                    #expect(anchorDate == now)
+                    #expect(offset == 3)
+                    return stream
+                },
+                fetchItemsHandler: { cohabitantId, from, to in
+                    #expect(cohabitantId == self.inputCohabitantId)
+                    #expect(from == expectedFrom)
+                    #expect(to == now)
+                    return [fetchedItem]
+                }
             )
         )
 
@@ -121,7 +55,7 @@ struct HouseworkManagerTest {
             offset: 3
         )
 
-        // Assert: オブザーバーストリームにフェッチ結果が流れてくる
+        // Assert
 
         var receivedItems: [HouseworkItem] = []
         for await items in observerStream {
@@ -130,13 +64,13 @@ struct HouseworkManagerTest {
         }
 
         let allItems = await manager.allItems
-        #expect(allItems.count == 2)
-        #expect(receivedItems.count == 2)
-        #expect(fetchedItems.allSatisfy { fetched in allItems.contains(where: { $0.id == fetched.id }) })
+        #expect(allItems.count == 1)
+        #expect(allItems.contains(where: { $0.id == fetchedItem.id }))
+        #expect(receivedItems.contains(where: { $0.id == fetchedItem.id }))
     }
 
     @Test("リアルタイムリスナーの更新がallItemsにupsertマージされオブザーバーに通知される")
-    func streamUpdateIsUpsertedAndNotifiesObserver() async throws {
+    func streamUpdateIsUpserted() async throws {
 
         // Arrange
 
@@ -161,16 +95,14 @@ struct HouseworkManagerTest {
             offset: 3
         )
 
-        // フェッチ結果（1件）の通知を消費
-        for await _ in observerStream {
-            break
-        }
+        // フェッチ結果の通知を消費
+        for await _ in observerStream { break }
 
-        // Act: 既存アイテムの更新 + 新規アイテムを yield
+        // Act
 
-        let updatedExistingItem = existingItem.updateProperties(title: "updated title")
+        let updatedItem = existingItem.updateProperties(title: "updated title")
         let newItem = HouseworkItem.makeForTest(id: 2, indexedDate: now, expiredAt: now)
-        streamContinuation.yield([updatedExistingItem, newItem])
+        streamContinuation.yield([updatedItem, newItem])
 
         var receivedItems: [HouseworkItem] = []
         for await items in observerStream {
@@ -179,7 +111,7 @@ struct HouseworkManagerTest {
         }
         streamContinuation.finish()
 
-        // Assert: upsert されて allItems が2件になり、既存アイテムが更新されている
+        // Assert
 
         let allItems = await manager.allItems
         #expect(allItems.count == 2)
