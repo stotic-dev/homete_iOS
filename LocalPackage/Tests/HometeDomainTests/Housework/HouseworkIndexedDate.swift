@@ -58,15 +58,15 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
 
         // Assert
         let expected = [
-            ["value": "2026/01/30"],
-            ["value": "2026/01/31"],
-            ["value": "2026/02/01"],
-            ["value": "2026/02/02"],
-            ["value": "2026/02/03"]
+            "2026/01/30",
+            "2026/01/31",
+            "2026/02/01",
+            "2026/02/02",
+            "2026/02/03"
         ]
         #expect(result == expected)
     }
-    
+
     @Test("指定の期間が0以下の場合、基準日付のみ返す")
     func calcTargetPeriod_zero_offset() {
 
@@ -81,7 +81,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
         )
 
         // Assert
-        let expected = [["value": "2026/01/15"]]
+        let expected = ["2026/01/15"]
         #expect(result == expected)
     }
 }

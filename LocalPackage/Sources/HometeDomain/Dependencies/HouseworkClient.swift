@@ -18,6 +18,11 @@ public struct HouseworkClient: Sendable {
         _ offset: Int
     ) async -> AsyncStream<[HouseworkItem]>
     public let removeListener: @Sendable (_ id: String) async -> Void
+    public let fetchItems: @Sendable (
+        _ cohabitantId: String,
+        _ from: Date,
+        _ to: Date
+    ) async throws -> [HouseworkItem]
 }
 
 public extension HouseworkClient {
@@ -37,13 +42,19 @@ public extension HouseworkClient {
             _ anchorDate: Date,
             _ offset: Int
         ) async -> AsyncStream<[HouseworkItem]> = { _, _, _, _ in .makeStream().stream },
-        removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in }
+        removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in },
+        fetchItemsHandler: @escaping @Sendable (
+            _ cohabitantId: String,
+            _ from: Date,
+            _ to: Date
+        ) async throws -> [HouseworkItem] = { _, _, _ in [] }
     ) {
 
         insertOrUpdateItem = insertOrUpdateItemHandler
         removeItem = removeItemHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler
+        fetchItems = fetchItemsHandler
     }
 
     static let previewValue = HouseworkClient()
