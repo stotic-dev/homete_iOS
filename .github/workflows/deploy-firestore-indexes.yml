@@ -1,0 +1,36 @@
+name: Deploy Firestore Indexes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'firebase/firestore.indexes.json'
+  workflow_dispatch:
+
+jobs:
+  deploy-indexes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Write Service Account JSON
+        run: |
+          if [ -z '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"
+            exit 1
+          fi
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+
+      - name: Deploy Firestore Indexes
+        run: firebase deploy --only firestore:indexes --non-interactive
+        working-directory: firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
