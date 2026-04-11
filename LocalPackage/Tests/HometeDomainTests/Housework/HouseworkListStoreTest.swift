@@ -32,15 +32,18 @@ struct HouseworkListStoreTest {
         let calendar = Calendar.autoupdatingCurrent
         let (stream, continuation) = AsyncStream<[HouseworkItem]>.makeStream()
         let store = HouseworkListStore(
-            houseworkClient: .init(snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-                
-                #expect(id == inputId)
-                #expect(cohabitantId == inputCohabitantId)
-                #expect(anchorDate == now)
-                #expect(offset == 3)
-                return stream
-            }),
-            cohabitantPushNotificationClient: .previewValue
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue,
+            houseworkManager: .init(
+                houseworkClient: .init(snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
+                    
+                    #expect(id == inputId)
+                    #expect(cohabitantId == inputCohabitantId)
+                    #expect(anchorDate == now)
+                    #expect(offset == 3)
+                    return stream
+                })
+            )
         )
         
         // Act
@@ -67,7 +70,6 @@ struct HouseworkListStoreTest {
         continuation.yield(inputHouseworkList)
         await waiterForUpdateItems.value
         continuation.finish()
-        await store.stopObserving()
         
         #expect(
             store.items == .init(value: [

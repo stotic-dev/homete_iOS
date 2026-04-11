@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/27.
 //
 
+import Combine
 import Foundation
 import Observation
 
@@ -15,56 +16,44 @@ public final class HouseworkListStore {
     public private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
 
-    private var observeTask: Task<Void, Never>?
-
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
-
-    private let houseworkObserveKey = "houseworkObserveKey"
+    private let houseworkManager: HouseworkManager
+    
+    private let houseworkListObserveKey = "houseworkListObserveKey"
 
     public init(
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
+        houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         items: [DailyHouseworkList] = [],
         cohabitantId: String = ""
     ) {
 
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
+        self.houseworkManager = houseworkManager
         self.items = .init(value: items)
         self.cohabitantId = cohabitantId
+        
+        Task {
+            await startObserving()
+        }
     }
 
     public func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
 
         self.cohabitantId = cohabitantId
 
-        guard !cohabitantId.isEmpty else {
-
-            await clear()
-            return
-        }
-
-        observeTask?.cancel()
-        await houseworkClient.removeListener(houseworkObserveKey)
-
-        let houseworkListStream = await houseworkClient.snapshotListener(
-            houseworkObserveKey,
-            cohabitantId,
-            currentTime,
-            3
+        // すでに監視処理のセットアップ済みなら、後続の処理は行わない
+        guard !cohabitantId.isEmpty else { return }
+        
+        await houseworkManager.setupObserver(
+            currentTime: currentTime,
+            cohabitantId: cohabitantId,
+            calendar: calendar,
+            offset: 3
         )
-
-        observeTask = Task {
-
-            for await currentItems in houseworkListStream {
-
-                items = StoredAllHouseworkList.makeMultiDateList(
-                    items: currentItems,
-                    calendar: calendar
-                )
-            }
-        }
     }
 
     public func register(_ newItem: HouseworkItem) async throws {
@@ -116,22 +105,16 @@ public final class HouseworkListStore {
 
         try await houseworkClient.removeItem(target, cohabitantId)
     }
-
-    public func stopObserving() async {
-
-        observeTask?.cancel()
-        await observeTask?.value
-        observeTask = nil
-    }
 }
 
 private extension HouseworkListStore {
-
-    func clear() async {
-
-        await stopObserving()
-        await houseworkClient.removeListener(houseworkObserveKey)
-        items.removeAll()
+    
+    func startObserving() async {
+        
+        let stream = await houseworkManager.createListObserver(houseworkListObserveKey)
+        for await newList in stream {
+            items = newList
+        }
     }
 
     func updateAndSave(

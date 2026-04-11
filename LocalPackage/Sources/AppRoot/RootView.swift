@@ -68,7 +68,8 @@ public extension RootView {
                 ))
                 .environment(HouseworkListStore(
                     houseworkClient: $0.houseworkClient,
-                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
+                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient,
+                    houseworkManager: $0.houseworkManager
                 ))
                 .environment(CohabitantStore(
                     cohabitantClient: $0.cohabitantClient,
