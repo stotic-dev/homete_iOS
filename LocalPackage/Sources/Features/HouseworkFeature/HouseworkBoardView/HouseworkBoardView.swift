@@ -150,9 +150,14 @@ private extension HouseworkBoardView {
         houseworkManager: .init(
             houseworkClient: .previewValue,
             allItems: list.items
-        )
+        ),
+        items: [
+            .init(
+                items: list.items,
+                metaData: .init(selectedDate: .distantPast, calendar: .japanese)
+            )
+        ]
     ))
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
-    .snapshotForPreview(delay: 2)
 }
