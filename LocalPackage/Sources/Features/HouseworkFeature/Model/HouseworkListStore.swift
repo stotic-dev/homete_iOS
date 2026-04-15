@@ -42,22 +42,6 @@ final class HouseworkListStore {
         }
     }
 
-    func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
-
-        self.cohabitantId = cohabitantId
-        self.calendar = calendar
-
-        // すでに監視処理のセットアップ済みなら、後続の処理は行わない
-        guard !cohabitantId.isEmpty else { return }
-
-        await houseworkManager.setupObserver(
-            currentTime: currentTime,
-            cohabitantId: cohabitantId,
-            calendar: calendar,
-            offset: 3
-        )
-    }
-
     func register(_ newItem: HouseworkItem) async throws {
 
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)

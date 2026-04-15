@@ -11,10 +11,7 @@ import UserNotifications
 
 struct AppTabView: View {
 
-    @Environment(\.calendar) var calendar
-    @Environment(\.now) var now
     @Environment(\.loginContext.account.cohabitantId) var cohabitantId
-    @Environment(\.appDependencies.houseworkManager) var houseworkManager
 
     @State var type: TabType = .dashboard
 
@@ -71,14 +68,6 @@ private extension AppTabView {
     func onAppear() async {
 
         await requestNotificationPermission()
-
-        guard let cohabitantId else { return }
-        await houseworkManager.setupObserver(
-            currentTime: now,
-            cohabitantId: cohabitantId,
-            calendar: calendar,
-            offset: 3 // TODO: 定数を使うようにする
-        )
     }
 }
 
@@ -94,9 +83,7 @@ private extension AppTabView {
                 return
             }
             #if os(iOS)
-            await MainActor.run {
-                UIApplication.shared.registerForRemoteNotifications()
-            }
+            UIApplication.shared.registerForRemoteNotifications()
             #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")

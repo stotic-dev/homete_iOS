@@ -16,6 +16,9 @@ public struct HomeView: View {
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
+    @Environment(\.appDependencies.houseworkManager) var houseworkManager
+    @Environment(\.now) var now
+    @Environment(\.calendar) var calendar
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     
@@ -64,6 +67,12 @@ private extension HomeView {
             return
         }
         await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId)
+        await houseworkManager.setupObserver(
+            currentTime: now,
+            cohabitantId: cohabitantId,
+            calendar: calendar,
+            offset: 3
+        )
     }
     
     func didAppearNotRegisteredContent() async {
