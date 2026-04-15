@@ -7,7 +7,9 @@
 
 import Foundation
 import Testing
-@testable import HometeDomain
+import HometeDomainTests
+import HometeDomain
+@testable import HouseworkFeature
 
 struct StoredAllHouseworkListTest {
     

@@ -8,7 +8,7 @@
 import Foundation
 
 extension Date {
-    static func dateComponents(
+    public static func dateComponents(
         year: Int,
         month: Int,
         day: Int,

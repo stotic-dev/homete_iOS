@@ -10,7 +10,7 @@ import Foundation
 
 extension HouseworkItem {
     
-    static func makeForTest(
+    public static func makeForTest(
         id: Int,
         indexedDate: Date = .now,
         title: String = "title",
@@ -39,7 +39,7 @@ extension HouseworkItem {
         )
     }
     
-    func updateProperties(
+    public func updateProperties(
         indexedDate: HouseworkIndexedDate? = nil,
         title: String? = nil,
         point: Int? = nil,

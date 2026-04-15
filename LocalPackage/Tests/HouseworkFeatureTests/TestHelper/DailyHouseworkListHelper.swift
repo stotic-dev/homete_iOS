@@ -5,7 +5,8 @@
 //  Created by 佐藤汰一 on 2025/10/02.
 //
 
-@testable import HometeDomain
+import HometeDomain
+@testable import HouseworkFeature
 
 extension DailyHouseworkList {
     
