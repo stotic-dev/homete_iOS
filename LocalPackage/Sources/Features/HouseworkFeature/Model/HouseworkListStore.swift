@@ -6,13 +6,14 @@
 //
 
 import Foundation
+import HometeDomain
 import Observation
 
 @MainActor
 @Observable
-public final class HouseworkListStore {
+final class HouseworkListStore {
 
-    public private(set) var items: StoredAllHouseworkList
+    private(set) var items: StoredAllHouseworkList
     private var cohabitantId: String
     private var calendar: Calendar = .autoupdatingCurrent
 
@@ -22,7 +23,7 @@ public final class HouseworkListStore {
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
-    public init(
+    init(
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
@@ -41,7 +42,7 @@ public final class HouseworkListStore {
         }
     }
 
-    public func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
+    func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
 
         self.cohabitantId = cohabitantId
         self.calendar = calendar
@@ -57,7 +58,7 @@ public final class HouseworkListStore {
         )
     }
 
-    public func register(_ newItem: HouseworkItem) async throws {
+    func register(_ newItem: HouseworkItem) async throws {
 
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
@@ -68,7 +69,7 @@ public final class HouseworkListStore {
         }
     }
 
-    public func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
+    func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
 
         try await updateAndSave(target: target) {
             $0.updatePendingApproval(at: now, changer: executor)
@@ -77,7 +78,7 @@ public final class HouseworkListStore {
         }
     }
 
-    public func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
 
         try await updateAndSave(target: target) {
             $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
@@ -86,7 +87,7 @@ public final class HouseworkListStore {
         }
     }
 
-    public func rejected(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func rejected(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
 
         try await updateAndSave(target: target) {
             $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
@@ -95,14 +96,14 @@ public final class HouseworkListStore {
         }
     }
 
-    public func returnToIncomplete(target: HouseworkItem) async throws {
+    func returnToIncomplete(target: HouseworkItem) async throws {
 
         try await updateAndSave(target: target) {
             $0.updateIncomplete()
         }
     }
 
-    public func remove(_ target: HouseworkItem) async throws {
+    func remove(_ target: HouseworkItem) async throws {
 
         try await houseworkClient.removeItem(target, cohabitantId)
     }

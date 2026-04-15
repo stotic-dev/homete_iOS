@@ -6,21 +6,22 @@
 //
 
 import Foundation
+import HometeDomain
 
-public struct HouseworkBoardList: Equatable {
+struct HouseworkBoardList: Equatable {
 
-    public private(set) var items: [HouseworkItem]
+    private(set) var items: [HouseworkItem]
 
-    public func items(matching state: HouseworkState) -> [HouseworkItem] {
+    func items(matching state: HouseworkState) -> [HouseworkItem] {
         return items.filter { $0.state == state }
     }
 
-    public init(items: [HouseworkItem]) {
+    init(items: [HouseworkItem]) {
         self.items = items
     }
 }
 
-public extension HouseworkBoardList {
+extension HouseworkBoardList {
 
     init(
         dailyList: [DailyHouseworkList],

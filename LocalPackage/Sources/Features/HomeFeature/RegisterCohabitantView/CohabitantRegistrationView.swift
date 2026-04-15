@@ -15,8 +15,9 @@ public struct CohabitantRegistrationView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
+    @Environment(\.appDependencies.houseworkManager) var houseworkManager
+    @Environment(\.now) var now
     @Environment(AccountStore.self) var accountStore
-    @Environment(HouseworkListStore.self) var houseworkListStore
     
     public init() {}
 
@@ -64,10 +65,11 @@ private extension CohabitantRegistrationView {
         do {
             
             try await accountStore.registerCohabitantId(cohabitantId)
-            await houseworkListStore.loadHouseworkList(
-                currentTime: .now,
+            await houseworkManager.setupObserver(
+                currentTime: now,
                 cohabitantId: cohabitantId,
-                calendar: calendar
+                calendar: calendar,
+                offset: 3 // TODO: 定数を使うようにする
             )
         } catch {
             
