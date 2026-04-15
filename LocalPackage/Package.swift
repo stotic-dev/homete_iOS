@@ -170,7 +170,8 @@ let package = Package(
         .testTarget(
             name: "HouseworkFeatureTests",
             dependencies: [
-                "HouseworkFeature"
+                "HouseworkFeature",
+                "HometeDomainTests"
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),

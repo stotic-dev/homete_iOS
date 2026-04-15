@@ -36,6 +36,13 @@
         "identifier" : "HometeDomainTests",
         "name" : "HometeDomainTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "HouseworkFeatureTests",
+        "name" : "HouseworkFeatureTests"
+      }
     }
   ],
   "version" : 1

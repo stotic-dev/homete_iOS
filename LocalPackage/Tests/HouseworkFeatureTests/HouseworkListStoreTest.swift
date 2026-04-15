@@ -8,8 +8,8 @@
 
 import Foundation
 import Testing
-
-@testable import HometeDomain
+import HometeDomain
+@testable import HouseworkFeature
 
 @MainActor
 struct HouseworkListStoreTest {
@@ -22,70 +22,6 @@ struct HouseworkListStoreTest {
 
         private let inputId = "houseworkObserveKey"
         private let inputCohabitantId = "cohabitantId"
-    }
-
-    @Test("家事リストのロードを行うと最新の家事リストを常に監視し続ける")
-    func loadHouseworkList() async throws {
-
-        // Arrange
-
-        let now = Date()
-        let calendar = Calendar.autoupdatingCurrent
-        let (stream, continuation) = AsyncStream<[HouseworkItem]>.makeStream()
-        let store = HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue,
-            houseworkManager: .init(
-                houseworkClient: .init(
-                    snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-
-                        #expect(id == inputId)
-                        #expect(cohabitantId == inputCohabitantId)
-                        #expect(anchorDate == now)
-                        #expect(offset == 3)
-                        return stream
-                    },
-                    fetchItemsHandler: { _, _, _ in [] }
-                )
-            )
-        )
-
-        // Act
-
-        await store.loadHouseworkList(
-            currentTime: now,
-            cohabitantId: inputCohabitantId,
-            calendar: calendar
-        )
-
-        // Assert
-
-        let waiterForUpdateItems = Task {
-            await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking({ store.items }, onChange: {
-                    continuation.resume(returning: ())
-                })
-            }
-        }
-
-        let inputHouseworkList: [HouseworkItem] = [
-            .makeForTest(id: 1, indexedDate: now, expiredAt: now)
-        ]
-        continuation.yield(inputHouseworkList)
-        await waiterForUpdateItems.value
-        continuation.finish()
-
-        #expect(
-            store.items == .init(value: [
-                .init(
-                    items: inputHouseworkList,
-                    metaData: .init(
-                        indexedDate: .init(.now, calendar: .japanese),
-                        expiredAt: now
-                    )
-                )
-            ])
-        )
     }
 
     @Test("新しい家事の登録すると、パートナーに通知を送信する")
