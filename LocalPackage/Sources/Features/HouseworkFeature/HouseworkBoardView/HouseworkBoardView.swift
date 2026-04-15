@@ -20,8 +20,15 @@ public struct HouseworkBoardView: View {
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var isPresentingAddHouseworkView = false
     
-    public static func instantiate() -> Self {
-        HouseworkBoardView()
+    public static func instantiate() -> some View {
+        DependenciesInjectLayer {
+            HouseworkBoardView()
+                .environment(HouseworkListStore(
+                    houseworkClient: $0.houseworkClient,
+                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient,
+                    houseworkManager: $0.houseworkManager
+                ))
+        }
     }
 
     public var body: some View {

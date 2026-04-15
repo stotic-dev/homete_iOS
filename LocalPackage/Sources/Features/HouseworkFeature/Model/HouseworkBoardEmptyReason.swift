@@ -5,8 +5,10 @@
 //  Created by 佐藤汰一 on 2026/04/04.
 //
 
+import HometeDomain
+
 /// 家事ボードの各タブが空のときの理由
-public enum HouseworkBoardEmptyReason: Equatable, Sendable {
+enum HouseworkBoardEmptyReason: Equatable, Sendable {
     /// 家事が1件も登録されていない
     case noHouseworkRegistered
     /// 未完了タブ: 全ての家事が完了または承認待ちに移行済み
@@ -21,7 +23,7 @@ public enum HouseworkBoardEmptyReason: Equatable, Sendable {
     case allPendingApprovalByOthers
 
     /// 指定された状態のタブが空のときの理由を返す。表示対象の家事がある場合は `nil`。
-    public init?(list: HouseworkBoardList, state: HouseworkState, ownUserId: String) {
+    init?(list: HouseworkBoardList, state: HouseworkState, ownUserId: String) {
         guard list.items(matching: state).isEmpty else { return nil }
 
         if list.items.isEmpty {

@@ -12,8 +12,9 @@ import UserNotifications
 struct AppTabView: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var now
     @Environment(\.loginContext.account.cohabitantId) var cohabitantId
-    @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.appDependencies.houseworkManager) var houseworkManager
 
     @State var type: TabType = .dashboard
 
@@ -72,10 +73,11 @@ private extension AppTabView {
         await requestNotificationPermission()
 
         guard let cohabitantId else { return }
-        await houseworkListStore.loadHouseworkList(
-            currentTime: .now,
+        await houseworkManager.setupObserver(
+            currentTime: now,
             cohabitantId: cohabitantId,
-            calendar: calendar
+            calendar: calendar,
+            offset: 3 // TODO: 定数を使うようにする
         )
     }
 }
@@ -115,9 +117,5 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
-        .environment(HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ))
         .environment(CohabitantStore())
 }
