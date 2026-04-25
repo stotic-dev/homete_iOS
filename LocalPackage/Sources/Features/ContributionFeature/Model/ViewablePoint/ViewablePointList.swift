@@ -9,6 +9,8 @@ protocol ViewablePointList<Element>: Equatable, Hashable {
     
     associatedtype Element: ViewablePointElement
     
+    /// ユーザーID 
+    var userId: String { get }
     /// 表示区間
     var displayPeriod: DisplayPointPeriod { get }
     /// トータルのポイント

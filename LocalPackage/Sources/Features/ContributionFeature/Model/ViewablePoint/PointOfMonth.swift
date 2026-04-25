@@ -8,6 +8,8 @@
 import Foundation
 
 struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointList<PointOfDay> {
+    
+    let userId: String
     let displayPeriod: DisplayPointPeriod
     let total: Point
     let elements: Set<PointOfDay>
@@ -19,13 +21,18 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
         hasher.combine(displayPeriod)
     }
     
-    static func make(period: DateComponents, by pointOfDay: [PointOfDay], calendar: Calendar) -> Self {
+    static func make(
+        by pointOfDay: [PointOfDay],
+        userId: String,
+        period: DateComponents,
+        calendar: Calendar) -> Self {
 
         let targetMonthPoints = pointOfDay.filter {
             monthComponent(pointOfDay: $0, calendar: calendar) == period
         }
         
         return .init(
+            userId: userId,
             displayPeriod: .init(type: .month, components: period),
             total: calcTotalPoint(targetMonthPoints),
             elements: .init(targetMonthPoints)
@@ -33,7 +40,7 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
     }
     
     /// 月毎に分けた月間ポイントのリスト
-    static func makeWithSeparated(by pointOfDays: [PointOfDay], calendar: Calendar) -> [Self] {
+    static func makeWithSeparated(by pointOfDays: [PointOfDay], userId: String, calendar: Calendar) -> [Self] {
         
         let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
             
@@ -53,6 +60,7 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
         
         return separetedDic.map {
             .init(
+                userId: userId,
                 displayPeriod: .init(type: .month, components: $0.key),
                 total: calcTotalPoint(.init($0.value)),
                 elements: $0.value

@@ -9,6 +9,7 @@ import Foundation
 
 struct PointOfYear: Equatable, Hashable, ViewablePointList<PointOfMonth> {
     
+    let userId: String
     let displayPeriod: DisplayPointPeriod
     let total: Point
     let elements: Set<PointOfMonth>
@@ -18,17 +19,23 @@ struct PointOfYear: Equatable, Hashable, ViewablePointList<PointOfMonth> {
         hasher.combine(displayPeriod)
     }
     
-    static func make(period: DateComponents, by dayOfPoints: [PointOfDay], calendar: Calendar) -> Self {
+    static func make(
+        by dayOfPoints: [PointOfDay],
+        userId: String,
+        period: DateComponents,
+        calendar: Calendar
+    ) -> Self {
         
         let targetYearPoints = dayOfPoints.filter {
             calendar.dateComponents([.year], from: $0.indexedDay) == period
         }
-        let months = PointOfMonth.makeWithSeparated(by: targetYearPoints, calendar: calendar)
+        let months = PointOfMonth.makeWithSeparated(by: targetYearPoints, userId: userId, calendar: calendar)
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }
         
         return .init(
+            userId: userId,
             displayPeriod: .init(type: .year, components: period),
             total: total,
             elements: .init(months)

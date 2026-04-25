@@ -10,29 +10,76 @@ import HometeDomain
 
 struct AllPointList: Equatable {
     
-    private(set) var list: [PointOfDay] = []
+    private(set) var list: [String: [PointOfDay]] = [:]
     
     static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
         
-        let list: [PointOfDay] = houseworkItems.compactMap {
-            guard $0.state == .completed else { return nil }
-            return .init(indexedDay: $0.indexedDate.value, point: .init(value: $0.point))
+        let groupedByUserItems: [String: [HouseworkItem]] = Dictionary(
+            grouping: houseworkItems.filter { $0.state == .completed }
+        ) { $0.executorId ?? "" }
+        let list: [String: [PointOfDay]] = groupedByUserItems.mapValues {
+            $0.map { .init(indexedDay: $0.indexedDate.value, point: .init(value: $0.point)) }
         }
         return .init(list: list)
     }
     
-    func viewablePointList(period: DateComponents, calendar: Calendar) -> PointOfYear {
+    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfYear] {
         
-        return .make(period: period, by: list, calendar: calendar)
+        return allUserIdList.map {
+            guard let userPointList = list[$0] else {
+                return .init(
+                    userId: $0,
+                    displayPeriod: .init(type: .year, components: period),
+                    total: .init(value: .zero),
+                    elements: []
+                )
+            }
+            return .make(
+                by: userPointList,
+                userId: $0,
+                period: period,
+                calendar: calendar
+            )
+        }
     }
     
-    func viewablePointList(period: DateComponents, calendar: Calendar) -> PointOfMonth {
+    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfMonth] {
         
-        return .make(period: period, by: list, calendar: calendar)
+        return allUserIdList.map {
+            guard let userPointList = list[$0] else {
+                return .init(
+                    userId: $0,
+                    displayPeriod: .init(type: .month, components: period),
+                    total: .init(value: .zero),
+                    elements: []
+                )
+            }
+            return .make(
+                by: userPointList,
+                userId: $0,
+                period: period,
+                calendar: calendar
+            )
+        }
     }
     
-    // TODO: Weekの生成メソッド実装後に定義
-//    func viewablePointList(utilWeek: String) -> WeekOfPoint {
-//        return .make(util: .year(value: utilYear), by: list)
-//    }
+    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfWeek] {
+        
+        return allUserIdList.map {
+            guard let userPointList = list[$0] else {
+                return .init(
+                    userId: $0,
+                    displayPeriod: .init(type: .month, components: period),
+                    total: .init(value: .zero),
+                    elements: []
+                )
+            }
+            return .make(
+                by: userPointList,
+                userId: $0,
+                period: period,
+                calendar: calendar
+            )
+        }
+    }
 }
