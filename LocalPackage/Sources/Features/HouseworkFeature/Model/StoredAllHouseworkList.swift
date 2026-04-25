@@ -16,9 +16,19 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
         self.value = value
     }
 
-    public static func makeMultiDateList(items: [HouseworkItem], calendar: Calendar) -> Self {
+    public static func makeMultiDateList(
+        items: [HouseworkItem],
+        anchorDate: Date,
+        offsetDays: Int,
+        calendar: Calendar
+    ) -> Self {
 
-        let items: [DailyHouseworkList] = Dictionary(grouping: items) { $0.formattedIndexedDate }
+        let targetDates = Set(
+            HouseworkIndexedDate.calcTargetPeriod(anchorDate: anchorDate, offsetDays: offsetDays, calendar: calendar)
+        )
+        let dailyLists: [DailyHouseworkList] = Dictionary(
+            grouping: items.filter { targetDates.contains($0.formattedIndexedDate) }
+        ) { $0.formattedIndexedDate }
             .compactMap {
 
                 guard let firstItem = $1.first else { return nil }
@@ -27,7 +37,7 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
                     metaData: .init(indexedDate: firstItem.indexedDate, expiredAt: firstItem.expiredAt)
                 )
             }
-        return .init(value: items)
+        return .init(value: dailyLists)
     }
 
     public func item(_ item: HouseworkItem) -> HouseworkItem? {

@@ -7,6 +7,8 @@
 
 import Foundation
 
+#if DEBUG
+
 public extension Date {
     static func previewDate(
         year: Int,
@@ -29,3 +31,5 @@ public extension Date {
         .date! // swiftlint:disable:this force_unwrapping
     }
 }
+
+#endif

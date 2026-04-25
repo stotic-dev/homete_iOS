@@ -22,7 +22,7 @@ extension HouseworkIndexedDateTest.InitCase {
     @Test(arguments: [
         Date.distantPast,
         .init(timeIntervalSince1970: .zero),
-        .dateComponents(year: 2025, month: 1, day: 1),
+        .previewDate(year: 2025, month: 1, day: 1),
         .distantFuture
     ])
     func init_parse_date(inputDate: Date) async throws {
@@ -51,7 +51,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
 
         // Act
         let result = HouseworkIndexedDate.calcTargetPeriod(
-            anchorDate: .dateComponents(year: 2026, month: 2, day: 1),
+            anchorDate: .previewDate(year: 2026, month: 2, day: 1),
             offsetDays: 2,
             calendar: calendar
         )
@@ -75,7 +75,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
 
         // Act
         let result = HouseworkIndexedDate.calcTargetPeriod(
-            anchorDate: .dateComponents(year: 2026, month: 1, day: 15),
+            anchorDate: .previewDate(year: 2026, month: 1, day: 15),
             offsetDays: 0,
             calendar: calendar
         )

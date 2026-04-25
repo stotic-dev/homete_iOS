@@ -6,7 +6,8 @@
 //
 
 import Foundation
-@testable import HometeDomain
+
+#if DEBUG
 
 extension HouseworkItem {
     
@@ -78,3 +79,5 @@ extension HouseworkItem {
         )
     }
 }
+
+#endif

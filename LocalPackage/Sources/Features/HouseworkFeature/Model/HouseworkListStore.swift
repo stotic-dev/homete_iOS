@@ -99,7 +99,13 @@ private extension HouseworkListStore {
 
         let stream = await houseworkManager.createObserver(houseworkListObserveKey)
         for await newItems in stream {
-            items = StoredAllHouseworkList.makeMultiDateList(items: newItems, calendar: calendar)
+            let anchorDate = await houseworkManager.listenerAnchorDate
+            items = StoredAllHouseworkList.makeMultiDateList(
+                items: newItems,
+                anchorDate: anchorDate,
+                offsetDays: HouseworkManager.listenerOffset,
+                calendar: calendar
+            )
         }
     }
 

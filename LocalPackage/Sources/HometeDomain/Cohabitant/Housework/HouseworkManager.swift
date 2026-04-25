@@ -12,9 +12,10 @@ public final actor HouseworkManager {
     // MARK: state
 
     public private(set) var allItems: [HouseworkItem] = []
+    public private(set) var listenerAnchorDate: Date = .now
     private var streamContinuationDic: [String: AsyncStream<[HouseworkItem]>.Continuation] = [:]
     private var observeTask: Task<Void, Never>?
-
+    
     // MARK: Dependencies
 
     private let houseworkClient: HouseworkClient
@@ -22,6 +23,7 @@ public final actor HouseworkManager {
     // MARK: constant
 
     private let houseworkObserveKey = "houseworkObserveKey"
+    public static let listenerOffset: Int = 3
 
     // MARK: initialize
 
@@ -44,7 +46,8 @@ public final actor HouseworkManager {
         return stream
     }
 
-    public func setupObserver(currentTime: Date, cohabitantId: String, calendar: Calendar, offset: Int) async {
+    public func setupObserver(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
+        listenerAnchorDate = currentTime
         observeTask?.cancel()
         await houseworkClient.removeListener(houseworkObserveKey)
 
@@ -60,7 +63,7 @@ public final actor HouseworkManager {
             houseworkObserveKey,
             cohabitantId,
             currentTime,
-            offset
+            Self.listenerOffset
         )
 
         observeTask = Task {

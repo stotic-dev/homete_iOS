@@ -70,8 +70,7 @@ private extension HomeView {
         await houseworkManager.setupObserver(
             currentTime: now,
             cohabitantId: cohabitantId,
-            calendar: calendar,
-            offset: 3
+            calendar: calendar
         )
     }
     
