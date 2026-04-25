@@ -102,6 +102,11 @@ let package = Package(
             dependencies: ["HouseworkFeature"],
             plugins: [swiftLintPlugin()]
         ),
+        .testTarget(
+            name: "ContributionFeatureTests",
+            dependencies: ["ContributionFeature"],
+            plugins: [swiftLintPlugin()]
+        )
     ]
 )
 
