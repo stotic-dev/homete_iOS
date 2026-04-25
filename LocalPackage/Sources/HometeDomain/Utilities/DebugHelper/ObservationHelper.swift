@@ -7,14 +7,16 @@
 
 import Observation
 
-enum ObservationHelper {
+#if DEBUG
+
+public enum ObservationHelper {
     
     /// Observableなオブジェクトのプロパティが変更を検知する
     /// - Parameters:
     ///   - apply: 変更を検知したいプロパティを返す
     ///   - onChange: 変更検知時に発火するクロージャ
     @MainActor
-    static func continuousObservationTracking<T: Sendable>(
+    public static func continuousObservationTracking<T: Sendable>(
         _ apply: @escaping @MainActor @Sendable () -> T,
         onChange: @escaping @Sendable () -> Void
     ) {
@@ -28,3 +30,5 @@ enum ObservationHelper {
         }
     }
 }
+
+#endif

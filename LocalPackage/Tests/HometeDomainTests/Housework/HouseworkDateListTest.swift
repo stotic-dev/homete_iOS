@@ -14,7 +14,7 @@ struct HouseworkDateListTest {
     // anchorDate = 2026/04/15、selectedDate = 2026/04/15（= anchor当日）を基準にテスト
     // selectableOffset=7、unselectablePadding=3 → 合計 (7+3)*2+1 = 21件
     private static let calendar = Calendar.japanese
-    private static let anchorDate = Date.dateComponents(year: 2026, month: 4, day: 15)
+    private static let anchorDate = Date.previewDate(year: 2026, month: 4, day: 15)
 
     // MARK: - items
 
@@ -61,9 +61,9 @@ struct HouseworkDateListTest {
     @Test(
         "selectedDateと同じ日付のアイテム状態はselectedを返す",
         arguments: [
-            Date.dateComponents(year: 2026, month: 4, day: 15), // anchor当日
-            Date.dateComponents(year: 2026, month: 4, day: 12), // anchor-3（selectable範囲内）
-            Date.dateComponents(year: 2026, month: 4, day: 18)  // anchor+3（selectable範囲内）
+            Date.previewDate(year: 2026, month: 4, day: 15), // anchor当日
+            Date.previewDate(year: 2026, month: 4, day: 12), // anchor-3（selectable範囲内）
+            Date.previewDate(year: 2026, month: 4, day: 18)  // anchor+3（selectable範囲内）
         ]
     )
     func state_returns_selected(selectedDate: Date) {

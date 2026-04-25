@@ -52,7 +52,6 @@ struct HouseworkManagerTest {
             currentTime: now,
             cohabitantId: inputCohabitantId,
             calendar: calendar,
-            offset: 3
         )
 
         // Assert
@@ -92,7 +91,6 @@ struct HouseworkManagerTest {
             currentTime: now,
             cohabitantId: inputCohabitantId,
             calendar: calendar,
-            offset: 3
         )
 
         // フェッチ結果の通知を消費
