@@ -130,6 +130,18 @@ let package = Package(
             ]
         ),
         .target(
+            name: "ContributionFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            path: "./Sources/Features/ContributionFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
             name: "HometeInfrastructure",
             dependencies: [
                 "HometeDomain",
