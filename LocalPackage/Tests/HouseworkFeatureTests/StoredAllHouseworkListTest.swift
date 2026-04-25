@@ -34,7 +34,7 @@ struct StoredAllHouseworkListTest {
             items: inputHouseworkItem,
             anchorDate: Self.anchorDate,
             offsetDays: Self.offsetDays,
-            calendar: .current
+            calendar: .japanese
         )
 
         let sortedActualValue = actual.value.sorted { $0.metaData.indexedDate.value < $1.metaData.indexedDate.value }
@@ -57,7 +57,7 @@ struct StoredAllHouseworkListTest {
             items: inRangeItems + outOfRangeItems,
             anchorDate: Self.anchorDate,
             offsetDays: Self.offsetDays,
-            calendar: .current
+            calendar: .japanese
         )
 
         let expected = StoredAllHouseworkList(value: [.makeForTest(items: inRangeItems)])
@@ -81,7 +81,7 @@ struct StoredAllHouseworkListTest {
             items: (inputFirstHouseworkGroup + [expectedItem]).shuffled(),
             anchorDate: Self.anchorDate,
             offsetDays: Self.offsetDays,
-            calendar: .current
+            calendar: .japanese
         )
 
         let actual = list.item(expectedItem)
