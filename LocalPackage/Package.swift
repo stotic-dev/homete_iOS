@@ -18,6 +18,7 @@ let package = Package(
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
         lib("AppRoot"),
+        lib("ContributionFeature")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
@@ -84,6 +85,7 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "ContributionFeature"
             ],
             plugins: [swiftLintPlugin()]
         ),

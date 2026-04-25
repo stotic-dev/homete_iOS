@@ -15,10 +15,6 @@ struct HouseworkBoardList: Equatable {
     func items(matching state: HouseworkState) -> [HouseworkItem] {
         return items.filter { $0.state == state }
     }
-
-    init(items: [HouseworkItem]) {
-        self.items = items
-    }
 }
 
 extension HouseworkBoardList {

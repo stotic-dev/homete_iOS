@@ -44,7 +44,6 @@ struct HouseworkBoardListTest {
         let actual = HouseworkBoardList(
             dailyList: inputList,
             selectedDate: selectTime,
-            calendar: .japanese
         )
         
         // Assert
@@ -59,11 +58,11 @@ struct HouseworkBoardListTest {
     func items_match_state(expectedState: HouseworkState) async throws {
         
         // Arrange
-        let inputHouseworkItem = makeHouseworkItemListWithAllState()
+        let targetDate = Date.previewDate(year: 2026, month: 1, day: 1)
+        let inputHouseworkItem = makeHouseworkItemListWithAllState(targetDate)
         let houseworkBoardList = HouseworkBoardList(
             dailyList: [.makeForTest(items: inputHouseworkItem)],
-            selectedDate: .now,
-            calendar: .japanese
+            selectedDate: targetDate,
         )
         
         // Act
@@ -77,9 +76,15 @@ struct HouseworkBoardListTest {
 
 private extension HouseworkBoardListTest {
     
-    func makeHouseworkItemListWithAllState() -> [HouseworkItem] {
+    func makeHouseworkItemListWithAllState(_ date: Date) -> [HouseworkItem] {
         HouseworkState.allCases.enumerated().flatMap { index, state in
-            (1...3).map { HouseworkItem.makeForTest(id: index + 1 + $0, state: state) }
+            (1...3).map {
+                HouseworkItem.makeForTest(
+                    id: index + 1 + $0,
+                    indexedDate: date,
+                    state: state
+                )
+            }
         }
     }
 }

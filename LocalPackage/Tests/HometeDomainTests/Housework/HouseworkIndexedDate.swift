@@ -15,30 +15,6 @@ enum HouseworkIndexedDateTest {
     struct CalcTargetPeriodCase {}
 }
 
-// MARK: - InitCase
-
-extension HouseworkIndexedDateTest.InitCase {
-
-    @Test(arguments: [
-        Date.distantPast,
-        .init(timeIntervalSince1970: .zero),
-        .previewDate(year: 2025, month: 1, day: 1),
-        .distantFuture
-    ])
-    func init_parse_date(inputDate: Date) async throws {
-        let indexedDate = HouseworkIndexedDate(inputDate, calendar: .japanese)
-        
-        let expected = inputDate.formatted(
-            Date.FormatStyle(date: .numeric, time: .omitted, calendar: .japanese, timeZone: .tokyo)
-                .year(.extended(minimumLength: 4))
-                .month(.twoDigits)
-                .day(.twoDigits)
-                .locale(.jp)
-        )
-        #expect(indexedDate.value == expected)
-    }
-}
-
 // MARK: - CalcTargetPeriodCase
 
 extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
@@ -57,12 +33,12 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
         )
 
         // Assert
-        let expected = [
-            "2026/01/30",
-            "2026/01/31",
-            "2026/02/01",
-            "2026/02/02",
-            "2026/02/03"
+        let expected: [Date] = [
+            .previewDate(year: 2026, month: 1, day: 30),
+            .previewDate(year: 2026, month: 1, day: 31),
+            .previewDate(year: 2026, month: 2, day: 1),
+            .previewDate(year: 2026, month: 2, day: 2),
+            .previewDate(year: 2026, month: 2, day: 3),
         ]
         #expect(result == expected)
     }
@@ -81,7 +57,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
         )
 
         // Assert
-        let expected = ["2026/01/15"]
+        let expected = [Date.previewDate(year: 2026, month: 1, day: 15)]
         #expect(result == expected)
     }
 }

@@ -5,6 +5,8 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
+import Foundation
+
 struct YearOfPoint: Equatable, Hashable, ViewablePointList<MonthOfPoint> {
     
     let displayPeriod: DisplayPointPeriod
@@ -16,20 +18,20 @@ struct YearOfPoint: Equatable, Hashable, ViewablePointList<MonthOfPoint> {
         hasher.combine(displayPeriod)
     }
     
-    static func make(util: DisplayPointPeriod, by dayOfPoints: [DayOfPoint]) -> Self {
+    static func make(period: DateComponents, by dayOfPoints: [DayOfPoint], calendar: Calendar) -> Self {
         
-        guard case .year(let yearValue) = util else {
-            preconditionFailure("Unexpected display period: \(util).")
-        }
-
         let targetYearPoints = dayOfPoints.filter {
-            $0.indexedDay.components(separatedBy: "/").first == yearValue
+            calendar.dateComponents([.year], from: $0.indexedDay) == period
         }
-        let months = MonthOfPoint.makeWithSeparated(by: targetYearPoints)
+        let months = MonthOfPoint.makeWithSeparated(by: targetYearPoints, calendar: calendar)
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }
         
-        return .init(displayPeriod: util, total: total, elements: .init(months))
+        return .init(
+            displayPeriod: .init(type: .year, components: period),
+            total: total,
+            elements: .init(months)
+        )
     }
 }

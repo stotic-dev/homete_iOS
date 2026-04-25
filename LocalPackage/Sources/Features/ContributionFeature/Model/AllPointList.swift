@@ -21,14 +21,14 @@ struct AllPointList: Equatable {
         return .init(list: list)
     }
     
-    func viewablePointList(utilYear: String) -> YearOfPoint {
+    func viewablePointList(period: DateComponents, calendar: Calendar) -> YearOfPoint {
         
-        return .make(util: .year(value: utilYear), by: list)
+        return .make(period: period, by: list, calendar: calendar)
     }
     
-    func viewablePointList(utilMonth: String) -> MonthOfPoint {
+    func viewablePointList(period: DateComponents, calendar: Calendar) -> MonthOfPoint {
         
-        return .make(util: .month(value: utilMonth), by: list)
+        return .make(period: period, by: list, calendar: calendar)
     }
     
     // TODO: Weekの生成メソッド実装後に定義
