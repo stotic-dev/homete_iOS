@@ -10,23 +10,23 @@ import HometeDomain
 
 struct AllPointList: Equatable {
     
-    private(set) var list: [DayOfPoint] = []
+    private(set) var list: [PointOfDay] = []
     
     static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
         
-        let list: [DayOfPoint] = houseworkItems.compactMap {
+        let list: [PointOfDay] = houseworkItems.compactMap {
             guard $0.state == .completed else { return nil }
             return .init(indexedDay: $0.indexedDate.value, point: .init(value: $0.point))
         }
         return .init(list: list)
     }
     
-    func viewablePointList(period: DateComponents, calendar: Calendar) -> YearOfPoint {
+    func viewablePointList(period: DateComponents, calendar: Calendar) -> PointOfYear {
         
         return .make(period: period, by: list, calendar: calendar)
     }
     
-    func viewablePointList(period: DateComponents, calendar: Calendar) -> MonthOfPoint {
+    func viewablePointList(period: DateComponents, calendar: Calendar) -> PointOfMonth {
         
         return .make(period: period, by: list, calendar: calendar)
     }

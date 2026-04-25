@@ -1,5 +1,5 @@
 //
-//  DayOfPoint.swift
+//  PointOfDay.swift
 //  LocalPackage
 //
 //  Created by Taichi Sato on 2026/04/25.
@@ -8,7 +8,7 @@
 import Foundation
 
 /// 一日のポイント
-struct DayOfPoint: Equatable, Hashable, ViewablePointElement {
+struct PointOfDay: Equatable, Hashable, ViewablePointElement {
     let indexedDay: Date
     let point: Point
     

@@ -26,8 +26,9 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         // Arrange
         let calendar = Calendar.japanese
         let selectedDate = Date()
-        let expectedIndexedDate = HouseworkIndexedDate(value: selectedDate)
-        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 1, to: selectedDate))
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+        let expectedIndexedDate = HouseworkIndexedDate(value: selectedDay)
+        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 1, to: selectedDay))
         
         let expectedList = DailyHouseworkList(
             items: [],
