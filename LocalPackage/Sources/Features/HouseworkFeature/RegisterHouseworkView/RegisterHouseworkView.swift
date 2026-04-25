@@ -14,6 +14,7 @@ struct RegisterHouseworkView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
     @LoadingState var loadingState
     
     @State var houseworkTitle = ""
@@ -153,6 +154,8 @@ private extension RegisterHouseworkView {
     
     func tappedRegisterButton() async {
         
+        guard let cohabitantId else { return }
+        
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
@@ -170,7 +173,10 @@ private extension RegisterHouseworkView {
         
         do {
             
-            try await houseworkListStore.register(newItem)
+            try await houseworkListStore.register(
+                newItem: newItem,
+                cohabitantId: cohabitantId
+            )
             dismiss()
         }
         catch {

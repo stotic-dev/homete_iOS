@@ -14,7 +14,6 @@ import Observation
 final class HouseworkListStore {
 
     private(set) var items: StoredAllHouseworkList
-    private var cohabitantId: String
     private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
@@ -27,67 +26,82 @@ final class HouseworkListStore {
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
-        items: [DailyHouseworkList] = [],
-        cohabitantId: String = ""
+        items: [DailyHouseworkList] = []
     ) {
 
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
         self.items = .init(value: items)
-        self.cohabitantId = cohabitantId
 
         Task {
             await startObserving()
         }
     }
 
-    func register(_ newItem: HouseworkItem) async throws {
+    func register(newItem: HouseworkItem, cohabitantId: String) async throws {
 
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
         Task.detached {
 
             let notificationContent = PushNotificationContent.addNewHouseworkItem(newItem.title)
-            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+            try await self.cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
         }
     }
 
-    func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
+    func requestReview(
+        target: HouseworkItem,
+        now: Date,
+        executor: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updatePendingApproval(at: now, changer: executor)
         } notification: {
             .requestReviewMessage(houseworkTitle: target.title)
         }
     }
 
-    func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func approved(
+        target: HouseworkItem,
+        now: Date,
+        reviwer: Account,
+        comment: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
             .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
 
-    func rejected(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func rejected(
+        target: HouseworkItem,
+        now: Date,
+        reviwer: Account,
+        comment: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
             .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
 
-    func returnToIncomplete(target: HouseworkItem) async throws {
+    func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateIncomplete()
         }
     }
 
-    func remove(_ target: HouseworkItem) async throws {
+    func remove(target: HouseworkItem, cohabitantId: String) async throws {
 
         try await houseworkClient.removeItem(target, cohabitantId)
     }
@@ -111,6 +125,7 @@ private extension HouseworkListStore {
 
     func updateAndSave(
         target: HouseworkItem,
+        cohabitantId: String,
         transform: (HouseworkItem) -> HouseworkItem,
         notification: (() -> PushNotificationContent)? = nil
     ) async throws {
@@ -126,7 +141,7 @@ private extension HouseworkListStore {
             let content = notification()
             Task.detached {
                 try await self.cohabitantPushNotificationClient.send(
-                    self.cohabitantId,
+                    cohabitantId,
                     content
                 )
             }

@@ -80,9 +80,13 @@ private extension HouseworkBoardListContent {
     
     func didSwipeDeleteItemAction(_ item: HouseworkItem) async {
         
+        guard let cohabitantId = loginContext.cohabitantId else { return }
         do {
             
-            try await houseworkListStore.remove(item)
+            try await houseworkListStore.remove(
+                target: item,
+                cohabitantId: cohabitantId
+            )
         }
         catch {
             

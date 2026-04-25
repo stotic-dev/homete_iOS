@@ -12,6 +12,7 @@ import SwiftUI
 struct HouseworkDetailActionContent: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.routeResolver) var router
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
     @State var isPresentedApprovalView = false
     
     @Binding var isLoading: Bool
@@ -90,11 +91,14 @@ private extension HouseworkDetailActionContent {
     
     func tappedRequestConfirmButton() async {
         
+        guard let cohabitantId else { return }
+        
         do {
             try await houseworkListStore.requestReview(
                 target: item,
                 now: .now,
-                executor: account.id
+                executor: account.id,
+                cohabitantId: cohabitantId
             )
         }
         catch {
@@ -104,9 +108,11 @@ private extension HouseworkDetailActionContent {
     
     func tappedUndoStateButton() async {
         
+        guard let cohabitantId else { return }
+        
         do {
             
-            try await houseworkListStore.returnToIncomplete(target: item)
+            try await houseworkListStore.returnToIncomplete(target: item, cohabitantId: cohabitantId)
         } catch {
             
             commonErrorContent = .init(error: error)
