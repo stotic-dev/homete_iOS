@@ -66,10 +66,6 @@ public extension RootView {
                     signInWithAppleClient: $0.signInWithAppleClient,
                     nonceGenerationClient: $0.nonceGeneratorClient
                 ))
-                .environment(HouseworkListStore(
-                    houseworkClient: $0.houseworkClient,
-                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient
-                ))
                 .environment(CohabitantStore(
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient

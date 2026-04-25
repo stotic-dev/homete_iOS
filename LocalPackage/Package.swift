@@ -51,15 +51,11 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
     ],
     targets: [
+        
+        // MARK: Targets
+        
         .target(
             name: "HometeDomain",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .testTarget(
-            name: "HometeDomainTests",
-            dependencies: ["HometeDomain"],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
@@ -155,6 +151,27 @@ let package = Package(
                 "AuthFeature",
                 "SettingFeature",
                 "HomeFeature",
+                "HouseworkFeature",
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        
+        // MARK: Test Targets
+        
+        .testTarget(
+            name: "HometeDomainTests",
+            dependencies: [
+                "HometeDomain",
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .testTarget(
+            name: "HouseworkFeatureTests",
+            dependencies: [
                 "HouseworkFeature",
             ],
             plugins: [

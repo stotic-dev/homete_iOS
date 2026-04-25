@@ -132,13 +132,16 @@ private extension HouseworkApprovalView {
     
     func tappedApproveButton() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
             try await houseworkListStore.approved(
                 target: item,
                 now: .now,
                 reviwer: account,
-                comment: inputMessage
+                comment: inputMessage,
+                cohabitantId: cohabitantId
             )
             dismiss()
         } catch {
@@ -149,13 +152,16 @@ private extension HouseworkApprovalView {
     
     func tappedReconfirmationButton() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
             try await houseworkListStore.rejected(
                 target: item,
                 now: .now,
                 reviwer: account,
-                comment: inputMessage
+                comment: inputMessage,
+                cohabitantId: cohabitantId
             )
             dismiss()
         } catch {

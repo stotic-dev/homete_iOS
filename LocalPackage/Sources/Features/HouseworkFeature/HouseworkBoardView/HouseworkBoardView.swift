@@ -20,8 +20,15 @@ public struct HouseworkBoardView: View {
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var isPresentingAddHouseworkView = false
     
-    public static func instantiate() -> Self {
-        HouseworkBoardView()
+    public static func instantiate() -> some View {
+        DependenciesInjectLayer {
+            HouseworkBoardView()
+                .environment(HouseworkListStore(
+                    houseworkClient: $0.houseworkClient,
+                    cohabitantPushNotificationClient: $0.cohabitantPushNotificationClient,
+                    houseworkManager: $0.houseworkManager
+                ))
+        }
     }
 
     public var body: some View {
@@ -147,17 +154,17 @@ private extension HouseworkBoardView {
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue,
+        houseworkManager: .init(
+            houseworkClient: .previewValue,
+            allItems: list.items
+        ),
         items: [
             .init(
                 items: list.items,
-                metaData: .init(
-                    indexedDate: .init(value: "0001/01/01"),
-                    expiredAt: .now
-                )
+                metaData: .init(selectedDate: .distantPast, calendar: .japanese)
             )
         ]
     ))
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
-    .snapshotForPreview(delay: 2)
 }

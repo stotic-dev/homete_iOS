@@ -1,14 +1,16 @@
 //
 //  DateHelper.swift
-//  homete
+//  LocalPackage
 //
-//  Created by 佐藤汰一 on 2025/11/22.
+//  Created by Taichi Sato on 2026/04/04.
 //
 
 import Foundation
 
-extension Date {
-    static func dateComponents(
+#if DEBUG
+
+public extension Date {
+    static func previewDate(
         year: Int,
         month: Int,
         day: Int,
@@ -17,8 +19,8 @@ extension Date {
         second: Int = .zero
     ) -> Date {
         DateComponents(
-            calendar: Calendar.init(identifier: .gregorian),
-            timeZone: .init(identifier: "Asia/Tokyo"),
+            calendar: .japanese,
+            timeZone: .tokyo,
             year: year,
             month: month,
             day: day,
@@ -29,3 +31,5 @@ extension Date {
         .date! // swiftlint:disable:this force_unwrapping
     }
 }
+
+#endif

@@ -12,11 +12,9 @@ import SwiftUI
 
 public struct CohabitantRegistrationView: View {
     
-    @Environment(\.calendar) var calendar
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
-    @Environment(HouseworkListStore.self) var houseworkListStore
     
     public init() {}
 
@@ -64,11 +62,6 @@ private extension CohabitantRegistrationView {
         do {
             
             try await accountStore.registerCohabitantId(cohabitantId)
-            await houseworkListStore.loadHouseworkList(
-                currentTime: .now,
-                cohabitantId: cohabitantId,
-                calendar: calendar
-            )
         } catch {
             
             print("error occurred: \(error)")

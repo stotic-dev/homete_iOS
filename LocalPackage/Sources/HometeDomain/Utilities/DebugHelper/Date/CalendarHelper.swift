@@ -7,11 +7,15 @@
 
 import Foundation
 
+#if DEBUG
+
 extension Calendar {
-    static var japanese: Self {
+    public static var japanese: Self {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .tokyo
         calendar.locale = .jp
         return calendar
     }
 }
+
+#endif

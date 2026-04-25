@@ -11,9 +11,7 @@ import UserNotifications
 
 struct AppTabView: View {
 
-    @Environment(\.calendar) var calendar
     @Environment(\.loginContext.account.cohabitantId) var cohabitantId
-    @Environment(HouseworkListStore.self) var houseworkListStore
 
     @State var type: TabType = .dashboard
 
@@ -70,13 +68,6 @@ private extension AppTabView {
     func onAppear() async {
 
         await requestNotificationPermission()
-
-        guard let cohabitantId else { return }
-        await houseworkListStore.loadHouseworkList(
-            currentTime: .now,
-            cohabitantId: cohabitantId,
-            calendar: calendar
-        )
     }
 }
 
@@ -92,9 +83,7 @@ private extension AppTabView {
                 return
             }
             #if os(iOS)
-            await MainActor.run {
-                UIApplication.shared.registerForRemoteNotifications()
-            }
+            UIApplication.shared.registerForRemoteNotifications()
             #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")
@@ -115,9 +104,5 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
-        .environment(HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ))
         .environment(CohabitantStore())
 }

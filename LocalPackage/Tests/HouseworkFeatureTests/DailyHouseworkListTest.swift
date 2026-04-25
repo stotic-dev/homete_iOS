@@ -7,8 +7,8 @@
 
 import Foundation
 import Testing
-
-@testable import HometeDomain
+import HometeDomain
+@testable import HouseworkFeature
 
 // swiftlint:disable:next convenience_type
 struct DailyHouseworkListTest {

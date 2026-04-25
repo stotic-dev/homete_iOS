@@ -6,136 +6,126 @@
 //
 
 import Foundation
+import HometeDomain
 import Observation
 
 @MainActor
 @Observable
-public final class HouseworkListStore {
+final class HouseworkListStore {
 
-    public private(set) var items: StoredAllHouseworkList
-    private var cohabitantId: String
-
-    private var observeTask: Task<Void, Never>?
+    private(set) var items: StoredAllHouseworkList
+    private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
+    private let houseworkManager: HouseworkManager
 
-    private let houseworkObserveKey = "houseworkObserveKey"
+    private let houseworkListObserveKey = "houseworkListObserveKey"
 
-    public init(
+    init(
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
-        items: [DailyHouseworkList] = [],
-        cohabitantId: String = ""
+        houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
+        items: [DailyHouseworkList] = []
     ) {
 
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
+        self.houseworkManager = houseworkManager
         self.items = .init(value: items)
-        self.cohabitantId = cohabitantId
-    }
 
-    public func loadHouseworkList(currentTime: Date, cohabitantId: String, calendar: Calendar) async {
-
-        self.cohabitantId = cohabitantId
-
-        guard !cohabitantId.isEmpty else {
-
-            await clear()
-            return
-        }
-
-        observeTask?.cancel()
-        await houseworkClient.removeListener(houseworkObserveKey)
-
-        let houseworkListStream = await houseworkClient.snapshotListener(
-            houseworkObserveKey,
-            cohabitantId,
-            currentTime,
-            3
-        )
-
-        observeTask = Task {
-
-            for await currentItems in houseworkListStream {
-
-                items = StoredAllHouseworkList.makeMultiDateList(
-                    items: currentItems,
-                    calendar: calendar
-                )
-            }
+        Task {
+            await startObserving()
         }
     }
 
-    public func register(_ newItem: HouseworkItem) async throws {
+    func register(newItem: HouseworkItem, cohabitantId: String) async throws {
 
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
         Task.detached {
 
             let notificationContent = PushNotificationContent.addNewHouseworkItem(newItem.title)
-            try await self.cohabitantPushNotificationClient.send(self.cohabitantId, notificationContent)
+            try await self.cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
         }
     }
 
-    public func requestReview(target: HouseworkItem, now: Date, executor: String) async throws {
+    func requestReview(
+        target: HouseworkItem,
+        now: Date,
+        executor: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updatePendingApproval(at: now, changer: executor)
         } notification: {
             .requestReviewMessage(houseworkTitle: target.title)
         }
     }
 
-    public func approved(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func approved(
+        target: HouseworkItem,
+        now: Date,
+        reviwer: Account,
+        comment: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
             .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
 
-    public func rejected(target: HouseworkItem, now: Date, reviwer: Account, comment: String) async throws {
+    func rejected(
+        target: HouseworkItem,
+        now: Date,
+        reviwer: Account,
+        comment: String,
+        cohabitantId: String
+    ) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
             .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
         }
     }
 
-    public func returnToIncomplete(target: HouseworkItem) async throws {
+    func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
 
-        try await updateAndSave(target: target) {
+        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateIncomplete()
         }
     }
 
-    public func remove(_ target: HouseworkItem) async throws {
+    func remove(target: HouseworkItem, cohabitantId: String) async throws {
 
         try await houseworkClient.removeItem(target, cohabitantId)
-    }
-
-    public func stopObserving() async {
-
-        observeTask?.cancel()
-        await observeTask?.value
-        observeTask = nil
     }
 }
 
 private extension HouseworkListStore {
 
-    func clear() async {
+    func startObserving() async {
 
-        await stopObserving()
-        await houseworkClient.removeListener(houseworkObserveKey)
-        items.removeAll()
+        let stream = await houseworkManager.createObserver(houseworkListObserveKey)
+        for await newItems in stream {
+            let anchorDate = await houseworkManager.listenerAnchorDate
+            items = StoredAllHouseworkList.makeMultiDateList(
+                items: newItems,
+                anchorDate: anchorDate,
+                offsetDays: HouseworkManager.listenerOffset,
+                calendar: calendar
+            )
+        }
     }
 
     func updateAndSave(
         target: HouseworkItem,
+        cohabitantId: String,
         transform: (HouseworkItem) -> HouseworkItem,
         notification: (() -> PushNotificationContent)? = nil
     ) async throws {
@@ -151,7 +141,7 @@ private extension HouseworkListStore {
             let content = notification()
             Task.detached {
                 try await self.cohabitantPushNotificationClient.send(
-                    self.cohabitantId,
+                    cohabitantId,
                     content
                 )
             }
