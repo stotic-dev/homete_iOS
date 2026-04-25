@@ -67,9 +67,14 @@ private extension HouseworkDetailView {
     
     func tappedDeleteHouseworkItem() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
-            try await houseworkListStore.remove(item)
+            try await houseworkListStore.remove(
+                target: item,
+                cohabitantId: cohabitantId
+            )
             dismiss()
         }
         catch {
