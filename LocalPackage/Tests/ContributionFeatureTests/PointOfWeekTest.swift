@@ -39,10 +39,11 @@ extension PointOfWeekTest.MakeCase {
         let weekPeriod = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: april20)
 
         // Act
-        let result = PointOfWeek.make(period: weekPeriod, by: dayOfPoints, calendar: calendar)
+        let result = PointOfWeek.make(by: dayOfPoints, userId: "testUser", period: weekPeriod, calendar: calendar)
 
         // Assert
         let expected = PointOfWeek(
+            userId: "testUser",
             displayPeriod: .init(type: .week, components: weekPeriod),
             total: .init(value: 80),
             elements: [

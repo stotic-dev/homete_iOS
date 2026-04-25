@@ -35,7 +35,7 @@ extension PointOfYearTest.MakeCase {
         let period2026 = calendar.dateComponents([.year], from: april2026)
 
         // Act
-        let result = PointOfYear.make(period: period2026, by: dayOfPoints, calendar: calendar)
+        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
 
         // Assert
         #expect(result.total.value == 30)
@@ -58,7 +58,7 @@ extension PointOfYearTest.MakeCase {
         let period2026 = calendar.dateComponents([.year], from: april2026)
 
         // Act
-        let result = PointOfYear.make(period: period2026, by: dayOfPoints, calendar: calendar)
+        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
 
         // Assert
         #expect(result.elements.count == 2)
@@ -81,7 +81,7 @@ extension PointOfYearTest.MakeCase {
         let period2026 = calendar.dateComponents([.year], from: april2026)
 
         // Act
-        let result = PointOfYear.make(period: period2026, by: dayOfPoints, calendar: calendar)
+        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
 
         // Assert
         #expect(result.total.value == 80)

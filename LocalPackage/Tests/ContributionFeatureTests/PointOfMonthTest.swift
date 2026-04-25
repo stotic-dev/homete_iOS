@@ -41,10 +41,11 @@ extension PointOfMonthTest.MakeCase {
         let aprilPeriod = calendar.dateComponents([.year, .month], from: april10)
 
         // Act
-        let result = PointOfMonth.make(period: aprilPeriod, by: dayOfPoints, calendar: calendar)
+        let result = PointOfMonth.make(by: dayOfPoints, userId: "testUser", period: aprilPeriod, calendar: calendar)
 
         // Assert
         let expected = PointOfMonth(
+            userId: "testUser",
             displayPeriod: .init(type: .month, components: aprilPeriod),
             total: .init(value: 80),
             elements: [
@@ -77,13 +78,14 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
         ]
 
         // Act
-        let result = PointOfMonth.makeWithSeparated(by: dayOfPoints, calendar: calendar)
+        let result = PointOfMonth.makeWithSeparated(by: dayOfPoints, userId: "testUser", calendar: calendar)
 
         // Assert
         let aprilComp = calendar.dateComponents([.year, .month], from: april10)
         let mayComp = calendar.dateComponents([.year, .month], from: may10)
         let expected: [PointOfMonth] = [
             .init(
+                userId: "testUser",
                 displayPeriod: .init(type: .month, components: aprilComp),
                 total: .init(value: 80),
                 elements: [
@@ -92,6 +94,7 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
                 ]
             ),
             .init(
+                userId: "testUser",
                 displayPeriod: .init(type: .month, components: mayComp),
                 total: .init(value: 20),
                 elements: [
@@ -99,6 +102,6 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
                 ]
             )
         ]
-        #expect(result == .init(expected))
+        #expect(Set(result) == Set(expected))
     }
 }
