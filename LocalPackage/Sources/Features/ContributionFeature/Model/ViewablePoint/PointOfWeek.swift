@@ -14,14 +14,6 @@ struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList
 
     var point: Point { total }
 
-    init(displayPeriod: DisplayPointPeriod, elements: Set<PointOfDay>) {
-        self.displayPeriod = displayPeriod
-        self.total = elements.reduce(Point(value: .zero)) { partialResult, pointOfDay in
-            .init(value: partialResult.value + pointOfDay.point.value)
-        }
-        self.elements = elements
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(displayPeriod)
     }
@@ -32,40 +24,23 @@ struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList
         }
         return .init(
             displayPeriod: .init(type: .week, components: period),
+            total: calcTotalPoint(targetWeekPoints),
             elements: .init(targetWeekPoints)
         )
-    }
-
-    /// 週毎に分けた週間ポイントのリスト
-    static func makeWithSeparated(by pointOfDays: [PointOfDay], calendar: Calendar) -> [Self] {
-        return pointOfDays.reduce([Self]()) { partialResult, pointOfDay in
-            let week = weekComponent(pointOfDay: pointOfDay, calendar: calendar)
-            var result = partialResult
-
-            if let lastWeek = partialResult.last,
-               let lastIndex = partialResult.firstIndex(of: lastWeek),
-               lastWeek.displayPeriod.components == week {
-                var currentWeekElements = lastWeek.elements
-                currentWeekElements.insert(pointOfDay)
-                result[lastIndex] = .init(
-                    displayPeriod: .init(type: .week, components: week),
-                    elements: currentWeekElements
-                )
-            } else {
-                result.append(Self(
-                    displayPeriod: .init(type: .week, components: week),
-                    elements: [pointOfDay]
-                ))
-            }
-
-            return result
-        }
     }
 }
 
 private extension PointOfWeek {
 
     static func weekComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-        calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: pointOfDay.indexedDay)
+        
+        return calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: pointOfDay.indexedDay)
+    }
+    
+    static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
+        
+        return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
+            return .init(value: partialResult.value + pointOfDay.point.value)
+        })
     }
 }

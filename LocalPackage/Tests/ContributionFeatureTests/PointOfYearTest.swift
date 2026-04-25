@@ -12,7 +12,7 @@ import Testing
 // swiftlint:disable:next convenience_type
 struct PointOfYearTest {
     struct MakeCase {
-        private let calendar = makeTestCalendar()
+        private let calendar = Calendar.japanese
     }
 }
 
@@ -86,11 +86,4 @@ extension PointOfYearTest.MakeCase {
         // Assert
         #expect(result.total.value == 80)
     }
-}
-
-private func makeTestCalendar() -> Calendar {
-    var cal = Calendar(identifier: .gregorian)
-    cal.locale = Locale(identifier: "ja_JP")
-    cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
-    return cal
 }

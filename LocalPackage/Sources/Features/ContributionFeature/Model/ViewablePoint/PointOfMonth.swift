@@ -14,14 +14,6 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
     
     var point: Point { total }
     
-    init(displayPeriod: DisplayPointPeriod, elements: Set<PointOfDay>) {
-        self.displayPeriod = displayPeriod
-        self.total = elements.reduce(Point(value: .zero), { partialResult, pointOfDay in
-            return .init(value: partialResult.value + pointOfDay.point.value)
-        })
-        self.elements = elements
-    }
-    
     func hash(into hasher: inout Hasher) {
         
         hasher.combine(displayPeriod)
@@ -35,6 +27,7 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
         
         return .init(
             displayPeriod: .init(type: .month, components: period),
+            total: calcTotalPoint(targetMonthPoints),
             elements: .init(targetMonthPoints)
         )
     }
@@ -42,30 +35,28 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
     /// 月毎に分けた月間ポイントのリスト
     static func makeWithSeparated(by pointOfDays: [PointOfDay], calendar: Calendar) -> [Self] {
         
-        return pointOfDays.reduce([Self]()) { partialResult, pointOfDay in
+        let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
+            
             let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
             var result = partialResult
             
-            if let lastMonth = partialResult.last,
-               let lastIndex = partialResult.firstIndex(of: lastMonth),
-               lastMonth.displayPeriod.components == month {
-                // 月の計算の続き
-                var currentMonthElements = lastMonth.elements
+            if let elements = result[month] {
+                var currentMonthElements = elements
                 currentMonthElements.insert(pointOfDay)
-                result[lastIndex] = .init(
-                    displayPeriod: .init(type: .month, components: month),
-                    elements: currentMonthElements
-                )
+                result[month] = currentMonthElements
             } else {
-                // それ以外はそのまま追加
-                let pointOfMonth = Self(
-                    displayPeriod: .init(type: .month, components: month),
-                    elements: [pointOfDay]
-                )
-                result.append(pointOfMonth)
+                result[month] = [pointOfDay]
             }
             
             return result
+        }
+        
+        return separetedDic.map {
+            .init(
+                displayPeriod: .init(type: .month, components: $0.key),
+                total: calcTotalPoint(.init($0.value)),
+                elements: $0.value
+            )
         }
     }
 }
@@ -75,5 +66,12 @@ private extension PointOfMonth {
     static func monthComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
         
         return calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
+    }
+    
+    static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
+        
+        return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
+            return .init(value: partialResult.value + pointOfDay.point.value)
+        })
     }
 }

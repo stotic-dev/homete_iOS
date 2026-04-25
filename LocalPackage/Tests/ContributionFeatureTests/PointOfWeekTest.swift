@@ -12,10 +12,7 @@ import Testing
 // swiftlint:disable:next convenience_type
 struct PointOfWeekTest {
     struct MakeCase {
-        private let calendar = makeTestCalendar()
-    }
-    struct MakeWithSeparatedCase {
-        private let calendar = makeTestCalendar()
+        private let calendar = Calendar.japanese
     }
 }
 
@@ -37,7 +34,7 @@ extension PointOfWeekTest.MakeCase {
         let dayOfPoints = [
             PointOfDay(indexedDay: april20, point: Point(value: 30)),
             PointOfDay(indexedDay: april21, point: Point(value: 50)),
-            PointOfDay(indexedDay: april27, point: Point(value: 20)),
+            PointOfDay(indexedDay: april27, point: Point(value: 20))
         ]
         let weekPeriod = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: april20)
 
@@ -45,70 +42,14 @@ extension PointOfWeekTest.MakeCase {
         let result = PointOfWeek.make(period: weekPeriod, by: dayOfPoints, calendar: calendar)
 
         // Assert
-        #expect(result.elements.count == 2)
-        #expect(result.total.value == 80)
+        let expected = PointOfWeek(
+            displayPeriod: .init(type: .week, components: weekPeriod),
+            total: .init(value: 80),
+            elements: [
+                PointOfDay(indexedDay: april20, point: Point(value: 30)),
+                PointOfDay(indexedDay: april21, point: Point(value: 50))
+            ]
+        )
+        #expect(result == expected)
     }
-}
-
-extension PointOfWeekTest.MakeWithSeparatedCase {
-
-    @Test("同じ週のPointOfDayが1つのPointOfWeekにまとめられる")
-    func makeWithSeparated_sameWeekItemsAreGroupedTogether() throws {
-
-        // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 20
-        let april20 = try #require(calendar.date(from: comps))
-        comps.day = 21
-        let april21 = try #require(calendar.date(from: comps))
-        comps.day = 27
-        let april27 = try #require(calendar.date(from: comps))
-
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april20, point: Point(value: 30)),
-            PointOfDay(indexedDay: april21, point: Point(value: 50)),
-            PointOfDay(indexedDay: april27, point: Point(value: 20)),
-        ]
-
-        // Act
-        let result = PointOfWeek.makeWithSeparated(by: dayOfPoints, calendar: calendar)
-
-        // Assert
-        #expect(result.count == 2)
-    }
-
-    @Test("各週のポイントの合計が正しく計算される")
-    func makeWithSeparated_totalPerWeekIsCorrect() throws {
-
-        // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 20
-        let april20 = try #require(calendar.date(from: comps))
-        comps.day = 21
-        let april21 = try #require(calendar.date(from: comps))
-        comps.day = 27
-        let april27 = try #require(calendar.date(from: comps))
-
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april20, point: Point(value: 30)),
-            PointOfDay(indexedDay: april21, point: Point(value: 50)),
-            PointOfDay(indexedDay: april27, point: Point(value: 20)),
-        ]
-
-        // Act
-        let result = PointOfWeek.makeWithSeparated(by: dayOfPoints, calendar: calendar)
-
-        // Assert
-        let firstWeek = try #require(result.first)
-        let secondWeek = try #require(result.last)
-        #expect(firstWeek.total.value == 80)
-        #expect(secondWeek.total.value == 20)
-    }
-}
-
-private func makeTestCalendar() -> Calendar {
-    var cal = Calendar(identifier: .gregorian)
-    cal.locale = Locale(identifier: "ja_JP")
-    cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
-    return cal
 }

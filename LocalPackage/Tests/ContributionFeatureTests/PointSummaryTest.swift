@@ -13,7 +13,7 @@ import HometeDomain
 // swiftlint:disable:next convenience_type
 struct PointSummaryTest {
     struct CalculateCase {
-        private let calendar = makeTestCalendar()
+        private let calendar = Calendar.japanese
     }
 }
 
@@ -31,7 +31,7 @@ extension PointSummaryTest.CalculateCase {
 
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, point: 30, state: .completed, executorId: "alice", approvedAt: april10),
-            .makeForTest(id: 2, point: 50, state: .completed, executorId: "alice", approvedAt: april20),
+            .makeForTest(id: 2, point: 50, state: .completed, executorId: "alice", approvedAt: april20)
         ]
 
         // Act
@@ -51,7 +51,7 @@ extension PointSummaryTest.CalculateCase {
 
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, point: 30, state: .completed, executorId: "alice", approvedAt: april10),
-            .makeForTest(id: 2, point: 50, state: .completed, executorId: "bob", approvedAt: april10),
+            .makeForTest(id: 2, point: 50, state: .completed, executorId: "bob", approvedAt: april10)
         ]
 
         // Act
@@ -73,7 +73,7 @@ extension PointSummaryTest.CalculateCase {
 
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, point: 30, state: .completed, executorId: "alice", approvedAt: april10),
-            .makeForTest(id: 2, point: 50, state: .completed, executorId: "alice", approvedAt: march10),
+            .makeForTest(id: 2, point: 50, state: .completed, executorId: "alice", approvedAt: march10)
         ]
 
         // Act
@@ -93,7 +93,7 @@ extension PointSummaryTest.CalculateCase {
 
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, point: 30, state: .completed, executorId: "alice", approvedAt: april10),
-            .makeForTest(id: 2, point: 50, state: .incomplete, executorId: "alice"),
+            .makeForTest(id: 2, point: 50, state: .incomplete, executorId: "alice")
         ]
 
         // Act
@@ -114,7 +114,7 @@ extension PointSummaryTest.CalculateCase {
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, state: .completed, executorId: "alice", reviewerId: "bob", approvedAt: april10),
             .makeForTest(id: 2, state: .completed, executorId: "alice", reviewerId: nil, approvedAt: april10),
-            .makeForTest(id: 3, state: .completed, executorId: "alice", reviewerId: "bob", approvedAt: april10),
+            .makeForTest(id: 3, state: .completed, executorId: "alice", reviewerId: "bob", approvedAt: april10)
         ]
 
         // Act
@@ -123,11 +123,4 @@ extension PointSummaryTest.CalculateCase {
         // Assert
         #expect(result.thanksCount == 2)
     }
-}
-
-private func makeTestCalendar() -> Calendar {
-    var cal = Calendar(identifier: .gregorian)
-    cal.locale = Locale(identifier: "ja_JP")
-    cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
-    return cal
 }
