@@ -31,7 +31,7 @@ let package = Package(
 
         .target(
             name: "HometeDomain",
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "HometeUI",
@@ -40,7 +40,7 @@ let package = Package(
                 "HometeResources",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "HometeResources",
@@ -73,7 +73,7 @@ let package = Package(
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
             ],
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "AppRoot",
@@ -85,7 +85,7 @@ let package = Package(
                 "HomeFeature",
                 "HouseworkFeature",
             ],
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
 
         // MARK: Test Targets
@@ -93,32 +93,28 @@ let package = Package(
         .testTarget(
             name: "HometeDomainTests",
             dependencies: ["HometeDomain"],
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
         .testTarget(
             name: "HouseworkFeatureTests",
             dependencies: ["HouseworkFeature"],
-            plugins: [swiftLintPlugin]
+            plugins: [swiftLintPlugin()]
         ),
     ]
 )
 
 // MARK: - Helpers
 
-nonisolated(unsafe) let swiftLintPlugin: Target.PluginUsage = .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
-
-let featureDeps: [Target.Dependency] = [
-    "HometeDomain",
-    "HometeUI",
-    "HometeResources",
-]
+func swiftLintPlugin() -> Target.PluginUsage {
+    .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
+}
 
 func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {
     .target(
         name: name,
-        dependencies: featureDeps + extraDeps,
+        dependencies: ["HometeDomain", "HometeUI", "HometeResources"] + extraDeps,
         path: "./Sources/Features/\(name)",
-        plugins: [swiftLintPlugin]
+        plugins: [swiftLintPlugin()]
     )
 }
 
