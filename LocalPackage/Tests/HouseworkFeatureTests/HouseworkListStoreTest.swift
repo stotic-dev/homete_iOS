@@ -1,4 +1,3 @@
-// swiftlint:disable file_length
 //
 //  HouseworkListStoreTest.swift
 //  hometeTests
@@ -56,15 +55,14 @@ struct HouseworkListStoreTest {
                         #expect(content == expectedNotificationContent)
                         confirmation()
                         continuation.resume()
-                    },
-                    cohabitantId: inputCohabitantId
+                    }
                 )
 
                 // Act
 
                 Task {
 
-                    try await store.register(inputHouseworkItem)
+                    try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId)
                 }
             }
         }
@@ -116,7 +114,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         continuation.resume()
                     },
                     items: [.makeForTest(items: [inputHouseworkItem])],
-                    cohabitantId: inputCohabitantId
                 )
 
                 // Act
@@ -126,7 +123,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     try await store.requestReview(
                         target: inputHouseworkItem,
                         now: requestedAt,
-                        executor: inputExecutor
+                        executor: inputExecutor,
+                        cohabitantId: inputCohabitantId
                     )
                 }
             }
@@ -168,12 +166,11 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     Issue.record()
                 },
                 items: [.makeForTest(items: [inputHouseworkItem])],
-                cohabitantId: inputCohabitantId
             )
 
             // Act
 
-            try await store.returnToIncomplete(target: inputHouseworkItem)
+            try await store.returnToIncomplete(target: inputHouseworkItem, cohabitantId: inputCohabitantId)
         }
     }
 
@@ -197,12 +194,11 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 }),
                 cohabitantPushNotificationClient: .previewValue,
                 items: [.makeForTest(items: [inputHouseworkItem])],
-                cohabitantId: inputCohabitantId
             )
 
             // Act
 
-            try await store.remove(inputHouseworkItem)
+            try await store.remove(target: inputHouseworkItem, cohabitantId: inputCohabitantId)
         }
     }
 
@@ -262,7 +258,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         continuation.resume()
                     },
                     items: [.makeForTest(items: [inputHouseworkItem])],
-                    cohabitantId: inputCohabitantId
                 )
 
                 // Act
@@ -273,7 +268,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         target: inputHouseworkItem,
                         now: approvedAt,
                         reviwer: inputReviewer,
-                        comment: inputComment
+                        comment: inputComment,
+                        cohabitantId: inputCohabitantId
                     )
                 }
             }
@@ -336,7 +332,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         continuation.resume()
                     },
                     items: [.makeForTest(items: [inputHouseworkItem])],
-                    cohabitantId: inputCohabitantId
                 )
 
                 // Act
@@ -347,7 +342,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         target: inputHouseworkItem,
                         now: rejectedAt,
                         reviwer: inputReviewer,
-                        comment: inputComment
+                        comment: inputComment,
+                        cohabitantId: inputCohabitantId
                     )
                 }
             }
