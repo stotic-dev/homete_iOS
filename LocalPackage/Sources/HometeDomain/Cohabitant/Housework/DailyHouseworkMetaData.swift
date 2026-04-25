@@ -22,7 +22,7 @@ public extension DailyHouseworkMetaData {
 
     init(selectedDate: Date, calendar: Calendar) {
 
-        let indexedDate = HouseworkIndexedDate(selectedDate, calendar: calendar)
+        let indexedDate = HouseworkIndexedDate(value: selectedDate)
         let expiredAt = calendar.date(byAdding: .year, value: 1, to: selectedDate) ?? selectedDate
         self.init(indexedDate: indexedDate, expiredAt: expiredAt)
     }

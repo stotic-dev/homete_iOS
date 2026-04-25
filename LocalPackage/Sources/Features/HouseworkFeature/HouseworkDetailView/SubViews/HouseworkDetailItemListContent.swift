@@ -12,13 +12,15 @@ import SwiftUI
 
 struct HouseworkDetailItemListContent: View {
     
+    @Environment(\.calendar) var calendar
+    
     let cohabitantMemberList: CohabitantMemberList
     let item: HouseworkItem
     
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
             HouseworkDetailItemRow(title: "実施予定日付") {
-                Text(item.formattedIndexedDate)
+                Text(item.formattedIndexedDate(calendar: calendar))
                     .font(with: .body)
                     .foregroundStyle(.primary2)
             }
@@ -49,7 +51,7 @@ struct HouseworkDetailItemListContent: View {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
         )
     )
 }
@@ -61,7 +63,7 @@ struct HouseworkDetailItemListContent: View {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture),
+            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture),
             executorId: "test",
             executedAt: .distantPast
         )

@@ -129,7 +129,10 @@ private extension HouseworkDetailActionContent {
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .distantFuture)
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .distantFuture
+            )
         )
     )
     .environment(HouseworkListStore())
@@ -143,7 +146,7 @@ private extension HouseworkDetailActionContent {
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            indexedDate: .init(value: "2026/1/1"),
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .pendingApproval,
             executorId: "dummy"
         )
@@ -159,7 +162,7 @@ private extension HouseworkDetailActionContent {
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            indexedDate: .init(value: "2026/1/1"),
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .pendingApproval,
             executorId: "executorAccount"
         )

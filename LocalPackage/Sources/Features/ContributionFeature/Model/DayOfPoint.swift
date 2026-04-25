@@ -9,10 +9,10 @@ import Foundation
 
 /// 一日のポイント
 struct DayOfPoint: Equatable, Hashable, ViewablePointElement {
-    let indexedDay: String
+    let indexedDay: Date
     let point: Point
     
-    init(indexedDay: String, point: Point) {
+    init(indexedDay: Date, point: Point) {
         self.indexedDay = indexedDay
         self.point = point
     }

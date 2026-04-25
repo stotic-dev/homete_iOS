@@ -5,13 +5,15 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
+import Foundation
 import HometeDomain
 
 struct AllPointList: Equatable {
     
     private(set) var list: [DayOfPoint] = []
     
-    static func make(by houseworkItems: [HouseworkItem]) -> Self {
+    static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
+        
         let list: [DayOfPoint] = houseworkItems.compactMap {
             guard $0.state == .completed else { return nil }
             return .init(indexedDay: $0.indexedDate.value, point: .init(value: $0.point))
@@ -20,10 +22,12 @@ struct AllPointList: Equatable {
     }
     
     func viewablePointList(utilYear: String) -> YearOfPoint {
+        
         return .make(util: .year(value: utilYear), by: list)
     }
     
     func viewablePointList(utilMonth: String) -> MonthOfPoint {
+        
         return .make(util: .month(value: utilMonth), by: list)
     }
     

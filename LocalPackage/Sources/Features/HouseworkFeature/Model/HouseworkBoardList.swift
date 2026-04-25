@@ -25,13 +25,12 @@ extension HouseworkBoardList {
 
     init(
         dailyList: [DailyHouseworkList],
-        selectedDate: Date,
-        calendar: Calendar
+        selectedDate: Date
     ) {
 
         items = dailyList
             .first {
-                $0.metaData.indexedDate == .init(selectedDate, calendar: calendar)
+                $0.metaData.indexedDate == .init(value: selectedDate)
             }?.items ?? []
     }
 }

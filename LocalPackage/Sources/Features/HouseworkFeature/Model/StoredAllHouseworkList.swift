@@ -27,8 +27,8 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
             HouseworkIndexedDate.calcTargetPeriod(anchorDate: anchorDate, offsetDays: offsetDays, calendar: calendar)
         )
         let dailyLists: [DailyHouseworkList] = Dictionary(
-            grouping: items.filter { targetDates.contains($0.formattedIndexedDate) }
-        ) { $0.formattedIndexedDate }
+            grouping: items.filter { targetDates.contains($0.indexedDate.value) }
+        ) { $0.indexedDate }
             .compactMap {
 
                 guard let firstItem = $1.first else { return nil }
