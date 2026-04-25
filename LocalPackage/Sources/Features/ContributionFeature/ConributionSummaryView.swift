@@ -7,8 +7,13 @@
 
 import SwiftUI
 
-struct ConributionSummaryView: View {
-    var body: some View {
+public struct ConributionSummaryView: View {
+    
+    public static func make() -> some View {
+        ConributionSummaryView()
+    }
+    
+    public var body: some View {
         Text("Hello World")
     }
 }

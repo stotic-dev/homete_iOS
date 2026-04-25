@@ -9,27 +9,27 @@ import Foundation
 import HometeDomain
 
 /// ユーザーの家事貢献度集計結果
-public struct PointSummary: Equatable, Sendable, Identifiable {
+struct PointSummary: Equatable, Sendable, Identifiable {
 
-    public var id: String { userId }
+    var id: String { userId }
 
     /// ユーザーID
-    public let userId: String
+    let userId: String
 
     /// 月間獲得ポイント（当月に完了した家事の合計ポイント）
-    public let monthlyPoint: Int
+    let monthlyPoint: Int
 
     /// もらった感謝の数（自分が実行しレビューされて完了した家事の数）
-    public let thanksCount: Int
+    let thanksCount: Int
 
-    public init(userId: String, monthlyPoint: Int, thanksCount: Int) {
+    init(userId: String, monthlyPoint: Int, thanksCount: Int) {
         self.userId = userId
         self.monthlyPoint = monthlyPoint
         self.thanksCount = thanksCount
     }
 }
 
-public extension PointSummary {
+extension PointSummary {
 
     /// HouseworkItemの配列から指定月のPointSummaryを算出する
     static func calculate(
