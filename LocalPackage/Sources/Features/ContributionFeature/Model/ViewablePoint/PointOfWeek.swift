@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList<PointOfDay> {
+struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList {
     
     let userId: String
     let displayPeriod: DisplayPointPeriod

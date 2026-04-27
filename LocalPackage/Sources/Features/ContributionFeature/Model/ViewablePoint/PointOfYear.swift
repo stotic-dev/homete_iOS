@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PointOfYear: Equatable, Hashable, ViewablePointList<PointOfMonth> {
+struct PointOfYear: Equatable, Hashable, ViewablePointList {
     
     let userId: String
     let displayPeriod: DisplayPointPeriod
