@@ -81,15 +81,19 @@ public final actor HouseworkManager {
 private extension HouseworkManager {
 
     func upsert(_ updatedItems: [HouseworkItem]) {
+        
         var itemsDict = Dictionary(uniqueKeysWithValues: allItems.map { ($0.id, $0) })
         for item in updatedItems {
+            
             itemsDict[item.id] = item
         }
         allItems = Array(itemsDict.values)
     }
 
     func notifyObservers() {
+        
         streamContinuationDic.forEach { _, continuation in
+            
             continuation.yield(allItems)
         }
     }
