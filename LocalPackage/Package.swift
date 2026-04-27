@@ -17,8 +17,7 @@ let package = Package(
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
-        lib("AppRoot"),
-        lib("ContributionFeature")
+        lib("AppRoot")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
