@@ -1,5 +1,5 @@
 //
-//  ConributionSummaryView.swift
+//  ContributionSummaryComponent.swift
 //  LocalPackage
 //
 //  Created by Taichi Sato on 2026/04/25.
@@ -67,4 +67,7 @@ private extension ContributionSummaryContent {
 
 #Preview {
     ContributionSummaryContent()
+        .environment(ContributionStore())
+        .environment(CohabitantStore())
+        .setupEnvironmentForPreview()
 }
