@@ -45,7 +45,7 @@ extension HouseworkContributionTest.MakeCase {
                 .init(indexedDay: inputThirdDate, point: .init(value: 20))
             ]
         ]
-        #expect(result == .init(list: expectedList, thanksItemsByUser: [:]))
+        #expect(result == .init(list: expectedList))
     }
 
     @Test("家事が空の場合は空のリストが返る")
@@ -58,7 +58,7 @@ extension HouseworkContributionTest.MakeCase {
         let result = HouseworkContribution.make(by: items, calendar: calendar)
 
         // Assert
-        #expect(result == .init(list: [:], thanksItemsByUser: [:]))
+        #expect(result == .init(list: [:]))
     }
 }
 
@@ -85,8 +85,8 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         #expect(result == [
-            PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 0),
-            PointSummary(userId: "bob", monthlyPoint: 50, thanksCount: 0)
+            PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 1),
+            PointSummary(userId: "bob", monthlyPoint: 50, thanksCount: 1)
         ])
     }
 
@@ -106,7 +106,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 0)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 2)])
     }
 
     @Test("レビュー済み家事の数がthanksCountに反映される")
@@ -145,7 +145,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 90, thanksCount: 2)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 90, thanksCount: 3)])
     }
 
     @Test("対象月外のレビュー済み家事はthanksCountに含まれない")
