@@ -1,5 +1,5 @@
 //
-//  AllPointList.swift
+//  HouseworkContribution.swift
 //  LocalPackage
 //
 //  Created by Taichi Sato on 2026/04/25.
@@ -8,7 +8,7 @@
 import Foundation
 import HometeDomain
 
-struct AllPointList: Equatable {
+struct HouseworkContribution: Equatable {
 
     private(set) var list: [String: [PointOfDay]] = [:]
     private(set) var thanksItemsByUser: [String: [Date]] = [:]
@@ -23,13 +23,13 @@ struct AllPointList: Equatable {
             $0.map { .init(indexedDay: $0.indexedDate.value, point: .init(value: $0.point)) }
         }
         let thanksItemsByUser: [String: [Date]] = groupedByUserItems
-            .mapValues { $0.filter { $0.reviewerId != nil }.map { $0.indexedDate.value } }
+            .mapValues { $0.filter { $0.reviewerId != nil }.map(\.indexedDate.value) }
             .filter { !$0.value.isEmpty }
         return .init(list: list, thanksItemsByUser: thanksItemsByUser)
     }
-    
+
     func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfYear] {
-        
+
         return allUserIdList.map {
             guard let userPointList = list[$0] else {
                 return .init(
@@ -47,9 +47,9 @@ struct AllPointList: Equatable {
             )
         }
     }
-    
+
     func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfMonth] {
-        
+
         return allUserIdList.map {
             guard let userPointList = list[$0] else {
                 return .init(
@@ -67,7 +67,7 @@ struct AllPointList: Equatable {
             )
         }
     }
-    
+
     func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfWeek] {
 
         return allUserIdList.map {

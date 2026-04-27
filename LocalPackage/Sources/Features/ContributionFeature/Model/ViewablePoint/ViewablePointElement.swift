@@ -6,6 +6,6 @@
 //
 
 protocol ViewablePointElement: Equatable, Hashable {
-    
+
     var point: Point { get }
 }

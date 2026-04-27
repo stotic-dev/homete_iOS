@@ -11,13 +11,7 @@ import Foundation
 struct PointOfDay: Equatable, Hashable, ViewablePointElement {
     let indexedDay: Date
     let point: Point
-    
-    init(indexedDay: Date, point: Point) {
-        self.indexedDay = indexedDay
-        self.point = point
-    }
-    
-    // 日付基準で一意にする
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(indexedDay)
     }
