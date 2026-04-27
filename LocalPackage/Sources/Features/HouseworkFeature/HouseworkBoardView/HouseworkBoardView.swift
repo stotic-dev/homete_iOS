@@ -124,8 +124,7 @@ private extension HouseworkBoardView {
         
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
-            selectedDate: dateList.selectedDate,
-            calendar: calendar
+            selectedDate: dateList.selectedDate
         )
     }
 }
@@ -137,7 +136,7 @@ private extension HouseworkBoardView {
             title: "洗濯",
             point: 20,
             metaData: .init(
-                indexedDate: .init(value: "0001/01/01"),
+                indexedDate: .init(value: .distantPast),
                 expiredAt: .distantPast
             )
         )

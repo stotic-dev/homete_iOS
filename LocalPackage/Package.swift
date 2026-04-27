@@ -1,48 +1,24 @@
 // swift-tools-version: 6.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+
+// MARK: - Package
 
 let package = Package(
     name: "LocalPackage",
     platforms: [.iOS(.v17), .macOS(.v15)],
     products: [
-        .library(
-            name: "HometeDomain",
-            targets: ["HometeDomain"]
-        ),
-        .library(
-            name: "HometeUI",
-            targets: ["HometeUI"]
-        ),
-        .library(
-            name: "HometeResources",
-            targets: ["HometeResources"]
-        ),
-        .library(
-            name: "AuthFeature",
-            targets: ["AuthFeature"]
-        ),
-        .library(
-            name: "SettingFeature",
-            targets: ["SettingFeature"]
-        ),
-        .library(
-            name: "HomeFeature",
-            targets: ["HomeFeature"]
-        ),
-        .library(
-            name: "HouseworkFeature",
-            targets: ["HouseworkFeature"]
-        ),
-        .library(
-            name: "HometeInfrastructure",
-            targets: ["HometeInfrastructure"]
-        ),
-        .library(
-            name: "AppRoot",
-            targets: ["AppRoot"]
-        ),
+        lib("HometeDomain"),
+        lib("HometeUI"),
+        lib("HometeResources"),
+        lib("AuthFeature"),
+        lib("SettingFeature"),
+        lib("HomeFeature"),
+        lib("HouseworkFeature"),
+        lib("ContributionFeature"),
+        lib("HometeInfrastructure"),
+        lib("AppRoot"),
+        lib("ContributionFeature")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
@@ -51,14 +27,12 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
     ],
     targets: [
-        
-        // MARK: Targets
-        
+
+        // MARK: Core Targets
+
         .target(
             name: "HometeDomain",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "HometeUI",
@@ -67,9 +41,7 @@ let package = Package(
                 "HometeResources",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "HometeResources",
@@ -78,57 +50,20 @@ let package = Package(
                 .process("Resources/Image.xcassets"),
             ],
             plugins: [
-                .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin")
+                .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin"),
             ]
         ),
-        .target(
-            name: "AuthFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/AuthFeature",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .target(
-            name: "SettingFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/SettingFeature",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .target(
-            name: "HomeFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/HomeFeature",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .target(
-            name: "HouseworkFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/HouseworkFeature",
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
+
+        // MARK: Feature Targets
+
+        feature(name: "AuthFeature"),
+        feature(name: "SettingFeature"),
+        feature(name: "HomeFeature"),
+        feature(name: "HouseworkFeature"),
+        feature(name: "ContributionFeature"),
+
+        // MARK: Infrastructure / Root
+
         .target(
             name: "HometeInfrastructure",
             dependencies: [
@@ -139,9 +74,7 @@ let package = Package(
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
             ],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            plugins: [swiftLintPlugin()]
         ),
         .target(
             name: "AppRoot",
@@ -152,31 +85,46 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "ContributionFeature"
             ],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            plugins: [swiftLintPlugin()]
         ),
-        
+
         // MARK: Test Targets
-        
+
         .testTarget(
             name: "HometeDomainTests",
-            dependencies: [
-                "HometeDomain",
-            ],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            dependencies: ["HometeDomain"],
+            plugins: [swiftLintPlugin()]
         ),
         .testTarget(
             name: "HouseworkFeatureTests",
-            dependencies: [
-                "HouseworkFeature",
-            ],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
+            dependencies: ["HouseworkFeature"],
+            plugins: [swiftLintPlugin()]
         ),
+        .testTarget(
+            name: "ContributionFeatureTests",
+            dependencies: ["ContributionFeature"],
+            plugins: [swiftLintPlugin()]
+        )
     ]
 )
+
+// MARK: - Helpers
+
+func swiftLintPlugin() -> Target.PluginUsage {
+    .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
+}
+
+func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {
+    .target(
+        name: name,
+        dependencies: ["HometeDomain", "HometeUI", "HometeResources"] + extraDeps,
+        path: "./Sources/Features/\(name)",
+        plugins: [swiftLintPlugin()]
+    )
+}
+
+func lib(_ name: String) -> Product {
+    .library(name: name, targets: [name])
+}

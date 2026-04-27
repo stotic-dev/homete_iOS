@@ -9,9 +9,9 @@ import Foundation
 
 public struct HouseworkIndexedDate: Equatable, Codable, Hashable, Sendable {
 
-    public let value: String
+    public let value: Date
 
-    public init(value: String) {
+    public init(value: Date) {
         self.value = value
     }
 
@@ -19,35 +19,18 @@ public struct HouseworkIndexedDate: Equatable, Codable, Hashable, Sendable {
         anchorDate: Date,
         offsetDays: Int,
         calendar: Calendar
-    ) -> [String] {
+    ) -> [Date] {
 
         let base = calendar.startOfDay(for: anchorDate)
         guard offsetDays >= 0 else {
 
-            return [HouseworkIndexedDate(base, calendar: calendar).value]
+            return [base]
         }
         // -offset ... +offset の範囲を列挙
         return (-offsetDays...offsetDays).compactMap { delta in
 
             guard let date = calendar.date(byAdding: .day, value: delta, to: base) else { return nil }
-            return HouseworkIndexedDate(date, calendar: calendar).value
+            return date
         }
-    }
-}
-
-public extension HouseworkIndexedDate {
-
-    init(_ date: Date, calendar: Calendar) {
-        let formatStyle = Date.FormatStyle(
-            date: .numeric,
-            time: .omitted,
-            locale: calendar.locale ?? .autoupdatingCurrent,
-            calendar: calendar,
-            timeZone: calendar.timeZone
-        )
-            .year(.extended(minimumLength: 4))
-            .month(.twoDigits)
-            .day(.twoDigits)
-        value = date.formatted(formatStyle)
     }
 }

@@ -191,7 +191,10 @@ private extension RegisterHouseworkView {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
+            )
         )
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
@@ -212,7 +215,10 @@ private extension RegisterHouseworkView {
         loadingState: .init(store: .init(isLoading: true)),
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
+            )
         )
     )
     .environment(HouseworkListStore(
