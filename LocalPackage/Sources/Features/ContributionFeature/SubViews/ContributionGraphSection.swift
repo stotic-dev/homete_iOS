@@ -31,7 +31,7 @@ struct ContributionGraphSection: View {
 
     @ViewBuilder
     private var charts: some View {
-        ContributionBarChart(
+        SummaryPointBarChart(
             summaries: summaries,
             userNames: userNames,
             myUserId: myUserId

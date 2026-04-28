@@ -1,5 +1,5 @@
 //
-//  ContributionBarChart.swift
+//  SummaryPointBarChart.swift
 //  LocalPackage
 //
 //  Created by Taichi Sato on 2026/04/28.
@@ -9,7 +9,7 @@ import Charts
 import HometeUI
 import SwiftUI
 
-struct ContributionBarChart: View {
+struct SummaryPointBarChart: View {
 
     let summaries: [PointSummary]
     let userNames: [String: String]
@@ -43,7 +43,7 @@ struct ContributionBarChart: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    ContributionBarChart(
+    SummaryPointBarChart(
         summaries: [
             PointSummary(userId: "user1", monthlyPoint: 120, achievedCount: 5),
             PointSummary(userId: "user2", monthlyPoint: 40, achievedCount: 2)

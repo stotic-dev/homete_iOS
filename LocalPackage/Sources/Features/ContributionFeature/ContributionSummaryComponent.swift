@@ -15,7 +15,7 @@ public struct ContributionSummaryComponent: View {
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
     
-    @State var summary: [PointSummary] = []
+    @State var summary: AllUserPointSummary = .init()
     
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -45,14 +45,17 @@ private extension ContributionSummaryComponent {
         let contribution = contributionStore.contiribution
         let allUserIds = cohabitantStore.members.value.map(\.id)
         
-        summary = await Task.detached {
-            
+        let summary = await Task.detached {
             await contribution.calculatePointSummaries(
                 allUserIds: allUserIds,
                 month: now,
                 calendar: calendar
             )
         }.value
+        
+        withAnimation {
+            self.summary = summary
+        }
     }
 }
 
@@ -62,7 +65,7 @@ struct ContributionSummaryContent: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
 
-    let summary: [PointSummary]
+    let summary: AllUserPointSummary
     let members: CohabitantMemberList
     @State var isShowingLegend = false
 
@@ -76,7 +79,7 @@ struct ContributionSummaryContent: View {
                 .padding(.vertical, .space16)
             Divider()
             ContributionGraphSection(
-                summaries: sortedSummary,
+                summaries: summary.items,
                 userNames: Dictionary(
                     uniqueKeysWithValues: members.value.map { ($0.id, $0.userName) }
                 ),
@@ -101,22 +104,12 @@ struct ContributionSummaryContent: View {
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space16)
-            ForEach(Array(sortedSummary.enumerated()), id: \.element.id) { index, item in
-                SummaryRow(
-                    rank: index + 1,
-                    userName: members.userName(item.userId) ?? item.userId,
-                    isMe: item.userId == userId,
-                    monthlyPoint: item.monthlyPoint,
-                    achievedCount: item.achievedCount
-                )
+            ForEach(summary.makeRanking(members: members, myUserId: userId)) { item in
+                SummaryRow(item: item)
                 Divider()
                     .padding(.leading, .space16)
             }
         }
-    }
-
-    private var sortedSummary: [PointSummary] {
-        summary.sorted { $0.monthlyPoint > $1.monthlyPoint }
     }
 
     private var monthTitle: String {
@@ -127,10 +120,10 @@ struct ContributionSummaryContent: View {
 
 #Preview(traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
-        summary: [
+        summary: AllUserPointSummary(items: [
             PointSummary(userId: "user1", monthlyPoint: 120, achievedCount: 5),
             PointSummary(userId: "user2", monthlyPoint: 40, achievedCount: 2)
-        ],
+        ]),
         members: .init(value: [
             .init(id: "user1", userName: "田中"),
             .init(id: "user2", userName: "佐藤")

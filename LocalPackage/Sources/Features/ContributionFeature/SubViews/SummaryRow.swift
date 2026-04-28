@@ -10,22 +10,18 @@ import SwiftUI
 
 struct SummaryRow: View {
 
-    let rank: Int
-    let userName: String
-    let isMe: Bool
-    let monthlyPoint: Int
-    let achievedCount: Int
+    let item: ContributionRankItem
 
     var body: some View {
         HStack(spacing: .space16) {
-            Image(systemName: "\(rank).circle.fill")
+            Image(systemName: "\(item.rank).circle.fill")
                 .font(.title2)
                 .foregroundStyle(rankColor)
             VStack(alignment: .leading, spacing: .space4) {
-                Text(userName)
+                Text(item.userName)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
-                if isMe {
+                if item.isMe {
                     Text("あなた")
                         .font(with: .caption)
                         .foregroundStyle(.secondary)
@@ -36,14 +32,14 @@ struct SummaryRow: View {
                 HStack(spacing: .space4) {
                     Image(systemName: "star.fill")
                         .foregroundStyle(.yellow)
-                    Text("\(monthlyPoint)pt")
+                    Text("\(item.monthlyPoint)pt")
                         .font(with: .headLineM)
                         .foregroundStyle(.onSurface)
                 }
                 HStack(spacing: .space4) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text("\(achievedCount)件達成")
+                    Text("\(item.achievedCount)件達成")
                         .font(with: .headLineM)
                         .foregroundStyle(.onSurface)
                 }
@@ -54,7 +50,7 @@ struct SummaryRow: View {
     }
 
     private var rankColor: Color {
-        switch rank {
+        switch item.rank {
         case 1: .yellow
         case 2: Color(white: 0.7)
         case 3: Color(red: 0.8, green: 0.5, blue: 0.2)
