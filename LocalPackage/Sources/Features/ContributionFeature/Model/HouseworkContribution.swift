@@ -86,24 +86,21 @@ struct HouseworkContribution: Equatable {
     }
     
     func calculatePointSummaries(
-        allUserIds: [String],
         month: Date,
         calendar: Calendar,
         members: CohabitantMemberList,
         myUserId: String
     ) -> AllUserPointSummary {
 
-        let userItems: [UserPointSummary] = allUserIds.compactMap { userId in
+        let userItems: [UserPointSummary] = members.value.compactMap { member in
 
-            guard let userName = members.userName(userId) else { return nil }
-
-            guard let targetList = list[userId]?.filter({
+            guard let targetList = list[member.id]?.filter({
                 calendar.isDate($0.indexedDay, equalTo: month, toGranularity: .month)
             }) else {
                 return UserPointSummary(
-                    userId: userId,
-                    userName: userName,
-                    isMe: userId == myUserId,
+                    userId: member.id,
+                    userName: member.userName,
+                    isMe: member.id == myUserId,
                     monthlyPoint: .init(value: .zero),
                     achievedCount: .zero
                 )
@@ -112,9 +109,9 @@ struct HouseworkContribution: Equatable {
             let monthlyPoint = targetList.reduce(0) { $0 + $1.point.value }
             let achievedCount = targetList.count
             return UserPointSummary(
-                userId: userId,
-                userName: userName,
-                isMe: userId == myUserId,
+                userId: member.id,
+                userName: member.userName,
+                isMe: member.id == myUserId,
                 monthlyPoint: .init(value: monthlyPoint),
                 achievedCount: achievedCount
             )

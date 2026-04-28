@@ -27,12 +27,6 @@ struct UserPointSummary: Equatable, Sendable, Identifiable {
 
     /// もらった感謝の数（自分が実行しレビューされて完了した家事の数）
     let achievedCount: Int
+    
 
-    init(userId: String, userName: String, isMe: Bool, monthlyPoint: Point, achievedCount: Int) {
-        self.userId = userId
-        self.userName = userName
-        self.isMe = isMe
-        self.monthlyPoint = monthlyPoint
-        self.achievedCount = achievedCount
-    }
 }

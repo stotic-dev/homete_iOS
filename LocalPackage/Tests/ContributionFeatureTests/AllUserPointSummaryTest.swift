@@ -21,7 +21,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "あなた", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2),
+            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2),
             UserPointSummary(userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 120), achievedCount: 5),
             UserPointSummary(userId: "carol", userName: "キャロル", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 3)
         ])
@@ -33,7 +33,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let expected: [ContributionRankItem] = [
             .init(rank: 1, userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 120), achievedCount: 5),
             .init(rank: 2, userId: "carol", userName: "キャロル", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 3),
-            .init(rank: 3, userId: "alice", userName: "あなた", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2)
+            .init(rank: 3, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2)
         ]
         #expect(result == expected)
     }
