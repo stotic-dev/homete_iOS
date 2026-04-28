@@ -10,15 +10,15 @@ import HometeDomain
 /// 全ユーザーの月間家事貢献度集計
 struct AllUserPointSummary: Equatable, Sendable {
 
-    let items: [PointSummary]
+    let items: [UserPointSummary]
 
-    init(items: [PointSummary] = []) {
+    init(items: [UserPointSummary] = []) {
         self.items = items
     }
 
     /// ランキング形式のアイテム一覧を生成する
     func makeRanking(members: CohabitantMemberList, myUserId: String) -> [ContributionRankItem] {
-        items.sorted { $0.monthlyPoint > $1.monthlyPoint }
+        items.sorted { $0.monthlyPoint.value > $1.monthlyPoint.value }
             .enumerated().map { index, item in
                 ContributionRankItem(
                     rank: index + 1,

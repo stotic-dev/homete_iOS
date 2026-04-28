@@ -20,8 +20,7 @@ struct ContributionRankItem: Identifiable, Equatable, Sendable {
     /// 自分かどうか
     let isMe: Bool
     /// 月間獲得ポイント
-    let monthlyPoint: Int
+    let monthlyPoint: Point
     /// 達成した家事件数
     let achievedCount: Int
 }
-

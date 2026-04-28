@@ -121,8 +121,8 @@ struct ContributionSummaryContent: View {
 #Preview(traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
         summary: AllUserPointSummary(items: [
-            PointSummary(userId: "user1", monthlyPoint: 120, achievedCount: 5),
-            PointSummary(userId: "user2", monthlyPoint: 40, achievedCount: 2)
+            UserPointSummary(userId: "user1", monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "user2", monthlyPoint: .init(value: 40), achievedCount: 2)
         ]),
         members: .init(value: [
             .init(id: "user1", userName: "田中"),

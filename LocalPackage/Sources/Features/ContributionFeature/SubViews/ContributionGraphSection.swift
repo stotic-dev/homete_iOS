@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContributionGraphSection: View {
 
-    let summaries: [PointSummary]
+    let summaries: [UserPointSummary]
     let userNames: [String: String]
     let myUserId: String
 
@@ -46,8 +46,8 @@ struct ContributionGraphSection: View {
 #Preview(traits: .sizeThatFitsLayout) {
     ContributionGraphSection(
         summaries: [
-            PointSummary(userId: "user1", monthlyPoint: 120, achievedCount: 5),
-            PointSummary(userId: "user2", monthlyPoint: 40, achievedCount: 2)
+            UserPointSummary(userId: "user1", monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "user2", monthlyPoint: .init(value: 40), achievedCount: 2)
         ],
         userNames: ["user1": "田中", "user2": "佐藤"],
         myUserId: "user1"

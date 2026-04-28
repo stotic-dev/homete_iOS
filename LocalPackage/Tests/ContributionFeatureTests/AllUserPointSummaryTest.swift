@@ -21,9 +21,9 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            PointSummary(userId: "alice", monthlyPoint: 40, achievedCount: 2),
-            PointSummary(userId: "bob", monthlyPoint: 120, achievedCount: 5),
-            PointSummary(userId: "carol", monthlyPoint: 80, achievedCount: 3)
+            UserPointSummary(userId: "alice", monthlyPoint: .init(value: 40), achievedCount: 2),
+            UserPointSummary(userId: "bob", monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "carol", monthlyPoint: .init(value: 80), achievedCount: 3)
         ])
         let members = CohabitantMemberList(value: [
             .init(id: "alice", userName: "アリス"),
@@ -48,8 +48,8 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            PointSummary(userId: "alice", monthlyPoint: 100, achievedCount: 3),
-            PointSummary(userId: "bob", monthlyPoint: 80, achievedCount: 2)
+            UserPointSummary(userId: "alice", monthlyPoint: .init(value: 100), achievedCount: 3),
+            UserPointSummary(userId: "bob", monthlyPoint: .init(value: 80), achievedCount: 2)
         ])
         let members = CohabitantMemberList(value: [
             .init(id: "alice", userName: "アリス"),
@@ -69,7 +69,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            PointSummary(userId: "alice", monthlyPoint: 100, achievedCount: 3)
+            UserPointSummary(userId: "alice", monthlyPoint: .init(value: 100), achievedCount: 3)
         ])
         let members = CohabitantMemberList(value: [
             .init(id: "alice", userName: "アリス")
@@ -87,7 +87,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            PointSummary(userId: "unknown-user", monthlyPoint: 100, achievedCount: 3)
+            UserPointSummary(userId: "unknown-user", monthlyPoint: .init(value: 100), achievedCount: 3)
         ])
         let members = CohabitantMemberList(value: [])
 
@@ -117,7 +117,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            PointSummary(userId: "alice", monthlyPoint: 120, achievedCount: 5)
+            UserPointSummary(userId: "alice", monthlyPoint: .init(value: 120), achievedCount: 5)
         ])
         let members = CohabitantMemberList(value: [
             .init(id: "alice", userName: "アリス")
@@ -127,7 +127,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result[0].monthlyPoint == 120)
+        #expect(result[0].monthlyPoint == .init(value: 120))
         #expect(result[0].achievedCount == 5)
     }
 }
