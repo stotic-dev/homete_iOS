@@ -12,11 +12,12 @@ import SwiftUI
 public struct ContributionSummaryComponent: View {
     @Environment(ContributionStore.self) var contributionStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(\.loginContext.account.id) var userId
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
-    
+
     @State var summary: AllUserPointSummary = .init()
-    
+
     public static func make() -> some View {
         DependenciesInjectLayer {
             ContributionSummaryComponent()
@@ -26,33 +27,34 @@ public struct ContributionSummaryComponent: View {
                 ))
         }
     }
-    
+
     public var body: some View {
-        ContributionSummaryContent(
-            summary: summary,
-            members: cohabitantStore.members
-        )
-        .task(id: contributionStore.contiribution) {
-            await onChangeContribution()
-        }
+        ContributionSummaryContent(summaries: summary)
+            .task(id: contributionStore.contiribution) {
+                await onChangeContribution()
+            }
     }
 }
 
 private extension ContributionSummaryComponent {
-    
+
     func onChangeContribution() async {
-        
+
         let contribution = contributionStore.contiribution
-        let allUserIds = cohabitantStore.members.value.map(\.id)
-        
+        let members = cohabitantStore.members
+        let allUserIds = members.value.map(\.id)
+        let myUserId = userId
+
         let summary = await Task.detached {
             await contribution.calculatePointSummaries(
                 allUserIds: allUserIds,
                 month: now,
-                calendar: calendar
+                calendar: calendar,
+                members: members,
+                myUserId: myUserId
             )
         }.value
-        
+
         withAnimation {
             self.summary = summary
         }
@@ -65,8 +67,7 @@ struct ContributionSummaryContent: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
 
-    let summary: AllUserPointSummary
-    let members: CohabitantMemberList
+    let summaries: AllUserPointSummary
     @State var isShowingLegend = false
 
     var body: some View {
@@ -79,9 +80,9 @@ struct ContributionSummaryContent: View {
                 .padding(.vertical, .space16)
             Divider()
             ContributionGraphSection(
-                summaries: summary.items,
+                summaries: summaries,
                 userNames: Dictionary(
-                    uniqueKeysWithValues: members.value.map { ($0.id, $0.userName) }
+                    uniqueKeysWithValues: summaries.items.map { ($0.userId, $0.userName) }
                 ),
                 myUserId: userId
             )
@@ -104,7 +105,7 @@ struct ContributionSummaryContent: View {
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space16)
-            ForEach(summary.makeRanking(members: members, myUserId: userId)) { item in
+            ForEach(summaries.makeRanking()) { item in
                 SummaryRow(item: item)
                 Divider()
                     .padding(.leading, .space16)
@@ -120,13 +121,9 @@ struct ContributionSummaryContent: View {
 
 #Preview(traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
-        summary: AllUserPointSummary(items: [
-            UserPointSummary(userId: "user1", monthlyPoint: .init(value: 120), achievedCount: 5),
-            UserPointSummary(userId: "user2", monthlyPoint: .init(value: 40), achievedCount: 2)
-        ]),
-        members: .init(value: [
-            .init(id: "user1", userName: "田中"),
-            .init(id: "user2", userName: "佐藤")
+        summaries: AllUserPointSummary(items: [
+            UserPointSummary(userId: "user1", userName: "田中", isMe: true, monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "user2", userName: "佐藤", isMe: false, monthlyPoint: .init(value: 40), achievedCount: 2)
         ])
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))

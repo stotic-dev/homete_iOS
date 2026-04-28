@@ -11,7 +11,7 @@ import SwiftUI
 
 struct ContributionPieChart: View {
 
-    let summaries: [UserPointSummary]
+    let summaries: AllUserPointSummary
     let userNames: [String: String]
 
     var body: some View {
@@ -21,11 +21,8 @@ struct ContributionPieChart: View {
                 .foregroundStyle(.onSurface)
                 .padding(.top, .space16)
                 .padding(.leading, .space16)
-            if summaries.allSatisfy({ $0.achievedCount == 0 }) {
-                ContentUnavailableView("今月の達成家事はありません", systemImage: "checkmark.circle")
-                    .frame(height: 180)
-            } else {
-                Chart(summaries) { item in
+            if summaries.hasData {
+                Chart(summaries.items) { item in
                     SectorMark(
                         angle: .value("件数", item.achievedCount),
                         innerRadius: .ratio(0.5),
@@ -34,20 +31,28 @@ struct ContributionPieChart: View {
                     .foregroundStyle(by: .value("名前", userNames[item.userId] ?? item.userId))
                 }
                 .chartLegend(position: .bottom, alignment: .center)
-                .frame(height: 180)
-                .padding(.horizontal, .space16)
-                .padding(.bottom, .space40)
+            } else {
+                ContentUnavailableView("達成した家事はありません", systemImage: "checkmark.circle")
             }
         }
     }
 }
 
-#Preview(traits: .sizeThatFitsLayout) {
+#Preview("データ有り", traits: .sizeThatFitsLayout) {
     ContributionPieChart(
-        summaries: [
-            UserPointSummary(userId: "user1", monthlyPoint: .init(value: 120), achievedCount: 5),
-            UserPointSummary(userId: "user2", monthlyPoint: .init(value: 40), achievedCount: 2)
-        ],
+        summaries: .init(items: [
+            UserPointSummary(userId: "user1", userName: "田中", isMe: true, monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "user2", userName: "佐藤", isMe: false, monthlyPoint: .init(value: 40), achievedCount: 2)
+        ]),
         userNames: ["user1": "田中", "user2": "佐藤"]
     )
+    .frame(height: 240)
+}
+
+#Preview("データ無し", traits: .sizeThatFitsLayout) {
+    ContributionPieChart(
+        summaries: .init(),
+        userNames: [:]
+    )
+    .frame(height: 240)
 }

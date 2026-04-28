@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContributionGraphSection: View {
 
-    let summaries: [UserPointSummary]
+    let summaries: AllUserPointSummary
     let userNames: [String: String]
     let myUserId: String
 
@@ -17,10 +17,11 @@ struct ContributionGraphSection: View {
         #if os(iOS)
         TabView {
             charts
+                .padding(.bottom, .space48)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .indexViewStyle(.page(backgroundDisplayMode: .always))
-        .frame(height: 280)
+        .frame(height: 300)
         #else
         TabView {
             charts
@@ -45,10 +46,10 @@ struct ContributionGraphSection: View {
 
 #Preview(traits: .sizeThatFitsLayout) {
     ContributionGraphSection(
-        summaries: [
-            UserPointSummary(userId: "user1", monthlyPoint: .init(value: 120), achievedCount: 5),
-            UserPointSummary(userId: "user2", monthlyPoint: .init(value: 40), achievedCount: 2)
-        ],
+        summaries: .init(items: [
+            UserPointSummary(userId: "user1", userName: "田中", isMe: true, monthlyPoint: .init(value: 120), achievedCount: 5),
+            UserPointSummary(userId: "user2", userName: "佐藤", isMe: false, monthlyPoint: .init(value: 40), achievedCount: 2)
+        ]),
         userNames: ["user1": "田中", "user2": "佐藤"],
         myUserId: "user1"
     )

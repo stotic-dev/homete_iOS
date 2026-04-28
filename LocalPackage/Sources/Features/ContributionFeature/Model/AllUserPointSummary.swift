@@ -15,16 +15,20 @@ struct AllUserPointSummary: Equatable, Sendable {
     init(items: [UserPointSummary] = []) {
         self.items = items
     }
+    
+    /// 達成された家事があるかどうかで、データの有無を判定
+    var hasData: Bool { !items.allSatisfy { $0.achievedCount == 0 } }
 
     /// ランキング形式のアイテム一覧を生成する
-    func makeRanking(members: CohabitantMemberList, myUserId: String) -> [ContributionRankItem] {
+    func makeRanking() -> [ContributionRankItem] {
         items.sorted { $0.monthlyPoint.value > $1.monthlyPoint.value }
-            .enumerated().map { index, item in
+            .enumerated()
+            .map { index, item in
                 ContributionRankItem(
                     rank: index + 1,
                     userId: item.userId,
-                    userName: members.userName(item.userId) ?? item.userId,
-                    isMe: item.userId == myUserId,
+                    userName: item.userName,
+                    isMe: item.isMe,
                     monthlyPoint: item.monthlyPoint,
                     achievedCount: item.achievedCount
                 )
