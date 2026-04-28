@@ -16,22 +16,29 @@ struct ContributionBarChart: View {
     let myUserId: String
 
     var body: some View {
-        Chart(summaries) { item in
-            BarMark(
-                x: .value("ユーザー", userNames[item.userId] ?? item.userId),
-                y: .value("ポイント", item.monthlyPoint)
-            )
-            .foregroundStyle(item.userId == myUserId ? Color.primary2 : Color.secondary)
-            .annotation(position: .top) {
-                Text("\(item.monthlyPoint)pt")
-                    .font(with: .caption)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("月間ポイント比較")
+                .font(with: .headLineS)
+                .foregroundStyle(.onSurface)
+                .padding(.top, .space16)
+                .padding(.leading, .space16)
+            Chart(summaries) { item in
+                BarMark(
+                    x: .value("ユーザー", userNames[item.userId] ?? item.userId),
+                    y: .value("ポイント", item.monthlyPoint)
+                )
+                .foregroundStyle(item.userId == myUserId ? Color.primary2 : Color.secondary)
+                .annotation(position: .top) {
+                    Text("\(item.monthlyPoint)pt")
+                        .font(with: .caption)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .chartYAxis(.hidden)
+            .frame(height: 180)
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space40)
         }
-        .chartYAxis(.hidden)
-        .frame(height: 160)
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space16)
     }
 }
 

@@ -5,10 +5,12 @@
 //  Created by Taichi Sato on 2026/04/28.
 //
 
+import HometeUI
 import SwiftUI
 
 struct SummaryRow: View {
 
+    let rank: Int
     let userName: String
     let isMe: Bool
     let monthlyPoint: Int
@@ -16,6 +18,9 @@ struct SummaryRow: View {
 
     var body: some View {
         HStack(spacing: .space16) {
+            Image(systemName: "\(rank).circle.fill")
+                .font(.title2)
+                .foregroundStyle(rankColor)
             VStack(alignment: .leading, spacing: .space4) {
                 Text(userName)
                     .font(with: .headLineS)
@@ -46,5 +51,14 @@ struct SummaryRow: View {
         }
         .padding(.horizontal, .space16)
         .padding(.vertical, .space16)
+    }
+
+    private var rankColor: Color {
+        switch rank {
+        case 1: .yellow
+        case 2: Color(white: 0.7)
+        case 3: Color(red: 0.8, green: 0.5, blue: 0.2)
+        default: .secondary
+        }
     }
 }

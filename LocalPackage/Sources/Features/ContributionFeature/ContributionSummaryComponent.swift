@@ -68,8 +68,23 @@ struct ContributionSummaryContent: View {
 
     var body: some View {
         VStack(spacing: .zero) {
-            HStack {
-                Text(monthTitle)
+            Text(monthTitle)
+                .font(with: .headLineS)
+                .foregroundStyle(.onSurface)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space16)
+            Divider()
+            ContributionGraphSection(
+                summaries: sortedSummary,
+                userNames: Dictionary(
+                    uniqueKeysWithValues: members.value.map { ($0.id, $0.userName) }
+                ),
+                myUserId: userId
+            )
+            Divider()
+            HStack(spacing: .zero) {
+                Text("今月の貢献ランキング")
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
@@ -85,18 +100,10 @@ struct ContributionSummaryContent: View {
                 }
             }
             .padding(.horizontal, .space16)
-            .padding(.vertical, .space16)
-            Divider()
-            ContributionBarChart(
-                summaries: sortedSummary,
-                userNames: Dictionary(
-                    uniqueKeysWithValues: members.value.map { ($0.id, $0.userName) }
-                ),
-                myUserId: userId
-            )
-            Divider()
-            ForEach(sortedSummary) { item in
+            .padding(.top, .space16)
+            ForEach(Array(sortedSummary.enumerated()), id: \.element.id) { index, item in
                 SummaryRow(
+                    rank: index + 1,
                     userName: members.userName(item.userId) ?? item.userId,
                     isMe: item.userId == userId,
                     monthlyPoint: item.monthlyPoint,
