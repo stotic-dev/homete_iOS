@@ -10,7 +10,7 @@ import Foundation
 struct DisplayPointPeriod: Equatable, Hashable {
     let type: PeriodType
     let components: DateComponents
-    
+
     enum PeriodType {
         /// 週
         case week
