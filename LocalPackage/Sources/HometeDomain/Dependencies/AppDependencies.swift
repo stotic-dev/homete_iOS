@@ -16,6 +16,7 @@ public struct AppDependencies: Sendable {
     public let houseworkClient: HouseworkClient
     public let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     public let signInWithAppleClient: SignInWithAppleClient
+    public let houseworkTemplateClient: HouseworkTemplateClient
 
     public init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
@@ -25,7 +26,8 @@ public struct AppDependencies: Sendable {
         cohabitantClient: CohabitantClient = .previewValue,
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
-        signInWithAppleClient: SignInWithAppleClient = .previewValue
+        signInWithAppleClient: SignInWithAppleClient = .previewValue,
+        houseworkTemplateClient: HouseworkTemplateClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
@@ -35,6 +37,7 @@ public struct AppDependencies: Sendable {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.signInWithAppleClient = signInWithAppleClient
+        self.houseworkTemplateClient = houseworkTemplateClient
     }
 }
 

@@ -28,4 +28,27 @@ extension Firestore {
         return self.cohabitantRef(id: id)
             .collection(CollectionPath.houseworks.rawValue)
     }
+
+    /// テンプレート一覧コレクションの参照を取得する
+    func houseworkTemplatesRef(cohabitantId: String) -> CollectionReference {
+
+        return self.cohabitantRef(id: cohabitantId)
+            .collection(CollectionPath.houseworkTemplates.rawValue)
+    }
+
+    /// 特定テンプレートの Days コレクションの参照を取得する
+    func houseworkTemplateDaysRef(cohabitantId: String, templateId: String) -> CollectionReference {
+
+        return self.houseworkTemplatesRef(cohabitantId: cohabitantId)
+            .document(templateId)
+            .collection(CollectionPath.days.rawValue)
+    }
+
+    /// 特定テンプレートの Editors コレクションの参照を取得する
+    func houseworkTemplateEditorsRef(cohabitantId: String, templateId: String) -> CollectionReference {
+
+        return self.houseworkTemplatesRef(cohabitantId: cohabitantId)
+            .document(templateId)
+            .collection(CollectionPath.editors.rawValue)
+    }
 }

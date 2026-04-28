@@ -10,6 +10,9 @@ enum CollectionPath: String {
     case cohabitant = "Cohabitant"
     case houseworks = "Houseworks"
     case dailyHouseworks = "DailyHouseworks"
+    case houseworkTemplates = "HouseworkTemplates"
+    case days = "Days"
+    case editors = "Editors"
 }
 
 extension Firestore {
