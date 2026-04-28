@@ -35,12 +35,12 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result[0].rank == 1)
-        #expect(result[0].userId == "bob")
-        #expect(result[1].rank == 2)
-        #expect(result[1].userId == "carol")
-        #expect(result[2].rank == 3)
-        #expect(result[2].userId == "alice")
+        let expected: [ContributionRankItem] = [
+            .init(rank: 1, userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 120), achievedCount: 5),
+            .init(rank: 2, userId: "carol", userName: "キャロル", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 3),
+            .init(rank: 3, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2)
+        ]
+        #expect(result == expected)
     }
 
     @Test("自分のユーザーIDと一致するアイテムのisMeがtrueになる")
@@ -60,8 +60,11 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result.first(where: { $0.userId == "alice" })?.isMe == true)
-        #expect(result.first(where: { $0.userId == "bob" })?.isMe == false)
+        let expected: [ContributionRankItem] = [
+            .init(rank: 1, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 100), achievedCount: 3),
+            .init(rank: 2, userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 2)
+        ]
+        #expect(result == expected)
     }
 
     @Test("membersに存在するユーザーIDの場合は登録名が表示される")
@@ -79,7 +82,10 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result[0].userName == "アリス")
+        let expected: [ContributionRankItem] = [
+            .init(rank: 1, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 100), achievedCount: 3)
+        ]
+        #expect(result == expected)
     }
 
     @Test("membersに存在しないユーザーIDの場合はIDがそのまま表示名になる")
@@ -95,7 +101,10 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "other")
 
         // Assert
-        #expect(result[0].userName == "unknown-user")
+        let expected: [ContributionRankItem] = [
+            .init(rank: 1, userId: "unknown-user", userName: "unknown-user", isMe: false, monthlyPoint: .init(value: 100), achievedCount: 3)
+        ]
+        #expect(result == expected)
     }
 
     @Test("アイテムが空の場合はランキングも空になる")
@@ -109,7 +118,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result.isEmpty)
+        #expect(result == [])
     }
 
     @Test("ランキングアイテムのmonthlyPointとachievedCountが正しく引き継がれる")
@@ -127,7 +136,9 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         let result = summary.makeRanking(members: members, myUserId: "alice")
 
         // Assert
-        #expect(result[0].monthlyPoint == .init(value: 120))
-        #expect(result[0].achievedCount == 5)
+        let expected: [ContributionRankItem] = [
+            .init(rank: 1, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 120), achievedCount: 5)
+        ]
+        #expect(result == expected)
     }
 }
