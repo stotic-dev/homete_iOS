@@ -65,4 +65,37 @@ final actor FirestoreService {
         let listener = listeners[id]
         listener?.remove()
     }
+
+    /// クエリに一致するドキュメントをバッチ削除する
+    func deleteDocuments(predicate: (Firestore) -> Query) async throws {
+
+        let documents = try await predicate(firestore).getDocuments().documents
+        guard !documents.isEmpty else { return }
+        let batch = firestore.batch()
+        for document in documents {
+            batch.deleteDocument(document.reference)
+        }
+        try await batch.commit()
+    }
+
+    /// Firestoreトランザクションを実行する（楽観的ロックに使用）
+    func runTransaction(_ updateBlock: @escaping (Transaction) throws -> Void) async throws {
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            firestore.runTransaction({ transaction, errorPointer -> Any? in
+                do {
+                    try updateBlock(transaction)
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                }
+                return nil
+            }, completion: { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            })
+        }
+    }
 }
