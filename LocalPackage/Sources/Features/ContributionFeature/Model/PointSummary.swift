@@ -20,12 +20,12 @@ struct PointSummary: Equatable, Sendable, Identifiable {
     let monthlyPoint: Int
 
     /// もらった感謝の数（自分が実行しレビューされて完了した家事の数）
-    let thanksCount: Int
+    let achievedCount: Int
 
-    init(userId: String, monthlyPoint: Int, thanksCount: Int) {
+    init(userId: String, monthlyPoint: Int, achievedCount: Int) {
         self.userId = userId
         self.monthlyPoint = monthlyPoint
-        self.thanksCount = thanksCount
+        self.achievedCount = achievedCount
     }
 }
 
@@ -49,14 +49,14 @@ extension PointSummary {
             .filter { $0.executorId == userId }
             .reduce(0) { $0 + $1.point }
 
-        let thanksCount = completedInMonth
+        let achievedCount = completedInMonth
             .filter { $0.executorId == userId && $0.reviewerId != nil }
             .count
 
         return PointSummary(
             userId: userId,
             monthlyPoint: monthlyPoint,
-            thanksCount: thanksCount
+            achievedCount: achievedCount
         )
     }
 }

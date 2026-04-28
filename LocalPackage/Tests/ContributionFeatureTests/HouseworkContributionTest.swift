@@ -85,8 +85,8 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         #expect(result == [
-            PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 1),
-            PointSummary(userId: "bob", monthlyPoint: 50, thanksCount: 1)
+            PointSummary(userId: "alice", monthlyPoint: 30, achievedCount: 1),
+            PointSummary(userId: "bob", monthlyPoint: 50, achievedCount: 1)
         ])
     }
 
@@ -106,11 +106,11 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 1)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, achievedCount: 1)])
     }
 
-    @Test("レビュー済み家事の数がthanksCountに反映される")
-    func calculatePointSummaries_includesThanksCount() {
+    @Test("対象月に達成した家事の数がachievedCountに反映される")
+    func calculatePointSummaries_includesAchievedCount() {
 
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
@@ -145,11 +145,11 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 90, thanksCount: 3)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 90, achievedCount: 3)])
     }
 
-    @Test("対象月外のレビュー済み家事はthanksCountに含まれない")
-    func calculatePointSummaries_excludesThanksItemsOutsideTargetMonth() {
+    @Test("対象月外の達成家事はachievedCountに含まれない")
+    func calculatePointSummaries_excludesAchievedItemsOutsideTargetMonth() {
 
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
@@ -178,7 +178,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 1)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, achievedCount: 1)])
     }
 
     @Test("対象ユーザーに家事が存在しない場合はゼロのPointSummaryが返る")
@@ -192,6 +192,6 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 0, thanksCount: 0)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 0, achievedCount: 0)])
     }
 }

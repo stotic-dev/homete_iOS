@@ -95,16 +95,16 @@ struct HouseworkContribution: Equatable {
                 return PointSummary(
                     userId: userId,
                     monthlyPoint: .zero,
-                    thanksCount: .zero
+                    achievedCount: .zero
                 )
             }
             
             let monthlyPoint = targetList.reduce(0) { $0 + $1.point.value }
-            let thanksCount = targetList.count
+            let achievedCount = targetList.count
             return PointSummary(
                 userId: userId,
                 monthlyPoint: monthlyPoint,
-                thanksCount: thanksCount
+                achievedCount: achievedCount
             )
         }
     }

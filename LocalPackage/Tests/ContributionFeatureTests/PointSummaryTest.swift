@@ -103,8 +103,8 @@ extension PointSummaryTest.CalculateCase {
         #expect(result.monthlyPoint == 30)
     }
 
-    @Test("レビュー済みの完了家事の数がthanksCountになる")
-    func calculate_thanksCount_countsReviewedItemsByTargetUser() throws {
+    @Test("パートナーにレビューされた完了家事の数がachievedCountになる")
+    func calculate_achievedCount_countsReviewedItemsByTargetUser() throws {
 
         // Arrange
         var comps = DateComponents()
@@ -121,6 +121,6 @@ extension PointSummaryTest.CalculateCase {
         let result = PointSummary.calculate(userId: "alice", from: items, in: april10, calendar: calendar)
 
         // Assert
-        #expect(result.thanksCount == 2)
+        #expect(result.achievedCount == 2)
     }
 }
