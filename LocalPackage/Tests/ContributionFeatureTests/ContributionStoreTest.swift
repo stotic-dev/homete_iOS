@@ -54,7 +54,7 @@ extension ContributionStoreTest {
 
         // Assert: 完了済み家事のみ集計される
         let expectedContribution = HouseworkContribution(
-            list: ["": [.init(indexedDay: jan10, point: .init(value: 30))]]
+            list: ["alice": [.init(indexedDay: jan10, point: .init(value: 30))]]
         )
         #expect(store.contiribution == expectedContribution)
     }

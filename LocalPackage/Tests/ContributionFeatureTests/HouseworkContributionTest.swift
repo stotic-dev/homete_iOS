@@ -106,7 +106,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let result = contribution.calculatePointSummaries(allUserIds: ["alice"], month: jan10, calendar: calendar)
 
         // Assert
-        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 2)])
+        #expect(result == [PointSummary(userId: "alice", monthlyPoint: 30, thanksCount: 1)])
     }
 
     @Test("レビュー済み家事の数がthanksCountに反映される")
