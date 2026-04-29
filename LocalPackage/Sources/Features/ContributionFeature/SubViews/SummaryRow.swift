@@ -28,11 +28,11 @@ struct SummaryRow: View {
                 }
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: .space8) {
+            VStack(alignment: .leading, spacing: .space8) {
                 HStack(spacing: .space4) {
                     Image(systemName: "star.fill")
                         .foregroundStyle(.yellow)
-                    Text("\(item.monthlyPoint)pt")
+                    Text("\(item.monthlyPoint.value)pt")
                         .font(with: .headLineM)
                         .foregroundStyle(.onSurface)
                 }

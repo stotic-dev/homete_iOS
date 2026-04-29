@@ -105,7 +105,7 @@ struct ContributionSummaryContent: View {
                 }
             } else {
                 // TODO: 今日の家事完了を促すメッセージとアクションの導線を追加する
-                ContentUnavailableView("まだ達成された家事がありません", systemImage: "house.circle")
+                ContentUnavailableView("今月はまだ達成された家事がありません", systemImage: "house.circle")
             }
         }
     }
