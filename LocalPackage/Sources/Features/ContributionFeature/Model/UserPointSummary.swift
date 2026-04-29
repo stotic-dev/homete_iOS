@@ -27,6 +27,4 @@ struct UserPointSummary: Equatable, Sendable, Identifiable {
 
     /// もらった感謝の数（自分が実行しレビューされて完了した家事の数）
     let achievedCount: Int
-    
-
 }

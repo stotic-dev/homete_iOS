@@ -26,18 +26,18 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
         userId: String,
         period: DateComponents,
         calendar: Calendar) -> Self {
-
-        let targetMonthPoints = pointOfDay.filter {
-            monthComponent(pointOfDay: $0, calendar: calendar) == period
+            
+            let targetMonthPoints = pointOfDay.filter {
+                monthComponent(pointOfDay: $0, calendar: calendar) == period
+            }
+            
+            return .init(
+                userId: userId,
+                displayPeriod: .init(type: .month, components: period),
+                total: calcTotalPoint(targetMonthPoints),
+                elements: .init(targetMonthPoints)
+            )
         }
-        
-        return .init(
-            userId: userId,
-            displayPeriod: .init(type: .month, components: period),
-            total: calcTotalPoint(targetMonthPoints),
-            elements: .init(targetMonthPoints)
-        )
-    }
     
     /// 月毎に分けた月間ポイントのリスト
     static func makeWithSeparated(by pointOfDays: [PointOfDay], userId: String, calendar: Calendar) -> [Self] {
