@@ -22,12 +22,14 @@ extension PointOfWeekTest.MakeCase {
     func make_onlyTargetWeekItemsAreIncludedAndSummed() throws {
 
         // Arrange
-        // 2026-04-20(月), 2026-04-21(火) は同じ週、2026-04-27(月) は翌週
+        // 2026-04-20(月)〜2026-04-26(日) の週、2026-04-27(月) は翌週
         var comps = DateComponents()
         comps.year = 2026; comps.month = 4; comps.day = 20
         let april20 = try #require(calendar.date(from: comps))
         comps.day = 21
         let april21 = try #require(calendar.date(from: comps))
+        comps.day = 26
+        let april26 = try #require(calendar.date(from: comps))
         comps.day = 27
         let april27 = try #require(calendar.date(from: comps))
 
@@ -36,15 +38,22 @@ extension PointOfWeekTest.MakeCase {
             PointOfDay(indexedDay: april21, point: Point(value: 50)),
             PointOfDay(indexedDay: april27, point: Point(value: 20))
         ]
-        let weekPeriod = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: april20)
+        let weekRange = april20...april26
 
         // Act
-        let result = PointOfWeek.make(by: dayOfPoints, userId: "testUser", period: weekPeriod, calendar: calendar)
+        let result = PointOfWeek.make(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            dateRange: weekRange,
+            calendar: calendar
+        )
 
         // Assert
         let expected = PointOfWeek(
             userId: "testUser",
-            displayPeriod: .init(type: .week, components: weekPeriod),
+            userName: "テストユーザー",
+            displayPeriod: .week,
             total: .init(value: 80),
             elements: [
                 PointOfDay(indexedDay: april20, point: Point(value: 30)),

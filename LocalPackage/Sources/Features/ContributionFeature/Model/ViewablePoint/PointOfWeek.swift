@@ -8,9 +8,10 @@
 import Foundation
 
 struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList {
-    
+
     let userId: String
-    let displayPeriod: DisplayPointPeriod
+    let userName: String
+    let displayPeriod: DisplayPointPeriod.PeriodType
     let total: Point
     let elements: Set<PointOfDay>
 
@@ -23,16 +24,16 @@ struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList
     static func make(
         by pointOfDays: [PointOfDay],
         userId: String,
-        period: DateComponents,
+        userName: String,
+        dateRange: ClosedRange<Date>,
         calendar: Calendar
     ) -> Self {
-        
-        let targetWeekPoints = pointOfDays.filter {
-            weekComponent(pointOfDay: $0, calendar: calendar) == period
-        }
+
+        let targetWeekPoints = pointOfDays.filter { dateRange.contains($0.indexedDay) }
         return .init(
             userId: userId,
-            displayPeriod: .init(type: .week, components: period),
+            userName: userName,
+            displayPeriod: .week,
             total: calcTotalPoint(targetWeekPoints),
             elements: .init(targetWeekPoints)
         )

@@ -23,6 +23,10 @@ extension PointOfYearTest.MakeCase {
 
         // Arrange
         var comps = DateComponents()
+        comps.year = 2026; comps.month = 1; comps.day = 1
+        let yearStart2026 = try #require(calendar.date(from: comps))
+        comps.month = 12; comps.day = 31
+        let yearEnd2026 = try #require(calendar.date(from: comps))
         comps.year = 2026; comps.month = 4; comps.day = 10
         let april2026 = try #require(calendar.date(from: comps))
         comps.year = 2025
@@ -32,10 +36,16 @@ extension PointOfYearTest.MakeCase {
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: april2025, point: Point(value: 50)),
         ]
-        let period2026 = calendar.dateComponents([.year], from: april2026)
+        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
-        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
+        let result = PointOfYear.make(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            dateRange: dateRange2026,
+            calendar: calendar
+        )
 
         // Assert
         #expect(result.total.value == 30)
@@ -46,7 +56,11 @@ extension PointOfYearTest.MakeCase {
 
         // Arrange
         var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 10
+        comps.year = 2026; comps.month = 1; comps.day = 1
+        let yearStart2026 = try #require(calendar.date(from: comps))
+        comps.month = 12; comps.day = 31
+        let yearEnd2026 = try #require(calendar.date(from: comps))
+        comps.month = 4; comps.day = 10
         let april2026 = try #require(calendar.date(from: comps))
         comps.month = 5
         let may2026 = try #require(calendar.date(from: comps))
@@ -55,10 +69,16 @@ extension PointOfYearTest.MakeCase {
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: may2026, point: Point(value: 50)),
         ]
-        let period2026 = calendar.dateComponents([.year], from: april2026)
+        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
-        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
+        let result = PointOfYear.make(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            dateRange: dateRange2026,
+            calendar: calendar
+        )
 
         // Assert
         #expect(result.elements.count == 2)
@@ -69,7 +89,11 @@ extension PointOfYearTest.MakeCase {
 
         // Arrange
         var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 10
+        comps.year = 2026; comps.month = 1; comps.day = 1
+        let yearStart2026 = try #require(calendar.date(from: comps))
+        comps.month = 12; comps.day = 31
+        let yearEnd2026 = try #require(calendar.date(from: comps))
+        comps.month = 4; comps.day = 10
         let april2026 = try #require(calendar.date(from: comps))
         comps.month = 5
         let may2026 = try #require(calendar.date(from: comps))
@@ -78,10 +102,16 @@ extension PointOfYearTest.MakeCase {
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: may2026, point: Point(value: 50)),
         ]
-        let period2026 = calendar.dateComponents([.year], from: april2026)
+        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
-        let result = PointOfYear.make(by: dayOfPoints, userId: "testUser", period: period2026, calendar: calendar)
+        let result = PointOfYear.make(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            dateRange: dateRange2026,
+            calendar: calendar
+        )
 
         // Assert
         #expect(result.total.value == 80)

@@ -11,8 +11,10 @@ protocol ViewablePointList<Element>: Equatable, Hashable {
 
     /// ユーザーID
     var userId: String { get }
+    /// ユーザー名
+    var userName: String { get }
     /// 表示区間
-    var displayPeriod: DisplayPointPeriod { get }
+    var displayPeriod: DisplayPointPeriod.PeriodType { get }
     /// トータルのポイント
     var total: Point { get }
     /// 表示するポイントのリスト
