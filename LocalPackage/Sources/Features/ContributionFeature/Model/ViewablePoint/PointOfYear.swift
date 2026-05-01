@@ -7,18 +7,17 @@
 
 import Foundation
 
-struct PointOfYear: Equatable, Hashable, ViewablePointList {
+struct PointOfYear: Equatable, Hashable {
 
     let userId: String
     let userName: String
-    let displayPeriod: DisplayPointPeriod.PeriodType
     let total: Point
     let elements: Set<PointOfMonth>
     let dateRange: ClosedRange<Date>
 
     func hash(into hasher: inout Hasher) {
 
-        hasher.combine(displayPeriod)
+        hasher.combine(dateRange.lowerBound)
     }
 
     static func make(
@@ -38,10 +37,22 @@ struct PointOfYear: Equatable, Hashable, ViewablePointList {
         return .init(
             userId: userId,
             userName: userName,
-            displayPeriod: .year,
             total: total,
             elements: .init(months),
             dateRange: dateRange
+        )
+    }
+}
+
+extension PointOfYear: GenerableViewablePointList {
+    
+    func generate() -> ViewablePointList {
+        
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: total,
+            elements: .init(elements.map { .init(point: $0.total, date: $0.startDate) })
         )
     }
 }

@@ -10,16 +10,10 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct AllUserViewablePointList<ViewableType: ViewablePointList> {
-    let list: [ViewableType]
-    let dateRange: ClosedRange<Date>
-}
-
-struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
-    let viewableData: AllUserViewablePointList<ViewableType>
+struct PointsTimeSeriesChartView: View {
+    let viewableData: AllUserViewablePointList
 
     @Environment(\.locale) private var locale
-    @Environment(\.calendar) private var calendar
 
     var body: some View {
         Chart {
@@ -39,9 +33,8 @@ struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
                 }
             }
         }
-        .chartXScale(domain: xScaleDomain)
         .chartXAxis {
-            AxisMarks(values: xAxisDates) { value in
+            AxisMarks(values: viewableData.xAxisDates) { value in
                 AxisGridLine()
                 AxisTick()
                 AxisValueLabel(
@@ -59,80 +52,19 @@ struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
         .chartLegend(position: .bottom, alignment: .center)
     }
 
-    private var xScaleDomain: ClosedRange<Date> {
-        let end = viewableData.dateRange.upperBound
-        let paddedEnd: Date
-        switch periodType {
-        case .year:
-            let lastMonthStart = calendar.date(from: calendar.dateComponents([.era, .year, .month], from: end)) ?? end
-            paddedEnd = calendar.date(byAdding: .month, value: 1, to: lastMonthStart) ?? end
-        case .month:
-            paddedEnd = calendar.date(byAdding: .day, value: 3, to: end) ?? end
-        case .week:
-            paddedEnd = calendar.date(byAdding: .day, value: 1, to: end) ?? end
-        }
-        return viewableData.dateRange.lowerBound...paddedEnd
-    }
-
-    private var periodType: DisplayPointPeriod.PeriodType {
-        viewableData.list.first?.displayPeriod ?? .month
-    }
-
     private var xUnit: Calendar.Component {
-        switch periodType {
+        switch viewableData.displayPeriod {
         case .year: return .month
         case .month, .week: return .day
         }
     }
 
-    private var xStrideComponent: Calendar.Component {
-        switch periodType {
-        case .year: return .month
-        case .month: return .day
-        case .week: return .day
-        }
-    }
-
-    private var xStrideCount: Int {
-        switch periodType {
-        case .year: return 1
-        case .month: return 5
-        case .week: return 1
-        }
-    }
-
     private var xLabelFormat: Date.FormatStyle {
-        switch periodType {
+        switch viewableData.displayPeriod {
         case .year: return .dateTime.month(.defaultDigits).locale(locale)
         case .month: return .dateTime.day().locale(locale)
         case .week: return .dateTime.weekday(.abbreviated).locale(locale)
         }
-    }
-
-    private var xAxisDates: [Date] {
-        let start = viewableData.dateRange.lowerBound
-        let end = viewableData.dateRange.upperBound
-        var dates: [Date] = []
-        var current = start
-        while current <= end {
-            dates.append(current)
-            guard let next = calendar.date(byAdding: xStrideComponent, value: xStrideCount, to: current) else { break }
-            current = next
-        }
-        if let last = dates.last {
-            switch periodType {
-            case .month, .week:
-                if !calendar.isDate(last, inSameDayAs: end) {
-                    dates.append(end)
-                }
-            case .year:
-                if !calendar.isDate(last, equalTo: end, toGranularity: .month),
-                   let monthStart = calendar.date(from: calendar.dateComponents([.era, .year, .month], from: end)) {
-                    dates.append(monthStart)
-                }
-            }
-        }
-        return dates
     }
 }
 
@@ -156,12 +88,14 @@ struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 26), point: .init(value: 20))
     ]
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList(
+    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
             PointOfWeek.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
             PointOfWeek.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
         ],
-        dateRange: dateRange
+        displayPeriod: .week,
+        dateRange: dateRange,
+        calendar: calendar
     ))
     .frame(height: 240)
     .setupEnvironmentForPreview()
@@ -188,12 +122,14 @@ struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 40))
     ]
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList(
+    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
             PointOfMonth.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
             PointOfMonth.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
         ],
-        dateRange: dateRange
+        displayPeriod: .month,
+        dateRange: dateRange,
+        calendar: calendar
     ))
     .frame(height: 240)
     .setupEnvironmentForPreview()
@@ -215,12 +151,14 @@ struct PointsTimeSeriesChartView<ViewableType: ViewablePointList>: View {
         PointOfDay(indexedDay: .previewDate(year: 2026, month: month, day: 20), point: .init(value: points2[month - 1]))
     }
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList(
+    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
             PointOfYear.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
             PointOfYear.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
         ],
-        dateRange: dateRange
+        displayPeriod: .year,
+        dateRange: dateRange,
+        calendar: calendar
     ))
     .frame(height: 240)
     .setupEnvironmentForPreview()

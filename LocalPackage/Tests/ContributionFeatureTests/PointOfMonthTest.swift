@@ -57,12 +57,12 @@ extension PointOfMonthTest.MakeCase {
         let expected = PointOfMonth(
             userId: "testUser",
             userName: "テストユーザー",
-            displayPeriod: .month,
             total: .init(value: 80),
             elements: [
                 PointOfDay(indexedDay: april10, point: Point(value: 30)),
                 PointOfDay(indexedDay: april20, point: Point(value: 50))
-            ]
+            ],
+            startDate: aprilStart
         )
         #expect(result == expected)
     }
@@ -97,25 +97,27 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
         )
 
         // Assert
+        let aprilStart = try #require(calendar.date(from: DateComponents(year: 2026, month: 4, day: 1)))
+        let mayStart = try #require(calendar.date(from: DateComponents(year: 2026, month: 5, day: 1)))
         let expected: [PointOfMonth] = [
             .init(
                 userId: "testUser",
                 userName: "テストユーザー",
-                displayPeriod: .month,
-                total: .init(value: 80),
+                    total: .init(value: 80),
                 elements: [
                     PointOfDay(indexedDay: april10, point: Point(value: 30)),
                     PointOfDay(indexedDay: april20, point: Point(value: 50))
-                ]
+                ],
+                startDate: aprilStart
             ),
             .init(
                 userId: "testUser",
                 userName: "テストユーザー",
-                displayPeriod: .month,
-                total: .init(value: 20),
+                    total: .init(value: 20),
                 elements: [
                     PointOfDay(indexedDay: may10, point: Point(value: 20))
-                ]
+                ],
+                startDate: mayStart
             )
         ]
         #expect(result.count == expected.count)

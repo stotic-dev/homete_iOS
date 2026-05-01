@@ -36,7 +36,6 @@ struct HouseworkContribution: Equatable {
                 return .init(
                     userId: member.id,
                     userName: member.userName,
-                    displayPeriod: .year,
                     total: .init(value: .zero),
                     elements: [],
                     dateRange: dateRange
@@ -63,9 +62,9 @@ struct HouseworkContribution: Equatable {
                 return .init(
                     userId: member.id,
                     userName: member.userName,
-                    displayPeriod: .month,
                     total: .init(value: .zero),
-                    elements: []
+                    elements: [],
+                    startDate: dateRange.lowerBound
                 )
             }
             return .make(
@@ -89,9 +88,9 @@ struct HouseworkContribution: Equatable {
                 return .init(
                     userId: member.id,
                     userName: member.userName,
-                    displayPeriod: .week,
                     total: .init(value: .zero),
-                    elements: []
+                    elements: [],
+                    startDate: dateRange.lowerBound
                 )
             }
             return .make(

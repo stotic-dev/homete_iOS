@@ -7,18 +7,19 @@
 
 import Foundation
 
-struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList {
+struct PointOfWeek: Equatable, Hashable {
 
     let userId: String
     let userName: String
-    let displayPeriod: DisplayPointPeriod.PeriodType
     let total: Point
     let elements: Set<PointOfDay>
+    let startDate: Date
 
     var point: Point { total }
+    var date: Date { startDate }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(displayPeriod)
+        hasher.combine(startDate)
     }
 
     static func make(
@@ -33,22 +34,30 @@ struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList
         return .init(
             userId: userId,
             userName: userName,
-            displayPeriod: .week,
             total: calcTotalPoint(targetWeekPoints),
-            elements: .init(targetWeekPoints)
+            elements: .init(targetWeekPoints),
+            startDate: dateRange.lowerBound
+        )
+    }
+}
+
+extension PointOfWeek: GenerableViewablePointList {
+    
+    func generate() -> ViewablePointList {
+        
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: total,
+            elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
         )
     }
 }
 
 private extension PointOfWeek {
 
-    static func weekComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-        
-        return calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: pointOfDay.indexedDay)
-    }
-    
     static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
-        
+
         return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
             return .init(value: partialResult.value + pointOfDay.point.value)
         })

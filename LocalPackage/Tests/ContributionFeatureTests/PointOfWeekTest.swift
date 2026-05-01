@@ -53,12 +53,12 @@ extension PointOfWeekTest.MakeCase {
         let expected = PointOfWeek(
             userId: "testUser",
             userName: "テストユーザー",
-            displayPeriod: .week,
             total: .init(value: 80),
             elements: [
                 PointOfDay(indexedDay: april20, point: Point(value: 30)),
                 PointOfDay(indexedDay: april21, point: Point(value: 50))
-            ]
+            ],
+            startDate: april20
         )
         #expect(result == expected)
     }

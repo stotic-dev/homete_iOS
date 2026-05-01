@@ -249,6 +249,43 @@ let updatedItem = existingItem.updateProperties(title: "updated title")
 
 ---
 
+## ジェネリック型のテスト
+
+ジェネリック型（`AllUserViewablePointList<ViewableType>` など）は型引数を渡してインスタンス化する。型推論が効く場合はそのままで良いが、空リストなど推論できない場合は明示指定する。
+
+```swift
+// 型推論が効く場合
+let sut = AllUserViewablePointList(
+    list: [PointOfWeek(...)],
+    dateRange: start...end
+)
+
+// 空リストで推論できない場合は明示指定
+let sut = AllUserViewablePointList<PointOfWeek>(
+    list: [],
+    dateRange: start...end
+)
+```
+
+---
+
+## Assertion のルール
+
+- **戻り値の型をそのまま比較する**: `ClosedRange<Date>`、`[Date]` など複合型も `#expect(result == expected)` で比較する
+- **一部プロパティだけの検証は禁止**: `result.count == 2` や `result.total.value == 80` のような部分検証は行わない
+
+```swift
+// OK: 戻り値の型を直接比較
+let expected = [april1, april6, april11, april30]
+#expect(result == expected)
+
+// NG: 部分プロパティの検証
+#expect(result.count == 4)
+#expect(result.first == april1)
+```
+
+---
+
 ## 制約・規約
 
 | 項目 | ルール |

@@ -7,19 +7,16 @@
 
 import Foundation
 
-struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointList {
+struct PointOfMonth: Equatable, Hashable {
 
     let userId: String
     let userName: String
-    let displayPeriod: DisplayPointPeriod.PeriodType
     let total: Point
     let elements: Set<PointOfDay>
-
-    var point: Point { total }
+    let startDate: Date
 
     func hash(into hasher: inout Hasher) {
-
-        hasher.combine(displayPeriod)
+        hasher.combine(startDate)
     }
 
     static func make(
@@ -35,9 +32,9 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
         return .init(
             userId: userId,
             userName: userName,
-            displayPeriod: .month,
             total: calcTotalPoint(targetMonthPoints),
-            elements: .init(targetMonthPoints)
+            elements: .init(targetMonthPoints),
+            startDate: dateRange.lowerBound
         )
     }
 
@@ -60,15 +57,29 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
             return result
         }
 
-        return separetedDic.map {
-            .init(
+        return separetedDic.map { components, elements in
+            let startDate = calendar.date(from: components) ?? elements.min { $0.indexedDay < $1.indexedDay }!.indexedDay
+            return .init(
                 userId: userId,
                 userName: userName,
-                displayPeriod: .month,
-                total: calcTotalPoint(.init($0.value)),
-                elements: $0.value
+                    total: calcTotalPoint(.init(elements)),
+                elements: elements,
+                startDate: startDate
             )
         }
+    }
+}
+
+extension PointOfMonth: GenerableViewablePointList {
+    
+    func generate() -> ViewablePointList {
+        
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: total,
+            elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
+        )
     }
 }
 
