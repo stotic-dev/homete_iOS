@@ -12,12 +12,24 @@ struct DisplayPointPeriod: Equatable, Hashable {
     let anchor: Date
     
     func calcDateRange(calendar: Calendar) -> ClosedRange<Date>? {
-        guard let startOfMonth = calendar.date(
+        guard let decreasedDate = calendar.date(
             byAdding: type.component,
-            value: -1, to: anchor
-        ) else { return nil }
-        let endOfMonth = anchor
-        return startOfMonth...endOfMonth
+            value: -1,
+            to: anchor
+        ),
+              let start = calendar.date(byAdding: .day, value: 1, to: decreasedDate) else { return nil }
+        let end = anchor
+        return start...end
+    }
+    
+    func shiftPeriod(by value: Int, calendar: Calendar) -> Self {
+        
+        guard let newAnchor = calendar.date(
+            byAdding: type.component,
+            value: value,
+            to: anchor
+        ) else { return self }
+        return .init(type: type, anchor: newAnchor)
     }
 
     enum PeriodType {

@@ -56,19 +56,13 @@ struct AllUserViewablePointList: Equatable {
             guard let next = calendar.date(byAdding: strideComponent, value: strideCount, to: current) else { break }
             current = next
         }
-        if let last = dates.last {
-            switch displayPeriod {
-            case .month, .week:
-                if !calendar.isDate(last, inSameDayAs: end) {
-                    dates.append(end)
-                }
-            case .year:
-                if !calendar.isDate(last, equalTo: end, toGranularity: .month),
-                   let monthStart = calendar.date(from: calendar.dateComponents([.era, .year, .month], from: end)) {
-                    dates.append(monthStart)
-                }
-            }
+        if strideCount > 1,
+           let last = dates.last,
+           !dates.contains(last) {
+            dates.append(end)
         }
+        
+        print("calcXAxisDates: dateRange(\(dateRange)) result(\(dates))")
         return dates
     }
 }

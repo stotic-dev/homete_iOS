@@ -36,7 +36,8 @@ extension HouseworkContribution {
             // 週間ビュー用 (2026-04-23 〜 2026-04-30)
             .init(indexedDay: .previewDate(year: 2026, month: 4, day: 24), point: .init(value: 20)),
             .init(indexedDay: .previewDate(year: 2026, month: 4, day: 26), point: .init(value: 15)),
-            .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 25))
+            .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 25)),
+            .init(indexedDay: .previewDate(year: 2026, month: 4, day: 30), point: .init(value: 18))
         ]
         let user2Days: [PointOfDay] = [
             // 年間ビュー用 (2025-04-30 〜 2026-04-30)
@@ -87,6 +88,8 @@ extension ContributionAnalytics {
         guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else {
             return .init(weekPointList: [], monthPointList: [], yearPointList: [], displayPeriod: displayPeriod)
         }
+        
+        print("dateRange: \(dateRange)")
 
         let weekPointList: [PointOfWeek] = contribution.viewablePointList(
             members: members,

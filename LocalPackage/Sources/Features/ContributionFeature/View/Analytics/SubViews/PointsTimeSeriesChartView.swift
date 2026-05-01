@@ -70,9 +70,9 @@ struct PointsTimeSeriesChartView: View {
 
 #Preview("週間 (日別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
-    let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
     let weekEnd = Date.previewDate(year: 2026, month: 4, day: 26)
-    let dateRange = weekStart...weekEnd
+    let period = DisplayPointPeriod(type: .week, anchor: weekEnd)
+    let dateRange = period.calcDateRange(calendar: calendar)!
 
     let pointOfDays1: [PointOfDay] = [
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 10)),
@@ -104,9 +104,11 @@ struct PointsTimeSeriesChartView: View {
 
 #Preview("月間 (日別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
-    let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: .previewDate(year: 2026, month: 4, day: 1)))!
-    let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
-    let dateRange = startOfMonth...endOfMonth
+    let period = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    let dateRange = period.calcDateRange(calendar: calendar)!
 
     let pointOfDays1: [PointOfDay] = [
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 1), point: .init(value: 10)),
@@ -140,7 +142,11 @@ struct PointsTimeSeriesChartView: View {
     let calendar = Calendar.japanese
     let yearStart = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1))!
     let yearEnd = calendar.date(from: DateComponents(year: 2026, month: 12, day: 31))!
-    let dateRange = yearStart...yearEnd
+    let period = DisplayPointPeriod(
+        type: .year,
+        anchor: yearEnd
+    )
+    let dateRange = period.calcDateRange(calendar: calendar)!
 
     let points1 = [30, 15, 45, 20, 50, 35, 25, 40, 10, 45, 30, 20]
     let points2 = [20, 40, 25, 45, 30, 15, 50, 20, 35, 25, 45, 30]

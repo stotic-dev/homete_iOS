@@ -20,18 +20,21 @@ struct ContributionAnalyticsScreen: View {
     @State var analytics: ContributionAnalytics?
     
     var body: some View {
-        ContributionAnalyticsView(
-            selectedPeriod: $selectedPeriod,
-            analytics: analytics
-        )
-        .task(id: contributionStore.contiribution) {
-            await onChangeContribution()
-        }
-        .onChange(of: selectedPeriod) {
-            loadingState.task {
-                await onChangePeriod()
+        NavigationStack {
+            ContributionAnalyticsView(
+                selectedPeriod: $selectedPeriod,
+                analytics: analytics
+            )
+            .task(id: contributionStore.contiribution) {
+                await onChangeContribution()
+            }
+            .onChange(of: selectedPeriod) {
+                loadingState.task {
+                    await onChangePeriod()
+                }
             }
         }
+        .navigationTitle("家事分析")
     }
 }
 
