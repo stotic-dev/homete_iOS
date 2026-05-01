@@ -8,7 +8,7 @@
 import Foundation
 
 struct DisplayPointPeriod: Equatable, Hashable {
-    let type: PeriodType
+    var type: PeriodType
     let anchor: Date
     
     func calcDateRange(calendar: Calendar) -> ClosedRange<Date>? {
