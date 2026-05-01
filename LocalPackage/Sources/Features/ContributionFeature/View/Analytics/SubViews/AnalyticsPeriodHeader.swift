@@ -11,6 +11,7 @@ struct AnalyticsPeriodHeader: View {
     
     @Environment(\.locale) var locale
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var now
     
     @Binding var selectedPeriod: DisplayPointPeriod
     
@@ -56,6 +57,17 @@ private extension AnalyticsPeriodHeader {
     }
     
     func periodTitle() -> String {
+        
+        guard selectedPeriod.anchor != now else {
+            
+            // 基準日が今日の場合は直近の表示にする
+            return switch selectedPeriod.type {
+            case .week: "直近1週間"
+            case .month: "直近1ヶ月"
+            case .year: "直近1年"
+            }
+        }
+        
         guard let dateRange = selectedPeriod.calcDateRange(calendar: calendar) else { return "" }
         let dateFormatStyle: Date.FormatStyle
         switch selectedPeriod.type {
@@ -90,11 +102,62 @@ private extension AnalyticsPeriodHeader {
     }
 }
 
-#Preview(traits: .sizeThatFitsLayout) {
+#Preview("AnalyticsPeriodHeader_直近1週間の表示", traits: .sizeThatFitsLayout) {
     @Previewable @State var selectedPeriod = DisplayPointPeriod(
         type: .week,
         anchor: .previewDate(year: 2026, month: 4, day: 30)
     )
     AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
         .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+}
+
+#Preview("AnalyticsPeriodHeader_直近1ヶ月の表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+}
+
+#Preview("AnalyticsPeriodHeader_直近1年の表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .year,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+}
+
+#Preview("AnalyticsPeriodHeader_直近でない1週間の表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .week,
+        anchor: .previewDate(year: 2026, month: 3, day: 30)
+    )
+    AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+}
+
+#Preview("AnalyticsPeriodHeader_直近でない1ヶ月の表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 3, day: 30)
+    )
+    AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+}
+
+#Preview("AnalyticsPeriodHeader_直近でない1年の表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .year,
+        anchor: .previewDate(year: 2026, month: 3, day: 30)
+    )
+    AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
 }
