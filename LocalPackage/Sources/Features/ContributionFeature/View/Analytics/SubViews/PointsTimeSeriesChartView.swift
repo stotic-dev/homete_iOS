@@ -14,6 +14,13 @@ struct PointsTimeSeriesChartView: View {
     let viewableData: AllUserViewablePointList
 
     @Environment(\.locale) private var locale
+    @Environment(\.calendar) private var calendar
+    @State private var selectedDate: Date?
+
+    init(viewableData: AllUserViewablePointList, selectedDate: Date? = nil) {
+        self.viewableData = viewableData
+        self._selectedDate = State(initialValue: selectedDate)
+    }
 
     var body: some View {
         Chart {
@@ -32,9 +39,19 @@ struct PointsTimeSeriesChartView: View {
                     .foregroundStyle(by: .value("ユーザー", userData.userName))
                 }
             }
+            if let date = selectedDate {
+                RuleMark(x: .value("日付", date, unit: xUnit))
+                    .foregroundStyle(.secondary.opacity(0.3))
+                    .annotation(
+                        position: .top,
+                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+                    ) {
+                        selectionPopup(for: date)
+                    }
+            }
         }
         .chartXAxis {
-            AxisMarks(values: viewableData.xAxisDates) { value in
+            AxisMarks(values: viewableData.xAxisDates) { _ in
                 AxisGridLine()
                 AxisTick()
                 AxisValueLabel(
@@ -50,6 +67,16 @@ struct PointsTimeSeriesChartView: View {
             }
         }
         .chartLegend(position: .bottom, alignment: .center)
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        handleTap(at: location, proxy: proxy, geometry: geometry)
+                    }
+            }
+        }
     }
 
     private var xUnit: Calendar.Component {
@@ -66,12 +93,60 @@ struct PointsTimeSeriesChartView: View {
         case .week: return .dateTime.weekday(.abbreviated).locale(locale)
         }
     }
+
+    private var popupDateFormat: Date.FormatStyle {
+        switch viewableData.displayPeriod {
+        case .year: return .dateTime.year().month().locale(locale)
+        case .month, .week: return .dateTime.month().day().locale(locale)
+        }
+    }
+}
+
+private extension PointsTimeSeriesChartView {
+
+    func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
+        let frame = geometry.frame(in: .local)
+        guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
+        let nearest = viewableData.xAxisDates.min {
+            abs($0.timeIntervalSince(tapDate)) < abs($1.timeIntervalSince(tapDate))
+        }
+        guard let nearest, !viewableData.pointEntries(for: nearest, calendar: calendar).isEmpty else {
+            selectedDate = nil
+            return
+        }
+        selectedDate = selectedDate == nearest ? nil : nearest
+    }
+
+    @ViewBuilder
+    func selectionPopup(for date: Date) -> some View {
+        let entries = viewableData.pointEntries(for: date, calendar: calendar)
+        if !entries.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(date, format: popupDateFormat)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                ForEach(entries) { entry in
+                    Text("\(entry.userName): \(entry.point)pt")
+                        .font(.caption)
+                        .bold()
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+            }
+        }
+    }
 }
 
 #Preview("週間 (日別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
     let weekEnd = Date.previewDate(year: 2026, month: 4, day: 26)
     let period = DisplayPointPeriod(type: .week, anchor: weekEnd)
+    // swiftlint:disable:next force_unwrapping
     let dateRange = period.calcDateRange(calendar: calendar)!
 
     let pointOfDays1: [PointOfDay] = [

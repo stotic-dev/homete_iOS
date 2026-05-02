@@ -8,6 +8,13 @@
 import Foundation
 
 struct AllUserViewablePointList: Equatable {
+
+    struct PointEntry: Identifiable {
+        let id: String
+        let userName: String
+        let point: Int
+    }
+
     /// グラフに表示する日データ
     let list: [ViewablePointList]
     /// 表示区間
@@ -64,5 +71,18 @@ struct AllUserViewablePointList: Equatable {
         
         print("calcXAxisDates: dateRange(\(dateRange)) result(\(dates))")
         return dates
+    }
+
+    func pointEntries(for date: Date, calendar: Calendar) -> [PointEntry] {
+        let granularity: Calendar.Component = switch displayPeriod {
+        case .year: .month
+        case .month, .week: .day
+        }
+        return list.compactMap { userData in
+            guard let element = userData.elements.first(where: {
+                calendar.isDate($0.date, equalTo: date, toGranularity: granularity)
+            }) else { return nil }
+            return PointEntry(id: userData.userId, userName: userData.userName, point: element.point.value)
+        }
     }
 }
