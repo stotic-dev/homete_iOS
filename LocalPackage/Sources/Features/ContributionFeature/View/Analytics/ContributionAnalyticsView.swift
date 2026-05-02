@@ -16,22 +16,45 @@ struct ContributionAnalyticsView: View {
     @Binding var selectedPeriod: DisplayPointPeriod
     let analytics: ContributionAnalytics?
 
+    @State private var isScrolled = false
+
     var body: some View {
-        VStack(spacing: .space24) {
+        ScrollView {
+            VStack(spacing: .space16) {
+                GeometryReader { geo in
+                    Color.clear.preference(
+                        key: ScrollOffsetPreferenceKey.self,
+                        value: geo.frame(in: .named("analyticsScroll")).minY
+                    )
+                }
+                .frame(height: 0)
+                if let currentList = analytics?.currentList(calendar: calendar) {
+                    graphContent(data: currentList)
+                } else {
+                    // TODO: データがない旨の空表示を実装する
+                }
+            }
+            .padding(.top, .space16)
+            .padding(.horizontal, .space16)
+        }
+        .coordinateSpace(name: "analyticsScroll")
+        .onPreferenceChange(ScrollOffsetPreferenceKey.self) { offset in
+            isScrolled = offset < 0
+        }
+        .safeAreaInset(edge: .top, spacing: 0) {
             AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
                 .padding(.horizontal, .space16)
-            ScrollView {
-                VStack(spacing: .space16) {
-                    if let currentList = analytics?.currentList(calendar: calendar) {
-                        graphContent(data: currentList)
-                    } else {
-                        // TODO: データがない旨の空表示を実装する
-                    }
-                }
-                .padding(.top, .space16)
-                .padding(.horizontal, .space16)
-            }
+                .padding(.vertical, .space8)
+                .background(isScrolled ? AnyShapeStyle(.bar) : AnyShapeStyle(.clear))
+                .animation(.easeInOut(duration: 0.2), value: isScrolled)
         }
+    }
+}
+
+private struct ScrollOffsetPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
