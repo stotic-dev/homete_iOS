@@ -26,7 +26,7 @@ struct AnalyticsPeriodHeader: View {
 private extension AnalyticsPeriodHeader {
     
     func periodTypePicker() -> some View {
-        Picker("表示期間", selection: $selectedPeriod) {
+        Picker("表示期間", selection: $selectedPeriod.type) {
             Text("週").tag(DisplayPointPeriod.PeriodType.week)
             Text("月").tag(DisplayPointPeriod.PeriodType.month)
             Text("年").tag(DisplayPointPeriod.PeriodType.year)
