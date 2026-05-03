@@ -12,6 +12,7 @@ struct AnalyticsPeriodHeader: View {
     @Environment(\.locale) var locale
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
+    @Environment(\.timeZone) var timeZone
     
     @Binding var selectedPeriod: DisplayPointPeriod
     
@@ -71,18 +72,19 @@ private extension AnalyticsPeriodHeader {
         }
         
         guard let dateRange = selectedPeriod.calcDateRange(calendar: calendar) else { return "" }
-        let dateFormatStyle: Date.FormatStyle
+        var dateFormatStyle: Date.FormatStyle
         switch selectedPeriod.type {
         case .week:
             dateFormatStyle = .dateTime.month(.defaultDigits).day().locale(locale)
-            
+
         case .month:
             dateFormatStyle = .dateTime.month(.defaultDigits).day().locale(locale)
-            
+
         case .year:
             dateFormatStyle = .dateTime.year().month(.defaultDigits).locale(locale)
         }
-        
+        dateFormatStyle.timeZone = timeZone
+
         let start = dateRange.lowerBound.formatted(dateFormatStyle)
         let end = dateRange.upperBound.formatted(dateFormatStyle)
         return "\(start) 〜 \(end)"
