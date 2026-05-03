@@ -15,6 +15,13 @@ struct AllUserViewablePointList: Equatable {
         let point: Int
     }
 
+    struct CumulativePointEntry: Identifiable, Equatable {
+        let id: String
+        let userName: String
+        let date: Date
+        let cumulativePoint: Int
+    }
+
     /// グラフに表示する日データ
     let list: [ViewablePointList]
     /// 表示区間
@@ -23,6 +30,8 @@ struct AllUserViewablePointList: Equatable {
     let xAxisDates: [Date]
     /// 表示対象の日付範囲
     let dateRange: ClosedRange<Date>
+    /// ユーザーごとの累計ポイント推移
+    let cumulativeEntries: [CumulativePointEntry]
 
     static func make<T: GenerableViewablePointList>(
         list: [T],
@@ -30,16 +39,34 @@ struct AllUserViewablePointList: Equatable {
         dateRange: ClosedRange<Date>,
         calendar: Calendar
     ) -> Self {
+        let viewableList = list.map { $0.generate() }
         return .init(
-            list: list.map { $0.generate() },
+            list: viewableList,
             displayPeriod: displayPeriod,
             xAxisDates: calcXAxisDates(
                 displayPeriod: displayPeriod,
                 dateRange: dateRange,
                 calendar: calendar
             ),
-            dateRange: dateRange
+            dateRange: dateRange,
+            cumulativeEntries: calcCumulativeEntries(list: viewableList)
         )
+    }
+
+    private static func calcCumulativeEntries(list: [ViewablePointList]) -> [CumulativePointEntry] {
+        list.flatMap { userData in
+            let sorted = userData.elements.sorted { $0.date < $1.date }
+            var running = 0
+            return sorted.map { element in
+                running += element.point.value
+                return CumulativePointEntry(
+                    id: "\(userData.userId)-\(element.date.timeIntervalSince1970)",
+                    userName: userData.userName,
+                    date: element.date,
+                    cumulativePoint: running
+                )
+            }
+        }
     }
 
     static func calcXAxisDates(
@@ -81,6 +108,16 @@ struct AllUserViewablePointList: Equatable {
                 calendar.isDate($0.date, equalTo: date, toGranularity: granularity)
             }) else { return nil }
             return PointEntry(id: userData.userId, userName: userData.userName, point: element.point.value)
+        }
+    }
+
+    func cumulativeEntries(for date: Date, calendar: Calendar) -> [CumulativePointEntry] {
+        let granularity: Calendar.Component = switch displayPeriod {
+        case .year: .month
+        case .month, .week: .day
+        }
+        return cumulativeEntries.filter {
+            calendar.isDate($0.date, equalTo: date, toGranularity: granularity)
         }
     }
 }

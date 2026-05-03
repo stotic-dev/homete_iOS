@@ -148,7 +148,8 @@ extension ContributionAnalyticsTest.CurrentListCase {
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 50), elements: [])],
             displayPeriod: .week,
             xAxisDates: (0...6).map { Date.previewDate(year: 2026, month: 4, day: 20 + $0) },
-            dateRange: dateRange
+            dateRange: dateRange,
+            cumulativeEntries: []
         )
         #expect(result == expected)
     }
@@ -187,7 +188,8 @@ extension ContributionAnalyticsTest.CurrentListCase {
                 Date.previewDate(year: 2026, month: 4, day: 25),
                 Date.previewDate(year: 2026, month: 4, day: 30)
             ],
-            dateRange: dateRange
+            dateRange: dateRange,
+            cumulativeEntries: []
         )
         #expect(result == expected)
     }
@@ -218,7 +220,8 @@ extension ContributionAnalyticsTest.CurrentListCase {
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 500), elements: [])],
             displayPeriod: .year,
             xAxisDates: (1...12).map { Date.previewDate(year: 2026, month: $0, day: 1) },
-            dateRange: dateRange
+            dateRange: dateRange,
+            cumulativeEntries: []
         )
         #expect(result == expected)
     }

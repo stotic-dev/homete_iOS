@@ -21,7 +21,7 @@ struct CumulativePointsAreaChartView: View {
 
     var body: some View {
         Chart {
-            ForEach(cumulativeData, id: \.id) { dataPoint in
+            ForEach(viewableData.cumulativeEntries) { dataPoint in
                 AreaMark(
                     x: .value("日付", dataPoint.date, unit: xUnit),
                     y: .value("累計ポイント", dataPoint.cumulativePoint)
@@ -100,72 +100,34 @@ struct CumulativePointsAreaChartView: View {
     }
 }
 
-// MARK: Cumulative Data
-
-private extension CumulativePointsAreaChartView {
-
-    struct CumulativeDataPoint: Identifiable {
-        let id: String
-        let userName: String
-        let date: Date
-        let cumulativePoint: Int
-    }
-
-    var cumulativeData: [CumulativeDataPoint] {
-        viewableData.list.flatMap { userData in
-            let sorted = Array(userData.elements).sorted { $0.date < $1.date }
-            var running = 0
-            return sorted.map { element in
-                running += element.point.value
-                return CumulativeDataPoint(
-                    id: "\(userData.userId)-\(element.date.timeIntervalSince1970)",
-                    userName: userData.userName,
-                    date: element.date,
-                    cumulativePoint: running
-                )
-            }
-        }
-    }
-}
-
 // MARK: Interaction
 
 private extension CumulativePointsAreaChartView {
 
     func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
-        
+
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
         let nearest = viewableData.xAxisDates.min {
             abs($0.timeIntervalSince(tapDate)) < abs($1.timeIntervalSince(tapDate))
         }
-        guard let nearest, !cumulativeEntries(for: nearest).isEmpty else {
+        guard let nearest, !viewableData.cumulativeEntries(for: nearest, calendar: calendar).isEmpty else {
             selectedDate = nil
             return
         }
         selectedDate = selectedDate == nearest ? nil : nearest
     }
 
-    func cumulativeEntries(for date: Date) -> [(userName: String, point: Int)] {
-        let granularity: Calendar.Component = switch viewableData.displayPeriod {
-        case .year: .month
-        case .month, .week: .day
-        }
-        return cumulativeData
-            .filter { calendar.isDate($0.date, equalTo: date, toGranularity: granularity) }
-            .map { (userName: $0.userName, point: $0.cumulativePoint) }
-    }
-
     @ViewBuilder
     func selectionPopup(for date: Date) -> some View {
-        let entries = cumulativeEntries(for: date)
+        let entries = viewableData.cumulativeEntries(for: date, calendar: calendar)
         if !entries.isEmpty {
             VStack(alignment: .leading, spacing: 4) {
                 Text(date, format: popupDateFormat)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                ForEach(entries, id: \.userName) { entry in
-                    Text("\(entry.userName): \(entry.point)pt")
+                ForEach(entries) { entry in
+                    Text("\(entry.userName): \(entry.cumulativePoint)pt")
                         .font(.caption)
                         .bold()
                 }
