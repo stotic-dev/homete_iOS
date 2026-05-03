@@ -135,7 +135,7 @@ private extension PointsTimeSeriesChartView {
             .padding(.vertical, 6)
             .background {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(.systemBackground))
+                    .fill(.background)
                     .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
             }
         }
@@ -165,8 +165,20 @@ private extension PointsTimeSeriesChartView {
 
     PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
-            PointOfWeek.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
-            PointOfWeek.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
+            PointOfWeek.make(
+                by: pointOfDays1,
+                userId: "user1",
+                userName: "田中",
+                dateRange: dateRange,
+                calendar: calendar
+            ),
+            PointOfWeek.make(
+                by: pointOfDays2,
+                userId: "user2",
+                userName: "佐藤",
+                dateRange: dateRange,
+                calendar: calendar
+            )
         ],
         displayPeriod: .week,
         dateRange: dateRange,
@@ -201,8 +213,20 @@ private extension PointsTimeSeriesChartView {
 
     PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
-            PointOfMonth.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
-            PointOfMonth.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
+            PointOfMonth.make(
+                by: pointOfDays1,
+                userId: "user1",
+                userName: "田中",
+                dateRange: dateRange,
+                calendar: calendar
+            ),
+            PointOfMonth.make(
+                by: pointOfDays2,
+                userId: "user2",
+                userName: "佐藤",
+                dateRange: dateRange,
+                calendar: calendar
+            )
         ],
         displayPeriod: .month,
         dateRange: dateRange,
@@ -215,12 +239,13 @@ private extension PointsTimeSeriesChartView {
 
 #Preview("年間 (月別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
-    let yearStart = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1))!
+    // swiftlint:disable:next force_unwrapping
     let yearEnd = calendar.date(from: DateComponents(year: 2026, month: 12, day: 31))!
     let period = DisplayPointPeriod(
         type: .year,
         anchor: yearEnd
     )
+    // swiftlint:disable:next force_unwrapping
     let dateRange = period.calcDateRange(calendar: calendar)!
 
     let points1 = [30, 15, 45, 20, 50, 35, 25, 40, 10, 45, 30, 20]
@@ -234,8 +259,20 @@ private extension PointsTimeSeriesChartView {
 
     PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
         list: [
-            PointOfYear.make(by: pointOfDays1, userId: "user1", userName: "田中", dateRange: dateRange, calendar: calendar),
-            PointOfYear.make(by: pointOfDays2, userId: "user2", userName: "佐藤", dateRange: dateRange, calendar: calendar)
+            PointOfYear.make(
+                by: pointOfDays1,
+                userId: "user1",
+                userName: "田中",
+                dateRange: dateRange,
+                calendar: calendar
+            ),
+            PointOfYear.make(
+                by: pointOfDays2,
+                userId: "user2",
+                userName: "佐藤",
+                dateRange: dateRange,
+                calendar: calendar
+            )
         ],
         displayPeriod: .year,
         dateRange: dateRange,

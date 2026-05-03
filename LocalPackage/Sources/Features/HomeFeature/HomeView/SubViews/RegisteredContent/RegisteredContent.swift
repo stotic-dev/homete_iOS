@@ -11,11 +11,13 @@ import HometeUI
 import SwiftUI
 
 struct RegisteredContent: View {
-    
+
+    @State private var isShowAnalytics = false
+
     var body: some View {
         ScrollView {
             VStack(spacing: .space24) {
-                ContributionSummaryComponent.make()
+                ContributionSummaryComponent.make(onTapAnalytics: { isShowAnalytics = true })
                     .padding(.vertical, .space16)
                 // TODO: テンプレート未設定の場合のみ表示する
                 PromoteHouseworkTemplateBanner()
@@ -23,6 +25,9 @@ struct RegisteredContent: View {
                 TimelineContent()
             }
             .padding(.horizontal, .space16)
+        }
+        .navigationDestination(isPresented: $isShowAnalytics) {
+            ContributionAnalyticsScreen()
         }
     }
 }

@@ -63,9 +63,7 @@ struct AllUserViewablePointList: Equatable {
             guard let next = calendar.date(byAdding: strideComponent, value: strideCount, to: current) else { break }
             current = next
         }
-        if strideCount > 1,
-           let last = dates.last,
-           !dates.contains(last) {
+        if strideCount > 1, !dates.contains(end) {
             dates.append(end)
         }
         

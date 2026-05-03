@@ -19,9 +19,11 @@ public struct ContributionSummaryComponent: View {
 
     @State var summary: AllUserPointSummary = .init()
 
-    public static func make() -> some View {
+    var onTapAnalytics: () -> Void = {}
+
+    public static func make(onTapAnalytics: @escaping () -> Void = {}) -> some View {
         DependenciesInjectLayer {
-            ContributionSummaryComponent()
+            ContributionSummaryComponent(onTapAnalytics: onTapAnalytics)
                 .environment(ContributionStore(
                     houseworkManager: $0.houseworkManager,
                     calendar: Calendar.autoupdatingCurrent
@@ -30,7 +32,7 @@ public struct ContributionSummaryComponent: View {
     }
 
     public var body: some View {
-        ContributionSummaryContent(summaries: summary)
+        ContributionSummaryContent(summaries: summary, onTapAnalytics: onTapAnalytics)
             .task(id: contributionStore.contiribution) {
                 await onChangeContribution()
             }
@@ -66,16 +68,23 @@ struct ContributionSummaryContent: View {
     @Environment(\.now) var now
 
     let summaries: AllUserPointSummary
+    var onTapAnalytics: () -> Void = {}
     @State var isShowingLegend = false
 
     var body: some View {
         VStack(spacing: .zero) {
-            Text(monthTitle)
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, .space16)
-                .padding(.vertical, .space16)
+            HStack {
+                Text(monthTitle)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Button(action: onTapAnalytics) {
+                    Image(systemName: "chart.xyaxis.line")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space16)
             if summaries.hasData {
                 Divider()
                 ContributionGraphSection(summaries: summaries)

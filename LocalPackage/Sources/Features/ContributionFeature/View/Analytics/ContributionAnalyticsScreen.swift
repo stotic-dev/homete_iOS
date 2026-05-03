@@ -9,32 +9,32 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct ContributionAnalyticsScreen: View {
-    
+public struct ContributionAnalyticsScreen: View {
+
+    public init() {}
+
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(ContributionStore.self) var contributionStore
     @Environment(\.calendar) var calendar
     @LoadingState var loadingState
-    
+
     @State var selectedPeriod: DisplayPointPeriod = .init(type: .month, anchor: .now)
     @State var analytics: ContributionAnalytics?
-    
-    var body: some View {
-        NavigationStack {
-            ContributionAnalyticsView(
-                selectedPeriod: $selectedPeriod,
-                analytics: analytics
-            )
-            .task(id: contributionStore.contiribution) {
-                await onChangeContribution()
-            }
-            .onChange(of: selectedPeriod) {
-                loadingState.task {
-                    await onChangePeriod()
-                }
+
+    public var body: some View {
+        ContributionAnalyticsView(
+            selectedPeriod: $selectedPeriod,
+            analytics: analytics
+        )
+        .navigationTitle("家事分析")
+        .task(id: contributionStore.contiribution) {
+            await onChangeContribution()
+        }
+        .onChange(of: selectedPeriod) {
+            loadingState.task {
+                await onChangePeriod()
             }
         }
-        .navigationTitle("家事分析")
     }
 }
 
