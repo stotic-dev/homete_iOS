@@ -49,7 +49,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
             displayPeriod: weekPeriod
         )
         let contribution = HouseworkContribution()
-        let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")])
+        let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")], ownId: "u1")
 
         // Act
         let result = try #require(await analytics.updatePeriod(
@@ -89,7 +89,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
             displayPeriod: oldPeriod
         )
         let contribution = HouseworkContribution()
-        let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")])
+        let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")], ownId: "u1")
 
         // Act
         let result = try #require(await analytics.updatePeriod(

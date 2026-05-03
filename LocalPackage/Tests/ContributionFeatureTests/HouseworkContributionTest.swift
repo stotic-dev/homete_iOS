@@ -75,10 +75,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             .makeForTest(id: 2, indexedDate: jan20, point: 50, state: .completed, executorId: "bob")
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
-        let members = CohabitantMemberList(value: [
-            .init(id: "alice", userName: "アリス"),
-            .init(id: "bob", userName: "ボブ")
-        ])
+        let members = CohabitantMemberList(
+            value: [
+                .init(id: "alice", userName: "アリス"),
+                .init(id: "bob", userName: "ボブ")
+            ],
+            ownId: "alice"
+        )
 
         // Act
         let result = contribution.calculatePointSummaries(
@@ -107,7 +110,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             .makeForTest(id: 2, indexedDate: feb10, point: 50, state: .completed, executorId: "alice")
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
-        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")])
+        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
 
         // Act
         let result = contribution.calculatePointSummaries(
@@ -135,7 +138,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             .makeForTest(id: 3, indexedDate: jan10, point: 40, state: .completed, executorId: "alice", reviewerId: "bob")
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
-        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")])
+        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
 
         // Act
         let result = contribution.calculatePointSummaries(
@@ -163,7 +166,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             .makeForTest(id: 2, indexedDate: feb10, point: 50, state: .completed, executorId: "alice", reviewerId: "bob")
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
-        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")])
+        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
 
         // Act
         let result = contribution.calculatePointSummaries(
@@ -186,7 +189,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let contribution = HouseworkContribution.make(by: [], calendar: calendar)
-        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")])
+        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
 
         // Act
         let result = contribution.calculatePointSummaries(
@@ -213,7 +216,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             .makeForTest(id: 2, indexedDate: jan10, point: 50, state: .completed, executorId: "unknown")
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
-        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")])
+        let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
 
         // Act
         let result = contribution.calculatePointSummaries(
