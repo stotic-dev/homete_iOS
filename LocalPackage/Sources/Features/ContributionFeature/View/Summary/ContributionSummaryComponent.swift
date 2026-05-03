@@ -46,7 +46,7 @@ private extension ContributionSummaryComponent {
     func onChangeContribution() async {
 
         let contribution = contributionStore.contiribution
-        print("did change contribution: \(contribution)")
+        print("did change contribution: \(contribution), members: \(members)")
         
         let myUserId = userId
 

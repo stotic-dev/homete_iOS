@@ -12,9 +12,6 @@ import SwiftUI
 
 public struct HomeView: View {
 
-    public init() {}
-
-    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
@@ -22,16 +19,20 @@ public struct HomeView: View {
     @Environment(\.calendar) var calendar
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
-    @State private var contributionStore: ContributionStore?
+    let contributionStore: ContributionStore?
+    let cohabitantStore: CohabitantStore?
 
     public var body: some View {
         NavigationStack {
             ZStack {
-                if loginContext.hasCohabitant, let store = contributionStore {
+                if loginContext.hasCohabitant,
+                   let contributionStore,
+                   let cohabitantStore {
                     RegisteredContent()
-                        .environment(store)
+                        .environment(contributionStore)
+                        .environment(cohabitantStore)
                         .task {
-                            await didAppearRegisteredContent()
+                            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
                         }
                 }
                 else if !loginContext.hasCohabitant {
@@ -55,14 +56,19 @@ public struct HomeView: View {
                 }
             }
         }
-        .task(id: loginContext.hasCohabitant) {
-            if loginContext.hasCohabitant, contributionStore == nil {
-                contributionStore = ContributionStore(
-                    houseworkManager: houseworkManager,
-                    calendar: calendar
-                )
-            }
-        }
+    }
+}
+
+public extension HomeView {
+    
+    static func make(
+        contributionStore: ContributionStore?,
+        cohabitantStore: CohabitantStore?
+    ) -> some View {
+        HomeView(
+            contributionStore: contributionStore,
+            cohabitantStore: cohabitantStore
+        )
     }
 }
 
@@ -70,7 +76,7 @@ public struct HomeView: View {
 
 private extension HomeView {
 
-    func didAppearRegisteredContent() async {
+    func didAppearRegisteredContent(cohabitantStore: CohabitantStore) async {
 
         guard let cohabitantId = loginContext.account.cohabitantId else {
             // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
@@ -87,6 +93,6 @@ private extension HomeView {
 
     func didAppearNotRegisteredContent() async {
 
-        await cohabitantStore.removeSnapshotListener()
+        await cohabitantStore?.removeSnapshotListener()
     }
 }

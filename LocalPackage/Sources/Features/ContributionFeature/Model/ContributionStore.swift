@@ -15,7 +15,9 @@ public final class ContributionStore {
 
     // MARK: state
 
-    public private(set) var contiribution: HouseworkContribution = .init()
+    private(set) var contiribution: HouseworkContribution = .init()
+    /// 初回ロード済みかどうか
+    public private(set) var isInitialLoaded = false
 
     // MARK: Dependencies
 
@@ -45,13 +47,17 @@ public final class ContributionStore {
 private extension ContributionStore {
 
     func startObserving() async {
+        
         let stream = await houseworkManager.createObserver(observeKey)
         for await items in stream {
             await updatePoints(from: items)
+            // ポイントを更新したら初回ロード完了フラグを立てる
+            isInitialLoaded = true
         }
     }
 
     func updatePoints(from items: [HouseworkItem]) async {
+        
         let calendar = self.calendar
         let contribution = await Task.detached {
             // 貢献度のモデル生成は重い処理なのでバックグラウンドで実行する

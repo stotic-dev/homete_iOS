@@ -80,10 +80,13 @@ extension ContributionAnalytics {
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let displayPeriod = DisplayPointPeriod(type: type, anchor: anchor)
         let contribution = HouseworkContribution.makeForPreview()
-        let members = CohabitantMemberList(value: [
-            .init(id: "user1", userName: "田中"),
-            .init(id: "user2", userName: "佐藤")
-        ])
+        let members = CohabitantMemberList(
+            value: [
+                .init(id: "user1", userName: "田中"),
+                .init(id: "user2", userName: "佐藤")
+            ],
+            ownId: "user1"
+        )
 
         guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else {
             return .init(weekPointList: [], monthPointList: [], yearPointList: [], displayPeriod: displayPeriod)

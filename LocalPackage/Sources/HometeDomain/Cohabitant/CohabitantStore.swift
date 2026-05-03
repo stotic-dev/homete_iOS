@@ -13,6 +13,8 @@ import SwiftUI
 public final class CohabitantStore {
 
     public private(set) var members: CohabitantMemberList
+    /// 初回ロード済みかどうか
+    public private(set) var isInitialLoaded = false
     private var listenerTask: Task<Void, Never>?
 
     private let cohabitantListenerKey = "cohabitantListenerKey"
@@ -23,12 +25,13 @@ public final class CohabitantStore {
     private let accountInfoClient: AccountInfoClient
 
     public init(
-        members: CohabitantMemberList = .init(value: []),
+        members: Set<CohabitantMember> = [],
+        ownId: String = "",
         cohabitantClient: CohabitantClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue
     ) {
 
-        self.members = members
+        self.members = .init(value: members, ownId: ownId)
         self.cohabitantClient = cohabitantClient
         self.accountInfoClient = accountInfoClient
     }
@@ -65,6 +68,9 @@ public final class CohabitantStore {
                         print("error occurred: \(error)")
                     }
                 }
+                
+                // 初回のデータをロード完了したらその旨のフラグを立てる
+                isInitialLoaded = true
             }
 
             print("finish listening cohabitant snapshot.")
@@ -82,5 +88,5 @@ public final class CohabitantStore {
 
 public extension EnvironmentValues {
     /// 家事グループメンバー
-    @Entry var cohabitantMembers: CohabitantMemberList = .init(value: [])
+    @Entry var cohabitantMembers: CohabitantMemberList = .init(value: [], ownId: "")
 }

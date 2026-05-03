@@ -11,6 +11,7 @@ import HometeUI
 import SwiftUI
 
 public struct HouseworkApprovalView: View {
+    
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
@@ -184,6 +185,9 @@ private extension HouseworkApprovalView {
         executedAt: .distantFuture,
     ))
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(members: .init(value: [.init(id: "test", userName: "hogehoge")])))
+    .environment(CohabitantStore(
+        members: [.init(id: "test", userName: "hogehoge")],
+        ownId: "test"
+    ))
     .environment(HouseworkListStore())
 }

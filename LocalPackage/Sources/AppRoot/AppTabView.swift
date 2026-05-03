@@ -2,6 +2,7 @@
 //  AppTabView.swift
 //
 
+import ContributionFeature
 import HomeFeature
 import HometeDomain
 import HouseworkFeature
@@ -10,11 +11,35 @@ import SwiftUI
 import UserNotifications
 
 struct AppTabView: View {
+    
+    @Environment(\.appDependencies) var appDependencies
+    @Environment(\.loginContext) var loginContext
+    @Environment(\.calendar) var calendar
 
-    @Environment(CohabitantStore.self) var cohabitantStore
+    @State var cohabitantStore: CohabitantStore?
+    @State var contributionStore: ContributionStore?
     @State var type: TabType = .dashboard
 
     var body: some View {
+        tabView()
+            .task {
+                await onAppear()
+            }
+            .onChange(of: loginContext.cohabitantId) {
+                onChangeCohabitantId()
+            }
+            .environment(
+                \.cohabitantMembers,
+                 cohabitantStore?.members ?? .init(value: [], ownId: "")
+            )
+    }
+}
+
+// MARK: UI定義
+
+private extension AppTabView {
+    
+    func tabView() -> some View {
         ZStack {
             if #available(iOS 18.0, *) {
                 TabView(selection: $type) {
@@ -23,7 +48,10 @@ struct AppTabView: View {
                         systemImage: "list.bullet.clipboard.fill",
                         value: .dashboard
                     ) {
-                        HomeView()
+                        HomeView.make(
+                            contributionStore: contributionStore,
+                            cohabitantStore: cohabitantStore
+                        )
                     }
                     Tab(
                         "家事",
@@ -35,14 +63,17 @@ struct AppTabView: View {
                 }
             } else {
                 TabView(selection: $type) {
-                    HomeView()
-                        .tag(TabType.dashboard)
-                        .tabItem {
-                            Label(
-                                "ダッシュボード",
-                                systemImage: "list.bullet.clipboard.fill"
-                            )
-                        }
+                    HomeView.make(
+                        contributionStore: contributionStore,
+                        cohabitantStore: cohabitantStore
+                    )
+                    .tag(TabType.dashboard)
+                    .tabItem {
+                        Label(
+                            "ダッシュボード",
+                            systemImage: "list.bullet.clipboard.fill"
+                        )
+                    }
                     HouseworkBoardView.instantiate()
                         .tag(TabType.homework)
                         .tabItem {
@@ -54,10 +85,6 @@ struct AppTabView: View {
                 }
             }
         }
-        .task {
-           await onAppear()
-        }
-        .environment(\.cohabitantMembers, cohabitantStore.members)
     }
 }
 
@@ -67,7 +94,13 @@ private extension AppTabView {
 
     func onAppear() async {
 
+        setupStore()
         await requestNotificationPermission()
+    }
+    
+    func onChangeCohabitantId() {
+        
+        setupStore()
     }
 }
 
@@ -89,6 +122,25 @@ private extension AppTabView {
             print("[Notifications] Authorization error: \(error)")
         }
     }
+    
+    func setupStore() {
+        
+        guard loginContext.hasCohabitant else {
+            
+            cohabitantStore = nil
+            contributionStore = nil
+            return
+        }
+        cohabitantStore = .init(
+            ownId: loginContext.account.id,
+            cohabitantClient: appDependencies.cohabitantClient,
+            accountInfoClient: appDependencies.accountInfoClient
+        )
+        contributionStore = .init(
+            houseworkManager: appDependencies.houseworkManager,
+            calendar: calendar
+        )
+    }
 }
 
 extension AppTabView {
@@ -104,5 +156,4 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
-        .environment(CohabitantStore())
 }

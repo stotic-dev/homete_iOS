@@ -110,7 +110,8 @@ public struct HouseworkContribution: Equatable, Sendable {
         myUserId: String
     ) -> AllUserPointSummary {
 
-        let userItems: [UserPointSummary] = members.value.compactMap { member in
+        let userItems: [UserPointSummary] = members.value
+            .compactMap { member in
 
             guard let targetList = list[member.id]?.filter({
                 calendar.isDate($0.indexedDay, equalTo: month, toGranularity: .month)
