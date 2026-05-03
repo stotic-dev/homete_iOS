@@ -13,6 +13,8 @@ struct CumulativePointsAreaChartView: View {
 
     @Environment(\.locale) private var locale
     @Environment(\.calendar) private var calendar
+    @Environment(\.timeZone) var timeZone
+    
     @State private var selectedDate: Date?
     
     let viewableData: AllUserViewablePointList
@@ -80,11 +82,14 @@ struct CumulativePointsAreaChartView: View {
     }
 
     private var xLabelFormat: Date.FormatStyle {
-        switch viewableData.displayPeriod {
-        case .year: return .dateTime.month(.defaultDigits).locale(locale)
-        case .month: return .dateTime.day().locale(locale)
-        case .week: return .dateTime.weekday(.abbreviated).locale(locale)
+        var formatStyle: Date.FormatStyle = switch viewableData.displayPeriod {
+        case .year: .dateTime.month(.defaultDigits).locale(locale)
+        case .month: .dateTime.day().locale(locale)
+        case .week: .dateTime.weekday(.abbreviated).locale(locale)
         }
+        
+        formatStyle.timeZone = timeZone
+        return formatStyle
     }
 
     private var popupDateFormat: Date.FormatStyle {
