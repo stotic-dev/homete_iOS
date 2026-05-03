@@ -143,7 +143,7 @@ private extension PointsTimeSeriesChartView {
     }
 }
 
-#Preview("週間 (日別)", traits: .sizeThatFitsLayout) {
+#Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
     let weekEnd = Date.previewDate(year: 2026, month: 4, day: 26)
     let period = DisplayPointPeriod(type: .week, anchor: weekEnd)
@@ -190,7 +190,7 @@ private extension PointsTimeSeriesChartView {
     .padding(.space16)
 }
 
-#Preview("月間 (日別)", traits: .sizeThatFitsLayout) {
+#Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
     let period = DisplayPointPeriod(
         type: .month,
@@ -239,7 +239,7 @@ private extension PointsTimeSeriesChartView {
     .padding(.space16)
 }
 
-#Preview("年間 (月別)", traits: .sizeThatFitsLayout) {
+#Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
     let calendar = Calendar.japanese
     // swiftlint:disable:next force_unwrapping
     let yearEnd = calendar.date(from: DateComponents(year: 2026, month: 12, day: 31))!

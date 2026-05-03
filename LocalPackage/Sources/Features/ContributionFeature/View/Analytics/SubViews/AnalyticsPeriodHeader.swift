@@ -41,6 +41,7 @@ private extension AnalyticsPeriodHeader {
             } label: {
                 Image(systemName: "chevron.left")
                     .foregroundStyle(.onSurface)
+                    .padding(.space8)
             }
             Spacer()
             Text(periodTitle())
@@ -52,6 +53,7 @@ private extension AnalyticsPeriodHeader {
             } label: {
                 Image(systemName: "chevron.right")
                     .foregroundStyle(.onSurface)
+                    .padding(.space8)
             }
         }
     }
