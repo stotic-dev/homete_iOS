@@ -36,6 +36,7 @@ public struct ContributionSummaryComponent: View {
             }
             .navigationDestination(isPresented: $isShowAnalytics) {
                 ContributionAnalyticsScreen.make()
+                    .environment(contributionStore)
             }
     }
 }
@@ -81,11 +82,13 @@ struct ContributionSummaryContent: View {
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
-                Button {
-                    isShowAnalytics = true
-                } label: {
-                    Image(systemName: "chart.xyaxis.line")
-                        .foregroundStyle(.secondary)
+                if summaries.hasData {
+                    Button {
+                        isShowAnalytics = true
+                    } label: {
+                        Image(systemName: "chart.xyaxis.line")
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             .padding(.horizontal, .space16)

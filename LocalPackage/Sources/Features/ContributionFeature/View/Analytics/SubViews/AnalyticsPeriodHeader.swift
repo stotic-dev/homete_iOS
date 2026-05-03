@@ -58,7 +58,7 @@ private extension AnalyticsPeriodHeader {
     
     func periodTitle() -> String {
         
-        guard selectedPeriod.anchor != now else {
+        guard !calendar.isDate(selectedPeriod.anchor, inSameDayAs: now) else {
             
             // 基準日が今日の場合は直近の表示にする
             return switch selectedPeriod.type {

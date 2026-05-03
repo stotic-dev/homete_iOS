@@ -38,5 +38,6 @@ struct RegisteredContent: View {
     RegisteredContent()
         .environment(ContributionStore())
         .environment(CohabitantStore())
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
 }

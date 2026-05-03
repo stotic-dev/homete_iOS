@@ -90,24 +90,3 @@ private extension HomeView {
         await cohabitantStore.removeSnapshotListener()
     }
 }
-
-#Preview("HomeView_未登録時") {
-    NavigationStack {
-        HomeView()
-            .injectAppStorageWithPreview("HomeView_未登録時")
-    }
-    .environment(CohabitantStore())
-}
-
-#Preview("HomeView_登録時") {
-    NavigationStack {
-        HomeView()
-            .environment(\.loginContext, .init(account: .init(
-                id: "",
-                userName: "",
-                fcmToken: nil,
-                cohabitantId: "dummy"
-            )))
-    }
-    .environment(CohabitantStore())
-}
