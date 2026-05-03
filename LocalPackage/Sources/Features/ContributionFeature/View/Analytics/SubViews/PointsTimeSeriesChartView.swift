@@ -16,6 +16,7 @@ struct PointsTimeSeriesChartView: View {
 
     @Environment(\.locale) private var locale
     @Environment(\.calendar) private var calendar
+    @Environment(\.timeZone) private var timeZone
     @State private var selectedDate: Date?
 
     init(viewableData: AllUserViewablePointList, selectedDate: Date? = nil) {
@@ -88,18 +89,24 @@ struct PointsTimeSeriesChartView: View {
     }
 
     private var xLabelFormat: Date.FormatStyle {
+        var style: Date.FormatStyle
         switch viewableData.displayPeriod {
-        case .year: return .dateTime.month(.defaultDigits).locale(locale)
-        case .month: return .dateTime.day().locale(locale)
-        case .week: return .dateTime.weekday(.abbreviated).locale(locale)
+        case .year: style = .dateTime.month(.defaultDigits).locale(locale)
+        case .month: style = .dateTime.day().locale(locale)
+        case .week: style = .dateTime.weekday(.abbreviated).locale(locale)
         }
+        style.timeZone = timeZone
+        return style
     }
 
     private var popupDateFormat: Date.FormatStyle {
+        var style: Date.FormatStyle
         switch viewableData.displayPeriod {
-        case .year: return .dateTime.year().month().locale(locale)
-        case .month, .week: return .dateTime.month().day().locale(locale)
+        case .year: style = .dateTime.year().month().locale(locale)
+        case .month, .week: style = .dateTime.month().day().locale(locale)
         }
+        style.timeZone = timeZone
+        return style
     }
 }
 
