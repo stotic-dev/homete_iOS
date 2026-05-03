@@ -12,27 +12,31 @@ import SwiftUI
 
 struct RegisteredContent: View {
 
+    @Environment(ContributionStore.self) var contributionStore
+    
     @State private var isShowAnalytics = false
+    @State var members: CohabitantMemberList = .init(value: [])
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: .space24) {
-                ContributionSummaryComponent.make(onTapAnalytics: { isShowAnalytics = true })
-                    .padding(.vertical, .space16)
-                // TODO: テンプレート未設定の場合のみ表示する
-                PromoteHouseworkTemplateBanner()
-                TodayHouseworkListContent()
-                TimelineContent()
+        ZStack {
+            ScrollView {
+                VStack(spacing: .space24) {
+                    ContributionSummaryComponent.make()
+                        .padding(.vertical, .space16)
+                    // TODO: テンプレート未設定の場合のみ表示する
+                    PromoteHouseworkTemplateBanner()
+                    TodayHouseworkListContent()
+                    TimelineContent()
+                }
+                .padding(.horizontal, .space16)
             }
-            .padding(.horizontal, .space16)
-        }
-        .navigationDestination(isPresented: $isShowAnalytics) {
-            ContributionAnalyticsScreen()
         }
     }
 }
 
 #Preview {
     RegisteredContent()
+        .environment(ContributionStore())
         .environment(CohabitantStore())
+        .setupEnvironmentForPreview()
 }

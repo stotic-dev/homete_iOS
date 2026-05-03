@@ -29,7 +29,12 @@ struct PointOfYear: Equatable, Hashable {
     ) -> Self {
 
         let targetPoints = dayOfPoints.filter { dateRange.contains($0.indexedDay) }
-        let months = PointOfMonth.makeWithSeparated(by: targetPoints, userId: userId, userName: userName, calendar: calendar)
+        let months = PointOfMonth.makeWithSeparated(
+            by: targetPoints,
+            userId: userId,
+            userName: userName,
+            calendar: calendar
+        )
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }

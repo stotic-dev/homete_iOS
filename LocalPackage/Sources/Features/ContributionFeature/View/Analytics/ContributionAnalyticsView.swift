@@ -14,6 +14,7 @@ struct ContributionAnalyticsView: View {
     @Environment(\.locale) var locale
 
     @Binding var selectedPeriod: DisplayPointPeriod
+    
     let analytics: ContributionAnalytics?
 
     var body: some View {

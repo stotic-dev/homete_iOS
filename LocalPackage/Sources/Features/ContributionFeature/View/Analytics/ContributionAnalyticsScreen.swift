@@ -11,15 +11,17 @@ import SwiftUI
 
 public struct ContributionAnalyticsScreen: View {
 
-    public init() {}
-
-    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(ContributionStore.self) var contributionStore
+    @Environment(\.cohabitantMembers) var members
     @Environment(\.calendar) var calendar
     @LoadingState var loadingState
 
     @State var selectedPeriod: DisplayPointPeriod = .init(type: .month, anchor: .now)
     @State var analytics: ContributionAnalytics?
+    
+    public static func make() -> some View {
+        ContributionAnalyticsScreen()
+    }
 
     public var body: some View {
         ContributionAnalyticsView(
@@ -43,7 +45,6 @@ private extension ContributionAnalyticsScreen {
     func onChangeContribution() async {
         
         let contribution = contributionStore.contiribution
-        let members = cohabitantStore.members
         analytics = await .make(
             contribution: contribution,
             members: members,
@@ -55,7 +56,6 @@ private extension ContributionAnalyticsScreen {
     func onChangePeriod() async {
         
         let contribution = contributionStore.contiribution
-        let members = cohabitantStore.members
         analytics = await analytics?.updatePeriod(
             displayPeriod: selectedPeriod,
             members: members,

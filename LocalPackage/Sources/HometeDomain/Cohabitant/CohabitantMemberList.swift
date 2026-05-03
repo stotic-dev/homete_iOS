@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2026/01/04.
 //
 
-public struct CohabitantMemberList: Sendable {
+public struct CohabitantMemberList: Sendable, Equatable {
 
     public private(set) var value: Set<CohabitantMember>
 

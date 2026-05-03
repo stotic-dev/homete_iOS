@@ -110,7 +110,7 @@ private extension ContributionAnalytics {
         contribution: HouseworkContribution,
         dateRange: ClosedRange<Date>,
         calendar: Calendar
-    ) async -> (
+    ) async -> ( // swiftlint:disable:this large_tuple
         [PointOfWeek],
         [PointOfMonth],
         [PointOfYear]

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
+import ContributionFeature
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -21,17 +22,19 @@ public struct HomeView: View {
     @Environment(\.calendar) var calendar
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
-    
+    @State private var contributionStore: ContributionStore?
+
     public var body: some View {
         NavigationStack {
             ZStack {
-                if loginContext.hasCohabitant {
+                if loginContext.hasCohabitant, let store = contributionStore {
                     RegisteredContent()
+                        .environment(store)
                         .task {
                             await didAppearRegisteredContent()
                         }
                 }
-                else {
+                else if !loginContext.hasCohabitant {
                     NotRegisteredContent(
                         isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
                     )
@@ -52,15 +55,23 @@ public struct HomeView: View {
                 }
             }
         }
+        .task(id: loginContext.hasCohabitant) {
+            if loginContext.hasCohabitant, contributionStore == nil {
+                contributionStore = ContributionStore(
+                    houseworkManager: houseworkManager,
+                    calendar: calendar
+                )
+            }
+        }
     }
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension HomeView {
-    
+
     func didAppearRegisteredContent() async {
-        
+
         guard let cohabitantId = loginContext.account.cohabitantId else {
             // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
             assertionFailure("Required param is nil(cohabitantId)")
@@ -73,9 +84,9 @@ private extension HomeView {
             calendar: calendar
         )
     }
-    
+
     func didAppearNotRegisteredContent() async {
-        
+
         await cohabitantStore.removeSnapshotListener()
     }
 }

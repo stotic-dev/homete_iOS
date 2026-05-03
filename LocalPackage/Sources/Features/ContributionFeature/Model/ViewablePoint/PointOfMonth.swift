@@ -39,7 +39,12 @@ struct PointOfMonth: Equatable, Hashable {
     }
 
     /// 月毎に分けた月間ポイントのリスト
-    static func makeWithSeparated(by pointOfDays: [PointOfDay], userId: String, userName: String, calendar: Calendar) -> [Self] {
+    static func makeWithSeparated(
+        by pointOfDays: [PointOfDay],
+        userId: String,
+        userName: String,
+        calendar: Calendar
+    ) -> [Self] {
 
         let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
 
@@ -57,8 +62,8 @@ struct PointOfMonth: Equatable, Hashable {
             return result
         }
 
-        return separetedDic.map { components, elements in
-            let startDate = calendar.date(from: components) ?? elements.min { $0.indexedDay < $1.indexedDay }!.indexedDay
+        return separetedDic.compactMap { components, elements in
+            guard let startDate = calendar.date(from: components) else { return nil }
             return .init(
                 userId: userId,
                 userName: userName,

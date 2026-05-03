@@ -6,6 +6,7 @@
 //
 
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -58,6 +59,7 @@ public final class CohabitantStore {
                             continue
                         }
                         members.insert(.init(id: member, userName: account.userName))
+                        print("loaded cohabitant members: \(members)")
                     } catch {
 
                         print("error occurred: \(error)")
@@ -76,4 +78,9 @@ public final class CohabitantStore {
         listenerTask = nil
         await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
     }
+}
+
+public extension EnvironmentValues {
+    /// 家事グループメンバー
+    @Entry var cohabitantMembers: CohabitantMemberList = .init(value: [])
 }

@@ -11,8 +11,7 @@ import UserNotifications
 
 struct AppTabView: View {
 
-    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
-
+    @Environment(CohabitantStore.self) var cohabitantStore
     @State var type: TabType = .dashboard
 
     var body: some View {
@@ -58,6 +57,7 @@ struct AppTabView: View {
         .task {
            await onAppear()
         }
+        .environment(\.cohabitantMembers, cohabitantStore.members)
     }
 }
 

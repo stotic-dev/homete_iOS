@@ -8,7 +8,7 @@
 import Foundation
 import HometeDomain
 
-struct HouseworkContribution: Equatable {
+public struct HouseworkContribution: Equatable, Sendable {
     
     private(set) var list: [String: [PointOfDay]] = [:]
     

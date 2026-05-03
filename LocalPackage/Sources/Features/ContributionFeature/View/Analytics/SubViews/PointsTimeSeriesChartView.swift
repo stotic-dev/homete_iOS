@@ -11,6 +11,7 @@ import HometeUI
 import SwiftUI
 
 struct PointsTimeSeriesChartView: View {
+    
     let viewableData: AllUserViewablePointList
 
     @Environment(\.locale) private var locale
@@ -195,6 +196,7 @@ private extension PointsTimeSeriesChartView {
         type: .month,
         anchor: .previewDate(year: 2026, month: 4, day: 30)
     )
+    // swiftlint:disable:next force_unwrapping
     let dateRange = period.calcDateRange(calendar: calendar)!
 
     let pointOfDays1: [PointOfDay] = [
