@@ -34,7 +34,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: april2025, point: Point(value: 50)),
+            PointOfDay(indexedDay: april2025, point: Point(value: 50))
         ]
         let dateRange2026 = yearStart2026...yearEnd2026
 
@@ -67,7 +67,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: may2026, point: Point(value: 50)),
+            PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
         let dateRange2026 = yearStart2026...yearEnd2026
 
@@ -100,7 +100,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: may2026, point: Point(value: 50)),
+            PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
         let dateRange2026 = yearStart2026...yearEnd2026
 

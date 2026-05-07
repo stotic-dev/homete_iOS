@@ -40,11 +40,20 @@ struct DisplayPointPeriod: Equatable, Hashable {
         /// 年
         case year
         
+        /// 対応する期間の範囲
         var component: Calendar.Component {
             switch self {
             case .week: .weekOfMonth
             case .month: .month
             case .year: .year
+            }
+        }
+        
+        /// 期間内のデータの粒度
+        var granularity: Calendar.Component {
+            switch self {
+            case .year: .month
+            case .month, .week: .day
             }
         }
     }

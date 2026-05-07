@@ -11,12 +11,13 @@ import HometeUI
 import SwiftUI
 
 struct PointsTimeSeriesChartView: View {
-    
-    let viewableData: AllUserViewablePointList
 
     @Environment(\.locale) private var locale
     @Environment(\.calendar) private var calendar
     @Environment(\.timeZone) private var timeZone
+    
+    let viewableData: AllUserViewablePointList
+    
     @State private var selectedDate: Date?
 
     init(viewableData: AllUserViewablePointList, selectedDate: Date? = nil) {
@@ -46,9 +47,16 @@ struct PointsTimeSeriesChartView: View {
                     .foregroundStyle(.secondary.opacity(0.3))
                     .annotation(
                         position: .top,
-                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+                        alignment: .center,
+                        overflowResolution: .init(
+                            x: .fit(to: .chart),
+                            y: .disabled
+                        )
                     ) {
-                        selectionPopup(for: date)
+                        selectionPopup(
+                            for: viewableData.pointEntries(for: date, calendar: calendar),
+                            selectedDate: date
+                        )
                     }
             }
         }
@@ -78,8 +86,13 @@ struct PointsTimeSeriesChartView: View {
             }
         }
     }
+}
+
+// MARK: UI定義
+
+private extension PointsTimeSeriesChartView {
     
-    private var xAxisStride: AxisMarkValues {
+    var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
         case .week:
             return .automatic(desiredCount: 7)
@@ -90,7 +103,7 @@ struct PointsTimeSeriesChartView: View {
         }
     }
 
-    private var xLabelFormat: Date.FormatStyle {
+    var xLabelFormat: Date.FormatStyle {
         var style: Date.FormatStyle
         switch viewableData.displayPeriod {
         case .year: style = .dateTime.month(.defaultDigits).locale(locale)
@@ -101,7 +114,7 @@ struct PointsTimeSeriesChartView: View {
         return style
     }
 
-    private var popupDateFormat: Date.FormatStyle {
+    var popupDateFormat: Date.FormatStyle {
         var style: Date.FormatStyle
         switch viewableData.displayPeriod {
         case .year: style = .dateTime.year().month().locale(locale)
@@ -110,46 +123,51 @@ struct PointsTimeSeriesChartView: View {
         style.timeZone = timeZone
         return style
     }
+
+    @ViewBuilder
+    func selectionPopup(for entries: [AllUserViewablePointList.PointEntry], selectedDate: Date) -> some View {
+        VStack(alignment: .leading, spacing: .space4) {
+            Text(selectedDate, format: popupDateFormat)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: true, vertical: false)
+            if entries.isEmpty {
+                Text("データ無し")
+                    .font(with: .boldCaption)
+            } else {
+                ForEach(entries) { entry in
+                    Text("\(entry.userName): \(entry.point)pt")
+                        .font(with: .boldCaption)
+                }
+            }
+        }
+        .padding(.horizontal, .space8)
+        .padding(.vertical, .space4)
+        .background {
+            RoundedRectangle(radius: .radius8)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+        }
+    }
 }
 
-private extension PointsTimeSeriesChartView {
+// MARK: プレゼンテーションロジック
 
-    func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
+private extension PointsTimeSeriesChartView {
+    
+    func handleTap(
+        at location: CGPoint,
+        proxy: ChartProxy,
+        geometry: GeometryProxy
+    ) {
         
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
-        let nearest = viewableData.xAxisDates.min {
-            abs($0.timeIntervalSince(tapDate)) < abs($1.timeIntervalSince(tapDate))
-        }
-        guard let nearest, !viewableData.pointEntries(for: nearest, calendar: calendar).isEmpty else {
+        guard let nearest = viewableData.nearestDate(to: tapDate) else {
             selectedDate = nil
             return
         }
         selectedDate = selectedDate == nearest ? nil : nearest
-    }
-
-    @ViewBuilder
-    func selectionPopup(for date: Date) -> some View {
-        let entries = viewableData.pointEntries(for: date, calendar: calendar)
-        if !entries.isEmpty {
-            VStack(alignment: .leading, spacing: .space4) {
-                Text(date, format: popupDateFormat)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                ForEach(entries) { entry in
-                    Text("\(entry.userName): \(entry.point)pt")
-                        .font(.caption)
-                        .bold()
-                }
-            }
-            .padding(.horizontal, .space8)
-            .padding(.vertical, .space4)
-            .background {
-                RoundedRectangle(radius: .radius8)
-                    .fill(.background)
-                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-            }
-        }
     }
 }
 
@@ -174,27 +192,30 @@ private extension PointsTimeSeriesChartView {
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 26), point: .init(value: 20))
     ]
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfWeek.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfWeek.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .week,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
+    PointsTimeSeriesChartView(
+        viewableData: AllUserViewablePointList.make(
+            list: [
+                PointOfWeek.make(
+                    by: pointOfDays1,
+                    userId: "user1",
+                    userName: "田中",
+                    dateRange: dateRange,
+                    calendar: calendar
+                ),
+                PointOfWeek.make(
+                    by: pointOfDays2,
+                    userId: "user2",
+                    userName: "佐藤",
+                    dateRange: dateRange,
+                    calendar: calendar
+                )
+            ],
+            displayPeriod: .week,
+            dateRange: dateRange,
+            calendar: calendar
+        ),
+        selectedDate: .previewDate(year: 2026, month: 4, day: 20)
+    )
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
@@ -223,27 +244,30 @@ private extension PointsTimeSeriesChartView {
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 40))
     ]
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfMonth.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfMonth.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .month,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
+    PointsTimeSeriesChartView(
+        viewableData: AllUserViewablePointList.make(
+            list: [
+                PointOfMonth.make(
+                    by: pointOfDays1,
+                    userId: "user1",
+                    userName: "田中",
+                    dateRange: dateRange,
+                    calendar: calendar
+                ),
+                PointOfMonth.make(
+                    by: pointOfDays2,
+                    userId: "user2",
+                    userName: "佐藤",
+                    dateRange: dateRange,
+                    calendar: calendar
+                )
+            ],
+            displayPeriod: .month,
+            dateRange: dateRange,
+            calendar: calendar
+        ),
+        selectedDate: .previewDate(year: 2026, month: 4, day: 7)
+    )
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
@@ -269,27 +293,30 @@ private extension PointsTimeSeriesChartView {
         PointOfDay(indexedDay: .previewDate(year: 2026, month: month, day: 20), point: .init(value: points2[month - 1]))
     }
 
-    PointsTimeSeriesChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfYear.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfYear.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .year,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
+    PointsTimeSeriesChartView(
+        viewableData: AllUserViewablePointList.make(
+            list: [
+                PointOfYear.make(
+                    by: pointOfDays1,
+                    userId: "user1",
+                    userName: "田中",
+                    dateRange: dateRange,
+                    calendar: calendar
+                ),
+                PointOfYear.make(
+                    by: pointOfDays2,
+                    userId: "user2",
+                    userName: "佐藤",
+                    dateRange: dateRange,
+                    calendar: calendar
+                )
+            ],
+            displayPeriod: .year,
+            dateRange: dateRange,
+            calendar: calendar
+        ),
+        selectedDate: .previewDate(year: 2026, month: 4, day: 1)
+    )
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)

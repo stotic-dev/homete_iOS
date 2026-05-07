@@ -42,7 +42,9 @@ extension ContributionStoreTest {
 
         let waiterForContribution = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking({ store.contiribution }) {
+                ObservationHelper.continuousObservationTracking {
+                    store.contiribution
+                } onChange: {
                     continuation.resume(returning: ())
                 }
             }

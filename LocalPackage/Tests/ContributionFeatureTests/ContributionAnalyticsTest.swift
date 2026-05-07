@@ -29,7 +29,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
 
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
-        let weekPeriod  = DisplayPointPeriod(type: .week,  anchor: anchor)
+        let weekPeriod = DisplayPointPeriod(type: .week, anchor: anchor)
         let monthPeriod = DisplayPointPeriod(type: .month, anchor: anchor)
 
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -40,7 +40,13 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
             .init(userId: "u1", userName: "ユーザー1", total: .init(value: 200), elements: [], startDate: weekStart)
         ]
         let existingYearList: [PointOfYear] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 300), elements: [], dateRange: weekStart...anchor)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 300),
+                elements: [],
+                dateRange: weekStart...anchor
+            )
         ]
         let analytics = ContributionAnalytics(
             weekPointList: existingWeekList,
@@ -110,7 +116,13 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
                 .init(userId: "u1", userName: "ユーザー1", total: .init(value: 0), elements: [], startDate: newStart)
             ],
             yearPointList: [
-                .init(userId: "u1", userName: "ユーザー1", total: .init(value: 0), elements: [], dateRange: newStart...newEnd)
+                .init(
+                    userId: "u1",
+                    userName: "ユーザー1"
+                    , total: .init(value: 0),
+                    elements: [],
+                    dateRange: newStart...newEnd
+                )
             ],
             displayPeriod: newPeriod
         )
@@ -147,7 +159,6 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 50), elements: [])],
             displayPeriod: .week,
-            xAxisDates: (0...6).map { Date.previewDate(year: 2026, month: 4, day: 20 + $0) },
             dateRange: dateRange
         )
         #expect(result == expected)
@@ -178,15 +189,6 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 80), elements: [])],
             displayPeriod: .month,
-            xAxisDates: [
-                Date.previewDate(year: 2026, month: 3, day: 31),
-                Date.previewDate(year: 2026, month: 4, day: 5),
-                Date.previewDate(year: 2026, month: 4, day: 10),
-                Date.previewDate(year: 2026, month: 4, day: 15),
-                Date.previewDate(year: 2026, month: 4, day: 20),
-                Date.previewDate(year: 2026, month: 4, day: 25),
-                Date.previewDate(year: 2026, month: 4, day: 30)
-            ],
             dateRange: dateRange
         )
         #expect(result == expected)
@@ -200,7 +202,13 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let yearStart = Date.previewDate(year: 2026, month: 1, day: 1)
         let period    = DisplayPointPeriod(type: .year, anchor: anchor)
         let yearList: [PointOfYear] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 500), elements: [], dateRange: yearStart...anchor)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 500),
+                elements: [],
+                dateRange: yearStart...anchor
+            )
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -217,7 +225,6 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 500), elements: [])],
             displayPeriod: .year,
-            xAxisDates: (1...12).map { Date.previewDate(year: 2026, month: $0, day: 1) },
             dateRange: dateRange
         )
         #expect(result == expected)
