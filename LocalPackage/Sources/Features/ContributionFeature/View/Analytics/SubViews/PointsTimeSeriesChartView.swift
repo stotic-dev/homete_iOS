@@ -53,9 +53,10 @@ struct PointsTimeSeriesChartView: View {
                             y: .disabled
                         )
                     ) {
-                        selectionPopup(
-                            for: viewableData.pointEntries(for: date, calendar: calendar),
-                            selectedDate: date
+                        AllUserDataAnnotation(
+                            entries: viewableData.pointEntries(for: date, calendar: calendar),
+                            selectedDate: date,
+                            displayPeriod: viewableData.displayPeriod
                         )
                     }
             }
@@ -112,42 +113,6 @@ private extension PointsTimeSeriesChartView {
         }
         style.timeZone = timeZone
         return style
-    }
-
-    var popupDateFormat: Date.FormatStyle {
-        var style: Date.FormatStyle
-        switch viewableData.displayPeriod {
-        case .year: style = .dateTime.year().month().locale(locale)
-        case .month, .week: style = .dateTime.month().day().locale(locale)
-        }
-        style.timeZone = timeZone
-        return style
-    }
-
-    @ViewBuilder
-    func selectionPopup(for entries: [AllUserViewablePointList.PointEntry], selectedDate: Date) -> some View {
-        VStack(alignment: .leading, spacing: .space4) {
-            Text(selectedDate, format: popupDateFormat)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: true, vertical: false)
-            if entries.isEmpty {
-                Text("データ無し")
-                    .font(with: .boldCaption)
-            } else {
-                ForEach(entries) { entry in
-                    Text("\(entry.userName): \(entry.point)pt")
-                        .font(with: .boldCaption)
-                }
-            }
-        }
-        .padding(.horizontal, .space8)
-        .padding(.vertical, .space4)
-        .background {
-            RoundedRectangle(radius: .radius8)
-                .fill(.background)
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-        }
     }
 }
 
@@ -218,7 +183,8 @@ private extension PointsTimeSeriesChartView {
     )
     .frame(height: 240)
     .setupEnvironmentForPreview()
-    .padding(.space16)
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
 }
 
 #Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
@@ -270,7 +236,8 @@ private extension PointsTimeSeriesChartView {
     )
     .frame(height: 240)
     .setupEnvironmentForPreview()
-    .padding(.space16)
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
 }
 
 #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
@@ -319,5 +286,6 @@ private extension PointsTimeSeriesChartView {
     )
     .frame(height: 240)
     .setupEnvironmentForPreview()
-    .padding(.space16)
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
 }
