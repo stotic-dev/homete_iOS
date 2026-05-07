@@ -30,19 +30,19 @@ struct PointsTimeSeriesChartView: View {
                 let sortedElements = Array(userData.elements).sorted { $0.date < $1.date }
                 ForEach(sortedElements, id: \.self) { element in
                     LineMark(
-                        x: .value("日付", element.date, unit: xUnit),
+                        x: .value("日付", element.date),
                         y: .value("ポイント", element.point.value)
                     )
                     .foregroundStyle(by: .value("ユーザー", userData.userName))
                     PointMark(
-                        x: .value("日付", element.date, unit: xUnit),
+                        x: .value("日付", element.date),
                         y: .value("ポイント", element.point.value)
                     )
                     .foregroundStyle(by: .value("ユーザー", userData.userName))
                 }
             }
             if let date = selectedDate {
-                RuleMark(x: .value("日付", date, unit: xUnit))
+                RuleMark(x: .value("日付", date))
                     .foregroundStyle(.secondary.opacity(0.3))
                     .annotation(
                         position: .top,
@@ -53,12 +53,10 @@ struct PointsTimeSeriesChartView: View {
             }
         }
         .chartXAxis {
-            AxisMarks(values: viewableData.xAxisDates) { _ in
-                AxisGridLine()
-                AxisTick()
+            AxisMarks(preset: .aligned, position: .bottom, values: xAxisStride) { _ in
                 AxisValueLabel(
                     format: xLabelFormat,
-                    multiLabelAlignment: .center
+                    multiLabelAlignment: .leading
                 )
             }
         }
@@ -80,11 +78,15 @@ struct PointsTimeSeriesChartView: View {
             }
         }
     }
-
-    private var xUnit: Calendar.Component {
+    
+    private var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
-        case .year: return .month
-        case .month, .week: return .day
+        case .week:
+            return .automatic(desiredCount: 7)
+        case .month:
+            return .automatic(desiredCount: 5)
+        case .year:
+            return .automatic(desiredCount: 12)
         }
     }
 
@@ -113,6 +115,7 @@ struct PointsTimeSeriesChartView: View {
 private extension PointsTimeSeriesChartView {
 
     func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
+        
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
         let nearest = viewableData.xAxisDates.min {
@@ -129,7 +132,7 @@ private extension PointsTimeSeriesChartView {
     func selectionPopup(for date: Date) -> some View {
         let entries = viewableData.pointEntries(for: date, calendar: calendar)
         if !entries.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: .space4) {
                 Text(date, format: popupDateFormat)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -139,10 +142,10 @@ private extension PointsTimeSeriesChartView {
                         .bold()
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .padding(.horizontal, .space8)
+            .padding(.vertical, .space4)
             .background {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(radius: .radius8)
                     .fill(.background)
                     .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
             }
