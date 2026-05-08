@@ -93,3 +93,4 @@ hometeSnapshotTests/PreviewTests.generated.swift
 !.claude/agents/
 !.claude/rules/
 !.claude/skills/
+!.claude/settings.json
