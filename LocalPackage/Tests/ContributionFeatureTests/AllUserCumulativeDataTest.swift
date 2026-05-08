@@ -83,6 +83,7 @@ extension AllUserCumulativeDataTest.MakeCase {
     }
 
     @Test("複数ユーザーの場合、ユーザーごとに独立して累計計算される")
+    // swiftlint:disable:next function_body_length
     func make_calcsCumulativePoints_perUserIndependently() throws {
 
         // Arrange
