@@ -15,11 +15,20 @@ struct ContributionPieChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("家事達成割合")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-                .padding(.top, .space16)
-                .padding(.leading, .space16)
+            HStack(spacing: .zero) {
+                Text("家事達成割合")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                GraphDescriptionPopoverButton(
+                    title: "家事達成割合とは？",
+                    message: """
+                    指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。
+                    達成した家事の数の観点から、家事貢献度を図ることができます。
+                    """
+                )
+            }
+            .padding(.horizontal, .space16)
             Chart(data) { item in
                 SectorMark(
                     angle: .value("件数", item.achievedCount),
