@@ -39,13 +39,16 @@ extension HouseworkContributionTest.MakeCase {
         let result = HouseworkContribution.make(by: items, calendar: calendar)
 
         // Assert
-        let expectedList: [String: [PointOfDay]] = [
-            "alice": [
-                .init(indexedDay: inputFirstDate, point: .init(value: 30)),
-                .init(indexedDay: inputThirdDate, point: .init(value: 20))
-            ]
-        ]
-        #expect(result == .init(list: expectedList))
+        let expected = HouseworkContribution.makeForTest(
+            list: [
+                "alice": [
+                    .init(indexedDay: inputFirstDate, point: .init(value: 30)),
+                    .init(indexedDay: inputThirdDate, point: .init(value: 20))
+                ]
+            ],
+            calendar: calendar
+        )
+        #expect(result == expected)
     }
 
     @Test("家事が空の場合は空のリストが返る")

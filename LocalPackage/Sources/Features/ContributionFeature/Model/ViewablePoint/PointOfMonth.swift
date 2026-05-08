@@ -16,37 +16,42 @@ struct PointOfMonth: Equatable, Hashable {
     let startDate: Date
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(userId)
         hasher.combine(startDate)
     }
 
     static func make(
-        by pointOfDay: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetMonthPoints = pointOfDay.filter { dateRange.contains($0.indexedDay) }
+        let allDays: [PointOfDay] = dates.map { targetDate in
+            pointOfDayByDate[calendar.startOfDay(for: targetDate)]
+                ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
+        }
 
         return .init(
             userId: userId,
             userName: userName,
-            total: calcTotalPoint(targetMonthPoints),
-            elements: .init(targetMonthPoints),
-            startDate: dateRange.lowerBound
+            total: calcTotalPoint(allDays),
+            elements: .init(allDays),
+            startDate: dates.first ?? Date()
         )
     }
 
     /// 月毎に分けた月間ポイントのリスト
     static func makeWithSeparated(
-        by pointOfDays: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
         calendar: Calendar
     ) -> [Self] {
 
-        let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
+        let separetedDic = pointOfDayByDate.values
+            .reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
 
             let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
             var result = partialResult
@@ -76,9 +81,9 @@ struct PointOfMonth: Equatable, Hashable {
 }
 
 extension PointOfMonth: GenerableViewablePointList {
-    
+
     func generate() -> ViewablePointList {
-        
+
         return .init(
             userId: userId,
             userName: userName,
@@ -89,14 +94,14 @@ extension PointOfMonth: GenerableViewablePointList {
 }
 
 private extension PointOfMonth {
-    
+
     static func monthComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-        
+
         return calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
     }
-    
+
     static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
-        
+
         return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
             return .init(value: partialResult.value + pointOfDay.point.value)
         })

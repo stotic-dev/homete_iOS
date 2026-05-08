@@ -45,8 +45,7 @@ extension AllUserViewablePointListTest.NearestDateCase {
                     ]
                 )
             ],
-            displayPeriod: .week,
-            dateRange: april20...april26
+            displayPeriod: .week
         )
         let tapDate = Date.previewDate(year: 2026, month: 4, day: 24)
 
@@ -78,8 +77,7 @@ extension AllUserViewablePointListTest.NearestDateCase {
                     elements: [.init(point: .init(value: 5), date: april25)]
                 )
             ],
-            displayPeriod: .week,
-            dateRange: april20...april25
+            displayPeriod: .week
         )
         let tapDate = Date.previewDate(year: 2026, month: 4, day: 24)
 
@@ -94,14 +92,11 @@ extension AllUserViewablePointListTest.NearestDateCase {
     func nearestDate_returnsNilWhenNoData() throws {
 
         // Arrange
-        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
-        let april26 = Date.previewDate(year: 2026, month: 4, day: 26)
         let sut = AllUserViewablePointList(
             list: [
                 .init(userId: "u1", userName: "ユーザー1", total: .init(value: 0), elements: [])
             ],
-            displayPeriod: .week,
-            dateRange: april20...april26
+            displayPeriod: .week
         )
         let tapDate = Date.previewDate(year: 2026, month: 4, day: 23)
 

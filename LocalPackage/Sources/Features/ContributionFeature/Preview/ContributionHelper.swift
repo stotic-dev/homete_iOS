@@ -62,11 +62,23 @@ extension HouseworkContribution {
             .init(indexedDay: .previewDate(year: 2026, month: 4, day: 25), point: .init(value: 30)),
             .init(indexedDay: .previewDate(year: 2026, month: 4, day: 29), point: .init(value: 20))
         ]
-        return .init(list: ["user1": user1Days, "user2": user2Days])
+        return makeForTest(
+            list: ["user1": user1Days, "user2": user2Days],
+            calendar: .japanese
+        )
     }
 
-    static func makeForTest(list: [String: [PointOfDay]] = [:]) -> Self {
-        .init(list: list)
+    static func makeForTest(
+        list: [String: [PointOfDay]] = [:],
+        calendar: Calendar = .japanese
+    ) -> Self {
+        let converted: [String: [Date: PointOfDay]] = list.mapValues { pointOfDays in
+            Dictionary(
+                pointOfDays.map { (calendar.startOfDay(for: $0.indexedDay), $0) },
+                uniquingKeysWith: { first, _ in first }
+            )
+        }
+        return .init(list: converted)
     }
 }
 
@@ -88,25 +100,21 @@ extension ContributionAnalytics {
             ownId: "user1"
         )
 
-        guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else {
-            return .init(weekPointList: [], monthPointList: [], yearPointList: [], displayPeriod: displayPeriod)
-        }
-        
-        print("dateRange: \(dateRange)")
+        let dates = displayPeriod.calcDatePeriod(calendar: calendar)
 
         let weekPointList: [PointOfWeek] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
         let monthPointList: [PointOfMonth] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
         let yearPointList: [PointOfYear] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
 

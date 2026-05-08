@@ -12,7 +12,7 @@ struct AllUserDataAnnotation: View {
     @Environment(\.timeZone) var timeZone
     @Environment(\.locale) var locale
     
-    let entries: [AllUserViewablePointList.PointEntry]
+    let entries: [PointEntry]
     let selectedDate: Date
     let displayPeriod: DisplayPointPeriod.PeriodType
     

@@ -13,28 +13,49 @@ struct PointOfYear: Equatable, Hashable {
     let userName: String
     let total: Point
     let elements: Set<PointOfMonth>
-    let dateRange: ClosedRange<Date>
 
     func hash(into hasher: inout Hasher) {
 
-        hasher.combine(dateRange.lowerBound)
+        hasher.combine(userId)
     }
 
     static func make(
-        by dayOfPoints: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetPoints = dayOfPoints.filter { dateRange.contains($0.indexedDay) }
+        let targetDataByDate = pointOfDayByDate.filter { _, pointOfDay in
+            dates.contains {
+                calendar.isDate($0, equalTo: pointOfDay.indexedDay, toGranularity: .month)
+            }
+        }
         let months = PointOfMonth.makeWithSeparated(
-            by: targetPoints,
+            by: targetDataByDate,
             userId: userId,
             userName: userName,
             calendar: calendar
         )
+        let allMonths: [PointOfMonth] = dates.map { targetMonth in
+            guard let month = months.first(where: {
+                calendar.isDate($0.startDate, equalTo: targetMonth, toGranularity: .month)
+            }) else {
+                let startOfMonth = calendar.date(
+                    from: calendar.dateComponents([.year, .month], from: targetMonth)
+                ) ?? targetMonth
+                return .init(
+                    userId: userId,
+                    userName: userName,
+                    total: .init(value: .zero),
+                    elements: [],
+                    startDate: startOfMonth
+                )
+            }
+            return month
+        }
+
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }
@@ -43,16 +64,15 @@ struct PointOfYear: Equatable, Hashable {
             userId: userId,
             userName: userName,
             total: total,
-            elements: .init(months),
-            dateRange: dateRange
+            elements: .init(allMonths)
         )
     }
 }
 
 extension PointOfYear: GenerableViewablePointList {
-    
+
     func generate() -> ViewablePointList {
-        
+
         return .init(
             userId: userId,
             userName: userName,
