@@ -152,12 +152,14 @@ private extension PointsTimeSeriesChartView {
 
     PointsTimeSeriesChartView(
         viewableData: allUserList,
-        selectedDate: .previewDate(year: 2026, month: 4, day: 7)
+        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
     )
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
+    // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
+    .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
 }
 
 #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
