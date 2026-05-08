@@ -16,11 +16,12 @@ struct PointOfMonth: Equatable, Hashable {
     let startDate: Date
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(userId)
         hasher.combine(startDate)
     }
 
     static func make(
-        by pointOfDay: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
         dates: [Date],
@@ -28,9 +29,8 @@ struct PointOfMonth: Equatable, Hashable {
     ) -> Self {
 
         let allDays: [PointOfDay] = dates.map { targetDate in
-            pointOfDay.first {
-                calendar.isDate($0.indexedDay, inSameDayAs: targetDate)
-            } ?? .init(indexedDay: targetDate, point: .init(value: .zero))
+            pointOfDayByDate[calendar.startOfDay(for: targetDate)]
+                ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
         }
 
         return .init(
@@ -44,13 +44,14 @@ struct PointOfMonth: Equatable, Hashable {
 
     /// 月毎に分けた月間ポイントのリスト
     static func makeWithSeparated(
-        by pointOfDays: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
         calendar: Calendar
     ) -> [Self] {
 
-        let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
+        let separetedDic = pointOfDayByDate.values
+            .reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
 
             let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
             var result = partialResult
@@ -80,9 +81,9 @@ struct PointOfMonth: Equatable, Hashable {
 }
 
 extension PointOfMonth: GenerableViewablePointList {
-    
+
     func generate() -> ViewablePointList {
-        
+
         return .init(
             userId: userId,
             userName: userName,
@@ -93,14 +94,14 @@ extension PointOfMonth: GenerableViewablePointList {
 }
 
 private extension PointOfMonth {
-    
+
     static func monthComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-        
+
         return calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
     }
-    
+
     static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
-        
+
         return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
             return .init(value: partialResult.value + pointOfDay.point.value)
         })

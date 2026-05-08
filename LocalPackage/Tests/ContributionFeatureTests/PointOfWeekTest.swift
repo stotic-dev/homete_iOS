@@ -30,10 +30,10 @@ extension PointOfWeekTest.MakeCase {
         let april21 = Date.previewDate(year: 2026, month: 4, day: 21)
         let april27 = Date.previewDate(year: 2026, month: 4, day: 27)
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april20, point: Point(value: 30)),
-            PointOfDay(indexedDay: april21, point: Point(value: 50)),
-            PointOfDay(indexedDay: april27, point: Point(value: 20))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april20: PointOfDay(indexedDay: april20, point: Point(value: 30)),
+            april21: PointOfDay(indexedDay: april21, point: Point(value: 50)),
+            april27: PointOfDay(indexedDay: april27, point: Point(value: 20))
         ]
 
         // Act

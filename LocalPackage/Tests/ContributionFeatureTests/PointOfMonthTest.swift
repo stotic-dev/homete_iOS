@@ -33,10 +33,10 @@ extension PointOfMonthTest.MakeCase {
         let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
         let may10 = Date.previewDate(year: 2026, month: 5, day: 10)
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april10, point: Point(value: 30)),
-            PointOfDay(indexedDay: april20, point: Point(value: 50)),
-            PointOfDay(indexedDay: may10, point: Point(value: 50))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april10: PointOfDay(indexedDay: april10, point: Point(value: 30)),
+            april20: PointOfDay(indexedDay: april20, point: Point(value: 50)),
+            may10: PointOfDay(indexedDay: may10, point: Point(value: 50))
         ]
 
         // Act
@@ -72,10 +72,10 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
         comps.month = 5; comps.day = 10
         let may10 = try #require(calendar.date(from: comps))
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april10, point: Point(value: 30)),
-            PointOfDay(indexedDay: april20, point: Point(value: 50)),
-            PointOfDay(indexedDay: may10, point: Point(value: 20))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april10: PointOfDay(indexedDay: april10, point: Point(value: 30)),
+            april20: PointOfDay(indexedDay: april20, point: Point(value: 50)),
+            may10: PointOfDay(indexedDay: may10, point: Point(value: 20))
         ]
 
         // Act

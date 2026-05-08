@@ -11,10 +11,13 @@ import Foundation
 struct PointOfDay: Equatable, Hashable {
     let indexedDay: Date
     let point: Point
+    let achievedCount: Int
 
     var date: Date { indexedDay }
 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(indexedDay)
+    init(indexedDay: Date, point: Point, achievedCount: Int = 1) {
+        self.indexedDay = indexedDay
+        self.point = point
+        self.achievedCount = achievedCount
     }
 }

@@ -28,9 +28,9 @@ extension PointOfYearTest.MakeCase {
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
         let april2025 = Date.previewDate(year: 2025, month: 4, day: 10)
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: april2025, point: Point(value: 50))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
+            april2025: PointOfDay(indexedDay: april2025, point: Point(value: 50))
         ]
 
         // Act
@@ -56,9 +56,9 @@ extension PointOfYearTest.MakeCase {
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
         let may2026 = Date.previewDate(year: 2026, month: 5, day: 10)
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: may2026, point: Point(value: 50))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
+            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
 
         // Act
@@ -86,9 +86,9 @@ extension PointOfYearTest.MakeCase {
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
         let may2026 = Date.previewDate(year: 2026, month: 5, day: 10)
 
-        let dayOfPoints = [
-            PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            PointOfDay(indexedDay: may2026, point: Point(value: 50))
+        let dayOfPoints: [Date: PointOfDay] = [
+            april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
+            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
 
         // Act

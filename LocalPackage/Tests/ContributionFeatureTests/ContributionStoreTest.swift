@@ -55,8 +55,9 @@ extension ContributionStoreTest {
         await waiterForContribution.value
 
         // Assert: 完了済み家事のみ集計される
-        let expectedContribution = HouseworkContribution(
-            list: ["alice": [.init(indexedDay: jan10, point: .init(value: 30))]]
+        let expectedContribution = HouseworkContribution.makeForTest(
+            list: ["alice": [.init(indexedDay: jan10, point: .init(value: 30))]],
+            calendar: calendar
         )
         #expect(store.contiribution == expectedContribution)
     }

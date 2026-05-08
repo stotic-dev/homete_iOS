@@ -19,11 +19,12 @@ struct PointOfWeek: Equatable, Hashable {
     var date: Date { startDate }
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(userId)
         hasher.combine(startDate)
     }
 
     static func make(
-        by pointOfDays: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
         dates: [Date],
@@ -31,9 +32,8 @@ struct PointOfWeek: Equatable, Hashable {
     ) -> Self {
 
         let allDays: [PointOfDay] = dates.map { targetDate in
-            pointOfDays.first {
-                calendar.isDate($0.indexedDay, inSameDayAs: targetDate)
-            } ?? .init(indexedDay: targetDate, point: .init(value: .zero))
+            pointOfDayByDate[calendar.startOfDay(for: targetDate)]
+                ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
         }
         return .init(
             userId: userId,
@@ -46,9 +46,9 @@ struct PointOfWeek: Equatable, Hashable {
 }
 
 extension PointOfWeek: GenerableViewablePointList {
-    
+
     func generate() -> ViewablePointList {
-        
+
         return .init(
             userId: userId,
             userName: userName,

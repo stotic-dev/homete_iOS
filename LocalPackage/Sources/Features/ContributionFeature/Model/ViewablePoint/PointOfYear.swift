@@ -20,26 +20,28 @@ struct PointOfYear: Equatable, Hashable {
     }
 
     static func make(
-        by dayOfPoints: [PointOfDay],
+        by pointOfDayByDate: [Date: PointOfDay],
         userId: String,
         userName: String,
         dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetDataList = dayOfPoints.filter { point in
+        let targetDataByDate = pointOfDayByDate.filter { _, pointOfDay in
             dates.contains {
-                calendar.isDate($0, equalTo: point.indexedDay, toGranularity: .month)
+                calendar.isDate($0, equalTo: pointOfDay.indexedDay, toGranularity: .month)
             }
         }
         let months = PointOfMonth.makeWithSeparated(
-            by: targetDataList,
+            by: targetDataByDate,
             userId: userId,
             userName: userName,
             calendar: calendar
         )
         let allMonths: [PointOfMonth] = dates.map { targetMonth in
-            guard let month = months.first(where: { calendar.isDate($0.startDate, equalTo: targetMonth, toGranularity: .month) }) else {
+            guard let month = months.first(where: {
+                calendar.isDate($0.startDate, equalTo: targetMonth, toGranularity: .month)
+            }) else {
                 let startOfMonth = calendar.date(
                     from: calendar.dateComponents([.year, .month], from: targetMonth)
                 ) ?? targetMonth
@@ -53,7 +55,7 @@ struct PointOfYear: Equatable, Hashable {
             }
             return month
         }
-        
+
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }
@@ -68,9 +70,9 @@ struct PointOfYear: Equatable, Hashable {
 }
 
 extension PointOfYear: GenerableViewablePointList {
-    
+
     func generate() -> ViewablePointList {
-        
+
         return .init(
             userId: userId,
             userName: userName,

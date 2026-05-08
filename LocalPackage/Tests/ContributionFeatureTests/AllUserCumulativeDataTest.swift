@@ -36,9 +36,9 @@ extension AllUserCumulativeDataTest.MakeCase {
             PointOfWeek
                 .make(
                     by: [
-                        .init(indexedDay: april20, point: .init(value: 10)),
-                        .init(indexedDay: april22, point: .init(value: 30)),
-                        .init(indexedDay: april25, point: .init(value: 20))
+                        april20: .init(indexedDay: april20, point: .init(value: 10)),
+                        april22: .init(indexedDay: april22, point: .init(value: 30)),
+                        april25: .init(indexedDay: april25, point: .init(value: 20))
                     ],
                     userId: "u1",
                     userName: "田中",
@@ -80,8 +80,8 @@ extension AllUserCumulativeDataTest.MakeCase {
             PointOfWeek
                 .make(
                     by: [
-                        .init(indexedDay: april20, point: .init(value: 10)),
-                        .init(indexedDay: april22, point: .init(value: 30))
+                        april20: .init(indexedDay: april20, point: .init(value: 10)),
+                        april22: .init(indexedDay: april22, point: .init(value: 30))
                     ],
                     userId: "u1",
                     userName: "田中",
@@ -92,8 +92,8 @@ extension AllUserCumulativeDataTest.MakeCase {
             PointOfWeek
                 .make(
                     by: [
-                        .init(indexedDay: april21, point: .init(value: 5)),
-                        .init(indexedDay: april22, point: .init(value: 15))
+                        april21: .init(indexedDay: april21, point: .init(value: 5)),
+                        april22: .init(indexedDay: april22, point: .init(value: 15))
                     ],
                     userId: "u2",
                     userName: "佐藤",
@@ -162,8 +162,8 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
             PointOfWeek
                 .make(
                     by: [
-                        .init(indexedDay: april20, point: .init(value: 10)),
-                        .init(indexedDay: april22, point: .init(value: 30))
+                        april20: .init(indexedDay: april20, point: .init(value: 10)),
+                        april22: .init(indexedDay: april22, point: .init(value: 30))
                     ],
                     userId: "u1",
                     userName: "田中",
@@ -198,7 +198,7 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
         let viewableList: [ViewablePointList] = [
             PointOfWeek
                 .make(
-                    by: [.init(indexedDay: april20, point: .init(value: 10))],
+                    by: [april20: .init(indexedDay: april20, point: .init(value: 10))],
                     userId: "u1",
                     userName: "田中",
                     dates: weekDates,
@@ -233,8 +233,8 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
             PointOfYear
                 .make(
                     by: [
-                        .init(indexedDay: jan1, point: .init(value: 20)),
-                        .init(indexedDay: mar15, point: .init(value: 30))
+                        jan1: .init(indexedDay: jan1, point: .init(value: 20)),
+                        mar15: .init(indexedDay: mar15, point: .init(value: 30))
                     ],
                     userId: "u1",
                     userName: "田中",
