@@ -87,4 +87,3 @@ struct DisplayPointPeriod: Equatable, Hashable {
         }
     }
 }
-
