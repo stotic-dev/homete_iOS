@@ -57,5 +57,7 @@ struct GraphDescriptionPopoverButton: View {
         """,
         isShowPopover: true
     )
-    .snapshotForPreview(delay: 3)
+    #if canImport(Prefire)
+    .prefireIgnored()
+    #endif
 }
