@@ -11,13 +11,21 @@ import SwiftUI
 import Prefire
 
 public extension View {
-    func snapshotForPreview(delay: Double = .zero, precision: Float = 1.0, perceptualPrecision: Float = 1.0) -> some View {
+    func snapshotForPreview(
+        delay: Double = .zero,
+        precision: Float = 1.0,
+        perceptualPrecision: Float = 1.0
+    ) -> some View {
         snapshot(delay: delay, precision: precision, perceptualPrecision: perceptualPrecision)
     }
 }
 #else
 public extension View {
-    func snapshotForPreview(delay: Double) -> some View {
+    func snapshotForPreview(
+        delay: Double = .zero,
+        precision: Float = 1.0,
+        perceptualPrecision: Float = 1.0
+    ) -> some View {
         self
     }
 }
