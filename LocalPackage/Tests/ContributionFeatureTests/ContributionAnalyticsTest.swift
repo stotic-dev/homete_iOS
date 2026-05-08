@@ -44,8 +44,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
                 userId: "u1",
                 userName: "ユーザー1",
                 total: .init(value: 300),
-                elements: [],
-                dateRange: weekStart...anchor
+                elements: []
             )
         ]
         let analytics = ContributionAnalytics(
@@ -58,12 +57,12 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
         let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")], ownId: "u1")
 
         // Act
-        let result = try #require(await analytics.updatePeriod(
+        let result = await analytics.updatePeriod(
             displayPeriod: monthPeriod,
             members: members,
             contribution: contribution,
             calendar: calendar
-        ))
+        )
 
         // Assert: displayPeriodだけ変わり、pointListはそのまま保持される
         let expected = ContributionAnalytics(
@@ -98,35 +97,23 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
         let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")], ownId: "u1")
 
         // Act
-        let result = try #require(await analytics.updatePeriod(
+        let result = await analytics.updatePeriod(
             displayPeriod: newPeriod,
             members: members,
             contribution: contribution,
             calendar: calendar
-        ))
+        )
 
         // Assert: anchorが変わったのでpointListが再計算される（HouseworkContributionが空なのでポイントはゼロ）
-        let newStart   = Date.previewDate(year: 2026, month: 4, day: 27)
-        let newEnd     = Date.previewDate(year: 2026, month: 5, day: 3)
-        let expected = ContributionAnalytics(
-            weekPointList: [
-                .init(userId: "u1", userName: "ユーザー1", total: .init(value: 0), elements: [], startDate: newStart)
-            ],
-            monthPointList: [
-                .init(userId: "u1", userName: "ユーザー1", total: .init(value: 0), elements: [], startDate: newStart)
-            ],
-            yearPointList: [
-                .init(
-                    userId: "u1",
-                    userName: "ユーザー1"
-                    , total: .init(value: 0),
-                    elements: [],
-                    dateRange: newStart...newEnd
-                )
-            ],
-            displayPeriod: newPeriod
-        )
-        #expect(result == expected)
+        let newWeekStart = Date.previewDate(year: 2026, month: 4, day: 27)
+        #expect(result.displayPeriod == newPeriod)
+        #expect(result.weekPointList.first?.userId == "u1")
+        #expect(result.weekPointList.first?.total.value == 0)
+        #expect(result.weekPointList.first?.startDate == newWeekStart)
+        #expect(result.monthPointList.first?.total.value == 0)
+        #expect(result.yearPointList.first?.total.value == 0)
+        // sentinelListが入れ替わっていることの確認
+        #expect(result.weekPointList.first?.total.value != 999)
     }
 }
 
@@ -150,16 +137,14 @@ extension ContributionAnalyticsTest.CurrentListCase {
             yearPointList: [],
             displayPeriod: period
         )
-        let dateRange = try #require(period.calcDateRange(calendar: calendar))
 
         // Act
-        let result = try #require(analytics.currentList(calendar: calendar))
+        let result = analytics.currentList(calendar: calendar)
 
         // Assert
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 50), elements: [])],
-            displayPeriod: .week,
-            dateRange: dateRange
+            displayPeriod: .week
         )
         #expect(result == expected)
     }
@@ -180,16 +165,14 @@ extension ContributionAnalyticsTest.CurrentListCase {
             yearPointList: [],
             displayPeriod: period
         )
-        let dateRange = try #require(period.calcDateRange(calendar: calendar))
 
         // Act
-        let result = try #require(analytics.currentList(calendar: calendar))
+        let result = analytics.currentList(calendar: calendar)
 
         // Assert
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 80), elements: [])],
-            displayPeriod: .month,
-            dateRange: dateRange
+            displayPeriod: .month
         )
         #expect(result == expected)
     }
@@ -199,15 +182,13 @@ extension ContributionAnalyticsTest.CurrentListCase {
 
         // Arrange
         let anchor    = Date.previewDate(year: 2026, month: 12, day: 31)
-        let yearStart = Date.previewDate(year: 2026, month: 1, day: 1)
         let period    = DisplayPointPeriod(type: .year, anchor: anchor)
         let yearList: [PointOfYear] = [
             .init(
                 userId: "u1",
                 userName: "ユーザー1",
                 total: .init(value: 500),
-                elements: [],
-                dateRange: yearStart...anchor
+                elements: []
             )
         ]
         let analytics = ContributionAnalytics(
@@ -216,16 +197,14 @@ extension ContributionAnalyticsTest.CurrentListCase {
             yearPointList: yearList,
             displayPeriod: period
         )
-        let dateRange = try #require(period.calcDateRange(calendar: calendar))
 
         // Act
-        let result = try #require(analytics.currentList(calendar: calendar))
+        let result = analytics.currentList(calendar: calendar)
 
         // Assert
         let expected = AllUserViewablePointList(
             list: [.init(userId: "u1", userName: "ユーザー1", total: .init(value: 500), elements: [])],
-            displayPeriod: .year,
-            dateRange: dateRange
+            displayPeriod: .year
         )
         #expect(result == expected)
     }

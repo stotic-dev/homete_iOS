@@ -25,12 +25,13 @@ extension AllUserCumulativeDataTest.MakeCase {
     func make_calcsCumulativePoints_forSingleUser() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4
-        comps.day = 20; let april20 = try #require(calendar.date(from: comps))
-        comps.day = 22; let april22 = try #require(calendar.date(from: comps))
-        comps.day = 25; let april25 = try #require(calendar.date(from: comps))
-        comps.day = 26; let april26 = try #require(calendar.date(from: comps))
+        let weekDates: [Date] = (20...26).map {
+            Date.previewDate(year: 2026, month: 4, day: $0)
+        }
+        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
+        let april22 = Date.previewDate(year: 2026, month: 4, day: 22)
+        let april25 = Date.previewDate(year: 2026, month: 4, day: 25)
+        let april26 = Date.previewDate(year: 2026, month: 4, day: 26)
         let viewableList: [ViewablePointList] = [
             PointOfWeek
                 .make(
@@ -41,7 +42,7 @@ extension AllUserCumulativeDataTest.MakeCase {
                     ],
                     userId: "u1",
                     userName: "田中",
-                    dateRange: april20...april26,
+                    dates: weekDates,
                     calendar: calendar
                 )
                 .generate()
@@ -53,27 +54,28 @@ extension AllUserCumulativeDataTest.MakeCase {
             displayPeriod: .week
         )
 
-        // Assert
+        // Assert: 補完含む日付ごとの累計が日付順に積み上がる
         let elements = try #require(result.list.first).sortedElements
-        #expect(elements.count == 3)
-        #expect(elements[0].date == april20)
-        #expect(elements[0].point.value == 10)
-        #expect(elements[1].date == april22)
-        #expect(elements[1].point.value == 40)
-        #expect(elements[2].date == april25)
-        #expect(elements[2].point.value == 60)
+        #expect(elements.count == weekDates.count)
+        let pointAt: (Date) -> Int? = { date in
+            elements.first { $0.date == date }?.point.value
+        }
+        #expect(pointAt(april20) == 10)
+        #expect(pointAt(april22) == 40)
+        #expect(pointAt(april25) == 60)
+        #expect(pointAt(april26) == 60)
     }
 
     @Test("複数ユーザーの場合、ユーザーごとに独立して累計計算される")
     func make_calcsCumulativePoints_perUserIndependently() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4
-        comps.day = 20; let april20 = try #require(calendar.date(from: comps))
-        comps.day = 21; let april21 = try #require(calendar.date(from: comps))
-        comps.day = 22; let april22 = try #require(calendar.date(from: comps))
-        comps.day = 26; let april26 = try #require(calendar.date(from: comps))
+        let weekDates: [Date] = (20...26).map {
+            Date.previewDate(year: 2026, month: 4, day: $0)
+        }
+        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
+        let april21 = Date.previewDate(year: 2026, month: 4, day: 21)
+        let april22 = Date.previewDate(year: 2026, month: 4, day: 22)
         let viewableList: [ViewablePointList] = [
             PointOfWeek
                 .make(
@@ -83,7 +85,7 @@ extension AllUserCumulativeDataTest.MakeCase {
                     ],
                     userId: "u1",
                     userName: "田中",
-                    dateRange: april20...april26,
+                    dates: weekDates,
                     calendar: calendar
                 )
                 .generate(),
@@ -95,7 +97,7 @@ extension AllUserCumulativeDataTest.MakeCase {
                     ],
                     userId: "u2",
                     userName: "佐藤",
-                    dateRange: april20...april26,
+                    dates: weekDates,
                     calendar: calendar
                 )
                 .generate()
@@ -110,12 +112,14 @@ extension AllUserCumulativeDataTest.MakeCase {
         // Assert
         let u1 = try #require(result.list.first { $0.userId == "u1" }).sortedElements
         let u2 = try #require(result.list.first { $0.userId == "u2" }).sortedElements
-        #expect(u1.count == 2)
-        #expect(u1[0].point.value == 10)
-        #expect(u1[1].point.value == 40)
-        #expect(u2.count == 2)
-        #expect(u2[0].point.value == 5)
-        #expect(u2[1].point.value == 20)
+        #expect(u1.count == weekDates.count)
+        #expect(u2.count == weekDates.count)
+        let u1At: (Date) -> Int? = { date in u1.first { $0.date == date }?.point.value }
+        let u2At: (Date) -> Int? = { date in u2.first { $0.date == date }?.point.value }
+        #expect(u1At(april20) == 10)
+        #expect(u1At(april22) == 40)
+        #expect(u2At(april21) == 5)
+        #expect(u2At(april22) == 20)
     }
 
     @Test("ポイントデータがない場合は空のelementsが返される")
@@ -149,11 +153,11 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
     func cumulativePointEntries_returnsMatchingEntries_forDayGranularity() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4
-        comps.day = 20; let april20 = try #require(calendar.date(from: comps))
-        comps.day = 22; let april22 = try #require(calendar.date(from: comps))
-        comps.day = 26; let april26 = try #require(calendar.date(from: comps))
+        let weekDates: [Date] = (20...26).map {
+            Date.previewDate(year: 2026, month: 4, day: $0)
+        }
+        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
+        let april22 = Date.previewDate(year: 2026, month: 4, day: 22)
         let viewableList: [ViewablePointList] = [
             PointOfWeek
                 .make(
@@ -163,7 +167,7 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
                     ],
                     userId: "u1",
                     userName: "田中",
-                    dateRange: april20...april26,
+                    dates: weekDates,
                     calendar: calendar
                 )
                 .generate()
@@ -182,22 +186,22 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
         #expect(entries[0].point == 40)
     }
 
-    @Test("データがない日付を指定した場合は空配列が返される")
-    func cumulativePointEntries_returnsEmpty_whenNoDataForDate() throws {
+    @Test("データがない日付を指定した場合は補完値（直前までの累計）が返される")
+    func cumulativePointEntries_returnsCarriedOverValue_whenNoDataForDate() throws {
 
-        // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4
-        comps.day = 20; let april20 = try #require(calendar.date(from: comps))
-        comps.day = 23; let april23 = try #require(calendar.date(from: comps))
-        comps.day = 26; let april26 = try #require(calendar.date(from: comps))
+        // Arrange: april20 のみデータがある状態で、補完日(april23)を問い合わせる
+        let weekDates: [Date] = (20...26).map {
+            Date.previewDate(year: 2026, month: 4, day: $0)
+        }
+        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
+        let april23 = Date.previewDate(year: 2026, month: 4, day: 23)
         let viewableList: [ViewablePointList] = [
             PointOfWeek
                 .make(
                     by: [.init(indexedDay: april20, point: .init(value: 10))],
                     userId: "u1",
                     userName: "田中",
-                    dateRange: april20...april26,
+                    dates: weekDates,
                     calendar: calendar
                 )
                 .generate()
@@ -210,20 +214,21 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
         // Act
         let entries = sut.cumulativePointEntries(for: april23, calendar: calendar)
 
-        // Assert
-        #expect(entries.isEmpty)
+        // Assert: 補完日も累計エントリとして返り、値は直前までの累計（10）が引き継がれる
+        #expect(entries.count == 1)
+        #expect(entries[0].point == 10)
     }
 
     @Test("年間データの場合は月粒度でフィルタリングされる")
     func cumulativePointEntries_filtersWithMonthGranularity_forYearPeriod() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026
-        comps.month = 1; comps.day = 1; let jan1 = try #require(calendar.date(from: comps))
-        comps.month = 3; comps.day = 15; let mar15 = try #require(calendar.date(from: comps))
-        comps.month = 3; comps.day = 1; let mar1 = try #require(calendar.date(from: comps))
-        comps.month = 12; comps.day = 31; let dec31 = try #require(calendar.date(from: comps))
+        let yearDates: [Date] = (1...12).map {
+            Date.previewDate(year: 2026, month: $0, day: 1)
+        }
+        let jan1 = Date.previewDate(year: 2026, month: 1, day: 1)
+        let mar15 = Date.previewDate(year: 2026, month: 3, day: 15)
+        let mar1 = Date.previewDate(year: 2026, month: 3, day: 1)
         let viewableList: [ViewablePointList] = [
             PointOfYear
                 .make(
@@ -233,7 +238,7 @@ extension AllUserCumulativeDataTest.CumulativePointEntriesCase {
                     ],
                     userId: "u1",
                     userName: "田中",
-                    dateRange: jan1...dec31,
+                    dates: yearDates,
                     calendar: calendar
                 )
                 .generate()

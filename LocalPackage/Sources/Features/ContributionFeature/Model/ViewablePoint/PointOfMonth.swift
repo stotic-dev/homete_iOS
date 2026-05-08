@@ -23,18 +23,22 @@ struct PointOfMonth: Equatable, Hashable {
         by pointOfDay: [PointOfDay],
         userId: String,
         userName: String,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetMonthPoints = pointOfDay.filter { dateRange.contains($0.indexedDay) }
+        let allDays: [PointOfDay] = dates.map { targetDate in
+            pointOfDay.first {
+                calendar.isDate($0.indexedDay, inSameDayAs: targetDate)
+            } ?? .init(indexedDay: targetDate, point: .init(value: .zero))
+        }
 
         return .init(
             userId: userId,
             userName: userName,
-            total: calcTotalPoint(targetMonthPoints),
-            elements: .init(targetMonthPoints),
-            startDate: dateRange.lowerBound
+            total: calcTotalPoint(allDays),
+            elements: .init(allDays),
+            startDate: dates.first ?? Date()
         )
     }
 

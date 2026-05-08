@@ -88,25 +88,21 @@ extension ContributionAnalytics {
             ownId: "user1"
         )
 
-        guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else {
-            return .init(weekPointList: [], monthPointList: [], yearPointList: [], displayPeriod: displayPeriod)
-        }
-        
-        print("dateRange: \(dateRange)")
+        let dates = displayPeriod.calcDatePeriod(calendar: calendar)
 
         let weekPointList: [PointOfWeek] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
         let monthPointList: [PointOfMonth] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
         let yearPointList: [PointOfYear] = contribution.viewablePointList(
             members: members,
-            dateRange: dateRange,
+            dates: dates,
             calendar: calendar
         )
 

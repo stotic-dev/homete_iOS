@@ -27,25 +27,16 @@ public struct HouseworkContribution: Equatable, Sendable {
     
     func viewablePointList(
         members: CohabitantMemberList,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> [PointOfYear] {
 
         return members.value.map { member in
-            guard let userPointList = list[member.id] else {
-                return .init(
-                    userId: member.id,
-                    userName: member.userName,
-                    total: .init(value: .zero),
-                    elements: [],
-                    dateRange: dateRange
-                )
-            }
             return .make(
-                by: userPointList,
+                by: list[member.id] ?? [],
                 userId: member.id,
                 userName: member.userName,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }
@@ -53,25 +44,16 @@ public struct HouseworkContribution: Equatable, Sendable {
 
     func viewablePointList(
         members: CohabitantMemberList,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> [PointOfMonth] {
 
         return members.value.map { member in
-            guard let userPointList = list[member.id] else {
-                return .init(
-                    userId: member.id,
-                    userName: member.userName,
-                    total: .init(value: .zero),
-                    elements: [],
-                    startDate: dateRange.lowerBound
-                )
-            }
             return .make(
-                by: userPointList,
+                by: list[member.id] ?? [],
                 userId: member.id,
                 userName: member.userName,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }
@@ -79,25 +61,16 @@ public struct HouseworkContribution: Equatable, Sendable {
 
     func viewablePointList(
         members: CohabitantMemberList,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> [PointOfWeek] {
 
         return members.value.map { member in
-            guard let userPointList = list[member.id] else {
-                return .init(
-                    userId: member.id,
-                    userName: member.userName,
-                    total: .init(value: .zero),
-                    elements: [],
-                    startDate: dateRange.lowerBound
-                )
-            }
             return .make(
-                by: userPointList,
+                by: list[member.id] ?? [],
                 userId: member.id,
                 userName: member.userName,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }

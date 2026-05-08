@@ -21,13 +21,13 @@ struct ContributionAnalytics: Equatable {
         members: CohabitantMemberList,
         displayPeriod: DisplayPointPeriod,
         calendar: Calendar
-    ) async -> Self? {
+    ) async -> Self {
         
-        guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else { return nil }
+        let periodDates = displayPeriod.calcDatePeriod(calendar: calendar)
         let (weekPointList, monthPointList, yearPointList) = await buildPointList(
             members: members,
             contribution: contribution,
-            dateRange: dateRange,
+            dates: periodDates,
             calendar: calendar
         )
         
@@ -44,9 +44,8 @@ struct ContributionAnalytics: Equatable {
         members: CohabitantMemberList,
         contribution: HouseworkContribution,
         calendar: Calendar
-    ) async -> Self? {
+    ) async -> Self {
         
-        guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else { return nil }
         guard self.displayPeriod.anchor != displayPeriod.anchor else {
             
             // 基準日が変わっていない場合は別の期間のpointListは計算済みなので、指定期間だけ更新する
@@ -59,10 +58,11 @@ struct ContributionAnalytics: Equatable {
         }
         
         // 基準日が変わった場合はpointListを入れ替える必要があるので更新する
+        let periodDates = displayPeriod.calcDatePeriod(calendar: calendar)
         let (weekPointList, monthPointList, yearPointList) = await Self.buildPointList(
             members: members,
             contribution: contribution,
-            dateRange: dateRange,
+            dates: periodDates,
             calendar: calendar
         )
         
@@ -74,30 +74,23 @@ struct ContributionAnalytics: Equatable {
         )
     }
     
-    func currentList(calendar: Calendar) -> AllUserViewablePointList? {
+    func currentList(calendar: Calendar) -> AllUserViewablePointList {
 
-        guard let dateRange = displayPeriod.calcDateRange(calendar: calendar) else { return nil }
         return switch displayPeriod.type {
 
         case .week: .make(
             list: weekPointList,
-            displayPeriod: displayPeriod.type,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: displayPeriod.type
         )
 
         case .month: .make(
             list: monthPointList,
-            displayPeriod: displayPeriod.type,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: displayPeriod.type
         )
 
         case .year: .make(
             list: yearPointList,
-            displayPeriod: displayPeriod.type,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: displayPeriod.type
         )
         }
     }
@@ -108,7 +101,7 @@ private extension ContributionAnalytics {
     static func buildPointList(
         members: CohabitantMemberList,
         contribution: HouseworkContribution,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) async -> ( // swiftlint:disable:this large_tuple
         [PointOfWeek],
@@ -119,7 +112,7 @@ private extension ContributionAnalytics {
         async let weekPointList: [PointOfWeek] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }.value
@@ -127,7 +120,7 @@ private extension ContributionAnalytics {
         async let monthPointList: [PointOfMonth] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }.value
@@ -135,7 +128,7 @@ private extension ContributionAnalytics {
         async let yearPointList: [PointOfYear] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dateRange: dateRange,
+                dates: dates,
                 calendar: calendar
             )
         }.value

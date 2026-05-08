@@ -8,25 +8,19 @@
 import Foundation
 
 struct AllUserViewablePointList: Equatable {
-    
+
     /// グラフに表示する日データ
     let list: [ViewablePointList]
     /// 表示区間
     let displayPeriod: DisplayPointPeriod.PeriodType
-    /// 表示対象の日付範囲
-    let dateRange: ClosedRange<Date>
-    
+
     static func make<T: GenerableViewablePointList>(
         list: [T],
-        displayPeriod: DisplayPointPeriod.PeriodType,
-        dateRange: ClosedRange<Date>,
-        calendar: Calendar
+        displayPeriod: DisplayPointPeriod.PeriodType
     ) -> Self {
-        let viewableList = list.map { $0.generate() }
         return .init(
-            list: viewableList,
-            displayPeriod: displayPeriod,
-            dateRange: dateRange
+            list: list.map { $0.generate() },
+            displayPeriod: displayPeriod
         )
     }
     

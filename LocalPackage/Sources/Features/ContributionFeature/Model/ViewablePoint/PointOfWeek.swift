@@ -26,17 +26,21 @@ struct PointOfWeek: Equatable, Hashable {
         by pointOfDays: [PointOfDay],
         userId: String,
         userName: String,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetWeekPoints = pointOfDays.filter { dateRange.contains($0.indexedDay) }
+        let allDays: [PointOfDay] = dates.map { targetDate in
+            pointOfDays.first {
+                calendar.isDate($0.indexedDay, inSameDayAs: targetDate)
+            } ?? .init(indexedDay: targetDate, point: .init(value: .zero))
+        }
         return .init(
             userId: userId,
             userName: userName,
-            total: calcTotalPoint(targetWeekPoints),
-            elements: .init(targetWeekPoints),
-            startDate: dateRange.lowerBound
+            total: calcTotalPoint(allDays),
+            elements: .init(allDays),
+            startDate: dates.first ?? Date()
         )
     }
 }

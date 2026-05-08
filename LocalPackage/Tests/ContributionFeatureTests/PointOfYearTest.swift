@@ -22,28 +22,23 @@ extension PointOfYearTest.MakeCase {
     func make_excludesItemsOutsideTargetYear() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 1; comps.day = 1
-        let yearStart2026 = try #require(calendar.date(from: comps))
-        comps.month = 12; comps.day = 31
-        let yearEnd2026 = try #require(calendar.date(from: comps))
-        comps.year = 2026; comps.month = 4; comps.day = 10
-        let april2026 = try #require(calendar.date(from: comps))
-        comps.year = 2025
-        let april2025 = try #require(calendar.date(from: comps))
+        let yearDates2026: [Date] = (1...12).map { month in
+            Date.previewDate(year: 2026, month: month, day: 1)
+        }
+        let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
+        let april2025 = Date.previewDate(year: 2025, month: 4, day: 10)
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: april2025, point: Point(value: 50))
         ]
-        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
         let result = PointOfYear.make(
             by: dayOfPoints,
             userId: "testUser",
             userName: "テストユーザー",
-            dateRange: dateRange2026,
+            dates: yearDates2026,
             calendar: calendar
         )
 
@@ -55,61 +50,53 @@ extension PointOfYearTest.MakeCase {
     func make_elementsAreGroupedByMonth() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 1; comps.day = 1
-        let yearStart2026 = try #require(calendar.date(from: comps))
-        comps.month = 12; comps.day = 31
-        let yearEnd2026 = try #require(calendar.date(from: comps))
-        comps.month = 4; comps.day = 10
-        let april2026 = try #require(calendar.date(from: comps))
-        comps.month = 5
-        let may2026 = try #require(calendar.date(from: comps))
+        let yearDates2026: [Date] = (1...12).map { month in
+            Date.previewDate(year: 2026, month: month, day: 1)
+        }
+        let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
+        let may2026 = Date.previewDate(year: 2026, month: 5, day: 10)
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
-        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
         let result = PointOfYear.make(
             by: dayOfPoints,
             userId: "testUser",
             userName: "テストユーザー",
-            dateRange: dateRange2026,
+            dates: yearDates2026,
             calendar: calendar
         )
 
-        // Assert
-        #expect(result.elements.count == 2)
+        // Assert: 全12ヶ月分のelementsが返る（データなしの月も補完される）
+        #expect(result.elements.count == yearDates2026.count)
+        #expect(result.elements.contains { $0.total.value == 30 })
+        #expect(result.elements.contains { $0.total.value == 50 })
     }
 
     @Test("指定年に含まれる全月のポイントが合算される")
     func make_totalIsSumOfAllTargetYearItemPoints() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 1; comps.day = 1
-        let yearStart2026 = try #require(calendar.date(from: comps))
-        comps.month = 12; comps.day = 31
-        let yearEnd2026 = try #require(calendar.date(from: comps))
-        comps.month = 4; comps.day = 10
-        let april2026 = try #require(calendar.date(from: comps))
-        comps.month = 5
-        let may2026 = try #require(calendar.date(from: comps))
+        let yearDates2026: [Date] = (1...12).map { month in
+            Date.previewDate(year: 2026, month: month, day: 1)
+        }
+        let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
+        let may2026 = Date.previewDate(year: 2026, month: 5, day: 10)
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april2026, point: Point(value: 30)),
             PointOfDay(indexedDay: may2026, point: Point(value: 50))
         ]
-        let dateRange2026 = yearStart2026...yearEnd2026
 
         // Act
         let result = PointOfYear.make(
             by: dayOfPoints,
             userId: "testUser",
             userName: "テストユーザー",
-            dateRange: dateRange2026,
+            dates: yearDates2026,
             calendar: calendar
         )
 

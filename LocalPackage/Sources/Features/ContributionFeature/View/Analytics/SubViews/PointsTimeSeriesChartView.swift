@@ -134,8 +134,7 @@ private extension PointsTimeSeriesChartView {
     let calendar = Calendar.japanese
     let weekEnd = Date.previewDate(year: 2026, month: 4, day: 26)
     let period = DisplayPointPeriod(type: .week, anchor: weekEnd)
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
+    let dates = period.calcDatePeriod(calendar: calendar)
 
     let pointOfDays1: [PointOfDay] = [
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 10)),
@@ -158,20 +157,18 @@ private extension PointsTimeSeriesChartView {
                     by: pointOfDays1,
                     userId: "user1",
                     userName: "田中",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 ),
                 PointOfWeek.make(
                     by: pointOfDays2,
                     userId: "user2",
                     userName: "佐藤",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 )
             ],
-            displayPeriod: .week,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: .week
         ),
         selectedDate: .previewDate(year: 2026, month: 4, day: 20)
     )
@@ -187,8 +184,7 @@ private extension PointsTimeSeriesChartView {
         type: .month,
         anchor: .previewDate(year: 2026, month: 4, day: 30)
     )
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
+    let dates = period.calcDatePeriod(calendar: calendar)
 
     let pointOfDays1: [PointOfDay] = [
         .init(indexedDay: .previewDate(year: 2026, month: 4, day: 1), point: .init(value: 10)),
@@ -211,20 +207,18 @@ private extension PointsTimeSeriesChartView {
                     by: pointOfDays1,
                     userId: "user1",
                     userName: "田中",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 ),
                 PointOfMonth.make(
                     by: pointOfDays2,
                     userId: "user2",
                     userName: "佐藤",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 )
             ],
-            displayPeriod: .month,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: .month
         ),
         selectedDate: .previewDate(year: 2026, month: 4, day: 7)
     )
@@ -242,8 +236,7 @@ private extension PointsTimeSeriesChartView {
         type: .year,
         anchor: yearEnd
     )
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
+    let dates = period.calcDatePeriod(calendar: calendar)
 
     let points1 = [30, 15, 45, 20, 50, 35, 25, 40, 10, 45, 30, 20]
     let points2 = [20, 40, 25, 45, 30, 15, 50, 20, 35, 25, 45, 30]
@@ -261,20 +254,18 @@ private extension PointsTimeSeriesChartView {
                     by: pointOfDays1,
                     userId: "user1",
                     userName: "田中",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 ),
                 PointOfYear.make(
                     by: pointOfDays2,
                     userId: "user2",
                     userName: "佐藤",
-                    dateRange: dateRange,
+                    dates: dates,
                     calendar: calendar
                 )
             ],
-            displayPeriod: .year,
-            dateRange: dateRange,
-            calendar: calendar
+            displayPeriod: .year
         ),
         selectedDate: .previewDate(year: 2026, month: 4, day: 1)
     )

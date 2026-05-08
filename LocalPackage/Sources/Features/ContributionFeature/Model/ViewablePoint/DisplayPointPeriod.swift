@@ -8,10 +8,13 @@
 import Foundation
 
 struct DisplayPointPeriod: Equatable, Hashable {
+    /// 表示期間の種別
     var type: PeriodType
+    /// 表示期間の基準日
     let anchor: Date
-    
+
     func calcDateRange(calendar: Calendar) -> ClosedRange<Date>? {
+
         guard let decreasedDate = calendar.date(
             byAdding: type.component,
             value: -1,
@@ -21,7 +24,7 @@ struct DisplayPointPeriod: Equatable, Hashable {
         let end = anchor
         return start...end
     }
-    
+
     /// グラフにプロットする粒度としてDateの配列を返す
     func calcDatePeriod(calendar: Calendar) -> [Date] {
         
@@ -84,3 +87,4 @@ struct DisplayPointPeriod: Equatable, Hashable {
         }
     }
 }
+

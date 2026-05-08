@@ -139,7 +139,7 @@ private extension CumulativePointsAreaChartView {
 
     CumulativePointsAreaChartView(
         viewableData: AllUserCumulativeData.make(
-            list: allUserList?.list ?? [],
+            list: allUserList.list,
             displayPeriod: .week
         )
     )
@@ -155,7 +155,7 @@ private extension CumulativePointsAreaChartView {
 
     CumulativePointsAreaChartView(
         viewableData: AllUserCumulativeData.make(
-            list: allUserList?.list ?? [],
+            list: allUserList.list,
             displayPeriod: .month
         )
     )
@@ -171,7 +171,7 @@ private extension CumulativePointsAreaChartView {
 
     CumulativePointsAreaChartView(
         viewableData: AllUserCumulativeData.make(
-            list: allUserList?.list ?? [],
+            list: allUserList.list,
             displayPeriod: .year
         )
     )

@@ -25,46 +25,36 @@ extension PointOfMonthTest.MakeCase {
     func make_excludesItemsOutsideTargetMonth() throws {
 
         // Arrange
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 1
-        let aprilStart = try #require(calendar.date(from: comps))
-        comps.day = 10
-        let april10 = try #require(calendar.date(from: comps))
-        comps.day = 20
-        let april20 = try #require(calendar.date(from: comps))
-        comps.day = 30
-        let aprilEnd = try #require(calendar.date(from: comps))
-        comps.month = 5; comps.day = 10
-        let may10 = try #require(calendar.date(from: comps))
+        let aprilDates: [Date] = (1...30).map { day in
+            Date.previewDate(year: 2026, month: 4, day: day)
+        }
+        let aprilStart = Date.previewDate(year: 2026, month: 4, day: 1)
+        let april10 = Date.previewDate(year: 2026, month: 4, day: 10)
+        let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
+        let may10 = Date.previewDate(year: 2026, month: 5, day: 10)
 
         let dayOfPoints = [
             PointOfDay(indexedDay: april10, point: Point(value: 30)),
             PointOfDay(indexedDay: april20, point: Point(value: 50)),
             PointOfDay(indexedDay: may10, point: Point(value: 50))
         ]
-        let aprilRange = aprilStart...aprilEnd
 
         // Act
         let result = PointOfMonth.make(
             by: dayOfPoints,
             userId: "testUser",
             userName: "テストユーザー",
-            dateRange: aprilRange,
+            dates: aprilDates,
             calendar: calendar
         )
 
-        // Assert
-        let expected = PointOfMonth(
-            userId: "testUser",
-            userName: "テストユーザー",
-            total: .init(value: 80),
-            elements: [
-                PointOfDay(indexedDay: april10, point: Point(value: 30)),
-                PointOfDay(indexedDay: april20, point: Point(value: 50))
-            ],
-            startDate: aprilStart
-        )
-        #expect(result == expected)
+        // Assert: may10 は除外され、データなしの日は0で補完される
+        #expect(result.total.value == 80)
+        #expect(result.elements.count == aprilDates.count)
+        #expect(result.startDate == aprilStart)
+        #expect(result.elements.contains { $0.indexedDay == april10 && $0.point.value == 30 })
+        #expect(result.elements.contains { $0.indexedDay == april20 && $0.point.value == 50 })
+        #expect(!result.elements.contains { $0.indexedDay == may10 })
     }
 }
 

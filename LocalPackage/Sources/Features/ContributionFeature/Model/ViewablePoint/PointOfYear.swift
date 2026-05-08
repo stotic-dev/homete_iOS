@@ -13,28 +13,47 @@ struct PointOfYear: Equatable, Hashable {
     let userName: String
     let total: Point
     let elements: Set<PointOfMonth>
-    let dateRange: ClosedRange<Date>
 
     func hash(into hasher: inout Hasher) {
 
-        hasher.combine(dateRange.lowerBound)
+        hasher.combine(userId)
     }
 
     static func make(
         by dayOfPoints: [PointOfDay],
         userId: String,
         userName: String,
-        dateRange: ClosedRange<Date>,
+        dates: [Date],
         calendar: Calendar
     ) -> Self {
 
-        let targetPoints = dayOfPoints.filter { dateRange.contains($0.indexedDay) }
+        let targetDataList = dayOfPoints.filter { point in
+            dates.contains {
+                calendar.isDate($0, equalTo: point.indexedDay, toGranularity: .month)
+            }
+        }
         let months = PointOfMonth.makeWithSeparated(
-            by: targetPoints,
+            by: targetDataList,
             userId: userId,
             userName: userName,
             calendar: calendar
         )
+        let allMonths: [PointOfMonth] = dates.map { targetMonth in
+            guard let month = months.first(where: { calendar.isDate($0.startDate, equalTo: targetMonth, toGranularity: .month) }) else {
+                let startOfMonth = calendar.date(
+                    from: calendar.dateComponents([.year, .month], from: targetMonth)
+                ) ?? targetMonth
+                return .init(
+                    userId: userId,
+                    userName: userName,
+                    total: .init(value: .zero),
+                    elements: [],
+                    startDate: startOfMonth
+                )
+            }
+            return month
+        }
+        
         let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
             return .init(value: partialResult.value + pointOfMonth.total.value)
         }
@@ -43,8 +62,7 @@ struct PointOfYear: Equatable, Hashable {
             userId: userId,
             userName: userName,
             total: total,
-            elements: .init(months),
-            dateRange: dateRange
+            elements: .init(allMonths)
         )
     }
 }
