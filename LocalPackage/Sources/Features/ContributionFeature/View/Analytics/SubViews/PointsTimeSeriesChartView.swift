@@ -152,7 +152,7 @@ private extension PointsTimeSeriesChartView {
 
     PointsTimeSeriesChartView(
         viewableData: allUserList,
-        selectedDate: .previewDate(year: 2026, month: 4, day: 7)
+        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
     )
     .frame(height: 240)
     .setupEnvironmentForPreview()
