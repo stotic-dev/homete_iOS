@@ -6,6 +6,7 @@
 //
 
 struct PointEntry: Identifiable, Equatable {
+    
     let id: String
     let userName: String
     let point: Int

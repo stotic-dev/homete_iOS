@@ -94,6 +94,24 @@ struct ContributionAnalytics: Equatable {
         )
         }
     }
+    
+    func achieved() -> [UserHouseworkAchieved] {
+        
+        switch displayPeriod.type {
+        case .week:
+            weekPointList.map {
+                .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
+            }
+
+        case .month: monthPointList.map {
+            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
+        }
+
+        case .year: yearPointList.map {
+            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
+        }
+        }
+    }
 }
 
 private extension ContributionAnalytics {

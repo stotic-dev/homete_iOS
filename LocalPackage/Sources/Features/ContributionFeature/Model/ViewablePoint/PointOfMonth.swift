@@ -12,6 +12,7 @@ struct PointOfMonth: Equatable, Hashable {
     let userId: String
     let userName: String
     let total: Point
+    let totalAchievementCount: Int
     let elements: Set<PointOfDay>
     let startDate: Date
 
@@ -32,11 +33,14 @@ struct PointOfMonth: Equatable, Hashable {
             pointOfDayByDate[calendar.startOfDay(for: targetDate)]
                 ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
         }
+        
+        let (totalPoint, totalAchivementCount) = allDays.calcTotalValue()
 
         return .init(
             userId: userId,
             userName: userName,
-            total: calcTotalPoint(allDays),
+            total: totalPoint,
+            totalAchievementCount: totalAchivementCount,
             elements: .init(allDays),
             startDate: dates.first ?? Date()
         )
@@ -69,10 +73,12 @@ struct PointOfMonth: Equatable, Hashable {
 
         return separetedDic.compactMap { components, elements in
             guard let startDate = calendar.date(from: components) else { return nil }
+            let (totalPoint, totalAchivementCount) = Array(elements).calcTotalValue()
             return .init(
                 userId: userId,
                 userName: userName,
-                    total: calcTotalPoint(.init(elements)),
+                total: totalPoint,
+                totalAchievementCount: totalAchivementCount,
                 elements: elements,
                 startDate: startDate
             )
@@ -99,11 +105,18 @@ private extension PointOfMonth {
 
         return calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
     }
+}
 
-    static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
+extension Sequence where Element == PointOfMonth {
+    
+    /// ポイントと家事達成数の合計を返す
+    func calcTotalValue() -> (Point, Int) {
 
-        return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
-            return .init(value: partialResult.value + pointOfDay.point.value)
+        return self.reduce((Point(value: .zero), .zero), { partialResult, monthOfDay in
+            
+            let point = Point(value: partialResult.0.value + monthOfDay.total.value)
+            let achievementCount = partialResult.1 + monthOfDay.totalAchievementCount
+            return (point, achievementCount)
         })
     }
 }

@@ -12,6 +12,7 @@ struct PointOfYear: Equatable, Hashable {
     let userId: String
     let userName: String
     let total: Point
+    let totalAchievementCount: Int
     let elements: Set<PointOfMonth>
 
     func hash(into hasher: inout Hasher) {
@@ -49,6 +50,7 @@ struct PointOfYear: Equatable, Hashable {
                     userId: userId,
                     userName: userName,
                     total: .init(value: .zero),
+                    totalAchievementCount: .zero,
                     elements: [],
                     startDate: startOfMonth
                 )
@@ -56,14 +58,13 @@ struct PointOfYear: Equatable, Hashable {
             return month
         }
 
-        let total = months.reduce(Point(value: .zero)) { partialResult, pointOfMonth in
-            return .init(value: partialResult.value + pointOfMonth.total.value)
-        }
+        let (totalPoint, totalAchievementCount) = allMonths.calcTotalValue()
 
         return .init(
             userId: userId,
             userName: userName,
-            total: total,
+            total: totalPoint,
+            totalAchievementCount: totalAchievementCount,
             elements: .init(allMonths)
         )
     }

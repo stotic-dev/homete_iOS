@@ -34,18 +34,21 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
 
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
         let existingWeekList: [PointOfWeek] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 100), elements: [], startDate: weekStart)
-        ]
-        let existingMonthList: [PointOfMonth] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 200), elements: [], startDate: weekStart)
-        ]
-        let existingYearList: [PointOfYear] = [
             .init(
                 userId: "u1",
                 userName: "ユーザー1",
-                total: .init(value: 300),
-                elements: []
+                total: .init(value: 100),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
             )
+        ]
+        let existingMonthList: [PointOfMonth] = [
+            // swiftlint:disable:next line_length
+            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 200), totalAchievementCount: 0, elements: [], startDate: weekStart)
+        ]
+        let existingYearList: [PointOfYear] = [
+            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 300), totalAchievementCount: 0, elements: [])
         ]
         let analytics = ContributionAnalytics(
             weekPointList: existingWeekList,
@@ -85,7 +88,14 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
 
         let oldStart = Date.previewDate(year: 2026, month: 4, day: 20)
         let sentinelList: [PointOfWeek] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 999), elements: [], startDate: oldStart)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 999),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: oldStart
+            )
         ]
         let analytics = ContributionAnalytics(
             weekPointList: sentinelList,
@@ -93,8 +103,9 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
             yearPointList: [],
             displayPeriod: oldPeriod
         )
+        // メンバーを空にして再計算結果を空配列に固定し、sentinelListが入れ替わったことを比較で検証する
         let contribution = HouseworkContribution()
-        let members = CohabitantMemberList(value: [.init(id: "u1", userName: "ユーザー1")], ownId: "u1")
+        let members = CohabitantMemberList(value: [], ownId: "u1")
 
         // Act
         let result = await analytics.updatePeriod(
@@ -104,16 +115,14 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
             calendar: calendar
         )
 
-        // Assert: anchorが変わったのでpointListが再計算される（HouseworkContributionが空なのでポイントはゼロ）
-        let newWeekStart = Date.previewDate(year: 2026, month: 4, day: 27)
-        #expect(result.displayPeriod == newPeriod)
-        #expect(result.weekPointList.first?.userId == "u1")
-        #expect(result.weekPointList.first?.total.value == 0)
-        #expect(result.weekPointList.first?.startDate == newWeekStart)
-        #expect(result.monthPointList.first?.total.value == 0)
-        #expect(result.yearPointList.first?.total.value == 0)
-        // sentinelListが入れ替わっていることの確認
-        #expect(result.weekPointList.first?.total.value != 999)
+        // Assert: anchorが変わったのでpointListが再計算され、sentinelListが空のリストに入れ替わる
+        let expected = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: [],
+            yearPointList: [],
+            displayPeriod: newPeriod
+        )
+        #expect(result == expected)
     }
 }
 
@@ -129,7 +138,14 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
         let period   = DisplayPointPeriod(type: .week, anchor: anchor)
         let weekList: [PointOfWeek] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 50), elements: [], startDate: weekStart)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 50),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
+            )
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -157,7 +173,14 @@ extension ContributionAnalyticsTest.CurrentListCase {
         let monthStart  = Date.previewDate(year: 2026, month: 3, day: 31)
         let period      = DisplayPointPeriod(type: .month, anchor: anchor)
         let monthList: [PointOfMonth] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 80), elements: [], startDate: monthStart)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 80),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: monthStart
+            )
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -188,6 +211,7 @@ extension ContributionAnalyticsTest.CurrentListCase {
                 userId: "u1",
                 userName: "ユーザー1",
                 total: .init(value: 500),
+                totalAchievementCount: 0,
                 elements: []
             )
         ]

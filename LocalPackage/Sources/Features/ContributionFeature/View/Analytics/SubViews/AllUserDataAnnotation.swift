@@ -77,4 +77,3 @@ private extension AllUserDataAnnotation {
     .setupEnvironmentForPreview()
     .padding(.space16)
 }
-

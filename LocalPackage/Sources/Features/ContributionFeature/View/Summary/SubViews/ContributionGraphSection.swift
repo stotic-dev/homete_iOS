@@ -34,7 +34,7 @@ struct ContributionGraphSection: View {
             summaries: summaries
         )
         ContributionPieChart(
-            summaries: summaries
+            data: summaries.achieved()
         )
     }
 }

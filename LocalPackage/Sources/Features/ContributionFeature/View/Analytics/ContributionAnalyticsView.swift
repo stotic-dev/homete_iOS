@@ -20,8 +20,10 @@ struct ContributionAnalyticsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: .space16) {
-                if let currentList = analytics?.currentList(calendar: calendar) {
-                    graphContent(data: currentList)
+                if let analytics {
+                    graphContent(data: analytics.currentList(calendar: calendar))
+                    ContributionPieChart(data: analytics.achieved())
+                        .frame(height: 240)
                 } else {
                     // TODO: データがない旨の空表示を実装する
                 }

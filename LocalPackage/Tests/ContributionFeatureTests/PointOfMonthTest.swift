@@ -93,7 +93,8 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
             .init(
                 userId: "testUser",
                 userName: "テストユーザー",
-                    total: .init(value: 80),
+                total: .init(value: 80),
+                totalAchievementCount: 2,
                 elements: [
                     PointOfDay(indexedDay: april10, point: Point(value: 30)),
                     PointOfDay(indexedDay: april20, point: Point(value: 50))
@@ -103,7 +104,8 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
             .init(
                 userId: "testUser",
                 userName: "テストユーザー",
-                    total: .init(value: 20),
+                total: .init(value: 20),
+                totalAchievementCount: 1,
                 elements: [
                     PointOfDay(indexedDay: may10, point: Point(value: 20))
                 ],

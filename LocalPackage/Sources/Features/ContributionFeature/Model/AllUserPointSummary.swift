@@ -34,4 +34,12 @@ struct AllUserPointSummary: Equatable, Sendable {
                 )
             }
     }
+    
+    /// サマリー情報からユーザー毎の達成情報のモデルを返す
+    func achieved() -> [UserHouseworkAchieved] {
+        
+        return items.map {
+            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.achievedCount)
+        }
+    }
 }

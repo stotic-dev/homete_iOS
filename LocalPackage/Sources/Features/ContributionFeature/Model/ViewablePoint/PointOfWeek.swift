@@ -12,6 +12,7 @@ struct PointOfWeek: Equatable, Hashable {
     let userId: String
     let userName: String
     let total: Point
+    let totalAchievementCount: Int
     let elements: Set<PointOfDay>
     let startDate: Date
 
@@ -35,10 +36,12 @@ struct PointOfWeek: Equatable, Hashable {
             pointOfDayByDate[calendar.startOfDay(for: targetDate)]
                 ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
         }
+        let (totalPoint, totalAchievementCount) = allDays.calcTotalValue()
         return .init(
             userId: userId,
             userName: userName,
-            total: calcTotalPoint(allDays),
+            total: totalPoint,
+            totalAchievementCount: totalAchievementCount,
             elements: .init(allDays),
             startDate: dates.first ?? Date()
         )
@@ -55,15 +58,5 @@ extension PointOfWeek: GenerableViewablePointList {
             total: total,
             elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
         )
-    }
-}
-
-private extension PointOfWeek {
-
-    static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
-
-        return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
-            return .init(value: partialResult.value + pointOfDay.point.value)
-        })
     }
 }

@@ -21,3 +21,17 @@ struct PointOfDay: Equatable, Hashable {
         self.achievedCount = achievedCount
     }
 }
+
+extension Sequence where Element == PointOfDay {
+    
+    /// ポイントと家事達成数の合計を返す
+    func calcTotalValue() -> (Point, Int) {
+
+        return self.reduce((Point(value: .zero), .zero), { partialResult, pointOfDay in
+            
+            let point = Point(value: partialResult.0.value + pointOfDay.point.value)
+            let achievementCount = partialResult.1 + pointOfDay.achievedCount
+            return (point, achievementCount)
+        })
+    }
+}
