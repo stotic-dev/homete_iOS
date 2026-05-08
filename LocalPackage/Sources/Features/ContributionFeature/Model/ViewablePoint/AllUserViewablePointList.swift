@@ -18,6 +18,7 @@ struct AllUserViewablePointList: Equatable {
         list: [T],
         displayPeriod: DisplayPointPeriod.PeriodType
     ) -> Self {
+        
         return .init(
             list: list.map { $0.generate() },
             displayPeriod: displayPeriod
@@ -26,6 +27,7 @@ struct AllUserViewablePointList: Equatable {
     
     /// 指定日のユーザー毎のポイント取得
     func pointEntries(for date: Date, calendar: Calendar) -> [PointEntry] {
+        
         return list.compactMap { userData in
             guard let element = userData.elements.first(where: {
                 calendar.isDate($0.date, equalTo: date, toGranularity: displayPeriod.granularity)
@@ -36,7 +38,8 @@ struct AllUserViewablePointList: Equatable {
     
     /// タップ位置の日付に最も近い、データが存在する日付を返す
     func nearestDate(to date: Date) -> Date? {
-        list.flatMap { $0.elements.map(\.date) }
+        
+        return list.flatMap { $0.elements.map(\.date) }
             .min { abs($0.timeIntervalSince(date)) < abs($1.timeIntervalSince(date)) }
     }
 }
