@@ -5,11 +5,11 @@
 import AuthenticationServices
 import HometeDomain
 
-final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
+public final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
 
     private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
 
-    func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
+    public func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
 
         return try await withCheckedThrowingContinuation { continuation in
 
@@ -23,7 +23,7 @@ final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
         }
     }
 
-    func authorizationController(
+    public func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
     ) {
@@ -33,7 +33,7 @@ final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
         }
     }
 
-    func authorizationController(
+    public func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithError error: any Error
     ) {

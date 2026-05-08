@@ -4,7 +4,7 @@
 
 import FirebaseFirestore
 
-extension Firestore {
+public extension Firestore {
 
     /// アカウントの参照を取得する
     func accountRef(id: String) -> DocumentReference {

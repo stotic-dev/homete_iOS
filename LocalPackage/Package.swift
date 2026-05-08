@@ -134,6 +134,18 @@ let package = Package(
             ]
         ),
         .target(
+            name: "HouseworkTemplateFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            path: "./Sources/Features/HouseworkTemplateFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
             name: "HometeInfrastructure",
             dependencies: [
                 "HometeDomain",
@@ -156,6 +168,7 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "HometeInfrastructure"
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),

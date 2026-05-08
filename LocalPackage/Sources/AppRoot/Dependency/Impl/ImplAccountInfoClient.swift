@@ -3,6 +3,7 @@
 //
 
 import FirebaseFirestore
+import HometeInfrastructure
 import HometeDomain
 
 extension AccountInfoClient {

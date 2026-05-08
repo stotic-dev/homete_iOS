@@ -1,5 +1,6 @@
 import FirebaseFirestore
 import HometeDomain
+import HometeInfrastructure
 
 extension HouseworkTemplateClient {
 
