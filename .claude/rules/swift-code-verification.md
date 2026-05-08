@@ -7,7 +7,7 @@ applyTo: "**/*.swift"
 Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず `swift-code-verification` スキルに従って検証を実行すること。
 
 検証フロー（ビルド → SwiftLint → ユニットテスト → 必要ならVRT）の詳細は当該スキルに集約されている:
-- `~/.claude/skills/swift-code-verification/SKILL.md`
+- `.claude/skills/swift-code-verification/SKILL.md`
 
 **ユニットテストは省略不可。必ず実行すること。**
 
