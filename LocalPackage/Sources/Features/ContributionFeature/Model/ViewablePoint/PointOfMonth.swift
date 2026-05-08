@@ -7,46 +7,50 @@
 
 import Foundation
 
-struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointList {
-    
+struct PointOfMonth: Equatable, Hashable {
+
     let userId: String
-    let displayPeriod: DisplayPointPeriod
+    let userName: String
     let total: Point
     let elements: Set<PointOfDay>
-    
-    var point: Point { total }
-    
+    let startDate: Date
+
     func hash(into hasher: inout Hasher) {
-        
-        hasher.combine(displayPeriod)
+        hasher.combine(startDate)
     }
-    
+
     static func make(
         by pointOfDay: [PointOfDay],
         userId: String,
-        period: DateComponents,
-        calendar: Calendar) -> Self {
-            
-            let targetMonthPoints = pointOfDay.filter {
-                monthComponent(pointOfDay: $0, calendar: calendar) == period
-            }
-            
-            return .init(
-                userId: userId,
-                displayPeriod: .init(type: .month, components: period),
-                total: calcTotalPoint(targetMonthPoints),
-                elements: .init(targetMonthPoints)
-            )
-        }
-    
+        userName: String,
+        dateRange: ClosedRange<Date>,
+        calendar: Calendar
+    ) -> Self {
+
+        let targetMonthPoints = pointOfDay.filter { dateRange.contains($0.indexedDay) }
+
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: calcTotalPoint(targetMonthPoints),
+            elements: .init(targetMonthPoints),
+            startDate: dateRange.lowerBound
+        )
+    }
+
     /// 月毎に分けた月間ポイントのリスト
-    static func makeWithSeparated(by pointOfDays: [PointOfDay], userId: String, calendar: Calendar) -> [Self] {
-        
+    static func makeWithSeparated(
+        by pointOfDays: [PointOfDay],
+        userId: String,
+        userName: String,
+        calendar: Calendar
+    ) -> [Self] {
+
         let separetedDic = pointOfDays.reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
-            
+
             let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
             var result = partialResult
-            
+
             if let elements = result[month] {
                 var currentMonthElements = elements
                 currentMonthElements.insert(pointOfDay)
@@ -54,18 +58,33 @@ struct PointOfMonth: Equatable, Hashable, ViewablePointElement, ViewablePointLis
             } else {
                 result[month] = [pointOfDay]
             }
-            
+
             return result
         }
-        
-        return separetedDic.map {
-            .init(
+
+        return separetedDic.compactMap { components, elements in
+            guard let startDate = calendar.date(from: components) else { return nil }
+            return .init(
                 userId: userId,
-                displayPeriod: .init(type: .month, components: $0.key),
-                total: calcTotalPoint(.init($0.value)),
-                elements: $0.value
+                userName: userName,
+                    total: calcTotalPoint(.init(elements)),
+                elements: elements,
+                startDate: startDate
             )
         }
+    }
+}
+
+extension PointOfMonth: GenerableViewablePointList {
+    
+    func generate() -> ViewablePointList {
+        
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: total,
+            elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
+        )
     }
 }
 

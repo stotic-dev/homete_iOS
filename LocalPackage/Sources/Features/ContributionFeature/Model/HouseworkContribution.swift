@@ -8,7 +8,7 @@
 import Foundation
 import HometeDomain
 
-struct HouseworkContribution: Equatable {
+public struct HouseworkContribution: Equatable, Sendable {
     
     private(set) var list: [String: [PointOfDay]] = [:]
     
@@ -25,61 +25,79 @@ struct HouseworkContribution: Equatable {
         return .init(list: list)
     }
     
-    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfYear] {
-        
-        return allUserIdList.map {
-            guard let userPointList = list[$0] else {
+    func viewablePointList(
+        members: CohabitantMemberList,
+        dateRange: ClosedRange<Date>,
+        calendar: Calendar
+    ) -> [PointOfYear] {
+
+        return members.value.map { member in
+            guard let userPointList = list[member.id] else {
                 return .init(
-                    userId: $0,
-                    displayPeriod: .init(type: .year, components: period),
+                    userId: member.id,
+                    userName: member.userName,
                     total: .init(value: .zero),
-                    elements: []
+                    elements: [],
+                    dateRange: dateRange
                 )
             }
             return .make(
                 by: userPointList,
-                userId: $0,
-                period: period,
+                userId: member.id,
+                userName: member.userName,
+                dateRange: dateRange,
                 calendar: calendar
             )
         }
     }
-    
-    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfMonth] {
-        
-        return allUserIdList.map {
-            guard let userPointList = list[$0] else {
+
+    func viewablePointList(
+        members: CohabitantMemberList,
+        dateRange: ClosedRange<Date>,
+        calendar: Calendar
+    ) -> [PointOfMonth] {
+
+        return members.value.map { member in
+            guard let userPointList = list[member.id] else {
                 return .init(
-                    userId: $0,
-                    displayPeriod: .init(type: .month, components: period),
+                    userId: member.id,
+                    userName: member.userName,
                     total: .init(value: .zero),
-                    elements: []
+                    elements: [],
+                    startDate: dateRange.lowerBound
                 )
             }
             return .make(
                 by: userPointList,
-                userId: $0,
-                period: period,
+                userId: member.id,
+                userName: member.userName,
+                dateRange: dateRange,
                 calendar: calendar
             )
         }
     }
-    
-    func viewablePointList(allUserIdList: [String], period: DateComponents, calendar: Calendar) -> [PointOfWeek] {
-        
-        return allUserIdList.map {
-            guard let userPointList = list[$0] else {
+
+    func viewablePointList(
+        members: CohabitantMemberList,
+        dateRange: ClosedRange<Date>,
+        calendar: Calendar
+    ) -> [PointOfWeek] {
+
+        return members.value.map { member in
+            guard let userPointList = list[member.id] else {
                 return .init(
-                    userId: $0,
-                    displayPeriod: .init(type: .month, components: period),
+                    userId: member.id,
+                    userName: member.userName,
                     total: .init(value: .zero),
-                    elements: []
+                    elements: [],
+                    startDate: dateRange.lowerBound
                 )
             }
             return .make(
                 by: userPointList,
-                userId: $0,
-                period: period,
+                userId: member.id,
+                userName: member.userName,
+                dateRange: dateRange,
                 calendar: calendar
             )
         }
@@ -92,7 +110,8 @@ struct HouseworkContribution: Equatable {
         myUserId: String
     ) -> AllUserPointSummary {
 
-        let userItems: [UserPointSummary] = members.value.compactMap { member in
+        let userItems: [UserPointSummary] = members.value
+            .compactMap { member in
 
             guard let targetList = list[member.id]?.filter({
                 calendar.isDate($0.indexedDay, equalTo: month, toGranularity: .month)

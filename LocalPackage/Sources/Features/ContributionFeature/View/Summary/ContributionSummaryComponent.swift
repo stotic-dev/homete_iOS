@@ -12,27 +12,31 @@ import SwiftUI
 public struct ContributionSummaryComponent: View {
     
     @Environment(ContributionStore.self) var contributionStore
-    @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(\.cohabitantMembers) var members
     @Environment(\.loginContext.account.id) var userId
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
     @State var summary: AllUserPointSummary = .init()
+    @State var isShowAnalytics = false
 
     public static func make() -> some View {
-        DependenciesInjectLayer {
-            ContributionSummaryComponent()
-                .environment(ContributionStore(
-                    houseworkManager: $0.houseworkManager,
-                    calendar: Calendar.autoupdatingCurrent
-                ))
-        }
+        ContributionSummaryComponent()
     }
 
     public var body: some View {
-        ContributionSummaryContent(summaries: summary)
+        ContributionSummaryContent(isShowAnalytics: $isShowAnalytics, summaries: summary)
+            .onChange(of: members) {
+                Task {
+                    await onChangeContribution()
+                }
+            }
             .task(id: contributionStore.contiribution) {
                 await onChangeContribution()
+            }
+            .navigationDestination(isPresented: $isShowAnalytics) {
+                ContributionAnalyticsScreen.make()
+                    .environment(contributionStore)
             }
     }
 }
@@ -42,7 +46,8 @@ private extension ContributionSummaryComponent {
     func onChangeContribution() async {
 
         let contribution = contributionStore.contiribution
-        let members = cohabitantStore.members
+        print("did change contribution: \(contribution), members: \(members)")
+        
         let myUserId = userId
 
         let summary = await Task.detached {
@@ -64,18 +69,30 @@ struct ContributionSummaryContent: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
+    
+    @Binding var isShowAnalytics: Bool
 
     let summaries: AllUserPointSummary
     @State var isShowingLegend = false
 
     var body: some View {
         VStack(spacing: .zero) {
-            Text(monthTitle)
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, .space16)
-                .padding(.vertical, .space16)
+            HStack {
+                Text(monthTitle)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                if summaries.hasData {
+                    Button {
+                        isShowAnalytics = true
+                    } label: {
+                        Image(systemName: "chart.xyaxis.line")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space16)
             if summaries.hasData {
                 Divider()
                 ContributionGraphSection(summaries: summaries)
@@ -118,6 +135,7 @@ struct ContributionSummaryContent: View {
 
 #Preview("ContributionSummaryContent_データ有り", traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
+        isShowAnalytics: .constant(false),
         summaries: AllUserPointSummary(items: [
             UserPointSummary(
                 userId: "user1",
@@ -141,6 +159,7 @@ struct ContributionSummaryContent: View {
 
 #Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
+        isShowAnalytics: .constant(false),
         summaries: AllUserPointSummary(items: [])
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))

@@ -54,9 +54,9 @@ struct AccountAuthStoreTest {
     }
     
     @Test("ログアウト時はローカルのログイン状態をログアウトにしてログアウト処理を行い、イベントログを送信する")
-    func test_logout() async throws {
+    func test_logout() async {
 
-        try await confirmation(expectedCount: 3) { confirmation in
+        await confirmation(expectedCount: 3) { confirmation in
 
             let store = AccountAuthStore(
                 accountAuthClient: .init(

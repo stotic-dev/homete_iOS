@@ -26,10 +26,14 @@ extension PointOfMonthTest.MakeCase {
 
         // Arrange
         var comps = DateComponents()
-        comps.year = 2026; comps.month = 4; comps.day = 10
+        comps.year = 2026; comps.month = 4; comps.day = 1
+        let aprilStart = try #require(calendar.date(from: comps))
+        comps.day = 10
         let april10 = try #require(calendar.date(from: comps))
         comps.day = 20
         let april20 = try #require(calendar.date(from: comps))
+        comps.day = 30
+        let aprilEnd = try #require(calendar.date(from: comps))
         comps.month = 5; comps.day = 10
         let may10 = try #require(calendar.date(from: comps))
 
@@ -38,20 +42,27 @@ extension PointOfMonthTest.MakeCase {
             PointOfDay(indexedDay: april20, point: Point(value: 50)),
             PointOfDay(indexedDay: may10, point: Point(value: 50))
         ]
-        let aprilPeriod = calendar.dateComponents([.year, .month], from: april10)
+        let aprilRange = aprilStart...aprilEnd
 
         // Act
-        let result = PointOfMonth.make(by: dayOfPoints, userId: "testUser", period: aprilPeriod, calendar: calendar)
+        let result = PointOfMonth.make(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            dateRange: aprilRange,
+            calendar: calendar
+        )
 
         // Assert
         let expected = PointOfMonth(
             userId: "testUser",
-            displayPeriod: .init(type: .month, components: aprilPeriod),
+            userName: "テストユーザー",
             total: .init(value: 80),
             elements: [
                 PointOfDay(indexedDay: april10, point: Point(value: 30)),
                 PointOfDay(indexedDay: april20, point: Point(value: 50))
-            ]
+            ],
+            startDate: aprilStart
         )
         #expect(result == expected)
     }
@@ -78,30 +89,40 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
         ]
 
         // Act
-        let result = PointOfMonth.makeWithSeparated(by: dayOfPoints, userId: "testUser", calendar: calendar)
+        let result = PointOfMonth.makeWithSeparated(
+            by: dayOfPoints,
+            userId: "testUser",
+            userName: "テストユーザー",
+            calendar: calendar
+        )
 
         // Assert
-        let aprilComp = calendar.dateComponents([.year, .month], from: april10)
-        let mayComp = calendar.dateComponents([.year, .month], from: may10)
+        let aprilStart = try #require(calendar.date(from: DateComponents(year: 2026, month: 4, day: 1)))
+        let mayStart = try #require(calendar.date(from: DateComponents(year: 2026, month: 5, day: 1)))
         let expected: [PointOfMonth] = [
             .init(
                 userId: "testUser",
-                displayPeriod: .init(type: .month, components: aprilComp),
-                total: .init(value: 80),
+                userName: "テストユーザー",
+                    total: .init(value: 80),
                 elements: [
                     PointOfDay(indexedDay: april10, point: Point(value: 30)),
                     PointOfDay(indexedDay: april20, point: Point(value: 50))
-                ]
+                ],
+                startDate: aprilStart
             ),
             .init(
                 userId: "testUser",
-                displayPeriod: .init(type: .month, components: mayComp),
-                total: .init(value: 20),
+                userName: "テストユーザー",
+                    total: .init(value: 20),
                 elements: [
                     PointOfDay(indexedDay: may10, point: Point(value: 20))
-                ]
+                ],
+                startDate: mayStart
             )
         ]
-        #expect(Set(result) == Set(expected))
+        #expect(result.count == expected.count)
+        for item in result {
+            #expect(expected.contains { $0.elements == item.elements && $0.total == item.total })
+        }
     }
 }

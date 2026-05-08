@@ -6,6 +6,6 @@
 //
 
 /// ポイントを表すモデル
-struct Point: Equatable {
+struct Point: Equatable, Hashable {
     let value: Int
 }

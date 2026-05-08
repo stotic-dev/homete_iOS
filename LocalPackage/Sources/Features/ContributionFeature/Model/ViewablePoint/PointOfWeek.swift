@@ -7,47 +7,57 @@
 
 import Foundation
 
-struct PointOfWeek: Equatable, Hashable, ViewablePointElement, ViewablePointList {
-    
+struct PointOfWeek: Equatable, Hashable {
+
     let userId: String
-    let displayPeriod: DisplayPointPeriod
+    let userName: String
     let total: Point
     let elements: Set<PointOfDay>
+    let startDate: Date
 
     var point: Point { total }
+    var date: Date { startDate }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(displayPeriod)
+        hasher.combine(startDate)
     }
 
     static func make(
         by pointOfDays: [PointOfDay],
         userId: String,
-        period: DateComponents,
+        userName: String,
+        dateRange: ClosedRange<Date>,
         calendar: Calendar
     ) -> Self {
-        
-        let targetWeekPoints = pointOfDays.filter {
-            weekComponent(pointOfDay: $0, calendar: calendar) == period
-        }
+
+        let targetWeekPoints = pointOfDays.filter { dateRange.contains($0.indexedDay) }
         return .init(
             userId: userId,
-            displayPeriod: .init(type: .week, components: period),
+            userName: userName,
             total: calcTotalPoint(targetWeekPoints),
-            elements: .init(targetWeekPoints)
+            elements: .init(targetWeekPoints),
+            startDate: dateRange.lowerBound
+        )
+    }
+}
+
+extension PointOfWeek: GenerableViewablePointList {
+    
+    func generate() -> ViewablePointList {
+        
+        return .init(
+            userId: userId,
+            userName: userName,
+            total: total,
+            elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
         )
     }
 }
 
 private extension PointOfWeek {
 
-    static func weekComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-        
-        return calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: pointOfDay.indexedDay)
-    }
-    
     static func calcTotalPoint(_ pointOfDay: [PointOfDay]) -> Point {
-        
+
         return pointOfDay.reduce(Point(value: .zero), { partialResult, pointOfDay in
             return .init(value: partialResult.value + pointOfDay.point.value)
         })

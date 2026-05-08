@@ -35,6 +35,7 @@ public extension DesignSystem {
         case headLineS
         case body
         case caption
+        case boldCaption
 
         var value: SwiftUI.Font {
 
@@ -45,6 +46,7 @@ public extension DesignSystem {
             case .headLineS: .headline
             case .body: .body
             case .caption: .caption
+            case .boldCaption: .caption.bold()
             }
         }
     }

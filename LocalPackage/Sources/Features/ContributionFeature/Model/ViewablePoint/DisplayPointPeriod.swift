@@ -8,8 +8,29 @@
 import Foundation
 
 struct DisplayPointPeriod: Equatable, Hashable {
-    let type: PeriodType
-    let components: DateComponents
+    var type: PeriodType
+    let anchor: Date
+    
+    func calcDateRange(calendar: Calendar) -> ClosedRange<Date>? {
+        guard let decreasedDate = calendar.date(
+            byAdding: type.component,
+            value: -1,
+            to: anchor
+        ),
+              let start = calendar.date(byAdding: .day, value: 1, to: decreasedDate) else { return nil }
+        let end = anchor
+        return start...end
+    }
+    
+    func shiftPeriod(by value: Int, calendar: Calendar) -> Self {
+        
+        guard let newAnchor = calendar.date(
+            byAdding: type.component,
+            value: value,
+            to: anchor
+        ) else { return self }
+        return .init(type: type, anchor: newAnchor)
+    }
 
     enum PeriodType {
         /// 週
@@ -18,5 +39,22 @@ struct DisplayPointPeriod: Equatable, Hashable {
         case month
         /// 年
         case year
+        
+        /// 対応する期間の範囲
+        var component: Calendar.Component {
+            switch self {
+            case .week: .weekOfMonth
+            case .month: .month
+            case .year: .year
+            }
+        }
+        
+        /// 期間内のデータの粒度
+        var granularity: Calendar.Component {
+            switch self {
+            case .year: .month
+            case .month, .week: .day
+            }
+        }
     }
 }

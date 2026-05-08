@@ -5,7 +5,10 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
-protocol ViewablePointElement: Equatable, Hashable {
+import Foundation
 
-    var point: Point { get }
+struct ViewablePointElement: Equatable, Hashable {
+
+    let point: Point
+    let date: Date
 }

@@ -5,16 +5,19 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
-protocol ViewablePointList<Element>: Equatable, Hashable {
-
-    associatedtype Element: ViewablePointElement
+struct ViewablePointList: Equatable, Hashable {
 
     /// ユーザーID
-    var userId: String { get }
-    /// 表示区間
-    var displayPeriod: DisplayPointPeriod { get }
+    let userId: String
+    /// ユーザー名
+    let userName: String
     /// トータルのポイント
-    var total: Point { get }
+    let total: Point
     /// 表示するポイントのリスト
-    var elements: Set<Element> { get }
+    let elements: Set<ViewablePointElement>
+}
+
+/// ViewablePointListを生成するインターフェース
+protocol GenerableViewablePointList {
+    func generate() -> ViewablePointList
 }

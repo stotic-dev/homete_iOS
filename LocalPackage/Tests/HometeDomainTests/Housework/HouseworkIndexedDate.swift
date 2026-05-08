@@ -38,7 +38,7 @@ extension HouseworkIndexedDateTest.CalcTargetPeriodCase {
             .previewDate(year: 2026, month: 1, day: 31),
             .previewDate(year: 2026, month: 2, day: 1),
             .previewDate(year: 2026, month: 2, day: 2),
-            .previewDate(year: 2026, month: 2, day: 3),
+            .previewDate(year: 2026, month: 2, day: 3)
         ]
         #expect(result == expected)
     }

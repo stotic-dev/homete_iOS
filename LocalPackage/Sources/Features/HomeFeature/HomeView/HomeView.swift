@@ -5,15 +5,13 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
+import ContributionFeature
 import HometeDomain
 import HometeUI
 import SwiftUI
 
 public struct HomeView: View {
 
-    public init() {}
-
-    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
@@ -21,17 +19,23 @@ public struct HomeView: View {
     @Environment(\.calendar) var calendar
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
-    
+    let contributionStore: ContributionStore?
+    let cohabitantStore: CohabitantStore?
+
     public var body: some View {
         NavigationStack {
             ZStack {
-                if loginContext.hasCohabitant {
+                if loginContext.hasCohabitant,
+                   let contributionStore,
+                   let cohabitantStore {
                     RegisteredContent()
+                        .environment(contributionStore)
+                        .environment(cohabitantStore)
                         .task {
-                            await didAppearRegisteredContent()
+                            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
                         }
                 }
-                else {
+                else if !loginContext.hasCohabitant {
                     NotRegisteredContent(
                         isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
                     )
@@ -55,12 +59,25 @@ public struct HomeView: View {
     }
 }
 
+public extension HomeView {
+    
+    static func make(
+        contributionStore: ContributionStore?,
+        cohabitantStore: CohabitantStore?
+    ) -> some View {
+        HomeView(
+            contributionStore: contributionStore,
+            cohabitantStore: cohabitantStore
+        )
+    }
+}
+
 // MARK: プレゼンテーションロジック
 
 private extension HomeView {
-    
-    func didAppearRegisteredContent() async {
-        
+
+    func didAppearRegisteredContent(cohabitantStore: CohabitantStore) async {
+
         guard let cohabitantId = loginContext.account.cohabitantId else {
             // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
             assertionFailure("Required param is nil(cohabitantId)")
@@ -73,30 +90,9 @@ private extension HomeView {
             calendar: calendar
         )
     }
-    
+
     func didAppearNotRegisteredContent() async {
-        
-        await cohabitantStore.removeSnapshotListener()
-    }
-}
 
-#Preview("HomeView_未登録時") {
-    NavigationStack {
-        HomeView()
-            .injectAppStorageWithPreview("HomeView_未登録時")
+        await cohabitantStore?.removeSnapshotListener()
     }
-    .environment(CohabitantStore())
-}
-
-#Preview("HomeView_登録時") {
-    NavigationStack {
-        HomeView()
-            .environment(\.loginContext, .init(account: .init(
-                id: "",
-                userName: "",
-                fcmToken: nil,
-                cohabitantId: "dummy"
-            )))
-    }
-    .environment(CohabitantStore())
 }
