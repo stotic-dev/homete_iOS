@@ -64,7 +64,9 @@ struct CohabitantStoreTest {
 
         let waiterForUpdateMembers = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking({ store.members }) {
+                ObservationHelper.continuousObservationTracking {
+                    store.members
+                } onChange: {
                     continuation.resume(returning: ())
                 }
             }

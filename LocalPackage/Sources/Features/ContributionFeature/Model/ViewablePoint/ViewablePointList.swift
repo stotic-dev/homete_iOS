@@ -15,6 +15,10 @@ struct ViewablePointList: Equatable, Hashable {
     let total: Point
     /// 表示するポイントのリスト
     let elements: Set<ViewablePointElement>
+    
+    var sortedElements: [ViewablePointElement] {
+        elements.sorted { $0.date < $1.date }
+    }
 }
 
 /// ViewablePointListを生成するインターフェース

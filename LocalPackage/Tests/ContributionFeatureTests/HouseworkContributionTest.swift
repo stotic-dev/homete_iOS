@@ -93,8 +93,20 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected: [UserPointSummary] = [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 30), achievedCount: 1),
-            UserPointSummary(userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 50), achievedCount: 1)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 30),
+                achievedCount: 1
+            ),
+            UserPointSummary(
+                userId: "bob",
+                userName: "ボブ",
+                isMe: false,
+                monthlyPoint: .init(value: 50),
+                achievedCount: 1
+            )
         ]
         #expect(result.items.sorted(by: { $0.userId < $1.userId }) == expected.sorted(by: { $0.userId < $1.userId }))
     }
@@ -122,7 +134,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 30), achievedCount: 1)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 30),
+                achievedCount: 1
+            )
         ])
         #expect(result == expected)
     }
@@ -133,9 +151,29 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let items: [HouseworkItem] = [
-            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice", reviewerId: "bob"),
-            .makeForTest(id: 2, indexedDate: jan10, point: 20, state: .completed, executorId: "alice"),
-            .makeForTest(id: 3, indexedDate: jan10, point: 40, state: .completed, executorId: "alice", reviewerId: "bob")
+            .makeForTest(
+                id: 1,
+                indexedDate: jan10,
+                point: 30,
+                state: .completed,
+                executorId: "alice",
+                reviewerId: "bob"
+            ),
+            .makeForTest(
+                id: 2,
+                indexedDate: jan10,
+                point: 20,
+                state: .completed,
+                executorId: "alice"
+            ),
+            .makeForTest(
+                id: 3,
+                indexedDate: jan10,
+                point: 40,
+                state: .completed,
+                executorId: "alice",
+                reviewerId: "bob"
+            )
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -150,7 +188,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 90), achievedCount: 3)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 90),
+                achievedCount: 3
+            )
         ])
         #expect(result == expected)
     }
@@ -162,8 +206,22 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let feb10 = Date.previewDate(year: 2026, month: 2, day: 10)
         let items: [HouseworkItem] = [
-            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice", reviewerId: "bob"),
-            .makeForTest(id: 2, indexedDate: feb10, point: 50, state: .completed, executorId: "alice", reviewerId: "bob")
+            .makeForTest(
+                id: 1,
+                indexedDate: jan10,
+                point: 30,
+                state: .completed,
+                executorId: "alice",
+                reviewerId: "bob"
+            ),
+            .makeForTest(
+                id: 2,
+                indexedDate: feb10,
+                point: 50,
+                state: .completed,
+                executorId: "alice",
+                reviewerId: "bob"
+            )
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -178,7 +236,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 30), achievedCount: 1)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 30),
+                achievedCount: 1
+            )
         ])
         #expect(result == expected)
     }
@@ -201,7 +265,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 0), achievedCount: 0)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 0),
+                achievedCount: 0
+            )
         ])
         #expect(result == expected)
     }
@@ -228,7 +298,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
 
         // Assert
         let expected = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 30), achievedCount: 1)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 30),
+                achievedCount: 1
+            )
         ])
         #expect(result == expected)
     }

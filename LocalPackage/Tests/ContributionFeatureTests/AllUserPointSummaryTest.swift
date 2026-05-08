@@ -17,13 +17,32 @@ struct AllUserPointSummaryTest {
 extension AllUserPointSummaryTest.MakeRankingCase {
 
     @Test("ポイント降順でランク付けされ、自分のユーザーIDと一致するアイテムは自分自身のアイテムであるフラグが立つ")
+    // swiftlint:disable:next function_body_length
     func makeRanking_assignsRanksInDescendingPointOrder() {
 
         // Arrange
         let summary = AllUserPointSummary(items: [
-            UserPointSummary(userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2),
-            UserPointSummary(userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 120), achievedCount: 5),
-            UserPointSummary(userId: "carol", userName: "キャロル", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 3)
+            UserPointSummary(
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 40),
+                achievedCount: 2
+            ),
+            UserPointSummary(
+                userId: "bob",
+                userName: "ボブ",
+                isMe: false,
+                monthlyPoint: .init(value: 120),
+                achievedCount: 5
+            ),
+            UserPointSummary(
+                userId: "carol",
+                userName: "キャロル",
+                isMe: false,
+                monthlyPoint: .init(value: 80),
+                achievedCount: 3
+            )
         ])
 
         // Act
@@ -31,9 +50,30 @@ extension AllUserPointSummaryTest.MakeRankingCase {
 
         // Assert
         let expected: [ContributionRankItem] = [
-            .init(rank: 1, userId: "bob", userName: "ボブ", isMe: false, monthlyPoint: .init(value: 120), achievedCount: 5),
-            .init(rank: 2, userId: "carol", userName: "キャロル", isMe: false, monthlyPoint: .init(value: 80), achievedCount: 3),
-            .init(rank: 3, userId: "alice", userName: "アリス", isMe: true, monthlyPoint: .init(value: 40), achievedCount: 2)
+            .init(
+                rank: 1,
+                userId: "bob",
+                userName: "ボブ",
+                isMe: false,
+                monthlyPoint: .init(value: 120),
+                achievedCount: 5
+            ),
+            .init(
+                rank: 2,
+                userId: "carol",
+                userName: "キャロル",
+                isMe: false,
+                monthlyPoint: .init(value: 80),
+                achievedCount: 3
+            ),
+            .init(
+                rank: 3,
+                userId: "alice",
+                userName: "アリス",
+                isMe: true,
+                monthlyPoint: .init(value: 40),
+                achievedCount: 2
+            )
         ]
         #expect(result == expected)
     }

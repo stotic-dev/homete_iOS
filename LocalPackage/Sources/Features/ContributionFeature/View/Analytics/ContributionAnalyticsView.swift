@@ -51,8 +51,11 @@ private extension ContributionAnalyticsView {
             Text("指定期間中の累計ポイントの推移")
                 .font(with: .headLineS)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            CumulativePointsAreaChartView(viewableData: data)
-                .frame(height: 240)
+            CumulativePointsAreaChartView(viewableData: AllUserCumulativeData.make(
+                list: data.list,
+                displayPeriod: data.displayPeriod
+            ))
+            .frame(height: 240)
         }
     }
 }

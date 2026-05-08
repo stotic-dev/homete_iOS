@@ -11,10 +11,12 @@ import SwiftUI
 
 public extension View {
     func setupEnvironmentForPreview() -> some View {
-        self
+        var calendar = Calendar.japanese
+        calendar.timeZone = .tokyo
+        return self
             .environment(\.locale, .jp)
             .environment(\.timeZone, .tokyo)
-            .environment(\.calendar, .japanese)
+            .environment(\.calendar, calendar)
     }
 }
 

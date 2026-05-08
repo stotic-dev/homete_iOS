@@ -15,38 +15,39 @@ struct CumulativePointsAreaChartView: View {
     @Environment(\.calendar) private var calendar
     @Environment(\.timeZone) var timeZone
     
-    @State private var selectedDate: Date?
+    @State var selectedDate: Date?
     
-    let viewableData: AllUserViewablePointList
+    let viewableData: AllUserCumulativeData
 
     var body: some View {
         Chart {
-            ForEach(viewableData.cumulativeEntries) { dataPoint in
-                AreaMark(
-                    x: .value("日付", dataPoint.date, unit: xUnit),
-                    y: .value("累計ポイント", dataPoint.cumulativePoint)
-                )
-                .foregroundStyle(by: .value("ユーザー", dataPoint.userName))
-                .opacity(0.4)
-                LineMark(
-                    x: .value("日付", dataPoint.date, unit: xUnit),
-                    y: .value("累計ポイント", dataPoint.cumulativePoint)
-                )
-                .foregroundStyle(by: .value("ユーザー", dataPoint.userName))
+            ForEach(viewableData.list, id: \.self) { userData in
+                userCumulativeArea(userData)
             }
             if let date = selectedDate {
-                RuleMark(x: .value("日付", date, unit: xUnit))
+                RuleMark(x: .value("日付", date))
                     .foregroundStyle(.secondary.opacity(0.3))
                     .annotation(
                         position: .top,
                         overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
                     ) {
-                        selectionPopup(for: date)
+                        AllUserDataAnnotation(
+                            entries: viewableData.cumulativePointEntries(
+                                for: date,
+                                calendar: calendar
+                            ),
+                            selectedDate: date,
+                            displayPeriod: viewableData.displayPeriod
+                        )
                     }
             }
         }
         .chartXAxis {
-            AxisMarks(values: viewableData.xAxisDates) { _ in
+            AxisMarks(
+                preset: .aligned,
+                position: .bottom,
+                values: xAxisStride
+            ) { _ in
                 AxisGridLine()
                 AxisTick()
                 AxisValueLabel(
@@ -73,15 +74,40 @@ struct CumulativePointsAreaChartView: View {
             }
         }
     }
+}
 
-    private var xUnit: Calendar.Component {
+// MARK: UI定義
+
+private extension CumulativePointsAreaChartView {
+    
+    func userCumulativeArea(_ userData: ViewablePointList) -> some ChartContent {
+        ForEach(userData.sortedElements, id: \.self) { element in
+            AreaMark(
+                x: .value("日付", element.date),
+                y: .value("累計ポイント", element.point.value)
+            )
+            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            .opacity(0.4)
+            LineMark(
+                x: .value("日付", element.date),
+                y: .value("累計ポイント", element.point.value)
+            )
+            .foregroundStyle(by: .value("ユーザー", userData.userName))
+        }
+    }
+    
+    var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
-        case .year: return .month
-        case .month, .week: return .day
+        case .week:
+            return .automatic(desiredCount: 7)
+        case .month:
+            return .automatic(desiredCount: 5)
+        case .year:
+            return .automatic(desiredCount: 12)
         }
     }
 
-    private var xLabelFormat: Date.FormatStyle {
+    var xLabelFormat: Date.FormatStyle {
         var formatStyle: Date.FormatStyle = switch viewableData.displayPeriod {
         case .year: .dateTime.month(.defaultDigits).locale(locale)
         case .month: .dateTime.day().locale(locale)
@@ -91,16 +117,9 @@ struct CumulativePointsAreaChartView: View {
         formatStyle.timeZone = timeZone
         return formatStyle
     }
-
-    private var popupDateFormat: Date.FormatStyle {
-        switch viewableData.displayPeriod {
-        case .year: return .dateTime.year().month().locale(locale)
-        case .month, .week: return .dateTime.month().day().locale(locale)
-        }
-    }
 }
 
-// MARK: Interaction
+// MARK: プレゼンテーションロジック
 
 private extension CumulativePointsAreaChartView {
 
@@ -108,178 +127,54 @@ private extension CumulativePointsAreaChartView {
 
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
-        let nearest = viewableData.xAxisDates.min {
-            abs($0.timeIntervalSince(tapDate)) < abs($1.timeIntervalSince(tapDate))
-        }
-        guard let nearest, !viewableData.cumulativeEntries(for: nearest, calendar: calendar).isEmpty else {
-            selectedDate = nil
-            return
-        }
+        let nearest = viewableData.nearestDate(to: tapDate)
         selectedDate = selectedDate == nearest ? nil : nearest
-    }
-
-    @ViewBuilder
-    func selectionPopup(for date: Date) -> some View {
-        let entries = viewableData.cumulativeEntries(for: date, calendar: calendar)
-        if !entries.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(date, format: popupDateFormat)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                ForEach(entries) { entry in
-                    Text("\(entry.userName): \(entry.cumulativePoint)pt")
-                        .font(.caption)
-                        .bold()
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(.background)
-                    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-            }
-        }
     }
 }
 
 #Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
-    let calendar = Calendar.japanese
-    let weekEnd = Date.previewDate(year: 2026, month: 4, day: 26)
-    let period = DisplayPointPeriod(type: .week, anchor: weekEnd)
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .week)
+        .currentList(calendar: .japanese)
 
-    let pointOfDays1: [PointOfDay] = [
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 10)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 21), point: .init(value: 30)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 23), point: .init(value: 15)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 25), point: .init(value: 20)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 26), point: .init(value: 10))
-    ]
-    let pointOfDays2: [PointOfDay] = [
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 5)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 22), point: .init(value: 25)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 24), point: .init(value: 10)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 26), point: .init(value: 20))
-    ]
-
-    CumulativePointsAreaChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfWeek.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfWeek.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .week,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList?.list ?? [],
+            displayPeriod: .week
+        )
+    )
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
 }
 
 #Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
-    let calendar = Calendar.japanese
-    let period = DisplayPointPeriod(
-        type: .month,
-        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .month)
+        .currentList(calendar: .japanese)
+
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList?.list ?? [],
+            displayPeriod: .month
+        )
     )
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
-
-    let pointOfDays1: [PointOfDay] = [
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 1), point: .init(value: 10)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 7), point: .init(value: 20)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 14), point: .init(value: 15)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 30)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 25))
-    ]
-    let pointOfDays2: [PointOfDay] = [
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 3), point: .init(value: 5)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 10), point: .init(value: 18)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 20), point: .init(value: 10)),
-        .init(indexedDay: .previewDate(year: 2026, month: 4, day: 28), point: .init(value: 40))
-    ]
-
-    CumulativePointsAreaChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfMonth.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfMonth.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .month,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
 }
 
 #Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
-    let calendar = Calendar.japanese
-    // swiftlint:disable:next force_unwrapping
-    let yearEnd = calendar.date(from: DateComponents(year: 2026, month: 12, day: 31))!
-    let period = DisplayPointPeriod(
-        type: .year,
-        anchor: yearEnd
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .year)
+        .currentList(calendar: .japanese)
+
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList?.list ?? [],
+            displayPeriod: .year
+        )
     )
-    // swiftlint:disable:next force_unwrapping
-    let dateRange = period.calcDateRange(calendar: calendar)!
-
-    let points1 = [30, 15, 45, 20, 50, 35, 25, 40, 10, 45, 30, 20]
-    let points2 = [20, 40, 25, 45, 30, 15, 50, 20, 35, 25, 45, 30]
-    let pointOfDays1: [PointOfDay] = (1...12).map { month in
-        PointOfDay(indexedDay: .previewDate(year: 2026, month: month, day: 10), point: .init(value: points1[month - 1]))
-    }
-    let pointOfDays2: [PointOfDay] = (1...12).map { month in
-        PointOfDay(indexedDay: .previewDate(year: 2026, month: month, day: 20), point: .init(value: points2[month - 1]))
-    }
-
-    CumulativePointsAreaChartView(viewableData: AllUserViewablePointList.make(
-        list: [
-            PointOfYear.make(
-                by: pointOfDays1,
-                userId: "user1",
-                userName: "田中",
-                dateRange: dateRange,
-                calendar: calendar
-            ),
-            PointOfYear.make(
-                by: pointOfDays2,
-                userId: "user2",
-                userName: "佐藤",
-                dateRange: dateRange,
-                calendar: calendar
-            )
-        ],
-        displayPeriod: .year,
-        dateRange: dateRange,
-        calendar: calendar
-    ))
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)

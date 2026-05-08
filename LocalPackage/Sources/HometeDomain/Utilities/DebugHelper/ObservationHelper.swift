@@ -21,7 +21,7 @@ public enum ObservationHelper {
         onChange: @escaping @Sendable () -> Void
     ) {
 
-        _ = withObservationTracking({ apply() }) {
+        _ = withObservationTracking { apply() } onChange: {
 
             onChange()
             Task { @MainActor in
