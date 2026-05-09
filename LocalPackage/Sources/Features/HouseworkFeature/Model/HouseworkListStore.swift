@@ -8,10 +8,11 @@
 import Foundation
 import HometeDomain
 import Observation
+import SwiftUI
 
 @MainActor
 @Observable
-final class HouseworkListStore {
+public final class HouseworkListStore {
 
     private(set) var items: StoredAllHouseworkList
     private var calendar: Calendar = .autoupdatingCurrent
@@ -22,18 +23,18 @@ final class HouseworkListStore {
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
-    init(
+    public init(
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
-        items: [DailyHouseworkList] = []
+        items: StoredAllHouseworkList = .init(value: [])
     ) {
 
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
-        self.items = .init(value: items)
-
+        self.items = items
+        
         Task {
             await startObserving()
         }
@@ -120,6 +121,7 @@ private extension HouseworkListStore {
                 offsetDays: HouseworkManager.listenerOffset,
                 calendar: calendar
             )
+            print("did receive current items: \(items)")
         }
     }
 
