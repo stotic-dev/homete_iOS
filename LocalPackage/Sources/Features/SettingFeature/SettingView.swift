@@ -15,10 +15,12 @@ public struct SettingView: View {
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
+    @Environment(\.routeResolver) var router
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
+    @State var isShowHouseworkTemplate = false
 
     public init() {}
 
@@ -33,7 +35,7 @@ public struct SettingView: View {
                     VStack(spacing: .zero) {
                         ForEach(SettingMenuItem.allCases, id: \.self) { item in
                             SettingMenuItemButton(item: item) {
-                                // TODO: メニューボタンタップ時の処理
+                                tappedSettingMenuItem(item)
                             }
                         }
                     }
@@ -79,6 +81,9 @@ public struct SettingView: View {
         } message: {
             Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
         }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
+        }
     }
 }
 
@@ -94,6 +99,18 @@ private extension SettingView {
 // MARK: プレゼンテーションロジック
 
 private extension SettingView {
+
+    func tappedSettingMenuItem(_ item: SettingMenuItem) {
+
+        switch item {
+        case .taskTemplate:
+            isShowHouseworkTemplate = true
+
+        case .privacyPolicy, .license:
+            // TODO: 各画面への遷移処理
+            break
+        }
+    }
 
     func tappedLogoutRowButton() {
 

@@ -5,15 +5,31 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
+import HometeUI
 import SwiftUI
 
 public struct HouseworkTemplateScreen: View {
-    
+
+    @Environment(\.dismiss) var dismiss
+
     public static func make() -> some View {
         HouseworkTemplateScreen()
     }
-    
+
     public var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+                .navigationTitle("家事テンプレート")
+                .inlineNavigationBarTitleDisplayMode()
+                .trailingToolbarItem {
+                    NavigationBarButton(label: .close) {
+                        dismiss()
+                    }
+                }
+        }
     }
+}
+
+#Preview {
+    HouseworkTemplateScreen.make()
 }
