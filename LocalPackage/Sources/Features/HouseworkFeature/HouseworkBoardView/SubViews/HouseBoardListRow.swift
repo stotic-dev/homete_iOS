@@ -24,6 +24,7 @@ struct HouseBoardListRow: View {
     }
 }
 
+#if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     HouseBoardListRow(
         houseworkItem: .init(
@@ -37,3 +38,4 @@ struct HouseBoardListRow: View {
         )
     )
 }
+#endif

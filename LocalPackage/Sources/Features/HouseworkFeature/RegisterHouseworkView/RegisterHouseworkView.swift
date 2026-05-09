@@ -187,6 +187,7 @@ private extension RegisterHouseworkView {
     }
 }
 
+#if DEBUG
 #Preview("RegisterHouseworkView") {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
@@ -229,3 +230,4 @@ private extension RegisterHouseworkView {
     .prefireIgnored()
     #endif
 }
+#endif

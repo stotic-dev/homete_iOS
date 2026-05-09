@@ -144,6 +144,7 @@ private extension ContributionSummaryContent {
     }
 }
 
+#if DEBUG
 #Preview("ContributionSummaryContent_データ有り", traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
         isShowAnalytics: .constant(false),
@@ -176,3 +177,4 @@ private extension ContributionSummaryContent {
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
     .setupEnvironmentForPreview()
 }
+#endif

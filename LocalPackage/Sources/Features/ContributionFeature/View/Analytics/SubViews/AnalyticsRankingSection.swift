@@ -84,6 +84,7 @@ private extension AnalyticsRankingSection {
     }
 }
 
+#if DEBUG
 #Preview("AnalyticsRankingSection_週", traits: .sizeThatFitsLayout) {
     AnalyticsRankingSection(
         pointRanking: [
@@ -117,3 +118,4 @@ private extension AnalyticsRankingSection {
     )
     .setupEnvironmentForPreview()
 }
+#endif

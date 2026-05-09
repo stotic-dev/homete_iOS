@@ -105,6 +105,7 @@ private extension ContributionAnalyticsView {
     }
 }
 
+#if DEBUG
 #Preview("ContributionAnalyticsView_週間", traits: .sizeThatFitsLayout) {
     @Previewable @State var selectedPeriod = DisplayPointPeriod(
         type: .week,
@@ -160,3 +161,4 @@ private extension ContributionAnalyticsView {
     )
     .setupEnvironmentForPreview()
 }
+#endif

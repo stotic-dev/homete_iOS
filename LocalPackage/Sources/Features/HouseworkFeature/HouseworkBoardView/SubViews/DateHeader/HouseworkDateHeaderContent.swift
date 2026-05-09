@@ -85,6 +85,7 @@ private extension HouseworkDateHeaderContent {
     }
 }
 
+#if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     HouseworkDateHeaderContent(
         dateList: .constant(.init(
@@ -97,3 +98,4 @@ private extension HouseworkDateHeaderContent {
     .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
     .snapshotForPreview(delay: 2)
 }
+#endif

@@ -116,6 +116,7 @@ private extension AnalyticsPeriodHeader {
     }
 }
 
+#if DEBUG
 #Preview("AnalyticsPeriodHeader_直近1週間の表示", traits: .sizeThatFitsLayout) {
     @Previewable @State var selectedPeriod = DisplayPointPeriod(
         type: .week,
@@ -175,3 +176,4 @@ private extension AnalyticsPeriodHeader {
         .setupEnvironmentForPreview()
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
 }
+#endif

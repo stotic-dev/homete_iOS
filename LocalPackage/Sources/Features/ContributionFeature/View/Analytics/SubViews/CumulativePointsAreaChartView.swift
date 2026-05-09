@@ -164,6 +164,7 @@ private extension CumulativePointsAreaChartView {
     }
 }
 
+#if DEBUG
 #Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
     let allUserList = ContributionAnalytics
         .makeForPreview(type: .week)
@@ -211,3 +212,4 @@ private extension CumulativePointsAreaChartView {
     .setupEnvironmentForPreview()
     .padding(.space16)
 }
+#endif

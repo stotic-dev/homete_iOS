@@ -30,7 +30,7 @@ public final class ContributionStore {
 
     public init(
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
-        calendar: Calendar = .japanese
+        calendar: Calendar = .current
     ) {
 
         self.houseworkManager = houseworkManager

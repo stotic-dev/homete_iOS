@@ -172,6 +172,7 @@ private extension HouseworkApprovalView {
     }
 }
 
+#if DEBUG
 #Preview {
     HouseworkApprovalView(item: .init(
         id: "",
@@ -191,3 +192,4 @@ private extension HouseworkApprovalView {
     ))
     .environment(HouseworkListStore())
 }
+#endif
