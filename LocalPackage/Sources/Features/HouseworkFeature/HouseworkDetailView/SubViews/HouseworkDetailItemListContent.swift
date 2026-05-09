@@ -12,13 +12,15 @@ import SwiftUI
 
 struct HouseworkDetailItemListContent: View {
     
+    @Environment(\.calendar) var calendar
+    
     let cohabitantMemberList: CohabitantMemberList
     let item: HouseworkItem
     
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
             HouseworkDetailItemRow(title: "実施予定日付") {
-                Text(item.formattedIndexedDate)
+                Text(item.formattedIndexedDate(calendar: calendar))
                     .font(with: .body)
                     .foregroundStyle(.primary2)
             }
@@ -44,24 +46,27 @@ struct HouseworkDetailItemListContent: View {
 
 #Preview("HouseworkDetailItemListContent_未完了時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
-        cohabitantMemberList: .init(value: []),
+        cohabitantMemberList: .init(value: [], ownId: ""),
         item: .init(
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
         )
     )
 }
 
 #Preview("HouseworkDetailItemListContent_承認確認時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
-        cohabitantMemberList: .init(value: [.init(id: "test", userName: "hogehoge")]),
+        cohabitantMemberList: .init(
+            value: [.init(id: "test", userName: "hogehoge")],
+            ownId: "test"
+        ),
         item: .init(
             id: "",
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture),
+            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture),
             executorId: "test",
             executedAt: .distantPast
         )

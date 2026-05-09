@@ -80,9 +80,13 @@ private extension HouseworkBoardListContent {
     
     func didSwipeDeleteItemAction(_ item: HouseworkItem) async {
         
+        guard let cohabitantId = loginContext.cohabitantId else { return }
         do {
             
-            try await houseworkListStore.remove(item)
+            try await houseworkListStore.remove(
+                target: item,
+                cohabitantId: cohabitantId
+            )
         }
         catch {
             
@@ -104,19 +108,28 @@ private extension HouseworkBoardListContent {
                 id: "1",
                 title: "洗濯",
                 point: 20,
-                metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
             ),
             .init(
                 id: "2",
                 title: "掃除",
                 point: 100,
-                metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
             ),
             .init(
                 id: "3",
                 title: "料理",
                 point: 1,
-                metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
             )
         ]),
         selectedHouseworkState: $selectedState,

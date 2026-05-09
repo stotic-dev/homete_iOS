@@ -14,6 +14,7 @@ struct RegisterHouseworkView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
     @LoadingState var loadingState
     
     @State var houseworkTitle = ""
@@ -153,6 +154,8 @@ private extension RegisterHouseworkView {
     
     func tappedRegisterButton() async {
         
+        guard let cohabitantId else { return }
+        
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
@@ -170,7 +173,10 @@ private extension RegisterHouseworkView {
         
         do {
             
-            try await houseworkListStore.register(newItem)
+            try await houseworkListStore.register(
+                newItem: newItem,
+                cohabitantId: cohabitantId
+            )
             dismiss()
         }
         catch {
@@ -185,7 +191,10 @@ private extension RegisterHouseworkView {
     RegisterHouseworkView(
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
+            )
         )
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
@@ -206,7 +215,10 @@ private extension RegisterHouseworkView {
         loadingState: .init(store: .init(isLoading: true)),
         dailyHouseworkList: .init(
             items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
+            )
         )
     )
     .environment(HouseworkListStore(

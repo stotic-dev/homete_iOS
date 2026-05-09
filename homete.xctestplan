@@ -36,6 +36,20 @@
         "identifier" : "HometeDomainTests",
         "name" : "HometeDomainTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "HouseworkFeatureTests",
+        "name" : "HouseworkFeatureTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "ContributionFeatureTests",
+        "name" : "ContributionFeatureTests"
+      }
     }
   ],
   "version" : 1

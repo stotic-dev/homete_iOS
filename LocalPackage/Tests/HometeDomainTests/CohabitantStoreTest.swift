@@ -20,6 +20,7 @@ struct CohabitantStoreTest {
 
         // Arrange
 
+        let selfId = "selfId"
         let newMemberId = "newMemberId"
         let newMemberUserName = "新しいメンバー"
         let expectedAccount = Account(
@@ -30,24 +31,26 @@ struct CohabitantStoreTest {
         )
         let inputCohabitantData = CohabitantData(
             id: inputCohabitantId,
-            members: [newMemberId]
+            members: [selfId, newMemberId]
         )
 
         let (stream, continuation) = AsyncStream<[CohabitantData]>.makeStream()
 
         let store = CohabitantStore(
+            members: [.init(id: selfId, userName: "自分")],
+            ownId: selfId,
             cohabitantClient: .init(
                 addSnapshotListener: { listenerId, cohabitantId in
-                    
+
                     #expect(listenerId == inputListenerId)
                     #expect(cohabitantId == inputCohabitantId)
                     return stream
                 }
             ),
             accountInfoClient: .init(fetch: { userId in
-                
+
                 // Assert
-                
+
                 #expect(userId == newMemberId)
                 return expectedAccount
             })
@@ -61,7 +64,9 @@ struct CohabitantStoreTest {
 
         let waiterForUpdateMembers = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking({ store.members }) {
+                ObservationHelper.continuousObservationTracking {
+                    store.members
+                } onChange: {
                     continuation.resume(returning: ())
                 }
             }
@@ -72,7 +77,7 @@ struct CohabitantStoreTest {
         continuation.finish()
         await store.removeSnapshotListener()
 
-        #expect(store.members.value.count == 1)
+        #expect(store.members.value.count == 2)
         #expect(store.members.value.contains(.init(id: newMemberId, userName: newMemberUserName)))
     }
 }

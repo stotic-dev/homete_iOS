@@ -11,6 +11,7 @@ import HometeUI
 import SwiftUI
 
 public struct HouseworkApprovalView: View {
+    
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
@@ -132,13 +133,16 @@ private extension HouseworkApprovalView {
     
     func tappedApproveButton() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
             try await houseworkListStore.approved(
                 target: item,
                 now: .now,
                 reviwer: account,
-                comment: inputMessage
+                comment: inputMessage,
+                cohabitantId: cohabitantId
             )
             dismiss()
         } catch {
@@ -149,13 +153,16 @@ private extension HouseworkApprovalView {
     
     func tappedReconfirmationButton() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
             try await houseworkListStore.rejected(
                 target: item,
                 now: .now,
                 reviwer: account,
-                comment: inputMessage
+                comment: inputMessage,
+                cohabitantId: cohabitantId
             )
             dismiss()
         } catch {
@@ -171,13 +178,16 @@ private extension HouseworkApprovalView {
         title: "洗濯",
         point: 10,
         metaData: .init(
-            indexedDate: .init(value: "1970/01/01"),
+            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
             expiredAt: .init(timeIntervalSince1970: 0)
         ),
         executorId: "test",
         executedAt: .distantFuture,
     ))
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(members: .init(value: [.init(id: "test", userName: "hogehoge")])))
+    .environment(CohabitantStore(
+        members: [.init(id: "test", userName: "hogehoge")],
+        ownId: "test"
+    ))
     .environment(HouseworkListStore())
 }

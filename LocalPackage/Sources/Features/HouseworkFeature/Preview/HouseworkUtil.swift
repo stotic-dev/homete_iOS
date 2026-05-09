@@ -14,7 +14,7 @@ extension HouseworkItem {
         id: String = UUID().uuidString,
         title: String = "",
         point: Int = 10,
-        indexedDate: HouseworkIndexedDate = .init(value: "2026/01/01"),
+        indexedDate: HouseworkIndexedDate = .init(value: .previewDate(year: 2026, month: 1, day: 1)),
         expiredAt: Date = .distantFuture,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,

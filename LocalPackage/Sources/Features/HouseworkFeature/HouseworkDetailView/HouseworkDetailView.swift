@@ -67,9 +67,14 @@ private extension HouseworkDetailView {
     
     func tappedDeleteHouseworkItem() async {
         
+        guard let cohabitantId = account.cohabitantId else { return }
+        
         do {
             
-            try await houseworkListStore.remove(item)
+            try await houseworkListStore.remove(
+                target: item,
+                cohabitantId: cohabitantId
+            )
             dismiss()
         }
         catch {
@@ -96,7 +101,7 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
             )
         )
     }
@@ -112,7 +117,7 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
             )
         )
     }

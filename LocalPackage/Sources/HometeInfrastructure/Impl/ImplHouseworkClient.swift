@@ -34,10 +34,17 @@ extension HouseworkClient {
         return await FirestoreService.shared.addSnapshotListener(id: id) {
 
             return $0.houseworkListRef(id: cohabitantId)
-                .whereField("indexedDate", in: targetDateList)
+                .whereField("indexedDate.value", in: targetDateList)
         }
     } removeListenerHandler: { id in
 
         await FirestoreService.shared.removeSnapshotListener(id: id)
+    } fetchItemsHandler: { cohabitantId, from, to in
+
+        return try await FirestoreService.shared.fetch {
+            $0.houseworkListRef(id: cohabitantId)
+                .whereField("indexedDate.value", isGreaterThanOrEqualTo: from)
+                .whereField("indexedDate.value", isLessThanOrEqualTo: to)
+        }
     }
 }
