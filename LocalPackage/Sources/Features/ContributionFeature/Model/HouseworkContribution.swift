@@ -13,6 +13,11 @@ public struct HouseworkContribution: Equatable, Sendable {
     /// userId -> (startOfDay -> その日の集約済みPointOfDay)
     private(set) var list: [String: [Date: PointOfDay]] = [:]
 
+    /// 全ユーザーの中で家事を達成した最新の日付。データが無い場合はnil
+    var latestAchievedDate: Date? {
+        list.values.flatMap(\.values).map(\.indexedDay).max()
+    }
+
     static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
 
         let completedItems = houseworkItems.filter { $0.state == .completed }

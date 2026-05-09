@@ -56,7 +56,12 @@ private extension AnalyticsPeriodHeader {
                     .foregroundStyle(.onSurface)
                     .padding(.space8)
             }
+            .disabled(isAtCurrentDate)
         }
+    }
+
+    var isAtCurrentDate: Bool {
+        calendar.isDate(selectedPeriod.anchor, inSameDayAs: now)
     }
     
     func periodTitle() -> String {
@@ -101,8 +106,13 @@ private extension AnalyticsPeriodHeader {
     }
     
     func tappedShiftRightButton() {
-        
-        selectedPeriod = selectedPeriod.shiftPeriod(by: 1, calendar: calendar)
+
+        let shifted = selectedPeriod.shiftPeriod(by: 1, calendar: calendar)
+        if shifted.anchor > now {
+            selectedPeriod = .init(type: shifted.type, anchor: now)
+        } else {
+            selectedPeriod = shifted
+        }
     }
 }
 

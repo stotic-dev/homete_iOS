@@ -19,6 +19,7 @@ struct ContributionAnalyticsTest {
         private let calendar = Calendar.japanese
     }
     struct RankingCase {}
+    struct IsEmptyCase {}
 }
 
 // MARK: - updatePeriod
@@ -232,5 +233,193 @@ extension ContributionAnalyticsTest.CurrentListCase {
             displayPeriod: .year
         )
         #expect(result == expected)
+    }
+}
+
+// MARK: - isEmpty
+
+extension ContributionAnalyticsTest.IsEmptyCase {
+
+    @Test("週表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
+    func isEmpty_week_allZero_returnsTrue() {
+
+        // Arrange
+        let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
+        let weekList: [PointOfWeek] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 0),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
+            ),
+            .init(
+                userId: "u2",
+                userName: "ユーザー2",
+                total: .init(value: 0),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: weekList,
+            monthPointList: [],
+            yearPointList: [],
+            displayPeriod: .init(type: .week, anchor: Date.previewDate(year: 2026, month: 4, day: 26))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == true)
+    }
+
+    @Test("週表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
+    func isEmpty_week_someAchieved_returnsFalse() {
+
+        // Arrange
+        let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
+        let weekList: [PointOfWeek] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 0),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
+            ),
+            .init(
+                userId: "u2",
+                userName: "ユーザー2",
+                total: .init(value: 30),
+                totalAchievementCount: 1,
+                elements: [],
+                startDate: weekStart
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: weekList,
+            monthPointList: [],
+            yearPointList: [],
+            displayPeriod: .init(type: .week, anchor: Date.previewDate(year: 2026, month: 4, day: 26))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == false)
+    }
+
+    @Test("月表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
+    func isEmpty_month_allZero_returnsTrue() {
+
+        // Arrange
+        let startDate = Date.previewDate(year: 2026, month: 4, day: 1)
+        let monthList: [PointOfMonth] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 0),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: startDate
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: monthList,
+            yearPointList: [],
+            displayPeriod: .init(type: .month, anchor: Date.previewDate(year: 2026, month: 4, day: 30))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == true)
+    }
+
+    @Test("月表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
+    func isEmpty_month_someAchieved_returnsFalse() {
+
+        // Arrange
+        let startDate = Date.previewDate(year: 2026, month: 4, day: 1)
+        let monthList: [PointOfMonth] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 50),
+                totalAchievementCount: 2,
+                elements: [],
+                startDate: startDate
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: monthList,
+            yearPointList: [],
+            displayPeriod: .init(type: .month, anchor: Date.previewDate(year: 2026, month: 4, day: 30))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == false)
+    }
+
+    @Test("年表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
+    func isEmpty_year_allZero_returnsTrue() {
+
+        // Arrange
+        let yearList: [PointOfYear] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 0),
+                totalAchievementCount: 0,
+                elements: []
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: [],
+            yearPointList: yearList,
+            displayPeriod: .init(type: .year, anchor: Date.previewDate(year: 2026, month: 4, day: 30))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == true)
+    }
+
+    @Test("年表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
+    func isEmpty_year_someAchieved_returnsFalse() {
+
+        // Arrange
+        let yearList: [PointOfYear] = [
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 100),
+                totalAchievementCount: 5,
+                elements: []
+            )
+        ]
+        let analytics = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: [],
+            yearPointList: yearList,
+            displayPeriod: .init(type: .year, anchor: Date.previewDate(year: 2026, month: 4, day: 30))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == false)
+    }
+
+    @Test("メンバーがいない（pointListが空）ならisEmptyはtrue")
+    func isEmpty_noMembers_returnsTrue() {
+
+        // Arrange
+        let analytics = ContributionAnalytics(
+            weekPointList: [],
+            monthPointList: [],
+            yearPointList: [],
+            displayPeriod: .init(type: .month, anchor: Date.previewDate(year: 2026, month: 4, day: 30))
+        )
+
+        // Act & Assert
+        #expect(analytics.isEmpty == true)
     }
 }
