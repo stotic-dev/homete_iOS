@@ -163,6 +163,7 @@ private extension PointsTimeSeriesChartView {
     }
 }
 
+#if DEBUG
 #Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
     let allUserList = ContributionAnalytics
         .makeForPreview(type: .week)
@@ -209,3 +210,4 @@ private extension PointsTimeSeriesChartView {
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
 }
+#endif

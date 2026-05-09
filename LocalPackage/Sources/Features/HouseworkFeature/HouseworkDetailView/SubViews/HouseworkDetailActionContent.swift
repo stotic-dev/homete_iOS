@@ -120,6 +120,7 @@ private extension HouseworkDetailActionContent {
     }
 }
 
+#if DEBUG
 #Preview("HouseworkDetailActionContent_未完了", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
@@ -169,3 +170,4 @@ private extension HouseworkDetailActionContent {
     )
     .environment(HouseworkListStore())
 }
+#endif

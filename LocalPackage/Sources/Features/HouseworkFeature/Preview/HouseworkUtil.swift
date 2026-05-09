@@ -8,8 +8,10 @@
 import Foundation
 import HometeDomain
 
+#if DEBUG
+
 extension HouseworkItem {
-    
+
     static func makeForPreview(
         id: String = UUID().uuidString,
         title: String = "",
@@ -23,7 +25,7 @@ extension HouseworkItem {
         approvedAt: Date? = nil,
         reviewerComment: String? = nil
     ) -> Self {
-        
+
         return .init(
             id: id,
             title: title,
@@ -38,3 +40,5 @@ extension HouseworkItem {
         )
     }
 }
+
+#endif

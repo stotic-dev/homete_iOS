@@ -95,6 +95,7 @@ private extension HouseworkBoardListContent {
     }
 }
 
+#if DEBUG
 #Preview {
     @Previewable @State var selectedState = HouseworkState.incomplete
     HouseworkBoardListContent(
@@ -136,3 +137,4 @@ private extension HouseworkBoardListContent {
         onCreateTapped: {}
     )
 }
+#endif

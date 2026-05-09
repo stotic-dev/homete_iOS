@@ -55,6 +55,7 @@ struct AnalyticsRankingRow: View {
     }
 }
 
+#if DEBUG
 #Preview("AnalyticsRankingRow_1位_あなた", traits: .sizeThatFitsLayout) {
     AnalyticsRankingRow(
         item: .init(
@@ -102,3 +103,4 @@ struct AnalyticsRankingRow: View {
     )
     .setupEnvironmentForPreview()
 }
+#endif

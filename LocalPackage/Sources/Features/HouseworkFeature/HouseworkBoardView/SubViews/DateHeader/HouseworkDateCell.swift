@@ -89,6 +89,7 @@ private extension HouseworkDateCell {
     }
 }
 
+#if DEBUG
 #Preview("HouseworkDateCell_今日の日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
         .setupEnvironmentForPreview()
@@ -109,3 +110,4 @@ private extension HouseworkDateCell {
     HouseworkDateCell(date: .distantPast, state: .unselectable) { _ in }
         .setupEnvironmentForPreview()
 }
+#endif

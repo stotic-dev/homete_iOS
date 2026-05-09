@@ -114,6 +114,7 @@ private extension HouseworkBoardView {
     }
 }
 
+#if DEBUG
 #Preview {
     let list = HouseworkBoardList(items: [
         .init(
@@ -139,3 +140,4 @@ private extension HouseworkBoardView {
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
 }
+#endif

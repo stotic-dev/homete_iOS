@@ -55,6 +55,7 @@ private extension AllUserDataAnnotation {
     }
 }
 
+#if DEBUG
 #Preview("AllUserDataAnnotation_データ有り", traits: .sizeThatFitsLayout) {
     AllUserDataAnnotation(
        entries: [
@@ -77,3 +78,4 @@ private extension AllUserDataAnnotation {
     .setupEnvironmentForPreview()
     .padding(.space16)
 }
+#endif

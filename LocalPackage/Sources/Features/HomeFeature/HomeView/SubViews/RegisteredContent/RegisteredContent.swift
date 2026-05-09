@@ -52,6 +52,7 @@ private extension RegisteredContent {
     }
 }
 
+#if DEBUG
 #Preview {
     RegisteredContent()
         .environment(ContributionStore())
@@ -59,3 +60,4 @@ private extension RegisteredContent {
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
 }
+#endif

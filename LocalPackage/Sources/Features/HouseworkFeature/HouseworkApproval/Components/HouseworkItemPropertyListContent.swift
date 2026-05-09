@@ -51,6 +51,7 @@ private extension HouseworkItemPropertyListContent {
     }
 }
 
+#if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     HouseworkItemPropertyListContent(item: .init(
         id: "",
@@ -64,3 +65,4 @@ private extension HouseworkItemPropertyListContent {
     ))
     .setupEnvironmentForPreview()
 }
+#endif
