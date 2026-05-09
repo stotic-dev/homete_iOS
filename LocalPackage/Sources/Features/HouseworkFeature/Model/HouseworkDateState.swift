@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/04/04.
 //
 
-public enum HouseworkDateState: Equatable {
+enum HouseworkDateState: Equatable {
     case selected
     case selectable
     case unselectable

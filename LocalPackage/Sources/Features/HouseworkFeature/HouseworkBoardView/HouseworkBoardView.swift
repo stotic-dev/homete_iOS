@@ -9,39 +9,19 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-public struct HouseworkBoardScreen: View {
-    @State var houseworkListStore: HouseworkListStore?
-    
-    public static func make(houseworkListStore: HouseworkListStore?) -> some View {
-        HouseworkBoardScreen(houseworkListStore: houseworkListStore)
-    }
-    
-    public var body: some View {
-        if let houseworkListStore {
-            HouseworkBoardView()
-                .environment(houseworkListStore)
-        } else {
-            // TODO: グループ登録前は利用できない旨の空表示を出す
-            ContentUnavailableView(
-                "グループの登録または参加を行うと、家事の管理ができるようになります。",
-                systemImage: ""
-            )
-        }
-    }
-}
-
 struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var anchorDate
     @Environment(HouseworkListStore.self) var houseworkListStore
     
+    @Binding var houseworkBoardList: HouseworkBoardList
+    @Binding var dateList: HouseworkDateList
+    
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
-    @State var dateList = HouseworkDateList()
     @State var selectedHouseworkState = HouseworkState.incomplete
-    @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var isPresentingAddHouseworkView = false
 
-    public var body: some View {
+    var body: some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
@@ -98,11 +78,6 @@ struct HouseworkBoardView: View {
                 updateHouseworkBoardList()
             }
         }
-        .onAppear {
-            withAnimation {
-                updateHouseworkBoardList()
-            }
-        }
     }
 }
 
@@ -152,12 +127,12 @@ private extension HouseworkBoardView {
         )
     ])
     HouseworkBoardView(
-        dateList: .init(
+        houseworkBoardList: .constant(list),
+        dateList: .constant(.init(
             anchorDate: .distantPast,
             selectedDate: .distantPast,
             calendar: .japanese
-        ),
-        houseworkBoardList: list
+        ))
     )
     .apply(theme: .init())
     .setupEnvironmentForPreview()
