@@ -74,6 +74,21 @@ struct ContributionAnalytics: Equatable {
         )
     }
     
+    /// 指定期間中に家事を達成したメンバーが一人もいない場合にtrue
+    var isEmpty: Bool {
+
+        switch displayPeriod.type {
+        case .week:
+            return weekPointList.allSatisfy { $0.totalAchievementCount == .zero }
+
+        case .month:
+            return monthPointList.allSatisfy { $0.totalAchievementCount == .zero }
+
+        case .year:
+            return yearPointList.allSatisfy { $0.totalAchievementCount == .zero }
+        }
+    }
+
     func currentList(calendar: Calendar) -> AllUserViewablePointList {
 
         return switch displayPeriod.type {

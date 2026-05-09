@@ -20,26 +20,36 @@ struct CumulativePointsAreaChartView: View {
     let viewableData: AllUserCumulativeData
 
     var body: some View {
+        VStack(spacing: .space16) {
+            HStack(spacing: .zero) {
+                Text(graphTitle)
+                    .font(with: .headLineS)
+                Spacer()
+                GraphDescriptionPopoverButton(
+                    title: "獲得ポイントの累積からわかること",
+                    message: """
+                        期間の最初から日が経つごとに積み上がっていく合計ポイントです。
+                        期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。
+                        線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。
+                        """
+                )
+            }
+            graphContent(viewableData.list)
+        }
+    }
+}
+
+// MARK: UI定義
+
+private extension CumulativePointsAreaChartView {
+    
+    func graphContent(_ list: [ViewablePointList]) -> some View {
         Chart {
-            ForEach(viewableData.list, id: \.self) { userData in
+            ForEach(list, id: \.self) { userData in
                 userCumulativeArea(userData)
             }
             if let date = selectedDate {
-                RuleMark(x: .value("日付", date))
-                    .foregroundStyle(.secondary.opacity(0.3))
-                    .annotation(
-                        position: .top,
-                        overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
-                    ) {
-                        AllUserDataAnnotation(
-                            entries: viewableData.cumulativePointEntries(
-                                for: date,
-                                calendar: calendar
-                            ),
-                            selectedDate: date,
-                            displayPeriod: viewableData.displayPeriod
-                        )
-                    }
+                selectedChartMark(date)
             }
         }
         .chartXAxis {
@@ -74,11 +84,6 @@ struct CumulativePointsAreaChartView: View {
             }
         }
     }
-}
-
-// MARK: UI定義
-
-private extension CumulativePointsAreaChartView {
     
     func userCumulativeArea(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
@@ -94,6 +99,24 @@ private extension CumulativePointsAreaChartView {
             )
             .foregroundStyle(by: .value("ユーザー", userData.userName))
         }
+    }
+    
+    func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
+        RuleMark(x: .value("日付", selectedDate))
+            .foregroundStyle(.secondary.opacity(0.3))
+            .annotation(
+                position: .top,
+                overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))
+            ) {
+                AllUserDataAnnotation(
+                    entries: viewableData.cumulativePointEntries(
+                        for: selectedDate,
+                        calendar: calendar
+                    ),
+                    selectedDate: selectedDate,
+                    displayPeriod: viewableData.displayPeriod
+                )
+            }
     }
     
     var xAxisStride: AxisMarkValues {
@@ -116,6 +139,15 @@ private extension CumulativePointsAreaChartView {
         
         formatStyle.timeZone = timeZone
         return formatStyle
+    }
+    
+    var graphTitle: String {
+        let unitStr = switch viewableData.displayPeriod {
+        case .year: "月ごと"
+        case .month, .week: "日ごと"
+        }
+        
+        return "\(unitStr)獲得ポイントの累積"
     }
 }
 

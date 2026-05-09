@@ -18,6 +18,9 @@ struct HouseworkContributionTest {
     struct CalculatePointSummariesCase {
         private let calendar = Calendar.japanese
     }
+    struct LatestAchievedDateCase {
+        let calendar = Calendar.japanese
+    }
 }
 
 extension HouseworkContributionTest.MakeCase {
@@ -310,5 +313,82 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
             )
         ])
         #expect(result == expected)
+    }
+}
+
+// MARK: - latestAchievedDate
+
+extension HouseworkContributionTest.LatestAchievedDateCase {
+
+    @Test("完了家事が複数ある場合は最新の日付が返る")
+    func latestAchievedDate_multipleItems_returnsLatest() {
+
+        // Arrange
+        let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
+        let feb20 = Date.previewDate(year: 2026, month: 2, day: 20)
+        let mar5 = Date.previewDate(year: 2026, month: 3, day: 5)
+        let items: [HouseworkItem] = [
+            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
+            .makeForTest(id: 2, indexedDate: feb20, point: 20, state: .completed, executorId: "alice"),
+            .makeForTest(id: 3, indexedDate: mar5, point: 15, state: .completed, executorId: "alice")
+        ]
+        let contribution = HouseworkContribution.make(by: items, calendar: calendar)
+
+        // Act
+        let result = contribution.latestAchievedDate
+
+        // Assert
+        #expect(result == calendar.startOfDay(for: mar5))
+    }
+
+    @Test("完了家事が1件の場合はその日付が返る")
+    func latestAchievedDate_singleItem_returnsThatDate() {
+
+        // Arrange
+        let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
+        let items: [HouseworkItem] = [
+            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice")
+        ]
+        let contribution = HouseworkContribution.make(by: items, calendar: calendar)
+
+        // Act
+        let result = contribution.latestAchievedDate
+
+        // Assert
+        #expect(result == calendar.startOfDay(for: jan10))
+    }
+
+    @Test("完了家事がない場合はnilが返る")
+    func latestAchievedDate_empty_returnsNil() {
+
+        // Arrange
+        let contribution = HouseworkContribution.make(by: [], calendar: calendar)
+
+        // Act
+        let result = contribution.latestAchievedDate
+
+        // Assert
+        #expect(result == nil)
+    }
+
+    @Test("複数ユーザーがいる場合は全体での最新日が返る")
+    func latestAchievedDate_multipleUsers_returnsOverallLatest() {
+
+        // Arrange
+        let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
+        let feb20 = Date.previewDate(year: 2026, month: 2, day: 20)
+        let mar5 = Date.previewDate(year: 2026, month: 3, day: 5)
+        let items: [HouseworkItem] = [
+            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
+            .makeForTest(id: 2, indexedDate: mar5, point: 20, state: .completed, executorId: "bob"),
+            .makeForTest(id: 3, indexedDate: feb20, point: 15, state: .completed, executorId: "alice")
+        ]
+        let contribution = HouseworkContribution.make(by: items, calendar: calendar)
+
+        // Act
+        let result = contribution.latestAchievedDate
+
+        // Assert
+        #expect(result == calendar.startOfDay(for: mar5))
     }
 }

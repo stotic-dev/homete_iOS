@@ -28,7 +28,8 @@ public struct ContributionAnalyticsScreen: View {
         ContributionAnalyticsView(
             selectedPeriod: $selectedPeriod,
             analytics: analytics,
-            myUserId: userId
+            myUserId: userId,
+            latestAchievedDate: contributionStore.contiribution.latestAchievedDate
         )
         .navigationTitle("家事分析")
         .task(id: contributionStore.contiribution) {
@@ -56,7 +57,7 @@ private extension ContributionAnalyticsScreen {
     }
     
     func onChangePeriod() async {
-        
+
         let contribution = contributionStore.contiribution
         analytics = await analytics?.updatePeriod(
             displayPeriod: selectedPeriod,
