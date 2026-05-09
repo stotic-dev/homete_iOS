@@ -70,29 +70,13 @@ private extension ContributionAnalyticsView {
     
     @ViewBuilder
     func pointGraph(pointData: AllUserViewablePointList) -> some View {
-        titleWithGraph("指定期間中のポイントの獲得推移") {
-            PointsTimeSeriesChartView(viewableData: pointData)
-                .frame(height: 240)
-        }
-        titleWithGraph("指定期間中の累計ポイントの推移") {
-            CumulativePointsAreaChartView(viewableData: AllUserCumulativeData.make(
-                list: pointData.list,
-                displayPeriod: pointData.displayPeriod
-            ))
+        PointsTimeSeriesChartView(viewableData: pointData)
             .frame(height: 240)
-        }
-    }
-    
-    func titleWithGraph<Content: View>(
-        _ title: LocalizedStringKey,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(spacing: .space16) {
-            Text(title)
-                .font(with: .headLineS)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            content()
-        }
+        CumulativePointsAreaChartView(viewableData: AllUserCumulativeData.make(
+            list: pointData.list,
+            displayPeriod: pointData.displayPeriod
+        ))
+        .frame(height: 240)
     }
 
     func emptyContent() -> some View {

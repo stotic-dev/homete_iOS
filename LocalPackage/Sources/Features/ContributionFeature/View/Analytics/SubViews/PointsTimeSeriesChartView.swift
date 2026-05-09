@@ -21,38 +21,35 @@ struct PointsTimeSeriesChartView: View {
     @State var selectedDate: Date?
 
     var body: some View {
+        VStack(spacing: .space16) {
+            HStack(spacing: .zero) {
+                Text("\(periodUnitLabel)獲得ポイント")
+                    .font(with: .headLineS)
+                Spacer()
+                GraphDescriptionPopoverButton(
+                    title: "獲得ポイントからわかること",
+                    message: """
+                        期間中、\(periodUnitLabel)に獲得したポイントを表します。
+                        同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
+                        """
+                )
+            }
+            graphContent(viewableData.list)
+        }
+    }
+}
+
+// MARK: UI定義
+
+private extension PointsTimeSeriesChartView {
+    
+    func graphContent(_ list: [ViewablePointList]) -> some View {
         Chart {
-            ForEach(viewableData.list, id: \.self) { userData in
-                ForEach(userData.sortedElements, id: \.self) { element in
-                    LineMark(
-                        x: .value("日付", element.date),
-                        y: .value("ポイント", element.point.value)
-                    )
-                    .foregroundStyle(by: .value("ユーザー", userData.userName))
-                    PointMark(
-                        x: .value("日付", element.date),
-                        y: .value("ポイント", element.point.value)
-                    )
-                    .foregroundStyle(by: .value("ユーザー", userData.userName))
-                }
+            ForEach(list, id: \.self) { userData in
+                userDataPlotContent(userData)
             }
             if let date = selectedDate {
-                RuleMark(x: .value("日付", date))
-                    .foregroundStyle(.secondary.opacity(0.3))
-                    .annotation(
-                        position: .top,
-                        alignment: .center,
-                        overflowResolution: .init(
-                            x: .fit(to: .chart),
-                            y: .disabled
-                        )
-                    ) {
-                        AllUserDataAnnotation(
-                            entries: viewableData.pointEntries(for: date, calendar: calendar),
-                            selectedDate: date,
-                            displayPeriod: viewableData.displayPeriod
-                        )
-                    }
+                selectedChartMark(date)
             }
         }
         .chartXAxis {
@@ -81,11 +78,40 @@ struct PointsTimeSeriesChartView: View {
             }
         }
     }
-}
-
-// MARK: UI定義
-
-private extension PointsTimeSeriesChartView {
+    
+    func userDataPlotContent(_ userData: ViewablePointList) -> some ChartContent {
+        ForEach(userData.sortedElements, id: \.self) { element in
+            LineMark(
+                x: .value("日付", element.date),
+                y: .value("ポイント", element.point.value)
+            )
+            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            PointMark(
+                x: .value("日付", element.date),
+                y: .value("ポイント", element.point.value)
+            )
+            .foregroundStyle(by: .value("ユーザー", userData.userName))
+        }
+    }
+    
+    func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
+        RuleMark(x: .value("日付", selectedDate))
+            .foregroundStyle(.secondary.opacity(0.3))
+            .annotation(
+                position: .top,
+                alignment: .center,
+                overflowResolution: .init(
+                    x: .fit(to: .chart),
+                    y: .disabled
+                )
+            ) {
+                AllUserDataAnnotation(
+                    entries: viewableData.pointEntries(for: selectedDate, calendar: calendar),
+                    selectedDate: selectedDate,
+                    displayPeriod: viewableData.displayPeriod
+                )
+            }
+    }
     
     var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
@@ -107,6 +133,13 @@ private extension PointsTimeSeriesChartView {
         }
         style.timeZone = timeZone
         return style
+    }
+    
+    var periodUnitLabel: String {
+        return switch viewableData.displayPeriod {
+        case .year: "月ごとの"
+        case .month, .week: "日ごとの"
+        }
     }
 }
 
