@@ -12,6 +12,7 @@ import SwiftUI
 public struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var anchorDate
+    @Environment(\.routeResolver) var router
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
@@ -19,6 +20,7 @@ public struct HouseworkBoardView: View {
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var isPresentingAddHouseworkView = false
+    @State var isShowHouseworkTemplate = false
     
     public static func instantiate() -> Self {
         HouseworkBoardView()
@@ -60,6 +62,11 @@ public struct HouseworkBoardView: View {
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
             }
+            .trailingToolbarItem {
+                NavigationBarButton(label: .houseworkTemplate) {
+                    isShowHouseworkTemplate = true
+                }
+            }
             .environment(\.houseworkBoardNavigationPath, navigationPath)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
@@ -70,6 +77,9 @@ public struct HouseworkBoardView: View {
                     calendar: calendar
                 )
             )
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
         }
         .onChange(of: houseworkListStore.items) {
             withAnimation {

@@ -36,4 +36,8 @@ public extension NavigationBarContentLabel {
         symbolName: "trash",
         assetIcon: nil
     )
+    static let houseworkTemplate = NavigationBarContentLabel(
+        symbolName: "list.bullet.rectangle",
+        assetIcon: nil
+    )
 }
