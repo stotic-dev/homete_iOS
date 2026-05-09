@@ -14,11 +14,12 @@ public struct ContributionAnalyticsScreen: View {
     @Environment(ContributionStore.self) var contributionStore
     @Environment(\.cohabitantMembers) var members
     @Environment(\.calendar) var calendar
+    @Environment(\.loginContext.account.id) var userId
     @LoadingState var loadingState
 
     @State var selectedPeriod: DisplayPointPeriod = .init(type: .month, anchor: .now)
     @State var analytics: ContributionAnalytics?
-    
+
     public static func make() -> some View {
         ContributionAnalyticsScreen()
     }
@@ -26,7 +27,8 @@ public struct ContributionAnalyticsScreen: View {
     public var body: some View {
         ContributionAnalyticsView(
             selectedPeriod: $selectedPeriod,
-            analytics: analytics
+            analytics: analytics,
+            myUserId: userId
         )
         .navigationTitle("家事分析")
         .task(id: contributionStore.contiribution) {

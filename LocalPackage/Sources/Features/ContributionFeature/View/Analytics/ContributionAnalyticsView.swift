@@ -14,8 +14,9 @@ struct ContributionAnalyticsView: View {
     @Environment(\.locale) var locale
 
     @Binding var selectedPeriod: DisplayPointPeriod
-    
+
     let analytics: ContributionAnalytics?
+    let myUserId: String
 
     var body: some View {
         ScrollView {
@@ -24,6 +25,19 @@ struct ContributionAnalyticsView: View {
                     graphContent(data: analytics.currentList(calendar: calendar))
                     ContributionPieChart(data: analytics.achieved())
                         .frame(height: 240)
+                    AnalyticsRankingSection(
+                        pointRanking: analytics.ranking(
+                            criterion: .point,
+                            myUserId: myUserId,
+                            calendar: calendar
+                        ),
+                        achievementRanking: analytics.ranking(
+                            criterion: .achievement,
+                            myUserId: myUserId,
+                            calendar: calendar
+                        ),
+                        averageDenominatorUnit: selectedPeriod.type.averageDenominatorUnit
+                    )
                 } else {
                     // TODO: データがない旨の空表示を実装する
                 }
@@ -73,7 +87,34 @@ private extension ContributionAnalyticsView {}
     )
     ContributionAnalyticsView(
         selectedPeriod: $selectedPeriod,
-        analytics: .makeForPreview(type: .week)
+        analytics: .makeForPreview(type: .week),
+        myUserId: "user1"
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("ContributionAnalyticsView_月間", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .month),
+        myUserId: "user1"
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("ContributionAnalyticsView_年間", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .year,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .year),
+        myUserId: "user1"
     )
     .setupEnvironmentForPreview()
 }
