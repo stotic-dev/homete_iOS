@@ -8,14 +8,6 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v15)],
     products: [
         .library(
-            name: "HometeDomain",
-            targets: ["HometeDomain"]
-        ),
-        .library(
-            name: "HometeUI",
-            targets: ["HometeUI"]
-        ),
-        .library(
             name: "HometeResources",
             targets: ["HometeResources"]
         ),
@@ -36,8 +28,8 @@ let package = Package(
             targets: ["HouseworkFeature"]
         ),
         .library(
-            name: "HometeInfrastructure",
-            targets: ["HometeInfrastructure"]
+            name: "HouseworkTemplateFeature",
+            targets: ["HouseworkTemplateFeature"]
         ),
         .library(
             name: "AppRoot",
@@ -168,6 +160,7 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "HouseworkTemplateFeature",
                 "HometeInfrastructure"
             ],
             plugins: [

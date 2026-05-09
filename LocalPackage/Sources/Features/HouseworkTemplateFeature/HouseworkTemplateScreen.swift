@@ -8,11 +8,12 @@
 import SwiftUI
 
 public struct HouseworkTemplateScreen: View {
+    
+    public static func make() -> some View {
+        HouseworkTemplateScreen()
+    }
+    
     public var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
-}
-
-#Preview {
-    HouseworkTemplateScreen()
 }

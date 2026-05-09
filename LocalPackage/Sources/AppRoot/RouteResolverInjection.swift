@@ -5,6 +5,7 @@
 import HomeFeature
 import HometeDomain
 import HometeUI
+import HouseworkTemplateFeature
 import SettingFeature
 import SwiftUI
 
@@ -18,6 +19,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     CohabitantRegistrationView()
                 case .setting:
                     SettingView()
+                case .houseworkTemplate:
+                    HouseworkTemplateScreen.make()
                 }
             })
     }
