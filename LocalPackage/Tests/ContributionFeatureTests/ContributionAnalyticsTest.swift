@@ -5,6 +5,8 @@
 //  Created by Taichi Sato on 2026/05/01.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 import Testing
 import HometeDomain
@@ -12,14 +14,144 @@ import HometeDomain
 
 // swiftlint:disable:next convenience_type
 struct ContributionAnalyticsTest {
+    struct MakeCase {
+        let calendar = Calendar.japanese
+    }
     struct UpdatePeriodCase {
         private let calendar = Calendar.japanese
     }
     struct CurrentListCase {
         private let calendar = Calendar.japanese
     }
-    struct RankingCase {}
+    struct RankingCase {
+        let calendar = Calendar.japanese
+    }
     struct IsEmptyCase {}
+}
+
+// MARK: - make
+
+extension ContributionAnalyticsTest.MakeCase {
+
+    @Test("displayPeriod.type=.monthで作ったanalyticsでも、week期間に切り替えると週間範囲のデータのみが集計される")
+    func make_typeMonth_thenSwitchToWeek_usesWeekDates() async throws {
+
+        // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
+        let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
+        let contribution = HouseworkContribution.makeForTest(
+            list: [
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+            ],
+            calendar: calendar
+        )
+        let members = CohabitantMemberList(
+            value: [.init(id: "u1", userName: "ユーザー1")],
+            ownId: "u1"
+        )
+        let monthPeriod = DisplayPointPeriod(type: .month, anchor: anchor)
+        let weekPeriod = DisplayPointPeriod(type: .week, anchor: anchor)
+        let analytics = await ContributionAnalytics.make(
+            contribution: contribution,
+            members: members,
+            displayPeriod: monthPeriod,
+            calendar: calendar
+        )
+
+        // Act: anchorを変えずにtypeだけweekへ切り替える
+        let result = await analytics.updatePeriod(
+            displayPeriod: weekPeriod,
+            members: members,
+            contribution: contribution,
+            calendar: calendar
+        )
+
+        // Assert: 週間範囲には04-10が含まれないので達成数0
+        let expected: [UserHouseworkAchieved] = [
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 0)
+        ]
+        #expect(result.achieved() == expected)
+    }
+
+    @Test("displayPeriod.type=.weekで作ったanalyticsでも、month期間に切り替えると月間範囲のデータが集計される")
+    func make_typeWeek_thenSwitchToMonth_usesMonthDates() async throws {
+
+        // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
+        let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
+        let contribution = HouseworkContribution.makeForTest(
+            list: [
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+            ],
+            calendar: calendar
+        )
+        let members = CohabitantMemberList(
+            value: [.init(id: "u1", userName: "ユーザー1")],
+            ownId: "u1"
+        )
+        let weekPeriod = DisplayPointPeriod(type: .week, anchor: anchor)
+        let monthPeriod = DisplayPointPeriod(type: .month, anchor: anchor)
+        let analytics = await ContributionAnalytics.make(
+            contribution: contribution,
+            members: members,
+            displayPeriod: weekPeriod,
+            calendar: calendar
+        )
+
+        // Act: anchorを変えずにtypeだけmonthへ切り替える
+        let result = await analytics.updatePeriod(
+            displayPeriod: monthPeriod,
+            members: members,
+            contribution: contribution,
+            calendar: calendar
+        )
+
+        // Assert: 月間範囲には04-10が含まれるので達成数1
+        let expected: [UserHouseworkAchieved] = [
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1)
+        ]
+        #expect(result.achieved() == expected)
+    }
+
+    @Test("displayPeriod.type=.monthで作ったanalyticsでも、year期間に切り替えると年間範囲のデータが集計される")
+    func make_typeMonth_thenSwitchToYear_usesYearDates() async throws {
+
+        // Arrange: 年間範囲には含まれるが月間範囲には含まれない日付にデータを置く
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
+        let dateOutsideMonth = Date.previewDate(year: 2025, month: 8, day: 15)
+        let contribution = HouseworkContribution.makeForTest(
+            list: [
+                "u1": [.init(indexedDay: dateOutsideMonth, point: .init(value: 50))]
+            ],
+            calendar: calendar
+        )
+        let members = CohabitantMemberList(
+            value: [.init(id: "u1", userName: "ユーザー1")],
+            ownId: "u1"
+        )
+        let monthPeriod = DisplayPointPeriod(type: .month, anchor: anchor)
+        let yearPeriod = DisplayPointPeriod(type: .year, anchor: anchor)
+        let analytics = await ContributionAnalytics.make(
+            contribution: contribution,
+            members: members,
+            displayPeriod: monthPeriod,
+            calendar: calendar
+        )
+
+        // Act: anchorを変えずにtypeだけyearへ切り替える
+        let result = await analytics.updatePeriod(
+            displayPeriod: yearPeriod,
+            members: members,
+            contribution: contribution,
+            calendar: calendar
+        )
+
+        // Assert: 年間範囲には2025-08-15が含まれるので達成数1
+        let expected: [UserHouseworkAchieved] = [
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1)
+        ]
+        #expect(result.achieved() == expected)
+    }
 }
 
 // MARK: - updatePeriod

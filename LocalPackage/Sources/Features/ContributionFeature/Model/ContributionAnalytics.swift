@@ -22,15 +22,14 @@ struct ContributionAnalytics: Equatable {
         displayPeriod: DisplayPointPeriod,
         calendar: Calendar
     ) async -> Self {
-        
-        let periodDates = displayPeriod.calcDatePeriod(calendar: calendar)
+
         let (weekPointList, monthPointList, yearPointList) = await buildPointList(
             members: members,
             contribution: contribution,
-            dates: periodDates,
+            anchor: displayPeriod.anchor,
             calendar: calendar
         )
-        
+
         return .init(
             weekPointList: weekPointList,
             monthPointList: monthPointList,
@@ -38,17 +37,17 @@ struct ContributionAnalytics: Equatable {
             displayPeriod: displayPeriod
         )
     }
-    
+
     func updatePeriod(
         displayPeriod: DisplayPointPeriod,
         members: CohabitantMemberList,
         contribution: HouseworkContribution,
         calendar: Calendar
     ) async -> Self {
-        
+
         guard self.displayPeriod.anchor != displayPeriod.anchor else {
-            
-            // 基準日が変わっていない場合は別の期間のpointListは計算済みなので、指定期間だけ更新する
+
+            // 基準日が変わっていない場合は週/月/年それぞれのpointListが既に算出済みなので、表示期間だけ差し替える
             return .init(
                 weekPointList: weekPointList,
                 monthPointList: monthPointList,
@@ -56,16 +55,15 @@ struct ContributionAnalytics: Equatable {
                 displayPeriod: displayPeriod
             )
         }
-        
+
         // 基準日が変わった場合はpointListを入れ替える必要があるので更新する
-        let periodDates = displayPeriod.calcDatePeriod(calendar: calendar)
         let (weekPointList, monthPointList, yearPointList) = await Self.buildPointList(
             members: members,
             contribution: contribution,
-            dates: periodDates,
+            anchor: displayPeriod.anchor,
             calendar: calendar
         )
-        
+
         return .init(
             weekPointList: weekPointList,
             monthPointList: monthPointList,
@@ -199,38 +197,45 @@ private extension ContributionAnalytics {
     static func buildPointList(
         members: CohabitantMemberList,
         contribution: HouseworkContribution,
-        dates: [Date],
+        anchor: Date,
         calendar: Calendar
     ) async -> ( // swiftlint:disable:this large_tuple
         [PointOfWeek],
         [PointOfMonth],
         [PointOfYear]
     ) {
-        
+
+        let weekDates = DisplayPointPeriod(type: .week, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
+        let monthDates = DisplayPointPeriod(type: .month, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
+        let yearDates = DisplayPointPeriod(type: .year, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
+
         async let weekPointList: [PointOfWeek] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dates: dates,
+                dates: weekDates,
                 calendar: calendar
             )
         }.value
-        
+
         async let monthPointList: [PointOfMonth] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dates: dates,
+                dates: monthDates,
                 calendar: calendar
             )
         }.value
-        
+
         async let yearPointList: [PointOfYear] = Task.detached {
             contribution.viewablePointList(
                 members: members,
-                dates: dates,
+                dates: yearDates,
                 calendar: calendar
             )
         }.value
-        
+
         return await (weekPointList, monthPointList, yearPointList)
     }
 }

@@ -20,7 +20,7 @@ struct DisplayPointPeriod: Equatable, Hashable {
             value: -1,
             to: anchor
         ),
-              let start = calendar.date(byAdding: .day, value: 1, to: decreasedDate) else { return nil }
+              let start = calendar.date(byAdding: type.granularity, value: 1, to: decreasedDate) else { return nil }
         let end = anchor
         return start...end
     }

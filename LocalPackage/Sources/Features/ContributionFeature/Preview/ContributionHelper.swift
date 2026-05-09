@@ -100,21 +100,26 @@ extension ContributionAnalytics {
             ownId: "user1"
         )
 
-        let dates = displayPeriod.calcDatePeriod(calendar: calendar)
+        let weekDates = DisplayPointPeriod(type: .week, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
+        let monthDates = DisplayPointPeriod(type: .month, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
+        let yearDates = DisplayPointPeriod(type: .year, anchor: anchor)
+            .calcDatePeriod(calendar: calendar)
 
         let weekPointList: [PointOfWeek] = contribution.viewablePointList(
             members: members,
-            dates: dates,
+            dates: weekDates,
             calendar: calendar
         )
         let monthPointList: [PointOfMonth] = contribution.viewablePointList(
             members: members,
-            dates: dates,
+            dates: monthDates,
             calendar: calendar
         )
         let yearPointList: [PointOfYear] = contribution.viewablePointList(
             members: members,
-            dates: dates,
+            dates: yearDates,
             calendar: calendar
         )
 
