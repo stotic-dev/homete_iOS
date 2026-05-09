@@ -7,7 +7,7 @@
 
 import Foundation
 import Testing
-@testable import HometeDomain
+@testable import HouseworkFeature
 
 struct HouseworkDateListTest {
 

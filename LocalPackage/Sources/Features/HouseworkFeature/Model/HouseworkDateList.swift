@@ -7,21 +7,21 @@
 
 import Foundation
 
-public struct HouseworkDateList: Equatable {
+struct HouseworkDateList: Equatable {
 
-    public struct Item: Equatable {
-        public let date: Date
-        public let state: HouseworkDateState
+    struct Item: Equatable {
+        let date: Date
+        let state: HouseworkDateState
     }
 
-    public let anchorDate: Date
-    public private(set) var selectedDate: Date
-    public private(set) var items: [Item]
+    let anchorDate: Date
+    private(set) var selectedDate: Date
+    private(set) var items: [Item]
 
     private static let selectableOffset = 7
     private static let unselectablePadding = 3
 
-    public init(anchorDate: Date = .now, selectedDate: Date = .now, calendar: Calendar = .autoupdatingCurrent) {
+    init(anchorDate: Date = .now, selectedDate: Date = .now, calendar: Calendar = .autoupdatingCurrent) {
         let selectedDay = calendar.startOfDay(for: selectedDate)
         self.anchorDate = anchorDate
         self.selectedDate = selectedDay

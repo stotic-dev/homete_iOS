@@ -18,6 +18,7 @@ struct AppTabView: View {
 
     @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
+    @State var houseworkListStore: HouseworkListStore?
     @State var type: TabType = .dashboard
 
     var body: some View {
@@ -58,7 +59,7 @@ private extension AppTabView {
                         systemImage: "person.2.arrow.trianglehead.counterclockwise",
                         value: .homework
                     ) {
-                        HouseworkBoardView.instantiate()
+                        HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
                     }
                 }
             } else {
@@ -74,7 +75,7 @@ private extension AppTabView {
                             systemImage: "list.bullet.clipboard.fill"
                         )
                     }
-                    HouseworkBoardView.instantiate()
+                    HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
@@ -139,6 +140,11 @@ private extension AppTabView {
         contributionStore = .init(
             houseworkManager: appDependencies.houseworkManager,
             calendar: calendar
+        )
+        houseworkListStore = .init(
+            houseworkClient: appDependencies.houseworkClient,
+            cohabitantPushNotificationClient: appDependencies.cohabitantPushNotificationClient,
+            houseworkManager: appDependencies.houseworkManager
         )
     }
 }
