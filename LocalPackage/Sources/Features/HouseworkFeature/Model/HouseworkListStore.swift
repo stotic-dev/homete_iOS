@@ -27,13 +27,13 @@ public final class HouseworkListStore {
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
-        items: StoredAllHouseworkList = .init(value: [])
+        items: [DailyHouseworkList] = []
     ) {
 
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
-        self.items = items
+        self.items = .init(value: items)
         
         Task {
             await startObserving()
