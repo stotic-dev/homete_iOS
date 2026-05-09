@@ -76,58 +76,69 @@ struct ContributionSummaryContent: View {
     @State var isShowingLegend = false
 
     var body: some View {
-        VStack(spacing: .zero) {
-            HStack {
-                Text(monthTitle)
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
-                Spacer()
-                if summaries.hasData {
-                    Button {
-                        isShowAnalytics = true
-                    } label: {
-                        Image(systemName: "chart.xyaxis.line")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .padding(.horizontal, .space16)
-            .padding(.vertical, .space16)
+        VStack(spacing: .space8) {
+            Text(monthTitle)
+                .font(with: .headLineS)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(.onSurface)
+            Divider()
             if summaries.hasData {
-                Divider()
-                ContributionGraphSection(summaries: summaries)
-                Divider()
-                HStack(spacing: .zero) {
-                    Text("今月の貢献ランキング")
-                        .font(with: .headLineS)
-                        .foregroundStyle(.onSurface)
-                    Spacer()
-                    Button {
-                        isShowingLegend = true
-                    } label: {
-                        Image(systemName: "questionmark.circle")
-                            .foregroundStyle(.secondary)
-                    }
-                    .popover(isPresented: $isShowingLegend) {
-                        LegendPopover()
-                            .presentationCompactAdaptation(.popover)
-                    }
-                }
-                .padding(.horizontal, .space16)
-                .padding(.top, .space16)
-                ForEach(summaries.makeRanking()) { item in
-                    SummaryRow(item: item)
+                VStack(spacing: .zero) {
+                    graphContent(summaries)
                     Divider()
-                        .padding(.leading, .space16)
+                        .padding(.vertical, .space24)
+                    rankingContent(summaries.makeRanking())
                 }
             } else {
                 // TODO: 今日の家事完了を促すメッセージとアクションの導線を追加する
                 ContentUnavailableView("今月はまだ達成された家事がありません", systemImage: "house.circle")
+                    .frame(height: 240)
             }
         }
     }
+}
 
-    private var monthTitle: String {
+// MARK: - UI定義
+
+private extension ContributionSummaryContent {
+    
+    func graphContent(_ summaries: AllUserPointSummary) -> some View {
+        VStack(spacing: .space16) {
+            ContributionGraphSection(summaries: summaries)
+            Button("もっと詳しく見る") {
+                isShowAnalytics = true
+            }
+            .primaryButtonStyle()
+        }
+    }
+    
+    func rankingContent(_ ranking: [ContributionRankItem]) -> some View {
+        VStack(spacing: .space8) {
+            HStack(spacing: .zero) {
+                Text("今月の貢献ランキング")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Button {
+                    isShowingLegend = true
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundStyle(.secondary)
+                }
+                .popover(isPresented: $isShowingLegend) {
+                    LegendPopover()
+                        .presentationCompactAdaptation(.popover)
+                }
+            }
+            ForEach(ranking) { item in
+                SummaryRow(item: item)
+                Divider()
+                    .padding(.leading, .space16)
+            }
+        }
+    }
+    
+    var monthTitle: String {
         let month = calendar.component(.month, from: now)
         return "\(month)月の家事貢献度サマリー"
     }
