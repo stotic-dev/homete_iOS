@@ -18,6 +18,7 @@ struct ContributionAnalyticsTest {
     struct CurrentListCase {
         private let calendar = Calendar.japanese
     }
+    struct RankingCase {}
 }
 
 // MARK: - updatePeriod

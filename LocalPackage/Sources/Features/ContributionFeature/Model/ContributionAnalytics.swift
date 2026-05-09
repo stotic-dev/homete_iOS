@@ -96,7 +96,7 @@ struct ContributionAnalytics: Equatable {
     }
     
     func achieved() -> [UserHouseworkAchieved] {
-        
+
         switch displayPeriod.type {
         case .week:
             weekPointList.map {
@@ -112,10 +112,74 @@ struct ContributionAnalytics: Equatable {
         }
         }
     }
+
+    /// 指定期間中の貢献度を criterion 順でランキング化する
+    func ranking(
+        criterion: ContributionAnalyticsRankingCriterion,
+        myUserId: String,
+        calendar: Calendar
+    ) -> [ContributionAnalyticsRankItem] {
+
+        let denominator = max(displayPeriod.calcDatePeriod(calendar: calendar).count, 1)
+        let sortedEntries = userTotals(criterion: criterion)
+            .sorted { $0.totalValue > $1.totalValue }
+
+        var items: [ContributionAnalyticsRankItem] = []
+        for (index, entry) in sortedEntries.enumerated() {
+            let item = ContributionAnalyticsRankItem(
+                rank: index + 1,
+                userId: entry.userId,
+                userName: entry.userName,
+                isMe: entry.userId == myUserId,
+                totalValue: entry.totalValue,
+                averageValue: Double(entry.totalValue) / Double(denominator)
+            )
+            items.append(item)
+        }
+        return items
+    }
 }
 
 private extension ContributionAnalytics {
-    
+
+    struct UserTotalEntry {
+        let userId: String
+        let userName: String
+        let totalValue: Int
+    }
+
+    func userTotals(criterion: ContributionAnalyticsRankingCriterion) -> [UserTotalEntry] {
+
+        switch displayPeriod.type {
+        case .week:
+            return weekPointList.map {
+                .init(
+                    userId: $0.userId,
+                    userName: $0.userName,
+                    totalValue: criterion == .point ? $0.total.value : $0.totalAchievementCount
+                )
+            }
+
+        case .month:
+            return monthPointList.map {
+                .init(
+                    userId: $0.userId,
+                    userName: $0.userName,
+                    totalValue: criterion == .point ? $0.total.value : $0.totalAchievementCount
+                )
+            }
+
+        case .year:
+            return yearPointList.map {
+                .init(
+                    userId: $0.userId,
+                    userName: $0.userName,
+                    totalValue: criterion == .point ? $0.total.value : $0.totalAchievementCount
+                )
+            }
+        }
+    }
+
     static func buildPointList(
         members: CohabitantMemberList,
         contribution: HouseworkContribution,
