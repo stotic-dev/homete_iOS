@@ -16,6 +16,7 @@ extension AppDependencies {
         cohabitantClient: .liveValue,
         houseworkClient: .liveValue,
         cohabitantPushNotificationClient: .liveValue,
-        signInWithAppleClient: .liveValue
+        signInWithAppleClient: .liveValue,
+        houseworkTemplateClient: .liveValue
     )
 }

@@ -3,6 +3,7 @@
 //
 
 import HometeDomain
+import HometeInfrastructure
 import FirebaseAuth
 
 extension AccountAuthClient {

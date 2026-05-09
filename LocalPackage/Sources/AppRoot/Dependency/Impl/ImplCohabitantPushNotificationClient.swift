@@ -4,6 +4,7 @@
 
 import FirebaseFunctions
 import HometeDomain
+import HometeInfrastructure
 
 extension CohabitantPushNotificationClient {
 

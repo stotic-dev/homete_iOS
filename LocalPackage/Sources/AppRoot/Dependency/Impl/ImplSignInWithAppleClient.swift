@@ -4,6 +4,7 @@
 
 import AuthenticationServices
 import HometeDomain
+import HometeInfrastructure
 
 extension SignInWithAppleClient {
 

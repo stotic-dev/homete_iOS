@@ -8,14 +8,6 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v15)],
     products: [
         .library(
-            name: "HometeDomain",
-            targets: ["HometeDomain"]
-        ),
-        .library(
-            name: "HometeUI",
-            targets: ["HometeUI"]
-        ),
-        .library(
             name: "HometeResources",
             targets: ["HometeResources"]
         ),
@@ -36,8 +28,8 @@ let package = Package(
             targets: ["HouseworkFeature"]
         ),
         .library(
-            name: "HometeInfrastructure",
-            targets: ["HometeInfrastructure"]
+            name: "HouseworkTemplateFeature",
+            targets: ["HouseworkTemplateFeature"]
         ),
         .library(
             name: "AppRoot",
@@ -134,6 +126,18 @@ let package = Package(
             ]
         ),
         .target(
+            name: "HouseworkTemplateFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            path: "./Sources/Features/HouseworkTemplateFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
             name: "HometeInfrastructure",
             dependencies: [
                 "HometeDomain",
@@ -156,6 +160,8 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "HouseworkTemplateFeature",
+                "HometeInfrastructure"
             ],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
