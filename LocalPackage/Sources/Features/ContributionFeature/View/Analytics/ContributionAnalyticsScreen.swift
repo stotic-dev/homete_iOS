@@ -14,7 +14,6 @@ public struct ContributionAnalyticsScreen: View {
     @Environment(ContributionStore.self) var contributionStore
     @Environment(\.cohabitantMembers) var members
     @Environment(\.calendar) var calendar
-    @Environment(\.now) var now
     @Environment(\.loginContext.account.id) var userId
     @LoadingState var loadingState
 
@@ -30,7 +29,7 @@ public struct ContributionAnalyticsScreen: View {
             selectedPeriod: $selectedPeriod,
             analytics: analytics,
             myUserId: userId,
-            onJumpToLatest: jumpToLatestAchievedPeriod
+            latestAchievedDate: contributionStore.contiribution.latestAchievedDate
         )
         .navigationTitle("家事分析")
         .task(id: contributionStore.contiribution) {
@@ -66,12 +65,5 @@ private extension ContributionAnalyticsScreen {
             contribution: contribution,
             calendar: calendar
         )
-    }
-
-    func jumpToLatestAchievedPeriod() {
-
-        guard let latestDate = contributionStore.contiribution.latestAchievedDate else { return }
-        let clampedAnchor = min(latestDate, now)
-        selectedPeriod = .init(type: selectedPeriod.type, anchor: clampedAnchor)
     }
 }

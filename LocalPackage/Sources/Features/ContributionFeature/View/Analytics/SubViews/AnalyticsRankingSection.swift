@@ -88,11 +88,15 @@ private extension AnalyticsRankingSection {
     AnalyticsRankingSection(
         pointRanking: [
             .init(rank: 1, userId: "user1", userName: "田中", isMe: true, totalValue: 78, averageValue: 11.1),
-            .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 60, averageValue: 8.6)
+            .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 60, averageValue: 8.6),
+            .init(rank: 3, userId: "user3", userName: "佐藤", isMe: false, totalValue: 50, averageValue: 8.2),
+            .init(rank: 4, userId: "user4", userName: "佐藤", isMe: false, totalValue: 40, averageValue: 8.1)
         ],
         achievementRanking: [
             .init(rank: 1, userId: "user1", userName: "田中", isMe: true, totalValue: 5, averageValue: 0.7),
-            .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 3, averageValue: 0.4)
+            .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 3, averageValue: 0.4),
+            .init(rank: 3, userId: "user3", userName: "佐藤", isMe: false, totalValue: 50, averageValue: 8.2),
+            .init(rank: 4, userId: "user4", userName: "佐藤", isMe: false, totalValue: 40, averageValue: 8.1)
         ],
         selectedPriodType: .week
     )

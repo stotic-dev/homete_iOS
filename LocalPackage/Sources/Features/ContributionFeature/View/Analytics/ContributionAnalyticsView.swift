@@ -12,12 +12,13 @@ struct ContributionAnalyticsView: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
+    @Environment(\.now) var now
 
     @Binding var selectedPeriod: DisplayPointPeriod
 
     let analytics: ContributionAnalytics?
     let myUserId: String
-    let onJumpToLatest: () -> Void
+    let latestAchievedDate: Date?
 
     var body: some View {
         ScrollView {
@@ -26,26 +27,12 @@ struct ContributionAnalyticsView: View {
                     if analytics.isEmpty {
                         emptyContent()
                     } else {
-                        graphContent(data: analytics.currentList(calendar: calendar))
-                        ContributionPieChart(data: analytics.achieved())
-                            .frame(height: 240)
-                        AnalyticsRankingSection(
-                            pointRanking: analytics.ranking(
-                                criterion: .point,
-                                myUserId: myUserId,
-                                calendar: calendar
-                            ),
-                            achievementRanking: analytics.ranking(
-                                criterion: .achievement,
-                                myUserId: myUserId,
-                                calendar: calendar
-                            ),
-                            selectedPriodType: selectedPeriod.type
-                        )
+                        graphContent(analytics: analytics)
                     }
                 }
             }
             .padding(.top, .space16)
+            .padding(.bottom, .space24)
             .padding(.horizontal, .space16)
         }
         .safeAreaInset(edge: .top, spacing: 0) {
@@ -60,21 +47,51 @@ struct ContributionAnalyticsView: View {
 
 private extension ContributionAnalyticsView {
     
-    func graphContent(data: AllUserViewablePointList) -> some View {
-        VStack(spacing: .space16) {
-            Text("指定期間中のポイントの獲得推移")
-                .font(with: .headLineS)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            PointsTimeSeriesChartView(viewableData: data)
+    func graphContent(analytics: ContributionAnalytics) -> some View {
+        VStack(spacing: .space32) {
+            pointGraph(pointData: analytics.currentList(calendar: calendar))
+            ContributionPieChart(data: analytics.achieved())
                 .frame(height: 240)
-            Text("指定期間中の累計ポイントの推移")
-                .font(with: .headLineS)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            AnalyticsRankingSection(
+                pointRanking: analytics.ranking(
+                    criterion: .point,
+                    myUserId: myUserId,
+                    calendar: calendar
+                ),
+                achievementRanking: analytics.ranking(
+                    criterion: .achievement,
+                    myUserId: myUserId,
+                    calendar: calendar
+                ),
+                selectedPriodType: selectedPeriod.type
+            )
+        }
+    }
+    
+    @ViewBuilder
+    func pointGraph(pointData: AllUserViewablePointList) -> some View {
+        titleWithGraph("指定期間中のポイントの獲得推移") {
+            PointsTimeSeriesChartView(viewableData: pointData)
+                .frame(height: 240)
+        }
+        titleWithGraph("指定期間中の累計ポイントの推移") {
             CumulativePointsAreaChartView(viewableData: AllUserCumulativeData.make(
-                list: data.list,
-                displayPeriod: data.displayPeriod
+                list: pointData.list,
+                displayPeriod: pointData.displayPeriod
             ))
             .frame(height: 240)
+        }
+    }
+    
+    func titleWithGraph<Content: View>(
+        _ title: LocalizedStringKey,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(spacing: .space16) {
+            Text(title)
+                .font(with: .headLineS)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            content()
         }
     }
 
@@ -84,15 +101,25 @@ private extension ContributionAnalyticsView {
         } description: {
             Text("期間を変更すると過去の家事貢献度を確認できます")
         } actions: {
-            Button("直近のデータがある期間を表示", action: onJumpToLatest)
-                .subPrimaryButtonStyle()
+            Button("直近のデータがある期間を表示") {
+                tappedLatestAchievedPeriodShowButton()
+            }
+            .subPrimaryButtonStyle()
         }
     }
 }
 
 // MARK: プレゼンテーションロジック
 
-private extension ContributionAnalyticsView {}
+private extension ContributionAnalyticsView {
+    
+    func tappedLatestAchievedPeriodShowButton() {
+
+        guard let latestDate = latestAchievedDate else { return }
+        let clampedAnchor = min(latestDate, now)
+        selectedPeriod = .init(type: selectedPeriod.type, anchor: clampedAnchor)
+    }
+}
 
 #Preview("ContributionAnalyticsView_週間", traits: .sizeThatFitsLayout) {
     @Previewable @State var selectedPeriod = DisplayPointPeriod(
@@ -103,7 +130,7 @@ private extension ContributionAnalyticsView {}
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .week),
         myUserId: "user1",
-        onJumpToLatest: {}
+        latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
 }
@@ -117,7 +144,7 @@ private extension ContributionAnalyticsView {}
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
-        onJumpToLatest: {}
+        latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
 }
@@ -131,7 +158,7 @@ private extension ContributionAnalyticsView {}
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .year),
         myUserId: "user1",
-        onJumpToLatest: {}
+        latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
 }
@@ -145,7 +172,7 @@ private extension ContributionAnalyticsView {}
         selectedPeriod: $selectedPeriod,
         analytics: .makeForTest(displayPeriod: selectedPeriod),
         myUserId: "user1",
-        onJumpToLatest: {}
+        latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
 }
