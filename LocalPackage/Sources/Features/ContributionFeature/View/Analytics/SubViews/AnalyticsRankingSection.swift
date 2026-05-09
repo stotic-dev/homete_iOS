@@ -15,6 +15,9 @@ struct AnalyticsRankingSection: View {
     let selectedPriodType: DisplayPointPeriod.PeriodType
 
     @State private var selectedCriterion: ContributionAnalyticsRankingCriterion = .point
+    
+    // ランキング行の高さ
+    private static let rowHeight: CGFloat = 70
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
@@ -59,18 +62,18 @@ private extension AnalyticsRankingSection {
                     totalUnit: criterion.totalUnit,
                     averageDenominatorUnit: averageDenominatorUnit
                 )
-                if item.id != items.last?.id {
-                    Divider()
-                        .padding(.leading, .space16)
-                }
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space16)
+                .frame(height: Self.rowHeight)
+                Divider()
+                    .padding(.leading, .space16)
             }
         }
     }
 
     var tabViewHeight: CGFloat {
         let rowCount = max(pointRanking.count, achievementRanking.count, 1)
-        let rowHeight: CGFloat = 64
-        return CGFloat(rowCount) * rowHeight
+        return CGFloat(rowCount) * (Self.rowHeight + 1)
     }
     
     var averageDenominatorUnit: String {

@@ -39,8 +39,6 @@ struct AnalyticsRankingRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space16)
     }
 
     private var rankColor: Color {
