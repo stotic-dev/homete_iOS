@@ -64,7 +64,7 @@ extension DisplayPointPeriodTest.CalcDateRangeCase {
         let result = try #require(period.calcDateRange(calendar: calendar))
 
         // Assert
-        let expectedStart = Date.previewDate(year: 2026, month: 1, day: 1)
+        let expectedStart = Date.previewDate(year: 2026, month: 1, day: 31)
         let expectedEnd = Date.previewDate(year: 2026, month: 12, day: 31)
         #expect(result == expectedStart...expectedEnd)
     }

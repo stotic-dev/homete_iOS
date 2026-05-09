@@ -12,6 +12,59 @@ import HometeDomain
 
 extension ContributionAnalyticsTest.RankingCase {
 
+    @Test("displayPeriod.type=.weekで作ったanalyticsを、anchor固定でmonthへ切り替えるとmonth期間のランキングが返る")
+    func ranking_afterTypeSwitchKeepingAnchor_usesNewPeriodPointList() async throws {
+
+        // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
+        let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
+        let contribution = HouseworkContribution.makeForTest(
+            list: [
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+            ],
+            calendar: calendar
+        )
+        let members = CohabitantMemberList(
+            value: [.init(id: "u1", userName: "ユーザー1")],
+            ownId: "u1"
+        )
+        let weekPeriod = DisplayPointPeriod(type: .week, anchor: anchor)
+        let monthPeriod = DisplayPointPeriod(type: .month, anchor: anchor)
+        let weekAnalytics = await ContributionAnalytics.make(
+            contribution: contribution,
+            members: members,
+            displayPeriod: weekPeriod,
+            calendar: calendar
+        )
+        let monthAnalytics = await weekAnalytics.updatePeriod(
+            displayPeriod: monthPeriod,
+            members: members,
+            contribution: contribution,
+            calendar: calendar
+        )
+
+        // Act
+        let result = monthAnalytics.ranking(
+            criterion: .point,
+            myUserId: "u1",
+            calendar: calendar
+        )
+
+        // Assert: 月間範囲のpointListに基づきtotalValue=50, denominator=月間日数
+        let monthDayCount = monthPeriod.calcDatePeriod(calendar: calendar).count
+        let expected: [ContributionAnalyticsRankItem] = [
+            .init(
+                rank: 1,
+                userId: "u1",
+                userName: "ユーザー1",
+                isMe: true,
+                totalValue: 50,
+                averageValue: 50.0 / Double(monthDayCount)
+            )
+        ]
+        #expect(result == expected)
+    }
+
     @Test("criterion=.point の場合はtotalポイント降順でランキングが返る")
     func ranking_byPoint_returnsDescendingOrder() throws {
 
