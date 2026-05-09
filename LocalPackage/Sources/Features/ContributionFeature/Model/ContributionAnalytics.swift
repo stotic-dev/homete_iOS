@@ -95,6 +95,7 @@ struct ContributionAnalytics: Equatable {
         }
     }
     
+    /// 指定期間中のユーザー毎の家事達成情報
     func achieved() -> [UserHouseworkAchieved] {
 
         switch displayPeriod.type {

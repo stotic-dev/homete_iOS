@@ -36,7 +36,7 @@ struct ContributionAnalyticsView: View {
                             myUserId: myUserId,
                             calendar: calendar
                         ),
-                        averageDenominatorUnit: selectedPeriod.type.averageDenominatorUnit
+                        selectedPriodType: selectedPeriod.type
                     )
                 } else {
                     // TODO: データがない旨の空表示を実装する

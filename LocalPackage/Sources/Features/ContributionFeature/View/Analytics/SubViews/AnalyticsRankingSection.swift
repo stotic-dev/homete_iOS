@@ -12,7 +12,7 @@ struct AnalyticsRankingSection: View {
 
     let pointRanking: [ContributionAnalyticsRankItem]
     let achievementRanking: [ContributionAnalyticsRankItem]
-    let averageDenominatorUnit: String
+    let selectedPriodType: DisplayPointPeriod.PeriodType
 
     @State private var selectedCriterion: ContributionAnalyticsRankingCriterion = .point
 
@@ -40,15 +40,6 @@ struct AnalyticsRankingSection: View {
                     .tag(ContributionAnalyticsRankingCriterion.achievement)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: tabViewHeight)
-            #else
-            TabView(selection: $selectedCriterion) {
-                rankingList(items: pointRanking, criterion: .point)
-                    .tag(ContributionAnalyticsRankingCriterion.point)
-
-                rankingList(items: achievementRanking, criterion: .achievement)
-                    .tag(ContributionAnalyticsRankingCriterion.achievement)
-            }
             .frame(height: tabViewHeight)
             #endif
         }
@@ -81,6 +72,13 @@ private extension AnalyticsRankingSection {
         let rowHeight: CGFloat = 64
         return CGFloat(rowCount) * rowHeight
     }
+    
+    var averageDenominatorUnit: String {
+        switch selectedPriodType {
+        case .week, .month: "日"
+        case .year: "月"
+        }
+    }
 }
 
 #Preview("AnalyticsRankingSection_週", traits: .sizeThatFitsLayout) {
@@ -93,7 +91,7 @@ private extension AnalyticsRankingSection {
             .init(rank: 1, userId: "user1", userName: "田中", isMe: true, totalValue: 5, averageValue: 0.7),
             .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 3, averageValue: 0.4)
         ],
-        averageDenominatorUnit: "日"
+        selectedPriodType: .week
     )
     .setupEnvironmentForPreview()
 }
@@ -108,7 +106,7 @@ private extension AnalyticsRankingSection {
             .init(rank: 1, userId: "user1", userName: "田中", isMe: true, totalValue: 24, averageValue: 2.0),
             .init(rank: 2, userId: "user2", userName: "佐藤", isMe: false, totalValue: 18, averageValue: 1.5)
         ],
-        averageDenominatorUnit: "月"
+        selectedPriodType: .year
     )
     .setupEnvironmentForPreview()
 }

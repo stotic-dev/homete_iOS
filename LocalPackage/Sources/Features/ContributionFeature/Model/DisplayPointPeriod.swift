@@ -85,13 +85,5 @@ struct DisplayPointPeriod: Equatable, Hashable {
             case .month, .week: .day
             }
         }
-
-        /// 平均値の分母として使う単位の表示文字列
-        var averageDenominatorUnit: String {
-            switch self {
-            case .week, .month: "日"
-            case .year: "月"
-            }
-        }
     }
 }
