@@ -36,3 +36,4 @@ echo "$STAGED_FILES" \
 echo "$STAGED_FILES" | xargs git add
 
 echo "✅ SwiftFormat完了"
+
