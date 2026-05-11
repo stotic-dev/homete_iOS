@@ -1,0 +1,15 @@
+# SwiftFormat configuration
+# https://github.com/nicklockwood/SwiftFormat
+
+# Swiftバージョン（CLAUDE.mdに準拠）
+--swift-version 6
+
+# 除外パス（.swiftlint.yml と揃える）
+--exclude ProjectTools,DangerTools,vendor,LocalPackage/.build
+
+# 既存コードへの影響が大きいルールを無効化
+--disable organizeDeclarations
+--disable markTypes
+--disable acronyms
+--disable wrapMultilineStatementBraces
+--disable blockComments

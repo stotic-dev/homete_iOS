@@ -16,6 +16,9 @@ let package = Package(
             targets: ["ProjectToolsDummy"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/nicklockwood/swiftformat", exact: "0.61.1")
+    ],
     targets: [
         .target(
             name: "ProjectToolsDummy"

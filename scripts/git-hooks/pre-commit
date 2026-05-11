@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# pre-commit hook: ステージ済みのSwiftファイルをSwiftFormatで整形し、再ステージする。
+#
+# 有効化:
+#   git config core.hooksPath scripts/git-hooks
+#   （または `make install-hooks`）
+
+set -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
+
+# ステージ済みのSwiftファイル一覧（フォーマット対象外ディレクトリを除外）
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM \
+    | grep -E '\.swift$' \
+    | grep -vE '^(ProjectTools|DangerTools|vendor|LocalPackage/\.build)/' \
+    || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+echo "🎨 SwiftFormatを実行中..."
+echo "$STAGED_FILES" | sed 's/^/  - /'
+
+# ProjectToolsのSwiftPMプラグイン経由でSwiftFormatを実行
+# （プラグインは自パッケージ内のソースも併せて処理するため
+#   --allow-writing-to-package-directory を付ける必要がある）
+echo "$STAGED_FILES" \
+    | xargs swift package --package-path ProjectTools plugin \
+        --allow-writing-to-package-directory \
+        swiftformat --config "$REPO_ROOT/.swiftformat"
+
+# 整形後のファイルを再ステージ
+echo "$STAGED_FILES" | xargs git add
+
+echo "✅ SwiftFormat完了"
