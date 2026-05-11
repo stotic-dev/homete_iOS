@@ -9,8 +9,9 @@ import MultipeerConnectivity
 import SwiftUI
 
 extension EnvironmentValues {
-    
+
     @Entry var myPeerID: MCPeerID?
     @Entry var connectedPeers: Set<MCPeerID> = []
     @Entry var p2pSessionReceiveData: P2PSessionReceiveData?
+
 }

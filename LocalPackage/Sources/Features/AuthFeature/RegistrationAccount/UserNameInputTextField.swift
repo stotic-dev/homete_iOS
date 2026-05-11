@@ -11,6 +11,7 @@ import HometeUI
 import SwiftUI
 
 struct UserNameInputTextField: View {
+
     @Binding var userName: UserName
 
     var body: some View {
@@ -43,6 +44,7 @@ struct UserNameInputTextField: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
+
 }
 
 #Preview("UserNameInputTextField_入力値なし", traits: .sizeThatFitsLayout) {

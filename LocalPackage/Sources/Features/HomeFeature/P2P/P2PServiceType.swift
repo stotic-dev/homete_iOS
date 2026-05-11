@@ -6,6 +6,7 @@
 //
 
 enum P2PServiceType: String {
-    
+
     case register
+
 }

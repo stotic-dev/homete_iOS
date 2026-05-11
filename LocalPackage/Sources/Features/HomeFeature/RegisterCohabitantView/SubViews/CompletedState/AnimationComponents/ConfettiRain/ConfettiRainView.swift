@@ -9,10 +9,10 @@ import Combine
 import SwiftUI
 
 struct ConfettiRainView: View {
-    
+
     @State private var confettis: [ConfettiRainPiece] = []
     @State var timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         GeometryReader { proxy in
             ForEach(confettis) { piece in
@@ -34,27 +34,25 @@ struct ConfettiRainView: View {
         }
         .drawingGroup()
     }
+
 }
 
 private extension ConfettiRainView {
-    
+
     func spawnConfetti(screenWidth: CGFloat) {
-        
-        for _ in 0..<10 {
-            
+        for _ in 0 ..< 10 {
             let piece = ConfettiRainPiece(screenWidth: screenWidth)
             confettis.append(piece)
-            
+
             // 画面下まで落ちたら削除
             withAnimation(.linear(duration: piece.speed)) {
-                
                 guard let index = confettis.firstIndex(where: { $0.id == piece.id }) else { return }
                 confettis[index].isAnimate = true
             } completion: {
-                
                 guard let index = confettis.firstIndex(where: { $0.id == piece.id }) else { return }
                 confettis.remove(at: index)
             }
         }
     }
+
 }

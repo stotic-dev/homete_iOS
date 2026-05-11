@@ -18,24 +18,25 @@ public struct DailyHouseworkList: Equatable, Sendable {
         items: [HouseworkItem],
         calendar: Calendar
     ) -> Self {
-
-        return .init(
+        .init(
             items: items,
             metaData: .init(selectedDate: selectedDate, calendar: calendar)
         )
     }
 
     /// この日付の家事情報がすでに登録済みであること
-    public var isRegistered: Bool { !items.isEmpty }
+    public var isRegistered: Bool {
+        !items.isEmpty
+    }
 
     /// すでに同じ家事が登録されているかどうか
     public func isAlreadyRegistered(_ item: HouseworkItem) -> Bool {
-
-        return items.contains { $0.title == item.title }
+        items.contains { $0.title == item.title }
     }
 
     public init(items: [HouseworkItem], metaData: DailyHouseworkMetaData) {
         self.items = items
         self.metaData = metaData
     }
+
 }

@@ -28,12 +28,11 @@ struct PointOfMonth: Equatable, Hashable {
         dates: [Date],
         calendar: Calendar
     ) -> Self {
-
         let allDays: [PointOfDay] = dates.map { targetDate in
             pointOfDayByDate[calendar.startOfDay(for: targetDate)]
                 ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
         }
-        
+
         let (totalPoint, totalAchivementCount) = allDays.calcTotalValue()
 
         return .init(
@@ -53,23 +52,21 @@ struct PointOfMonth: Equatable, Hashable {
         userName: String,
         calendar: Calendar
     ) -> [Self] {
-
         let separetedDic = pointOfDayByDate.values
             .reduce([DateComponents: Set<PointOfDay>]()) { partialResult, pointOfDay in
+                let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
+                var result = partialResult
 
-            let month = monthComponent(pointOfDay: pointOfDay, calendar: calendar)
-            var result = partialResult
+                if let elements = result[month] {
+                    var currentMonthElements = elements
+                    currentMonthElements.insert(pointOfDay)
+                    result[month] = currentMonthElements
+                } else {
+                    result[month] = [pointOfDay]
+                }
 
-            if let elements = result[month] {
-                var currentMonthElements = elements
-                currentMonthElements.insert(pointOfDay)
-                result[month] = currentMonthElements
-            } else {
-                result[month] = [pointOfDay]
+                return result
             }
-
-            return result
-        }
 
         return separetedDic.compactMap { components, elements in
             guard let startDate = calendar.date(from: components) else { return nil }
@@ -84,39 +81,39 @@ struct PointOfMonth: Equatable, Hashable {
             )
         }
     }
+
 }
 
 extension PointOfMonth: GenerableViewablePointList {
 
     func generate() -> ViewablePointList {
-
-        return .init(
+        .init(
             userId: userId,
             userName: userName,
             total: total,
             elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
         )
     }
+
 }
 
 private extension PointOfMonth {
 
     static func monthComponent(pointOfDay: PointOfDay, calendar: Calendar) -> DateComponents {
-
-        return calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
+        calendar.dateComponents([.year, .month], from: pointOfDay.indexedDay)
     }
+
 }
 
-extension Sequence where Element == PointOfMonth {
-    
+extension Sequence<PointOfMonth> {
+
     /// ポイントと家事達成数の合計を返す
     func calcTotalValue() -> (Point, Int) {
-
-        return self.reduce((Point(value: .zero), .zero), { partialResult, monthOfDay in
-            
+        reduce((Point(value: .zero), .zero)) { partialResult, monthOfDay in
             let point = Point(value: partialResult.0.value + monthOfDay.total.value)
             let achievementCount = partialResult.1 + monthOfDay.totalAchievementCount
             return (point, achievementCount)
-        })
+        }
     }
+
 }

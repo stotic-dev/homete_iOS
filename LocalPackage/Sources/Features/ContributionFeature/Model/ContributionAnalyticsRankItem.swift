@@ -5,9 +5,11 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
-struct ContributionAnalyticsRankItem: Identifiable, Equatable, Sendable {
+struct ContributionAnalyticsRankItem: Identifiable, Equatable {
 
-    var id: String { userId }
+    var id: String {
+        userId
+    }
 
     /// 順位（1始まり）
     let rank: Int
@@ -21,4 +23,5 @@ struct ContributionAnalyticsRankItem: Identifiable, Equatable, Sendable {
     let totalValue: Int
     /// 平均値（週・月の場合は1日あたり、年の場合は1ヶ月あたり）
     let averageValue: Double
+
 }

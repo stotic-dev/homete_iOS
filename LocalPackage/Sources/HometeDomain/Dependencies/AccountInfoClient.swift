@@ -17,9 +17,11 @@ public struct AccountInfoClient: Sendable {
         self.insertOrUpdate = insertOrUpdate
         self.fetch = fetch
     }
+
 }
 
 public extension AccountInfoClient {
 
     static let previewValue: AccountInfoClient = .init()
+
 }

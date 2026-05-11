@@ -8,17 +8,16 @@
 import Foundation
 
 struct AllUserCumulativeData: Equatable {
-    
+
     /// グラフに表示する累積データ
     let list: [ViewablePointList]
     /// 表示区間
     let displayPeriod: DisplayPointPeriod.PeriodType
-    
+
     static func make(
         list: [ViewablePointList],
         displayPeriod: DisplayPointPeriod.PeriodType
     ) -> Self {
-        
         let cumulativeList: [ViewablePointList] = list.map { userData in
             var running = 0
             let cumulatedList: [ViewablePointElement] = userData.sortedElements.map {
@@ -32,17 +31,17 @@ struct AllUserCumulativeData: Equatable {
                 elements: .init(cumulatedList)
             )
         }
-        
+
         print("cumulativeList: \(cumulativeList)")
         return .init(
             list: cumulativeList,
             displayPeriod: displayPeriod
         )
     }
-    
+
     /// 指定日時点でのユーザー毎の取得ポイント累計
     func cumulativePointEntries(for date: Date, calendar: Calendar) -> [PointEntry] {
-        return list.flatMap { userData in
+        list.flatMap { userData in
             let filtered = userData.elements.filter {
                 calendar.isDate($0.date, equalTo: date, toGranularity: displayPeriod.granularity)
             }
@@ -58,10 +57,11 @@ struct AllUserCumulativeData: Equatable {
             }
         }
     }
-    
+
     /// タップ位置の日付に最も近い、データが存在する日付を返す
     func nearestDate(to date: Date) -> Date? {
         list.flatMap { $0.elements.map(\.date) }
             .min { abs($0.timeIntervalSince(date)) < abs($1.timeIntervalSince(date)) }
     }
+
 }

@@ -26,7 +26,6 @@ public final class AccountAuthStore {
         nonceGenerationClient: NonceGenerationClient = .previewValue,
         currentAuth: AccountAuthInfo = .initial
     ) {
-
         self.accountAuthClient = accountAuthClient
         self.analyticsClient = analyticsClient
         self.signInWithAppleClient = signInWithAppleClient
@@ -36,43 +35,33 @@ public final class AccountAuthStore {
         listener = accountAuthClient.makeListener()
 
         Task {
-
             await listen()
         }
     }
 
     public func login(_ signInResult: SignInWithAppleResult) async throws {
-
         do {
-
             let authInfo = try await accountAuthClient.signIn(signInResult.tokenId, signInResult.nonce)
             analyticsClient.setId(authInfo.id)
             analyticsClient.log(.login(isSuccess: true))
-        }
-        catch {
-
+        } catch {
             analyticsClient.log(.login(isSuccess: false))
             throw error
         }
     }
 
     public func logOut() {
-
         currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
         analyticsClient.log(.logout())
 
         do {
-
             try accountAuthClient.signOut()
-        }
-        catch {
-
+        } catch {
             print("occurred error: \(error)")
         }
     }
 
     public func deleteAccount() async throws {
-
         // 1. 再認証
         let nonce = nonceGenerationClient()
         let signInWithAppleResult = try await signInWithAppleClient.reauthentication(nonce)
@@ -90,16 +79,16 @@ public final class AccountAuthStore {
         // 5. 状態更新
         currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
     }
+
 }
 
 private extension AccountAuthStore {
 
     func listen() async {
-
         for await value in listener.values {
-
             currentAuth = .init(result: value, alreadyLoadedAtInitiate: true)
             print("currentAuth snapshot: \(String(describing: currentAuth))")
         }
     }
+
 }

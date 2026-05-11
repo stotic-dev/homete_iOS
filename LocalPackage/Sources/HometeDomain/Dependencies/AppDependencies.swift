@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct AppDependencies: Sendable {
+
     public let nonceGeneratorClient: NonceGenerationClient
     public let accountAuthClient: AccountAuthClient
     public let analyticsClient: AnalyticsClient
@@ -38,16 +39,19 @@ public struct AppDependencies: Sendable {
         self.signInWithAppleClient = signInWithAppleClient
         houseworkManager = .init(houseworkClient: houseworkClient)
     }
+
 }
 
 // MARK: Preview用の定義
 
-extension AppDependencies {
+public extension AppDependencies {
 
-    public static let previewValue: Self = .init()
+    static let previewValue: Self = .init()
+
 }
 
-extension EnvironmentValues {
+public extension EnvironmentValues {
 
-    @Entry public var appDependencies: AppDependencies = .init()
+    @Entry var appDependencies: AppDependencies = .init()
+
 }

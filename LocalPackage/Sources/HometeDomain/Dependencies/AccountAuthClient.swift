@@ -1,5 +1,5 @@
 //
-//  AccountListener.swift
+//  AccountAuthClient.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/03.
@@ -20,17 +20,17 @@ public struct AccountAuthClient: Sendable {
         signIn: @Sendable @escaping (String, String) async throws -> AccountAuthResult = { _, _ in .init(id: "id") },
         signOut: @Sendable @escaping () throws -> Void = {},
         makeListener: @Sendable @escaping () -> AccountListenerStream = {
-
             let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
-            return AccountListenerStream(values: stream,
-                                         listenerToken: NSObject(),
-                                         continuation: continuation)
+            return AccountListenerStream(
+                values: stream,
+                listenerToken: NSObject(),
+                continuation: continuation
+            )
         },
         reauthenticateWithApple: @Sendable @escaping (_: SignInWithAppleResult) async throws -> Void = { _ in },
         revokeAppleToken: @Sendable @escaping (_: String) async throws -> Void = { _ in },
         deleteAccount: @Sendable @escaping () async throws -> Void = {}
     ) {
-
         self.signIn = signIn
         self.signOut = signOut
         self.makeListener = makeListener
@@ -38,8 +38,11 @@ public struct AccountAuthClient: Sendable {
         self.revokeAppleToken = revokeAppleToken
         self.deleteAccount = deleteAccount
     }
+
 }
 
 public extension AccountAuthClient {
+
     static let previewValue = AccountAuthClient()
+
 }

@@ -11,10 +11,10 @@ import HometeUI
 import SwiftUI
 
 struct HouseworkItemPropertyListContent: View {
-    
+
     @Environment(\.calendar) var calendar
     let item: HouseworkItem
-    
+
     var body: some View {
         VStack(spacing: .zero) {
             houseworkPropertyRow("日付") {
@@ -35,10 +35,11 @@ struct HouseworkItemPropertyListContent: View {
             }
         }
     }
+
 }
 
 private extension HouseworkItemPropertyListContent {
-    
+
     func houseworkPropertyRow(_ title: String, detailContent: () -> some View) -> some View {
         HStack(spacing: .zero) {
             Text(title)
@@ -49,20 +50,21 @@ private extension HouseworkItemPropertyListContent {
         }
         .padding(.space24)
     }
+
 }
 
 #if DEBUG
-#Preview(traits: .sizeThatFitsLayout) {
-    HouseworkItemPropertyListContent(item: .init(
-        id: "",
-        title: "洗濯",
-        point: 10,
-        metaData: .init(
-            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
-            expiredAt: .init(timeIntervalSince1970: 0)
-        ),
-        executedAt: .distantFuture
-    ))
-    .setupEnvironmentForPreview()
-}
+    #Preview(traits: .sizeThatFitsLayout) {
+        HouseworkItemPropertyListContent(item: .init(
+            id: "",
+            title: "洗濯",
+            point: 10,
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+                expiredAt: .init(timeIntervalSince1970: 0)
+            ),
+            executedAt: .distantFuture
+        ))
+        .setupEnvironmentForPreview()
+    }
 #endif

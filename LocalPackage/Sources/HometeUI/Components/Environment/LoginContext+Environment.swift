@@ -11,4 +11,5 @@ import SwiftUI
 public extension EnvironmentValues {
 
     @Entry var loginContext = LoginContext(account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil))
+
 }

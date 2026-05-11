@@ -9,9 +9,9 @@ import SwiftUI
 
 @MainActor
 extension ButtonStyleConfiguration {
-    
+
     func commonStyle(_ foregroundColor: Color = .onSurface) -> some View {
-        self.label
+        label
             .font(with: .headLineS)
             .padding(.horizontal, .space16)
             .padding(.vertical, .space8)
@@ -19,4 +19,5 @@ extension ButtonStyleConfiguration {
                 foregroundColor.opacity(isPressed ? 0.3 : 1)
             )
     }
+
 }

@@ -7,15 +7,16 @@ import SwiftUI
 
 public extension View {
 
-    func fullScreenCoverOnIOS<Content: View>(
+    func fullScreenCoverOnIOS(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping () -> Content
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         #if os(iOS)
-        self.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
+            fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
         #else
-        self
+            self
         #endif
     }
+
 }

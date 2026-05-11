@@ -13,18 +13,18 @@ struct ContributionGraphSection: View {
 
     var body: some View {
         #if os(iOS)
-        TabView {
-            charts
-                .padding(.bottom, .space48)
-        }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-        .indexViewStyle(.page(backgroundDisplayMode: .always))
-        .frame(height: 300)
+            TabView {
+                charts
+                    .padding(.bottom, .space48)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .frame(height: 300)
         #else
-        TabView {
-            charts
-        }
-        .frame(height: 280)
+            TabView {
+                charts
+            }
+            .frame(height: 280)
         #endif
     }
 
@@ -37,6 +37,7 @@ struct ContributionGraphSection: View {
             data: summaries.achieved()
         )
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
@@ -55,7 +56,7 @@ struct ContributionGraphSection: View {
                 isMe: false,
                 monthlyPoint: .init(value: 40),
                 achievedCount: 2
-            )
+            ),
         ])
     )
 }

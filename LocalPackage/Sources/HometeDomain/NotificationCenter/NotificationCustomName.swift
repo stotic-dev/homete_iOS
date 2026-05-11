@@ -4,7 +4,8 @@
 
 import Foundation
 
-extension Notification.Name {
+public extension Notification.Name {
 
-    public static let didReceiveFcmToken = Notification.Name("didReceiveFcmToken")
+    static let didReceiveFcmToken = Notification.Name("didReceiveFcmToken")
+
 }

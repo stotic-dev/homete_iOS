@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project
+.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project install-hooks format
 
 .DEFAULT_GOAL := setup-project
 
@@ -23,6 +23,17 @@ build-local-package: ## LocalPackageをiOSシミュレーター向けにビル�
 test-packages: ## LocalPackageのテストを実行
 	swift test --package-path LocalPackage --enable-code-coverage
 
+install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
+	git config core.hooksPath scripts/git-hooks
+	@echo "✅ git hooksを scripts/git-hooks に設定しました"
+
+format: ## プロダクション+テストコード全体にSwiftFormatを実行
+	swift package --package-path ProjectTools plugin \
+		--allow-writing-to-package-directory \
+		--allow-writing-to-directory $(CURDIR) \
+		swiftformat --config .swiftformat \
+		homete hometeSnapshotTests LocalPackage
+
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh
 	@echo "Bundler依存関係をインストール中..."
@@ -34,4 +45,5 @@ setup-project: ## iOSプロジェクトのセットアップ
 	rbenv exec bundle exec fastlane install_dev_profile
 	@echo "本番用プロビジョニングプロファイルを取得中..."
 	rbenv exec bundle exec fastlane install_prod_profile
+	@$(MAKE) install-hooks
 	@echo "✅ セットアップ完了！"

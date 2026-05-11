@@ -19,7 +19,6 @@ public struct HouseworkContribution: Equatable, Sendable {
     }
 
     static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
-
         let completedItems = houseworkItems.filter { $0.state == .completed }
         let groupedByUserItems: [String: [HouseworkItem]] = Dictionary(
             grouping: completedItems
@@ -47,9 +46,8 @@ public struct HouseworkContribution: Equatable, Sendable {
         dates: [Date],
         calendar: Calendar
     ) -> [PointOfYear] {
-
-        return members.value.map { member in
-            return .make(
+        members.value.map { member in
+            .make(
                 by: list[member.id] ?? [:],
                 userId: member.id,
                 userName: member.userName,
@@ -64,9 +62,8 @@ public struct HouseworkContribution: Equatable, Sendable {
         dates: [Date],
         calendar: Calendar
     ) -> [PointOfMonth] {
-
-        return members.value.map { member in
-            return .make(
+        members.value.map { member in
+            .make(
                 by: list[member.id] ?? [:],
                 userId: member.id,
                 userName: member.userName,
@@ -81,9 +78,8 @@ public struct HouseworkContribution: Equatable, Sendable {
         dates: [Date],
         calendar: Calendar
     ) -> [PointOfWeek] {
-
-        return members.value.map { member in
-            return .make(
+        members.value.map { member in
+            .make(
                 by: list[member.id] ?? [:],
                 userId: member.id,
                 userName: member.userName,
@@ -99,35 +95,34 @@ public struct HouseworkContribution: Equatable, Sendable {
         members: CohabitantMemberList,
         myUserId: String
     ) -> AllUserPointSummary {
-
         let userItems: [UserPointSummary] = members.value
             .compactMap { member in
+                guard let userMap = list[member.id] else {
+                    return UserPointSummary(
+                        userId: member.id,
+                        userName: member.userName,
+                        isMe: member.id == myUserId,
+                        monthlyPoint: .init(value: .zero),
+                        achievedCount: .zero
+                    )
+                }
 
-            guard let userMap = list[member.id] else {
+                let targetList = userMap.values.filter {
+                    calendar.isDate($0.indexedDay, equalTo: month, toGranularity: .month)
+                }
+
+                let monthlyPoint = targetList.reduce(0) { $0 + $1.point.value }
+                let achievedCount = targetList.reduce(0) { $0 + $1.achievedCount }
                 return UserPointSummary(
                     userId: member.id,
                     userName: member.userName,
                     isMe: member.id == myUserId,
-                    monthlyPoint: .init(value: .zero),
-                    achievedCount: .zero
+                    monthlyPoint: .init(value: monthlyPoint),
+                    achievedCount: achievedCount
                 )
             }
 
-            let targetList = userMap.values.filter {
-                calendar.isDate($0.indexedDay, equalTo: month, toGranularity: .month)
-            }
-
-            let monthlyPoint = targetList.reduce(0) { $0 + $1.point.value }
-            let achievedCount = targetList.reduce(0) { $0 + $1.achievedCount }
-            return UserPointSummary(
-                userId: member.id,
-                userName: member.userName,
-                isMe: member.id == myUserId,
-                monthlyPoint: .init(value: monthlyPoint),
-                achievedCount: achievedCount
-            )
-        }
-
         return .init(items: userItems)
     }
+
 }

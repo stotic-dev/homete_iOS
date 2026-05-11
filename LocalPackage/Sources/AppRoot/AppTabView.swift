@@ -5,13 +5,13 @@
 import ContributionFeature
 import HomeFeature
 import HometeDomain
-import HouseworkFeature
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 import UserNotifications
 
 struct AppTabView: View {
-    
+
     @Environment(\.appDependencies) var appDependencies
     @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
@@ -31,15 +31,16 @@ struct AppTabView: View {
             }
             .environment(
                 \.cohabitantMembers,
-                 cohabitantStore?.members ?? .init(value: [], ownId: "")
+                cohabitantStore?.members ?? .init(value: [], ownId: "")
             )
     }
+
 }
 
 // MARK: UI定義
 
 private extension AppTabView {
-    
+
     func tabView() -> some View {
         ZStack {
             if #available(iOS 18.0, *) {
@@ -87,6 +88,7 @@ private extension AppTabView {
             }
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -94,21 +96,19 @@ private extension AppTabView {
 private extension AppTabView {
 
     func onAppear() async {
-
         setupStore()
         await requestNotificationPermission()
     }
-    
+
     func onChangeCohabitantId() {
-        
         setupStore()
     }
+
 }
 
 private extension AppTabView {
 
     func requestNotificationPermission() async {
-
         let center = UNUserNotificationCenter.current()
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
@@ -117,17 +117,15 @@ private extension AppTabView {
                 return
             }
             #if os(iOS)
-            UIApplication.shared.registerForRemoteNotifications()
+                UIApplication.shared.registerForRemoteNotifications()
             #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")
         }
     }
-    
+
     func setupStore() {
-        
         guard loginContext.hasCohabitant else {
-            
             cohabitantStore = nil
             contributionStore = nil
             return
@@ -147,6 +145,7 @@ private extension AppTabView {
             houseworkManager: appDependencies.houseworkManager
         )
     }
+
 }
 
 extension AppTabView {
@@ -155,7 +154,9 @@ extension AppTabView {
 
         case dashboard
         case homework
+
     }
+
 }
 
 #Preview {

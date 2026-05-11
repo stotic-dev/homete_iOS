@@ -7,5 +7,7 @@
 
 /// ポイントを表すモデル
 struct Point: Equatable, Hashable {
+
     let value: Int
+
 }

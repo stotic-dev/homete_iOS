@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct PrimaryButtonStyle: ButtonStyle {
-    
+
     @Environment(\.isEnabled) var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .commonStyle()
@@ -23,13 +23,15 @@ struct PrimaryButtonStyle: ButtonStyle {
             .opacity(isEnabled ? 1 : 0.5)
             .disabled(!isEnabled)
     }
+
 }
 
 public extension View {
 
     func primaryButtonStyle() -> some View {
-        self.buttonStyle(PrimaryButtonStyle())
+        buttonStyle(PrimaryButtonStyle())
     }
+
 }
 
 #Preview("PrimaryButtonStyle_Enabled", traits: .sizeThatFitsLayout) {

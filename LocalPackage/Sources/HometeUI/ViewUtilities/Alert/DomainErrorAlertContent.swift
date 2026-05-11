@@ -18,34 +18,35 @@ public struct DomainErrorAlertContent: Sendable {
         self.error = error
     }
 
-    public var hasError: Bool { error != nil }
+    public var hasError: Bool {
+        error != nil
+    }
 
     public var errorMessage: LocalizedStringKey? {
-
         switch error {
-
         case .failAuth:
-            return "認証に失敗しました。再度サインインをお試しください。"
+            "認証に失敗しました。再度サインインをお試しください。"
 
         case .noNetwork:
-            return "通信に失敗しました"
+            "通信に失敗しました"
 
         case .other:
-            return "不明のエラーが発生しました"
+            "不明のエラーが発生しました"
 
         default:
-            return nil
+            nil
         }
     }
 
     public static let initial = DomainErrorAlertContent(isPresenting: false, error: nil)
+
 }
 
 public extension DomainErrorAlertContent {
 
     init(error: any Error) {
-
         isPresenting = true
         self.error = .make(error)
     }
+
 }

@@ -11,12 +11,12 @@ import HometeUI
 import SwiftUI
 
 struct HouseworkDetailItemListContent: View {
-    
+
     @Environment(\.calendar) var calendar
-    
+
     let cohabitantMemberList: CohabitantMemberList
     let item: HouseworkItem
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
             HouseworkDetailItemRow(title: "実施予定日付") {
@@ -42,6 +42,7 @@ struct HouseworkDetailItemListContent: View {
             }
         }
     }
+
 }
 
 #Preview("HouseworkDetailItemListContent_未完了時", traits: .sizeThatFitsLayout) {

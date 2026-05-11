@@ -10,6 +10,7 @@ protocol FirestoreListenerStorerable<Element> {
     var continuation: AsyncStream<Element>.Continuation { get }
     var listener: any ListenerRegistration { get }
     func remove()
+
 }
 
 struct FirestoreListener<Element>: FirestoreListenerStorerable {
@@ -18,8 +19,8 @@ struct FirestoreListener<Element>: FirestoreListenerStorerable {
     let listener: any ListenerRegistration
 
     func remove() {
-
         continuation.finish()
         listener.remove()
     }
+
 }

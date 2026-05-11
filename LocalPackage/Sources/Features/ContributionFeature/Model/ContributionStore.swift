@@ -32,7 +32,6 @@ public final class ContributionStore {
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         calendar: Calendar = .current
     ) {
-
         self.houseworkManager = houseworkManager
         self.calendar = calendar
 
@@ -40,6 +39,7 @@ public final class ContributionStore {
             await startObserving()
         }
     }
+
 }
 
 // MARK: private
@@ -47,7 +47,6 @@ public final class ContributionStore {
 private extension ContributionStore {
 
     func startObserving() async {
-        
         let stream = await houseworkManager.createObserver(observeKey)
         for await items in stream {
             await updatePoints(from: items)
@@ -57,12 +56,12 @@ private extension ContributionStore {
     }
 
     func updatePoints(from items: [HouseworkItem]) async {
-        
-        let calendar = self.calendar
+        let calendar = calendar
         let contribution = await Task.detached {
             // 貢献度のモデル生成は重い処理なのでバックグラウンドで実行する
-            return HouseworkContribution.make(by: items, calendar: calendar)
+            HouseworkContribution.make(by: items, calendar: calendar)
         }.value
-        self.contiribution = contribution
+        contiribution = contribution
     }
+
 }

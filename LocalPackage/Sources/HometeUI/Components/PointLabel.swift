@@ -5,8 +5,8 @@
 //  Created by 佐藤汰一 on 2025/11/11.
 //
 
-import SwiftUI
 import HometeResources
+import SwiftUI
 
 public struct PointLabel: View {
 
@@ -29,6 +29,7 @@ public struct PointLabel: View {
                 }
             }
     }
+
 }
 
 #Preview("PointLabel_1桁", traits: .sizeThatFitsLayout) {

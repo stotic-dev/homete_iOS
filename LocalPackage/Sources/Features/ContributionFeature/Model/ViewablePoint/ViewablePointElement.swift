@@ -11,4 +11,5 @@ struct ViewablePointElement: Equatable, Hashable {
 
     let point: Point
     let date: Date
+
 }

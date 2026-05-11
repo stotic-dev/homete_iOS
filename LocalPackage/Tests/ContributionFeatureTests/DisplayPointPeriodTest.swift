@@ -5,25 +5,31 @@
 //  Created by Taichi Sato on 2026/05/01.
 //
 
+@testable import ContributionFeature
 import Foundation
 import Testing
-@testable import ContributionFeature
 
 // swiftlint:disable:next convenience_type
-struct DisplayPointPeriodTest {
+enum DisplayPointPeriodTest {
+
     struct CalcDateRangeCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct ShiftPeriodCase {
+
         private let calendar = Calendar.japanese
+
     }
+
 }
 
 extension DisplayPointPeriodTest.CalcDateRangeCase {
 
     @Test("週モードのとき直近7日間のdateRangeが返る")
     func calcDateRange_week_returnsLastSevenDays() throws {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let period = DisplayPointPeriod(type: .week, anchor: anchor)
@@ -33,13 +39,12 @@ extension DisplayPointPeriodTest.CalcDateRangeCase {
 
         // Assert
         let expectedStart = Date.previewDate(year: 2026, month: 4, day: 20)
-        let expectedEnd   = Date.previewDate(year: 2026, month: 4, day: 26)
-        #expect(result == expectedStart...expectedEnd)
+        let expectedEnd = Date.previewDate(year: 2026, month: 4, day: 26)
+        #expect(result == expectedStart ... expectedEnd)
     }
 
     @Test("月モードのとき直近1ヶ月間のdateRangeが返る")
     func calcDateRange_month_returnsLastOneMonth() throws {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let period = DisplayPointPeriod(type: .month, anchor: anchor)
@@ -50,12 +55,11 @@ extension DisplayPointPeriodTest.CalcDateRangeCase {
         // Assert
         let expectedStart = Date.previewDate(year: 2026, month: 3, day: 31)
         let expectedEnd = Date.previewDate(year: 2026, month: 4, day: 30)
-        #expect(result == expectedStart...expectedEnd)
+        #expect(result == expectedStart ... expectedEnd)
     }
 
     @Test("年モードのとき直近1年間のdateRangeが返る")
     func calcDateRange_year_returnsLastOneYear() throws {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 12, day: 31)
         let period = DisplayPointPeriod(type: .year, anchor: anchor)
@@ -66,15 +70,15 @@ extension DisplayPointPeriodTest.CalcDateRangeCase {
         // Assert
         let expectedStart = Date.previewDate(year: 2026, month: 1, day: 31)
         let expectedEnd = Date.previewDate(year: 2026, month: 12, day: 31)
-        #expect(result == expectedStart...expectedEnd)
+        #expect(result == expectedStart ... expectedEnd)
     }
+
 }
 
 extension DisplayPointPeriodTest.ShiftPeriodCase {
 
     @Test("週モードで+1したとき1週間後がanchorになる")
     func shiftPeriod_week_forwardByOne_movesAnchorOneWeekLater() {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 20)
         let period = DisplayPointPeriod(type: .week, anchor: anchor)
@@ -89,7 +93,6 @@ extension DisplayPointPeriodTest.ShiftPeriodCase {
 
     @Test("月モードで-1したとき1ヶ月前がanchorになる")
     func shiftPeriod_month_backByOne_movesAnchorOneMonthEarlier() {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let period = DisplayPointPeriod(type: .month, anchor: anchor)
@@ -104,7 +107,6 @@ extension DisplayPointPeriodTest.ShiftPeriodCase {
 
     @Test("年モードで+1したとき1年後がanchorになる")
     func shiftPeriod_year_forwardByOne_movesAnchorOneYearLater() {
-
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 12, day: 31)
         let period = DisplayPointPeriod(type: .year, anchor: anchor)
@@ -116,4 +118,5 @@ extension DisplayPointPeriodTest.ShiftPeriodCase {
         let expectedAnchor = Date.previewDate(year: 2027, month: 12, day: 31)
         #expect(result == DisplayPointPeriod(type: .year, anchor: expectedAnchor))
     }
+
 }

@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct GraphDescriptionPopoverButton: View {
-    
+
     let title: LocalizedStringKey
     let message: LocalizedStringKey
-    
+
     @State var isShowPopover = false
 
     var body: some View {
@@ -36,6 +36,7 @@ struct GraphDescriptionPopoverButton: View {
             .presentationCompactAdaptation(.popover)
         }
     }
+
 }
 
 #Preview("GraphDescriptionPopoverButton_ポップアップ非表示", traits: .sizeThatFitsLayout) {

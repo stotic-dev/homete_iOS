@@ -7,26 +7,40 @@
 
 // swiftlint:disable file_length
 
-import Foundation
-import Testing
-import HometeDomain
 @testable import ContributionFeature
+import Foundation
+import HometeDomain
+import Testing
 
 // swiftlint:disable:next convenience_type
-struct ContributionAnalyticsTest {
+enum ContributionAnalyticsTest {
+
     struct MakeCase {
+
         let calendar = Calendar.japanese
+
     }
+
     struct UpdatePeriodCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct CurrentListCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct RankingCase {
+
         let calendar = Calendar.japanese
+
     }
+
     struct IsEmptyCase {}
+
 }
 
 // MARK: - make
@@ -34,14 +48,13 @@ struct ContributionAnalyticsTest {
 extension ContributionAnalyticsTest.MakeCase {
 
     @Test("displayPeriod.type=.monthで作ったanalyticsでも、week期間に切り替えると週間範囲のデータのみが集計される")
-    func make_typeMonth_thenSwitchToWeek_usesWeekDates() async throws {
-
+    func make_typeMonth_thenSwitchToWeek_usesWeekDates() async {
         // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
         let contribution = HouseworkContribution.makeForTest(
             list: [
-                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))],
             ],
             calendar: calendar
         )
@@ -68,20 +81,19 @@ extension ContributionAnalyticsTest.MakeCase {
 
         // Assert: 週間範囲には04-10が含まれないので達成数0
         let expected: [UserHouseworkAchieved] = [
-            .init(userId: "u1", userName: "ユーザー1", achievedCount: 0)
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 0),
         ]
         #expect(result.achieved() == expected)
     }
 
     @Test("displayPeriod.type=.weekで作ったanalyticsでも、month期間に切り替えると月間範囲のデータが集計される")
-    func make_typeWeek_thenSwitchToMonth_usesMonthDates() async throws {
-
+    func make_typeWeek_thenSwitchToMonth_usesMonthDates() async {
         // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
         let contribution = HouseworkContribution.makeForTest(
             list: [
-                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))],
             ],
             calendar: calendar
         )
@@ -108,20 +120,19 @@ extension ContributionAnalyticsTest.MakeCase {
 
         // Assert: 月間範囲には04-10が含まれるので達成数1
         let expected: [UserHouseworkAchieved] = [
-            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1)
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1),
         ]
         #expect(result.achieved() == expected)
     }
 
     @Test("displayPeriod.type=.monthで作ったanalyticsでも、year期間に切り替えると年間範囲のデータが集計される")
-    func make_typeMonth_thenSwitchToYear_usesYearDates() async throws {
-
+    func make_typeMonth_thenSwitchToYear_usesYearDates() async {
         // Arrange: 年間範囲には含まれるが月間範囲には含まれない日付にデータを置く
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let dateOutsideMonth = Date.previewDate(year: 2025, month: 8, day: 15)
         let contribution = HouseworkContribution.makeForTest(
             list: [
-                "u1": [.init(indexedDay: dateOutsideMonth, point: .init(value: 50))]
+                "u1": [.init(indexedDay: dateOutsideMonth, point: .init(value: 50))],
             ],
             calendar: calendar
         )
@@ -148,10 +159,11 @@ extension ContributionAnalyticsTest.MakeCase {
 
         // Assert: 年間範囲には2025-08-15が含まれるので達成数1
         let expected: [UserHouseworkAchieved] = [
-            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1)
+            .init(userId: "u1", userName: "ユーザー1", achievedCount: 1),
         ]
         #expect(result.achieved() == expected)
     }
+
 }
 
 // MARK: - updatePeriod
@@ -159,8 +171,7 @@ extension ContributionAnalyticsTest.MakeCase {
 extension ContributionAnalyticsTest.UpdatePeriodCase {
 
     @Test("anchorが同じ場合はpointListを再計算せずdisplayPeriodだけ更新される")
-    func updatePeriod_sameAnchor_keepsExistingPointLists() async throws {
-
+    func updatePeriod_sameAnchor_keepsExistingPointLists() async {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekPeriod = DisplayPointPeriod(type: .week, anchor: anchor)
@@ -175,14 +186,21 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let existingMonthList: [PointOfMonth] = [
             // swiftlint:disable:next line_length
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 200), totalAchievementCount: 0, elements: [], startDate: weekStart)
+            .init(
+                userId: "u1",
+                userName: "ユーザー1",
+                total: .init(value: 200),
+                totalAchievementCount: 0,
+                elements: [],
+                startDate: weekStart
+            ),
         ]
         let existingYearList: [PointOfYear] = [
-            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 300), totalAchievementCount: 0, elements: [])
+            .init(userId: "u1", userName: "ユーザー1", total: .init(value: 300), totalAchievementCount: 0, elements: []),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: existingWeekList,
@@ -212,8 +230,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
     }
 
     @Test("anchorが異なる場合はpointListが再計算される")
-    func updatePeriod_differentAnchor_recalculatesPointLists() async throws {
-
+    func updatePeriod_differentAnchor_recalculatesPointLists() async {
         // Arrange
         let oldAnchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let newAnchor = Date.previewDate(year: 2026, month: 5, day: 3)
@@ -229,7 +246,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: oldStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: sentinelList,
@@ -258,6 +275,7 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
         )
         #expect(result == expected)
     }
+
 }
 
 // MARK: - currentList
@@ -265,12 +283,11 @@ extension ContributionAnalyticsTest.UpdatePeriodCase {
 extension ContributionAnalyticsTest.CurrentListCase {
 
     @Test("week表示のときweekPointListに基づくAllUserViewablePointListが返る")
-    func currentList_weekPeriod_returnsWeekBasedList() throws {
-
+    func currentList_weekPeriod_returnsWeekBasedList() {
         // Arrange
-        let anchor   = Date.previewDate(year: 2026, month: 4, day: 26)
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
-        let period   = DisplayPointPeriod(type: .week, anchor: anchor)
+        let period = DisplayPointPeriod(type: .week, anchor: anchor)
         let weekList: [PointOfWeek] = [
             .init(
                 userId: "u1",
@@ -279,7 +296,7 @@ extension ContributionAnalyticsTest.CurrentListCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -300,12 +317,11 @@ extension ContributionAnalyticsTest.CurrentListCase {
     }
 
     @Test("month表示のときmonthPointListに基づくAllUserViewablePointListが返る")
-    func currentList_monthPeriod_returnsMonthBasedList() throws {
-
+    func currentList_monthPeriod_returnsMonthBasedList() {
         // Arrange
-        let anchor      = Date.previewDate(year: 2026, month: 4, day: 30)
-        let monthStart  = Date.previewDate(year: 2026, month: 3, day: 31)
-        let period      = DisplayPointPeriod(type: .month, anchor: anchor)
+        let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
+        let monthStart = Date.previewDate(year: 2026, month: 3, day: 31)
+        let period = DisplayPointPeriod(type: .month, anchor: anchor)
         let monthList: [PointOfMonth] = [
             .init(
                 userId: "u1",
@@ -314,7 +330,7 @@ extension ContributionAnalyticsTest.CurrentListCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: monthStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -335,11 +351,10 @@ extension ContributionAnalyticsTest.CurrentListCase {
     }
 
     @Test("year表示のときyearPointListに基づくAllUserViewablePointListが返る")
-    func currentList_yearPeriod_returnsYearBasedList() throws {
-
+    func currentList_yearPeriod_returnsYearBasedList() {
         // Arrange
-        let anchor    = Date.previewDate(year: 2026, month: 12, day: 31)
-        let period    = DisplayPointPeriod(type: .year, anchor: anchor)
+        let anchor = Date.previewDate(year: 2026, month: 12, day: 31)
+        let period = DisplayPointPeriod(type: .year, anchor: anchor)
         let yearList: [PointOfYear] = [
             .init(
                 userId: "u1",
@@ -347,7 +362,7 @@ extension ContributionAnalyticsTest.CurrentListCase {
                 total: .init(value: 500),
                 totalAchievementCount: 0,
                 elements: []
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -366,6 +381,7 @@ extension ContributionAnalyticsTest.CurrentListCase {
         )
         #expect(result == expected)
     }
+
 }
 
 // MARK: - isEmpty
@@ -374,7 +390,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("週表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
     func isEmpty_week_allZero_returnsTrue() {
-
         // Arrange
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
         let weekList: [PointOfWeek] = [
@@ -393,7 +408,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -408,7 +423,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("週表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
     func isEmpty_week_someAchieved_returnsFalse() {
-
         // Arrange
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
         let weekList: [PointOfWeek] = [
@@ -427,7 +441,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 totalAchievementCount: 1,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -442,7 +456,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("月表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
     func isEmpty_month_allZero_returnsTrue() {
-
         // Arrange
         let startDate = Date.previewDate(year: 2026, month: 4, day: 1)
         let monthList: [PointOfMonth] = [
@@ -453,7 +466,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: startDate
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -468,7 +481,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("月表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
     func isEmpty_month_someAchieved_returnsFalse() {
-
         // Arrange
         let startDate = Date.previewDate(year: 2026, month: 4, day: 1)
         let monthList: [PointOfMonth] = [
@@ -479,7 +491,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 totalAchievementCount: 2,
                 elements: [],
                 startDate: startDate
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -494,7 +506,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("年表示で全メンバーのtotalAchievementCountが0ならisEmptyはtrue")
     func isEmpty_year_allZero_returnsTrue() {
-
         // Arrange
         let yearList: [PointOfYear] = [
             .init(
@@ -503,7 +514,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 total: .init(value: 0),
                 totalAchievementCount: 0,
                 elements: []
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -518,7 +529,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("年表示でいずれかのメンバーが家事を達成していればisEmptyはfalse")
     func isEmpty_year_someAchieved_returnsFalse() {
-
         // Arrange
         let yearList: [PointOfYear] = [
             .init(
@@ -527,7 +537,7 @@ extension ContributionAnalyticsTest.IsEmptyCase {
                 total: .init(value: 100),
                 totalAchievementCount: 5,
                 elements: []
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -542,7 +552,6 @@ extension ContributionAnalyticsTest.IsEmptyCase {
 
     @Test("メンバーがいない（pointListが空）ならisEmptyはtrue")
     func isEmpty_noMembers_returnsTrue() {
-
         // Arrange
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -554,4 +563,5 @@ extension ContributionAnalyticsTest.IsEmptyCase {
         // Act & Assert
         #expect(analytics.isEmpty == true)
     }
+
 }

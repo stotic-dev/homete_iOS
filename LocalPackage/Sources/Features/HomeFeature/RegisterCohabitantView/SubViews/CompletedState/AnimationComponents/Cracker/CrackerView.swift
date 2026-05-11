@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct CrackerView: View {
-    
+
     @State var ribbons: [CrackerRibbon] = []
     @State var confettis: [CrackerConfettiPiece] = []
     @State var launched = false
-    
+
     /// アニメーション終了したら呼ばれるクロージャ
     let completion: () -> Void
-    
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -87,69 +87,63 @@ struct CrackerView: View {
             }
         }
     }
+
 }
 
 private extension CrackerView {
-    
+
     func fireCracker(screenHeight: CGFloat) {
-                
         let startX: CGFloat = 60
         let startY: CGFloat = screenHeight - 120
-        
+
         confettis = CrackerConfettiPiece.makeConfettis(startX: startX, startY: startY)
         ribbons = CrackerRibbon.makeRibbons(startX: startX, startY: startY)
-        
+
         // アニメーション開始
-        
+
         withAnimation(.default) {
-            
-            for i in 0..<confettis.count {
-                
+
+            for i in 0 ..< confettis.count {
                 confettis[i] = confettis[i].explosion(startX: startX, startY: startY)
             }
         } completion: {
-            
             withAnimation(.linear(duration: 1.5)) {
-                
-                for i in 0..<confettis.count {
-                    
+
+                for i in 0 ..< confettis.count {
                     confettis[i] = confettis[i].scatter()
                 }
             } completion: {
-                
                 confettis.removeAll()
                 completion()
             }
         }
-        
-        for i in 0..<ribbons.count {
-            
+
+        for i in 0 ..< ribbons.count {
             withAnimation(.easeInOut(duration: ribbons[i].speed)) {
-                
                 ribbons[i] = ribbons[i].explosion()
             }
-            
+
             Task {
-                
                 try await Task.sleep(for: .seconds(ribbons[i].speed / CGFloat(2)))
                 withAnimation {
-                    
                     ribbons[i] = ribbons[i].scatter()
                 } completion: {
-                    
                     ribbons.removeAll()
                 }
             }
         }
     }
+
 }
 
 private extension CrackerView {
-    
+
     struct CrackerAnimationValue {
-        
+
         var opacity = 0.0
         var offset = CGSize.zero
         var scale = 1.0
+
     }
+
 }

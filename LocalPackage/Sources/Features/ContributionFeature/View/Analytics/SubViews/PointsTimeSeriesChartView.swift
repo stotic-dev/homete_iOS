@@ -15,9 +15,9 @@ struct PointsTimeSeriesChartView: View {
     @Environment(\.locale) private var locale
     @Environment(\.calendar) private var calendar
     @Environment(\.timeZone) private var timeZone
-    
+
     let viewableData: AllUserViewablePointList
-    
+
     @State var selectedDate: Date?
 
     var body: some View {
@@ -29,20 +29,21 @@ struct PointsTimeSeriesChartView: View {
                 GraphDescriptionPopoverButton(
                     title: "獲得ポイントからわかること",
                     message: """
-                        期間中、\(periodUnitLabel)に獲得したポイントを表します。
-                        同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
-                        """
+                    期間中、\(periodUnitLabel)に獲得したポイントを表します。
+                    同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
+                    """
                 )
             }
             graphContent(viewableData.list)
         }
     }
+
 }
 
 // MARK: UI定義
 
 private extension PointsTimeSeriesChartView {
-    
+
     func graphContent(_ list: [ViewablePointList]) -> some View {
         Chart {
             ForEach(list, id: \.self) { userData in
@@ -78,7 +79,7 @@ private extension PointsTimeSeriesChartView {
             }
         }
     }
-    
+
     func userDataPlotContent(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
             LineMark(
@@ -93,7 +94,7 @@ private extension PointsTimeSeriesChartView {
             .foregroundStyle(by: .value("ユーザー", userData.userName))
         }
     }
-    
+
     func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
         RuleMark(x: .value("日付", selectedDate))
             .foregroundStyle(.secondary.opacity(0.3))
@@ -112,47 +113,46 @@ private extension PointsTimeSeriesChartView {
                 )
             }
     }
-    
+
     var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
         case .week:
-            return .automatic(desiredCount: 7)
+            .automatic(desiredCount: 7)
         case .month:
-            return .automatic(desiredCount: 5)
+            .automatic(desiredCount: 5)
         case .year:
-            return .automatic(desiredCount: 12)
+            .automatic(desiredCount: 12)
         }
     }
 
     var xLabelFormat: Date.FormatStyle {
-        var style: Date.FormatStyle
-        switch viewableData.displayPeriod {
-        case .year: style = .dateTime.month(.defaultDigits).locale(locale)
-        case .month: style = .dateTime.day().locale(locale)
-        case .week: style = .dateTime.weekday(.abbreviated).locale(locale)
+        var style: Date.FormatStyle = switch viewableData.displayPeriod {
+        case .year: .dateTime.month(.defaultDigits).locale(locale)
+        case .month: .dateTime.day().locale(locale)
+        case .week: .dateTime.weekday(.abbreviated).locale(locale)
         }
         style.timeZone = timeZone
         return style
     }
-    
+
     var periodUnitLabel: String {
-        return switch viewableData.displayPeriod {
+        switch viewableData.displayPeriod {
         case .year: "月ごとの"
         case .month, .week: "日ごとの"
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension PointsTimeSeriesChartView {
-    
+
     func handleTap(
         at location: CGPoint,
         proxy: ChartProxy,
         geometry: GeometryProxy
     ) {
-        
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
         guard let nearest = viewableData.nearestDate(to: tapDate) else {
@@ -161,53 +161,54 @@ private extension PointsTimeSeriesChartView {
         }
         selectedDate = selectedDate == nearest ? nil : nearest
     }
+
 }
 
 #if DEBUG
-#Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .week)
-        .currentList(calendar: .japanese)
+    #Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .week)
+            .currentList(calendar: .japanese)
 
-    PointsTimeSeriesChartView(
-        viewableData: allUserList,
-        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.horizontal, .space16)
-    .padding(.vertical, .space56)
-}
+        PointsTimeSeriesChartView(
+            viewableData: allUserList,
+            selectedDate: .previewDate(year: 2026, month: 4, day: 24)
+        )
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space56)
+    }
 
-#Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .month)
-        .currentList(calendar: .japanese)
+    #Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .month)
+            .currentList(calendar: .japanese)
 
-    PointsTimeSeriesChartView(
-        viewableData: allUserList,
-        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.horizontal, .space16)
-    .padding(.vertical, .space56)
-    // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
-    .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
-}
+        PointsTimeSeriesChartView(
+            viewableData: allUserList,
+            selectedDate: .previewDate(year: 2026, month: 4, day: 24)
+        )
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space56)
+        // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
+        .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
+    }
 
-#Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .year)
-        .currentList(calendar: .japanese)
+    #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .year)
+            .currentList(calendar: .japanese)
 
-    PointsTimeSeriesChartView(
-        viewableData: allUserList,
-        selectedDate: .previewDate(year: 2026, month: 4, day: 1)
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.horizontal, .space16)
-    .padding(.vertical, .space56)
-}
+        PointsTimeSeriesChartView(
+            viewableData: allUserList,
+            selectedDate: .previewDate(year: 2026, month: 4, day: 1)
+        )
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space56)
+    }
 #endif

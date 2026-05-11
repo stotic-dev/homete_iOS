@@ -1,5 +1,5 @@
 //
-//  CohabitantRegistrationProcessingLeaderView.swift
+//  CohabitantRegistrationProcessingLeader.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/28.
@@ -11,7 +11,7 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationProcessingLeader: View {
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
@@ -20,18 +20,18 @@ struct CohabitantRegistrationProcessingLeader: View {
     @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(\.loginContext.account.id) var accountId
     @Environment(\.onCompleteCohabitantRegistration) var onCompleteCohabitantRegistration
-        
+
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var cohabitantsAccountId: Set<String> = []
-    // 登録完了したデバイスリスト
+    /// 登録完了したデバイスリスト
     @State var completedRegistrationPeers: Set<MCPeerID> = []
     // 同居人レコードの登録に失敗した時のアラート
     @State var isPresentingFailedRegistrationIdAlert = false
     @State var cohabitantId: String?
-    
+
     @Binding var registrationState: CohabitantRegistrationState
-    
+
     var body: some View {
         CohabitantRegistrationProcessingView(
             confirmedRolePeers: $confirmedRolePeers,
@@ -65,65 +65,57 @@ struct CohabitantRegistrationProcessingLeader: View {
             dispatchReceivedMessage(data, newValue.sender)
         }
     }
+
 }
 
 private extension CohabitantRegistrationProcessingLeader {
-    
+
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
-        
         // フォロワーからのメッセージであれば、
         // 登録時に使用するアカウントIDをオンメモリに保持しておく
         if let accountId = data.memberRole?.accountId {
-            
             print("dispatchReceivedMessage share accountId")
             cohabitantsAccountId.insert(accountId)
             confirmedRolePeers.insert(sender)
         }
         // フォロワーからの同居人登録完了メッセージ受信時は、保持している完了したメンバーに加える
         else if data.isComplete ?? false {
-            
             completedRegistrationPeers.insert(sender)
         }
     }
-    
+
     func onReadyRegistration() {
-        
         print("call onReadyRegistration")
         let cohabitantId = UUID().uuidString
         self.cohabitantId = cohabitantId
-                
+
         Task {
-            
             do {
-                
                 try await cohabitantClient.register(
                     .init(
                         id: cohabitantId,
                         members: [accountId] + .init(cohabitantsAccountId)
                     )
                 )
-                
+
                 // 同居人IDをメンバーに連携する
                 let message = CohabitantRegistrationMessage(type: .shareCohabitantId(id: cohabitantId))
                 p2pSessionProxy?.send(
                     message.encodedData(),
                     to: connectedPeers
                 )
-            }
-            catch {
-                
+            } catch {
                 // エラーアラートを表示
                 isPresentingFailedRegistrationIdAlert = true
             }
         }
     }
-    
+
     func onCompletedRegistration() {
-        
         guard let cohabitantId else {
             preconditionFailure("Not found required param(cohabitantId)")
         }
-        
+
         onCompleteCohabitantRegistration(cohabitantId)
         let message = CohabitantRegistrationMessage(type: .complete)
         p2pSessionProxy?.send(
@@ -132,4 +124,5 @@ private extension CohabitantRegistrationProcessingLeader {
         )
         registrationState = .completed
     }
+
 }

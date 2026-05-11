@@ -20,17 +20,15 @@ public struct HouseworkIndexedDate: Equatable, Codable, Hashable, Sendable {
         offsetDays: Int,
         calendar: Calendar
     ) -> [Date] {
-
         let base = calendar.startOfDay(for: anchorDate)
         guard offsetDays >= 0 else {
-
             return [base]
         }
         // -offset ... +offset の範囲を列挙
-        return (-offsetDays...offsetDays).compactMap { delta in
-
+        return (-offsetDays ... offsetDays).compactMap { delta in
             guard let date = calendar.date(byAdding: .day, value: delta, to: base) else { return nil }
             return date
         }
     }
+
 }

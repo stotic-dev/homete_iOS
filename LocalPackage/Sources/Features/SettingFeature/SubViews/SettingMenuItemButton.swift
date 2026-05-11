@@ -41,6 +41,7 @@ public struct SettingMenuItemButton: View {
             .padding(.vertical, .space8)
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

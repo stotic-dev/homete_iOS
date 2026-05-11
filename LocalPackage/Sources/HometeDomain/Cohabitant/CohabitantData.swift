@@ -18,4 +18,5 @@ public struct CohabitantData: Codable, Sendable {
         self.id = id
         self.members = members
     }
+
 }

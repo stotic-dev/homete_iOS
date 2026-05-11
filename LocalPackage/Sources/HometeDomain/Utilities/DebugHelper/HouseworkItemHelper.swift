@@ -9,75 +9,74 @@ import Foundation
 
 #if DEBUG
 
-extension HouseworkItem {
-    
-    public static func makeForTest(
-        id: Int,
-        indexedDate: Date = .now,
-        title: String = "title",
-        point: Int = 100,
-        state: HouseworkState = .incomplete,
-        executorId: String? = nil,
-        executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
-        expiredAt: Date = .now
-    ) -> Self {
-        
-        return .init(
-            id: "id\(id.formatted())",
-            indexedDate: .init(value: indexedDate),
-            title: title,
-            point: point,
-            state: state,
-            executorId: executorId,
-            executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
-            expiredAt: expiredAt
-        )
+    public extension HouseworkItem {
+
+        static func makeForTest(
+            id: Int,
+            indexedDate: Date = .now,
+            title: String = "title",
+            point: Int = 100,
+            state: HouseworkState = .incomplete,
+            executorId: String? = nil,
+            executedAt: Date? = nil,
+            reviewerId: String? = nil,
+            approvedAt: Date? = nil,
+            reviewerComment: String? = nil,
+            expiredAt: Date = .now
+        ) -> Self {
+            .init(
+                id: "id\(id.formatted())",
+                indexedDate: .init(value: indexedDate),
+                title: title,
+                point: point,
+                state: state,
+                executorId: executorId,
+                executedAt: executedAt,
+                reviewerId: reviewerId,
+                approvedAt: approvedAt,
+                reviewerComment: reviewerComment,
+                expiredAt: expiredAt
+            )
+        }
+
+        func updateProperties(
+            indexedDate: HouseworkIndexedDate? = nil,
+            title: String? = nil,
+            point: Int? = nil,
+            state: HouseworkState? = nil,
+            executorId: String? = nil,
+            executedAt: Date? = nil,
+            reviewerId: String? = nil,
+            approvedAt: Date? = nil,
+            reviewerComment: String? = nil,
+            expiredAt: Date? = nil
+        ) -> HouseworkItem {
+            let inputIndexedDate = indexedDate ?? self.indexedDate
+            let inputTitle = title ?? self.title
+            let inputPoint = point ?? self.point
+            let inputState = state ?? self.state
+            let inputExecutorId = executorId
+            let inputExecutedAt = executedAt
+            let inputReviewerId = reviewerId
+            let inputApprovedAt = approvedAt
+            let inputReviewerComment = reviewerComment
+            let inputExpiredAt = expiredAt ?? self.expiredAt
+
+            return .init(
+                id: id,
+                indexedDate: inputIndexedDate,
+                title: inputTitle,
+                point: inputPoint,
+                state: inputState,
+                executorId: inputExecutorId,
+                executedAt: inputExecutedAt,
+                reviewerId: inputReviewerId,
+                approvedAt: inputApprovedAt,
+                reviewerComment: inputReviewerComment,
+                expiredAt: inputExpiredAt
+            )
+        }
+
     }
-    
-    public func updateProperties(
-        indexedDate: HouseworkIndexedDate? = nil,
-        title: String? = nil,
-        point: Int? = nil,
-        state: HouseworkState? = nil,
-        executorId: String? = nil,
-        executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
-        expiredAt: Date? = nil
-    ) -> HouseworkItem {
-        
-        let inputIndexedDate = indexedDate ?? self.indexedDate
-        let inputTitle = title ?? self.title
-        let inputPoint = point ?? self.point
-        let inputState = state ?? self.state
-        let inputExecutorId = executorId
-        let inputExecutedAt = executedAt
-        let inputReviewerId = reviewerId
-        let inputApprovedAt = approvedAt
-        let inputReviewerComment = reviewerComment
-        let inputExpiredAt = expiredAt ?? self.expiredAt
-        
-        return .init(
-            id: id,
-            indexedDate: inputIndexedDate,
-            title: inputTitle,
-            point: inputPoint,
-            state: inputState,
-            executorId: inputExecutorId,
-            executedAt: inputExecutedAt,
-            reviewerId: inputReviewerId,
-            approvedAt: inputApprovedAt,
-            reviewerComment: inputReviewerComment,
-            expiredAt: inputExpiredAt
-        )
-    }
-}
 
 #endif

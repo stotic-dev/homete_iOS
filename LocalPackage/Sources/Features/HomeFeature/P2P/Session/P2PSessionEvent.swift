@@ -9,8 +9,9 @@ import MultipeerConnectivity
 
 @MainActor
 enum P2PSessionEvent {
-    
+
     case connected(peerID: MCPeerID)
     case disconnected(peerID: MCPeerID)
     case received(data: Data, sender: MCPeerID)
+
 }

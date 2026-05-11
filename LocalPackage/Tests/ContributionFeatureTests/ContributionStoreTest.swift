@@ -5,29 +5,29 @@
 //  Created by Taichi Sato on 2026/04/27.
 //
 
-import Foundation
-import Testing
-import HometeDomain
 @testable import ContributionFeature
+import Foundation
+import HometeDomain
+import Testing
 
 @MainActor
 struct ContributionStoreTest {
 
     private let inputCohabitantId = "cohabitantId"
     private let calendar = Calendar.japanese
+
 }
 
 extension ContributionStoreTest {
 
     @Test("HouseworkManagerがフェッチしたアイテムを流すと完了済みのみcontributionに反映される")
     func startObserving_updatesContributionWithOnlyCompletedItems() async {
-
         // Arrange
         let now = Date()
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
-            .makeForTest(id: 2, indexedDate: jan10, point: 20, state: .incomplete, executorId: "alice")
+            .makeForTest(id: 2, indexedDate: jan10, point: 20, state: .incomplete, executorId: "alice"),
         ]
         let (stream, _) = AsyncStream<[HouseworkItem]>.makeStream()
 
@@ -61,4 +61,5 @@ extension ContributionStoreTest {
         )
         #expect(store.contiribution == expectedContribution)
     }
+
 }

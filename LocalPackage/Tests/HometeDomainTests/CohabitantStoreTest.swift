@@ -5,9 +5,9 @@
 //  Created by Taichi Sato on 2026/01/12.
 //
 
-import Testing
-import Observation
 @testable import HometeDomain
+import Observation
+import Testing
 
 @MainActor
 struct CohabitantStoreTest {
@@ -16,8 +16,7 @@ struct CohabitantStoreTest {
     private let inputListenerId = "cohabitantListenerKey"
 
     @Test("パートナーの監視中に、まだキャッシュしていないメンバーの場合はパートナーのリストにキャッシュとして追加する")
-    func addSnapshotListenerIfNeeded_add_member_case() async throws {
-
+    func addSnapshotListenerIfNeeded_add_member_case() async {
         // Arrange
 
         let selfId = "selfId"
@@ -41,14 +40,12 @@ struct CohabitantStoreTest {
             ownId: selfId,
             cohabitantClient: .init(
                 addSnapshotListener: { listenerId, cohabitantId in
-
                     #expect(listenerId == inputListenerId)
                     #expect(cohabitantId == inputCohabitantId)
                     return stream
                 }
             ),
             accountInfoClient: .init(fetch: { userId in
-
                 // Assert
 
                 #expect(userId == newMemberId)
@@ -80,4 +77,5 @@ struct CohabitantStoreTest {
         #expect(store.members.value.count == 2)
         #expect(store.members.value.contains(.init(id: newMemberId, userName: newMemberUserName)))
     }
+
 }

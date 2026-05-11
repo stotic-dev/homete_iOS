@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct LaunchStateProxy {
+
     @Binding private var launchState: LaunchState
 
     public init(launchState: Binding<LaunchState>) {
@@ -17,8 +18,11 @@ public struct LaunchStateProxy {
     public func callAsFunction(_ next: LaunchState) {
         launchState = next
     }
+
 }
 
-extension EnvironmentValues {
-    @Entry public var launchStateProxy = LaunchStateProxy(launchState: .constant(.notLoggedIn))
+public extension EnvironmentValues {
+
+    @Entry var launchStateProxy = LaunchStateProxy(launchState: .constant(.notLoggedIn))
+
 }

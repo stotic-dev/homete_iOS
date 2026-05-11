@@ -5,18 +5,18 @@
 //  Created by 佐藤汰一 on 2025/08/27.
 //
 
-import MultipeerConnectivity
 import HometeDomain
+import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationSession: View {
-    
+
     @Environment(AccountStore.self) var accountStore
-    
+
     @State var registrationState = CohabitantRegistrationState.scanning
-    
+
     let session: MCSession?
-        
+
     var body: some View {
         ZStack {
             switch registrationState {
@@ -28,14 +28,13 @@ struct CohabitantRegistrationSession: View {
                     )
                 }
                 .transition(.push(from: .trailing))
-            case .processing(let isLead):
+            case let .processing(isLead):
                 ZStack {
                     if isLead {
                         CohabitantRegistrationProcessingLeader(
                             registrationState: $registrationState
                         )
-                    }
-                    else {
+                    } else {
                         CohabitantRegistrationProcessingFollower(
                             registrationState: $registrationState
                         )
@@ -49,4 +48,5 @@ struct CohabitantRegistrationSession: View {
         }
         .animation(.spring, value: registrationState)
     }
+
 }
