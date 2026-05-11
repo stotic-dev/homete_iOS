@@ -16,4 +16,5 @@ public struct SignInWithAppleResult: Equatable, Sendable {
         self.nonce = nonce
         self.authorizationCode = authorizationCode
     }
+
 }

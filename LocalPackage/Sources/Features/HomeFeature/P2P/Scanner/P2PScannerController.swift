@@ -8,17 +8,16 @@
 import MultipeerConnectivity
 
 final class P2PScannerController: NSObject {
-    
+
     private let session: MCSession
     private let advertiser: MCNearbyServiceAdvertiser
     private let browser: MCNearbyServiceBrowser
-    
+
     init(
         session: MCSession,
         myPeerID: MCPeerID,
         serviceType: P2PServiceType
     ) {
-        
         self.session = session
         advertiser = MCNearbyServiceAdvertiser(
             peer: myPeerID,
@@ -26,68 +25,65 @@ final class P2PScannerController: NSObject {
             serviceType: serviceType.rawValue
         )
         browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType.rawValue)
-        
+
         super.init()
-        
+
         advertiser.delegate = self
         browser.delegate = self
     }
+
 }
 
 extension P2PScannerController: P2PScannerClient {
-    
+
     func startScan() {
-        
         advertiser.startAdvertisingPeer()
         browser.startBrowsingForPeers()
     }
-    
+
     func finishScan() {
-        
         advertiser.stopAdvertisingPeer()
         browser.stopBrowsingForPeers()
     }
+
 }
 
 extension P2PScannerController: MCNearbyServiceAdvertiserDelegate {
-    
+
     func advertiser(
-        _ advertiser: MCNearbyServiceAdvertiser,
+        _: MCNearbyServiceAdvertiser,
         didReceiveInvitationFromPeer peerID: MCPeerID,
-        withContext context: Data?,
+        withContext _: Data?,
         invitationHandler: @escaping (Bool, MCSession?) -> Void
     ) {
-        
         print("invitation from: \(peerID.displayName)")
         invitationHandler(true, session)
     }
-    
-    func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: any Error) {
-        
+
+    func advertiser(_: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: any Error) {
         print("advertising error: \(error)")
     }
+
 }
 
 extension P2PScannerController: MCNearbyServiceBrowserDelegate {
-    
+
     func browser(
         _ browser: MCNearbyServiceBrowser,
         foundPeer peerID: MCPeerID,
         // swiftlint:disable:next discouraged_optional_collection
-        withDiscoveryInfo info: [String: String]?
+        withDiscoveryInfo _: [String: String]?
     ) {
-        
         print("found device: \(peerID.displayName)")
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
-    
-    func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        
+
+    func browser(_: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
         print("lost device: \(peerID.displayName)")
     }
-    
-    func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: any Error) {
-        
+
+    func browser(_: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: any Error) {
         print("browsing error: \(error)")
     }
+
 }

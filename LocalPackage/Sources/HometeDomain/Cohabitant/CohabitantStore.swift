@@ -30,14 +30,12 @@ public final class CohabitantStore {
         cohabitantClient: CohabitantClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue
     ) {
-
         self.members = .init(value: members, ownId: ownId)
         self.cohabitantClient = cohabitantClient
         self.accountInfoClient = accountInfoClient
     }
 
     public func addSnapshotListenerIfNeeded(_ cohabitantId: String) async {
-
         // すでに監視中の場合は何もしない
         if listenerTask != nil { return }
 
@@ -49,26 +47,21 @@ public final class CohabitantStore {
         listenerTask = Task {
 
             for await cohabitantDataList in stream {
-
                 guard let cohabitantData = cohabitantDataList.first else { continue }
 
                 for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
-
                     do {
-
                         guard let account = try await accountInfoClient.fetch(member) else {
-
                             print("Not found account(cohabitantId: \(cohabitantId), userId: \(member))")
                             continue
                         }
                         members.insert(.init(id: member, userName: account.userName))
                         print("loaded cohabitant members: \(members)")
                     } catch {
-
                         print("error occurred: \(error)")
                     }
                 }
-                
+
                 // 初回のデータをロード完了したらその旨のフラグを立てる
                 isInitialLoaded = true
             }
@@ -78,15 +71,17 @@ public final class CohabitantStore {
     }
 
     public func removeSnapshotListener() async {
-
         listenerTask?.cancel()
         await listenerTask?.value
         listenerTask = nil
         await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
     }
+
 }
 
 public extension EnvironmentValues {
+
     /// 家事グループメンバー
     @Entry var cohabitantMembers: CohabitantMemberList = .init(value: [], ownId: "")
+
 }

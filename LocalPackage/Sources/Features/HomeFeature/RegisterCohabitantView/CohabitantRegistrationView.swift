@@ -11,16 +11,16 @@ import MultipeerConnectivity
 import SwiftUI
 
 public struct CohabitantRegistrationView: View {
-    
+
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
-    
+
     public init() {}
 
-    // 登録処理を中断するかどうかを確認するアラート
+    /// 登録処理を中断するかどうかを確認するアラート
     @State var isPresentingConfirmCancelAlert = false
-    
+
     public var body: some View {
         NavigationStack {
             P2PSession(displayName: userName) {
@@ -51,20 +51,19 @@ public struct CohabitantRegistrationView: View {
             }
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension CohabitantRegistrationView {
-    
+
     func onCompleteCohabitantRegistration(_ cohabitantId: String) async {
-        
         do {
-            
             try await accountStore.registerCohabitantId(cohabitantId)
         } catch {
-            
             print("error occurred: \(error)")
         }
     }
+
 }

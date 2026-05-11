@@ -6,7 +6,9 @@
 //
 
 enum HouseworkDateState: Equatable {
+
     case selected
     case selectable
     case unselectable
+
 }

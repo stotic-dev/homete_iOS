@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct AutomaticToolbarVisibilityModifier: ViewModifier {
-    
+
     let visibility: Visibility
     let position: ToolbarPlacement
-    
+
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
             content
@@ -20,6 +20,7 @@ struct AutomaticToolbarVisibilityModifier: ViewModifier {
             content.toolbar(visibility, for: position)
         }
     }
+
 }
 
 public extension View {
@@ -28,9 +29,11 @@ public extension View {
         visibility: Visibility,
         for position: ToolbarPlacement
     ) -> some View {
-        self.modifier(AutomaticToolbarVisibilityModifier(
+        modifier(AutomaticToolbarVisibilityModifier(
             visibility: visibility,
-            position: position)
+            position: position
+        )
         )
     }
+
 }

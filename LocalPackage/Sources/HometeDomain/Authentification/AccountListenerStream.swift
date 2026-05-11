@@ -18,14 +18,13 @@ public struct AccountListenerStream {
         listenerToken: any NSObjectProtocol,
         continuation: AsyncStream<AccountAuthResult?>.Continuation
     ) {
-
         self.values = values
         self.listenerToken = listenerToken
         self.continuation = continuation
     }
 
     public func stopListening() {
-
         continuation.finish()
     }
+
 }

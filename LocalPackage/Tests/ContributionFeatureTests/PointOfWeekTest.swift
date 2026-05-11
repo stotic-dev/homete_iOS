@@ -5,25 +5,28 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
+@testable import ContributionFeature
 import Foundation
 import Testing
-@testable import ContributionFeature
 
 // swiftlint:disable:next convenience_type
-struct PointOfWeekTest {
+enum PointOfWeekTest {
+
     struct MakeCase {
+
         private let calendar = Calendar.japanese
+
     }
+
 }
 
 extension PointOfWeekTest.MakeCase {
 
     @Test("指定週以外のPointOfDayは除外され、指定週のポイントが合算される")
-    func make_onlyTargetWeekItemsAreIncludedAndSummed() throws {
-
+    func make_onlyTargetWeekItemsAreIncludedAndSummed() {
         // Arrange
         // 2026-04-20(月)〜2026-04-26(日) の週、2026-04-27(月) は翌週
-        let weekDates: [Date] = (20...26).map { day in
+        let weekDates: [Date] = (20 ... 26).map { day in
             Date.previewDate(year: 2026, month: 4, day: day)
         }
         let april20 = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -33,7 +36,7 @@ extension PointOfWeekTest.MakeCase {
         let dayOfPoints: [Date: PointOfDay] = [
             april20: PointOfDay(indexedDay: april20, point: Point(value: 30)),
             april21: PointOfDay(indexedDay: april21, point: Point(value: 50)),
-            april27: PointOfDay(indexedDay: april27, point: Point(value: 20))
+            april27: PointOfDay(indexedDay: april27, point: Point(value: 20)),
         ]
 
         // Act
@@ -56,4 +59,5 @@ extension PointOfWeekTest.MakeCase {
             #expect(result.elements.contains { $0.indexedDay == date && $0.point.value == 0 })
         }
     }
+
 }

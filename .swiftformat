@@ -5,7 +5,7 @@
 --swift-version 6
 
 # 除外パス（.swiftlint.yml と揃える）
---exclude ProjectTools,DangerTools,vendor,LocalPackage/.build
+--exclude ProjectTools,DangerTools,vendor,LocalPackage/.build,LocalPackage/Package.swift
 
 # 型宣言（struct/class/enum/actor/extension/protocol）の `{` 直後に空行を入れる
 # 注: 関数/closure/if などの `{` には SwiftFormat 仕様上適用不可

@@ -6,10 +6,11 @@
 //
 
 import AuthenticationServices
-import SwiftUI
 import HometeDomain
+import SwiftUI
 
 struct SignInUpWithAppleButton: View {
+
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.appDependencies.nonceGeneratorClient) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
@@ -25,6 +26,7 @@ struct SignInUpWithAppleButton: View {
         .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
         .id(colorScheme)
     }
+
 }
 
 private extension SignInUpWithAppleButton {
@@ -39,32 +41,29 @@ private extension SignInUpWithAppleButton {
     func handleCompletion(result: Result<ASAuthorization, any Error>) {
         Task {
             switch result {
-            case .success(let authorization):
+            case let .success(authorization):
                 guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
                       let currentNonce else {
-
                     preconditionFailure("No sent sign in request.")
                 }
 
                 do {
-
                     let result = try SignInWithAppleResultFactory.make(appleIDCredential, currentNonce)
                     await onSignIn(.success(result))
                 } catch {
-
                     await onSignIn(.failure(error))
                 }
 
-            case .failure(let error):
+            case let .failure(error):
                 print("failed sign in with apple: \(error)")
                 if let error = error as? ASAuthorizationError,
                    error.code != .canceled {
-
                     await onSignIn(.failure(DomainError.failAuth))
                 }
             }
         }
     }
+
 }
 
 #Preview("SignInUpWithAppleButton_light scheme", traits: .sizeThatFitsLayout) {

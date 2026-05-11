@@ -16,15 +16,16 @@ public struct DailyHouseworkMetaData: Equatable, Sendable {
         self.indexedDate = indexedDate
         self.expiredAt = expiredAt
     }
+
 }
 
 public extension DailyHouseworkMetaData {
 
     init(selectedDate: Date, calendar: Calendar) {
-
         let selectedDay = calendar.startOfDay(for: selectedDate)
         let indexedDate = HouseworkIndexedDate(value: selectedDay)
         let expiredAt = calendar.date(byAdding: .year, value: 1, to: selectedDay) ?? selectedDay
         self.init(indexedDate: indexedDate, expiredAt: expiredAt)
     }
+
 }

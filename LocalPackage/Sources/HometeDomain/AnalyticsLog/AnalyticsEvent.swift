@@ -14,31 +14,30 @@ public struct AnalyticsEvent: Equatable {
         self.name = name
         self.parameters = parameters
     }
+
 }
 
 public extension AnalyticsEvent {
 
     static func login(isSuccess: Bool) -> Self {
-
-        return .init(
+        .init(
             name: "login",
             parameters: ["isSuccess": "\(isSuccess)"]
         )
     }
 
     static func logout() -> Self {
-
-        return .init(
+        .init(
             name: "logout",
             parameters: [:]
         )
     }
 
     static func deleteAccount() -> Self {
-
-        return .init(
+        .init(
             name: "delete_account",
             parameters: [:]
         )
     }
+
 }

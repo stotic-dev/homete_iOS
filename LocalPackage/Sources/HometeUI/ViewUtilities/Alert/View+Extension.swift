@@ -13,15 +13,18 @@ public extension View {
         content: Binding<DomainErrorAlertContent>,
         onDismiss: @escaping () -> Void = {}
     ) -> some View {
-        self
-            .alert("操作が完了しませんでした",
-                   isPresented: content.wrappedValue.hasError ? content.isPresenting : .constant(false),
-                   actions: {
+        alert(
+            "操作が完了しませんでした",
+            isPresented: content.wrappedValue.hasError ? content.isPresenting : .constant(false),
+            actions: {
                 Button("OK") {
                     onDismiss()
                 }
-            }, message: {
+            },
+            message: {
                 Text(content.wrappedValue.errorMessage ?? "")
-            })
+            }
+        )
     }
+
 }

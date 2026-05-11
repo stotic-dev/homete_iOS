@@ -13,8 +13,9 @@ struct HouseworkBoardList: Equatable {
     private(set) var items: [HouseworkItem]
 
     func items(matching state: HouseworkState) -> [HouseworkItem] {
-        return items.filter { $0.state == state }
+        items.filter { $0.state == state }
     }
+
 }
 
 extension HouseworkBoardList {
@@ -23,10 +24,10 @@ extension HouseworkBoardList {
         dailyList: [DailyHouseworkList],
         selectedDate: Date
     ) {
-
         items = dailyList
             .first {
                 $0.metaData.indexedDate == .init(value: selectedDate)
             }?.items ?? []
     }
+
 }

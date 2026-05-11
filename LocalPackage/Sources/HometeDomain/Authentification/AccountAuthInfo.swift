@@ -6,6 +6,7 @@
 //
 
 public struct AccountAuthInfo: Equatable, Sendable {
+
     public let result: AccountAuthResult?
     public let alreadyLoadedAtInitiate: Bool
 
@@ -15,4 +16,5 @@ public struct AccountAuthInfo: Equatable, Sendable {
         self.result = result
         self.alreadyLoadedAtInitiate = alreadyLoadedAtInitiate
     }
+
 }

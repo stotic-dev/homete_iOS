@@ -5,12 +5,12 @@
 //  Created by 佐藤汰一 on 2025/09/04.
 //
 
-import HometeUI
 import HometeResources
+import HometeUI
 import SwiftUI
 
 struct PromoteHouseworkTemplateBanner: View {
-    
+
     var body: some View {
         VStack(alignment: .center, spacing: .space24) {
             Image(.promoteHouseworkTemplateBannerIcon)
@@ -31,6 +31,7 @@ struct PromoteHouseworkTemplateBanner: View {
             .primaryButtonStyle()
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

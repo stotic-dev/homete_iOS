@@ -22,6 +22,7 @@ struct LaunchScreenView: View {
         .padding(.horizontal, .space16)
         .padding(.vertical, .space24)
     }
+
 }
 
 #Preview {

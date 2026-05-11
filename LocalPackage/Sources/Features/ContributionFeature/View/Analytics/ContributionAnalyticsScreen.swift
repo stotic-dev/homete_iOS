@@ -41,12 +41,12 @@ public struct ContributionAnalyticsScreen: View {
             }
         }
     }
+
 }
 
 private extension ContributionAnalyticsScreen {
-    
+
     func onChangeContribution() async {
-        
         let contribution = contributionStore.contiribution
         analytics = await .make(
             contribution: contribution,
@@ -55,9 +55,8 @@ private extension ContributionAnalyticsScreen {
             calendar: calendar
         )
     }
-    
-    func onChangePeriod() async {
 
+    func onChangePeriod() async {
         let contribution = contributionStore.contiribution
         analytics = await analytics?.updatePeriod(
             displayPeriod: selectedPeriod,
@@ -66,4 +65,5 @@ private extension ContributionAnalyticsScreen {
             calendar: calendar
         )
     }
+
 }

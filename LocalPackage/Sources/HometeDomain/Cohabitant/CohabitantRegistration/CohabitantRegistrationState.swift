@@ -13,4 +13,5 @@ public enum CohabitantRegistrationState: Equatable {
     case processing(isLead: Bool)
     /// 同居人の登録が完了
     case completed
+
 }

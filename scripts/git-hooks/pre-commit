@@ -25,11 +25,12 @@ echo "🎨 SwiftFormatを実行中..."
 echo "$STAGED_FILES" | sed 's/^/  - /'
 
 # ProjectToolsのSwiftPMプラグイン経由でSwiftFormatを実行
-# （プラグインは自パッケージ内のソースも併せて処理するため
-#   --allow-writing-to-package-directory を付ける必要がある）
+# - --allow-writing-to-package-directory: プラグインが自パッケージ内のソースを処理するため
+# - --allow-writing-to-directory: リポジトリ全体（パッケージ外）を整形対象にするため
 echo "$STAGED_FILES" \
     | xargs swift package --package-path ProjectTools plugin \
         --allow-writing-to-package-directory \
+        --allow-writing-to-directory "$REPO_ROOT" \
         swiftformat --config "$REPO_ROOT/.swiftformat"
 
 # 整形後のファイルを再ステージ

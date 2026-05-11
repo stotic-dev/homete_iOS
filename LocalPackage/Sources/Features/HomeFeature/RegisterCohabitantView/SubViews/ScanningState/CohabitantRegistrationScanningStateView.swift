@@ -1,5 +1,5 @@
 //
-//  CohabitantRegistrationSearchingStateView.swift
+//  CohabitantRegistrationScanningStateView.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/08/17.
@@ -11,19 +11,19 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationScanningStateView: View {
-    
+
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
     @LoadingState var loadingState
-    
+
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
     @State var confirmedReadyRegistrationPeers = ConfirmedRegistrationPeers(peers: [])
     @Binding var registrationState: CohabitantRegistrationState
-    
+
     let scannerController: any P2PScannerClient
-    
+
     var body: some View {
         ZStack {
             if connectedPeers.isEmpty {
@@ -32,8 +32,7 @@ struct CohabitantRegistrationScanningStateView: View {
                     .onAppear {
                         isConfirmedReadyRegistration = false
                     }
-            }
-            else {
+            } else {
                 CohabitantRegistrationPeersListView(
                     isConfirmedReadyRegistration: $isConfirmedReadyRegistration
                 )
@@ -66,48 +65,43 @@ struct CohabitantRegistrationScanningStateView: View {
             dispatchReceivedMessage(data, newValue.sender)
         }
     }
+
 }
 
 private extension CohabitantRegistrationScanningStateView {
-    
+
     // MARK: プレゼンテーション処理
-    
+
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
-        
         if let isFixedMember = data.isFixedMember {
-            
             if isFixedMember {
-                
                 // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
                 confirmedReadyRegistrationPeers.addPeer(sender)
-            }
-            else {
-                
+            } else {
                 // 登録メンバーが拒否した場合は、再度メンバーを選び直す
                 confirmedReadyRegistrationPeers = .init(peers: [])
                 isPresentingRejectRegistrationAlert = true
             }
         }
     }
-    
+
     func transitionToProcessingStateIfNeeded() {
-        
         loadingState.isLoading = true
-        
+
         // 自分が登録ボタンタップ済みで、かつ全てのメンバーが登録ボタンタップ済みの場合に、
         // 登録処理に移行する
         guard isConfirmedReadyRegistration,
-              let myPeerID = self.myPeerID,
-        let isLeadPeer = confirmedReadyRegistrationPeers.isLeadPeer(
-            connectedPeers: connectedPeers,
-            myPeerID: myPeerID
-        ) else { return }
-        
+              let myPeerID,
+              let isLeadPeer = confirmedReadyRegistrationPeers.isLeadPeer(
+                  connectedPeers: connectedPeers,
+                  myPeerID: myPeerID
+              ) else { return }
+
         registrationState = .processing(isLead: isLeadPeer)
     }
-    
+
     func tappedRejectAlertButton() {
-        
         isConfirmedReadyRegistration = false
     }
+
 }

@@ -7,9 +7,11 @@
 
 import Foundation
 
-struct ContributionRankItem: Identifiable, Equatable, Sendable {
+struct ContributionRankItem: Identifiable, Equatable {
 
-    var id: String { userId }
+    var id: String {
+        userId
+    }
 
     /// 順位（1始まり）
     let rank: Int
@@ -23,4 +25,5 @@ struct ContributionRankItem: Identifiable, Equatable, Sendable {
     let monthlyPoint: Point
     /// 達成した家事件数
     let achievedCount: Int
+
 }

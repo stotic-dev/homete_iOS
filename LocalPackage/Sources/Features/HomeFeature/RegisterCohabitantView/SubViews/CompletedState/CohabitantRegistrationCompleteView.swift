@@ -11,9 +11,9 @@ import SwiftUI
 struct CohabitantRegistrationCompleteView: View {
 
     @Environment(\.dismiss) var dismiss
-    
+
     @State var isCracked = false
-    
+
     var body: some View {
         ZStack {
             VStack(spacing: .space16) {
@@ -35,8 +35,7 @@ struct CohabitantRegistrationCompleteView: View {
             ZStack {
                 if isCracked {
                     ConfettiRainView()
-                }
-                else {
+                } else {
                     CrackerView {
                         withAnimation {
                             isCracked = true
@@ -49,4 +48,5 @@ struct CohabitantRegistrationCompleteView: View {
         }
         .hideNavigationBar()
     }
+
 }

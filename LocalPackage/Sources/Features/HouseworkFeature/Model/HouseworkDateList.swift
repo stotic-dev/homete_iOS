@@ -1,5 +1,5 @@
 //
-//  HouseworkDateScrollList.swift
+//  HouseworkDateList.swift
 //  LocalPackage
 //
 //  Created by Taichi Sato on 2026/04/04.
@@ -10,8 +10,10 @@ import Foundation
 struct HouseworkDateList: Equatable {
 
     struct Item: Equatable {
+
         let date: Date
         let state: HouseworkDateState
+
     }
 
     let anchorDate: Date
@@ -25,15 +27,16 @@ struct HouseworkDateList: Equatable {
         let selectedDay = calendar.startOfDay(for: selectedDate)
         self.anchorDate = anchorDate
         self.selectedDate = selectedDay
-        self.items = Self.buildItems(anchorDate: anchorDate, selectedDate: selectedDay, calendar: calendar)
+        items = Self.buildItems(anchorDate: anchorDate, selectedDate: selectedDay, calendar: calendar)
     }
 
     /// selectableな日付を選択してitemsとselectedDateを更新する。unselectableな場合は変更なし。
-    public mutating func selectDate(_ date: Date, calendar: Calendar) {
+    mutating func selectDate(_ date: Date, calendar: Calendar) {
         guard isSelectable(date, calendar: calendar) else { return }
         selectedDate = calendar.startOfDay(for: date)
         items = Self.buildItems(anchorDate: anchorDate, selectedDate: selectedDate, calendar: calendar)
     }
+
 }
 
 private extension HouseworkDateList {
@@ -42,15 +45,14 @@ private extension HouseworkDateList {
         let anchorDay = calendar.startOfDay(for: anchorDate)
         let start = -(selectableOffset + unselectablePadding)
         let end = selectableOffset + unselectablePadding
-        return (start...end).compactMap { delta -> Item? in
+        return (start ... end).compactMap { delta -> Item? in
             guard let date = calendar.date(byAdding: .day, value: delta, to: anchorDay) else { return nil }
-            let state: HouseworkDateState
-            if date == selectedDate {
-                state = .selected
+            let state: HouseworkDateState = if date == selectedDate {
+                .selected
             } else if abs(delta) <= selectableOffset {
-                state = .selectable
+                .selectable
             } else {
-                state = .unselectable
+                .unselectable
             }
             return Item(date: date, state: state)
         }
@@ -62,4 +64,5 @@ private extension HouseworkDateList {
         guard let diff = calendar.dateComponents([.day], from: anchorDay, to: dateDay).day else { return false }
         return abs(diff) <= Self.selectableOffset
     }
+
 }

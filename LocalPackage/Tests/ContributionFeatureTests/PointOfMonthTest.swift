@@ -5,27 +5,33 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
+@testable import ContributionFeature
 import Foundation
 import Testing
-@testable import ContributionFeature
 
 // swiftlint:disable:next convenience_type
-struct PointOfMonthTest {
+enum PointOfMonthTest {
+
     struct MakeCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct MakeWithSeparatedCase {
+
         private let calendar = Calendar.japanese
+
     }
+
 }
 
 extension PointOfMonthTest.MakeCase {
 
     @Test("指定月以外のPointOfDayは除外され、指定月のみ集計される")
-    func make_excludesItemsOutsideTargetMonth() throws {
-
+    func make_excludesItemsOutsideTargetMonth() {
         // Arrange
-        let aprilDates: [Date] = (1...30).map { day in
+        let aprilDates: [Date] = (1 ... 30).map { day in
             Date.previewDate(year: 2026, month: 4, day: day)
         }
         let aprilStart = Date.previewDate(year: 2026, month: 4, day: 1)
@@ -36,7 +42,7 @@ extension PointOfMonthTest.MakeCase {
         let dayOfPoints: [Date: PointOfDay] = [
             april10: PointOfDay(indexedDay: april10, point: Point(value: 30)),
             april20: PointOfDay(indexedDay: april20, point: Point(value: 50)),
-            may10: PointOfDay(indexedDay: may10, point: Point(value: 50))
+            may10: PointOfDay(indexedDay: may10, point: Point(value: 50)),
         ]
 
         // Act
@@ -56,13 +62,13 @@ extension PointOfMonthTest.MakeCase {
         #expect(result.elements.contains { $0.indexedDay == april20 && $0.point.value == 50 })
         #expect(!result.elements.contains { $0.indexedDay == may10 })
     }
+
 }
 
 extension PointOfMonthTest.MakeWithSeparatedCase {
 
     @Test("同じ月のPointOfDayが1つのPointOfMonthにまとめられる")
     func makeWithSeparated_sameMonthItemsAreGroupedTogether() throws {
-
         // Arrange
         var comps = DateComponents()
         comps.year = 2026; comps.month = 4; comps.day = 10
@@ -75,7 +81,7 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
         let dayOfPoints: [Date: PointOfDay] = [
             april10: PointOfDay(indexedDay: april10, point: Point(value: 30)),
             april20: PointOfDay(indexedDay: april20, point: Point(value: 50)),
-            may10: PointOfDay(indexedDay: may10, point: Point(value: 20))
+            may10: PointOfDay(indexedDay: may10, point: Point(value: 20)),
         ]
 
         // Act
@@ -97,7 +103,7 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
                 totalAchievementCount: 2,
                 elements: [
                     PointOfDay(indexedDay: april10, point: Point(value: 30)),
-                    PointOfDay(indexedDay: april20, point: Point(value: 50))
+                    PointOfDay(indexedDay: april20, point: Point(value: 50)),
                 ],
                 startDate: aprilStart
             ),
@@ -107,14 +113,15 @@ extension PointOfMonthTest.MakeWithSeparatedCase {
                 total: .init(value: 20),
                 totalAchievementCount: 1,
                 elements: [
-                    PointOfDay(indexedDay: may10, point: Point(value: 20))
+                    PointOfDay(indexedDay: may10, point: Point(value: 20)),
                 ],
                 startDate: mayStart
-            )
+            ),
         ]
         #expect(result.count == expected.count)
         for item in result {
             #expect(expected.contains { $0.elements == item.elements && $0.total == item.total })
         }
     }
+
 }

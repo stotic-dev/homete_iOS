@@ -6,9 +6,8 @@
 //
 
 import Foundation
-import Testing
-
 @testable import HometeDomain
+import Testing
 
 @MainActor
 struct HouseworkManagerTest {
@@ -16,8 +15,7 @@ struct HouseworkManagerTest {
     private let inputCohabitantId = "cohabitantId"
 
     @Test("setupObserverを呼び出すと直近1年分をフェッチしリスナーを起動してallItemsに反映する")
-    func setupObserver() async throws {
-
+    func setupObserver() async {
         // Arrange
 
         let now = Date()
@@ -30,13 +28,13 @@ struct HouseworkManagerTest {
             houseworkClient: .init(
                 snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
                     #expect(id == "houseworkObserveKey")
-                    #expect(cohabitantId == self.inputCohabitantId)
+                    #expect(cohabitantId == inputCohabitantId)
                     #expect(anchorDate == now)
                     #expect(offset == 3)
                     return stream
                 },
                 fetchItemsHandler: { cohabitantId, from, to in
-                    #expect(cohabitantId == self.inputCohabitantId)
+                    #expect(cohabitantId == inputCohabitantId)
                     #expect(from == expectedFrom)
                     #expect(to == now)
                     return [fetchedItem]
@@ -51,7 +49,7 @@ struct HouseworkManagerTest {
         await manager.setupObserver(
             currentTime: now,
             cohabitantId: inputCohabitantId,
-            calendar: calendar,
+            calendar: calendar
         )
 
         // Assert
@@ -69,8 +67,7 @@ struct HouseworkManagerTest {
     }
 
     @Test("リアルタイムリスナーの更新がallItemsにupsertマージされオブザーバーに通知される")
-    func streamUpdateIsUpserted() async throws {
-
+    func streamUpdateIsUpserted() async {
         // Arrange
 
         let now = Date()
@@ -90,11 +87,13 @@ struct HouseworkManagerTest {
         await manager.setupObserver(
             currentTime: now,
             cohabitantId: inputCohabitantId,
-            calendar: calendar,
+            calendar: calendar
         )
 
         // フェッチ結果の通知を消費
-        for await _ in observerStream { break }
+        for await _ in observerStream {
+            break
+        }
 
         // Act
 
@@ -117,4 +116,5 @@ struct HouseworkManagerTest {
         #expect(allItems.contains(where: { $0.id == newItem.id }))
         #expect(receivedItems.count == 2)
     }
+
 }

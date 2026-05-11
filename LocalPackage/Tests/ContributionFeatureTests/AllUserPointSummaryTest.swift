@@ -5,13 +5,15 @@
 //  Created by Taichi Sato on 2026/04/29.
 //
 
-import Testing
-import HometeDomain
 @testable import ContributionFeature
+import HometeDomain
+import Testing
 
 // swiftlint:disable:next convenience_type
-struct AllUserPointSummaryTest {
+enum AllUserPointSummaryTest {
+
     struct MakeRankingCase {}
+
 }
 
 extension AllUserPointSummaryTest.MakeRankingCase {
@@ -19,7 +21,6 @@ extension AllUserPointSummaryTest.MakeRankingCase {
     @Test("ポイント降順でランク付けされ、自分のユーザーIDと一致するアイテムは自分自身のアイテムであるフラグが立つ")
     // swiftlint:disable:next function_body_length
     func makeRanking_assignsRanksInDescendingPointOrder() {
-
         // Arrange
         let summary = AllUserPointSummary(items: [
             UserPointSummary(
@@ -42,7 +43,7 @@ extension AllUserPointSummaryTest.MakeRankingCase {
                 isMe: false,
                 monthlyPoint: .init(value: 80),
                 achievedCount: 3
-            )
+            ),
         ])
 
         // Act
@@ -73,14 +74,13 @@ extension AllUserPointSummaryTest.MakeRankingCase {
                 isMe: true,
                 monthlyPoint: .init(value: 40),
                 achievedCount: 2
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("アイテムが空の場合はランキングも空になる")
     func makeRanking_returnsEmptyRanking_whenNoItems() {
-
         // Arrange
         let summary = AllUserPointSummary()
 
@@ -90,4 +90,5 @@ extension AllUserPointSummaryTest.MakeRankingCase {
         // Assert
         #expect(result == [])
     }
+
 }

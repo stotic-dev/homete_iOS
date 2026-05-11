@@ -5,29 +5,38 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
-import Foundation
-import Testing
-import HometeDomain
 @testable import ContributionFeature
+import Foundation
+import HometeDomain
+import Testing
 
 // swiftlint:disable:next convenience_type
-struct HouseworkContributionTest {
+enum HouseworkContributionTest {
+
     struct MakeCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct CalculatePointSummariesCase {
+
         private let calendar = Calendar.japanese
+
     }
+
     struct LatestAchievedDateCase {
+
         let calendar = Calendar.japanese
+
     }
+
 }
 
 extension HouseworkContributionTest.MakeCase {
 
     @Test("完了した家事のみ獲得ポイントとして集計される")
     func make_onlyCompletedItemsAreIncluded() {
-
         // Arrange
         let inputFirstDate = Date.previewDate(year: 2026, month: 1, day: 1)
         let inputSecondDate = Date.previewDate(year: 2026, month: 1, day: 2)
@@ -35,7 +44,7 @@ extension HouseworkContributionTest.MakeCase {
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: inputFirstDate, point: 30, state: .completed, executorId: "alice"),
             .makeForTest(id: 2, indexedDate: inputSecondDate, point: 50, state: .incomplete, executorId: "alice"),
-            .makeForTest(id: 3, indexedDate: inputThirdDate, point: 20, state: .completed, executorId: "alice")
+            .makeForTest(id: 3, indexedDate: inputThirdDate, point: 20, state: .completed, executorId: "alice"),
         ]
 
         // Act
@@ -46,8 +55,8 @@ extension HouseworkContributionTest.MakeCase {
             list: [
                 "alice": [
                     .init(indexedDay: inputFirstDate, point: .init(value: 30)),
-                    .init(indexedDay: inputThirdDate, point: .init(value: 20))
-                ]
+                    .init(indexedDay: inputThirdDate, point: .init(value: 20)),
+                ],
             ],
             calendar: calendar
         )
@@ -56,7 +65,6 @@ extension HouseworkContributionTest.MakeCase {
 
     @Test("家事が空の場合は空のリストが返る")
     func make_emptyInput_returnsEmptyList() {
-
         // Arrange
         let items: [HouseworkItem] = []
 
@@ -66,25 +74,25 @@ extension HouseworkContributionTest.MakeCase {
         // Assert
         #expect(result == .init(list: [:]))
     }
+
 }
 
 extension HouseworkContributionTest.CalculatePointSummariesCase {
 
     @Test("対象月の完了家事のポイントがユーザー毎に集計される")
     func calculatePointSummaries_returnsMonthlyPointPerUser() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let jan20 = Date.previewDate(year: 2026, month: 1, day: 20)
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
-            .makeForTest(id: 2, indexedDate: jan20, point: 50, state: .completed, executorId: "bob")
+            .makeForTest(id: 2, indexedDate: jan20, point: 50, state: .completed, executorId: "bob"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(
             value: [
                 .init(id: "alice", userName: "アリス"),
-                .init(id: "bob", userName: "ボブ")
+                .init(id: "bob", userName: "ボブ"),
             ],
             ownId: "alice"
         )
@@ -112,20 +120,19 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: false,
                 monthlyPoint: .init(value: 50),
                 achievedCount: 1
-            )
+            ),
         ]
         #expect(result.items.sorted(by: { $0.userId < $1.userId }) == expected.sorted(by: { $0.userId < $1.userId }))
     }
 
     @Test("対象月外の家事は集計から除外される")
     func calculatePointSummaries_excludesItemsOutsideTargetMonth() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let feb10 = Date.previewDate(year: 2026, month: 2, day: 10)
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
-            .makeForTest(id: 2, indexedDate: feb10, point: 50, state: .completed, executorId: "alice")
+            .makeForTest(id: 2, indexedDate: feb10, point: 50, state: .completed, executorId: "alice"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -146,14 +153,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: true,
                 monthlyPoint: .init(value: 30),
                 achievedCount: 1
-            )
+            ),
         ])
         #expect(result == expected)
     }
 
     @Test("対象月に達成した家事の数がachievedCountに反映される")
     func calculatePointSummaries_includesAchievedCount() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let items: [HouseworkItem] = [
@@ -179,7 +185,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 state: .completed,
                 executorId: "alice",
                 reviewerId: "bob"
-            )
+            ),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -200,14 +206,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: true,
                 monthlyPoint: .init(value: 90),
                 achievedCount: 3
-            )
+            ),
         ])
         #expect(result == expected)
     }
 
     @Test("対象月外の達成家事はachievedCountに含まれない")
     func calculatePointSummaries_excludesAchievedItemsOutsideTargetMonth() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let feb10 = Date.previewDate(year: 2026, month: 2, day: 10)
@@ -227,7 +232,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 state: .completed,
                 executorId: "alice",
                 reviewerId: "bob"
-            )
+            ),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -248,14 +253,13 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: true,
                 monthlyPoint: .init(value: 30),
                 achievedCount: 1
-            )
+            ),
         ])
         #expect(result == expected)
     }
 
     @Test("対象ユーザーに家事が存在しない場合はゼロのPointSummaryが返る")
     func calculatePointSummaries_noItemsForUser_returnsZeroSummary() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let contribution = HouseworkContribution.make(by: [], calendar: calendar)
@@ -277,19 +281,18 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: true,
                 monthlyPoint: .init(value: 0),
                 achievedCount: 0
-            )
+            ),
         ])
         #expect(result == expected)
     }
 
     @Test("membersに存在しないユーザーの貢献データは集計結果に含まれない")
     func calculatePointSummaries_excludesUsersNotInMembers() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
-            .makeForTest(id: 2, indexedDate: jan10, point: 50, state: .completed, executorId: "unknown")
+            .makeForTest(id: 2, indexedDate: jan10, point: 50, state: .completed, executorId: "unknown"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
         let members = CohabitantMemberList(value: [.init(id: "alice", userName: "アリス")], ownId: "alice")
@@ -310,10 +313,11 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 isMe: true,
                 monthlyPoint: .init(value: 30),
                 achievedCount: 1
-            )
+            ),
         ])
         #expect(result == expected)
     }
+
 }
 
 // MARK: - latestAchievedDate
@@ -322,7 +326,6 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
 
     @Test("完了家事が複数ある場合は最新の日付が返る")
     func latestAchievedDate_multipleItems_returnsLatest() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let feb20 = Date.previewDate(year: 2026, month: 2, day: 20)
@@ -330,7 +333,7 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
             .makeForTest(id: 2, indexedDate: feb20, point: 20, state: .completed, executorId: "alice"),
-            .makeForTest(id: 3, indexedDate: mar5, point: 15, state: .completed, executorId: "alice")
+            .makeForTest(id: 3, indexedDate: mar5, point: 15, state: .completed, executorId: "alice"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
 
@@ -343,11 +346,10 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
 
     @Test("完了家事が1件の場合はその日付が返る")
     func latestAchievedDate_singleItem_returnsThatDate() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let items: [HouseworkItem] = [
-            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice")
+            .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
 
@@ -360,7 +362,6 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
 
     @Test("完了家事がない場合はnilが返る")
     func latestAchievedDate_empty_returnsNil() {
-
         // Arrange
         let contribution = HouseworkContribution.make(by: [], calendar: calendar)
 
@@ -373,7 +374,6 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
 
     @Test("複数ユーザーがいる場合は全体での最新日が返る")
     func latestAchievedDate_multipleUsers_returnsOverallLatest() {
-
         // Arrange
         let jan10 = Date.previewDate(year: 2026, month: 1, day: 10)
         let feb20 = Date.previewDate(year: 2026, month: 2, day: 20)
@@ -381,7 +381,7 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
         let items: [HouseworkItem] = [
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
             .makeForTest(id: 2, indexedDate: mar5, point: 20, state: .completed, executorId: "bob"),
-            .makeForTest(id: 3, indexedDate: feb20, point: 15, state: .completed, executorId: "alice")
+            .makeForTest(id: 3, indexedDate: feb20, point: 15, state: .completed, executorId: "alice"),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
 
@@ -391,4 +391,5 @@ extension HouseworkContributionTest.LatestAchievedDateCase {
         // Assert
         #expect(result == calendar.startOfDay(for: mar5))
     }
+
 }

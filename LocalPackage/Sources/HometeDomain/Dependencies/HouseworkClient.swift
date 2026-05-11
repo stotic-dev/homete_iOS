@@ -23,6 +23,7 @@ public struct HouseworkClient: Sendable {
         _ from: Date,
         _ to: Date
     ) async throws -> [HouseworkItem]
+
 }
 
 public extension HouseworkClient {
@@ -49,7 +50,6 @@ public extension HouseworkClient {
             _ to: Date
         ) async throws -> [HouseworkItem] = { _, _, _ in [] }
     ) {
-
         insertOrUpdateItem = insertOrUpdateItemHandler
         removeItem = removeItemHandler
         snapshotListener = snapshotListenerHandler
@@ -58,4 +58,5 @@ public extension HouseworkClient {
     }
 
     static let previewValue = HouseworkClient()
+
 }

@@ -8,14 +8,15 @@
 import SwiftUI
 
 public struct HouseworkBoardScreen: View {
+
     @State var houseworkListStore: HouseworkListStore?
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
-    
+
     public static func make(houseworkListStore: HouseworkListStore?) -> some View {
         HouseworkBoardScreen(houseworkListStore: houseworkListStore)
     }
-    
+
     public var body: some View {
         if let houseworkListStore {
             HouseworkBoardView(
@@ -36,16 +37,18 @@ public struct HouseworkBoardScreen: View {
             )
         }
     }
+
 }
 
 // MARK: - プレゼンテーションロジック
 
 private extension HouseworkBoardScreen {
-    
+
     func onAppeare(with store: HouseworkListStore) {
         houseworkBoardList = .init(
             dailyList: store.items.value,
             selectedDate: dateList.selectedDate
         )
     }
+
 }

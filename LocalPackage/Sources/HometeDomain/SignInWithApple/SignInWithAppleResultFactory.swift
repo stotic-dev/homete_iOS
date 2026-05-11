@@ -6,11 +6,11 @@ import AuthenticationServices
 import Foundation
 
 public enum SignInWithAppleResultFactory {
+
     public static func make(
         _ credential: ASAuthorizationAppleIDCredential,
         _ nonce: SignInWithAppleNonce
     ) throws -> SignInWithAppleResult {
-
         guard let appleIDToken = credential.identityToken else {
             print("Unable to fetdch identify token.")
             throw DomainError.failAuth
@@ -32,4 +32,5 @@ public enum SignInWithAppleResultFactory {
             authorizationCode: authCodeString
         )
     }
+
 }

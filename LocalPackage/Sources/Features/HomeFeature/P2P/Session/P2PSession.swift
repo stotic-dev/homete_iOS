@@ -9,24 +9,23 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct P2PSession<Content: View>: View {
-        
+
     @AppStorage(key: .archivedPeerIDDataKey) var archivedPeerIDDataKey
-    
+
     @State var session: MCSession?
     @State var myPeerID: MCPeerID?
     @State var connectedPeers: Set<MCPeerID> = []
     @State var sessionDelegate = P2PSessionDelegate()
     @State var receivedData: P2PSessionReceiveData?
-    
+
     let content: (MCSession?) -> Content
     let displayName: String
-    
+
     init(displayName: String, @ViewBuilder content: @escaping (MCSession?) -> Content) {
-        
         self.content = content
         self.displayName = displayName
     }
-    
+
     var body: some View {
         content(session)
             .environment(\.myPeerID, myPeerID)
@@ -35,20 +34,19 @@ struct P2PSession<Content: View>: View {
             .environment(\.p2pSessionProxy, .init(session: session))
             .task {
                 await onAppear()
-                
+
                 for await event in sessionDelegate.eventStream {
-                    
                     switch event {
-                    case .connected(let peerID):
+                    case let .connected(peerID):
                         connectedPeers.insert(peerID)
-                        
-                    case .disconnected(let peerID):
+
+                    case let .disconnected(peerID):
                         connectedPeers.remove(peerID)
-                        
-                    case .received(let data, let sender):
+
+                    case let .received(data, sender):
                         receivedData = .init(id: UUID(), sender: sender, body: data)
                     }
-                    
+
                     print("\(#file) event: \(event), connectedPeers: \(connectedPeers)")
                 }
             }
@@ -56,24 +54,25 @@ struct P2PSession<Content: View>: View {
                 sessionDelegate.finish()
             }
     }
+
 }
 
 private extension P2PSession {
-    
+
     func onAppear() async {
-        
         let myPeerData = MyPeerData.make(
             archivedData: archivedPeerIDDataKey,
             displayName: displayName
         )
-        self.session = MCSession(
+        session = MCSession(
             peer: myPeerData.id,
             securityIdentity: nil,
             encryptionPreference: .required
         )
         myPeerID = myPeerData.id
         archivedPeerIDDataKey = myPeerData.archivedData
-        
+
         session?.delegate = sessionDelegate
     }
+
 }

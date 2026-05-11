@@ -26,4 +26,5 @@ public struct NavigationBarButton: View {
                 .foregroundStyle(.onSurface)
         }
     }
+
 }

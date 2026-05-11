@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project install-hooks
+.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project install-hooks format
 
 .DEFAULT_GOAL := setup-project
 
@@ -26,6 +26,13 @@ test-packages: ## LocalPackageのテストを実行
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks
 	@echo "✅ git hooksを scripts/git-hooks に設定しました"
+
+format: ## プロダクション+テストコード全体にSwiftFormatを実行
+	swift package --package-path ProjectTools plugin \
+		--allow-writing-to-package-directory \
+		--allow-writing-to-directory $(CURDIR) \
+		swiftformat --config .swiftformat \
+		homete hometeSnapshotTests LocalPackage
 
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh

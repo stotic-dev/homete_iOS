@@ -8,14 +8,14 @@
 import SwiftUI
 
 struct AllUserDataAnnotation: View {
-    
+
     @Environment(\.timeZone) var timeZone
     @Environment(\.locale) var locale
-    
+
     let entries: [PointEntry]
     let selectedDate: Date
     let displayPeriod: DisplayPointPeriod.PeriodType
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: .space4) {
             Text(selectedDate, format: titleDateFormat)
@@ -40,42 +40,43 @@ struct AllUserDataAnnotation: View {
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
         }
     }
+
 }
 
 private extension AllUserDataAnnotation {
-    
+
     var titleDateFormat: Date.FormatStyle {
-        var style: Date.FormatStyle
-        switch displayPeriod {
-        case .year: style = .dateTime.year().month().locale(locale)
-        case .month, .week: style = .dateTime.month().day().locale(locale)
+        var style: Date.FormatStyle = switch displayPeriod {
+        case .year: .dateTime.year().month().locale(locale)
+        case .month, .week: .dateTime.month().day().locale(locale)
         }
         style.timeZone = timeZone
         return style
     }
+
 }
 
 #if DEBUG
-#Preview("AllUserDataAnnotation_データ有り", traits: .sizeThatFitsLayout) {
-    AllUserDataAnnotation(
-       entries: [
-        .init(id: "1", userName: "佐藤", point: 20),
-        .init(id: "2", userName: "佐藤2", point: 1000000)
-       ],
-       selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-       displayPeriod: .week
-    )
-    .setupEnvironmentForPreview()
-    .padding(.space16)
-}
+    #Preview("AllUserDataAnnotation_データ有り", traits: .sizeThatFitsLayout) {
+        AllUserDataAnnotation(
+            entries: [
+                .init(id: "1", userName: "佐藤", point: 20),
+                .init(id: "2", userName: "佐藤2", point: 1_000_000),
+            ],
+            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+            displayPeriod: .week
+        )
+        .setupEnvironmentForPreview()
+        .padding(.space16)
+    }
 
-#Preview("AllUserDataAnnotation_データ無し", traits: .sizeThatFitsLayout) {
-    AllUserDataAnnotation(
-       entries: [],
-       selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-       displayPeriod: .week
-    )
-    .setupEnvironmentForPreview()
-    .padding(.space16)
-}
+    #Preview("AllUserDataAnnotation_データ無し", traits: .sizeThatFitsLayout) {
+        AllUserDataAnnotation(
+            entries: [],
+            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+            displayPeriod: .week
+        )
+        .setupEnvironmentForPreview()
+        .padding(.space16)
+    }
 #endif

@@ -10,12 +10,13 @@ enum CollectionPath: String {
     case cohabitant = "Cohabitant"
     case houseworks = "Houseworks"
     case dailyHouseworks = "DailyHouseworks"
+
 }
 
 extension Firestore {
 
     func collection(path: CollectionPath) -> CollectionReference {
-
-        return self.collection(path.rawValue)
+        collection(path.rawValue)
     }
+
 }

@@ -13,21 +13,21 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationProcessingView: View {
-    
+
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.connectedPeers) var connectedPeers
-    
+
     @State var isPresentedMemberChangeAlert = false
-    
+
     // 登録処理の役割の通知が済んでいるデバイスリスト
     @Binding var confirmedRolePeers: Set<MCPeerID>
     @Binding var registrationState: CohabitantRegistrationState
-    
-    // 登録処理時の役割
+
+    /// 登録処理時の役割
     let role: CohabitantRegistrationRole
-    
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         VStack(spacing: .zero) {
             VStack(spacing: .space16) {
@@ -52,7 +52,7 @@ struct CohabitantRegistrationProcessingView: View {
         .padding(.horizontal, .space16)
         .onReceive(timer) { _ in
             guard confirmedRolePeers != connectedPeers else { return }
-            
+
             let message = CohabitantRegistrationMessage(
                 type: .preRegistration(role: role)
             )
@@ -66,14 +66,16 @@ struct CohabitantRegistrationProcessingView: View {
         }
         .alert(
             "接続エラー",
-            isPresented: $isPresentedMemberChangeAlert) {
-                Button("OK") {
-                    registrationState = .scanning
-                }
-            } message: {
-               Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
+            isPresented: $isPresentedMemberChangeAlert
+        ) {
+            Button("OK") {
+                registrationState = .scanning
             }
+        } message: {
+            Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
+        }
     }
+
 }
 
 #Preview("CohabitantRegistrationProcessingView_通常ケース") {

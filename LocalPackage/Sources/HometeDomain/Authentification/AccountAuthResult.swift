@@ -12,4 +12,5 @@ public struct AccountAuthResult: Equatable, Sendable {
     public init(id: String) {
         self.id = id
     }
+
 }

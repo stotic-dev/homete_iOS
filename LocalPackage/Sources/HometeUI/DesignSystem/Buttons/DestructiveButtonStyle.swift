@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct DestructiveButtonStyle: ButtonStyle {
-    
+
     @Environment(\.isEnabled) var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .commonStyle(.onDestructive)
@@ -18,13 +18,15 @@ struct DestructiveButtonStyle: ButtonStyle {
             .cornerRadius(.radius16)
             .opacity(isEnabled ? 1 : 0.5)
     }
+
 }
 
 public extension View {
 
     func destructiveButtonStyle() -> some View {
-        self.buttonStyle(DestructiveButtonStyle())
+        buttonStyle(DestructiveButtonStyle())
     }
+
 }
 
 #Preview("DestructiveButtonStyle_Enabled", traits: .sizeThatFitsLayout) {

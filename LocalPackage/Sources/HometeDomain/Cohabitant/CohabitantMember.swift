@@ -16,4 +16,5 @@ public struct CohabitantMember: Equatable, Hashable, Sendable {
         self.id = id
         self.userName = userName
     }
+
 }

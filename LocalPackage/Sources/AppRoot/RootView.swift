@@ -21,13 +21,13 @@ public struct RootView: View {
             switch launchState {
             case .launching:
                 LaunchScreenView()
-            case .preLoggedIn(let auth):
+            case let .preLoggedIn(auth):
                 RegistrationAccountView(authInfo: auth)
                     .transition(.asymmetric(
                         insertion: .push(from: .leading),
                         removal: .opacity
                     ))
-            case .loggedIn(let context):
+            case let .loggedIn(context):
                 AppTabView()
                     .environment(\.loginContext, context)
                     .transition(.scale)
@@ -52,6 +52,7 @@ public struct RootView: View {
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init(launchState: $launchState))
     }
+
 }
 
 public extension RootView {
@@ -74,6 +75,7 @@ public extension RootView {
         }
         .environment(\.appDependencies, dependencies)
     }
+
 }
 
 // MARK: - プレゼンテーションロジック
@@ -81,7 +83,6 @@ public extension RootView {
 private extension RootView {
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
-
         guard let fcmToken = notification.object as? String else { return }
         self.fcmToken = fcmToken
     }
@@ -93,17 +94,14 @@ private extension RootView {
         }
 
         if let account = await accountStore.load(authResult) {
-
             await updateFcmTokenIfNeeded()
             launchState = .loggedIn(context: .init(account: account))
         } else {
-
             launchState = .preLoggedIn(auth: authResult)
         }
     }
 
     func onChangeAccount() async {
-
         guard launchState.isLoggedIn,
               let account = accountStore.account else { return }
 
@@ -112,9 +110,9 @@ private extension RootView {
     }
 
     func updateFcmTokenIfNeeded() async {
-
         guard let fcmToken else { return }
         await accountStore.updateFcmTokenIfNeeded(fcmToken)
         self.fcmToken = nil
     }
+
 }

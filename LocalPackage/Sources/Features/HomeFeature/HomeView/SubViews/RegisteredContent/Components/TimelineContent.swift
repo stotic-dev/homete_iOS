@@ -10,6 +10,7 @@ import HometeUI
 import SwiftUI
 
 struct TimelineContent: View {
+
     var body: some View {
         VStack(spacing: .space24) {
             Text("タイムライン")
@@ -28,6 +29,7 @@ struct TimelineContent: View {
             }
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

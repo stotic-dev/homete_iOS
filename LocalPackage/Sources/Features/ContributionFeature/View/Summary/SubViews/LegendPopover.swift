@@ -26,6 +26,7 @@ struct LegendPopover: View {
         }
         .padding(.space16)
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

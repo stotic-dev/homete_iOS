@@ -22,7 +22,6 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
         offsetDays: Int,
         calendar: Calendar
     ) -> Self {
-
         let targetDates = Set(
             HouseworkIndexedDate.calcTargetPeriod(anchorDate: anchorDate, offsetDays: offsetDays, calendar: calendar)
         )
@@ -30,7 +29,6 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
             grouping: items.filter { targetDates.contains($0.indexedDate.value) }
         ) { $0.indexedDate }
             .compactMap {
-
                 guard let firstItem = $1.first else { return nil }
                 return .init(
                     items: $1,
@@ -41,15 +39,15 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
     }
 
     public func item(_ item: HouseworkItem) -> HouseworkItem? {
-
         guard let targetDayList = value.first(
             where: { $0.metaData.indexedDate == item.indexedDate }
         ),
-              let targetItem = targetDayList.items.first(where: { $0.id == item.id }) else { return nil }
+            let targetItem = targetDayList.items.first(where: { $0.id == item.id }) else { return nil }
         return targetItem
     }
 
     public mutating func removeAll() {
         value = []
     }
+
 }

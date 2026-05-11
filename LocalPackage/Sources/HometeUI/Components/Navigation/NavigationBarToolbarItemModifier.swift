@@ -1,5 +1,5 @@
 //
-//  TrailingToolbarItem.swift
+//  NavigationBarToolbarItemModifier.swift
 //  homete
 //
 
@@ -8,7 +8,9 @@ import SwiftUI
 struct NavigationBarToolbarItemModifier<ToolbarContent: View>: ViewModifier {
 
     enum Position {
+
         case leading, trailing
+
     }
 
     let position: Position
@@ -16,28 +18,30 @@ struct NavigationBarToolbarItemModifier<ToolbarContent: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         #if os(iOS)
-        content.toolbar {
-            ToolbarItem(placement: position == .leading ? .topBarLeading : .topBarTrailing) {
-                self.content()
+            content.toolbar {
+                ToolbarItem(placement: position == .leading ? .topBarLeading : .topBarTrailing) {
+                    self.content()
+                }
             }
-        }
         #else
-        content
+            content
         #endif
     }
+
 }
 
 public extension View {
 
-    func trailingToolbarItem<Content: View>(
-        @ViewBuilder content: @escaping () -> Content
+    func trailingToolbarItem(
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         modifier(NavigationBarToolbarItemModifier(position: .trailing, content: content))
     }
 
-    func leadingToolbarItem<Content: View>(
-        @ViewBuilder content: @escaping () -> Content
+    func leadingToolbarItem(
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         modifier(NavigationBarToolbarItemModifier(position: .leading, content: content))
     }
+
 }

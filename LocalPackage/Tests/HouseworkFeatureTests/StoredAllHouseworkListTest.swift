@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import Testing
 import HometeDomain
 @testable import HouseworkFeature
+import Testing
 
 struct StoredAllHouseworkListTest {
 
@@ -19,12 +19,11 @@ struct StoredAllHouseworkListTest {
 
     @Test("家事リストは家事の日付毎に保持される")
     func makeMultiDateList() {
-
-        let inputFirstHouseworkGroup  = makeAllCasesItems(
+        let inputFirstHouseworkGroup = makeAllCasesItems(
             at: Self.inputFirstDate,
             offset: 0
         )
-        let inputSecondHouseworkGroup  = makeAllCasesItems(
+        let inputSecondHouseworkGroup = makeAllCasesItems(
             at: Self.inputSecondDate,
             offset: inputFirstHouseworkGroup.count
         )
@@ -41,14 +40,13 @@ struct StoredAllHouseworkListTest {
         let sortedActual = StoredAllHouseworkList(value: sortedActualValue)
         let expected = StoredAllHouseworkList(value: [
             .makeForTest(items: inputFirstHouseworkGroup),
-            .makeForTest(items: inputSecondHouseworkGroup)
+            .makeForTest(items: inputSecondHouseworkGroup),
         ])
         #expect(sortedActual == expected)
     }
 
     @Test("リスナー範囲外の家事は保持しない")
     func makeMultiDateList_filtersOutOfRangeItems() {
-
         let inRangeItems = makeAllCasesItems(at: Self.inputFirstDate, offset: 0)
         let outOfRangeDate = Date.previewDate(year: 2024, month: 12, day: 1)
         let outOfRangeItems = makeAllCasesItems(at: outOfRangeDate, offset: inRangeItems.count)
@@ -72,8 +70,7 @@ struct StoredAllHouseworkListTest {
         ]
     )
     func items(expectedItem: HouseworkItem) {
-
-        let inputFirstHouseworkGroup  = makeAllCasesItems(
+        let inputFirstHouseworkGroup = makeAllCasesItems(
             at: Self.inputFirstDate,
             offset: 0
         )
@@ -88,16 +85,18 @@ struct StoredAllHouseworkListTest {
 
         #expect(actual == expectedItem)
     }
+
 }
 
 private extension StoredAllHouseworkListTest {
-    
+
     func makeAllCasesItems(at indexedDate: Date, offset: Int) -> [HouseworkItem] {
-        return [
+        [
             .makeForTest(id: offset + 1, indexedDate: indexedDate),
             .makeForTest(id: offset + 2, indexedDate: indexedDate, state: .pendingApproval),
             .makeForTest(id: offset + 3, indexedDate: indexedDate, state: .completed),
-            .makeForTest(id: offset + 4, indexedDate: indexedDate, executorId: "dummy", executedAt: .now)
+            .makeForTest(id: offset + 4, indexedDate: indexedDate, executorId: "dummy", executedAt: .now),
         ]
     }
+
 }

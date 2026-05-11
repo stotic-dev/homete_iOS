@@ -9,9 +9,10 @@ public extension View {
 
     func inlineNavigationBarTitleDisplayMode() -> some View {
         #if os(iOS)
-        self.navigationBarTitleDisplayMode(.inline)
+            navigationBarTitleDisplayMode(.inline)
         #else
-        self
+            self
         #endif
     }
+
 }

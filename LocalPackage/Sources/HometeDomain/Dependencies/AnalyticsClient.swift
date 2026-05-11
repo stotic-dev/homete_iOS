@@ -14,13 +14,14 @@ public struct AnalyticsClient: Sendable {
         setId: @Sendable @escaping (String) -> Void = { _ in },
         log: @Sendable @escaping (AnalyticsEvent) -> Void = { _ in }
     ) {
-
         self.setId = setId
         self.log = log
     }
+
 }
 
 public extension AnalyticsClient {
 
     static let previewValue = AnalyticsClient()
+
 }
