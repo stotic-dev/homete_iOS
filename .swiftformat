@@ -7,6 +7,23 @@
 # 除外パス（.swiftlint.yml と揃える）
 --exclude ProjectTools,DangerTools,vendor,LocalPackage/.build
 
+# 型宣言（struct/class/enum/actor/extension/protocol）の `{` 直後に空行を入れる
+# 注: 関数/closure/if などの `{` には SwiftFormat 仕様上適用不可
+--type-blank-lines insert
+
+# 1行の最大幅（SwiftLint の line_length 警告閾値 120 に合わせる）
+--max-width 120
+
+# 複数行にまたがる引数・パラメータ・コレクションを before-first スタイルで整形
+#   init(
+#       hoge: hoge,
+#       huga: huga
+#   )
+--wrap-arguments before-first
+--wrap-parameters before-first
+--wrap-collections before-first
+--closing-paren balanced
+
 # 既存コードへの影響が大きいルールを無効化
 --disable organizeDeclarations
 --disable markTypes
