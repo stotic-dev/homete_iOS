@@ -10,9 +10,9 @@ import HometeUI
 import SwiftUI
 
 struct HouseBoardListRow: View {
-    
+
     let houseworkItem: HouseworkItem
-    
+
     var body: some View {
         HStack(spacing: .space16) {
             PointLabel(point: houseworkItem.point)
@@ -22,18 +22,21 @@ struct HouseBoardListRow: View {
         }
         .tag(houseworkItem.id)
     }
+
 }
 
-#Preview(traits: .sizeThatFitsLayout) {
-    HouseBoardListRow(
-        houseworkItem: .init(
-            id: "1",
-            title: "洗濯",
-            point: 20,
-            metaData: .init(
-                indexedDate: .init(value: "2026/1/1"),
-                expiredAt: .distantPast
+#if DEBUG
+    #Preview(traits: .sizeThatFitsLayout) {
+        HouseBoardListRow(
+            houseworkItem: .init(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .distantPast
+                )
             )
         )
-    )
-}
+    }
+#endif

@@ -17,8 +17,8 @@ public enum LaunchState: Equatable {
     case notLoggedIn
 
     public var isLoggedIn: Bool {
-
         if case .loggedIn = self { return true }
         return false
     }
+
 }

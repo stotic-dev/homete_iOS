@@ -10,9 +10,9 @@ import HometeUI
 import SwiftUI
 
 struct NotRegisteredContent: View {
-    
+
     @Binding var isShowCohabitantRegistrationModal: Bool
-    
+
     var body: some View {
         VStack(spacing: .zero) {
             Spacer()
@@ -38,6 +38,7 @@ struct NotRegisteredContent: View {
         }
         .padding(.horizontal, .space16)
     }
+
 }
 
 #Preview {

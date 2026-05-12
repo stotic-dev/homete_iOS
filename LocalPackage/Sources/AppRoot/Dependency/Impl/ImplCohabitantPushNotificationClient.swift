@@ -14,7 +14,8 @@ extension CohabitantPushNotificationClient {
             .call([
                 "cohabitantId": id,
                 "title": content.title,
-                "body": content.message
+                "body": content.message,
             ])
     }
+
 }

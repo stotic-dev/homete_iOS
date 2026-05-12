@@ -12,16 +12,14 @@ public enum CohabitantRegistrationRole: Codable, Equatable, Sendable {
     case lead
 
     public var isLeader: Bool {
-
-        return self == .lead
+        self == .lead
     }
 
     public var accountId: String {
-
         guard case let .follower(accountId) = self else {
-
             preconditionFailure("Please pre checking role is follower.")
         }
         return accountId
     }
+
 }

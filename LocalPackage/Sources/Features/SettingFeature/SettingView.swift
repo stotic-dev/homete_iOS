@@ -85,15 +85,17 @@ public struct SettingView: View {
             router.resolve(.houseworkTemplate)
         }
     }
+
 }
 
 private extension SettingView {
-    @ViewBuilder
+
     func leadingNavigationBarContent() -> some View {
         NavigationBarButton(label: .close) {
             dismiss()
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -101,7 +103,6 @@ private extension SettingView {
 private extension SettingView {
 
     func tappedSettingMenuItem(_ item: SettingMenuItem) {
-
         switch item {
         case .taskTemplate:
             isShowHouseworkTemplate = true
@@ -113,31 +114,26 @@ private extension SettingView {
     }
 
     func tappedLogoutRowButton() {
-
         isPresentedLogoutConfirmAlert = true
     }
 
     func tappedLogoutAlertOkButton() {
-
         accountAuthStore.logOut()
     }
 
     func tappedAccountDeletionRowButton() {
-
         isPresentedAccountDeletionConfirmAlert = true
     }
 
     func tappedAccountDeletionAlertOkButton() async {
-
         do {
-
             try await accountAuthStore.deleteAccount()
         } catch {
-
             // TODO: エラーハンドリング
             print("occurred error: \(error)")
         }
     }
+
 }
 
 #Preview {

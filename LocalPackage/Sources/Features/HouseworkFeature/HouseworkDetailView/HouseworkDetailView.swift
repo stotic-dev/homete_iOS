@@ -10,17 +10,17 @@ import HometeUI
 import SwiftUI
 
 struct HouseworkDetailView: View {
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @LoadingState var loadingState
-    
+
     @State var item: HouseworkItem
-    
+
     @CommonError var commonErrorContent
-    
+
     var body: some View {
         mainContent()
             .padding(.horizontal, .space16)
@@ -40,6 +40,7 @@ struct HouseworkDetailView: View {
                 didChangeItems()
             }
     }
+
 }
 
 private extension HouseworkDetailView {
@@ -59,34 +60,35 @@ private extension HouseworkDetailView {
             )
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension HouseworkDetailView {
-    
+
     func tappedDeleteHouseworkItem() async {
-        
+        guard let cohabitantId = account.cohabitantId else { return }
+
         do {
-            
-            try await houseworkListStore.remove(item)
+            try await houseworkListStore.remove(
+                target: item,
+                cohabitantId: cohabitantId
+            )
             dismiss()
-        }
-        catch {
-            
+        } catch {
             commonErrorContent = .init(error: error)
         }
     }
-    
+
     func didChangeItems() {
-        
         guard let targetItem = houseworkListStore.items.item(item) else { return }
-        
+
         withAnimation {
-            
             item = targetItem
         }
     }
+
 }
 
 #Preview {
@@ -96,7 +98,7 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
             )
         )
     }
@@ -112,13 +114,13 @@ private extension HouseworkDetailView {
                 id: "",
                 title: "洗濯",
                 point: 10,
-                metaData: .init(indexedDate: .init(value: "0001/01/01"), expiredAt: .distantFuture)
+                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
             )
         )
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
     #if canImport(Prefire)
-    .prefireIgnored()
+        .prefireIgnored()
     #endif
 }

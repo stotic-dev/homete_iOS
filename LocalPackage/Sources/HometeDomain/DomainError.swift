@@ -10,13 +10,14 @@ public enum DomainError: Error, Equatable, Sendable {
     case failAuth
     case noNetwork
     case other
+
 }
 
 public extension DomainError {
 
     static func make(_ error: (any Error)?) -> Self? {
-
         guard let error else { return nil }
         return error as? DomainError ?? .other
     }
+
 }

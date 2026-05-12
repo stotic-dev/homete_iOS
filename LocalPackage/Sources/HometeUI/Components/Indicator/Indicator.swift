@@ -8,6 +8,7 @@
 import SwiftUI
 
 public struct Indicator: View {
+
     public init() {}
 
     public var body: some View {
@@ -17,4 +18,5 @@ public struct Indicator: View {
             .background(.primary3)
             .cornerRadius(.radius8)
     }
+
 }

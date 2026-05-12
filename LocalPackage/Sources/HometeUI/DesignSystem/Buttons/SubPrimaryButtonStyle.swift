@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct SubPrimaryButtonStyle: ButtonStyle {
-    
+
     @Environment(\.isEnabled) var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .commonStyle()
@@ -18,13 +18,15 @@ struct SubPrimaryButtonStyle: ButtonStyle {
             .cornerRadius(.radius16)
             .opacity(isEnabled ? 1 : 0.5)
     }
+
 }
 
 public extension View {
 
     func subPrimaryButtonStyle() -> some View {
-        self.buttonStyle(SubPrimaryButtonStyle())
+        buttonStyle(SubPrimaryButtonStyle())
     }
+
 }
 
 #Preview("SubPrimaryButtonStyle_Enabled", traits: .sizeThatFitsLayout) {

@@ -2,22 +2,46 @@
 //  AppTabView.swift
 //
 
+import ContributionFeature
 import HomeFeature
 import HometeDomain
-import HouseworkFeature
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 import UserNotifications
 
 struct AppTabView: View {
 
+    @Environment(\.appDependencies) var appDependencies
+    @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
-    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
-    @Environment(HouseworkListStore.self) var houseworkListStore
 
+    @State var cohabitantStore: CohabitantStore?
+    @State var contributionStore: ContributionStore?
+    @State var houseworkListStore: HouseworkListStore?
     @State var type: TabType = .dashboard
 
     var body: some View {
+        tabView()
+            .task {
+                await onAppear()
+            }
+            .onChange(of: loginContext.cohabitantId) {
+                onChangeCohabitantId()
+            }
+            .environment(
+                \.cohabitantMembers,
+                cohabitantStore?.members ?? .init(value: [], ownId: "")
+            )
+    }
+
+}
+
+// MARK: UI定義
+
+private extension AppTabView {
+
+    func tabView() -> some View {
         ZStack {
             if #available(iOS 18.0, *) {
                 TabView(selection: $type) {
@@ -26,27 +50,33 @@ struct AppTabView: View {
                         systemImage: "list.bullet.clipboard.fill",
                         value: .dashboard
                     ) {
-                        HomeView()
+                        HomeView.make(
+                            contributionStore: contributionStore,
+                            cohabitantStore: cohabitantStore
+                        )
                     }
                     Tab(
                         "家事",
                         systemImage: "person.2.arrow.trianglehead.counterclockwise",
                         value: .homework
                     ) {
-                        HouseworkBoardView.instantiate()
+                        HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
                     }
                 }
             } else {
                 TabView(selection: $type) {
-                    HomeView()
-                        .tag(TabType.dashboard)
-                        .tabItem {
-                            Label(
-                                "ダッシュボード",
-                                systemImage: "list.bullet.clipboard.fill"
-                            )
-                        }
-                    HouseworkBoardView.instantiate()
+                    HomeView.make(
+                        contributionStore: contributionStore,
+                        cohabitantStore: cohabitantStore
+                    )
+                    .tag(TabType.dashboard)
+                    .tabItem {
+                        Label(
+                            "ダッシュボード",
+                            systemImage: "list.bullet.clipboard.fill"
+                        )
+                    }
+                    HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
@@ -57,10 +87,8 @@ struct AppTabView: View {
                 }
             }
         }
-        .task {
-           await onAppear()
-        }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -68,22 +96,19 @@ struct AppTabView: View {
 private extension AppTabView {
 
     func onAppear() async {
-
+        setupStore()
         await requestNotificationPermission()
-
-        guard let cohabitantId else { return }
-        await houseworkListStore.loadHouseworkList(
-            currentTime: .now,
-            cohabitantId: cohabitantId,
-            calendar: calendar
-        )
     }
+
+    func onChangeCohabitantId() {
+        setupStore()
+    }
+
 }
 
 private extension AppTabView {
 
     func requestNotificationPermission() async {
-
         let center = UNUserNotificationCenter.current()
         do {
             let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
@@ -92,14 +117,35 @@ private extension AppTabView {
                 return
             }
             #if os(iOS)
-            await MainActor.run {
                 UIApplication.shared.registerForRemoteNotifications()
-            }
             #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")
         }
     }
+
+    func setupStore() {
+        guard loginContext.hasCohabitant else {
+            cohabitantStore = nil
+            contributionStore = nil
+            return
+        }
+        cohabitantStore = .init(
+            ownId: loginContext.account.id,
+            cohabitantClient: appDependencies.cohabitantClient,
+            accountInfoClient: appDependencies.accountInfoClient
+        )
+        contributionStore = .init(
+            houseworkManager: appDependencies.houseworkManager,
+            calendar: calendar
+        )
+        houseworkListStore = .init(
+            houseworkClient: appDependencies.houseworkClient,
+            cohabitantPushNotificationClient: appDependencies.cohabitantPushNotificationClient,
+            houseworkManager: appDependencies.houseworkManager
+        )
+    }
+
 }
 
 extension AppTabView {
@@ -108,16 +154,13 @@ extension AppTabView {
 
         case dashboard
         case homework
+
     }
+
 }
 
 #Preview {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
-        .environment(HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ))
-        .environment(CohabitantStore())
 }

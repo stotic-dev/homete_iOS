@@ -11,22 +11,23 @@ import HometeUI
 import SwiftUI
 
 struct RegisterHouseworkView: View {
-    
+
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
     @LoadingState var loadingState
-    
+
     @State var houseworkTitle = ""
     @State var completePoint = 10.0
     @State var isPresentingDuplicationAlert = false
-    
+
     @FocusState var isShowingKeyboard: Bool
     @CommonError var commonErrorContent
-    
+
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
-    
+
     let dailyHouseworkList: DailyHouseworkList
-    
+
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: .space16) {
@@ -72,12 +73,13 @@ struct RegisterHouseworkView: View {
             Text("\"\(houseworkTitle)\"は既に登録されています。")
         }
     }
+
 }
 
 // MARK: - コンポーネント
 
 private extension RegisterHouseworkView {
-    
+
     func inputTextField() -> some View {
         ZStack {
             TextField(
@@ -106,7 +108,7 @@ private extension RegisterHouseworkView {
             .opacity(houseworkTitle.isEmpty ? 0 : 1)
         }
     }
-    
+
     func inputPointSlider() -> some View {
         VStack(spacing: .space8) {
             Text("完了ポイント")
@@ -114,10 +116,10 @@ private extension RegisterHouseworkView {
                 .frame(maxWidth: .infinity, alignment: .leading)
             Text(Int(completePoint).formatted())
                 .font(with: .headLineL)
-            Slider(value: $completePoint, in: 1...100, step: Double.Stride(1))
+            Slider(value: $completePoint, in: 1 ... 100, step: Double.Stride(1))
         }
     }
-    
+
     func entryHistoryContent() -> some View {
         VStack(alignment: .leading, spacing: .space16) {
             Text("入力履歴")
@@ -134,86 +136,94 @@ private extension RegisterHouseworkView {
             .listStyle(.inset)
         }
     }
+
 }
 
 // MARK: - プレゼンテーションロジック
 
 private extension RegisterHouseworkView {
-    
+
     func tappedClearTextFiledButton() {
-        
         houseworkTitle = ""
     }
-    
+
     func tappedEntryHistoryRow(_ item: String) {
-        
         houseworkTitle = item
         houseworkEntryHistoryList.moveToFrontIfExists(item)
     }
-    
+
     func tappedRegisterButton() async {
-        
+        guard let cohabitantId else { return }
+
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
             point: Int(completePoint),
             metaData: dailyHouseworkList.metaData
         )
-        
+
         guard !dailyHouseworkList.isAlreadyRegistered(newItem) else {
-            
             isPresentingDuplicationAlert = true
             return
         }
-        
+
         houseworkEntryHistoryList.addNewHistory(houseworkTitle)
-        
+
         do {
-            
-            try await houseworkListStore.register(newItem)
+            try await houseworkListStore.register(
+                newItem: newItem,
+                cohabitantId: cohabitantId
+            )
             dismiss()
-        }
-        catch {
-            
+        } catch {
             print("Failed registering a new housework item: \(error)")
             commonErrorContent = .init(error: error)
         }
     }
+
 }
 
-#Preview("RegisterHouseworkView") {
-    RegisterHouseworkView(
-        dailyHouseworkList: .init(
-            items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+#if DEBUG
+    #Preview("RegisterHouseworkView") {
+        RegisterHouseworkView(
+            dailyHouseworkList: .init(
+                items: [],
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
+            )
         )
-    )
-    .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
-        let historyList = HouseworkHistoryList(items: [
-            "洗濯", "掃除"
-        ])
-        userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
+        .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
+            let historyList = HouseworkHistoryList(items: [
+                "洗濯", "掃除",
+            ])
+            userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
+        }
+        .environment(HouseworkListStore(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ))
+        .snapshotForPreview(delay: 1)
     }
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
-    .snapshotForPreview(delay: 1)
-}
 
-#Preview("RegisterHouseworkView_通信中") {
-    RegisterHouseworkView(
-        loadingState: .init(store: .init(isLoading: true)),
-        dailyHouseworkList: .init(
-            items: [],
-            metaData: .init(indexedDate: .init(value: "2026/1/1"), expiredAt: .now)
+    #Preview("RegisterHouseworkView_通信中") {
+        RegisterHouseworkView(
+            loadingState: .init(store: .init(isLoading: true)),
+            dailyHouseworkList: .init(
+                items: [],
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
+            )
         )
-    )
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
-    #if canImport(Prefire)
-    .prefireIgnored()
-    #endif
-}
+        .environment(HouseworkListStore(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ))
+        #if canImport(Prefire)
+        .prefireIgnored()
+        #endif
+    }
+#endif

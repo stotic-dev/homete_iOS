@@ -2,6 +2,11 @@
 
 homete の iOS アプリリポジトリ
 
+## ドキュメント
+
+- [コードスタイル統一: SwiftFormat & SwiftLint](doc/tech/code-style.md) — フォーマッタ/リンタの役割分担と使い方
+- [マルチモジュール構成](doc/multimodules_structure.md) — SPM モジュール構成
+
 ## 証明書・プロビジョニングプロファイルの管理
 
 証明書管理には [Fastlane Match](https://docs.fastlane.tools/actions/match/) を使用しています。

@@ -12,13 +12,13 @@ import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationPeersListView: View {
-    
+
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.connectedPeers) var connectedPeers
-    
+
     @State var isPresentingConfirmReadyRegistrationAlert = false
     @Binding var isConfirmedReadyRegistration: Bool
-    
+
     var body: some View {
         VStack(spacing: .space16) {
             Text("デバイスの名前を確認してください")
@@ -61,45 +61,43 @@ struct CohabitantRegistrationPeersListView: View {
             }
         }
     }
+
 }
 
 private extension CohabitantRegistrationPeersListView {
-    
+
     // MARK: プレゼンテーション処理
-    
+
     func convertToDisplayNameList(_ peers: Set<MCPeerID>) -> [String] {
-        
-        return peers.compactMap {
-            
+        peers.compactMap {
             $0.displayName.components(separatedBy: "_").first
         }
     }
-    
+
     func tappedConfirmAlertAcceptButton() {
-        
         isConfirmedReadyRegistration = true
-        
+
         // メンバーが確定したことの通知を送信する
         let data = CohabitantRegistrationMessage(
-            type: .fixedMember(isOK: true),
+            type: .fixedMember(isOK: true)
         )
         p2pSessionProxy?.send(
             data.encodedData(),
-            to: connectedPeers,
+            to: connectedPeers
         )
     }
-    
+
     func tappedConfirmAlertCancelButton() {
-        
         // メンバーが確定していないことの通知を送信する
         let data = CohabitantRegistrationMessage(
-            type: .fixedMember(isOK: false),
+            type: .fixedMember(isOK: false)
         )
         p2pSessionProxy?.send(
             data.encodedData(),
-            to: connectedPeers,
+            to: connectedPeers
         )
     }
+
 }
 
 #Preview("CohabitantRegistrationPeersListView_デバイス検知済みケース") {

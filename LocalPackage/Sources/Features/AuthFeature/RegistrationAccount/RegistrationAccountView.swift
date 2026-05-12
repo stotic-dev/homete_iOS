@@ -11,6 +11,7 @@ import HometeUI
 import SwiftUI
 
 public struct RegistrationAccountView: View {
+
     @Environment(AccountStore.self) var accountStore
     @Environment(\.launchStateProxy) var launchStateProxy
     @LoadingState var loadingState
@@ -60,9 +61,11 @@ public struct RegistrationAccountView: View {
         }
         .fullScreenLoadingIndicator(loadingState)
     }
+
 }
 
 private extension RegistrationAccountView {
+
     func userNameCautionMessage() -> some View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "exclamationmark.circle.fill")
@@ -73,6 +76,7 @@ private extension RegistrationAccountView {
         }
         .fixedSize(horizontal: false, vertical: true)
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -80,16 +84,14 @@ private extension RegistrationAccountView {
 private extension RegistrationAccountView {
 
     func tappedRegistrationButton() async {
-
         do {
-
             let account = try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
             launchStateProxy(.loggedIn(context: .init(account: account)))
         } catch {
-
             print("occurred error: \(error)")
         }
     }
+
 }
 
 #Preview("RegistrationAccountView_未入力") {

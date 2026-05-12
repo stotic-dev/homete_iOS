@@ -10,9 +10,11 @@ public struct CohabitantData: Codable, Sendable {
     public static let idField = "id"
 
     private enum CodingKeys: String, CodingKey {
+
         case id
         case members
         case appliedTemplates
+
     }
 
     /// 家族グループのID
@@ -37,4 +39,5 @@ public struct CohabitantData: Codable, Sendable {
             forKey: .appliedTemplates
         ) ?? [:]
     }
+
 }

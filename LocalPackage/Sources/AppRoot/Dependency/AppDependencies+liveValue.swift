@@ -6,9 +6,9 @@ import HometeDomain
 
 // MARK: Live用の定義
 
-extension AppDependencies {
+public extension AppDependencies {
 
-    public static let liveValue: Self = .init(
+    static let liveValue: Self = .init(
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
@@ -19,4 +19,5 @@ extension AppDependencies {
         signInWithAppleClient: .liveValue,
         houseworkTemplateClient: .liveValue
     )
+
 }

@@ -17,17 +17,15 @@ public final class AppNavigationPath<Route: Hashable> {
     }
 
     public func popToRoot() {
-
         path.removeAll()
     }
 
     public func pop() {
-
         _ = path.popLast()
     }
 
     public func push(_ route: Route) {
-
         path.append(route)
     }
+
 }

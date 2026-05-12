@@ -9,24 +9,22 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-public struct HouseworkBoardView: View {
+struct HouseworkBoardView: View {
+
     @Environment(\.calendar) var calendar
     @Environment(\.now) var anchorDate
     @Environment(\.routeResolver) var router
     @Environment(HouseworkListStore.self) var houseworkListStore
 
+    @Binding var houseworkBoardList: HouseworkBoardList
+    @Binding var dateList: HouseworkDateList
+
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
-    @State var dateList = HouseworkDateList()
     @State var selectedHouseworkState = HouseworkState.incomplete
-    @State var houseworkBoardList = HouseworkBoardList(items: [])
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
-    
-    public static func instantiate() -> Self {
-        HouseworkBoardView()
-    }
 
-    public var body: some View {
+    var body: some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
@@ -91,17 +89,12 @@ public struct HouseworkBoardView: View {
                 updateHouseworkBoardList()
             }
         }
-        .onAppear {
-            withAnimation {
-                updateHouseworkBoardList()
-            }
-        }
     }
+
 }
 
 private extension HouseworkBoardView {
-    
-    @ViewBuilder
+
     func addHouseworkButton(action: @escaping () -> Void) -> some View {
         Button {
             action()
@@ -111,63 +104,52 @@ private extension HouseworkBoardView {
         }
         .floatingButtonStyle()
     }
-    
+
     @ViewBuilder
     func navigationHandler(_ route: HouseworkBoardRoute) -> some View {
         switch route {
-        case .houseworkDetail(let item):
+        case let .houseworkDetail(item):
             HouseworkDetailView(item: item)
         }
     }
+
 }
 
 private extension HouseworkBoardView {
-    
+
     func updateHouseworkBoardList() {
-        
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
-            selectedDate: dateList.selectedDate,
-            calendar: calendar
+            selectedDate: dateList.selectedDate
         )
     }
+
 }
 
-#Preview {
-    let list = HouseworkBoardList(items: [
-        .init(
-            id: "1",
-            title: "洗濯",
-            point: 20,
-            metaData: .init(
-                indexedDate: .init(value: "0001/01/01"),
-                expiredAt: .distantPast
-            )
-        )
-    ])
-    HouseworkBoardView(
-        dateList: .init(
-            anchorDate: .distantPast,
-            selectedDate: .distantPast,
-            calendar: .japanese
-        ),
-        houseworkBoardList: list
-    )
-    .apply(theme: .init())
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue,
-        items: [
+#if DEBUG
+    #Preview {
+        let list = HouseworkBoardList(items: [
             .init(
-                items: list.items,
+                id: "1",
+                title: "洗濯",
+                point: 20,
                 metaData: .init(
-                    indexedDate: .init(value: "0001/01/01"),
-                    expiredAt: .now
+                    indexedDate: .init(value: .distantPast),
+                    expiredAt: .distantPast
                 )
-            )
-        ]
-    ))
-    .setupEnvironmentForPreview()
-    .environment(\.now, .distantPast)
-    .snapshotForPreview(delay: 2)
-}
+            ),
+        ])
+        HouseworkBoardView(
+            houseworkBoardList: .constant(list),
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            ))
+        )
+        .apply(theme: .init())
+        .setupEnvironmentForPreview()
+        .environment(\.now, .distantPast)
+        .environment(HouseworkListStore())
+    }
+#endif

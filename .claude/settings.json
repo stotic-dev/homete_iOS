@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(./private_keys/**)",
+      "Read(**/private_keys/**)",
+      "Read(**/*firebase-adminsdk*.json)",
+      "Read(**/service-account*.json)",
+      "Read(**/google-services.json)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Edit(./private_keys/**)",
+      "Edit(**/private_keys/**)",
+      "Edit(**/*firebase-adminsdk*.json)",
+      "Edit(**/service-account*.json)",
+      "Edit(**/google-services.json)"
+    ]
+  }
+}

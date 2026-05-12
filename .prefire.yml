@@ -26,5 +26,5 @@ test_configuration:
     - HomeFeature
     - HouseworkFeature
     - HouseworkTemplateFeature
-
+    - ContributionFeature
 

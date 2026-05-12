@@ -14,30 +14,29 @@ public enum SettingMenuItem: Equatable, CaseIterable {
     case license
 
     public var title: LocalizedStringKey {
-
         switch self {
         case .taskTemplate:
-            return "家事テンプレート"
+            "家事テンプレート"
 
         case .privacyPolicy:
-            return "プライバシーポリシー"
+            "プライバシーポリシー"
 
         case .license:
-            return "ライセンス"
+            "ライセンス"
         }
     }
 
     public var iconName: String {
-
         switch self {
         case .taskTemplate:
-            return "house"
+            "house"
 
         case .privacyPolicy:
-            return "hand.raised"
+            "hand.raised"
 
         case .license:
-            return "cube.box"
+            "cube.box"
         }
     }
+
 }

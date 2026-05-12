@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LoadingIndicator: View {
+
     var body: some View {
         ZStack {
             Color.loadingBg
@@ -17,9 +18,11 @@ struct LoadingIndicator: View {
         }
         .ignoresSafeArea()
     }
+
 }
 
 public extension View {
+
     func fullScreenLoadingIndicator(_ loadingState: LoadingStateStore) -> some View {
         ZStack {
             self
@@ -28,6 +31,7 @@ public extension View {
             }
         }
     }
+
 }
 
 #Preview {

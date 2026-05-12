@@ -5,8 +5,8 @@
 //  Created by 佐藤汰一 on 2025/09/04.
 //
 
-import HometeUI
 import HometeResources
+import HometeUI
 import SwiftUI
 
 struct PromoteHouseworkTemplateBanner: View {
@@ -33,6 +33,7 @@ struct PromoteHouseworkTemplateBanner: View {
             .primaryButtonStyle()
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

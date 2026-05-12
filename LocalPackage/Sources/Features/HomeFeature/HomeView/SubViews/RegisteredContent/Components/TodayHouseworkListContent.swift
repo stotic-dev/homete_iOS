@@ -10,7 +10,7 @@ import HometeUI
 import SwiftUI
 
 struct TodayHouseworkListContent: View {
-    
+
     var body: some View {
         // TODO: 家事が設定されている場合は、家事の内容を表示する
         VStack(spacing: .space24) {
@@ -41,6 +41,7 @@ struct TodayHouseworkListContent: View {
             }
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {

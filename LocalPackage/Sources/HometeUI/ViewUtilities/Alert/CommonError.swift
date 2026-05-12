@@ -16,7 +16,7 @@ public struct CommonError: DynamicProperty {
 
     public var wrappedValue: DomainErrorAlertContent {
         get {
-            return _content
+            _content
         }
         nonmutating set {
             _content = newValue
@@ -24,6 +24,7 @@ public struct CommonError: DynamicProperty {
     }
 
     public var projectedValue: Binding<DomainErrorAlertContent> {
-        return $_content
+        $_content
     }
+
 }

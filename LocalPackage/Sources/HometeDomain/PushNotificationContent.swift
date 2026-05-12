@@ -6,6 +6,7 @@
 //
 
 public struct PushNotificationContent: Equatable, Sendable {
+
     public let title: String
     public let message: String
 
@@ -13,35 +14,37 @@ public struct PushNotificationContent: Equatable, Sendable {
         self.title = title
         self.message = message
     }
+
 }
 
 public extension PushNotificationContent {
 
     static func addNewHouseworkItem(_ houseworkTitle: String) -> Self {
-        return .init(
+        .init(
             title: "新しい家事が登録されました",
             message: houseworkTitle
         )
     }
 
     static func requestReviewMessage(houseworkTitle: String) -> Self {
-        return .init(
+        .init(
             title: "確認が必要な家事があります",
             message: "問題なければ「\(houseworkTitle)」の完了に感謝を伝えましょう！"
         )
     }
 
     static func approvedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
-        return .init(
+        .init(
             title: "\(reviwerName)が「\(houseworkTitle)」を承認しました！",
             message: comment
         )
     }
 
-    static func rejectedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
-        return .init(
+    static func rejectedMessage(reviwerName _: String, houseworkTitle: String, comment: String) -> Self {
+        .init(
             title: "「\(houseworkTitle)」を再確認してください",
             message: comment
         )
     }
+
 }

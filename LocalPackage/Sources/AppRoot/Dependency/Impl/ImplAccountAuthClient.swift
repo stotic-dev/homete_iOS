@@ -2,56 +2,49 @@
 //  ImplAccountAuthClient.swift
 //
 
+import FirebaseAuth
 import HometeDomain
 import HometeInfrastructure
-import FirebaseAuth
 
 extension AccountAuthClient {
 
     static let liveValue: AccountAuthClient = .init(
         signIn: { tokenId, nonce in
-
             try await signInWithApple(tokenId: tokenId, nonce: nonce)
         },
         signOut: {
-
             try Auth.auth().signOut()
         },
         makeListener: {
-
-            return Self.makeListener()
+            Self.makeListener()
         },
         reauthenticateWithApple: { signInWithAppleResult in
-
             let credential = OAuthProvider.credential(
                 providerID: .apple,
                 idToken: signInWithAppleResult.tokenId,
                 rawNonce: signInWithAppleResult.nonce
             )
             guard let user = Auth.auth().currentUser else {
-
                 throw DomainError.failAuth
             }
             try await user.reauthenticate(with: credential)
         },
         revokeAppleToken: { authorizationCode in
-
             try await Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
         },
         deleteAccount: {
-
             guard let user = Auth.auth().currentUser else {
                 throw DomainError.failAuth
             }
             try await user.delete()
         }
     )
+
 }
 
 private extension AccountAuthClient {
 
     static func signInWithApple(tokenId: String, nonce: String) async throws -> AccountAuthResult {
-
         let credential = OAuthProvider.credential(
             providerID: .apple,
             idToken: tokenId,
@@ -64,7 +57,6 @@ private extension AccountAuthClient {
     static func makeListener() -> AccountListenerStream {
         let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
         let token = Auth.auth().addStateDidChangeListener { _, user in
-
             guard let user else {
                 continuation.yield(nil)
                 return
@@ -74,4 +66,5 @@ private extension AccountAuthClient {
         }
         return .init(values: stream, listenerToken: token, continuation: continuation)
     }
+
 }

@@ -6,14 +6,14 @@
 //
 
 import Foundation
-import Testing
-
 @testable import HometeDomain
+import Testing
 
 enum HouseworkItemTest {
 
     struct CanReviewCase {}
     struct UpdateStateCase {}
+
 }
 
 extension HouseworkItemTest.CanReviewCase {
@@ -23,7 +23,6 @@ extension HouseworkItemTest.CanReviewCase {
         arguments: [HouseworkState.incomplete, .pendingApproval]
     )
     func canReview_notOwnUserAndNotCompleted_returnsTrue(state: HouseworkState) {
-
         // Arrange
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -43,7 +42,6 @@ extension HouseworkItemTest.CanReviewCase {
         arguments: ["otherUserId", nil]
     )
     func canReview_completedState_returnsFalse(executorId: String?) {
-
         // Arrange
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -63,7 +61,6 @@ extension HouseworkItemTest.CanReviewCase {
         arguments: HouseworkState.allCases
     )
     func canReview_ownUser_returnsFalse(state: HouseworkState) {
-
         // Arrange
         let ownUserId = "ownUserId"
         let item = HouseworkItem.makeForTest(
@@ -78,6 +75,7 @@ extension HouseworkItemTest.CanReviewCase {
         // Assert
         #expect(result == false)
     }
+
 }
 
 // MARK: - UpdateStateCase
@@ -86,7 +84,6 @@ extension HouseworkItemTest.UpdateStateCase {
 
     @Test("承認待ち状態に更新すると、state・executorId・executedAtが更新される")
     func updatePendingApproval_updatesStateAndExecutorInfo() {
-
         // Arrange
         let indexedDate = Date()
         let expiredAt = Date().addingTimeInterval(3600)
@@ -117,10 +114,9 @@ extension HouseworkItemTest.UpdateStateCase {
         )
         #expect(result == expected)
     }
-    
+
     @Test("承認すると、state・reviewerId・approvedAt・reviewerCommentが更新される")
     func updateApproved_updatesStateAndReviewerInfo() {
-
         // Arrange
         let indexedDate = Date()
         let expiredAt = Date().addingTimeInterval(3600)
@@ -159,10 +155,9 @@ extension HouseworkItemTest.UpdateStateCase {
         )
         #expect(result == expected)
     }
-    
+
     @Test("未完了状態に戻すと、stateがincompleteになり実行者・承認者情報がクリアされる")
     func updateIncomplete_clearsExecutorAndReviewerInfo() {
-
         // Arrange
         let indexedDate = Date()
         let expiredAt = Date().addingTimeInterval(3600)
@@ -194,4 +189,5 @@ extension HouseworkItemTest.UpdateStateCase {
         )
         #expect(result == expected)
     }
+
 }

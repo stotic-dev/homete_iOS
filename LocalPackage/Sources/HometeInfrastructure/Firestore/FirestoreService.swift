@@ -11,42 +11,35 @@ public final actor FirestoreService {
     private var listeners: [String: any FirestoreListenerStorerable] = [:]
 
     public func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
-
-        return try await predicate(firestore)
+        try await predicate(firestore)
             .getDocuments()
             .documents
             .map { try $0.data(as: T.self) }
     }
 
     public func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
-
-        return try await predicate(firestore).getDocument(as: T.self)
+        try await predicate(firestore).getDocument(as: T.self)
     }
 
-    public func insertOrUpdate<T: Encodable>(data: T, predicate: (Firestore) -> DocumentReference) throws {
-
+    public func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) throws {
         try predicate(firestore).setData(from: data, merge: false)
     }
 
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {
-
         try await predicate(firestore).delete()
     }
 
-    public func addSnapshotListener<Output>(
+    public func addSnapshotListener<Output: Decodable>(
         id: String,
         predicate: (Firestore) -> Query
-    ) -> AsyncStream<[Output]> where Output: Decodable {
-
+    ) -> AsyncStream<[Output]> {
         let (stream, continuation) = AsyncStream.makeStream(
             of: [Output].self,
             bufferingPolicy: .bufferingNewest(10)
         )
         let listener = predicate(firestore)
             .addSnapshotListener { snapshots, error in
-
                 if let error {
-
                     print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
                     return
                 }
@@ -61,14 +54,12 @@ public final actor FirestoreService {
     }
 
     public func removeSnapshotListener(id: String) {
-
         let listener = listeners[id]
         listener?.remove()
     }
 
     /// クエリに一致するドキュメントをバッチ削除する
     public func deleteDocuments(predicate: (Firestore) -> Query) async throws {
-
         let documents = try await predicate(firestore).getDocuments().documents
         guard !documents.isEmpty else { return }
         let batch = firestore.batch()
@@ -80,22 +71,22 @@ public final actor FirestoreService {
 
     /// Firestoreトランザクションを実行する（楽観的ロックに使用）
     public func runTransaction(_ updateBlock: @escaping (Transaction) throws -> Void) async throws {
-
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            firestore.runTransaction({ transaction, errorPointer -> Any? in
+            firestore.runTransaction { transaction, errorPointer -> Any? in
                 do {
                     try updateBlock(transaction)
                 } catch {
                     errorPointer?.pointee = error as NSError
                 }
                 return nil
-            }, completion: { _, error in
+            } completion: { _, error in
                 if let error {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume()
                 }
-            })
+            }
         }
     }
+
 }

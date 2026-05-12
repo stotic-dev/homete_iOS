@@ -3,22 +3,19 @@
 //
 
 import FirebaseFirestore
-import HometeInfrastructure
 import HometeDomain
+import HometeInfrastructure
 
 extension AccountInfoClient {
 
     static let liveValue: AccountInfoClient = .init { account in
-
         try await FirestoreService.shared.insertOrUpdate(data: account) {
-
-            return $0.accountRef(id: account.id)
+            $0.accountRef(id: account.id)
         }
     } fetch: { id in
-
-        return try await FirestoreService.shared.fetch {
-
-            return $0.accountRef(id: id)
+        try await FirestoreService.shared.fetch {
+            $0.accountRef(id: id)
         }
     }
+
 }

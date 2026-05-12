@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct FloatingButtonStyle: ButtonStyle {
-    
+
     @Environment(\.isEnabled) var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.space16)
@@ -24,18 +24,19 @@ struct FloatingButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed || !isEnabled ? 0.5 : 1)
             .addGlassEffect(!isEnabled)
     }
+
 }
 
 private extension View {
-    
+
     func addGlassEffect(_ isDisable: Bool) -> some View {
         if #available(iOS 26.0, macOS 26.0, *) {
-            return self.glassEffect(.regular.interactive(!isDisable))
-        }
-        else {
+            return glassEffect(.regular.interactive(!isDisable))
+        } else {
             return self
         }
     }
+
 }
 
 public extension View {
@@ -43,8 +44,9 @@ public extension View {
     /// 宙に浮いたようなボタンのスタイル
     /// - Description: iOS26ではLiquid Glassの効果があるボタンになる
     func floatingButtonStyle() -> some View {
-        self.buttonStyle(FloatingButtonStyle())
+        buttonStyle(FloatingButtonStyle())
     }
+
 }
 
 #Preview("FloatingButtonStyle_テキストボタン", traits: .sizeThatFitsLayout) {

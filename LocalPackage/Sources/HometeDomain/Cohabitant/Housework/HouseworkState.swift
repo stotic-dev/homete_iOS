@@ -11,5 +11,8 @@ public enum HouseworkState: CaseIterable, Identifiable, Codable, Sendable {
     case pendingApproval
     case completed
 
-    public var id: Self { self }
+    public var id: Self {
+        self
+    }
+
 }
