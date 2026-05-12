@@ -76,6 +76,13 @@ let package = Package(
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
         ),
+        .testTarget(
+            name: "HouseworkTemplateFeatureTests",
+            dependencies: ["HouseworkTemplateFeature"],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
         .target(
             name: "HometeInfrastructure",
             dependencies: [
