@@ -67,4 +67,5 @@ extension HouseworkTemplateClient {
             await FirestoreService.shared.removeSnapshotListener(id: id)
         }
     )
+
 }

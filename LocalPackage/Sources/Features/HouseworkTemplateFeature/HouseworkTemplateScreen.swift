@@ -28,6 +28,7 @@ public struct HouseworkTemplateScreen: View {
                 }
         }
     }
+
 }
 
 #Preview {

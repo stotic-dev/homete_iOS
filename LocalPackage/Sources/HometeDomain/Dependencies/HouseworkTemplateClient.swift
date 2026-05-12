@@ -104,9 +104,11 @@ public struct HouseworkTemplateClient: Sendable {
         self.addEditorsSnapshotListener = addEditorsSnapshotListener
         self.removeListener = removeListener
     }
+
 }
 
 public extension HouseworkTemplateClient {
 
     static let previewValue: HouseworkTemplateClient = .init()
+
 }
