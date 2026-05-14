@@ -2,6 +2,8 @@
 
 関連Issue: [#67 家事の週間テンプレート機能の追加](https://github.com/stotic-dev/homete_iOS/issues/67)
 
+> テンプレート適用ロジックをバックエンドに集約する判断の背景は [ADR-0002](../adr/0002-housework-template-apply-on-backend.md) を参照。
+
 ## 概要
 
 毎週繰り返される定型的な家事（例: 月曜日はゴミ出し、水曜日は掃除）をテンプレートとして登録し、
@@ -246,7 +248,7 @@ AppRoot
 | `AppRoute.swift` | `HometeDomain` | `.houseworkTemplate` case を追加 |
 | `RouteResolverInjection` | `AppRoot` | `.houseworkTemplate` → `HouseworkTemplateView` の解決を追加 |
 | `Package.swift` | `LocalPackage` | `HouseworkTemplateFeature` ターゲットを追加、`AppRoot` の依存に追加 |
-| Firebase Functions | `firebase/functions/src/` | `applyWeeklyTemplate` Scheduled Function を追加 |
+| Firebase Functions | `firebase/functions/src/` | テンプレート適用の共通ロジックを実装し、`applyHouseworkTemplate`（Callable / 手動適用）と `applyWeeklyTemplate`（Scheduled / 自動適用）の両方から呼び出す |
 
 ### 画面データの更新タイミング
 
@@ -292,20 +294,24 @@ AppRoot
 
 #### 適用の種類
 
-テンプレートの適用には手動と自動の2種類がある。
+テンプレートの適用には手動と自動の2種類があり、**どちらも Firebase Cloud Functions 側に実装した共通の適用ロジックを呼び出す**。
 
-| 種類 | トリガー | 実行場所 |
+| 種類 | トリガー | 呼び出し方 |
 |---|---|---|
-| 手動適用 | ユーザー操作 | クライアント（iOS） |
-| 自動適用 | 毎週月曜0時（JST） | バックエンド（Cloud Functions Scheduled） |
+| 手動適用 | ユーザー操作 | クライアント（iOS）から Callable Function を呼び出す |
+| 自動適用 | 毎週月曜0時（JST） | Scheduled Function が直接共通ロジックを呼び出す |
 
-クライアント側で自動適用を行うと複数ユーザーから同時に適用されるリスクがあるため、自動適用はバックエンドのバッチ処理で行う。
+**バックエンドに寄せる理由:**
+
+- 手動適用と自動適用で同じ「対象期間の `incomplete` 削除 + テンプレートからの再生成 + `appliedTemplates` 更新」というロジックを使うため、クライアントとバックエンドで実装を二重持ちすると整合性のリスクが高い
+- 共通ロジックを Cloud Functions に集約することで、片方の修正がもう片方に確実に反映される
+- クライアント側で適用処理を行うと、複数ユーザーから同時に適用が走るリスクや、書き込み権限の細かい制御がセキュリティルール側に寄ってしまう問題もある
 
 #### 対象日付の仕様（手動適用）
 
 - 適用範囲は現在日付〜現在日付+6日（7日間）に固定する
 - ユーザーによる日付選択は行わない
-- 対象7日間の中に `incomplete` の家事が存在する日が1日でもあれば、上書きになるためユーザーに確認を求める
+- 対象7日間の中に `incomplete` の家事が存在する日が1日でもあれば、上書きになるためユーザーに確認を求める（上書き確認はクライアント側の UI 責務）
 
 #### 上書き方針
 
@@ -319,14 +325,36 @@ AppRoot
 
 テンプレートから新規追加される家事は常に `incomplete` 状態で作成されるため、完了・承認済みの家事には影響しない。
 
+#### 共通の適用ロジック（Cloud Functions 内）
+
+手動適用・自動適用の双方から呼び出される、純粋な適用処理。引数で渡された `cohabitantId` / `templateId` / 対象期間（開始日と日数）に対して以下を行う。
+
+1. 対象期間の `Days` サブコレクションを取得
+2. 対象期間の `Houseworks` のうち `incomplete` 状態のアイテムを全件取得
+3. Firestore バッチで以下を1リクエストにまとめて実行
+   - `incomplete` 家事の削除
+   - テンプレートのアイテムをもとに生成した `incomplete` 状態の `HouseworkItem` の書き込み（`DailyHouseworkMetaData` で `indexedDate` と `expiredAt` を設定）
+   - `Cohabitant.appliedTemplates[templateId]` の `lastAppliedWeek` と `lastAppliedVersion` を更新
+
+> 注: `Cohabitant.appliedTemplates` の更新は別 Issue（[#139](https://github.com/stotic-dev/homete_iOS/issues/139)）で追加する。本対応では共通ロジック化までを行い、`appliedTemplates` 更新の実装は #139 で実施する。
+
 #### 手動適用ステップ
 
+```typescript
+export const applyHouseworkTemplate = onCall(
+  { region: "asia-northeast1" },
+  async (request) => { /* 共通ロジックを呼び出す */ }
+);
+```
+
 1. ユーザーが「適用する」を実行（適用範囲は現在日付〜+6日の7日間に自動設定）
-2. 対象7日間の `Days` サブコレクション該当ドキュメントを取得（最大7読み取り）
-3. 対象7日間の中に `incomplete` の家事が存在する日が1日でもあれば上書き確認ダイアログを表示
-4. 確認後、対象7日間の `incomplete` 状態の家事を全件削除（`HouseworkClient.removeItem` を使用）
-5. テンプレートのアイテムをもとに `incomplete` 状態の `HouseworkItem` を生成し、`DailyHouseworkMetaData` で `indexedDate` と `expiredAt` を設定
-6. `HouseworkClient.insertOrUpdateItem` で `Houseworks` へ書き込み
+2. クライアントは対象7日間の `Days` と `Houseworks` をワンショットで取得し、`incomplete` の家事が存在する日が1日でもあれば上書き確認ダイアログを表示
+3. 確認後、クライアントは `applyHouseworkTemplate` Callable Function を呼び出す（引数: `cohabitantId`, `templateId`, `startDate`, `daysCount=7`）
+4. Function 側で認証・`cohabitantId` のメンバーシップを検証
+5. 共通の適用ロジックを実行
+6. クライアントは結果を受けて UI を更新（成功・失敗をトースト等で通知）
+
+> クライアント側の `HouseworkListStore.applyTemplate` は本対応で削除し、`HouseworkTemplateClient`（または専用 Client）から Callable Function を呼ぶ形に置き換える。
 
 #### 自動適用ステップ（Cloud Functions Scheduled）
 
@@ -335,7 +363,7 @@ AppRoot
 ```typescript
 export const applyWeeklyTemplate = onSchedule(
   { schedule: "every monday 00:00", timeZone: "Asia/Tokyo" },
-  async (event) => { ... }
+  async (event) => { /* 共通ロジックを呼び出す */ }
 );
 ```
 
@@ -343,5 +371,4 @@ export const applyWeeklyTemplate = onSchedule(
 2. 各 Cohabitant について `appliedTemplates` を確認し、スキップ判定を行う
    - `lastAppliedWeek === 今週` かつ `lastAppliedVersion === 現在の version` → スキップ
    - `Days` にアイテムが1件もない → スキップ
-3. 適用対象の場合、翌週の `incomplete` 家事を全件削除してテンプレートのアイテムを書き込む（Firestore バッチ書き込みで削除・追加を1リクエストにまとめる）
-4. `Cohabitant.appliedTemplates[templateId]` の `lastAppliedWeek` と `lastAppliedVersion` を更新
+3. 適用対象の場合、共通の適用ロジックを呼び出す（対象期間は翌週の月曜〜日曜の7日間）
