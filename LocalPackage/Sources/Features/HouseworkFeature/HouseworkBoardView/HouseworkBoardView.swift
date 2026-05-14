@@ -14,6 +14,7 @@ struct HouseworkBoardView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var anchorDate
     @Environment(\.routeResolver) var router
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @Binding var houseworkBoardList: HouseworkBoardList
@@ -23,6 +24,8 @@ struct HouseworkBoardView: View {
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
+
+    let onUpdateHouseboardList: () -> Void
 
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
@@ -81,12 +84,12 @@ struct HouseworkBoardView: View {
         }
         .onChange(of: houseworkListStore.items) {
             withAnimation {
-                updateHouseworkBoardList()
+                onUpdateHouseboardList()
             }
         }
         .onChange(of: dateList.selectedDate) {
             withAnimation {
-                updateHouseworkBoardList()
+                onUpdateHouseboardList()
             }
         }
     }
@@ -115,17 +118,6 @@ private extension HouseworkBoardView {
 
 }
 
-private extension HouseworkBoardView {
-
-    func updateHouseworkBoardList() {
-        houseworkBoardList = .init(
-            dailyList: houseworkListStore.items.value,
-            selectedDate: dateList.selectedDate
-        )
-    }
-
-}
-
 #if DEBUG
     #Preview {
         let list = HouseworkBoardList(items: [
@@ -145,7 +137,8 @@ private extension HouseworkBoardView {
                 anchorDate: .distantPast,
                 selectedDate: .distantPast,
                 calendar: .japanese
-            ))
+            )),
+            onUpdateHouseboardList: {}
         )
         .apply(theme: .init())
         .setupEnvironmentForPreview()

@@ -22,12 +22,28 @@ extension HouseworkBoardList {
 
     init(
         dailyList: [DailyHouseworkList],
-        selectedDate: Date
+        selectedDateTemplate: HouseworkTemplateDay?,
+        selectedDate: Date,
+        calendar: Calendar,
+        uuidGenerator: () -> UUID
     ) {
-        items = dailyList
+        let items = dailyList
             .first {
                 $0.metaData.indexedDate == .init(value: selectedDate)
             }?.items ?? []
+
+        // テンプレートが存在するときは、条件に合ったテンプレートの家事を未完了で追加する
+        guard let selectedDateTemplate else {
+            self.items = items
+            return
+        }
+
+        self.items = selectedDateTemplate.applyTemplate(
+            registeredItems: items,
+            selectedDate: selectedDate,
+            calendar: calendar,
+            uuidGenerator: uuidGenerator
+        )
     }
 
 }
