@@ -6,7 +6,6 @@
 //
 
 @testable import HometeDomain
-@testable import HouseworkTemplateFeature
 import Testing
 
 @MainActor

@@ -21,16 +21,19 @@ public struct HomeView: View {
     @State var isShowSetting = false
     let contributionStore: ContributionStore?
     let cohabitantStore: CohabitantStore?
+    let houseworkTemplateListStore: HouseworkTemplateListStore?
 
     public var body: some View {
         NavigationStack {
             ZStack {
                 if loginContext.hasCohabitant,
                    let contributionStore,
-                   let cohabitantStore {
+                   let cohabitantStore,
+                   let houseworkTemplateListStore {
                     RegisteredContent()
                         .environment(contributionStore)
                         .environment(cohabitantStore)
+                        .environment(houseworkTemplateListStore)
                         .task {
                             await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
                         }
@@ -63,11 +66,13 @@ public extension HomeView {
 
     static func make(
         contributionStore: ContributionStore?,
-        cohabitantStore: CohabitantStore?
+        cohabitantStore: CohabitantStore?,
+        houseworkTemplateListStore: HouseworkTemplateListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
-            cohabitantStore: cohabitantStore
+            cohabitantStore: cohabitantStore,
+            houseworkTemplateListStore: houseworkTemplateListStore
         )
     }
 

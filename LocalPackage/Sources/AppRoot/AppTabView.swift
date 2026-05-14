@@ -7,6 +7,7 @@ import HomeFeature
 import HometeDomain
 import HometeUI
 import HouseworkFeature
+import HouseworkTemplateFeature
 import SwiftUI
 import UserNotifications
 
@@ -19,6 +20,7 @@ struct AppTabView: View {
     @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
     @State var houseworkListStore: HouseworkListStore?
+    @State var houseworkTemplateListStore: HouseworkTemplateListStore?
     @State var type: TabType = .dashboard
 
     var body: some View {
@@ -32,6 +34,10 @@ struct AppTabView: View {
             .environment(
                 \.cohabitantMembers,
                 cohabitantStore?.members ?? .init(value: [], ownId: "")
+            )
+            .environment(
+                \.houseworkTemplateContext,
+                houseworkTemplateListStore?.context ?? .init(houseworkTemplate: [])
             )
     }
 
@@ -50,33 +56,27 @@ private extension AppTabView {
                         systemImage: "list.bullet.clipboard.fill",
                         value: .dashboard
                     ) {
-                        HomeView.make(
-                            contributionStore: contributionStore,
-                            cohabitantStore: cohabitantStore
-                        )
+                        homeScreen
                     }
                     Tab(
                         "家事",
                         systemImage: "person.2.arrow.trianglehead.counterclockwise",
                         value: .homework
                     ) {
-                        HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
+                        houseworkBoardScreen
                     }
                 }
             } else {
                 TabView(selection: $type) {
-                    HomeView.make(
-                        contributionStore: contributionStore,
-                        cohabitantStore: cohabitantStore
-                    )
-                    .tag(TabType.dashboard)
-                    .tabItem {
-                        Label(
-                            "ダッシュボード",
-                            systemImage: "list.bullet.clipboard.fill"
-                        )
-                    }
-                    HouseworkBoardScreen.make(houseworkListStore: houseworkListStore)
+                    homeScreen
+                        .tag(TabType.dashboard)
+                        .tabItem {
+                            Label(
+                                "ダッシュボード",
+                                systemImage: "list.bullet.clipboard.fill"
+                            )
+                        }
+                    houseworkBoardScreen
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
@@ -87,6 +87,21 @@ private extension AppTabView {
                 }
             }
         }
+    }
+
+    var homeScreen: some View {
+        HomeView.make(
+            contributionStore: contributionStore,
+            cohabitantStore: cohabitantStore,
+            houseworkTemplateListStore: houseworkTemplateListStore
+        )
+    }
+
+    var houseworkBoardScreen: some View {
+        HouseworkBoardScreen.make(
+            houseworkListStore: houseworkListStore,
+            houseworkTemplateListStore: houseworkTemplateListStore
+        )
     }
 
 }
@@ -143,6 +158,9 @@ private extension AppTabView {
             houseworkClient: appDependencies.houseworkClient,
             cohabitantPushNotificationClient: appDependencies.cohabitantPushNotificationClient,
             houseworkManager: appDependencies.houseworkManager
+        )
+        houseworkTemplateListStore = .init(
+            houseworkTemplateClient: appDependencies.houseworkTemplateClient
         )
     }
 

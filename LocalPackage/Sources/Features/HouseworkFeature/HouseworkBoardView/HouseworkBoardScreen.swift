@@ -12,12 +12,20 @@ public struct HouseworkBoardScreen: View {
 
     @Environment(\.calendar) var calendar
 
-    @State var houseworkListStore: HouseworkListStore?
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
 
-    public static func make(houseworkListStore: HouseworkListStore?) -> some View {
-        HouseworkBoardScreen(houseworkListStore: houseworkListStore)
+    let houseworkListStore: HouseworkListStore?
+    let houseworkTemplateListStore: HouseworkTemplateListStore?
+
+    public static func make(
+        houseworkListStore: HouseworkListStore?,
+        houseworkTemplateListStore: HouseworkTemplateListStore?
+    ) -> some View {
+        HouseworkBoardScreen(
+            houseworkListStore: houseworkListStore,
+            houseworkTemplateListStore: houseworkTemplateListStore
+        )
     }
 
     public var body: some View {
@@ -27,6 +35,7 @@ public struct HouseworkBoardScreen: View {
                 dateList: $dateList
             )
             .environment(houseworkListStore)
+            .environment(houseworkTemplateListStore)
             .onAppear {
                 withAnimation {
                     onAppeare(with: houseworkListStore)
