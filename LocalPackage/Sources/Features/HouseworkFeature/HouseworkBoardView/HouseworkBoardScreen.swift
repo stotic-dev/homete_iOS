@@ -10,6 +10,8 @@ import SwiftUI
 
 public struct HouseworkBoardScreen: View {
 
+    @Environment(\.calendar) var calendar
+
     @State var houseworkListStore: HouseworkListStore?
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -48,7 +50,10 @@ private extension HouseworkBoardScreen {
     func onAppeare(with store: HouseworkListStore) {
         houseworkBoardList = .init(
             dailyList: store.items.value,
-            selectedDate: dateList.selectedDate
+            selectedDateTemplate: .init(dayOfWeek: 1, items: []), // TODO: Storeから現在の日付のテンプレートを取得
+            selectedDate: dateList.selectedDate,
+            calendar: calendar,
+            uuidGenerator: { UUID() }
         )
     }
 

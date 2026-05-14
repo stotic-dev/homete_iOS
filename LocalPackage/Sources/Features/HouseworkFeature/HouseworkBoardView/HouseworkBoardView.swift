@@ -120,7 +120,10 @@ private extension HouseworkBoardView {
     func updateHouseworkBoardList() {
         houseworkBoardList = .init(
             dailyList: houseworkListStore.items.value,
-            selectedDate: dateList.selectedDate
+            selectedDateTemplate: .init(dayOfWeek: 1, items: []), // TODO: Storeから現在の日付のテンプレートを取得
+            selectedDate: dateList.selectedDate,
+            calendar: calendar,
+            uuidGenerator: { UUID() }
         )
     }
 

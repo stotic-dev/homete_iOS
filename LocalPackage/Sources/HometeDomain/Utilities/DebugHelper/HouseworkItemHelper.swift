@@ -41,6 +41,36 @@ import Foundation
             )
         }
 
+        static func makeForTest(
+            id: String,
+            indexedDate: Date = .now,
+            title: String = "title",
+            point: Int = 100,
+            state: HouseworkState = .incomplete,
+            executorId: String? = nil,
+            executedAt: Date? = nil,
+            reviewerId: String? = nil,
+            approvedAt: Date? = nil,
+            reviewerComment: String? = nil,
+            expiredAt: Date = .now,
+            templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        ) -> Self {
+            .init(
+                id: id,
+                indexedDate: .init(value: indexedDate),
+                title: title,
+                point: point,
+                state: state,
+                executorId: executorId,
+                executedAt: executedAt,
+                reviewerId: reviewerId,
+                approvedAt: approvedAt,
+                reviewerComment: reviewerComment,
+                expiredAt: expiredAt,
+                templateHouseworkItemId: templateHouseworkItemId
+            )
+        }
+
         func updateProperties(
             indexedDate: HouseworkIndexedDate? = nil,
             title: String? = nil,

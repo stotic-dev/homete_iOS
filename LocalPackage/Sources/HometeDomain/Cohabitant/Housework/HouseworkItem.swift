@@ -162,7 +162,8 @@ public extension HouseworkItem {
         executedAt: Date? = nil,
         reviewerId: String? = nil,
         approvedAt: Date? = nil,
-        reviewerComment: String? = nil
+        reviewerComment: String? = nil,
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) {
         self.init(
             id: id,
@@ -176,7 +177,7 @@ public extension HouseworkItem {
             approvedAt: approvedAt,
             reviewerComment: reviewerComment,
             expiredAt: metaData.expiredAt,
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
