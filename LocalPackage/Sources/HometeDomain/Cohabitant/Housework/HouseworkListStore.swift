@@ -19,7 +19,6 @@ public final class HouseworkListStore {
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     private let houseworkManager: HouseworkManager
-    private let idGenerator: @MainActor @Sendable () -> String
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
@@ -28,13 +27,12 @@ public final class HouseworkListStore {
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         items: [DailyHouseworkList] = [],
-        idGenerator: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
+        idGenerator _: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
         self.items = .init(value: items)
-        self.idGenerator = idGenerator
 
         Task {
             await startObserving()
@@ -99,17 +97,6 @@ public final class HouseworkListStore {
 
     public func remove(target: HouseworkItem, cohabitantId: String) async throws {
         try await houseworkClient.removeItem(target, cohabitantId)
-    }
-
-    /// テンプレートを適用する。`plan.targetIncompleteItems` を削除し、テンプレートから生成した家事を書き込む
-    public func applyTemplate(plan: ApplyPlan) async throws {
-        for item in plan.targetIncompleteItems {
-            try await houseworkClient.removeItem(item, plan.cohabitantId)
-        }
-
-        for newItem in plan.makeNewItems(idGenerator: idGenerator) {
-            try await houseworkClient.insertOrUpdateItem(newItem, plan.cohabitantId)
-        }
     }
 
 }
