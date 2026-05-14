@@ -11,6 +11,7 @@ import SwiftUI
 public struct HouseworkBoardScreen: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -33,7 +34,9 @@ public struct HouseworkBoardScreen: View {
             HouseworkBoardView(
                 houseworkBoardList: $houseworkBoardList,
                 dateList: $dateList
-            )
+            ) {
+                updateHouseboardList(with: houseworkListStore)
+            }
             .environment(houseworkListStore)
             .environment(houseworkTemplateListStore)
             .onAppear {
@@ -57,9 +60,14 @@ public struct HouseworkBoardScreen: View {
 private extension HouseworkBoardScreen {
 
     func onAppeare(with store: HouseworkListStore) {
+        updateHouseboardList(with: store)
+    }
+
+    func updateHouseboardList(with store: HouseworkListStore) {
+        let selectedDate = dateList.selectedDate
         houseworkBoardList = .init(
             dailyList: store.items.value,
-            selectedDateTemplate: .init(dayOfWeek: 1, items: []), // TODO: Storeから現在の日付のテンプレートを取得
+            selectedDateTemplate: templateContext.templateOfDay(by: selectedDate, calendar: calendar),
             selectedDate: dateList.selectedDate,
             calendar: calendar,
             uuidGenerator: { UUID() }
