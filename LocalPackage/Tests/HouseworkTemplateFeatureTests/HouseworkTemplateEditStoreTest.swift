@@ -6,16 +6,15 @@
 //
 
 import Foundation
-import HometeDomain
-import Testing
-
+@testable import HometeDomain
 @testable import HouseworkTemplateFeature
+import Testing
 
 private typealias TestCase = HouseworkTemplateEditStoreTest
 
 // swiftlint:disable:next convenience_type
-struct HouseworkTemplateEditStoreTest {
-    
+enum HouseworkTemplateEditStoreTest {
+
     static let inputCohabitantId = "cohabitantId"
     static let inputTemplateId = "templateId"
     static let inputUserId = "userId"
@@ -28,13 +27,13 @@ struct HouseworkTemplateEditStoreTest {
 
     @MainActor
     struct SaveDayCase {}
+
 }
 
 extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
     @Test("編集モード開始時、Editorをupsertし、initialのversionをcurrentVersionに反映する")
     func startEditing_upsertsEditorAndSetsCurrentVersion() async throws {
-
         // Arrange
 
         let now = Date(timeIntervalSince1970: 1_000_000)
@@ -53,7 +52,6 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 upsertEditor: { editor, templateId, cohabitantId in
-
                     await upserts.append(
                         .init(editor: editor, templateId: templateId, cohabitantId: cohabitantId)
                     )
@@ -96,7 +94,6 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
     @Test("編集モード開始後、Daysリスナーで受け取った値がdaysに反映される")
     func startEditing_reflectsDaysFromListener() async throws {
-
         // Arrange
 
         let inputMeta = HouseworkTemplateMeta(
@@ -105,7 +102,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
             version: 0
         )
         let expectedDays: [HouseworkTemplateDay] = [
-            .init(dayOfWeek: 1, items: [.init(title: "ゴミ出し", point: 5)])
+            .init(dayOfWeek: 1, items: [.init(id: .init(id: "id"), title: "ゴミ出し", point: 5, updatedAt: .now)]),
         ]
         let (daysStream, daysContinuation) = AsyncStream<[HouseworkTemplateDay]>.makeStream()
         let store = HouseworkTemplateEditStore(
@@ -130,12 +127,11 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
         let waiter = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking(
-                    { store.days },
-                    onChange: {
-                        continuation.resume(returning: ())
-                    }
-                )
+                ObservationHelper.continuousObservationTracking {
+                    store.days
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
             }
         }
         daysContinuation.yield(expectedDays)
@@ -154,7 +150,6 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
     @Test("編集モード開始後、Editorsリスナーで受け取った値がeditorsに反映される")
     func startEditing_reflectsEditorsFromListener() async throws {
-
         // Arrange
 
         let now = Date()
@@ -164,7 +159,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
             version: 0
         )
         let expectedEditors: [HouseworkTemplateEditor] = [
-            .init(userId: "otherUser", updatedAt: now, expiredAt: now.addingTimeInterval(300))
+            .init(userId: "otherUser", updatedAt: now, expiredAt: now.addingTimeInterval(300)),
         ]
         let (editorsStream, editorsContinuation) = AsyncStream<[HouseworkTemplateEditor]>.makeStream()
         let store = HouseworkTemplateEditStore(
@@ -189,12 +184,11 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
         let waiter = Task {
             await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking(
-                    { store.editors },
-                    onChange: {
-                        continuation.resume(returning: ())
-                    }
-                )
+                ObservationHelper.continuousObservationTracking {
+                    store.editors
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
             }
         }
         editorsContinuation.yield(expectedEditors)
@@ -210,13 +204,13 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
             userId: TestCase.inputUserId
         )
     }
+
 }
 
 extension HouseworkTemplateEditStoreTest.StopEditingCase {
 
     @Test("編集モード終了時、リスナー解除とEditor削除を実行する")
-    func stopEditing_removesListenersAndEditor() async throws {
-
+    func stopEditing_removesListenersAndEditor() async {
         // Arrange
 
         let removedListenerKeys = TestLockedArray<String>()
@@ -224,11 +218,9 @@ extension HouseworkTemplateEditStoreTest.StopEditingCase {
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 removeEditor: { userId, _, _ in
-
                     await removedEditorUserIds.append(userId)
                 },
                 removeListener: { id in
-
                     await removedListenerKeys.append(id)
                 }
             ),
@@ -249,28 +241,27 @@ extension HouseworkTemplateEditStoreTest.StopEditingCase {
         let editorUserIds = await removedEditorUserIds.values
         #expect(Set(listenerKeys) == Set([
             "houseworkTemplateDaysListener",
-            "houseworkTemplateEditorsListener"
+            "houseworkTemplateEditorsListener",
         ]))
         #expect(editorUserIds == [TestCase.inputUserId])
     }
+
 }
 
 extension HouseworkTemplateEditStoreTest.SaveDayCase {
 
     @Test("曜日定義の保存に成功すると、currentVersionが+1される")
     func saveDay_success_incrementsCurrentVersion() async throws {
-
         // Arrange
 
         let inputDay = HouseworkTemplateDay(
             dayOfWeek: 1,
-            items: [.init(title: "洗濯", point: 5)]
+            items: [.init(id: .init(id: "id"), title: "洗濯", point: 5, updatedAt: .now)]
         )
         let updateCalls = TestLockedArray<TestUpdateDayRecord>()
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 updateDay: { day, templateId, cohabitantId, currentVersion in
-
                     await updateCalls.append(
                         .init(
                             day: day,
@@ -305,14 +296,12 @@ extension HouseworkTemplateEditStoreTest.SaveDayCase {
 
     @Test("曜日定義の保存でversionConflictが発生すると、エラーがthrowされcurrentVersionは変わらない")
     func saveDay_conflict_throwsAndKeepsVersion() async throws {
-
         // Arrange
 
         let inputDay = HouseworkTemplateDay(dayOfWeek: 1, items: [])
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 updateDay: { _, _, _, _ in
-
                     throw HouseworkTemplateError.versionConflict
                 }
             ),
@@ -322,7 +311,6 @@ extension HouseworkTemplateEditStoreTest.SaveDayCase {
         // Act + Assert
 
         await #expect(throws: HouseworkTemplateError.self) {
-
             try await store.saveDay(
                 inputDay,
                 templateId: TestCase.inputTemplateId,
@@ -331,6 +319,7 @@ extension HouseworkTemplateEditStoreTest.SaveDayCase {
         }
         #expect(store.currentVersion == 3)
     }
+
 }
 
 // MARK: テスト用のモデル
@@ -338,23 +327,26 @@ extension HouseworkTemplateEditStoreTest.SaveDayCase {
 private actor TestLockedArray<Element: Sendable> {
 
     var values: [Element] = []
-    
+
     func append(_ element: Element) {
         values.append(element)
     }
+
 }
 
-private struct TestUpsertedEditorRecord: Sendable {
+private struct TestUpsertedEditorRecord {
 
     let editor: HouseworkTemplateEditor
     let templateId: String
     let cohabitantId: String
+
 }
 
-private struct TestUpdateDayRecord: Sendable {
+private struct TestUpdateDayRecord {
 
     let day: HouseworkTemplateDay
     let templateId: String
     let cohabitantId: String
     let currentVersion: Int
+
 }
