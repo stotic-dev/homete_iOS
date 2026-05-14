@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import HometeDomain
 
 public struct DailyHouseworkList: Equatable, Sendable {
 

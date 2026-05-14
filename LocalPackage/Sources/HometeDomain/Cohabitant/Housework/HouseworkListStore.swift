@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import HometeDomain
 import Observation
 import SwiftUI
 
@@ -14,12 +13,13 @@ import SwiftUI
 @Observable
 public final class HouseworkListStore {
 
-    private(set) var items: StoredAllHouseworkList
+    public private(set) var items: StoredAllHouseworkList
     private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     private let houseworkManager: HouseworkManager
+    private let idGenerator: @MainActor @Sendable () -> String
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
@@ -27,19 +27,21 @@ public final class HouseworkListStore {
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
-        items: [DailyHouseworkList] = []
+        items: [DailyHouseworkList] = [],
+        idGenerator: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
         self.items = .init(value: items)
+        self.idGenerator = idGenerator
 
         Task {
             await startObserving()
         }
     }
 
-    func register(newItem: HouseworkItem, cohabitantId: String) async throws {
+    public func register(newItem: HouseworkItem, cohabitantId: String) async throws {
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
         Task.detached {
@@ -48,7 +50,7 @@ public final class HouseworkListStore {
         }
     }
 
-    func requestReview(
+    public func requestReview(
         target: HouseworkItem,
         now: Date,
         executor: String,
@@ -61,7 +63,7 @@ public final class HouseworkListStore {
         }
     }
 
-    func approved(
+    public func approved(
         target: HouseworkItem,
         now: Date,
         reviwer: Account,
@@ -75,7 +77,7 @@ public final class HouseworkListStore {
         }
     }
 
-    func rejected(
+    public func rejected(
         target: HouseworkItem,
         now: Date,
         reviwer: Account,
@@ -89,14 +91,25 @@ public final class HouseworkListStore {
         }
     }
 
-    func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
+    public func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateIncomplete()
         }
     }
 
-    func remove(target: HouseworkItem, cohabitantId: String) async throws {
+    public func remove(target: HouseworkItem, cohabitantId: String) async throws {
         try await houseworkClient.removeItem(target, cohabitantId)
+    }
+
+    /// テンプレートを適用する。`plan.targetIncompleteItems` を削除し、テンプレートから生成した家事を書き込む
+    public func applyTemplate(plan: ApplyPlan) async throws {
+        for item in plan.targetIncompleteItems {
+            try await houseworkClient.removeItem(item, plan.cohabitantId)
+        }
+
+        for newItem in plan.makeNewItems(idGenerator: idGenerator) {
+            try await houseworkClient.insertOrUpdateItem(newItem, plan.cohabitantId)
+        }
     }
 
 }

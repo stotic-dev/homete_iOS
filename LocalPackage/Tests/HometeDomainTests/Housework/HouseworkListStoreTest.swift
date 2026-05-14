@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkListStoreTest.swift
 //  hometeTests
@@ -6,8 +7,7 @@
 //
 
 import Foundation
-import HometeDomain
-@testable import HouseworkFeature
+@testable import HometeDomain
 import Testing
 
 @MainActor
@@ -20,6 +20,13 @@ struct HouseworkListStoreTest {
     struct UpdateStatusCase {
 
         private let inputId = "houseworkObserveKey"
+        private let inputCohabitantId = "cohabitantId"
+
+    }
+
+    @MainActor
+    struct ApplyTemplateCase {
+
         private let inputCohabitantId = "cohabitantId"
 
     }
@@ -318,6 +325,99 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     )
                 }
             }
+        }
+    }
+
+}
+
+extension HouseworkListStoreTest.ApplyTemplateCase {
+
+    @Test("テンプレート適用時、対象範囲のincomplete家事をremoveItemで削除する")
+    func applyTemplate_removesIncompleteItemsInRange() async throws {
+        // Arrange
+
+        let calendar = Calendar.japanese
+        let now = Date.previewDate(year: 2026, month: 5, day: 9)
+        let targetItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date.previewDate(year: 2026, month: 5, day: 10)
+        )
+        let plan = ApplyPlan.make(
+            days: [],
+            cohabitantId: inputCohabitantId,
+            incompleteItems: [targetItem],
+            now: now,
+            calendar: calendar
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    removeItemHandler: { item, cohabitantId in
+                        // Assert
+
+                        #expect(item == targetItem)
+                        #expect(cohabitantId == self.inputCohabitantId)
+                        confirmation()
+                    }
+                )
+            )
+
+            // Act
+
+            try await store.applyTemplate(plan: plan)
+        }
+    }
+
+    @Test("テンプレート適用時、テンプレートのアイテムを該当曜日に書き込む")
+    func applyTemplate_writesTemplateItemsToMatchingWeekday() async throws {
+        // Arrange
+
+        let calendar = Calendar.japanese
+        // 2026-05-09 は土曜日（dayOfWeek=6）
+        let now = Date.previewDate(year: 2026, month: 5, day: 9)
+        let inputDays: [HouseworkTemplateDay] = [
+            .init(dayOfWeek: 6, items: [.init(title: "週末掃除", point: 30)])
+        ]
+        let fixedItemId = "generatedId"
+        let plan = ApplyPlan.make(
+            days: inputDays,
+            cohabitantId: inputCohabitantId,
+            incompleteItems: [],
+            now: now,
+            calendar: calendar
+        )
+        let expectedItem = HouseworkItem(
+            id: fixedItemId,
+            indexedDate: HouseworkIndexedDate(value: Date.previewDate(year: 2026, month: 5, day: 9)),
+            title: "週末掃除",
+            point: 30,
+            state: .incomplete,
+            executorId: nil,
+            executedAt: nil,
+            reviewerId: nil,
+            approvedAt: nil,
+            reviewerComment: nil,
+            expiredAt: Date.previewDate(year: 2027, month: 5, day: 9)
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, cohabitantId in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        #expect(cohabitantId == self.inputCohabitantId)
+                        confirmation()
+                    }
+                ),
+                idGenerator: { fixedItemId }
+            )
+
+            // Act
+
+            try await store.applyTemplate(plan: plan)
         }
     }
 
