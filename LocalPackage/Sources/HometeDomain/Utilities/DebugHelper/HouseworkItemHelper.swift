@@ -22,7 +22,8 @@ import Foundation
             reviewerId: String? = nil,
             approvedAt: Date? = nil,
             reviewerComment: String? = nil,
-            expiredAt: Date = .now
+            expiredAt: Date = .now,
+            templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
         ) -> Self {
             .init(
                 id: "id\(id.formatted())",
@@ -35,7 +36,8 @@ import Foundation
                 reviewerId: reviewerId,
                 approvedAt: approvedAt,
                 reviewerComment: reviewerComment,
-                expiredAt: expiredAt
+                expiredAt: expiredAt,
+                templateHouseworkItemId: templateHouseworkItemId
             )
         }
 
@@ -49,7 +51,8 @@ import Foundation
             reviewerId: String? = nil,
             approvedAt: Date? = nil,
             reviewerComment: String? = nil,
-            expiredAt: Date? = nil
+            expiredAt: Date? = nil,
+            templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
         ) -> HouseworkItem {
             let inputIndexedDate = indexedDate ?? self.indexedDate
             let inputTitle = title ?? self.title
@@ -61,6 +64,7 @@ import Foundation
             let inputApprovedAt = approvedAt
             let inputReviewerComment = reviewerComment
             let inputExpiredAt = expiredAt ?? self.expiredAt
+            let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
 
             return .init(
                 id: id,
@@ -73,7 +77,8 @@ import Foundation
                 reviewerId: inputReviewerId,
                 approvedAt: inputApprovedAt,
                 reviewerComment: inputReviewerComment,
-                expiredAt: inputExpiredAt
+                expiredAt: inputExpiredAt,
+                templateHouseworkItemId: inputTemplateHouseworkItemId
             )
         }
 

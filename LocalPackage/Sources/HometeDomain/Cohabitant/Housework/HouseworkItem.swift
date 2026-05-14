@@ -30,6 +30,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let reviewerComment: String?
     /// 有効期限
     public let expiredAt: Date
+    /// 紐づくテンプレートの家事ID
+    public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
 
     public init(
         id: String,
@@ -42,7 +44,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         reviewerId: String?,
         approvedAt: Date?,
         reviewerComment: String?,
-        expiredAt: Date
+        expiredAt: Date,
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -55,6 +58,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.approvedAt = approvedAt
         self.reviewerComment = reviewerComment
         self.expiredAt = expiredAt
+        self.templateHouseworkItemId = templateHouseworkItemId
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {
@@ -88,7 +92,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewerId,
             approvedAt: approvedAt,
             reviewerComment: reviewerComment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -104,7 +109,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewer,
             approvedAt: now,
             reviewerComment: comment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -120,7 +126,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewer,
             approvedAt: now,
             reviewerComment: comment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -136,7 +143,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: nil,
             approvedAt: nil,
             reviewerComment: nil,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -167,7 +175,8 @@ public extension HouseworkItem {
             reviewerId: reviewerId,
             approvedAt: approvedAt,
             reviewerComment: reviewerComment,
-            expiredAt: metaData.expiredAt
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: nil
         )
     }
 
