@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/09.
 //
 
+import HometeDomain
 import SwiftUI
 
 public struct HouseworkBoardScreen: View {
