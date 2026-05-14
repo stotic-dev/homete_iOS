@@ -2,12 +2,14 @@
 
 関連Issue: [#67 家事の週間テンプレート機能の追加](https://github.com/stotic-dev/homete_iOS/issues/67)
 
-> テンプレート適用ロジックをバックエンドに集約する判断の背景は [ADR-0002](../adr/0002-housework-template-apply-on-backend.md) を参照。
+> テンプレートを「適用」せず、表示時にマージする仮想ビュー方式を採用した経緯は [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
+> 当初検討した「テンプレート適用ロジックを Cloud Functions に集約する」案は [ADR-0002](../adr/0002-housework-template-apply-on-backend.md)（却下済）に記録している。
 
 ## 概要
 
-毎週繰り返される定型的な家事（例: 月曜日はゴミ出し、水曜日は掃除）をテンプレートとして登録し、
-週単位で一括適用できる機能を追加する。
+毎週繰り返される定型的な家事（例: 月曜日はゴミ出し、水曜日は掃除）をテンプレートとして登録し、`HouseworkBoardView` の incomplete 表示に自動的に組み込めるようにする機能を追加する。
+
+テンプレートに登録された家事は `Houseworks` コレクションには書き込まず、画面表示時にテンプレート定義と既存 `Houseworks` をマージして表示する。ユーザーがその家事を `pendingApproval` 以降の状態に遷移させた時点で初めて `Houseworks` コレクションにドキュメントを作成する。
 
 ---
 
@@ -54,13 +56,17 @@ Cohabitant/{cohabitantId}
   "dayOfWeek": Int,           // 0-6（ドキュメントIDと一致）
   "items": [
     {
+      "id": String,           // テンプレートアイテムの安定ID（UUID）
       "title": String,        // 家事名
-      "point": Int            // 家事ポイント
+      "point": Int,           // 家事ポイント
+      "updatedAt": Timestamp  // アイテムの作成・編集時刻（表示範囲制御に使用）
     },
     ...
   ]
 }
 ```
+
+`id` および `updatedAt` の役割は「HouseworkBoardView 表示方式」セクションを参照。
 
 #### `HouseworkTemplates/{templateId}/Editors/{userId}`（Presence用）
 
@@ -112,6 +118,10 @@ Cohabitant/{cohabitantId}
 
 Firestoreはドキュメントを削除してもサブコレクションを自動削除しない。テンプレートを削除する際はクライアント側で `Days`（固定7件）と `Editors`（0〜N件）を Firestore バッチ削除で明示的に削除する。
 
+**テンプレートアイテムに安定IDと `updatedAt` を持たせる理由**
+
+「HouseworkBoardView 表示方式」セクションを参照。仮想 incomplete 表示と実 Housework の重複防止、および過去日付への意図しない波及の防止のため、アイテム単位での安定ID と編集時刻が必要となる。
+
 **トレードオフ**
 
 - 1曜日内のアイテムを個別追加・削除する場合、`items` 配列全体を書き直す必要がある
@@ -122,31 +132,13 @@ Firestoreはドキュメントを削除してもサブコレクションを自�
 
 **`Houseworks` コレクション**
 
-変更なし。テンプレートを適用する際は、テンプレートのアイテムをもとに `HouseworkItem` を生成して `Houseworks` へ書き込む。生成ロジックは既存の `HouseworkClient.insertOrUpdateItem` を再利用する。
+`HouseworkItem` に `templateHouseworkItemId: String?` を追加する。テンプレート由来の家事（仮想 incomplete から状態遷移して作成されたもの）にのみ値が入り、手動追加された家事では `nil` のままになる。
+
+テンプレート由来かつ状態遷移していない家事は `Houseworks` コレクションに書き込まれない（表示時にマージで仮想表示する。「HouseworkBoardView 表示方式」セクション参照）。
 
 **`Cohabitant` ドキュメント**
 
-適用されるのは `Cohabitant` の `Houseworks` なので、適用済み状態も `Cohabitant` に属する情報として管理する。テンプレートが複数になっても対応できるよう `templateId` をキーにしたマップ形式で持つ。
-
-```
-Cohabitant/{cohabitantId}
-  - id: String
-  - members: [String]
-  - appliedTemplates: {              // 追加
-      [templateId]: {
-        lastAppliedWeek: String,     // 例: "2026-W17"
-        lastAppliedVersion: Int      // 適用時の template の version
-      }
-    }
-```
-
-**スキップロジック（自動適用時）:**
-
-| lastAppliedWeek | lastAppliedVersion | 結果 |
-|---|---|---|
-| 先週以前 | 任意 | 適用（新しい週） |
-| 今週 | 現在の version と異なる | 適用（今週テンプレートが変更された） |
-| 今週 | 現在の version と一致 | スキップ（今週すでに同じ内容で適用済み） |
+変更なし。仮想ビュー方式では「適用済み状態」を管理する必要がない（テンプレート適用操作自体が存在しないため）。
 
 ### セキュリティルール
 
@@ -232,7 +224,7 @@ AppRoot
 | Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateEmptyView.swift` | テンプレートが0件の初期状態のEmpty表示 |
 | Domain Model | `HometeDomain` | `HouseworkTemplateMeta.swift` | テンプレートのメタ情報（templateId, name, version） |
 | Domain Model | `HometeDomain` | `HouseworkTemplateDay.swift` | 曜日ごとの家事定義（dayOfWeek, items） |
-| Domain Model | `HometeDomain` | `HouseworkTemplateItem.swift` | テンプレートアイテム（title, point） |
+| Domain Model | `HometeDomain` | `HouseworkTemplateItem.swift` | テンプレートアイテム（id, title, point, updatedAt） |
 | Domain Model | `HometeDomain` | `HouseworkTemplateEditor.swift` | 編集中ユーザー情報（userId, updatedAt） |
 | Client | `HometeDomain` | `HouseworkTemplateClient.swift` | テンプレートのCRUD・Presence管理 |
 | Store | `HometeDomain` | テンプレート画面用Store | テンプレート一覧・編集のUI状態管理 |
@@ -243,12 +235,12 @@ AppRoot
 |---|---|---|
 | `CollectionPath.swift` | `HometeInfrastructure` | `houseworkTemplates = "HouseworkTemplates"`、`days = "Days"`、`editors = "Editors"` を追加 |
 | `FirestoreExtensionForReferencePath.swift` | `HometeInfrastructure` | `houseworkTemplateRef(cohabitantId:templateId:)`、`houseworkTemplateDaysRef`、`houseworkTemplateEditorRef` を追加 |
-| `CohabitantData.swift` | `HometeDomain` | `appliedTemplates: [String: AppliedTemplateInfo]` フィールドを追加 |
+| `HouseworkItem.swift` | `HometeDomain` | `templateHouseworkItemId: String?` を追加。テンプレート由来の Housework のみ値を持つ |
 | `AppDependencies.swift` | `HometeDomain` | `HouseworkTemplateClient` を追加 |
 | `AppRoute.swift` | `HometeDomain` | `.houseworkTemplate` case を追加 |
 | `RouteResolverInjection` | `AppRoot` | `.houseworkTemplate` → `HouseworkTemplateView` の解決を追加 |
 | `Package.swift` | `LocalPackage` | `HouseworkTemplateFeature` ターゲットを追加、`AppRoot` の依存に追加 |
-| Firebase Functions | `firebase/functions/src/` | テンプレート適用の共通ロジックを実装し、`applyHouseworkTemplate`（Callable / 手動適用）と `applyWeeklyTemplate`（Scheduled / 自動適用）の両方から呼び出す |
+| `HouseworkBoardView` 関連 Store | `HometeDomain` / `HouseworkFeature` | `Houseworks` に加えて `HouseworkTemplates/{templateId}/Days` を購読し、表示時マージを行うよう改修 |
 
 ### 画面データの更新タイミング
 
@@ -290,85 +282,59 @@ AppRoot
           ─ リスナーの最新値でUI更新 + エラー表示
 ```
 
-### テンプレート適用フロー
+---
 
-#### 適用の種類
+## HouseworkBoardView 表示方式
 
-テンプレートの適用には手動と自動の2種類があり、**どちらも Firebase Cloud Functions 側に実装した共通の適用ロジックを呼び出す**。
+テンプレートの家事は `Houseworks` コレクションには書き込まず、`HouseworkBoardView` 表示時に仮想的に組み立てて表示する。
 
-| 種類 | トリガー | 呼び出し方 |
-|---|---|---|
-| 手動適用 | ユーザー操作 | クライアント（iOS）から Callable Function を呼び出す |
-| 自動適用 | 毎週月曜0時（JST） | Scheduled Function が直接共通ロジックを呼び出す |
+### 「テンプレート適用」操作は存在しない
 
-**バックエンドに寄せる理由:**
+ユーザーから見ても、明示的な「適用する」アクションは存在しない。テンプレートを編集すれば、翌日以降の `HouseworkBoardView` に自動的に反映される。
 
-- 手動適用と自動適用で同じ「対象期間の `incomplete` 削除 + テンプレートからの再生成 + `appliedTemplates` 更新」というロジックを使うため、クライアントとバックエンドで実装を二重持ちすると整合性のリスクが高い
-- 共通ロジックを Cloud Functions に集約することで、片方の修正がもう片方に確実に反映される
-- クライアント側で適用処理を行うと、複数ユーザーから同時に適用が走るリスクや、書き込み権限の細かい制御がセキュリティルール側に寄ってしまう問題もある
+### 表示マージルール
 
-#### 対象日付の仕様（手動適用）
+`HouseworkBoardView` の incomplete 表示は、各表示対象日について以下のルールで組み立てる。
 
-- 適用範囲は現在日付〜現在日付+6日（7日間）に固定する
-- ユーザーによる日付選択は行わない
-- 対象7日間の中に `incomplete` の家事が存在する日が1日でもあれば、上書きになるためユーザーに確認を求める（上書き確認はクライアント側の UI 責務）
+1. **実 Housework**: その日付の `Houseworks` ドキュメントは常にそのまま表示する
+2. **仮想 incomplete（テンプレート由来）**: その日付の曜日に対応する `HouseworkTemplates/{templateId}/Days/{dayOfWeek}` の `items` のうち、以下を**両方**満たすものを `incomplete` として追加表示する
+   - **表示範囲条件**: 表示対象日（0時0分に正規化）`>=` `templateItem.updatedAt` を日付正規化したもの
+   - **重複防止条件**: その日付の `Houseworks` に `templateHouseworkItemId == templateItem.id` を持つドキュメントが存在しない
 
-#### 上書き方針
+### ルールの根拠
 
-テンプレート適用は曜日単位で完全上書きとする。
+**`templateHouseworkItemId` による重複防止**
 
-| 家事の状態 | 扱い |
+ユーザーが仮想 incomplete を `pendingApproval` などに遷移させると、その時点で `templateHouseworkItemId` を埋めた実 Housework が作成される。同じ日付・同じテンプレートアイテムに対する仮想 incomplete を引き続き表示してしまうと家事が二重に表示されてしまうため、ID 一致による除外でこれを防ぐ。
+
+**`updatedAt` による表示範囲制御**
+
+`updatedAt` を考慮しない場合、テンプレートに新しい家事を追加するとその曜日に該当する過去すべての日付にも仮想 incomplete が湧き出てしまい、「過去日付に未完了の家事が大量に出る」状態になる。
+
+`updatedAt` を日付正規化（0時0分）して、表示対象日がそれ以降の場合にのみ表示することで、テンプレートに追加・編集された家事は「変更日以降の該当曜日」にのみ反映されるようになる。
+
+### 状態遷移時の Housework 作成（Lazy 作成）
+
+仮想 incomplete に対してユーザーがアクション（`pendingApproval` への遷移など）を行った時点で、初めて実 Housework を作成する。
+
+作成内容:
+
+| フィールド | 値 |
 |---|---|
-| `incomplete`（未完了） | 削除対象 |
-| `pendingApproval`（承認待ち） | 残す |
-| `completed`（完了済み） | 残す |
+| `id` | 新規 UUID |
+| `templateHouseworkItemId` | テンプレートアイテムの `id` |
+| `date` | 操作が行われた表示対象日 |
+| `title` | テンプレートアイテムの `title` をスナップショット |
+| `point` | テンプレートアイテムの `point` をスナップショット |
+| `state` | `pendingApproval`（または遷移先の状態） |
+| `executor` | 操作したユーザー |
 
-テンプレートから新規追加される家事は常に `incomplete` 状態で作成されるため、完了・承認済みの家事には影響しない。
+スナップショットされた `title` / `point` は以降テンプレート側を編集しても更新されない。完了済みの記録は当時の内容を保持する仕様とする。
 
-#### 共通の適用ロジック（Cloud Functions 内）
+### テンプレート編集後の見え方
 
-手動適用・自動適用の双方から呼び出される、純粋な適用処理。引数で渡された `cohabitantId` / `templateId` / 対象期間（開始日と日数）に対して以下を行う。
-
-1. 対象期間の `Days` サブコレクションを取得
-2. 対象期間の `Houseworks` のうち `incomplete` 状態のアイテムを全件取得
-3. Firestore バッチで以下を1リクエストにまとめて実行
-   - `incomplete` 家事の削除
-   - テンプレートのアイテムをもとに生成した `incomplete` 状態の `HouseworkItem` の書き込み（`DailyHouseworkMetaData` で `indexedDate` と `expiredAt` を設定）
-   - `Cohabitant.appliedTemplates[templateId]` の `lastAppliedWeek` と `lastAppliedVersion` を更新
-
-> 注: `Cohabitant.appliedTemplates` の更新は別 Issue（[#139](https://github.com/stotic-dev/homete_iOS/issues/139)）で追加する。本対応では共通ロジック化までを行い、`appliedTemplates` 更新の実装は #139 で実施する。
-
-#### 手動適用ステップ
-
-```typescript
-export const applyHouseworkTemplate = onCall(
-  { region: "asia-northeast1" },
-  async (request) => { /* 共通ロジックを呼び出す */ }
-);
-```
-
-1. ユーザーが「適用する」を実行（適用範囲は現在日付〜+6日の7日間に自動設定）
-2. クライアントは対象7日間の `Days` と `Houseworks` をワンショットで取得し、`incomplete` の家事が存在する日が1日でもあれば上書き確認ダイアログを表示
-3. 確認後、クライアントは `applyHouseworkTemplate` Callable Function を呼び出す（引数: `cohabitantId`, `templateId`, `startDate`, `daysCount=7`）
-4. Function 側で認証・`cohabitantId` のメンバーシップを検証
-5. 共通の適用ロジックを実行
-6. クライアントは結果を受けて UI を更新（成功・失敗をトースト等で通知）
-
-> クライアント側の `HouseworkListStore.applyTemplate` は本対応で削除し、`HouseworkTemplateClient`（または専用 Client）から Callable Function を呼ぶ形に置き換える。
-
-#### 自動適用ステップ（Cloud Functions Scheduled）
-
-毎週月曜0時（JST）に Firebase Cloud Functions の Scheduled Functions で実行する。
-
-```typescript
-export const applyWeeklyTemplate = onSchedule(
-  { schedule: "every monday 00:00", timeZone: "Asia/Tokyo" },
-  async (event) => { /* 共通ロジックを呼び出す */ }
-);
-```
-
-1. 全 `Cohabitant` ドキュメントを取得
-2. 各 Cohabitant について `appliedTemplates` を確認し、スキップ判定を行う
-   - `lastAppliedWeek === 今週` かつ `lastAppliedVersion === 現在の version` → スキップ
-   - `Days` にアイテムが1件もない → スキップ
-3. 適用対象の場合、共通の適用ロジックを呼び出す（対象期間は翌週の月曜〜日曜の7日間）
+| 操作 | 過去日付 | 当日以降 |
+|---|---|---|
+| テンプレートアイテムを追加 | 表示されない（`updatedAt` が今日以降のため） | 該当曜日に表示される |
+| テンプレートアイテムを編集 | 編集前のスナップショットを持つ実 Housework はそのまま、仮想 incomplete は `updatedAt` 更新により表示が当日以降に絞られる | 編集後の内容で該当曜日に表示される |
+| テンプレートアイテムを削除 | 編集前のスナップショットを持つ実 Housework はそのまま、仮想 incomplete は表示されなくなる | 表示されなくなる |
