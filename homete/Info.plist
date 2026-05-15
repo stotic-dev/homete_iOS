@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AdUnitIdList</key>
+	<dict>
+		<key>BANNER_DASHBOARD_TOP_AD_UNIT_ID</key>
+		<string>$(BANNER_DASHBOARD_TOP_AD_UNIT_ID)</string>
+	</dict>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 	<key>NSBonjourServices</key>
