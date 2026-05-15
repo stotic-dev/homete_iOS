@@ -85,8 +85,9 @@ Cohabitant/{cohabitantId}
 #### 楽観的ロック（書き込み時の競合検知）
 
 - テンプレートドキュメント（`HouseworkTemplates/{templateId}`）に `version: Int` を持たせる
-- `Days/{dayOfWeek}` の書き込み時に Firestore トランザクションで現在の `version` を確認し、読み取り時と一致すれば `version + 1` して保存。不一致なら書き込みを拒否してUIにエラーを通知する
+- 曜日定義の書き込みは「1回の保存で変更があった複数の `Days/{dayOfWeek}` をまとめて更新する」一括書き込みとし、Firestore トランザクション内で現在の `version` を確認する。読み取り時と一致すれば対象 `Days` ドキュメントを順に書き込み、最後に `version + 1` して保存する。不一致なら書き込みを拒否してUIにエラーを通知する
 - `version` はテンプレートドキュメントに集約することで、どの曜日が更新されても整合性を保つ
+- 編集中クライアントは `HouseworkTemplates/{templateId}` の SnapshotListener を張って `version` をリアルタイムに追従する。これにより、他メンバーの保存後もローカルの `currentVersion` が最新化され、続けて保存しても不必要にコンフリクトを起こさない
 
 #### Presence（編集中ユーザーの表示）
 
@@ -254,32 +255,39 @@ AppRoot
 
 #### 編集画面
 
-編集中に他のメンバーの変更やPresenceをリアルタイムに反映する必要があるため、編集モードに入った時点でSnapshotListenerを開始する。リスナーは編集モードを抜けた時点で解除し、不要なコストを避ける。
+編集中に他のメンバーの変更・Presence・楽観的ロック用バージョンをリアルタイムに反映する必要があるため、編集モードに入った時点でSnapshotListenerを開始する。リスナーは編集モードを抜けた時点で解除し、不要なコストを避ける。
 
 | タイミング | 対象 | 方法 | 目的 |
 |---|---|---|---|
 | 編集モード開始時 | `Days` | SnapshotListener 開始 | 他メンバーの変更をリアルタイムに検知 |
 | 編集モード開始時 | `Editors` | SnapshotListener 開始 | 誰が編集中かをリアルタイム表示 |
-| 編集モード終了時 | `Days`・`Editors` | SnapshotListener 解除 | 不要なリスナーを解放 |
+| 編集モード開始時 | `HouseworkTemplates/{templateId}` の `version` | SnapshotListener 開始 | 楽観的ロック用 `currentVersion` をリアルタイム追従 |
+| 編集モード終了時 | `Days`・`Editors`・`version` | SnapshotListener 解除 | 不要なリスナーを解放 |
+
+**Store の責務分担:**
+
+- `Days` の SnapshotListener と曜日定義の一括保存（`saveDays`）は `HouseworkTemplateListStore` が保持する。閲覧画面でも `Days` を利用するため、編集セッション固有の状態とは切り分ける
+- `Editors` と `version` の SnapshotListener、Editor の keepalive は編集セッション固有のため `HouseworkTemplateEditStore` が保持する
 
 #### コンフリクト発生時
 
-編集モード中はすでに `Days` のSnapshotListenerが張られているため、コンフリクト後も変更は自動的に流れてくる。追加の再取得は不要で、リスナーの最新値でUIを更新してエラーを通知する。
+編集モード中は `Days`（`HouseworkTemplateListStore` 側）と `version`（`HouseworkTemplateEditStore` 側）の SnapshotListener が張られているため、コンフリクト後も他メンバーの変更内容と最新の `version` は自動的に流れてくる。追加の再取得は不要で、それぞれのリスナーの最新値でUIを更新してエラーを通知する。`version` の追従によりユーザーが再保存を試みた際は新しい `currentVersion` で再試行できる。
 
 | タイミング | 対象 | 方法 |
 |---|---|---|
-| 書き込み失敗（version不一致）時 | - | リスナーの最新値でUI更新 + エラー表示 |
+| 書き込み失敗（version不一致）時 | - | `Days` / `version` リスナーの最新値でUI更新 + エラー表示 |
 
 #### フロー概要
 
 ```
 閲覧画面 ─ 表示時ワンショット ─ リスナーなし
                 ↓ 編集ボタンタップ
-編集画面 ─ Days + Editors の SnapshotListener 開始
-                ↓ 保存 / キャンセル
+編集画面 ─ Days + Editors + version の SnapshotListener 開始
+                ↓ 保存（複数曜日を一括書き込み） / キャンセル
           ─ SnapshotListener 解除
                 ↓ 保存時に version が不一致（コンフリクト）
           ─ リスナーの最新値でUI更新 + エラー表示
+            （version リスナーで currentVersion が追従するため再保存で復旧可能）
 ```
 
 ---
