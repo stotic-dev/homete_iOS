@@ -271,11 +271,14 @@ AppRoot
 
 #### コンフリクト発生時
 
-編集モード中は `Days`（`HouseworkTemplateListStore` 側）と `version`（`HouseworkTemplateEditStore` 側）の SnapshotListener が張られているため、コンフリクト後も他メンバーの変更内容と最新の `version` は自動的に流れてくる。追加の再取得は不要で、それぞれのリスナーの最新値でUIを更新してエラーを通知する。`version` の追従によりユーザーが再保存を試みた際は新しい `currentVersion` で再試行できる。
+コンフリクトは以下の2経路で検知し、それぞれユーザーにアラートで通知する。
 
-| タイミング | 対象 | 方法 |
+| 検知経路 | 検知方法 | UI挙動 |
 |---|---|---|
-| 書き込み失敗（version不一致）時 | - | `Days` / `version` リスナーの最新値でUI更新 + エラー表示 |
+| 編集中に他ユーザーがテンプレートを更新（先回り検知） | `HouseworkTemplateEditStore` の `version` SnapshotListener が新しい `version` を受け取る | アラートを表示する。確認後、`HouseworkTemplateListStore` から最新のテンプレート内容を fetch し、View に反映する |
+| 自分の保存処理が version 不一致で失敗 | `HouseworkTemplateListStore.saveDays` が `HouseworkTemplateError.versionConflict` を throw | アラートを表示する |
+
+`version` SnapshotListener により `currentVersion` は常に最新化されているため、コンフリクト後のユーザー操作（再編集・再保存）は新しい `currentVersion` で再試行できる。
 
 #### フロー概要
 
@@ -285,9 +288,10 @@ AppRoot
 編集画面 ─ Days + Editors + version の SnapshotListener 開始
                 ↓ 保存（複数曜日を一括書き込み） / キャンセル
           ─ SnapshotListener 解除
-                ↓ 保存時に version が不一致（コンフリクト）
-          ─ リスナーの最新値でUI更新 + エラー表示
-            （version リスナーで currentVersion が追従するため再保存で復旧可能）
+                ↓ 編集中に version 変化を検知（他ユーザーが更新）
+          ─ アラート表示 + listStore で最新内容を fetch して View に反映
+                ↓ 保存時に versionConflict が throw された
+          ─ アラート表示
 ```
 
 ---
