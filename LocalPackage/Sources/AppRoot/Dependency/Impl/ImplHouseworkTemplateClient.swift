@@ -6,9 +6,11 @@ extension HouseworkTemplateClient {
 
     static let liveValue = HouseworkTemplateClient(
         fetchTemplates: { cohabitantId in
-            try await FirestoreService.shared.fetch { firestore in
-                firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
-            }
+            let documents: [HouseworkTemplateMetaDocument] = try await FirestoreService.shared
+                .fetch { firestore in
+                    firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
+                }
+            return documents.map { HouseworkTemplateMeta(templateId: $0.templateId, name: $0.name) }
         },
         fetchDays: { cohabitantId, templateId in
             try await FirestoreService.shared.fetch { firestore in
@@ -16,29 +18,38 @@ extension HouseworkTemplateClient {
             }
         },
         upsertTemplate: { meta, cohabitantId in
-            try await FirestoreService.shared.insertOrUpdate(data: meta) { firestore in
+            let document = HouseworkTemplateMetaDocument(
+                templateId: meta.templateId,
+                name: meta.name,
+                version: 0
+            )
+            try await FirestoreService.shared.insertOrUpdate(data: document) { firestore in
                 firestore.houseworkTemplatesRef(cohabitantId: cohabitantId).document(meta.templateId)
             }
         },
-        updateDay: { day, templateId, cohabitantId, currentVersion in
+        updateDays: { days, templateId, cohabitantId, currentVersion in
             try await FirestoreService.shared.runTransaction { transaction in
                 let metaRef = Firestore.firestore()
                     .houseworkTemplatesRef(cohabitantId: cohabitantId)
                     .document(templateId)
-                let meta = try transaction.getDocument(metaRef).data(as: HouseworkTemplateMeta.self)
-                guard meta.version == currentVersion else {
+                let metaDocument = try transaction
+                    .getDocument(metaRef)
+                    .data(as: HouseworkTemplateMetaDocument.self)
+                guard metaDocument.version == currentVersion else {
                     throw HouseworkTemplateError.versionConflict
                 }
-                let dayRef = Firestore.firestore()
+                let daysRef = Firestore.firestore()
                     .houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
-                    .document("\(day.dayOfWeek)")
-                try transaction.setData(from: day, forDocument: dayRef)
-                let updatedMeta = HouseworkTemplateMeta(
-                    templateId: meta.templateId,
-                    name: meta.name,
-                    version: meta.version + 1
+                for day in days {
+                    let dayRef = daysRef.document("\(day.dayOfWeek)")
+                    try transaction.setData(from: day, forDocument: dayRef)
+                }
+                let updatedDocument = HouseworkTemplateMetaDocument(
+                    templateId: metaDocument.templateId,
+                    name: metaDocument.name,
+                    version: metaDocument.version + 1
                 )
-                try transaction.setData(from: updatedMeta, forDocument: metaRef)
+                try transaction.setData(from: updatedDocument, forDocument: metaRef)
             }
         },
         upsertEditor: { editor, templateId, cohabitantId in
@@ -62,6 +73,22 @@ extension HouseworkTemplateClient {
             await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                 firestore.houseworkTemplateEditorsRef(cohabitantId: cohabitantId, templateId: templateId)
             }
+        },
+        addMetaVersionSnapshotListener: { id, templateId, cohabitantId in
+            let documentStream: AsyncStream<HouseworkTemplateMetaDocument?> = await FirestoreService
+                .shared
+                .addSnapshotListener(id: id) { firestore in
+                    firestore.houseworkTemplatesRef(cohabitantId: cohabitantId).document(templateId)
+                }
+            let (versionStream, continuation) = AsyncStream<Int>.makeStream()
+            Task {
+                for await document in documentStream {
+                    guard let document else { continue }
+                    continuation.yield(document.version)
+                }
+                continuation.finish()
+            }
+            return versionStream
         },
         removeListener: { id in
             await FirestoreService.shared.removeSnapshotListener(id: id)

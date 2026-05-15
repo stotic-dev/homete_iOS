@@ -13,87 +13,78 @@ import Observation
 @Observable
 final class HouseworkTemplateEditStore {
 
-    private(set) var days: [HouseworkTemplateDay]
     private(set) var editors: [HouseworkTemplateEditor]
     private(set) var currentVersion: Int
 
-    private var daysObserveTask: Task<Void, Never>?
     private var editorsObserveTask: Task<Void, Never>?
+    private var metaVersionObserveTask: Task<Void, Never>?
     private var keepaliveTask: Task<Void, Never>?
 
     private let houseworkTemplateClient: HouseworkTemplateClient
 
-    private let daysListenerKey = "houseworkTemplateDaysListener"
     private let editorsListenerKey = "houseworkTemplateEditorsListener"
-    
-    // Editor ドキュメントの TTL（5分）
+    private let metaVersionListenerKey = "houseworkTemplateMetaVersionListener"
+
+    /// Editor ドキュメントの TTL（5分）
     private static let editorTTL: TimeInterval = 5 * 60
 
-    public init(
+    init(
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
-        days: [HouseworkTemplateDay] = [],
         editors: [HouseworkTemplateEditor] = [],
         currentVersion: Int = 0
     ) {
-
         self.houseworkTemplateClient = houseworkTemplateClient
-        self.days = days
         self.editors = editors
         self.currentVersion = currentVersion
     }
 
-    /// 編集モードを開始する。Days と Editors の SnapshotListener を張り、自身を Editor として登録する
+    /// 編集モードを開始する。Editors・Meta version の SnapshotListener を張り、自身を Editor として登録する
     /// - Parameters:
-    ///   - meta: 編集対象のテンプレートメタ（version の初期値として使う）
+    ///   - templateId: 編集対象のテンプレートID
     ///   - cohabitantId: 同居人ID
     ///   - userId: 編集中ユーザーID
     ///   - now: 現在時刻
     ///   - keepaliveInterval: Editor の updatedAt を再upsertする周期（nil で無効化、デフォルト1分）
     func startEditing(
-        meta: HouseworkTemplateMeta,
+        templateId: String,
         cohabitantId: String,
         userId: String,
         now: Date,
         keepaliveInterval: TimeInterval = 60
     ) async throws {
-
-        currentVersion = meta.version
-
         let editor = HouseworkTemplateEditor(
             userId: userId,
             updatedAt: now,
             expiredAt: now.addingTimeInterval(Self.editorTTL)
         )
-        try await houseworkTemplateClient.upsertEditor(editor, meta.templateId, cohabitantId)
-
-        let daysStream = await houseworkTemplateClient.addDaysSnapshotListener(
-            daysListenerKey,
-            meta.templateId,
-            cohabitantId
-        )
-        daysObserveTask = Task {
-
-            for await currentDays in daysStream {
-
-                self.days = currentDays
-            }
-        }
+        try await houseworkTemplateClient.upsertEditor(editor, templateId, cohabitantId)
 
         let editorsStream = await houseworkTemplateClient.addEditorsSnapshotListener(
             editorsListenerKey,
-            meta.templateId,
+            templateId,
             cohabitantId
         )
         editorsObserveTask = Task {
 
             for await currentEditors in editorsStream {
-
                 self.editors = currentEditors
             }
         }
 
+        let metaVersionStream = await houseworkTemplateClient.addMetaVersionSnapshotListener(
+            metaVersionListenerKey,
+            templateId,
+            cohabitantId
+        )
+        metaVersionObserveTask = Task {
+
+            for await version in metaVersionStream {
+                self.currentVersion = version
+            }
+        }
+
         startKeepalive(
-            templateId: meta.templateId,
+            templateId: templateId,
             cohabitantId: cohabitantId,
             userId: userId,
             editorTTL: Self.editorTTL,
@@ -107,36 +98,19 @@ final class HouseworkTemplateEditStore {
         cohabitantId: String,
         userId: String
     ) async {
-
-        daysObserveTask?.cancel()
         editorsObserveTask?.cancel()
+        metaVersionObserveTask?.cancel()
         keepaliveTask?.cancel()
-        daysObserveTask = nil
         editorsObserveTask = nil
+        metaVersionObserveTask = nil
         keepaliveTask = nil
 
-        await houseworkTemplateClient.removeListener(daysListenerKey)
         await houseworkTemplateClient.removeListener(editorsListenerKey)
+        await houseworkTemplateClient.removeListener(metaVersionListenerKey)
 
         try? await houseworkTemplateClient.removeEditor(userId, templateId, cohabitantId)
     }
 
-    /// 曜日定義を保存する。version の楽観的ロックで競合が発生した場合は HouseworkTemplateError.versionConflict を throw する。
-    /// 保存成功後の `days` プロパティの更新は Days SnapshotListener による反映に委ねる（ローカルでは更新しない）
-    func saveDay(
-        _ day: HouseworkTemplateDay,
-        templateId: String,
-        cohabitantId: String
-    ) async throws {
-
-        try await houseworkTemplateClient.updateDay(
-            day,
-            templateId,
-            cohabitantId,
-            currentVersion
-        )
-        currentVersion += 1
-    }
 }
 
 private extension HouseworkTemplateEditStore {
@@ -148,14 +122,11 @@ private extension HouseworkTemplateEditStore {
         editorTTL: TimeInterval,
         keepaliveInterval: TimeInterval
     ) {
-
         keepaliveTask = Task {
-
             while !Task.isCancelled {
-
                 try? await Task.sleep(for: .seconds(keepaliveInterval))
                 guard !Task.isCancelled else { break }
-                
+
                 let updatedAt = Date()
                 let updated = HouseworkTemplateEditor(
                     userId: userId,
@@ -163,17 +134,16 @@ private extension HouseworkTemplateEditStore {
                     expiredAt: updatedAt.addingTimeInterval(editorTTL)
                 )
                 do {
-
                     try await houseworkTemplateClient.upsertEditor(
                         updated,
                         templateId,
                         cohabitantId
                     )
                 } catch {
-
                     print("keepalive upsertEditor failed: \(error)")
                 }
             }
         }
     }
+
 }

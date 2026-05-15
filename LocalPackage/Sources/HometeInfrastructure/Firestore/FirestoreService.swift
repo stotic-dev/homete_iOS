@@ -53,6 +53,33 @@ public final actor FirestoreService {
         return stream
     }
 
+    public func addSnapshotListener<Output: Decodable & Sendable>(
+        id: String,
+        predicate: (Firestore) -> DocumentReference
+    ) -> AsyncStream<Output?> {
+        let (stream, continuation) = AsyncStream.makeStream(
+            of: Output?.self,
+            bufferingPolicy: .bufferingNewest(10)
+        )
+        let listener = predicate(firestore)
+            .addSnapshotListener { snapshot, error in
+                if let error {
+                    print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
+                    return
+                }
+
+                guard let snapshot, snapshot.exists else {
+                    continuation.yield(nil)
+                    return
+                }
+                let value = try? snapshot.data(as: Output.self)
+                continuation.yield(value)
+            }
+
+        listeners[id] = FirestoreListener(continuation: continuation, listener: listener)
+        return stream
+    }
+
     public func removeSnapshotListener(id: String) {
         let listener = listeners[id]
         listener?.remove()
