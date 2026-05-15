@@ -15,9 +15,9 @@ public struct HouseworkTemplateClient: Sendable {
         _ cohabitantId: String
     ) async throws -> Void
 
-    /// 曜日定義の更新（楽観的ロック付きトランザクション）
-    public let updateDay: @Sendable (
-        _ day: HouseworkTemplateDay,
+    /// 曜日定義の一括更新（楽観的ロック付きトランザクション）
+    public let updateDays: @Sendable (
+        _ days: [HouseworkTemplateDay],
         _ templateId: String,
         _ cohabitantId: String,
         _ currentVersion: Int
@@ -73,8 +73,8 @@ public struct HouseworkTemplateClient: Sendable {
             _ meta: HouseworkTemplateMeta,
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
-        updateDay: @Sendable @escaping (
-            _ day: HouseworkTemplateDay,
+        updateDays: @Sendable @escaping (
+            _ days: [HouseworkTemplateDay],
             _ templateId: String,
             _ cohabitantId: String,
             _ currentVersion: Int
@@ -109,7 +109,7 @@ public struct HouseworkTemplateClient: Sendable {
         self.fetchTemplates = fetchTemplates
         self.fetchDays = fetchDays
         self.upsertTemplate = upsertTemplate
-        self.updateDay = updateDay
+        self.updateDays = updateDays
         self.upsertEditor = upsertEditor
         self.removeEditor = removeEditor
         self.addDaysSnapshotListener = addDaysSnapshotListener

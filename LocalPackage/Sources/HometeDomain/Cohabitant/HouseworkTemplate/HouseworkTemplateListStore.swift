@@ -57,7 +57,7 @@ public final class HouseworkTemplateListStore {
         templates.append(newMeta)
     }
 
-    /// 指定テンプレートの Days SnapshotListener を開始する（編集モード中の同期表示用）
+    /// 指定テンプレートの Days SnapshotListener を開始する
     public func startObservingDays(templateId: String, cohabitantId: String) async {
         let stream = await houseworkTemplateClient.addDaysSnapshotListener(
             daysListenerKey,
@@ -79,25 +79,29 @@ public final class HouseworkTemplateListStore {
         await houseworkTemplateClient.removeListener(daysListenerKey)
     }
 
-    /// 曜日定義を保存する。version の楽観的ロックで競合が発生した場合は `HouseworkTemplateError.versionConflict` を throw する。
-    /// 成功時には `selectedDays` をローカル更新する。
-    public func saveDay(
-        _ day: HouseworkTemplateDay,
+    /// 曜日定義を一括保存する。version の楽観的ロックで競合が発生した場合は `HouseworkTemplateError.versionConflict` を throw する。
+    /// 成功時には `selectedDays` をローカル更新する（既存の dayOfWeek は置換、未登録は追加）。
+    /// 空配列が渡された場合は no-op。
+    public func saveDays(
+        _ days: [HouseworkTemplateDay],
         templateId: String,
         cohabitantId: String,
         currentVersion: Int
     ) async throws {
-        try await houseworkTemplateClient.updateDay(
-            day,
+        guard !days.isEmpty else { return }
+        try await houseworkTemplateClient.updateDays(
+            days,
             templateId,
             cohabitantId,
             currentVersion
         )
 
-        if let index = selectedDays.firstIndex(where: { $0.dayOfWeek == day.dayOfWeek }) {
-            selectedDays[index] = day
-        } else {
-            selectedDays.append(day)
+        for day in days {
+            if let index = selectedDays.firstIndex(where: { $0.dayOfWeek == day.dayOfWeek }) {
+                selectedDays[index] = day
+            } else {
+                selectedDays.append(day)
+            }
         }
     }
 

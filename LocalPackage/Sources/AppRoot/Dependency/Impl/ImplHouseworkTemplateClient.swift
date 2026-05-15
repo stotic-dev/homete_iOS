@@ -27,7 +27,7 @@ extension HouseworkTemplateClient {
                 firestore.houseworkTemplatesRef(cohabitantId: cohabitantId).document(meta.templateId)
             }
         },
-        updateDay: { day, templateId, cohabitantId, currentVersion in
+        updateDays: { days, templateId, cohabitantId, currentVersion in
             try await FirestoreService.shared.runTransaction { transaction in
                 let metaRef = Firestore.firestore()
                     .houseworkTemplatesRef(cohabitantId: cohabitantId)
@@ -38,10 +38,12 @@ extension HouseworkTemplateClient {
                 guard metaDocument.version == currentVersion else {
                     throw HouseworkTemplateError.versionConflict
                 }
-                let dayRef = Firestore.firestore()
+                let daysRef = Firestore.firestore()
                     .houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
-                    .document("\(day.dayOfWeek)")
-                try transaction.setData(from: day, forDocument: dayRef)
+                for day in days {
+                    let dayRef = daysRef.document("\(day.dayOfWeek)")
+                    try transaction.setData(from: day, forDocument: dayRef)
+                }
                 let updatedDocument = HouseworkTemplateMetaDocument(
                     templateId: metaDocument.templateId,
                     name: metaDocument.name,

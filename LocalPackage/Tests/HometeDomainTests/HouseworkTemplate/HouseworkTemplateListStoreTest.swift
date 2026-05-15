@@ -108,8 +108,8 @@ struct HouseworkTemplateListStoreTest {
         }
     }
 
-    @Test("saveDayが成功すると、updateDayが呼ばれselectedDaysの該当dayOfWeekが置き換えられる")
-    func saveDayReplacesExistingDay() async throws {
+    @Test("saveDaysが成功すると、updateDaysが呼ばれselectedDaysの該当dayOfWeekが置き換えられ、未登録は追加される")
+    func saveDaysMergesIntoSelectedDays() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -122,21 +122,28 @@ struct HouseworkTemplateListStoreTest {
                 items: [.init(id: .init(id: "wed"), title: "水曜", point: 2, updatedAt: .now)]
             ),
         ]
-        let inputDay = HouseworkTemplateDay(
-            dayOfWeek: 1,
-            items: [.init(id: .init(id: "new"), title: "新しい家事", point: 5, updatedAt: .now)]
-        )
+        let inputDays: [HouseworkTemplateDay] = [
+            .init(
+                dayOfWeek: 1,
+                items: [.init(id: .init(id: "new"), title: "新しい家事", point: 5, updatedAt: .now)]
+            ),
+            .init(
+                dayOfWeek: 5,
+                items: [.init(id: .init(id: "fri"), title: "金曜", point: 3, updatedAt: .now)]
+            ),
+        ]
         let inputCurrentVersion = 3
         let expectedDays: [HouseworkTemplateDay] = [
-            inputDay,
+            inputDays[0],
             initialDays[1],
+            inputDays[1],
         ]
 
         try await confirmation { confirmation in
             let store = HouseworkTemplateListStore(
                 houseworkTemplateClient: .init(
-                    updateDay: { day, templateId, cohabitantId, currentVersion in
-                        #expect(day == inputDay)
+                    updateDays: { days, templateId, cohabitantId, currentVersion in
+                        #expect(days == inputDays)
                         #expect(templateId == Self.inputTemplateId)
                         #expect(cohabitantId == Self.inputCohabitantId)
                         #expect(currentVersion == inputCurrentVersion)
@@ -148,8 +155,8 @@ struct HouseworkTemplateListStoreTest {
 
             // Act
 
-            try await store.saveDay(
-                inputDay,
+            try await store.saveDays(
+                inputDays,
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
                 currentVersion: inputCurrentVersion
@@ -161,8 +168,8 @@ struct HouseworkTemplateListStoreTest {
         }
     }
 
-    @Test("saveDayで未登録の曜日定義を渡すと、selectedDaysに追加される")
-    func saveDayAppendsNewDay() async throws {
+    @Test("saveDaysに空配列を渡すと、updateDaysは呼ばれずselectedDaysも変わらない")
+    func saveDaysWithEmptyIsNoop() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -171,20 +178,18 @@ struct HouseworkTemplateListStoreTest {
                 items: [.init(id: .init(id: "mon"), title: "月曜", point: 1, updatedAt: .now)]
             ),
         ]
-        let inputDay = HouseworkTemplateDay(
-            dayOfWeek: 5,
-            items: [.init(id: .init(id: "fri"), title: "金曜", point: 3, updatedAt: .now)]
-        )
-        let expectedDays: [HouseworkTemplateDay] = initialDays + [inputDay]
+        let updateCallCount = TestCounter()
         let store = HouseworkTemplateListStore(
-            houseworkTemplateClient: .init(updateDay: { _, _, _, _ in }),
+            houseworkTemplateClient: .init(
+                updateDays: { _, _, _, _ in await updateCallCount.increment() }
+            ),
             selectedDays: initialDays
         )
 
         // Act
 
-        try await store.saveDay(
-            inputDay,
+        try await store.saveDays(
+            [],
             templateId: Self.inputTemplateId,
             cohabitantId: Self.inputCohabitantId,
             currentVersion: 0
@@ -192,11 +197,13 @@ struct HouseworkTemplateListStoreTest {
 
         // Assert
 
-        #expect(store.selectedDays == expectedDays)
+        let count = await updateCallCount.value
+        #expect(count == 0)
+        #expect(store.selectedDays == initialDays)
     }
 
-    @Test("saveDayでversionConflictが発生すると、エラーがthrowされselectedDaysは変わらない")
-    func saveDayConflictKeepsSelectedDays() async throws {
+    @Test("saveDaysでversionConflictが発生すると、エラーがthrowされselectedDaysは変わらない")
+    func saveDaysConflictKeepsSelectedDays() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -205,13 +212,15 @@ struct HouseworkTemplateListStoreTest {
                 items: [.init(id: .init(id: "mon"), title: "月曜", point: 1, updatedAt: .now)]
             ),
         ]
-        let inputDay = HouseworkTemplateDay(
-            dayOfWeek: 1,
-            items: [.init(id: .init(id: "new"), title: "新", point: 9, updatedAt: .now)]
-        )
+        let inputDays: [HouseworkTemplateDay] = [
+            .init(
+                dayOfWeek: 1,
+                items: [.init(id: .init(id: "new"), title: "新", point: 9, updatedAt: .now)]
+            ),
+        ]
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
-                updateDay: { _, _, _, _ in throw HouseworkTemplateError.versionConflict }
+                updateDays: { _, _, _, _ in throw HouseworkTemplateError.versionConflict }
             ),
             selectedDays: initialDays
         )
@@ -219,8 +228,8 @@ struct HouseworkTemplateListStoreTest {
         // Act + Assert
 
         await #expect(throws: HouseworkTemplateError.self) {
-            try await store.saveDay(
-                inputDay,
+            try await store.saveDays(
+                inputDays,
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
                 currentVersion: 0
@@ -305,6 +314,16 @@ private actor TestLockedArray<Element: Sendable> {
 
     func append(_ element: Element) {
         values.append(element)
+    }
+
+}
+
+private actor TestCounter {
+
+    var value: Int = 0
+
+    func increment() {
+        value += 1
     }
 
 }
