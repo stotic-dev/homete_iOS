@@ -71,6 +71,7 @@ public extension RootView {
                     accountInfoClient: $0.accountInfoClient
                 ))
                 .routeResolverInjection()
+                .adComponentResolverInjection()
         }
         .environment(\.appDependencies, dependencies)
     }

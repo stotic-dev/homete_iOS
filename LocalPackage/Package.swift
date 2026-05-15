@@ -86,7 +86,8 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
-                "ContributionFeature"
+                "ContributionFeature",
+                "HometeInfrastructure"
             ],
             plugins: [swiftLintPlugin()]
         ),
