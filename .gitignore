@@ -97,4 +97,4 @@ hometeSnapshotTests/PreviewTests.generated.swift
 
 # Admob 設定（広告ユニットID等の機密情報を含むため管理外）
 homete/Resouces/Admob.xcconfig
-homete/Resouces/Admob_dev.xcconfig
+
