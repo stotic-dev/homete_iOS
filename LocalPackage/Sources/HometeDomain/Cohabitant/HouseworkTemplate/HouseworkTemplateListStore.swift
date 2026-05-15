@@ -14,16 +14,20 @@ public final class HouseworkTemplateListStore {
     private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
 
+    private var daysObserveTask: Task<Void, Never>?
+
     private let houseworkTemplateClient: HouseworkTemplateClient
-    
-    public var context: HouseworkTemplateContext { .init(houseworkTemplate: selectedDays) }
+    private let daysListenerKey = "houseworkTemplateDaysListener"
+
+    public var context: HouseworkTemplateContext {
+        .init(houseworkTemplate: selectedDays)
+    }
 
     public init(
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = []
     ) {
-
         self.houseworkTemplateClient = houseworkTemplateClient
         self.templates = templates
         self.selectedDays = selectedDays
@@ -31,13 +35,11 @@ public final class HouseworkTemplateListStore {
 
     /// テンプレート一覧をワンショット取得する
     public func loadTemplates(cohabitantId: String) async throws {
-
         templates = try await houseworkTemplateClient.fetchTemplates(cohabitantId)
     }
 
     /// 指定テンプレートの曜日別定義をワンショット取得する
     public func loadDays(templateId: String, cohabitantId: String) async throws {
-
         selectedDays = try await houseworkTemplateClient.fetchDays(cohabitantId, templateId)
     }
 
@@ -47,13 +49,56 @@ public final class HouseworkTemplateListStore {
         name: String,
         cohabitantId: String
     ) async throws {
-
         let newMeta = HouseworkTemplateMeta(
             templateId: templateId,
-            name: name,
-            version: 0
+            name: name
         )
         try await houseworkTemplateClient.upsertTemplate(newMeta, cohabitantId)
         templates.append(newMeta)
     }
+
+    /// 指定テンプレートの Days SnapshotListener を開始する（編集モード中の同期表示用）
+    public func startObservingDays(templateId: String, cohabitantId: String) async {
+        let stream = await houseworkTemplateClient.addDaysSnapshotListener(
+            daysListenerKey,
+            templateId,
+            cohabitantId
+        )
+        daysObserveTask = Task {
+
+            for await currentDays in stream {
+                self.selectedDays = currentDays
+            }
+        }
+    }
+
+    /// Days SnapshotListener を解除する
+    public func stopObservingDays() async {
+        daysObserveTask?.cancel()
+        daysObserveTask = nil
+        await houseworkTemplateClient.removeListener(daysListenerKey)
+    }
+
+    /// 曜日定義を保存する。version の楽観的ロックで競合が発生した場合は `HouseworkTemplateError.versionConflict` を throw する。
+    /// 成功時には `selectedDays` をローカル更新する。
+    public func saveDay(
+        _ day: HouseworkTemplateDay,
+        templateId: String,
+        cohabitantId: String,
+        currentVersion: Int
+    ) async throws {
+        try await houseworkTemplateClient.updateDay(
+            day,
+            templateId,
+            cohabitantId,
+            currentVersion
+        )
+
+        if let index = selectedDays.firstIndex(where: { $0.dayOfWeek == day.dayOfWeek }) {
+            selectedDays[index] = day
+        } else {
+            selectedDays.append(day)
+        }
+    }
+
 }

@@ -51,6 +51,13 @@ public struct HouseworkTemplateClient: Sendable {
         _ cohabitantId: String
     ) async -> AsyncStream<[HouseworkTemplateEditor]>
 
+    /// テンプレートメタの version SnapshotListener（編集中のみ使用、楽観的ロックの currentVersion 取得用）
+    public let addMetaVersionSnapshotListener: @Sendable (
+        _ id: String,
+        _ templateId: String,
+        _ cohabitantId: String
+    ) async -> AsyncStream<Int>
+
     /// SnapshotListener の解除
     public let removeListener: @Sendable (_ id: String) async -> Void
 
@@ -92,6 +99,11 @@ public struct HouseworkTemplateClient: Sendable {
             _ templateId: String,
             _ cohabitantId: String
         ) async -> AsyncStream<[HouseworkTemplateEditor]> = { _, _, _ in .makeStream().stream },
+        addMetaVersionSnapshotListener: @Sendable @escaping (
+            _ id: String,
+            _ templateId: String,
+            _ cohabitantId: String
+        ) async -> AsyncStream<Int> = { _, _, _ in .makeStream().stream },
         removeListener: @Sendable @escaping (_ id: String) async -> Void = { _ in }
     ) {
         self.fetchTemplates = fetchTemplates
@@ -102,6 +114,7 @@ public struct HouseworkTemplateClient: Sendable {
         self.removeEditor = removeEditor
         self.addDaysSnapshotListener = addDaysSnapshotListener
         self.addEditorsSnapshotListener = addEditorsSnapshotListener
+        self.addMetaVersionSnapshotListener = addMetaVersionSnapshotListener
         self.removeListener = removeListener
     }
 
@@ -110,5 +123,21 @@ public struct HouseworkTemplateClient: Sendable {
 public extension HouseworkTemplateClient {
 
     static let previewValue: HouseworkTemplateClient = .init()
+
+}
+
+/// Firestore 上のテンプレートメタドキュメントを表現する内部構造体。
+/// `version` は Infrastructure 層でのみ扱い、Domain には公開しない。
+public struct HouseworkTemplateMetaDocument: Codable, Sendable {
+
+    public let templateId: String
+    public let name: String
+    public let version: Int
+
+    public init(templateId: String, name: String, version: Int) {
+        self.templateId = templateId
+        self.name = name
+        self.version = version
+    }
 
 }
