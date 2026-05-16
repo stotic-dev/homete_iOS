@@ -6,6 +6,8 @@
 //
 
 public enum BannerType {
+
     /// ダッシュボードに表示するバナー
     case dashboardTop
+
 }

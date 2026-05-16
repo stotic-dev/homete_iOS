@@ -6,10 +6,11 @@
 //
 
 import Foundation
-import HometeDomain
 import GoogleMobileAds
+import HometeDomain
 
 extension BannerType {
+
     var unitId: String {
         let adsUnitIdDic = Bundle.main.object(forInfoDictionaryKey: "AdUnitIdList") as? [String: String] ?? [:]
         switch self {
@@ -17,10 +18,11 @@ extension BannerType {
             return adsUnitIdDic["BANNER_DASHBOARD_TOP_AD_UNIT_ID"] ?? ""
         }
     }
-    
+
     var size: AdSize {
         switch self {
         case .dashboardTop: AdSizeBanner
         }
     }
+
 }

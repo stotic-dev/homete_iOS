@@ -6,8 +6,8 @@
 //
 
 import HometeDomain
-import HometeUI
 import HometeInfrastructure
+import HometeUI
 import SwiftUI
 
 private struct AdComponentResolverInjectionModifier: ViewModifier {
@@ -16,11 +16,12 @@ private struct AdComponentResolverInjectionModifier: ViewModifier {
         content
             .environment(\.adComponentResolver, AdComponentResolver { type in
                 switch type {
-                case .banner(let bannerType):
+                case let .banner(bannerType):
                     BannerViewContainer(bannerType)
                 }
             })
     }
+
 }
 
 extension View {
@@ -28,4 +29,5 @@ extension View {
     func adComponentResolverInjection() -> some View {
         modifier(AdComponentResolverInjectionModifier())
     }
+
 }

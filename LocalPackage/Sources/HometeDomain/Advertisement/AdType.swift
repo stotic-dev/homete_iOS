@@ -6,6 +6,8 @@
 //
 
 public enum AdType {
+
     /// バナー広告
     case banner(BannerType)
+
 }

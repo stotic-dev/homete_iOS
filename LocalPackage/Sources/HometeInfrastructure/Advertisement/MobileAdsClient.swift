@@ -9,10 +9,11 @@ import Foundation
 import GoogleMobileAds
 
 public final class MobileAdsClient: Sendable {
-    
+
     public static let shared = MobileAdsClient()
-    
+
     public func initialize() async {
         await MobileAds.shared.start()
     }
+
 }
