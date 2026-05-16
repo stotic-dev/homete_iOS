@@ -23,16 +23,11 @@ struct HouseworkTemplateItemDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
-            row(label: "ポイント", value: item.point.formatted())
-                .frame(maxWidth: .infinity, alignment: .leading)
-            VStack(alignment: .leading, spacing: .space8) {
-                Text("登録曜日")
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSubSurface)
-                Text(registeredDays.map(\.fullLabel).joined(separator: ", "))
-                    .font(with: .body)
-                    .foregroundStyle(.onSurface)
+            row(label: "ポイント") {
+                PointLabel(point: item.point)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            selectedDayOfWeeks()
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -59,14 +54,30 @@ struct HouseworkTemplateItemDetailView: View {
 
 private extension HouseworkTemplateItemDetailView {
 
-    func row(label: String, value: String) -> some View {
+    func row(label: String, @ViewBuilder valueContent: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(label)
                 .font(with: .headLineS)
                 .foregroundStyle(.onSubSurface)
-            Text(value)
-                .font(with: .body)
-                .foregroundStyle(.onSurface)
+            valueContent()
+        }
+    }
+
+    func selectedDayOfWeeks() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("登録曜日")
+                .font(with: .headLineS)
+                .foregroundStyle(.onSubSurface)
+            HStack(spacing: .space8) {
+                ForEach(registeredDays) { day in
+                    WeekdayLabel(
+                        weekday: day,
+                        isSelected: true
+                    )
+                    .frame(width: 40)
+                }
+                Spacer()
+            }
         }
     }
 
