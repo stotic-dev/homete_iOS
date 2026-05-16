@@ -9,15 +9,15 @@ import Foundation
 
 #if DEBUG
 
-    public extension Calendar {
+public extension Calendar {
 
-        static var japanese: Self {
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = .tokyo
-            calendar.locale = .jp
-            return calendar
-        }
-
+    static var japanese: Self {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .tokyo
+        calendar.locale = .jp
+        return calendar
     }
+
+}
 
 #endif

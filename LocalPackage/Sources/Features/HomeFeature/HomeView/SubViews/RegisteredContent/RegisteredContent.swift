@@ -63,11 +63,11 @@ private extension RegisteredContent {
 }
 
 #if DEBUG
-    #Preview {
-        RegisteredContent()
-            .environment(ContributionStore())
-            .environment(CohabitantStore())
-            .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-            .setupEnvironmentForPreview()
-    }
+#Preview {
+    RegisteredContent()
+        .environment(ContributionStore())
+        .environment(CohabitantStore())
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+        .setupEnvironmentForPreview()
+}
 #endif

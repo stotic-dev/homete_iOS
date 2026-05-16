@@ -95,45 +95,45 @@ private extension HouseworkBoardListContent {
 }
 
 #if DEBUG
-    #Preview {
-        @Previewable @State var selectedState = HouseworkState.incomplete
-        HouseworkBoardListContent(
-            houseworkListStore: .init(
-                houseworkClient: .previewValue,
-                cohabitantPushNotificationClient: .previewValue
+#Preview {
+    @Previewable @State var selectedState = HouseworkState.incomplete
+    HouseworkBoardListContent(
+        houseworkListStore: .init(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ),
+        state: .incomplete,
+        list: .init(items: [
+            .init(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
             ),
-            state: .incomplete,
-            list: .init(items: [
-                .init(
-                    id: "1",
-                    title: "洗濯",
-                    point: 20,
-                    metaData: .init(
-                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                        expiredAt: .now
-                    )
-                ),
-                .init(
-                    id: "2",
-                    title: "掃除",
-                    point: 100,
-                    metaData: .init(
-                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                        expiredAt: .now
-                    )
-                ),
-                .init(
-                    id: "3",
-                    title: "料理",
-                    point: 1,
-                    metaData: .init(
-                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                        expiredAt: .now
-                    )
-                ),
-            ]),
-            selectedHouseworkState: $selectedState,
-            onCreateTapped: {}
-        )
-    }
+            .init(
+                id: "2",
+                title: "掃除",
+                point: 100,
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
+            ),
+            .init(
+                id: "3",
+                title: "料理",
+                point: 1,
+                metaData: .init(
+                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                    expiredAt: .now
+                )
+            ),
+        ]),
+        selectedHouseworkState: $selectedState,
+        onCreateTapped: {}
+    )
+}
 #endif

@@ -119,30 +119,30 @@ private extension HouseworkBoardView {
 }
 
 #if DEBUG
-    #Preview {
-        let list = HouseworkBoardList(items: [
-            .init(
-                id: "1",
-                title: "洗濯",
-                point: 20,
-                metaData: .init(
-                    indexedDate: .init(value: .distantPast),
-                    expiredAt: .distantPast
-                )
-            ),
-        ])
-        HouseworkBoardView(
-            houseworkBoardList: .constant(list),
-            dateList: .constant(.init(
-                anchorDate: .distantPast,
-                selectedDate: .distantPast,
-                calendar: .japanese
-            )),
-            onUpdateHouseboardList: {}
-        )
-        .apply(theme: .init())
-        .setupEnvironmentForPreview()
-        .environment(\.now, .distantPast)
-        .environment(HouseworkListStore())
-    }
+#Preview {
+    let list = HouseworkBoardList(items: [
+        .init(
+            id: "1",
+            title: "洗濯",
+            point: 20,
+            metaData: .init(
+                indexedDate: .init(value: .distantPast),
+                expiredAt: .distantPast
+            )
+        ),
+    ])
+    HouseworkBoardView(
+        houseworkBoardList: .constant(list),
+        dateList: .constant(.init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )),
+        onUpdateHouseboardList: {}
+    )
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .environment(HouseworkListStore())
+}
 #endif

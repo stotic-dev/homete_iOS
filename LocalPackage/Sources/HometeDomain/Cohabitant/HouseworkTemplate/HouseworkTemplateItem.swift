@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HouseworkTemplateItem: Codable, Sendable, Equatable, Hashable {
+public struct HouseworkTemplateItem: Identifiable, Codable, Sendable, Equatable, Hashable {
 
     public let id: ItemId
     public let title: String
@@ -22,6 +22,10 @@ public extension HouseworkTemplateItem {
 
         public let id: String
 
+        public init(id: String) {
+            self.id = id
+        }
+
     }
 
 }
@@ -29,7 +33,7 @@ public extension HouseworkTemplateItem {
 public extension HouseworkTemplateItem.ItemId {
 
     init(uuid: UUID) {
-        id = uuid.uuidString
+        self.init(id: uuid.uuidString)
     }
 
 }

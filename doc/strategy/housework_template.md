@@ -217,18 +217,277 @@ AppRoot
 
 ---
 
+### 画面仕様
+
+#### 画面構成
+
+テンプレート機能は以下の3つの画面で構成される。
+
+```
+HouseworkTemplateView（テンプレート編集画面 / メイン画面）
+  ├─ HouseworkTemplateItemEditModal（家事追加・編集モーダル / ハーフモーダル）
+  └─ HouseworkTemplateItemDetailView（家事詳細画面 / Push 遷移）
+       └─ HouseworkTemplateItemEditModal（編集ボタンから再利用）
+```
+
+#### MVP制約
+
+MVP では「テンプレートは1件のみ」とする。テンプレート一覧画面は実装せず、`HouseworkTemplateView` を開いた時点で唯一のテンプレートを直接表示する。将来的に複数テンプレート対応する場合は、上位に一覧画面を挟む構造に拡張する。
+
+#### Empty State
+
+`HouseworkTemplates` コレクションにドキュメントが0件の場合は、Empty State を表示する。
+
+- 「テンプレートを作成する」ボタンを画面中央に配置する
+- ボタンタップで `HouseworkTemplateListStore.createTemplate` を呼び、cohabitantId に紐づく1件目のテンプレートを作成する
+- 作成成功後は同画面のまま編集可能な通常表示に切り替える
+
+#### HouseworkTemplateView（テンプレート編集画面）
+
+##### 表示モード
+
+画面には「閲覧モード」と「編集モード」の2つのモードがある。
+
+| モード | 開始トリガー | 終了トリガー |
+|---|---|---|
+| 閲覧モード | 画面表示時のデフォルト | 編集ボタンタップで編集モードへ |
+| 編集モード | ナビゲーション右上の編集ボタンタップ | 保存成功 / キャンセル確定 / コンフリクトアラートの確認 |
+
+##### 画面構成（概略）
+
+```
+┌──────────────────────────────────────────┐
+│ [キャンセル] 家事テンプレート [編集/保存] │ ← Navigation Bar
+├──────────────────────────────────────────┤
+│ 編集中: Aさん, Bさん                     │ ← 編集中ユーザー表示（編集モード中のみ）
+│ ⚠ 他のユーザーが編集中です...      [×]   │ ← コンフリクト注意バナー（条件付き）
+├──────────────────────────────────────────┤
+│ 月曜日                                   │
+│  ┌─────────────┐ ┌─────────────┐         │
+│  │ 洗濯  10pt  │ │ 掃除  15pt  │         │
+│  └─────────────┘ └─────────────┘         │
+│ 火曜日                                   │
+│  ┌─────────────┐                         │
+│  │ ゴミ出し 5pt│                         │
+│  └─────────────┘                         │
+│ ...                                      │
+│ 日曜日                                   │
+│  ...                                     │
+├──────────────────────────────────────────┤
+│                                  [＋]    │ ← 家事追加ボタン（編集モード中のみ）
+└──────────────────────────────────────────┘
+```
+
+##### ナビゲーションバー
+
+| 位置 | 要素 | 閲覧モード | 編集モード |
+|---|---|---|---|
+| 左上 | 閉じる / キャンセル | 閉じるボタン（`dismiss()`） | キャンセルボタン |
+| タイトル | "家事テンプレート" | 表示 | 表示 |
+| 右上 | 編集 / 保存 | 編集ボタンを表示 | 保存ボタンに入れ替え |
+
+##### 編集中ユーザー表示
+
+編集モード中のみ、画面上部に「編集中の他ユーザー」を表示する。
+
+- 参照元: `HouseworkTemplateEditStore.editors` のうち、自分以外で `isActive(now:)` が true（5分以内に updatedAt が更新されたもの）の editor
+- 表示形式: ユーザー名（または ID）を「編集中: Aさん, Bさん」の形で並べる
+- 自分自身は表示対象から除外する
+
+##### コンフリクト注意バナー
+
+編集モード中、上述の「自分以外のアクティブな editor」が1人以上存在する間、画面上部に注意バナーを表示する。
+
+- 文言例: 「他のユーザーがテンプレートを編集中です。保存時にコンフリクトすると編集内容が消える場合があります。」
+- 右端に × ボタンを配置し、タップで非表示にできる
+- 一度 × で閉じても、他ユーザーがアクティブな間は同セッション中に再表示されることはない（×で「閉じた」事実をセッション中保持する）
+- 編集モードを抜けて再度入った場合は閉じた状態はリセットされる
+
+##### 曜日リスト表示
+
+月〜日の7曜日それぞれについて、当該曜日に登録されているテンプレートアイテム（`HouseworkTemplateItem`）を一覧表示する。
+
+- 曜日の並び順: 月 → 火 → 水 → 木 → 金 → 土 → 日
+- 参照元: 閲覧モード時は `HouseworkTemplateListStore.selectedDays` を、編集モード時は編集セッションのローカル State を表示する
+- 各アイテム行に表示する項目: タイトル、ポイント
+
+#### 家事アイテムへのインタラクション
+
+| 操作 | 閲覧モード | 編集モード |
+|---|---|---|
+| タップ | 家事詳細画面へ Push 遷移 | 家事詳細画面へ Push 遷移 |
+| 長押し（コンテキストメニュー） | 非表示 | 「編集」「削除」メニューを表示 |
+| ドラッグ&ドロップ | 不可 | 別の曜日へ移動 |
+
+##### タップ
+
+家事アイテムをタップすると、家事詳細画面（`HouseworkTemplateItemDetailView`）へ Push 遷移する。
+
+##### 長押し（編集モード中のみ）
+
+家事アイテムを長押しすると、コンテキストメニューを表示する。
+
+- 編集: 家事追加・編集モーダルを「編集モード」で開く
+- 削除: 該当アイテムを仮削除する（保存時に確定）
+
+##### ドラッグ&ドロップ（編集モード中のみ）
+
+家事アイテムをドラッグ&ドロップで別の曜日へ移動できる。
+
+- 移動元の `Day.items` から該当アイテムを削除し、移動先の `Day.items` に追加する
+- アイテムの `updatedAt` は移動時に更新する（仮想 incomplete 表示の表示範囲制御に反映される）
+- 仮保存状態として保持し、保存ボタンで初めて Firestore に書き込む
+
+#### 家事追加ボタン
+
+編集モード中のみ、画面右下にフローティングボタン（＋）を表示する。タップでハーフモーダルの家事追加画面を表示する。
+
+#### 家事追加・編集モーダル（ハーフモーダル）
+
+##### 表示方法
+
+`.sheet(...)` + `.presentationDetents([.medium, .large])` でハーフモーダル表示する。
+
+##### 画面構成（概略）
+
+```
+┌──────────────────────────────────────────┐
+│             家事を追加 / 編集            │ ← タイトル
+├──────────────────────────────────────────┤
+│ 家事の名前                               │
+│ [_______________________________________]│ ← TextField
+│                                          │
+│ ポイント                                 │
+│         [─────●─────]   10               │ ← Slider
+│                                          │
+│ 曜日                                     │
+│ [月] [火] [水] [木] [金] [土] [日]       │ ← 複数選択トグル
+├──────────────────────────────────────────┤
+│              [決定]                      │
+└──────────────────────────────────────────┘
+```
+
+##### 入力要素
+
+| 項目 | UI | バリデーション |
+|---|---|---|
+| 家事名 | TextField | 空でない |
+| ポイント | Slider（1〜100、ステップ1） | デフォルト10 |
+| 曜日 | 複数選択トグル（月〜日） | 1個以上選択 |
+
+##### 新規追加モードと編集モード
+
+| モード | トリガー | 初期値 | 決定ボタンの挙動 |
+|---|---|---|---|
+| 新規追加 | 編集モード中の＋ボタン | 全て空・デフォルト値、曜日は全て未選択 | 各選択曜日の `Day.items` に新規アイテムを追加 |
+| 編集 | 詳細画面の編集ボタン / 長押しメニューの「編集」 | 既存アイテムの値で初期化、登録曜日が選択状態 | 既存アイテムを更新（曜日変更時は元の曜日から削除し、新しい曜日に追加） |
+
+複数曜日が選択された場合は、各曜日の `Day.items` に同じ家事を割り当てる。アイテム ID の割り当て規則（曜日ごとに新規 UUID か、共通 UUID か）は実装時に確定する。
+
+##### 「決定」ボタンの挙動
+
+- 仮保存状態として `HouseworkTemplateView` のローカル編集 State に反映する（この時点では Firestore には書き込まない）
+- モーダルを閉じる
+- `HouseworkTemplateView` の表示にも仮保存内容が即反映され、保存ボタンで初めて Firestore に書き込む
+
+##### バリデーション
+
+- 家事名が空、または曜日が0個選択の場合は「決定」ボタンを無効化する
+
+#### 家事詳細画面（HouseworkTemplateItemDetailView）
+
+##### 画面構成
+
+```
+┌──────────────────────────────────────────┐
+│ [<戻る] テンプレート家事    [編集][削除] │ ← Navigation Bar
+├──────────────────────────────────────────┤
+│ タイトル: 洗濯                           │
+│ ポイント: 10                             │
+│ 登録曜日: 月曜日, 水曜日                 │
+└──────────────────────────────────────────┘
+```
+
+##### ナビゲーションバー
+
+| 位置 | 要素 | 挙動 | 表示条件 |
+|---|---|---|---|
+| 右上 | 編集ボタン | 家事追加・編集モーダルを「編集モード」で開く | 編集モード中のみ |
+| 右上 | 削除ボタン | 該当アイテムを仮削除して詳細画面を pop する | 編集モード中のみ |
+
+##### 表示項目
+
+- 家事のタイトル
+- ポイント
+- 登録曜日（同一アイテムが複数曜日に登録されている場合は全て表示）
+
+##### 仮保存状態の扱い
+
+詳細画面で表示する内容は、ローカル編集 State の仮保存内容を反映する。詳細画面で編集モーダルを開いて変更を確定した場合も、仮保存状態として `HouseworkTemplateView` に反映される。
+
+#### 編集モード中の状態管理
+
+編集モード中は、Firestore からリスナーで受信した `selectedDays` をそのまま画面に直接バインドするのではなく、編集セッション開始時にスナップショットを取得して、ローカルの編集 State として保持する。保存ボタンで確定するまでの仮保存変更（追加・編集・削除・曜日間移動）はこのローカル State 上で反映される。
+
+| 状態 | 保持場所 | 役割 |
+|---|---|---|
+| サーバー側最新の `selectedDays` | `HouseworkTemplateListStore.selectedDays` | 閲覧モード時の表示、保存後の反映元、コンフリクト後の最新内容取得元 |
+| 編集セッション中の仮保存 State | `HouseworkTemplateEditStore`（または専用 Store） | 編集中の表示・確定までのバッファ |
+| `currentVersion` | `HouseworkTemplateEditStore.currentVersion` | 保存時の楽観的ロックチェック |
+| 他ユーザーの編集者一覧 | `HouseworkTemplateEditStore.editors` | 編集中ユーザー表示・コンフリクト注意バナーの表示条件 |
+| バナーの×閉じ状態 | 画面 State（または `HouseworkTemplateEditStore`） | 編集セッション中の閉じ状態保持 |
+
+##### 編集モード中の Days リスナー
+
+編集モード中は `HouseworkTemplateListStore` の Days SnapshotListener により `selectedDays` は最新化され続けるが、編集セッションのローカル State には自動反映しない（ユーザーの未保存変更を失わないため）。
+
+代わりに、後述のコンフリクト検知経路（`version` 変化）で「他ユーザーの更新を検知 → アラート → 最新内容で再描画」のフローで明示的にユーザーに確認を取る。
+
+#### 保存・キャンセル
+
+##### 保存ボタンの挙動
+
+1. ローカル編集 State の仮保存内容から、変更があった `Day` のみを抽出する（差分計算）
+2. `HouseworkTemplateListStore.saveDays(_:templateId:cohabitantId:currentVersion:)` を呼び出す
+3. 成功時: 編集モードを終了し閲覧モードに戻る。`HouseworkTemplateEditStore.stopEditing` で `Editors/{自分のuserId}` を削除し、各 SnapshotListener を解除する
+4. `HouseworkTemplateError.versionConflict` で失敗した場合: アラートを表示する（「画面データの更新タイミング > コンフリクト発生時」セクション参照）
+
+##### キャンセルボタンの挙動
+
+1. 仮保存中に未保存変更があるかを判定する（ローカル編集 State と編集開始時スナップショットの差分）
+2. 未保存変更がある場合のみ、確認アラート「変更を破棄します。よろしいですか？」を表示する
+3. 確認した場合（または未保存変更が無い場合）は、編集モードを終了し閲覧モードに戻る。`HouseworkTemplateEditStore.stopEditing` を呼び出して Editor 削除と SnapshotListener 解除を行う
+4. ローカル編集 State は破棄する
+
+#### 例外処理
+
+例外処理の方針は「コンフリクト制御」と「画面データの更新タイミング > コンフリクト発生時」セクションを参照。主な例外パターンは以下の3つ。
+
+| パターン | 検知方法 | UI挙動 |
+|---|---|---|
+| 編集中に他ユーザーがテンプレート更新 | `version` SnapshotListener が新しい version を受信 | アラート表示 → 確認後 `loadDays` で最新内容を fetch して編集 State にも反映 |
+| 自分の保存が version 不一致で失敗 | `saveDays` が `HouseworkTemplateError.versionConflict` を throw | アラート表示。`currentVersion` は SnapshotListener により最新化されているため、ユーザーが再操作後に再試行できる |
+| ネットワークエラー等の通常エラー | 各 Client メソッドの throw | `@CommonError` でエラーバナー表示（既存パターンを踏襲） |
+
+---
+
 ### 新規追加するファイル
 
 | 種別 | モジュール | ファイル | 概要 |
 |---|---|---|---|
-| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateView.swift` 等 | テンプレート設定・管理画面 |
-| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateEmptyView.swift` | テンプレートが0件の初期状態のEmpty表示 |
-| Domain Model | `HometeDomain` | `HouseworkTemplateMeta.swift` | テンプレートのメタ情報（templateId, name, version） |
+| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateScreen.swift` | テンプレート画面のスクリーンエントリー（NavigationStack を含むラッパー、既存） |
+| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateView.swift` | テンプレート編集画面の本体。閲覧・編集モード切替、曜日別家事一覧表示、編集者表示、注意バナー、家事追加ボタンを保持 |
+| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateEmptyView.swift` | テンプレートが0件の初期状態のEmpty表示。「テンプレートを作成する」ボタンを配置 |
+| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateItemEditModal.swift` | 家事追加・編集のハーフモーダル（新規・編集兼用） |
+| Feature | `HouseworkTemplateFeature`（新規） | `HouseworkTemplateItemDetailView.swift` | 家事詳細画面（タイトル・ポイント・登録曜日表示、編集・削除ボタン） |
+| Feature | `HouseworkTemplateFeature`（新規） | `Components/`（必要に応じて） | 家事行、曜日セクションヘッダ、コンフリクト注意バナー、編集者表示などのサブコンポーネント |
+| Feature | `HouseworkTemplateFeature`（新規） | `Stores/HouseworkTemplateEditStore.swift`（既存） | 既存。編集セッション中のローカル仮保存 State も保持する形で拡張する |
+| Domain Model | `HometeDomain` | `HouseworkTemplateMeta.swift` | テンプレートのメタ情報（templateId, name、version は Infrastructure 層でのみ扱う） |
 | Domain Model | `HometeDomain` | `HouseworkTemplateDay.swift` | 曜日ごとの家事定義（dayOfWeek, items） |
 | Domain Model | `HometeDomain` | `HouseworkTemplateItem.swift` | テンプレートアイテム（id, title, point, updatedAt） |
-| Domain Model | `HometeDomain` | `HouseworkTemplateEditor.swift` | 編集中ユーザー情報（userId, updatedAt） |
+| Domain Model | `HometeDomain` | `HouseworkTemplateEditor.swift` | 編集中ユーザー情報（userId, updatedAt, expiredAt） |
 | Client | `HometeDomain` | `HouseworkTemplateClient.swift` | テンプレートのCRUD・Presence管理 |
-| Store | `HometeDomain` | テンプレート画面用Store | テンプレート一覧・編集のUI状態管理 |
+| Store | `HometeDomain` | `HouseworkTemplateListStore.swift` | テンプレート一覧・Days の読み書きの状態管理 |
 
 ### 既存ファイルへの変更
 

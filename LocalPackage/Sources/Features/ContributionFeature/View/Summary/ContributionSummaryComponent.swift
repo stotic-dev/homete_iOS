@@ -148,36 +148,36 @@ private extension ContributionSummaryContent {
 }
 
 #if DEBUG
-    #Preview("ContributionSummaryContent_データ有り", traits: .sizeThatFitsLayout) {
-        ContributionSummaryContent(
-            isShowAnalytics: .constant(false),
-            summaries: AllUserPointSummary(items: [
-                UserPointSummary(
-                    userId: "user1",
-                    userName: "田中",
-                    isMe: true,
-                    monthlyPoint: .init(value: 120),
-                    achievedCount: 5
-                ),
-                UserPointSummary(
-                    userId: "user2",
-                    userName: "佐藤",
-                    isMe: false,
-                    monthlyPoint: .init(value: 40),
-                    achievedCount: 2
-                ),
-            ])
-        )
-        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionSummaryContent_データ有り", traits: .sizeThatFitsLayout) {
+    ContributionSummaryContent(
+        isShowAnalytics: .constant(false),
+        summaries: AllUserPointSummary(items: [
+            UserPointSummary(
+                userId: "user1",
+                userName: "田中",
+                isMe: true,
+                monthlyPoint: .init(value: 120),
+                achievedCount: 5
+            ),
+            UserPointSummary(
+                userId: "user2",
+                userName: "佐藤",
+                isMe: false,
+                monthlyPoint: .init(value: 40),
+                achievedCount: 2
+            ),
+        ])
+    )
+    .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+    .setupEnvironmentForPreview()
+}
 
-    #Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {
-        ContributionSummaryContent(
-            isShowAnalytics: .constant(false),
-            summaries: AllUserPointSummary(items: [])
-        )
-        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {
+    ContributionSummaryContent(
+        isShowAnalytics: .constant(false),
+        summaries: AllUserPointSummary(items: [])
+    )
+    .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+    .setupEnvironmentForPreview()
+}
 #endif
