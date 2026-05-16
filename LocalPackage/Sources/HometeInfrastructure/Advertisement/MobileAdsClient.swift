@@ -5,15 +5,17 @@
 //  Created by Taichi Sato on 2026/05/15.
 //
 
-import Foundation
-import GoogleMobileAds
+#if os(iOS)
+    import Foundation
+    import GoogleMobileAds
 
-public final class MobileAdsClient: Sendable {
+    public final class MobileAdsClient: Sendable {
 
-    public static let shared = MobileAdsClient()
+        public static let shared = MobileAdsClient()
 
-    public func initialize() async {
-        await MobileAds.shared.start()
+        public func initialize() async {
+            await MobileAds.shared.start()
+        }
+
     }
-
-}
+#endif

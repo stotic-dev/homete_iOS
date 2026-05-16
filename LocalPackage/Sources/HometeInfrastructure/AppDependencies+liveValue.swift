@@ -2,21 +2,23 @@
 //  AppDependencies+liveValue.swift
 //
 
-import HometeDomain
+#if os(iOS)
+    import HometeDomain
 
-// MARK: Live用の定義
+    // MARK: Live用の定義
 
-public extension AppDependencies {
+    public extension AppDependencies {
 
-    static let liveValue: Self = .init(
-        nonceGeneratorClient: .liveValue,
-        accountAuthClient: .liveValue,
-        analyticsClient: .liveValue,
-        accountInfoClient: .liveValue,
-        cohabitantClient: .liveValue,
-        houseworkClient: .liveValue,
-        cohabitantPushNotificationClient: .liveValue,
-        signInWithAppleClient: .liveValue
-    )
+        static let liveValue: Self = .init(
+            nonceGeneratorClient: .liveValue,
+            accountAuthClient: .liveValue,
+            analyticsClient: .liveValue,
+            accountInfoClient: .liveValue,
+            cohabitantClient: .liveValue,
+            houseworkClient: .liveValue,
+            cohabitantPushNotificationClient: .liveValue,
+            signInWithAppleClient: .liveValue
+        )
 
-}
+    }
+#endif

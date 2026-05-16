@@ -2,39 +2,41 @@
 //  SignInWithApple.swift
 //
 
-import AuthenticationServices
-import HometeDomain
+#if os(iOS)
+    import AuthenticationServices
+    import HometeDomain
 
-final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
+    final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
 
-    private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
+        private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
 
-    func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
-        try await withCheckedThrowingContinuation { continuation in
-            self.continuation = continuation
+        func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
+            try await withCheckedThrowingContinuation { continuation in
+                self.continuation = continuation
 
-            let authorizationController = ASAuthorizationController(
-                authorizationRequests: [SignInWithAppleRequestFactory.make(nonce)]
-            )
-            authorizationController.delegate = self
-            authorizationController.performRequests()
+                let authorizationController = ASAuthorizationController(
+                    authorizationRequests: [SignInWithAppleRequestFactory.make(nonce)]
+                )
+                authorizationController.delegate = self
+                authorizationController.performRequests()
+            }
         }
-    }
 
-    func authorizationController(
-        controller _: ASAuthorizationController,
-        didCompleteWithAuthorization authorization: ASAuthorization
-    ) {
-        if case let appleIDCredential as ASAuthorizationAppleIDCredential = authorization.credential {
-            continuation?.resume(returning: appleIDCredential)
+        func authorizationController(
+            controller _: ASAuthorizationController,
+            didCompleteWithAuthorization authorization: ASAuthorization
+        ) {
+            if case let appleIDCredential as ASAuthorizationAppleIDCredential = authorization.credential {
+                continuation?.resume(returning: appleIDCredential)
+            }
         }
-    }
 
-    func authorizationController(
-        controller _: ASAuthorizationController,
-        didCompleteWithError error: any Error
-    ) {
-        continuation?.resume(throwing: error)
-    }
+        func authorizationController(
+            controller _: ASAuthorizationController,
+            didCompleteWithError error: any Error
+        ) {
+            continuation?.resume(throwing: error)
+        }
 
-}
+    }
+#endif

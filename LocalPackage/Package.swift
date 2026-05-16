@@ -73,7 +73,7 @@ let package = Package(
                 .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
-                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads")
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS]))
             ],
             plugins: [swiftLintPlugin()]
         ),
