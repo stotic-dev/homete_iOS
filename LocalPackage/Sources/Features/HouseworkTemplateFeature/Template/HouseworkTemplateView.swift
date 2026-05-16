@@ -34,7 +34,7 @@ struct HouseworkTemplateView: View {
                     addItemButton()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         .padding(.trailing, .space24)
-                        .padding(.bottom, .space24)
+                        .padding(.bottom, .space8)
                 }
             } else {
                 HouseworkTemplateEmptyView {
@@ -49,7 +49,13 @@ struct HouseworkTemplateView: View {
         }
         .trailingToolbarItem {
             trailingNavigationItem()
-                .tint(.red)
+        }
+        .safeAreaInset(edge: .top) {
+            HouseworkTemplateEditorsLabel(
+                bannerDismissedInSession: $bannerDismissedInSession,
+                editorNames: activeOtherEditorNames
+            )
+            .padding(.horizontal, .space16)
         }
         .sheet(isPresented: $presentingAddModal) {
             HouseworkTemplateItemEditModal(mode: .create) { input in
@@ -96,18 +102,13 @@ private extension HouseworkTemplateView {
     func mainContent() -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: .space16) {
-                HouseworkTemplateEditorsLabel(editorNames: activeOtherEditorNames)
-                if !activeOtherEditorNames.isEmpty, !bannerDismissedInSession {
-                    HouseworkTemplateConflictBanner {
-                        bannerDismissedInSession = true
-                    }
-                }
                 ForEach(DayOfWeek.displayOrdered) { day in
                     daySection(day)
                 }
-                Spacer(minLength: .space48)
             }
-            .padding(.space16)
+            .padding(.horizontal, .space16)
+            .padding(.top, .space32)
+            .padding(.bottom, .space64)
         }
     }
 
@@ -196,7 +197,6 @@ private extension HouseworkTemplateView {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             tappedSaveButton()
         }
-        .foregroundStyle(.onPrimary1)
         .disabled(!hasUnsavedChanges)
     }
 
@@ -389,7 +389,6 @@ private extension HouseworkTemplateView {
                 activeOtherEditorNames: ["Aさん", "Bさん"]
             )
         }
-        .tint(.red)
         .apply(theme: .init())
     }
 #endif

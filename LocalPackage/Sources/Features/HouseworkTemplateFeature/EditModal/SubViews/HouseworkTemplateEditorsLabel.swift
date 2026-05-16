@@ -10,19 +10,29 @@ import SwiftUI
 
 struct HouseworkTemplateEditorsLabel: View {
 
+    @Binding var bannerDismissedInSession: Bool
     let editorNames: [String]
 
     var body: some View {
         if editorNames.isEmpty {
             EmptyView()
         } else {
-            HStack(spacing: .space8) {
-                Image(systemName: "person.fill")
-                    .foregroundStyle(.onSubSurface)
-                Text("編集中: \(editorNames.joined(separator: ", "))")
-                    .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
-                Spacer(minLength: .zero)
+            VStack(spacing: .space8) {
+                HStack(spacing: .space8) {
+                    Image(systemName: "person.fill")
+                        .foregroundStyle(.onSubSurface)
+                    Text("編集中: \(editorNames.joined(separator: ", "))")
+                        .font(with: .caption)
+                        .foregroundStyle(.onSubSurface)
+                    Spacer(minLength: .zero)
+                }
+                if !editorNames.isEmpty, !bannerDismissedInSession {
+                    HouseworkTemplateConflictBanner {
+                        withAnimation {
+                            bannerDismissedInSession = true
+                        }
+                    }
+                }
             }
         }
     }
@@ -30,10 +40,16 @@ struct HouseworkTemplateEditorsLabel: View {
 }
 
 #if DEBUG
-    #Preview {
+    #Preview(traits: .sizeThatFitsLayout) {
         VStack(alignment: .leading) {
-            HouseworkTemplateEditorsLabel(editorNames: ["Aさん", "Bさん"])
-            HouseworkTemplateEditorsLabel(editorNames: [])
+            HouseworkTemplateEditorsLabel(
+                bannerDismissedInSession: .constant(false),
+                editorNames: ["Aさん", "Bさん"]
+            )
+            HouseworkTemplateEditorsLabel(
+                bannerDismissedInSession: .constant(false),
+                editorNames: []
+            )
         }
         .padding()
     }
