@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# VRTワークフロー以外では何もしない（スナップショット参照ファイルの準備はVRT専用）
+if [ "$CI_WORKFLOW" != "VRT" ]; then
+    echo "Skipping ci_post_clone.sh (CI_WORKFLOW=$CI_WORKFLOW)"
+    exit 0
+fi
+
 # Xcode CloudでSwift Package Managerプラグインの検証をスキップする
 # PrefireTestsPluginなどのパッケージプラグインを許可するために必要
 defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
