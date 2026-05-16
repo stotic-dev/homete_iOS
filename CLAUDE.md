@@ -9,7 +9,7 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 **技術スタック:**
 - iOS: SwiftUI + Swift 6（strict concurrency有効）
 - バックエンド: Firebase（Firestore、Auth、Cloud Messaging、Functions）
-- CI/CD: GitHub Actions + Fastlane
+- CI/CD: GitHub Actions + Xcode Cloud + Fastlane
 
 ## よく使うコマンド
 
@@ -164,29 +164,31 @@ launching → notLoggedIn → Sign In with Apple
 
 **GitHub Actionsワークフロー:**
 
-1. **`ci.yml`** - 全てのpush/PRで実行
-   - ユニット + スナップショットテストを実行
+1. **`ci_danger.yml`** - PR作成時に実行
    - Danger実行（SwiftLint、カバレッジレポート）
-   - `main`ブランチでTestFlightデプロイをトリガー
 
-2. **`cd_testFlight.yml`** - TestFlightデプロイ
-   - `main`ブランチでビルド成功後に`ci.yml`からトリガー
-   - ビルド番号を`${{ github.run_number }}`にインクリメント
-   - Fastlane Matchでコード署名
-   - IPAをApp Store Connectにアップロード
-
-3. **`cd_release.yml`** - 本番リリース
-   - `release/*`ブランチへのpushでトリガー
-   - gitタグ`v{app_version}`を作成
-
-4. **`functions-e2e-test.yml`** - Firebase Functionsテスト
+2. **`functions-e2e-test.yml`** - Firebase Functionsテスト
    - `firebase/dev/functions/**`への変更でトリガー
    - ESLintとE2Eテストを実行
    - Node.js 21とJava 21を使用
 
+**Xcode Cloudワークフロー:**
+
+`ci_scripts/` 配下のシェルスクリプトが`$CI_WORKFLOW`の値で処理を分岐する。
+
+1. **`VRT`** - スナップショットテスト
+   - `ci_post_clone.sh`: SPMプラグイン検証スキップ + スナップショット参照ファイル確認
+
+2. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
+   - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info-dev.plist` をデコード配置
+
+3. **`Upload For AppStore`** - 本番App Storeアップロード
+   - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info.plist` をデコード配置
+   - `ci_pre_xcodebuild.sh`: `$CI_BUILD_NUMBER` を `agvtool` で全Targetに反映
+   - `ci_post_xcodebuild.sh`: archive成功時に `v{version}` の git タグを作成（`$GITHUB_TOKEN` 設定時のみpush）
+
 **コード署名:**
-- Fastlane Matchを使用（証明書はプライベートGitリポジトリに保存）
-- ASC APIキー認証（Apple ID/パスワード不要）
+- Xcode Cloudが自動管理（証明書・プロビジョニングプロファイルとも）
 - 開発用バンドルID: `taichi.satou.hometekure.dev`
 - 本番用バンドルID: `taichi.satou.hometekure`
 
