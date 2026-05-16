@@ -40,6 +40,7 @@ struct ContributionPieChart: View {
             .chartLegend(position: .bottom, alignment: .center)
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
@@ -54,7 +55,7 @@ struct ContributionPieChart: View {
                 userId: "user2",
                 userName: "佐藤",
                 achievedCount: 2
-            )
+            ),
         ]
     )
     .frame(height: 240)

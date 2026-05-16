@@ -21,6 +21,7 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 }
             })
     }
+
 }
 
 extension View {
@@ -28,4 +29,5 @@ extension View {
     func routeResolverInjection() -> some View {
         modifier(RouteResolverInjectionModifier())
     }
+
 }

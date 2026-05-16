@@ -18,12 +18,13 @@ public struct Account: Equatable, Codable, Sendable {
         self.fcmToken = fcmToken
         self.cohabitantId = cohabitantId
     }
+
 }
 
 public extension Account {
 
     static func initial(auth: AccountAuthResult, userName: UserName, fcmToken: String?) -> Self {
-
-        return .init(id: auth.id, userName: userName.value, fcmToken: fcmToken, cohabitantId: nil)
+        .init(id: auth.id, userName: userName.value, fcmToken: fcmToken, cohabitantId: nil)
     }
+
 }

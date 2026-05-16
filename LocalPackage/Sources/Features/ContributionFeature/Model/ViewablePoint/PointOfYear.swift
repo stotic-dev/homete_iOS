@@ -16,7 +16,6 @@ struct PointOfYear: Equatable, Hashable {
     let elements: Set<PointOfMonth>
 
     func hash(into hasher: inout Hasher) {
-
         hasher.combine(userId)
     }
 
@@ -27,7 +26,6 @@ struct PointOfYear: Equatable, Hashable {
         dates: [Date],
         calendar: Calendar
     ) -> Self {
-
         let targetDataByDate = pointOfDayByDate.filter { _, pointOfDay in
             dates.contains {
                 calendar.isDate($0, equalTo: pointOfDay.indexedDay, toGranularity: .month)
@@ -68,17 +66,18 @@ struct PointOfYear: Equatable, Hashable {
             elements: .init(allMonths)
         )
     }
+
 }
 
 extension PointOfYear: GenerableViewablePointList {
 
     func generate() -> ViewablePointList {
-
-        return .init(
+        .init(
             userId: userId,
             userName: userName,
             total: total,
             elements: .init(elements.map { .init(point: $0.total, date: $0.startDate) })
         )
     }
+
 }

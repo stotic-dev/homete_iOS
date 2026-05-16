@@ -41,18 +41,19 @@ struct HouseworkBoardListContent: View {
                 }
                 .listRowBackground(Color.clear)
                 #if os(iOS)
-                .listRowSpacing(.zero)
-                .listRowSeparator(.hidden)
+                    .listRowSpacing(.zero)
+                    .listRowSeparator(.hidden)
                 #endif
             }
             .listStyle(.plain)
             .commonError(content: $commonError)
         }
     }
+
 }
 
 private extension HouseworkBoardListContent {
-    
+
     func houseworkItemRow(_ item: HouseworkItem) -> some View {
         Button {
             navigationPath.push(.houseworkDetail(item))
@@ -72,69 +73,67 @@ private extension HouseworkBoardListContent {
         }
         #endif
     }
+
 }
 
 // プレゼンテーションロジック
 
 private extension HouseworkBoardListContent {
-    
+
     func didSwipeDeleteItemAction(_ item: HouseworkItem) async {
-        
         guard let cohabitantId = loginContext.cohabitantId else { return }
         do {
-            
             try await houseworkListStore.remove(
                 target: item,
                 cohabitantId: cohabitantId
             )
-        }
-        catch {
-            
+        } catch {
             commonError = .init(error: error)
         }
     }
+
 }
 
 #if DEBUG
-#Preview {
-    @Previewable @State var selectedState = HouseworkState.incomplete
-    HouseworkBoardListContent(
-        houseworkListStore: .init(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ),
-        state: .incomplete,
-        list: .init(items: [
-            .init(
-                id: "1",
-                title: "洗濯",
-                point: 20,
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .now
-                )
+    #Preview {
+        @Previewable @State var selectedState = HouseworkState.incomplete
+        HouseworkBoardListContent(
+            houseworkListStore: .init(
+                houseworkClient: .previewValue,
+                cohabitantPushNotificationClient: .previewValue
             ),
-            .init(
-                id: "2",
-                title: "掃除",
-                point: 100,
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .now
-                )
-            ),
-            .init(
-                id: "3",
-                title: "料理",
-                point: 1,
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .now
-                )
-            )
-        ]),
-        selectedHouseworkState: $selectedState,
-        onCreateTapped: {}
-    )
-}
+            state: .incomplete,
+            list: .init(items: [
+                .init(
+                    id: "1",
+                    title: "洗濯",
+                    point: 20,
+                    metaData: .init(
+                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                        expiredAt: .now
+                    )
+                ),
+                .init(
+                    id: "2",
+                    title: "掃除",
+                    point: 100,
+                    metaData: .init(
+                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                        expiredAt: .now
+                    )
+                ),
+                .init(
+                    id: "3",
+                    title: "料理",
+                    point: 1,
+                    metaData: .init(
+                        indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                        expiredAt: .now
+                    )
+                ),
+            ]),
+            selectedHouseworkState: $selectedState,
+            onCreateTapped: {}
+        )
+    }
 #endif

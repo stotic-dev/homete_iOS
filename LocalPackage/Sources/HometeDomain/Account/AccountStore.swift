@@ -19,7 +19,6 @@ public final class AccountStore {
         accountInfoClient: AccountInfoClient = .previewValue,
         account: Account? = nil
     ) {
-
         self.accountInfoClient = accountInfoClient
         self.account = account
     }
@@ -28,13 +27,9 @@ public final class AccountStore {
     /// - Returns: ロードしたアカウント情報を返す（アカウントがない場合はnilを返す）
     @discardableResult
     public func load(_ auth: AccountAuthResult) async -> Account? {
-
         do {
-
             account = try await accountInfoClient.fetch(auth.id)
-        }
-        catch {
-
+        } catch {
             print("failed to fetch account info: \(error)")
         }
 
@@ -42,7 +37,6 @@ public final class AccountStore {
     }
 
     public func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
-
         let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil, cohabitantId: nil)
         try await accountInfoClient.insertOrUpdate(newAccount)
         account = newAccount
@@ -50,13 +44,11 @@ public final class AccountStore {
     }
 
     public func updateFcmTokenIfNeeded(_ fcmToken: String) async {
-
         // 保持しているFCMトークンと異なるFCMトークンに変わった場合は、アカウント情報も新しいトークンに更新する
         guard let account,
               account.fcmToken != fcmToken else { return }
 
         do {
-
             let updatedAccount = Account(
                 id: account.id,
                 userName: account.userName,
@@ -65,17 +57,13 @@ public final class AccountStore {
             )
             try await accountInfoClient.insertOrUpdate(updatedAccount)
             self.account = updatedAccount
-        }
-        catch {
-
+        } catch {
             print("failed to update fcmToken: \(error)")
         }
     }
 
     public func registerCohabitantId(_ cohabitantId: String) async throws {
-
         guard let account else {
-
             preconditionFailure("Not found account.")
         }
 
@@ -88,4 +76,5 @@ public final class AccountStore {
         try await accountInfoClient.insertOrUpdate(updatedAccount)
         self.account = updatedAccount
     }
+
 }

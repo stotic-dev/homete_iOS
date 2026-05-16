@@ -11,12 +11,12 @@ import HometeUI
 import SwiftUI
 
 struct RegisteredContent: View {
-    
+
     @Environment(CohabitantStore.self) var cohabiantStore
     @Environment(ContributionStore.self) var contributionStore
-    
+
     @LoadingState var loadingState
-    
+
     var body: some View {
         ZStack {
             ScrollView {
@@ -40,24 +40,26 @@ struct RegisteredContent: View {
         }
         .fullScreenLoadingIndicator(loadingState)
     }
+
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension RegisteredContent {
-    
+
     func onChangeStoreInitialLoadedStatus() {
         // Storeの初回ロード完了まで、ローディング画面を表示する
         loadingState.isLoading = !contributionStore.isInitialLoaded || !cohabiantStore.isInitialLoaded
     }
+
 }
 
 #if DEBUG
-#Preview {
-    RegisteredContent()
-        .environment(ContributionStore())
-        .environment(CohabitantStore())
-        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-        .setupEnvironmentForPreview()
-}
+    #Preview {
+        RegisteredContent()
+            .environment(ContributionStore())
+            .environment(CohabitantStore())
+            .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+            .setupEnvironmentForPreview()
+    }
 #endif

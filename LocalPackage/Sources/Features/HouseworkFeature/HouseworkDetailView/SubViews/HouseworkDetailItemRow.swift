@@ -9,10 +9,10 @@ import HometeUI
 import SwiftUI
 
 struct HouseworkDetailItemRow<Content: View>: View {
-    
+
     let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             Text(title)
@@ -21,4 +21,5 @@ struct HouseworkDetailItemRow<Content: View>: View {
             content()
         }
     }
+
 }

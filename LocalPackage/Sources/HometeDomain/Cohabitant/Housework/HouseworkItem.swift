@@ -58,7 +58,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {
-        
         let formatStyle = Date.FormatStyle(
             date: .numeric,
             time: .omitted,
@@ -66,21 +65,19 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             calendar: calendar,
             timeZone: calendar.timeZone
         )
-            .year(.extended(minimumLength: 4))
-            .month(.twoDigits)
-            .day(.twoDigits)
+        .year(.extended(minimumLength: 4))
+        .month(.twoDigits)
+        .day(.twoDigits)
         return indexedDate.value.formatted(formatStyle)
     }
 
     /// レビュー可能かどうか
     public func canReview(ownUserId: String) -> Bool {
-
-        return executorId != ownUserId && state != .completed
+        executorId != ownUserId && state != .completed
     }
 
     public func updatePendingApproval(at now: Date, changer: String) -> Self {
-
-        return .init(
+        .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
@@ -96,8 +93,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     }
 
     public func updateApproved(at now: Date, reviewer: String, comment: String) -> Self {
-
-        return .init(
+        .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
@@ -113,8 +109,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     }
 
     public func updateRejected(at now: Date, reviewer: String, comment: String) -> Self {
-
-        return .init(
+        .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
@@ -130,8 +125,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     }
 
     public func updateIncomplete() -> Self {
-
-        return .init(
+        .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
@@ -145,6 +139,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt
         )
     }
+
 }
 
 public extension HouseworkItem {
@@ -161,7 +156,6 @@ public extension HouseworkItem {
         approvedAt: Date? = nil,
         reviewerComment: String? = nil
     ) {
-
         self.init(
             id: id,
             indexedDate: metaData.indexedDate,
@@ -176,4 +170,5 @@ public extension HouseworkItem {
             expiredAt: metaData.expiredAt
         )
     }
+
 }

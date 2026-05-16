@@ -11,19 +11,19 @@ public struct NonceGenerationClient: Sendable {
 
     public let value: @Sendable () -> SignInWithAppleNonce
     public func callAsFunction() -> SignInWithAppleNonce {
-
-        return value()
+        value()
     }
 
     public init(value: @Sendable @escaping () -> SignInWithAppleNonce) {
         self.value = value
     }
+
 }
 
 public extension NonceGenerationClient {
 
     static let previewValue: NonceGenerationClient = .init {
-
-        return .init(original: "preview", sha256: "preview sha256")
+        .init(original: "preview", sha256: "preview sha256")
     }
+
 }

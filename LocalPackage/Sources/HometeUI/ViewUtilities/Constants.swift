@@ -6,5 +6,7 @@
 //
 
 public enum Constants {
+
     public static let appName = "homete"
+
 }

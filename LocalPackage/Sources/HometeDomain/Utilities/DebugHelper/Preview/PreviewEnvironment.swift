@@ -9,15 +9,16 @@ import SwiftUI
 
 #if DEBUG
 
-public extension View {
-    func setupEnvironmentForPreview() -> some View {
-        var calendar = Calendar.japanese
-        calendar.timeZone = .tokyo
-        return self
-            .environment(\.locale, .jp)
-            .environment(\.timeZone, .tokyo)
-            .environment(\.calendar, calendar)
+    public extension View {
+
+        func setupEnvironmentForPreview() -> some View {
+            var calendar = Calendar.japanese
+            calendar.timeZone = .tokyo
+            return environment(\.locale, .jp)
+                .environment(\.timeZone, .tokyo)
+                .environment(\.calendar, calendar)
+        }
+
     }
-}
 
 #endif

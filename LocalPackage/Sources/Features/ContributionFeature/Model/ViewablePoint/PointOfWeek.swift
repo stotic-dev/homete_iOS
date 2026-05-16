@@ -16,8 +16,13 @@ struct PointOfWeek: Equatable, Hashable {
     let elements: Set<PointOfDay>
     let startDate: Date
 
-    var point: Point { total }
-    var date: Date { startDate }
+    var point: Point {
+        total
+    }
+
+    var date: Date {
+        startDate
+    }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(userId)
@@ -31,7 +36,6 @@ struct PointOfWeek: Equatable, Hashable {
         dates: [Date],
         calendar: Calendar
     ) -> Self {
-
         let allDays: [PointOfDay] = dates.map { targetDate in
             pointOfDayByDate[calendar.startOfDay(for: targetDate)]
                 ?? .init(indexedDay: targetDate, point: .init(value: .zero), achievedCount: .zero)
@@ -46,17 +50,18 @@ struct PointOfWeek: Equatable, Hashable {
             startDate: dates.first ?? Date()
         )
     }
+
 }
 
 extension PointOfWeek: GenerableViewablePointList {
 
     func generate() -> ViewablePointList {
-
-        return .init(
+        .init(
             userId: userId,
             userName: userName,
             total: total,
             elements: .init(elements.map { .init(point: $0.point, date: $0.indexedDay) })
         )
     }
+
 }

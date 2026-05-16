@@ -13,96 +13,95 @@ import HometeInfrastructure
 import SwiftUI
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
-    
+
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
-        
+
     func application(
-        _ application: UIApplication,
+        _: UIApplication,
         // swiftlint:disable:next discouraged_optional_collection
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+        didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        
         // Initialize Firebase
         setupFirebase()
-        
+
         // Initialize Google Mobile Ads
         setupGoogleMobileAds()
-        
+
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
-        
+
         return true
     }
-    
-    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        
+
+    func application(_: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         guard Messaging.messaging().apnsToken != deviceToken else { return }
         Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
     }
+
 }
 
 // MARK: - setup
 
 private extension AppDelegate {
-    
+
     func setupFirebase() {
         #if DEBUG
-        if !isXcodePreview && !isUnitTestMode {
-    
-            guard let devPlistFilePath = (
-                Bundle.main.url(
-                    forResource: "GoogleService-Info-dev",
-                    withExtension: "plist"
-                )?
-                    .path()
-            ),
-                  let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
-            FirebaseApp.configure(options: firebaseOption)
-        }
+            if !isXcodePreview, !isUnitTestMode {
+                guard let devPlistFilePath = (
+                    Bundle.main.url(
+                        forResource: "GoogleService-Info-dev",
+                        withExtension: "plist"
+                    )?
+                        .path()
+                ),
+                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
+                FirebaseApp.configure(options: firebaseOption)
+            }
         #else
-        FirebaseApp.configure()
+            FirebaseApp.configure()
         #endif
     }
-    
+
     func setupGoogleMobileAds() {
         Task {
             await MobileAdsClient.shared.initialize()
         }
     }
+
 }
 
 // MARK: - Delegate Conformances
 
 extension AppDelegate: MessagingDelegate {
-    
-    nonisolated func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        
+
+    nonisolated func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
         DispatchQueue.main.async {
-            
             NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
         }
     }
+
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
-    
+
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification
+        _: UNUserNotificationCenter,
+        willPresent _: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        return [.sound]
+        [.sound]
     }
+
 }
 
 @main
 struct HometeApp: App {
-    
+
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
+
     @State var fcmToken: String?
-    
+
     var body: some Scene {
         WindowGroup {
             if delegate.isUnitTestMode {
@@ -112,4 +111,5 @@ struct HometeApp: App {
             }
         }
     }
+
 }

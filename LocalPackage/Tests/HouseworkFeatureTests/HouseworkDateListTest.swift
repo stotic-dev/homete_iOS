@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import Testing
 @testable import HouseworkFeature
+import Testing
 
 struct HouseworkDateListTest {
 
@@ -63,7 +63,7 @@ struct HouseworkDateListTest {
         arguments: [
             Date.previewDate(year: 2026, month: 4, day: 15), // anchor当日
             Date.previewDate(year: 2026, month: 4, day: 12), // anchor-3（selectable範囲内）
-            Date.previewDate(year: 2026, month: 4, day: 18)  // anchor+3（selectable範囲内）
+            Date.previewDate(year: 2026, month: 4, day: 18) // anchor+3（selectable範囲内）
         ]
     )
     func state_returns_selected(selectedDate: Date) {
@@ -78,7 +78,7 @@ struct HouseworkDateListTest {
         "anchorDate±7の範囲かつselected以外のアイテム状態はselectableを返す",
         arguments: [-7, -5, -3, -1, 1, 3, 5, 7] // 0はanchor=selectedなのでselectedになる
     )
-    func state_returns_selectable(offsetFromAnchor: Int) async throws {
+    func state_returns_selectable(offsetFromAnchor: Int) throws {
         let sut = makeSut(selectedDate: Self.anchorDate) // selectedDate = anchorDate（offset=0）
         let targetDate = try #require(Self.calendar.date(byAdding: .day, value: offsetFromAnchor, to: Self.anchorDate))
         let actual = sut.items.first { Self.calendar.isDate($0.date, inSameDayAs: targetDate) }?.state
@@ -91,7 +91,7 @@ struct HouseworkDateListTest {
         "anchorDate±7の範囲外のアイテム状態はunselectableを返す",
         arguments: [-10, -9, -8, 8, 9, 10]
     )
-    func state_returns_unselectable(offsetFromAnchor: Int) async throws {
+    func state_returns_unselectable(offsetFromAnchor: Int) throws {
         let sut = makeSut(selectedDate: Self.anchorDate)
         let targetDate = try #require(Self.calendar.date(byAdding: .day, value: offsetFromAnchor, to: Self.anchorDate))
         let actual = sut.items.first { Self.calendar.isDate($0.date, inSameDayAs: targetDate) }?.state
@@ -104,7 +104,7 @@ struct HouseworkDateListTest {
         "selectableな日付を選択するとselectedDateが更新されその日付のアイテム状態がselectedになる",
         arguments: [-7, -3, -1, 1, 3, 7]
     )
-    func selectDate_selectable(offsetFromAnchor: Int) async throws {
+    func selectDate_selectable(offsetFromAnchor: Int) throws {
         var sut = makeSut(selectedDate: Self.anchorDate)
         let targetDate = try #require(Self.calendar.date(byAdding: .day, value: offsetFromAnchor, to: Self.anchorDate))
         sut.selectDate(targetDate, calendar: Self.calendar)
@@ -118,7 +118,7 @@ struct HouseworkDateListTest {
         "selectableな日付を選択すると旧selectedDateのアイテム状態がselectableに変わる",
         arguments: [-7, -3, -1, 1, 3, 7]
     )
-    func selectDate_previousSelected_becomes_selectable(offsetFromAnchor: Int) async throws {
+    func selectDate_previousSelected_becomes_selectable(offsetFromAnchor: Int) throws {
         var sut = makeSut(selectedDate: Self.anchorDate)
         let targetDate = try #require(Self.calendar.date(byAdding: .day, value: offsetFromAnchor, to: Self.anchorDate))
         sut.selectDate(targetDate, calendar: Self.calendar)
@@ -130,13 +130,14 @@ struct HouseworkDateListTest {
         "unselectableな日付を選択してもselectedDateとitemsは変更されない",
         arguments: [-10, -9, -8, 8, 9, 10]
     )
-    func selectDate_unselectable(offsetFromAnchor: Int) async throws {
+    func selectDate_unselectable(offsetFromAnchor: Int) throws {
         var sut = makeSut(selectedDate: Self.anchorDate)
         let originalSut = sut
         let targetDate = try #require(Self.calendar.date(byAdding: .day, value: offsetFromAnchor, to: Self.anchorDate))
         sut.selectDate(targetDate, calendar: Self.calendar)
         #expect(sut == originalSut)
     }
+
 }
 
 private extension HouseworkDateListTest {
@@ -148,4 +149,5 @@ private extension HouseworkDateListTest {
             calendar: Self.calendar
         )
     }
+
 }

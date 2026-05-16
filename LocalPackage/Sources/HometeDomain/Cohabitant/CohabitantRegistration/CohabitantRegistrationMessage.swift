@@ -21,12 +21,12 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         case shareCohabitantId(id: String)
         /// 登録完了したかどうかの確認
         case complete
+
     }
 
     /// 登録メンバーが確定したかどうか
     public var isFixedMember: Bool? {
-
-        guard case .fixedMember(let isOK) = type else {
+        guard case let .fixedMember(isOK) = type else {
             return nil
         }
         return isOK
@@ -34,9 +34,7 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
     /// メンバーの役割
     public var memberRole: CohabitantRegistrationRole? {
-
-        guard case .preRegistration(let role) = type else {
-
+        guard case let .preRegistration(role) = type else {
             return nil
         }
         return role
@@ -44,9 +42,7 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
     /// 同居人ID
     public var cohabitantId: String? {
-
-        guard case .shareCohabitantId(let id) = type else {
-
+        guard case let .shareCohabitantId(id) = type else {
             return nil
         }
         return id
@@ -54,18 +50,14 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
     /// 登録処理が完了したかどうか
     public var isComplete: Bool? {
-
         guard case .complete = type else {
-
             return nil
         }
         return true
     }
 
     public func encodedData() -> Data {
-
         guard let encodedData = try? JSONEncoder().encode(self) else {
-
             preconditionFailure("Invalid message structure(\(self)).")
         }
         return encodedData
@@ -74,16 +66,16 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
     public init(type: CommunicateType) {
         self.type = type
     }
+
 }
 
 public extension CohabitantRegistrationMessage {
 
     init(_ data: Data) {
-
         guard let message = try? JSONDecoder().decode(CohabitantRegistrationMessage.self, from: data) else {
-
             preconditionFailure("Invalid data(\(data)).")
         }
         self = message
     }
+
 }

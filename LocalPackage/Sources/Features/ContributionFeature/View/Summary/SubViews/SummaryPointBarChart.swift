@@ -35,6 +35,7 @@ struct SummaryPointBarChart: View {
             .chartYAxis(.hidden)
         }
     }
+
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
@@ -53,7 +54,7 @@ struct SummaryPointBarChart: View {
                 isMe: false,
                 monthlyPoint: .init(value: 40),
                 achievedCount: 2
-            )
+            ),
         ])
     )
     .frame(height: 240)

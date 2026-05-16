@@ -28,15 +28,18 @@ struct HouseworkBoardEmptyView: View {
             }
         }
     }
+
 }
 
 private extension HouseworkBoardEmptyView {
 
     struct EmptyContent {
+
         let systemImage: String
         let title: String
         let message: String?
         let action: (label: String, handler: () -> Void)?
+
     }
 
     var content: EmptyContent {
@@ -57,7 +60,7 @@ private extension HouseworkBoardEmptyView {
                 action: ("家事を追加", onCreateTapped)
             )
 
-        case .noPendingApproval(let hasIncomplete):
+        case let .noPendingApproval(hasIncomplete):
             EmptyContent(
                 systemImage: "clock.badge.checkmark",
                 title: "承認待ちの家事はありません",
@@ -92,6 +95,7 @@ private extension HouseworkBoardEmptyView {
             )
         }
     }
+
 }
 
 #Preview("家事未登録") {

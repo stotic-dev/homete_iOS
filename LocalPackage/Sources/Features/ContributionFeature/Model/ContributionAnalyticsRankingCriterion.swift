@@ -5,13 +5,16 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
-enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable, Sendable {
+enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable {
+
     /// 獲得ポイント
     case point
     /// 家事達成数
     case achievement
 
-    var id: String { rawValue }
+    var id: String {
+        rawValue
+    }
 
     var title: String {
         switch self {
@@ -26,4 +29,5 @@ enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable, 
         case .achievement: "件"
         }
     }
+
 }

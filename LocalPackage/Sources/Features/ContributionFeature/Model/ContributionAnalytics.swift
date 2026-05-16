@@ -9,7 +9,7 @@ import Foundation
 import HometeDomain
 
 struct ContributionAnalytics: Equatable {
-    
+
     let weekPointList: [PointOfWeek]
     let monthPointList: [PointOfMonth]
     let yearPointList: [PointOfYear]
@@ -22,7 +22,6 @@ struct ContributionAnalytics: Equatable {
         displayPeriod: DisplayPointPeriod,
         calendar: Calendar
     ) async -> Self {
-
         let (weekPointList, monthPointList, yearPointList) = await buildPointList(
             members: members,
             contribution: contribution,
@@ -44,9 +43,7 @@ struct ContributionAnalytics: Equatable {
         contribution: HouseworkContribution,
         calendar: Calendar
     ) async -> Self {
-
         guard self.displayPeriod.anchor != displayPeriod.anchor else {
-
             // 基準日が変わっていない場合は週/月/年それぞれのpointListが既に算出済みなので、表示期間だけ差し替える
             return .init(
                 weekPointList: weekPointList,
@@ -71,46 +68,42 @@ struct ContributionAnalytics: Equatable {
             displayPeriod: displayPeriod
         )
     }
-    
+
     /// 指定期間中に家事を達成したメンバーが一人もいない場合にtrue
     var isEmpty: Bool {
-
         switch displayPeriod.type {
         case .week:
-            return weekPointList.allSatisfy { $0.totalAchievementCount == .zero }
+            weekPointList.allSatisfy { $0.totalAchievementCount == .zero }
 
         case .month:
-            return monthPointList.allSatisfy { $0.totalAchievementCount == .zero }
+            monthPointList.allSatisfy { $0.totalAchievementCount == .zero }
 
         case .year:
-            return yearPointList.allSatisfy { $0.totalAchievementCount == .zero }
+            yearPointList.allSatisfy { $0.totalAchievementCount == .zero }
         }
     }
 
-    func currentList(calendar: Calendar) -> AllUserViewablePointList {
-
-        return switch displayPeriod.type {
-
+    func currentList(calendar _: Calendar) -> AllUserViewablePointList {
+        switch displayPeriod.type {
         case .week: .make(
-            list: weekPointList,
-            displayPeriod: displayPeriod.type
-        )
+                list: weekPointList,
+                displayPeriod: displayPeriod.type
+            )
 
         case .month: .make(
-            list: monthPointList,
-            displayPeriod: displayPeriod.type
-        )
+                list: monthPointList,
+                displayPeriod: displayPeriod.type
+            )
 
         case .year: .make(
-            list: yearPointList,
-            displayPeriod: displayPeriod.type
-        )
+                list: yearPointList,
+                displayPeriod: displayPeriod.type
+            )
         }
     }
-    
+
     /// 指定期間中のユーザー毎の家事達成情報
     func achieved() -> [UserHouseworkAchieved] {
-
         switch displayPeriod.type {
         case .week:
             weekPointList.map {
@@ -118,12 +111,12 @@ struct ContributionAnalytics: Equatable {
             }
 
         case .month: monthPointList.map {
-            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
-        }
+                .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
+            }
 
         case .year: yearPointList.map {
-            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
-        }
+                .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.totalAchievementCount)
+            }
         }
     }
 
@@ -133,7 +126,6 @@ struct ContributionAnalytics: Equatable {
         myUserId: String,
         calendar: Calendar
     ) -> [ContributionAnalyticsRankItem] {
-
         let denominator = max(displayPeriod.calcDatePeriod(calendar: calendar).count, 1)
         let sortedEntries = userTotals(criterion: criterion)
             .sorted { $0.totalValue > $1.totalValue }
@@ -152,21 +144,23 @@ struct ContributionAnalytics: Equatable {
         }
         return items
     }
+
 }
 
 private extension ContributionAnalytics {
 
     struct UserTotalEntry {
+
         let userId: String
         let userName: String
         let totalValue: Int
+
     }
 
     func userTotals(criterion: ContributionAnalyticsRankingCriterion) -> [UserTotalEntry] {
-
         switch displayPeriod.type {
         case .week:
-            return weekPointList.map {
+            weekPointList.map {
                 .init(
                     userId: $0.userId,
                     userName: $0.userName,
@@ -175,7 +169,7 @@ private extension ContributionAnalytics {
             }
 
         case .month:
-            return monthPointList.map {
+            monthPointList.map {
                 .init(
                     userId: $0.userId,
                     userName: $0.userName,
@@ -184,7 +178,7 @@ private extension ContributionAnalytics {
             }
 
         case .year:
-            return yearPointList.map {
+            yearPointList.map {
                 .init(
                     userId: $0.userId,
                     userName: $0.userName,
@@ -204,7 +198,6 @@ private extension ContributionAnalytics {
         [PointOfMonth],
         [PointOfYear]
     ) {
-
         let weekDates = DisplayPointPeriod(type: .week, anchor: anchor)
             .calcDatePeriod(calendar: calendar)
         let monthDates = DisplayPointPeriod(type: .month, anchor: anchor)
@@ -238,4 +231,5 @@ private extension ContributionAnalytics {
 
         return await (weekPointList, monthPointList, yearPointList)
     }
+
 }

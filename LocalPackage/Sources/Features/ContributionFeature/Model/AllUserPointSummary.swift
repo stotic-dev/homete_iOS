@@ -8,16 +8,18 @@
 import HometeDomain
 
 /// 全ユーザーの月間家事貢献度集計
-struct AllUserPointSummary: Equatable, Sendable {
+struct AllUserPointSummary: Equatable {
 
     let items: [UserPointSummary]
 
     init(items: [UserPointSummary] = []) {
         self.items = items
     }
-    
+
     /// 達成された家事があるかどうかで、データの有無を判定
-    var hasData: Bool { !items.allSatisfy { $0.achievedCount == 0 } }
+    var hasData: Bool {
+        !items.allSatisfy { $0.achievedCount == 0 }
+    }
 
     /// ランキング形式のアイテム一覧を生成する
     func makeRanking() -> [ContributionRankItem] {
@@ -34,12 +36,12 @@ struct AllUserPointSummary: Equatable, Sendable {
                 )
             }
     }
-    
+
     /// サマリー情報からユーザー毎の達成情報のモデルを返す
     func achieved() -> [UserHouseworkAchieved] {
-        
-        return items.map {
+        items.map {
             .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.achievedCount)
         }
     }
+
 }

@@ -53,54 +53,55 @@ struct AnalyticsRankingRow: View {
     private var formattedAverage: String {
         String(format: "%.1f%@", item.averageValue, totalUnit)
     }
+
 }
 
 #if DEBUG
-#Preview("AnalyticsRankingRow_1位_あなた", traits: .sizeThatFitsLayout) {
-    AnalyticsRankingRow(
-        item: .init(
-            rank: 1,
-            userId: "user1",
-            userName: "田中",
-            isMe: true,
-            totalValue: 120,
-            averageValue: 17.1
-        ),
-        totalUnit: "pt",
-        averageDenominatorUnit: "日"
-    )
-    .setupEnvironmentForPreview()
-}
+    #Preview("AnalyticsRankingRow_1位_あなた", traits: .sizeThatFitsLayout) {
+        AnalyticsRankingRow(
+            item: .init(
+                rank: 1,
+                userId: "user1",
+                userName: "田中",
+                isMe: true,
+                totalValue: 120,
+                averageValue: 17.1
+            ),
+            totalUnit: "pt",
+            averageDenominatorUnit: "日"
+        )
+        .setupEnvironmentForPreview()
+    }
 
-#Preview("AnalyticsRankingRow_2位", traits: .sizeThatFitsLayout) {
-    AnalyticsRankingRow(
-        item: .init(
-            rank: 2,
-            userId: "user2",
-            userName: "佐藤",
-            isMe: false,
-            totalValue: 40,
-            averageValue: 5.7
-        ),
-        totalUnit: "pt",
-        averageDenominatorUnit: "日"
-    )
-    .setupEnvironmentForPreview()
-}
+    #Preview("AnalyticsRankingRow_2位", traits: .sizeThatFitsLayout) {
+        AnalyticsRankingRow(
+            item: .init(
+                rank: 2,
+                userId: "user2",
+                userName: "佐藤",
+                isMe: false,
+                totalValue: 40,
+                averageValue: 5.7
+            ),
+            totalUnit: "pt",
+            averageDenominatorUnit: "日"
+        )
+        .setupEnvironmentForPreview()
+    }
 
-#Preview("AnalyticsRankingRow_達成数", traits: .sizeThatFitsLayout) {
-    AnalyticsRankingRow(
-        item: .init(
-            rank: 1,
-            userId: "user1",
-            userName: "田中",
-            isMe: false,
-            totalValue: 24,
-            averageValue: 2.0
-        ),
-        totalUnit: "件",
-        averageDenominatorUnit: "月"
-    )
-    .setupEnvironmentForPreview()
-}
+    #Preview("AnalyticsRankingRow_達成数", traits: .sizeThatFitsLayout) {
+        AnalyticsRankingRow(
+            item: .init(
+                rank: 1,
+                userId: "user1",
+                userName: "田中",
+                isMe: false,
+                totalValue: 24,
+                averageValue: 2.0
+            ),
+            totalUnit: "件",
+            averageDenominatorUnit: "月"
+        )
+        .setupEnvironmentForPreview()
+    }
 #endif

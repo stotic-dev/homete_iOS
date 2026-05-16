@@ -11,42 +11,35 @@ final actor FirestoreService {
     private var listeners: [String: any FirestoreListenerStorerable] = [:]
 
     func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
-
-        return try await predicate(firestore)
+        try await predicate(firestore)
             .getDocuments()
             .documents
             .map { try $0.data(as: T.self) }
     }
 
     func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
-
-        return try await predicate(firestore).getDocument(as: T.self)
+        try await predicate(firestore).getDocument(as: T.self)
     }
 
-    func insertOrUpdate<T: Encodable>(data: T, predicate: (Firestore) -> DocumentReference) throws {
-
+    func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) throws {
         try predicate(firestore).setData(from: data, merge: false)
     }
 
     func delete(predicate: (Firestore) -> DocumentReference) async throws {
-
         try await predicate(firestore).delete()
     }
 
-    func addSnapshotListener<Output>(
+    func addSnapshotListener<Output: Decodable>(
         id: String,
         predicate: (Firestore) -> Query
-    ) -> AsyncStream<[Output]> where Output: Decodable {
-
+    ) -> AsyncStream<[Output]> {
         let (stream, continuation) = AsyncStream.makeStream(
             of: [Output].self,
             bufferingPolicy: .bufferingNewest(10)
         )
         let listener = predicate(firestore)
             .addSnapshotListener { snapshots, error in
-
                 if let error {
-
                     print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
                     return
                 }
@@ -61,8 +54,8 @@ final actor FirestoreService {
     }
 
     func removeSnapshotListener(id: String) {
-
         let listener = listeners[id]
         listener?.remove()
     }
+
 }

@@ -29,23 +29,20 @@ public final class HouseworkListStore {
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         items: [DailyHouseworkList] = []
     ) {
-
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
         self.items = .init(value: items)
-        
+
         Task {
             await startObserving()
         }
     }
 
     func register(newItem: HouseworkItem, cohabitantId: String) async throws {
-
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
         Task.detached {
-
             let notificationContent = PushNotificationContent.addNewHouseworkItem(newItem.title)
             try await self.cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
         }
@@ -57,7 +54,6 @@ public final class HouseworkListStore {
         executor: String,
         cohabitantId: String
     ) async throws {
-
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updatePendingApproval(at: now, changer: executor)
         } notification: {
@@ -72,7 +68,6 @@ public final class HouseworkListStore {
         comment: String,
         cohabitantId: String
     ) async throws {
-
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
@@ -87,7 +82,6 @@ public final class HouseworkListStore {
         comment: String,
         cohabitantId: String
     ) async throws {
-
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
         } notification: {
@@ -96,22 +90,20 @@ public final class HouseworkListStore {
     }
 
     func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
-
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateIncomplete()
         }
     }
 
     func remove(target: HouseworkItem, cohabitantId: String) async throws {
-
         try await houseworkClient.removeItem(target, cohabitantId)
     }
+
 }
 
 private extension HouseworkListStore {
 
     func startObserving() async {
-
         let stream = await houseworkManager.createObserver(houseworkListObserveKey)
         for await newItems in stream {
             let anchorDate = await houseworkManager.listenerAnchorDate
@@ -131,7 +123,6 @@ private extension HouseworkListStore {
         transform: (HouseworkItem) -> HouseworkItem,
         notification: (() -> PushNotificationContent)? = nil
     ) async throws {
-
         guard let targetItem = items.item(target) else {
             preconditionFailure("Not found target item(\(target))")
         }
@@ -149,4 +140,5 @@ private extension HouseworkListStore {
             }
         }
     }
+
 }

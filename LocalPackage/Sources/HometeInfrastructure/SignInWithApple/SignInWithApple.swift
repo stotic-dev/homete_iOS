@@ -10,9 +10,7 @@ final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
     private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, any Error>?
 
     func callAsFunction(_ nonce: SignInWithAppleNonce) async throws -> ASAuthorizationAppleIDCredential {
-
-        return try await withCheckedThrowingContinuation { continuation in
-
+        try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
 
             let authorizationController = ASAuthorizationController(
@@ -24,20 +22,19 @@ final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate {
     }
 
     func authorizationController(
-        controller: ASAuthorizationController,
+        controller _: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
     ) {
-
         if case let appleIDCredential as ASAuthorizationAppleIDCredential = authorization.credential {
             continuation?.resume(returning: appleIDCredential)
         }
     }
 
     func authorizationController(
-        controller: ASAuthorizationController,
+        controller _: ASAuthorizationController,
         didCompleteWithError error: any Error
     ) {
-
         continuation?.resume(throwing: error)
     }
+
 }

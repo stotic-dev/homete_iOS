@@ -8,8 +8,9 @@
 import MultipeerConnectivity
 
 struct P2PSessionReceiveData: Equatable, Identifiable {
-    
+
     let id: UUID
     let sender: MCPeerID
     let body: Data
+
 }

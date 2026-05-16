@@ -13,18 +13,19 @@ public struct Theme {
     public let segmentedControl: SegmentedControl
 
     public init(segmentedControl: SegmentedControl = .init()) {
-
         self.segmentedControl = segmentedControl
     }
+
 }
 
 public extension View {
 
     func apply(theme: Theme) -> some View {
-        self.onAppear {
+        onAppear {
             theme.applySegmentedControl()
         }
     }
+
 }
 
 // MARK: - セグメントボタンの定義
@@ -52,20 +53,21 @@ public extension Theme {
             self.selectedForegroundColor = selectedForegroundColor
             self.foregroundColor = foregroundColor
         }
+
     }
 
     func applySegmentedControl() {
-
         #if canImport(UIKit)
-        UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(Color.primary2)],
-            for: .normal
-        )
-        UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(Color.onSurface)],
-            for: .selected
-        )
-        UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
+            UISegmentedControl.appearance().setTitleTextAttributes(
+                [.foregroundColor: UIColor(Color.primary2)],
+                for: .normal
+            )
+            UISegmentedControl.appearance().setTitleTextAttributes(
+                [.foregroundColor: UIColor(Color.onSurface)],
+                for: .selected
+            )
+            UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
         #endif
     }
+
 }

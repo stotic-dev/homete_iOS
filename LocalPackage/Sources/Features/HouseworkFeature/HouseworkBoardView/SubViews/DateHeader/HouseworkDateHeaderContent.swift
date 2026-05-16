@@ -44,6 +44,7 @@ struct HouseworkDateHeaderContent: View {
             }
         }
     }
+
 }
 
 private extension HouseworkDateHeaderContent {
@@ -54,8 +55,8 @@ private extension HouseworkDateHeaderContent {
             calendar: calendar,
             timeZone: timeZone
         )
-            .year()
-            .month()
+        .year()
+        .month()
         return dateList.selectedDate.formatted(format)
     }
 
@@ -83,19 +84,20 @@ private extension HouseworkDateHeaderContent {
                 .opacity(progress)
         }
     }
+
 }
 
 #if DEBUG
-#Preview(traits: .sizeThatFitsLayout) {
-    HouseworkDateHeaderContent(
-        dateList: .constant(.init(
-            anchorDate: .previewDate(year: 2026, month: 1, day: 1),
-            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-            calendar: .japanese
-        ))
-    )
-    .setupEnvironmentForPreview()
-    .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
-    .snapshotForPreview(delay: 2)
-}
+    #Preview(traits: .sizeThatFitsLayout) {
+        HouseworkDateHeaderContent(
+            dateList: .constant(.init(
+                anchorDate: .previewDate(year: 2026, month: 1, day: 1),
+                selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+                calendar: .japanese
+            ))
+        )
+        .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
+        .snapshotForPreview(delay: 2)
+    }
 #endif

@@ -5,24 +5,27 @@
 //  Created by Taichi Sato on 2026/04/25.
 //
 
+@testable import ContributionFeature
 import Foundation
 import Testing
-@testable import ContributionFeature
 
 // swiftlint:disable:next convenience_type
-struct PointOfYearTest {
+enum PointOfYearTest {
+
     struct MakeCase {
+
         private let calendar = Calendar.japanese
+
     }
+
 }
 
 extension PointOfYearTest.MakeCase {
 
     @Test("指定年以外のPointOfDayは除外される")
-    func make_excludesItemsOutsideTargetYear() throws {
-
+    func make_excludesItemsOutsideTargetYear() {
         // Arrange
-        let yearDates2026: [Date] = (1...12).map { month in
+        let yearDates2026: [Date] = (1 ... 12).map { month in
             Date.previewDate(year: 2026, month: month, day: 1)
         }
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
@@ -30,7 +33,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints: [Date: PointOfDay] = [
             april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            april2025: PointOfDay(indexedDay: april2025, point: Point(value: 50))
+            april2025: PointOfDay(indexedDay: april2025, point: Point(value: 50)),
         ]
 
         // Act
@@ -47,10 +50,9 @@ extension PointOfYearTest.MakeCase {
     }
 
     @Test("指定年の家事が月ごとにグループ化される")
-    func make_elementsAreGroupedByMonth() throws {
-
+    func make_elementsAreGroupedByMonth() {
         // Arrange
-        let yearDates2026: [Date] = (1...12).map { month in
+        let yearDates2026: [Date] = (1 ... 12).map { month in
             Date.previewDate(year: 2026, month: month, day: 1)
         }
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
@@ -58,7 +60,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints: [Date: PointOfDay] = [
             april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50))
+            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50)),
         ]
 
         // Act
@@ -77,10 +79,9 @@ extension PointOfYearTest.MakeCase {
     }
 
     @Test("指定年に含まれる全月のポイントが合算される")
-    func make_totalIsSumOfAllTargetYearItemPoints() throws {
-
+    func make_totalIsSumOfAllTargetYearItemPoints() {
         // Arrange
-        let yearDates2026: [Date] = (1...12).map { month in
+        let yearDates2026: [Date] = (1 ... 12).map { month in
             Date.previewDate(year: 2026, month: month, day: 1)
         }
         let april2026 = Date.previewDate(year: 2026, month: 4, day: 10)
@@ -88,7 +89,7 @@ extension PointOfYearTest.MakeCase {
 
         let dayOfPoints: [Date: PointOfDay] = [
             april2026: PointOfDay(indexedDay: april2026, point: Point(value: 30)),
-            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50))
+            may2026: PointOfDay(indexedDay: may2026, point: Point(value: 50)),
         ]
 
         // Act
@@ -103,4 +104,5 @@ extension PointOfYearTest.MakeCase {
         // Assert
         #expect(result.total.value == 80)
     }
+
 }

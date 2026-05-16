@@ -45,27 +45,25 @@ public struct LoginView: View {
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonErrorContent)
     }
+
 }
 
 private extension LoginView {
 
     func onSignInWithApple(_ result: Result<SignInWithAppleResult, any Error>) async {
-
         switch result {
-        case .success(let success):
+        case let .success(success):
             do {
-
                 try await accountAuthStore.login(success)
-            }
-            catch {
-
+            } catch {
                 commonErrorContent = .init(error: error)
             }
 
-        case .failure(let failure):
+        case let .failure(failure):
             commonErrorContent = .init(error: failure)
         }
     }
+
 }
 
 #Preview {

@@ -18,6 +18,7 @@ public struct HomeView: View {
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     let contributionStore: ContributionStore?
@@ -38,8 +39,7 @@ public struct HomeView: View {
                             .task {
                                 await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
                             }
-                    }
-                    else if !loginContext.hasCohabitant {
+                    } else if !loginContext.hasCohabitant {
                         NotRegisteredContent(
                             isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
                         )
@@ -48,24 +48,25 @@ public struct HomeView: View {
                         }
                     }
                 }
-            }
-            .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
-                router.resolve(.cohabitantRegistration)
-            }
-            .sheet(isPresented: $isShowSetting) {
-                router.resolve(.setting)
-            }
-            .trailingToolbarItem {
-                NavigationBarButton(label: .settings) {
-                    isShowSetting = true
+                .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
+                    router.resolve(.cohabitantRegistration)
+                }
+                .sheet(isPresented: $isShowSetting) {
+                    router.resolve(.setting)
+                }
+                .trailingToolbarItem {
+                    NavigationBarButton(label: .settings) {
+                        isShowSetting = true
+                    }
                 }
             }
         }
     }
+
 }
 
 public extension HomeView {
-    
+
     static func make(
         contributionStore: ContributionStore?,
         cohabitantStore: CohabitantStore?
@@ -75,6 +76,7 @@ public extension HomeView {
             cohabitantStore: cohabitantStore
         )
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -82,7 +84,6 @@ public extension HomeView {
 private extension HomeView {
 
     func didAppearRegisteredContent(cohabitantStore: CohabitantStore) async {
-
         guard let cohabitantId = loginContext.account.cohabitantId else {
             // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
             assertionFailure("Required param is nil(cohabitantId)")
@@ -97,7 +98,7 @@ private extension HomeView {
     }
 
     func didAppearNotRegisteredContent() async {
-
         await cohabitantStore?.removeSnapshotListener()
     }
+
 }

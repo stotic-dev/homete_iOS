@@ -14,4 +14,5 @@ public struct SignInWithAppleNonce: Equatable, Sendable {
         self.original = original
         self.sha256 = sha256
     }
+
 }

@@ -22,14 +22,15 @@ public struct CohabitantClient: Sendable {
         ) async -> AsyncStream<[CohabitantData]> = { _, _ in .init { nil } },
         removeSnapshotListener: @Sendable @escaping (_ listenerId: String) async -> Void = { _ in }
     ) {
-
         self.register = register
         self.addSnapshotListener = addSnapshotListener
         self.removeSnapshotListener = removeSnapshotListener
     }
+
 }
 
 public extension CohabitantClient {
 
     static let previewValue: CohabitantClient = .init()
+
 }

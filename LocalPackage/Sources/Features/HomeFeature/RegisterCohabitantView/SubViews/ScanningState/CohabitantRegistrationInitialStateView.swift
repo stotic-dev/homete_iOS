@@ -10,7 +10,7 @@ import HometeUI
 import SwiftUI
 
 struct CohabitantRegistrationInitialStateView: View {
-        
+
     var body: some View {
         VStack(spacing: .zero) {
             VStack(alignment: .leading, spacing: .space16) {
@@ -31,6 +31,7 @@ struct CohabitantRegistrationInitialStateView: View {
         }
         .padding(.horizontal, .space16)
     }
+
 }
 
 #Preview {

@@ -8,7 +8,8 @@
 import HometeDomain
 
 /// 家事ボードの各タブが空のときの理由
-enum HouseworkBoardEmptyReason: Equatable, Sendable {
+enum HouseworkBoardEmptyReason: Equatable {
+
     /// 家事が1件も登録されていない
     case noHouseworkRegistered
     /// 未完了タブ: 全ての家事が完了または承認待ちに移行済み
@@ -51,4 +52,5 @@ enum HouseworkBoardEmptyReason: Equatable, Sendable {
             }
         }
     }
+
 }

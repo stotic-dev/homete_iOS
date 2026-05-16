@@ -11,16 +11,16 @@ import HometeUI
 import SwiftUI
 
 public struct HouseworkApprovalView: View {
-    
+
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
     @CommonError var commonError
     @LoadingState var loadingState
-    
+
     @State var inputMessage = ""
-    
+
     let item: HouseworkItem
 
     public init(item: HouseworkItem) {
@@ -55,6 +55,7 @@ public struct HouseworkApprovalView: View {
             .fullScreenLoadingIndicator(loadingState)
         }
     }
+
 }
 
 private extension HouseworkApprovalView {
@@ -71,14 +72,14 @@ private extension HouseworkApprovalView {
             .padding(.vertical, .space16)
         }
     }
-    
+
     func houseworkPropertySection() -> some View {
         section {
             HouseworkItemPropertyListContent(item: item)
                 .padding(.vertical, .space8)
         }
     }
-    
+
     func inputMessageSection() -> some View {
         VStack(spacing: .space16) {
             Text("メッセージ")
@@ -92,7 +93,7 @@ private extension HouseworkApprovalView {
             }
         }
     }
-    
+
     func section(@ViewBuilder content: () -> some View) -> some View {
         content()
             .frame(maxWidth: .infinity)
@@ -101,7 +102,7 @@ private extension HouseworkApprovalView {
                     .fill(.subSurface)
             }
     }
-    
+
     func actionButtonContent() -> some View {
         VStack(spacing: .space16) {
             Button {
@@ -125,18 +126,17 @@ private extension HouseworkApprovalView {
         }
         .disabled(inputMessage.isEmpty)
     }
+
 }
 
 // MARK: プレゼンテーションロジック
 
 private extension HouseworkApprovalView {
-    
+
     func tappedApproveButton() async {
-        
         guard let cohabitantId = account.cohabitantId else { return }
-        
+
         do {
-            
             try await houseworkListStore.approved(
                 target: item,
                 now: .now,
@@ -146,17 +146,14 @@ private extension HouseworkApprovalView {
             )
             dismiss()
         } catch {
-            
             commonError = .init(error: error)
         }
     }
-    
+
     func tappedReconfirmationButton() async {
-        
         guard let cohabitantId = account.cohabitantId else { return }
-        
+
         do {
-            
             try await houseworkListStore.rejected(
                 target: item,
                 now: .now,
@@ -166,30 +163,30 @@ private extension HouseworkApprovalView {
             )
             dismiss()
         } catch {
-            
             commonError = .init(error: error)
         }
     }
+
 }
 
 #if DEBUG
-#Preview {
-    HouseworkApprovalView(item: .init(
-        id: "",
-        title: "洗濯",
-        point: 10,
-        metaData: .init(
-            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
-            expiredAt: .init(timeIntervalSince1970: 0)
-        ),
-        executorId: "test",
-        executedAt: .distantFuture,
-    ))
-    .setupEnvironmentForPreview()
-    .environment(CohabitantStore(
-        members: [.init(id: "test", userName: "hogehoge")],
-        ownId: "test"
-    ))
-    .environment(HouseworkListStore())
-}
+    #Preview {
+        HouseworkApprovalView(item: .init(
+            id: "",
+            title: "洗濯",
+            point: 10,
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+                expiredAt: .init(timeIntervalSince1970: 0)
+            ),
+            executorId: "test",
+            executedAt: .distantFuture
+        ))
+        .setupEnvironmentForPreview()
+        .environment(CohabitantStore(
+            members: [.init(id: "test", userName: "hogehoge")],
+            ownId: "test"
+        ))
+        .environment(HouseworkListStore())
+    }
 #endif

@@ -5,22 +5,21 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
-import Foundation
-import Testing
-import HometeDomain
 @testable import ContributionFeature
+import Foundation
+import HometeDomain
+import Testing
 
 extension ContributionAnalyticsTest.RankingCase {
 
     @Test("displayPeriod.type=.weekで作ったanalyticsを、anchor固定でmonthへ切り替えるとmonth期間のランキングが返る")
-    func ranking_afterTypeSwitchKeepingAnchor_usesNewPeriodPointList() async throws {
-
+    func ranking_afterTypeSwitchKeepingAnchor_usesNewPeriodPointList() async {
         // Arrange: 月間範囲には含まれるが週間範囲には含まれない日付にデータを置く
         let anchor = Date.previewDate(year: 2026, month: 4, day: 30)
         let dateOutsideWeek = Date.previewDate(year: 2026, month: 4, day: 10)
         let contribution = HouseworkContribution.makeForTest(
             list: [
-                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))]
+                "u1": [.init(indexedDay: dateOutsideWeek, point: .init(value: 50))],
             ],
             calendar: calendar
         )
@@ -60,14 +59,13 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: true,
                 totalValue: 50,
                 averageValue: 50.0 / Double(monthDayCount)
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("criterion=.point の場合はtotalポイント降順でランキングが返る")
-    func ranking_byPoint_returnsDescendingOrder() throws {
-
+    func ranking_byPoint_returnsDescendingOrder() {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -88,7 +86,7 @@ extension ContributionAnalyticsTest.RankingCase {
                 totalAchievementCount: 14,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -117,14 +115,13 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: true,
                 totalValue: 14,
                 averageValue: 2.0
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("criterion=.achievement の場合は達成数降順でランキングが返る")
-    func ranking_byAchievement_returnsDescendingOrder() throws {
-
+    func ranking_byAchievement_returnsDescendingOrder() {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -145,7 +142,7 @@ extension ContributionAnalyticsTest.RankingCase {
                 totalAchievementCount: 7,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -174,14 +171,13 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: false,
                 totalValue: 7,
                 averageValue: 1.0
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("週表示の平均値はトータル / 7日 で算出される")
-    func ranking_weekPeriod_dividesByDays() throws {
-
+    func ranking_weekPeriod_dividesByDays() {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -194,7 +190,7 @@ extension ContributionAnalyticsTest.RankingCase {
                 totalAchievementCount: 14,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -215,14 +211,13 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: true,
                 totalValue: 70,
                 averageValue: 10.0
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("年表示の平均値はトータル / 12ヶ月 で算出される")
-    func ranking_yearPeriod_dividesByMonths() throws {
-
+    func ranking_yearPeriod_dividesByMonths() {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 12, day: 31)
         let period = DisplayPointPeriod(type: .year, anchor: anchor)
@@ -233,7 +228,7 @@ extension ContributionAnalyticsTest.RankingCase {
                 total: .init(value: 240),
                 totalAchievementCount: 24,
                 elements: []
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: [],
@@ -254,14 +249,13 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: true,
                 totalValue: 240,
                 averageValue: 20.0
-            )
+            ),
         ]
         #expect(result == expected)
     }
 
     @Test("myUserIdに合致したユーザーのisMeがtrueになる")
-    func ranking_marksMyUser_isMeTrue() throws {
-
+    func ranking_marksMyUser_isMeTrue() {
         // Arrange
         let anchor = Date.previewDate(year: 2026, month: 4, day: 26)
         let weekStart = Date.previewDate(year: 2026, month: 4, day: 20)
@@ -282,7 +276,7 @@ extension ContributionAnalyticsTest.RankingCase {
                 totalAchievementCount: 0,
                 elements: [],
                 startDate: weekStart
-            )
+            ),
         ]
         let analytics = ContributionAnalytics(
             weekPointList: weekList,
@@ -311,8 +305,9 @@ extension ContributionAnalyticsTest.RankingCase {
                 isMe: false,
                 totalValue: 14,
                 averageValue: 2.0
-            )
+            ),
         ]
         #expect(result == expected)
     }
+
 }

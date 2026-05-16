@@ -14,9 +14,9 @@ struct CumulativePointsAreaChartView: View {
     @Environment(\.locale) private var locale
     @Environment(\.calendar) private var calendar
     @Environment(\.timeZone) var timeZone
-    
+
     @State var selectedDate: Date?
-    
+
     let viewableData: AllUserCumulativeData
 
     var body: some View {
@@ -28,21 +28,22 @@ struct CumulativePointsAreaChartView: View {
                 GraphDescriptionPopoverButton(
                     title: "獲得ポイントの累積からわかること",
                     message: """
-                        期間の最初から日が経つごとに積み上がっていく合計ポイントです。
-                        期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。
-                        線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。
-                        """
+                    期間の最初から日が経つごとに積み上がっていく合計ポイントです。
+                    期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。
+                    線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。
+                    """
                 )
             }
             graphContent(viewableData.list)
         }
     }
+
 }
 
 // MARK: UI定義
 
 private extension CumulativePointsAreaChartView {
-    
+
     func graphContent(_ list: [ViewablePointList]) -> some View {
         Chart {
             ForEach(list, id: \.self) { userData in
@@ -84,7 +85,7 @@ private extension CumulativePointsAreaChartView {
             }
         }
     }
-    
+
     func userCumulativeArea(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
             AreaMark(
@@ -100,7 +101,7 @@ private extension CumulativePointsAreaChartView {
             .foregroundStyle(by: .value("ユーザー", userData.userName))
         }
     }
-    
+
     func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
         RuleMark(x: .value("日付", selectedDate))
             .foregroundStyle(.secondary.opacity(0.3))
@@ -118,15 +119,15 @@ private extension CumulativePointsAreaChartView {
                 )
             }
     }
-    
+
     var xAxisStride: AxisMarkValues {
         switch viewableData.displayPeriod {
         case .week:
-            return .automatic(desiredCount: 7)
+            .automatic(desiredCount: 7)
         case .month:
-            return .automatic(desiredCount: 5)
+            .automatic(desiredCount: 5)
         case .year:
-            return .automatic(desiredCount: 12)
+            .automatic(desiredCount: 12)
         }
     }
 
@@ -136,19 +137,20 @@ private extension CumulativePointsAreaChartView {
         case .month: .dateTime.day().locale(locale)
         case .week: .dateTime.weekday(.abbreviated).locale(locale)
         }
-        
+
         formatStyle.timeZone = timeZone
         return formatStyle
     }
-    
+
     var graphTitle: String {
         let unitStr = switch viewableData.displayPeriod {
         case .year: "月ごと"
         case .month, .week: "日ごと"
         }
-        
+
         return "\(unitStr)獲得ポイントの累積"
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -156,60 +158,60 @@ private extension CumulativePointsAreaChartView {
 private extension CumulativePointsAreaChartView {
 
     func handleTap(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
-
         let frame = geometry.frame(in: .local)
         guard let tapDate: Date = proxy.value(atX: location.x - frame.minX) else { return }
         let nearest = viewableData.nearestDate(to: tapDate)
         selectedDate = selectedDate == nearest ? nil : nearest
     }
+
 }
 
 #if DEBUG
-#Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .week)
-        .currentList(calendar: .japanese)
+    #Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .week)
+            .currentList(calendar: .japanese)
 
-    CumulativePointsAreaChartView(
-        viewableData: AllUserCumulativeData.make(
-            list: allUserList.list,
-            displayPeriod: .week
+        CumulativePointsAreaChartView(
+            viewableData: AllUserCumulativeData.make(
+                list: allUserList.list,
+                displayPeriod: .week
+            )
         )
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.space16)
-}
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.space16)
+    }
 
-#Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .month)
-        .currentList(calendar: .japanese)
+    #Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .month)
+            .currentList(calendar: .japanese)
 
-    CumulativePointsAreaChartView(
-        viewableData: AllUserCumulativeData.make(
-            list: allUserList.list,
-            displayPeriod: .month
+        CumulativePointsAreaChartView(
+            viewableData: AllUserCumulativeData.make(
+                list: allUserList.list,
+                displayPeriod: .month
+            )
         )
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.space16)
-}
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.space16)
+    }
 
-#Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
-    let allUserList = ContributionAnalytics
-        .makeForPreview(type: .year)
-        .currentList(calendar: .japanese)
+    #Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
+        let allUserList = ContributionAnalytics
+            .makeForPreview(type: .year)
+            .currentList(calendar: .japanese)
 
-    CumulativePointsAreaChartView(
-        viewableData: AllUserCumulativeData.make(
-            list: allUserList.list,
-            displayPeriod: .year
+        CumulativePointsAreaChartView(
+            viewableData: AllUserCumulativeData.make(
+                list: allUserList.list,
+                displayPeriod: .year
+            )
         )
-    )
-    .frame(height: 240)
-    .setupEnvironmentForPreview()
-    .padding(.space16)
-}
+        .frame(height: 240)
+        .setupEnvironmentForPreview()
+        .padding(.space16)
+    }
 #endif

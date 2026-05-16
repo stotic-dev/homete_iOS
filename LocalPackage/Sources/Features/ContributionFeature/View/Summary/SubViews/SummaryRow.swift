@@ -57,4 +57,5 @@ struct SummaryRow: View {
         default: .secondary
         }
     }
+
 }

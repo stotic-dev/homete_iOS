@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import Testing
 import HometeDomain
 @testable import HouseworkFeature
+import Testing
 
 @MainActor
 struct HouseworkListStoreTest {
@@ -21,11 +21,11 @@ struct HouseworkListStoreTest {
 
         private let inputId = "houseworkObserveKey"
         private let inputCohabitantId = "cohabitantId"
+
     }
 
     @Test("新しい家事の登録すると、パートナーに通知を送信する")
-    func register() async throws {
-
+    func register() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
@@ -35,12 +35,9 @@ struct HouseworkListStoreTest {
         )
 
         await confirmation(expectedCount: 2) { confirmation in
-
             let _: Void = await withCheckedContinuation { continuation in
-
                 let store = HouseworkListStore(
                     houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-
                         // Assert
 
                         #expect(item == inputHouseworkItem)
@@ -48,7 +45,6 @@ struct HouseworkListStoreTest {
                         confirmation()
                     }),
                     cohabitantPushNotificationClient: .init { id, content in
-
                         // Assert
 
                         #expect(id == inputCohabitantId)
@@ -61,19 +57,18 @@ struct HouseworkListStoreTest {
                 // Act
 
                 Task {
-
                     try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId)
                 }
             }
         }
     }
+
 }
 
 extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
-    func requestReview() async throws {
-
+    func requestReview() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
@@ -90,13 +85,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
 
         await confirmation(expectedCount: 2) { confirmation in
-
             let _: Void = await withCheckedContinuation { continuation in
-
                 let store = HouseworkListStore(
                     houseworkClient: .init(
                         insertOrUpdateItemHandler: { item, cohabitantId in
-
                             // Assert
 
                             #expect(item == updatedHouseworkItem)
@@ -105,7 +97,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         }
                     ),
                     cohabitantPushNotificationClient: .init { id, content in
-
                         // Assert
 
                         #expect(id == inputCohabitantId)
@@ -113,13 +104,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         confirmation()
                         continuation.resume()
                     },
-                    items: [.makeForTest(items: [inputHouseworkItem])],
+                    items: [.makeForTest(items: [inputHouseworkItem])]
                 )
 
                 // Act
 
                 Task {
-
                     try await store.requestReview(
                         target: inputHouseworkItem,
                         now: requestedAt,
@@ -133,7 +123,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("実施者、実施日をクリアして家事のステータスを未完了に戻す")
     func returnToIncomplete() async throws {
-
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
@@ -149,11 +138,9 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
 
         try await confirmation(expectedCount: 1) { confirmation in
-
             let store = HouseworkListStore(
                 houseworkClient: .init(
                     insertOrUpdateItemHandler: { item, cohabitantId in
-
                         // Assert
 
                         #expect(item == updatedHouseworkItem)
@@ -162,10 +149,9 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     }
                 ),
                 cohabitantPushNotificationClient: .init { _, _ in
-
                     Issue.record()
                 },
-                items: [.makeForTest(items: [inputHouseworkItem])],
+                items: [.makeForTest(items: [inputHouseworkItem])]
             )
 
             // Act
@@ -176,16 +162,13 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事削除時は家事を削除するAPIを実行する")
     func remove() async throws {
-
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
 
         try await confirmation { confirmation in
-
             let store = HouseworkListStore(
                 houseworkClient: .init(removeItemHandler: { item, cohabitantId in
-
                     // Assert
 
                     #expect(item == inputHouseworkItem)
@@ -193,7 +176,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     confirmation()
                 }),
                 cohabitantPushNotificationClient: .previewValue,
-                items: [.makeForTest(items: [inputHouseworkItem])],
+                items: [.makeForTest(items: [inputHouseworkItem])]
             )
 
             // Act
@@ -204,8 +187,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事を承認すると、承認情報を更新しパートナーに通知を送信する")
     // swiftlint:disable:next function_body_length
-    func approved() async throws {
-
+    func approved() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
@@ -234,13 +216,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
 
         await confirmation(expectedCount: 2) { confirmation in
-
             let _: Void = await withCheckedContinuation { continuation in
-
                 let store = HouseworkListStore(
                     houseworkClient: .init(
                         insertOrUpdateItemHandler: { item, cohabitantId in
-
                             // Assert
 
                             #expect(item == updatedHouseworkItem)
@@ -249,7 +228,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         }
                     ),
                     cohabitantPushNotificationClient: .init { id, content in
-
                         // Assert
 
                         #expect(id == inputCohabitantId)
@@ -257,13 +235,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         confirmation()
                         continuation.resume()
                     },
-                    items: [.makeForTest(items: [inputHouseworkItem])],
+                    items: [.makeForTest(items: [inputHouseworkItem])]
                 )
 
                 // Act
 
                 Task {
-
                     try await store.approved(
                         target: inputHouseworkItem,
                         now: approvedAt,
@@ -278,8 +255,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事を却下すると、却下情報を更新しパートナーに通知を送信する")
     // swiftlint:disable:next function_body_length
-    func rejected() async throws {
-
+    func rejected() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
@@ -308,13 +284,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
 
         await confirmation(expectedCount: 2) { confirmation in
-
             let _: Void = await withCheckedContinuation { continuation in
-
                 let store = HouseworkListStore(
                     houseworkClient: .init(
                         insertOrUpdateItemHandler: { item, cohabitantId in
-
                             // Assert
 
                             #expect(item == updatedHouseworkItem)
@@ -323,7 +296,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         }
                     ),
                     cohabitantPushNotificationClient: .init { id, content in
-
                         // Assert
 
                         #expect(id == inputCohabitantId)
@@ -331,13 +303,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         confirmation()
                         continuation.resume()
                     },
-                    items: [.makeForTest(items: [inputHouseworkItem])],
+                    items: [.makeForTest(items: [inputHouseworkItem])]
                 )
 
                 // Act
 
                 Task {
-
                     try await store.rejected(
                         target: inputHouseworkItem,
                         now: rejectedAt,
@@ -349,4 +320,5 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             }
         }
     }
+
 }

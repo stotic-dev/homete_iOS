@@ -9,9 +9,11 @@ import Foundation
 import HometeDomain
 
 /// ユーザーの家事貢献度集計結果
-struct UserPointSummary: Equatable, Sendable, Identifiable {
+struct UserPointSummary: Equatable, Identifiable {
 
-    var id: String { userId }
+    var id: String {
+        userId
+    }
 
     /// ユーザーID
     let userId: String
@@ -27,4 +29,5 @@ struct UserPointSummary: Equatable, Sendable, Identifiable {
 
     /// もらった感謝の数（自分が実行しレビューされて完了した家事の数）
     let achievedCount: Int
+
 }

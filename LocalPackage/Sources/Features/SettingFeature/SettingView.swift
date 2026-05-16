@@ -80,15 +80,17 @@ public struct SettingView: View {
             Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
         }
     }
+
 }
 
 private extension SettingView {
-    @ViewBuilder
+
     func leadingNavigationBarContent() -> some View {
         NavigationBarButton(label: .close) {
             dismiss()
         }
     }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -96,31 +98,26 @@ private extension SettingView {
 private extension SettingView {
 
     func tappedLogoutRowButton() {
-
         isPresentedLogoutConfirmAlert = true
     }
 
     func tappedLogoutAlertOkButton() {
-
         accountAuthStore.logOut()
     }
 
     func tappedAccountDeletionRowButton() {
-
         isPresentedAccountDeletionConfirmAlert = true
     }
 
     func tappedAccountDeletionAlertOkButton() async {
-
         do {
-
             try await accountAuthStore.deleteAccount()
         } catch {
-
             // TODO: エラーハンドリング
             print("occurred error: \(error)")
         }
     }
+
 }
 
 #Preview {

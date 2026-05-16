@@ -15,11 +15,11 @@ public struct NavigationBarContentLabel: Sendable {
     public var icon: Image {
         if let assetIcon {
             Image(assetIcon)
-        }
-        else {
+        } else {
             Image(systemName: symbolName ?? "")
         }
     }
+
 }
 
 public extension NavigationBarContentLabel {
@@ -36,4 +36,5 @@ public extension NavigationBarContentLabel {
         symbolName: "trash",
         assetIcon: nil
     )
+
 }
