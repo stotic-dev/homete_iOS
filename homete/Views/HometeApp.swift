@@ -22,21 +22,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // swiftlint:disable:next discouraged_optional_collection
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        #if DEBUG
-            if !isXcodePreview, !isUnitTestMode {
-                guard let devPlistFilePath = (
-                    Bundle.main.url(
-                        forResource: "GoogleService-Info-dev",
-                        withExtension: "plist"
-                    )?
-                        .path()
-                ),
-                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
-                FirebaseApp.configure(options: firebaseOption)
-            }
-        #else
-            FirebaseApp.configure()
-        #endif
+        // Initialize Firebase
+        setupFirebase()
+
+        // Initialize Google Mobile Ads
+        setupGoogleMobileAds()
 
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
@@ -50,6 +40,38 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
 }
+
+// MARK: - setup
+
+private extension AppDelegate {
+
+    func setupFirebase() {
+        #if DEBUG
+            if !isXcodePreview, !isUnitTestMode {
+                guard let devPlistFilePath = (
+                    Bundle.main.url(
+                        forResource: "GoogleService-Info-dev",
+                        withExtension: "plist"
+                    )?
+                        .path()
+                ),
+                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
+                FirebaseApp.configure(options: firebaseOption)
+            }
+        #else
+            FirebaseApp.configure()
+        #endif
+    }
+
+    func setupGoogleMobileAds() {
+        Task {
+            await MobileAdsClient.shared.initialize()
+        }
+    }
+
+}
+
+// MARK: - Delegate Conformances
 
 extension AppDelegate: MessagingDelegate {
 

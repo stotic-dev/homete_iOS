@@ -2,22 +2,24 @@
 //  ImplCohabitantClient.swift
 //
 
-import FirebaseFirestore
-import HometeDomain
+#if os(iOS)
+    import FirebaseFirestore
+    import HometeDomain
 
-extension CohabitantClient {
+    extension CohabitantClient {
 
-    static let liveValue: CohabitantClient = .init { data in
-        try await FirestoreService.shared.insertOrUpdate(data: data) {
-            $0.cohabitantRef(id: data.id)
+        static let liveValue: CohabitantClient = .init { data in
+            try await FirestoreService.shared.insertOrUpdate(data: data) {
+                $0.cohabitantRef(id: data.id)
+            }
+        } addSnapshotListener: { listenerId, cohabitantId in
+            await FirestoreService.shared.addSnapshotListener(id: listenerId) {
+                $0.collection(path: .cohabitant)
+                    .whereField(CohabitantData.idField, isEqualTo: cohabitantId)
+            }
+        } removeSnapshotListener: { listenerId in
+            await FirestoreService.shared.removeSnapshotListener(id: listenerId)
         }
-    } addSnapshotListener: { listenerId, cohabitantId in
-        await FirestoreService.shared.addSnapshotListener(id: listenerId) {
-            $0.collection(path: .cohabitant)
-                .whereField(CohabitantData.idField, isEqualTo: cohabitantId)
-        }
-    } removeSnapshotListener: { listenerId in
-        await FirestoreService.shared.removeSnapshotListener(id: listenerId)
+
     }
-
-}
+#endif

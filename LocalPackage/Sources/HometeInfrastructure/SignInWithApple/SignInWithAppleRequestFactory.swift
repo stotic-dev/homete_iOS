@@ -2,17 +2,19 @@
 //  SignInWithAppleRequestFactory.swift
 //
 
-import AuthenticationServices
-import HometeDomain
+#if os(iOS)
+    import AuthenticationServices
+    import HometeDomain
 
-enum SignInWithAppleRequestFactory {
+    enum SignInWithAppleRequestFactory {
 
-    static func make(_ nonce: SignInWithAppleNonce) -> ASAuthorizationAppleIDRequest {
-        let appleIDProvider = ASAuthorizationAppleIDProvider()
-        let request = appleIDProvider.createRequest()
-        request.requestedScopes = [.fullName]
-        request.nonce = nonce.sha256
-        return request
+        static func make(_ nonce: SignInWithAppleNonce) -> ASAuthorizationAppleIDRequest {
+            let appleIDProvider = ASAuthorizationAppleIDProvider()
+            let request = appleIDProvider.createRequest()
+            request.requestedScopes = [.fullName]
+            request.nonce = nonce.sha256
+            return request
+        }
+
     }
-
-}
+#endif

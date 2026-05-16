@@ -2,15 +2,17 @@
 //  ImplSignInWithAppleClient.swift
 //
 
-import AuthenticationServices
-import HometeDomain
+#if os(iOS)
+    import AuthenticationServices
+    import HometeDomain
 
-extension SignInWithAppleClient {
+    extension SignInWithAppleClient {
 
-    static let liveValue = SignInWithAppleClient { nonce in
-        let signInWithApple = SignInWithApple()
-        let appleIDCredential = try await signInWithApple(nonce)
-        return try SignInWithAppleResultFactory.make(appleIDCredential, nonce)
+        static let liveValue = SignInWithAppleClient { nonce in
+            let signInWithApple = SignInWithApple()
+            let appleIDCredential = try await signInWithApple(nonce)
+            return try SignInWithAppleResultFactory.make(appleIDCredential, nonce)
+        }
+
     }
-
-}
+#endif

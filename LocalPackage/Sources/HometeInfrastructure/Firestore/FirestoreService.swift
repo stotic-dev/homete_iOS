@@ -2,60 +2,62 @@
 //  FirestoreService.swift
 //
 
-import FirebaseFirestore
+#if os(iOS)
+    import FirebaseFirestore
 
-final actor FirestoreService {
+    final actor FirestoreService {
 
-    static let shared = FirestoreService()
-    private let firestore = Firestore.firestore()
-    private var listeners: [String: any FirestoreListenerStorerable] = [:]
+        static let shared = FirestoreService()
+        private let firestore = Firestore.firestore()
+        private var listeners: [String: any FirestoreListenerStorerable] = [:]
 
-    func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
-        try await predicate(firestore)
-            .getDocuments()
-            .documents
-            .map { try $0.data(as: T.self) }
-    }
+        func fetch<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
+            try await predicate(firestore)
+                .getDocuments()
+                .documents
+                .map { try $0.data(as: T.self) }
+        }
 
-    func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
-        try await predicate(firestore).getDocument(as: T.self)
-    }
+        func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
+            try await predicate(firestore).getDocument(as: T.self)
+        }
 
-    func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) throws {
-        try predicate(firestore).setData(from: data, merge: false)
-    }
+        func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) throws {
+            try predicate(firestore).setData(from: data, merge: false)
+        }
 
-    func delete(predicate: (Firestore) -> DocumentReference) async throws {
-        try await predicate(firestore).delete()
-    }
+        func delete(predicate: (Firestore) -> DocumentReference) async throws {
+            try await predicate(firestore).delete()
+        }
 
-    func addSnapshotListener<Output: Decodable>(
-        id: String,
-        predicate: (Firestore) -> Query
-    ) -> AsyncStream<[Output]> {
-        let (stream, continuation) = AsyncStream.makeStream(
-            of: [Output].self,
-            bufferingPolicy: .bufferingNewest(10)
-        )
-        let listener = predicate(firestore)
-            .addSnapshotListener { snapshots, error in
-                if let error {
-                    print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
-                    return
+        func addSnapshotListener<Output: Decodable>(
+            id: String,
+            predicate: (Firestore) -> Query
+        ) -> AsyncStream<[Output]> {
+            let (stream, continuation) = AsyncStream.makeStream(
+                of: [Output].self,
+                bufferingPolicy: .bufferingNewest(10)
+            )
+            let listener = predicate(firestore)
+                .addSnapshotListener { snapshots, error in
+                    if let error {
+                        print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
+                        return
+                    }
+
+                    guard let snapshots else { return }
+                    let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
+                    continuation.yield(convertedValues)
                 }
 
-                guard let snapshots else { return }
-                let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
-                continuation.yield(convertedValues)
-            }
+            listeners[id] = FirestoreListener(continuation: continuation, listener: listener)
+            return stream
+        }
 
-        listeners[id] = FirestoreListener(continuation: continuation, listener: listener)
-        return stream
+        func removeSnapshotListener(id: String) {
+            let listener = listeners[id]
+            listener?.remove()
+        }
+
     }
-
-    func removeSnapshotListener(id: String) {
-        let listener = listeners[id]
-        listener?.remove()
-    }
-
-}
+#endif
