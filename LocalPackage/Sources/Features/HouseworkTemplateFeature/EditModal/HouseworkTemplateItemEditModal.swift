@@ -72,32 +72,11 @@ private extension HouseworkTemplateItemEditModal {
         VStack(alignment: .leading, spacing: .space8) {
             Text("家事の名前")
                 .font(with: .headLineS)
-            ZStack {
-                TextField(
-                    "",
-                    text: $input.title,
-                    prompt: Text("家事の名前を入力")
-                        .foregroundStyle(.primary2.opacity(0.7))
-                )
-                .focused($isShowingKeyboard)
-                .foregroundStyle(.primary2)
-                .padding()
-                .font(with: .body)
-                .background {
-                    RoundedRectangle(radius: .radius8)
-                        .foregroundStyle(.primary3)
-                }
-                Button {
-                    input.title = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.primary2)
-                        .padding(.space8)
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, .space8)
-                .opacity(input.isEmptyTitle ? 0 : 1)
-            }
+            ClearableTextField(
+                text: $input.title,
+                placeholder: "家事の名前を入力",
+                focus: $isShowingKeyboard
+            )
         }
     }
 

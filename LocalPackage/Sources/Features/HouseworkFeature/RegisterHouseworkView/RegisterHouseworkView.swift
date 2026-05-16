@@ -81,32 +81,11 @@ struct RegisterHouseworkView: View {
 private extension RegisterHouseworkView {
 
     func inputTextField() -> some View {
-        ZStack {
-            TextField(
-                "",
-                text: $houseworkTitle,
-                prompt: Text("家事の名前を入力")
-                    .foregroundStyle(.primary2.opacity(0.7))
-            )
-            .focused($isShowingKeyboard)
-            .foregroundStyle(.primary2)
-            .padding()
-            .font(with: .body)
-            .background {
-                RoundedRectangle(radius: .radius8)
-                    .foregroundStyle(.primary3)
-            }
-            Button {
-                tappedClearTextFiledButton()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.primary2)
-                    .padding(.space8)
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .padding(.trailing, .space8)
-            .opacity(houseworkTitle.isEmpty ? 0 : 1)
-        }
+        ClearableTextField(
+            text: $houseworkTitle,
+            placeholder: "家事の名前を入力",
+            focus: $isShowingKeyboard
+        )
     }
 
     func inputPointSlider() -> some View {
@@ -142,10 +121,6 @@ private extension RegisterHouseworkView {
 // MARK: - プレゼンテーションロジック
 
 private extension RegisterHouseworkView {
-
-    func tappedClearTextFiledButton() {
-        houseworkTitle = ""
-    }
 
     func tappedEntryHistoryRow(_ item: String) {
         houseworkTitle = item
