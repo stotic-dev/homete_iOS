@@ -76,7 +76,6 @@ struct HouseworkTemplateView: View {
             HouseworkTemplateItemDetailView(
                 item: item,
                 registeredDays: registeredDays(for: item),
-                isEditing: false, // TODO: 後で消す
                 onEdit: { input in
                     tappedEditItemButton(input: input)
                 },
@@ -288,107 +287,107 @@ private extension HouseworkTemplateView {
 }
 
 #if DEBUG
-    #Preview("HouseworkTemplateView_閲覧モード") {
-        let templateData: [DayOfWeek: [HouseworkTemplateItem]] = [
-            .monday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-            .tuesday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-                .init(
-                    id: .init(id: "2"),
-                    title: "hoge2",
-                    point: 15,
-                    updatedAt: .now
-                ),
-            ],
-            .wednesday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-            .thursday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-                .init(
-                    id: .init(id: "3"),
-                    title: "hoge3",
-                    point: 90,
-                    updatedAt: .now
-                ),
-            ],
-            .friday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-            .saturday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-            .sunday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-        ]
-        NavigationStack {
-            HouseworkTemplateView(
-                editingDays: templateData,
-                hasTemplate: true,
-                initialDays: templateData,
-                activeOtherEditorNames: []
-            )
-        }
-        .apply(theme: .init())
+#Preview("HouseworkTemplateView_閲覧モード") {
+    let templateData: [DayOfWeek: [HouseworkTemplateItem]] = [
+        .monday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+        .tuesday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+            .init(
+                id: .init(id: "2"),
+                title: "hoge2",
+                point: 15,
+                updatedAt: .now
+            ),
+        ],
+        .wednesday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+        .thursday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+            .init(
+                id: .init(id: "3"),
+                title: "hoge3",
+                point: 90,
+                updatedAt: .now
+            ),
+        ],
+        .friday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+        .saturday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+        .sunday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+    ]
+    NavigationStack {
+        HouseworkTemplateView(
+            editingDays: templateData,
+            hasTemplate: true,
+            initialDays: templateData,
+            activeOtherEditorNames: []
+        )
     }
+    .apply(theme: .init())
+}
 
-    #Preview("HouseworkTemplateView_アクティブユーザー有り") {
-        let templateData: [DayOfWeek: [HouseworkTemplateItem]] = [
-            .monday: [
-                .init(
-                    id: .init(id: "1"),
-                    title: "hoge",
-                    point: 10,
-                    updatedAt: .now
-                ),
-            ],
-        ]
-        NavigationStack {
-            HouseworkTemplateView(
-                editingDays: [:],
-                hasTemplate: true,
-                initialDays: templateData,
-                activeOtherEditorNames: ["Aさん", "Bさん"]
-            )
-        }
-        .apply(theme: .init())
+#Preview("HouseworkTemplateView_アクティブユーザー有り") {
+    let templateData: [DayOfWeek: [HouseworkTemplateItem]] = [
+        .monday: [
+            .init(
+                id: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                updatedAt: .now
+            ),
+        ],
+    ]
+    NavigationStack {
+        HouseworkTemplateView(
+            editingDays: [:],
+            hasTemplate: true,
+            initialDays: templateData,
+            activeOtherEditorNames: ["Aさん", "Bさん"]
+        )
     }
+    .apply(theme: .init())
+}
 #endif

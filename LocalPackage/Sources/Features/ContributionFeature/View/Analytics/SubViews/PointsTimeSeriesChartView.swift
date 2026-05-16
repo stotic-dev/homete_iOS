@@ -165,50 +165,50 @@ private extension PointsTimeSeriesChartView {
 }
 
 #if DEBUG
-    #Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .week)
-            .currentList(calendar: .japanese)
+#Preview("PointsTimeSeriesChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .week)
+        .currentList(calendar: .japanese)
 
-        PointsTimeSeriesChartView(
-            viewableData: allUserList,
-            selectedDate: .previewDate(year: 2026, month: 4, day: 24)
-        )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space56)
-    }
+    PointsTimeSeriesChartView(
+        viewableData: allUserList,
+        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
+}
 
-    #Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .month)
-            .currentList(calendar: .japanese)
+#Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .month)
+        .currentList(calendar: .japanese)
 
-        PointsTimeSeriesChartView(
-            viewableData: allUserList,
-            selectedDate: .previewDate(year: 2026, month: 4, day: 24)
-        )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space56)
-        // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
-        .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
-    }
+    PointsTimeSeriesChartView(
+        viewableData: allUserList,
+        selectedDate: .previewDate(year: 2026, month: 4, day: 24)
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
+    // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
+    .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
+}
 
-    #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .year)
-            .currentList(calendar: .japanese)
+#Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .year)
+        .currentList(calendar: .japanese)
 
-        PointsTimeSeriesChartView(
-            viewableData: allUserList,
-            selectedDate: .previewDate(year: 2026, month: 4, day: 1)
-        )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space56)
-    }
+    PointsTimeSeriesChartView(
+        viewableData: allUserList,
+        selectedDate: .previewDate(year: 2026, month: 4, day: 1)
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.horizontal, .space16)
+    .padding(.vertical, .space56)
+}
 #endif

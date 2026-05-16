@@ -9,11 +9,11 @@ import Foundation
 
 #if DEBUG
 
-    public extension TimeZone {
+public extension TimeZone {
 
-        // swiftlint:disable:next force_unwrapping
-        static let tokyo = Self(identifier: "Asia/Tokyo")!
+    // swiftlint:disable:next force_unwrapping
+    static let tokyo = Self(identifier: "Asia/Tokyo")!
 
-    }
+}
 
 #endif

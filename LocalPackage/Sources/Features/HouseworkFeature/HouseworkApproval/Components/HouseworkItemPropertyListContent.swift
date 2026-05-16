@@ -54,17 +54,17 @@ private extension HouseworkItemPropertyListContent {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseworkItemPropertyListContent(item: .init(
-            id: "",
-            title: "洗濯",
-            point: 10,
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
-                expiredAt: .init(timeIntervalSince1970: 0)
-            ),
-            executedAt: .distantFuture
-        ))
-        .setupEnvironmentForPreview()
-    }
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseworkItemPropertyListContent(item: .init(
+        id: "",
+        title: "洗濯",
+        point: 10,
+        metaData: .init(
+            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+            expiredAt: .init(timeIntervalSince1970: 0)
+        ),
+        executedAt: .distantFuture
+    ))
+    .setupEnvironmentForPreview()
+}
 #endif

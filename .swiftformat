@@ -24,6 +24,9 @@
 --wrap-collections before-first
 --closing-paren balanced
 
+# #if/#else/#endif 内のコードを追加インデントせず、外側と同じ階層に揃える
+--ifdef no-indent
+
 # 既存コードへの影響が大きいルールを無効化
 --disable organizeDeclarations
 --disable markTypes

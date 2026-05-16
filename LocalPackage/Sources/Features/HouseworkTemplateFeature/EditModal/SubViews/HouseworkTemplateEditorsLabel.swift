@@ -40,17 +40,17 @@ struct HouseworkTemplateEditorsLabel: View {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        VStack(alignment: .leading) {
-            HouseworkTemplateEditorsLabel(
-                bannerDismissedInSession: .constant(false),
-                editorNames: ["Aさん", "Bさん"]
-            )
-            HouseworkTemplateEditorsLabel(
-                bannerDismissedInSession: .constant(false),
-                editorNames: []
-            )
-        }
-        .padding()
+#Preview(traits: .sizeThatFitsLayout) {
+    VStack(alignment: .leading) {
+        HouseworkTemplateEditorsLabel(
+            bannerDismissedInSession: .constant(false),
+            editorNames: ["Aさん", "Bさん"]
+        )
+        HouseworkTemplateEditorsLabel(
+            bannerDismissedInSession: .constant(false),
+            editorNames: []
+        )
     }
+    .padding()
+}
 #endif

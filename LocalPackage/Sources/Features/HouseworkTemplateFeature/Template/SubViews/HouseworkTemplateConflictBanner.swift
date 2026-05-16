@@ -42,8 +42,8 @@ struct HouseworkTemplateConflictBanner: View {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseworkTemplateConflictBanner(onClose: {})
-            .padding()
-    }
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseworkTemplateConflictBanner(onClose: {})
+        .padding()
+}
 #endif

@@ -58,27 +58,23 @@ public struct ClearableTextField: View {
 }
 
 #if DEBUG
-    private struct ClearableTextFieldPreviewContainer: View {
+#Preview("ClearableTextField_未入力", traits: .sizeThatFitsLayout) {
+    @Previewable @FocusState var isFocused: Bool
+    ClearableTextField(
+        text: .constant(""),
+        placeholder: "家事の名前を入力",
+        focus: $isFocused
+    )
+    .padding(.space16)
+}
 
-        @State var text: String
-        @FocusState var isFocused: Bool
-
-        var body: some View {
-            ClearableTextField(
-                text: $text,
-                placeholder: "家事の名前を入力",
-                focus: $isFocused
-            )
-            .padding(.space16)
-        }
-
-    }
-
-    #Preview("ClearableTextField_未入力", traits: .sizeThatFitsLayout) {
-        ClearableTextFieldPreviewContainer(text: "")
-    }
-
-    #Preview("ClearableTextField_入力済み", traits: .sizeThatFitsLayout) {
-        ClearableTextFieldPreviewContainer(text: "洗濯")
-    }
+#Preview("ClearableTextField_入力済み", traits: .sizeThatFitsLayout) {
+    @Previewable @FocusState var isFocused: Bool
+    ClearableTextField(
+        text: .constant("洗濯"),
+        placeholder: "家事の名前を入力",
+        focus: $isFocused
+    )
+    .padding(.space16)
+}
 #endif

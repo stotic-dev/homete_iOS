@@ -23,19 +23,19 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         #if DEBUG
-            if !isXcodePreview, !isUnitTestMode {
-                guard let devPlistFilePath = (
-                    Bundle.main.url(
-                        forResource: "GoogleService-Info-dev",
-                        withExtension: "plist"
-                    )?
-                        .path()
-                ),
-                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
-                FirebaseApp.configure(options: firebaseOption)
-            }
+        if !isXcodePreview, !isUnitTestMode {
+            guard let devPlistFilePath = (
+                Bundle.main.url(
+                    forResource: "GoogleService-Info-dev",
+                    withExtension: "plist"
+                )?
+                    .path()
+            ),
+                let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return true }
+            FirebaseApp.configure(options: firebaseOption)
+        }
         #else
-            FirebaseApp.configure()
+        FirebaseApp.configure()
         #endif
 
         UNUserNotificationCenter.current().delegate = self

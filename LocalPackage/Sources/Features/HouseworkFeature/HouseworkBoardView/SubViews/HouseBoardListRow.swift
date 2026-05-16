@@ -26,17 +26,17 @@ struct HouseBoardListRow: View {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseBoardListRow(
-            houseworkItem: .init(
-                id: "1",
-                title: "洗濯",
-                point: 20,
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .distantPast
-                )
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .init(
+            id: "1",
+            title: "洗濯",
+            point: 20,
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .distantPast
             )
         )
-    }
+    )
+}
 #endif

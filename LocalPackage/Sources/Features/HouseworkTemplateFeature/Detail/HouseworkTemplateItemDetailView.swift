@@ -17,7 +17,6 @@ struct HouseworkTemplateItemDetailView: View {
 
     let item: HouseworkTemplateItem
     let registeredDays: [DayOfWeek]
-    let isEditing: Bool
     let onEdit: (TemplateItemEditInput) -> Void
     let onDelete: () -> Void
 
@@ -98,21 +97,18 @@ private extension HouseworkTemplateItemDetailView {
 
 }
 
-#if DEBUG
-    #Preview("HouseworkTemplateItemDetailView_閲覧モード") {
-        NavigationStack {
-            HouseworkTemplateItemDetailView(
-                item: .init(
-                    id: .init(id: "1"),
-                    title: "洗濯",
-                    point: 10,
-                    updatedAt: .distantPast
-                ),
-                registeredDays: [.monday, .wednesday],
-                isEditing: false,
-                onEdit: { _ in },
-                onDelete: {}
-            )
-        }
+#Preview("HouseworkTemplateItemDetailView_閲覧モード") {
+    NavigationStack {
+        HouseworkTemplateItemDetailView(
+            item: .init(
+                id: .init(id: "1"),
+                title: "洗濯",
+                point: 10,
+                updatedAt: .distantPast
+            ),
+            registeredDays: [.monday, .wednesday],
+            onEdit: { _ in },
+            onDelete: {}
+        )
     }
-#endif
+}

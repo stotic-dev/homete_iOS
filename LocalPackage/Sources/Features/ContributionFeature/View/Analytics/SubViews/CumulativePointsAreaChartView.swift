@@ -167,51 +167,51 @@ private extension CumulativePointsAreaChartView {
 }
 
 #if DEBUG
-    #Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .week)
-            .currentList(calendar: .japanese)
+#Preview("CumulativePointsAreaChartView_週間 (日別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .week)
+        .currentList(calendar: .japanese)
 
-        CumulativePointsAreaChartView(
-            viewableData: AllUserCumulativeData.make(
-                list: allUserList.list,
-                displayPeriod: .week
-            )
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList.list,
+            displayPeriod: .week
         )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.space16)
-    }
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.space16)
+}
 
-    #Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .month)
-            .currentList(calendar: .japanese)
+#Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .month)
+        .currentList(calendar: .japanese)
 
-        CumulativePointsAreaChartView(
-            viewableData: AllUserCumulativeData.make(
-                list: allUserList.list,
-                displayPeriod: .month
-            )
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList.list,
+            displayPeriod: .month
         )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.space16)
-    }
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.space16)
+}
 
-    #Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
-        let allUserList = ContributionAnalytics
-            .makeForPreview(type: .year)
-            .currentList(calendar: .japanese)
+#Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
+    let allUserList = ContributionAnalytics
+        .makeForPreview(type: .year)
+        .currentList(calendar: .japanese)
 
-        CumulativePointsAreaChartView(
-            viewableData: AllUserCumulativeData.make(
-                list: allUserList.list,
-                displayPeriod: .year
-            )
+    CumulativePointsAreaChartView(
+        viewableData: AllUserCumulativeData.make(
+            list: allUserList.list,
+            displayPeriod: .year
         )
-        .frame(height: 240)
-        .setupEnvironmentForPreview()
-        .padding(.space16)
-    }
+    )
+    .frame(height: 240)
+    .setupEnvironmentForPreview()
+    .padding(.space16)
+}
 #endif

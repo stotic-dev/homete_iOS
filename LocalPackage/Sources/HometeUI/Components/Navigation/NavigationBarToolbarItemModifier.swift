@@ -18,13 +18,13 @@ struct NavigationBarToolbarItemModifier<ToolbarContent: View>: ViewModifier {
 
     func body(content: Content) -> some View {
         #if os(iOS)
-            content.toolbar {
-                ToolbarItem(placement: position == .leading ? .topBarLeading : .topBarTrailing) {
-                    self.content()
-                }
+        content.toolbar {
+            ToolbarItem(placement: position == .leading ? .topBarLeading : .topBarTrailing) {
+                self.content()
             }
+        }
         #else
-            content
+        content
         #endif
     }
 

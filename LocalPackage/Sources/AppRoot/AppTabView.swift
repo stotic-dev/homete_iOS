@@ -132,7 +132,7 @@ private extension AppTabView {
                 return
             }
             #if os(iOS)
-                UIApplication.shared.registerForRemoteNotifications()
+            UIApplication.shared.registerForRemoteNotifications()
             #endif
         } catch {
             print("[Notifications] Authorization error: \(error)")

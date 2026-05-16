@@ -41,8 +41,8 @@ private extension WeekdaySelector {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        WeekdaySelector(selection: .constant([.monday, .wednesday]))
-            .padding()
-    }
+#Preview(traits: .sizeThatFitsLayout) {
+    WeekdaySelector(selection: .constant([.monday, .wednesday]))
+        .padding()
+}
 #endif

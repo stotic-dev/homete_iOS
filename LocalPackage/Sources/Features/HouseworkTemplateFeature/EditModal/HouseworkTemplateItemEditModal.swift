@@ -121,19 +121,19 @@ private extension HouseworkTemplateItemEditModal {
 }
 
 #if DEBUG
-    #Preview("HouseworkTemplateItemEditModal_未入力") {
-        HouseworkTemplateItemEditModal(mode: .create) { _ in }
-    }
+#Preview("HouseworkTemplateItemEditModal_未入力") {
+    HouseworkTemplateItemEditModal(mode: .create) { _ in }
+}
 
-    #Preview("HouseworkTemplateItemEditModal_入力済み") {
-        HouseworkTemplateItemEditModal(
-            input: .init(
-                itemId: .init(id: "1"),
-                title: "hoge",
-                point: 10,
-                days: [.monday, .friday]
-            ),
-            mode: .create
-        ) { _ in }
-    }
+#Preview("HouseworkTemplateItemEditModal_入力済み") {
+    HouseworkTemplateItemEditModal(
+        input: .init(
+            itemId: .init(id: "1"),
+            title: "hoge",
+            point: 10,
+            days: [.monday, .friday]
+        ),
+        mode: .create
+    ) { _ in }
+}
 #endif

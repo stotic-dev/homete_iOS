@@ -33,15 +33,15 @@ struct HouseworkTemplateItemRow: View {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseworkTemplateItemRow(
-            item: .init(
-                id: .init(id: "1"),
-                title: "洗濯",
-                point: 10,
-                updatedAt: .distantPast
-            )
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseworkTemplateItemRow(
+        item: .init(
+            id: .init(id: "1"),
+            title: "洗濯",
+            point: 10,
+            updatedAt: .distantPast
         )
-        .padding()
-    }
+    )
+    .padding()
+}
 #endif

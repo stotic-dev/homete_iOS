@@ -39,8 +39,8 @@ struct HouseworkTemplateEmptyView: View {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseworkTemplateEmptyView(onCreate: {})
-            .apply(theme: .init())
-    }
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseworkTemplateEmptyView(onCreate: {})
+        .apply(theme: .init())
+}
 #endif

@@ -8,29 +8,29 @@
 import SwiftUI
 
 #if canImport(Prefire)
-    import Prefire
+import Prefire
 
-    public extension View {
+public extension View {
 
-        func snapshotForPreview(
-            delay: Double = .zero,
-            precision: Float = 1.0,
-            perceptualPrecision: Float = 1.0
-        ) -> some View {
-            snapshot(delay: delay, precision: precision, perceptualPrecision: perceptualPrecision)
-        }
-
+    func snapshotForPreview(
+        delay: Double = .zero,
+        precision: Float = 1.0,
+        perceptualPrecision: Float = 1.0
+    ) -> some View {
+        snapshot(delay: delay, precision: precision, perceptualPrecision: perceptualPrecision)
     }
+
+}
 #else
-    public extension View {
+public extension View {
 
-        func snapshotForPreview(
-            delay _: Double = .zero,
-            precision _: Float = 1.0,
-            perceptualPrecision _: Float = 1.0
-        ) -> some View {
-            self
-        }
-
+    func snapshotForPreview(
+        delay _: Double = .zero,
+        precision _: Float = 1.0,
+        perceptualPrecision _: Float = 1.0
+    ) -> some View {
+        self
     }
+
+}
 #endif

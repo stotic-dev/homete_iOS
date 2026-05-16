@@ -159,46 +159,46 @@ private extension RegisterHouseworkView {
 }
 
 #if DEBUG
-    #Preview("RegisterHouseworkView") {
-        RegisterHouseworkView(
-            dailyHouseworkList: .init(
-                items: [],
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .now
-                )
+#Preview("RegisterHouseworkView") {
+    RegisterHouseworkView(
+        dailyHouseworkList: .init(
+            items: [],
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
             )
         )
-        .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
-            let historyList = HouseworkHistoryList(items: [
-                "洗濯", "掃除",
-            ])
-            userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
-        }
-        .environment(HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ))
-        .snapshotForPreview(delay: 1)
+    )
+    .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
+        let historyList = HouseworkHistoryList(items: [
+            "洗濯", "掃除",
+        ])
+        userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .snapshotForPreview(delay: 1)
+}
 
-    #Preview("RegisterHouseworkView_通信中") {
-        RegisterHouseworkView(
-            loadingState: .init(store: .init(isLoading: true)),
-            dailyHouseworkList: .init(
-                items: [],
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .now
-                )
+#Preview("RegisterHouseworkView_通信中") {
+    RegisterHouseworkView(
+        loadingState: .init(store: .init(isLoading: true)),
+        dailyHouseworkList: .init(
+            items: [],
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
             )
         )
-        .environment(HouseworkListStore(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ))
-        #if canImport(Prefire)
-        .prefireIgnored()
-        #endif
-    }
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    #if canImport(Prefire)
+    .prefireIgnored()
+    #endif
+}
 #endif

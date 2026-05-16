@@ -20,15 +20,15 @@ public struct NavigationBarPrimaryActionButton: View {
     public var body: some View {
         Group {
             #if os(iOS)
-                if #available(iOS 26.0, *) {
-                    Button("", systemImage: systemImage, role: .confirm) {
-                        action()
-                    }
-                } else {
-                    basicButton()
+            if #available(iOS 26.0, *) {
+                Button("", systemImage: systemImage, role: .confirm) {
+                    action()
                 }
-            #else
+            } else {
                 basicButton()
+            }
+            #else
+            basicButton()
             #endif
         }
         .tint(.primary1)
