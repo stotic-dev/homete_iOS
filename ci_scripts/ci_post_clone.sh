@@ -2,13 +2,15 @@
 
 set -e
 
+# Xcode CloudでSwift Package Managerプラグインの検証をスキップする
+# SwiftGenPlugin、PrefireTestsPluginなどのBuild Tool Pluginを許可するために必要
+# どのワークフローでも共通で必要なため、switch-caseの外で実行する
+defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
 case "$CI_WORKFLOW" in
     "VRT")
         echo "=== VRT workflow ==="
-
-        # Xcode CloudでSwift Package Managerプラグインの検証をスキップする
-        # PrefireTestsPluginなどのパッケージプラグインを許可するために必要
-        defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
 
         # スナップショット参照ファイルの確認
         SNAPSHOT_DIR="$CI_PRIMARY_REPOSITORY_PATH/hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
