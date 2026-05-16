@@ -9,20 +9,13 @@
 	</dict>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
+	<key>GADApplicationIdentifier</key>
+	<string>$(SAMPLE_APP_ID)</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_register._tcp</string>
 		<string>_register._udp</string>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-		<string>fetch</string>
-	</array>
-	<key>UIDesignRequiresCompatibility</key>
-	<false/>
-	<key>GADApplicationIdentifier</key>
-	<string>$(SAMPLE_APP_ID)</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -226,5 +219,12 @@
 			<string>3qcr597p9d.skadnetwork</string>
 		</dict>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<false/>
 </dict>
 </plist>
