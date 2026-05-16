@@ -121,7 +121,7 @@
       buildConfiguration = "Stg">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Stg"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
