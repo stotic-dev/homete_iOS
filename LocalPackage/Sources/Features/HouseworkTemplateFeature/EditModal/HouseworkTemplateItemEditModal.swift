@@ -123,20 +123,9 @@ private extension HouseworkTemplateItemEditModal {
     }
 
     func trailingNavigationItem() -> some View {
-        Group {
-            if #available(iOS 26.0, *) {
-                Button("保存", systemImage: "paperplane", role: .confirm) {
-                    tappedConfirmButton()
-                }
-            } else {
-                Button {
-                    tappedConfirmButton()
-                } label: {
-                    Image(systemName: "paperplane")
-                }
-            }
+        NavigationBarPrimaryActionButton(systemImage: "paperplane") {
+            tappedConfirmButton()
         }
-        .tint(.primary1)
         .foregroundStyle(.onPrimary1)
         .disabled(!input.canConfirm)
     }
@@ -153,7 +142,19 @@ private extension HouseworkTemplateItemEditModal {
 }
 
 #if DEBUG
-    #Preview() {
+    #Preview("HouseworkTemplateItemEditModal_未入力") {
         HouseworkTemplateItemEditModal(mode: .create) { _ in }
+    }
+
+    #Preview("HouseworkTemplateItemEditModal_入力済み") {
+        HouseworkTemplateItemEditModal(
+            input: .init(
+                itemId: .init(id: "1"),
+                title: "hoge",
+                point: 10,
+                days: [.monday, .friday]
+            ),
+            mode: .create
+        ) { _ in }
     }
 #endif

@@ -193,20 +193,9 @@ private extension HouseworkTemplateView {
     }
 
     func trailingNavigationItem() -> some View {
-        Group {
-            if #available(iOS 26.0, *) {
-                Button("保存", systemImage: "checkmark", role: .confirm) {
-                    tappedSaveButton()
-                }
-            } else {
-                Button {
-                    tappedSaveButton()
-                } label: {
-                    Image(systemName: "checkmark")
-                }
-            }
+        NavigationBarPrimaryActionButton(systemImage: "checkmark") {
+            tappedSaveButton()
         }
-        .tint(.primary1)
         .foregroundStyle(.onPrimary1)
         .disabled(!hasUnsavedChanges)
     }
