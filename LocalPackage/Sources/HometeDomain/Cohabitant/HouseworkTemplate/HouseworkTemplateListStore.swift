@@ -73,6 +73,7 @@ public final class HouseworkTemplateListStore {
         templates.append(newMeta)
         // 選択中のテンプレートを作成したテンプレートに更新
         selectedDays = []
+        selectedTemplateId = templateId
     }
 
     /// 指定テンプレートの Days SnapshotListener を開始する

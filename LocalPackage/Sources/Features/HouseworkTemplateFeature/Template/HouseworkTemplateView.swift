@@ -25,11 +25,10 @@ struct HouseworkTemplateView: View {
 
     @Binding var initialDraft: HouseworkTemplateDraft
     let editorContext: TemplateEditorContext
-    let templateId: String?
 
     var body: some View {
         ZStack {
-            if let templateId {
+            if let templateId = templateListStore.selectedTemplateId {
                 ZStack {
                     mainContent()
                     addItemButton()
@@ -347,8 +346,7 @@ private extension HouseworkTemplateView {
         HouseworkTemplateView(
             draft: .init(days: templateData),
             initialDraft: .constant(.init(days: templateData)),
-            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero),
-            templateId: ""
+            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero)
         )
     }
     .environment(
@@ -360,6 +358,7 @@ private extension HouseworkTemplateView {
             ]
         )
     )
+    .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .apply(theme: .init())
 }
 
@@ -384,8 +383,7 @@ private extension HouseworkTemplateView {
                     .init(id: "2", userName: "Bさん"),
                 ],
                 currentTemplateVersion: .zero
-            ),
-            templateId: ""
+            )
         )
     }
     .environment(
@@ -397,6 +395,7 @@ private extension HouseworkTemplateView {
             ]
         )
     )
+    .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .apply(theme: .init())
 }
 #endif

@@ -19,7 +19,6 @@ public struct HouseworkTemplateScreen: View {
     @State var templateEditStore: HouseworkTemplateEditStore
     @State var initialDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
-    @State var templateId: String?
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -33,8 +32,7 @@ public struct HouseworkTemplateScreen: View {
         NavigationStack {
             HouseworkTemplateView(
                 initialDraft: $initialDraft,
-                editorContext: editorContext,
-                templateId: templateId
+                editorContext: editorContext
             )
         }
         .environment(templateEditStore)
@@ -64,10 +62,8 @@ private extension HouseworkTemplateScreen {
         // currentVersionで変更検知するためテンプレートの変更監視を止める
         await houseworkTemplateListStore.stopObservingDays()
 
-        guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
+        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
-
-        self.templateId = templateId
 
         do {
             // 楽観ロックのための状態監視を開始
@@ -86,7 +82,7 @@ private extension HouseworkTemplateScreen {
     }
 
     func onDisappear() async {
-        guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
+        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
 
         await templateEditStore.stopEditing(
