@@ -14,7 +14,7 @@ struct HouseworkTemplateView: View {
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
 
-    @State var editingDays: [DayOfWeek: [HouseworkTemplateItem]] = [:]
+    @State var draft: HouseworkTemplateDraft = .init()
     @State var presentingAddModal = false
     @State var presentingEditModal: HouseworkTemplateItem?
     @State var presentingCancelAlert = false
@@ -22,7 +22,7 @@ struct HouseworkTemplateView: View {
     @State var bannerDismissedInSession = false
 
     let hasTemplate: Bool
-    let initialDays: [DayOfWeek: [HouseworkTemplateItem]]
+    let initialDraft: HouseworkTemplateDraft
     /// 編集中の他ユーザー名（自分以外、アクティブなもの）
     let activeOtherEditorNames: [String]
 
@@ -66,7 +66,7 @@ struct HouseworkTemplateView: View {
             HouseworkTemplateItemEditModal(
                 mode: .edit(before: .init(
                     item: item,
-                    selectedDays: Set(registeredDays(for: item))
+                    selectedDays: Set(draft.registeredDays(for: item.id))
                 ))
             ) { input in
                 tappedEditItemButton(input: input)
@@ -75,7 +75,7 @@ struct HouseworkTemplateView: View {
         .navigationDestination(item: $presentingDetailItem) { item in
             HouseworkTemplateItemDetailView(
                 item: item,
-                registeredDays: registeredDays(for: item),
+                registeredDays: draft.registeredDays(for: item.id),
                 onEdit: { input in
                     tappedEditItemButton(input: input)
                 },
@@ -117,8 +117,8 @@ private extension HouseworkTemplateView {
                 .font(with: .headLineS)
                 .foregroundStyle(.onSubSurface)
             VStack(spacing: .space8) {
-                if let items = editingDays[day],
-                   !items.isEmpty {
+                let items = draft.items(in: day)
+                if !items.isEmpty {
                     ForEach(items, id: \.id) { item in
                         itemRow(item, in: day)
                     }
@@ -196,7 +196,7 @@ private extension HouseworkTemplateView {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             tappedSaveButton()
         }
-        .disabled(!hasUnsavedChanges)
+        .disabled(!draft.hasUnsavedChanges(comparedTo: initialDraft))
     }
 
 }
@@ -205,70 +205,22 @@ private extension HouseworkTemplateView {
 
 private extension HouseworkTemplateView {
 
-    // TODO: ドメインロジックに切り出す
-    var hasUnsavedChanges: Bool {
-        editingDays != initialDays
-    }
-
-    // TODO: ドメインロジックに切り出す
-    func registeredDays(for item: HouseworkTemplateItem) -> [DayOfWeek] {
-        DayOfWeek.displayOrdered.filter { day in
-            editingDays[day]?.contains(where: { $0.id == item.id }) ?? false
-        }
-    }
-
     func tappedCreateItemButton(input: TemplateItemEditInput) {
-        // TODO: ドメインロジックに切り出す
         let item = input.createTemplate(now: now)
-        for day in input.days {
-            editingDays[day, default: []].append(item)
-        }
+        draft.addItem(item, to: input.days)
     }
 
     func tappedEditItemButton(input: TemplateItemEditInput) {
-        // TODO: ドメインロジックに切り出す
-        for day in DayOfWeek.allCases {
-            editingDays[day]?.removeAll { $0.id == input.itemId }
-        }
         let newItem = input.createTemplate(now: now)
-        for day in input.days {
-            editingDays[day, default: []].append(newItem)
-        }
+        draft.replaceItem(newItem, in: input.days)
     }
 
     func tappedDeleteItemButton(itemId: HouseworkTemplateItem.ItemId, from day: DayOfWeek? = nil) {
-        if let day {
-            editingDays[day]?.removeAll { $0.id == itemId }
-        } else {
-            for day in DayOfWeek.allCases {
-                editingDays[day]?.removeAll { $0.id == itemId }
-            }
-        }
+        draft.removeItem(itemId, from: day)
     }
 
     func onDropItem(itemId: HouseworkTemplateItem.ItemId, to destination: DayOfWeek) {
-        // TODO: ドメインロジックに切り出す
-        var movingItem: HouseworkTemplateItem?
-        for day in DayOfWeek.allCases {
-            if let index = editingDays[day]?.firstIndex(where: { $0.id == itemId }) {
-                movingItem = editingDays[day]?.remove(at: index)
-                if day == destination {
-                    // 同じ曜日へのドロップ：何もせず戻す
-                    if let movingItem {
-                        editingDays[day, default: []].insert(movingItem, at: index)
-                    }
-                    return
-                }
-            }
-        }
-        guard let movingItem else { return }
-        let updated = HouseworkTemplateItem(
-            id: movingItem.id,
-            title: movingItem.title,
-            point: movingItem.point,
-            updatedAt: Date()
-        )
-        editingDays[destination, default: []].append(updated)
+        draft.moveItem(itemId, to: destination, now: now)
     }
 
     func tappedCancelButton() {
@@ -277,7 +229,7 @@ private extension HouseworkTemplateView {
 
     func tappedDiscardChangesAlertButton() {
         // コンフリクトしたら、最新のテンプレート内容を再ロードして、編集内容は破棄する
-        editingDays = initialDays
+        draft = initialDraft
     }
 
     func tappedSaveButton() {
@@ -360,9 +312,9 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            editingDays: templateData,
+            draft: .init(days: templateData),
             hasTemplate: true,
-            initialDays: templateData,
+            initialDraft: .init(days: templateData),
             activeOtherEditorNames: []
         )
     }
@@ -382,9 +334,9 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            editingDays: [:],
+            draft: .init(),
             hasTemplate: true,
-            initialDays: templateData,
+            initialDraft: .init(days: templateData),
             activeOtherEditorNames: ["Aさん", "Bさん"]
         )
     }

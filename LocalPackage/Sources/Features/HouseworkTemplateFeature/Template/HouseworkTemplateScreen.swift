@@ -13,7 +13,7 @@ public struct HouseworkTemplateScreen: View {
 
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
 
-    @State var initialDays: [DayOfWeek: [HouseworkTemplateItem]] = [:]
+    @State var initialDraft: HouseworkTemplateDraft = .init()
 
     public static func make() -> some View {
         HouseworkTemplateScreen()
@@ -23,7 +23,7 @@ public struct HouseworkTemplateScreen: View {
         NavigationStack {
             HouseworkTemplateView(
                 hasTemplate: hasTemplate,
-                initialDays: initialDays,
+                initialDraft: initialDraft,
                 activeOtherEditorNames: []
             )
         }
