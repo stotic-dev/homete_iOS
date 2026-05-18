@@ -19,6 +19,7 @@ public struct HouseworkTemplateScreen: View {
     @State var templateEditStore: HouseworkTemplateEditStore
     @State var initialDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+    @State var templateId: String?
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -30,10 +31,13 @@ public struct HouseworkTemplateScreen: View {
 
     public var body: some View {
         NavigationStack {
-            HouseworkTemplateView(
-                initialDraft: initialDraft,
-                editorContext: editorContext
-            )
+            if let templateId {
+                HouseworkTemplateView(
+                    initialDraft: $initialDraft,
+                    editorContext: editorContext,
+                    templateId: templateId
+                )
+            }
         }
         .environment(templateEditStore)
         .task {
@@ -59,8 +63,11 @@ public struct HouseworkTemplateScreen: View {
 private extension HouseworkTemplateScreen {
 
     func onAppear() async {
+        // TODO: テンプレートの変更監視を止める（currentVersionで変更検知するため）
         guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
               let cohabitantId = account.cohabitantId else { return }
+
+        self.templateId = templateId
 
         do {
             // 楽観ロックのための状態監視を開始
@@ -79,6 +86,7 @@ private extension HouseworkTemplateScreen {
     }
 
     func onDisappear() async {
+        // TODO: テンプレートの変更監視を再開する
         guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
               let cohabitantId = account.cohabitantId else { return }
 
@@ -98,6 +106,7 @@ private extension HouseworkTemplateScreen {
     }
 
     func onChangeTemplateVersion() {
+        // TODO: 他ユーザーによるテンプレートの変更を検知したので、最新のテンプレート内容をロードする
         editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
     }
 

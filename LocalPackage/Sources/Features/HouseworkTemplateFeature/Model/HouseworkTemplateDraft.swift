@@ -13,6 +13,11 @@ struct HouseworkTemplateDraft: Equatable {
 
     private(set) var days: [DayOfWeek: [HouseworkTemplateItem]]
 
+    /// 保存するテンプレートのモデルを返す
+    var saveDays: [HouseworkTemplateDay] {
+        days.map { .init(dayOfWeek: $0.key.rawValue, items: $0.value) }
+    }
+
     init(days: [DayOfWeek: [HouseworkTemplateItem]] = [:]) {
         self.days = days
     }

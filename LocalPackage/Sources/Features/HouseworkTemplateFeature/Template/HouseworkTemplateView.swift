@@ -11,9 +11,11 @@ import SwiftUI
 
 struct HouseworkTemplateView: View {
 
+    @Environment(HouseworkTemplateListStore.self) var templateListStore
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
 
     @State var draft: HouseworkTemplateDraft = .init()
     @State var presentingAddModal = false
@@ -22,8 +24,9 @@ struct HouseworkTemplateView: View {
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
 
-    let initialDraft: HouseworkTemplateDraft
+    @Binding var initialDraft: HouseworkTemplateDraft
     let editorContext: TemplateEditorContext
+    let templateId: String
 
     var body: some View {
         ZStack {
@@ -193,7 +196,9 @@ private extension HouseworkTemplateView {
 
     func trailingNavigationItem() -> some View {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
-            tappedSaveButton()
+            Task {
+                await tappedSaveButton()
+            }
         }
         .disabled(!draft.hasUnsavedChanges(comparedTo: initialDraft))
     }
@@ -231,8 +236,20 @@ private extension HouseworkTemplateView {
         draft = initialDraft
     }
 
-    func tappedSaveButton() {
-        // TODO: 後続で Store 経由の保存処理に置き換える。
+    func tappedSaveButton() async {
+        guard let cohabitantId else { return }
+        do {
+            try await templateListStore.saveDays(
+                draft.saveDays,
+                templateId: templateId,
+                cohabitantId: cohabitantId,
+                currentVersion: editorContext.currentTemplateVersion
+            )
+            // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
+            initialDraft = draft
+        } catch {
+            // TODO: エラーハンドリング
+        }
     }
 
 }
@@ -314,8 +331,9 @@ private extension HouseworkTemplateView {
     NavigationStack {
         HouseworkTemplateView(
             draft: .init(days: templateData),
-            initialDraft: .init(days: templateData),
-            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+            initialDraft: .constant(.init(days: templateData)),
+            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero),
+            templateId: ""
         )
     }
     .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
@@ -338,14 +356,15 @@ private extension HouseworkTemplateView {
     NavigationStack {
         HouseworkTemplateView(
             draft: .init(),
-            initialDraft: .init(days: templateData),
+            initialDraft: .constant(.init(days: templateData)),
             editorContext: .init(
                 currentActiveEditors: [
                     .init(id: "1", userName: "Aさん"),
                     .init(id: "2", userName: "Bさん"),
                 ],
                 currentTemplateVersion: .zero
-            )
+            ),
+            templateId: ""
         )
     }
     .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
