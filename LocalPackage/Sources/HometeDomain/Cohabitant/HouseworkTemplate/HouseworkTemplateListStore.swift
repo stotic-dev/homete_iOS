@@ -20,7 +20,7 @@ public final class HouseworkTemplateListStore {
     private let daysListenerKey = "houseworkTemplateDaysListener"
 
     public var context: HouseworkTemplateContext {
-        .init(houseworkTemplate: selectedDays)
+        .init(metadata: templates.first, houseworkTemplate: selectedDays)
     }
 
     public init(
@@ -55,6 +55,8 @@ public final class HouseworkTemplateListStore {
         )
         try await houseworkTemplateClient.upsertTemplate(newMeta, cohabitantId)
         templates.append(newMeta)
+        // 選択中のテンプレートを作成したテンプレートに更新
+        selectedDays = []
     }
 
     /// 指定テンプレートの Days SnapshotListener を開始する

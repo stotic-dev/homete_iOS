@@ -11,6 +11,6 @@ import SwiftUI
 public extension EnvironmentValues {
 
     /// 現在洗濯中のテンプレートのコンテキスト
-    @Entry var houseworkTemplateContext: HouseworkTemplateContext = .init(houseworkTemplate: [])
+    @Entry var houseworkTemplateContext: HouseworkTemplateContext = .init(metadata: nil, houseworkTemplate: [])
 
 }

@@ -12,7 +12,6 @@ import SwiftUI
 struct HouseworkTemplateView: View {
 
     @Environment(HouseworkTemplateListStore.self) var templateListStore
-    @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.cohabitantId) var cohabitantId
@@ -26,11 +25,11 @@ struct HouseworkTemplateView: View {
 
     @Binding var initialDraft: HouseworkTemplateDraft
     let editorContext: TemplateEditorContext
-    let templateId: String
+    let templateId: String?
 
     var body: some View {
         ZStack {
-            if hasTemplate {
+            if let templateId {
                 ZStack {
                     mainContent()
                     addItemButton()
@@ -38,9 +37,14 @@ struct HouseworkTemplateView: View {
                         .padding(.trailing, .space24)
                         .padding(.bottom, .space8)
                 }
+                .trailingToolbarItem {
+                    trailingNavigationItem(templateId: templateId)
+                }
             } else {
                 HouseworkTemplateEmptyView {
-                    // TODO: テンプレート作成処理
+                    Task {
+                        await tappedCreateTemplateButton()
+                    }
                 }
             }
         }
@@ -48,9 +52,6 @@ struct HouseworkTemplateView: View {
         .inlineNavigationBarTitleDisplayMode()
         .leadingToolbarItem {
             leadingNavigationItem()
-        }
-        .trailingToolbarItem {
-            trailingNavigationItem()
         }
         .safeAreaInset(edge: .top) {
             HouseworkTemplateEditorsLabel(
@@ -194,10 +195,10 @@ private extension HouseworkTemplateView {
         .foregroundStyle(.onSurface)
     }
 
-    func trailingNavigationItem() -> some View {
+    func trailingNavigationItem(templateId: String) -> some View {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             Task {
-                await tappedSaveButton()
+                await tappedSaveButton(templateId: templateId)
             }
         }
         .disabled(!draft.hasUnsavedChanges(comparedTo: initialDraft))
@@ -236,7 +237,7 @@ private extension HouseworkTemplateView {
         draft = initialDraft
     }
 
-    func tappedSaveButton() async {
+    func tappedSaveButton(templateId: String) async {
         guard let cohabitantId else { return }
         do {
             try await templateListStore.saveDays(
@@ -247,6 +248,20 @@ private extension HouseworkTemplateView {
             )
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
             initialDraft = draft
+        } catch {
+            // TODO: エラーハンドリング
+        }
+    }
+
+    func tappedCreateTemplateButton() async {
+        guard let cohabitantId else { return }
+
+        do {
+            try await templateListStore.createTemplate(
+                templateId: UUID().uuidString,
+                name: "default",
+                cohabitantId: cohabitantId
+            )
         } catch {
             // TODO: エラーハンドリング
         }
@@ -336,9 +351,15 @@ private extension HouseworkTemplateView {
             templateId: ""
         )
     }
-    .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
-        .init(dayOfWeek: 1, items: []),
-    ]))
+    .environment(
+        \.houseworkTemplateContext,
+        .init(
+            metadata: .init(templateId: "", name: ""),
+            houseworkTemplate: [
+                .init(dayOfWeek: 1, items: []),
+            ]
+        )
+    )
     .apply(theme: .init())
 }
 
@@ -367,9 +388,15 @@ private extension HouseworkTemplateView {
             templateId: ""
         )
     }
-    .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
-        .init(dayOfWeek: 1, items: []),
-    ]))
+    .environment(
+        \.houseworkTemplateContext,
+        .init(
+            metadata: .init(templateId: "", name: ""),
+            houseworkTemplate: [
+                .init(dayOfWeek: 1, items: []),
+            ]
+        )
+    )
     .apply(theme: .init())
 }
 #endif

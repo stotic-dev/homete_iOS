@@ -31,13 +31,11 @@ public struct HouseworkTemplateScreen: View {
 
     public var body: some View {
         NavigationStack {
-            if let templateId {
-                HouseworkTemplateView(
-                    initialDraft: $initialDraft,
-                    editorContext: editorContext,
-                    templateId: templateId
-                )
-            }
+            HouseworkTemplateView(
+                initialDraft: $initialDraft,
+                editorContext: editorContext,
+                templateId: templateId
+            )
         }
         .environment(templateEditStore)
         .task {
