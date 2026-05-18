@@ -11,7 +11,7 @@ import Observation
 @Observable
 public final class HouseworkTemplateListStore {
 
-    private(set) var templates: [HouseworkTemplateMeta]
+    public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
 
     private var daysObserveTask: Task<Void, Never>?
