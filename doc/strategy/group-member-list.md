@@ -5,7 +5,7 @@
 
 ## ステータス
 
-- [ ] 設計確定（未決定事項を確定する）
+- [x] 設計確定（未決定事項を確定する）
 - [ ] 実装完了
 - [ ] テスト追加完了
 - [ ] PRレビュー完了
@@ -35,70 +35,94 @@
 
 ## 設計方針
 
+### 確定事項
+
+#### 1. `CohabitantContext` を新設してアプリ全体にDIする
+
+「グループID + メンバー一覧 + 自分以外（others）」を1つのコンテキストモデルに集約し、Environment 経由でアプリ全体にDIする。
+個別の `cohabitantMembers` Environment（現状）からの置き換えを行う。
+
+**新規モデル**: `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantContext.swift`
+
+```swift
+public struct CohabitantContext: Sendable, Equatable {
+    public let id: String                       // グループID（cohabitantId）
+    public let members: CohabitantMemberList    // 自分含むメンバー一覧
+    public var others: [CohabitantMember] { ... } // 自分を除いたメンバー
+}
+```
+
+- `others` は `CohabitantMemberList.value` から `ownId` を除外したものを返す
+- 既存の `CohabitantMemberList` 内部の `ownId` を活用するため、`CohabitantMemberList` 側に「自分以外を返すロジック」を持たせ、`CohabitantContext.others` から委譲する形でも良い（実装時に判断）
+
+#### 2. Environment注入箇所
+
+現状 `AppTabView` で `\.cohabitantMembers` に `CohabitantMemberList` を注入している（既存）。
+これを `\.cohabitantContext` のような形に置き換え、`CohabitantContext` 全体を渡すよう変更する。
+
+既存の参照箇所（要修正）:
+- `LocalPackage/Sources/AppRoot/AppTabView.swift` - 注入箇所
+- `LocalPackage/Sources/Features/ContributionFeature/View/Summary/ContributionSummaryComponent.swift`
+- `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsScreen.swift`
+
+#### 3. SubViewの粒度
+
+**案Y採用**: `GroupMemberListView` + `GroupMemberRow` に分離する。
+`SettingMenuItemButton` と同じ粒度で、行コンポーネントを独立Viewにすることで再利用性とPreview粒度を確保する。
+
 ### 依存関係
 
 ```
+AppTabView
+  └── @State cohabitantStore: CohabitantStore
+        └── members: CohabitantMemberList
+  └── 環境注入: \.cohabitantContext = CohabitantContext(id, members)
+
 SettingView
-  ├── @Environment(\.cohabitantMembers): CohabitantMemberList  ← AppTabViewでセット済み
-  └── @Environment(\.loginContext): LoginContext              ← 自分のID取得用
-        ↓ 渡す
-GroupMemberListView（新規 SubView）
-  └── members: [CohabitantMember]  ← 自分を除外した配列
+  ├── @Environment(\.cohabitantContext): CohabitantContext
+  └── GroupMemberListView(members: cohabitantContext.others)
+        └── ForEach { GroupMemberRow(member:) }
 ```
 
 ### データの流れ
 
-1. `AppTabView` が `CohabitantStore` を保持し、`\.cohabitantMembers` Environment に注入（既存）
-2. `SettingView` が Environment から `CohabitantMemberList` と `LoginContext` を取得
-3. `cohabitantMembers.value` から自分（`loginContext.account.id`）を除外して `GroupMemberListView` に渡す
-4. `GroupMemberListView` はメンバー名を縦並びで表示。0件時は `EmptyView` を返す
+1. `AppTabView` が `CohabitantStore` を保持（既存）
+2. `AppTabView` が `CohabitantContext(id: cohabitantId, members: store.members)` を構築し、`\.cohabitantContext` Environment に注入
+3. `SettingView` が Environment から `CohabitantContext` を取得し、`others` を `GroupMemberListView` に渡す
+4. `GroupMemberListView` は `ForEach` でメンバーを並べて `GroupMemberRow` に渡す。0件時は `EmptyView`
+5. `GroupMemberRow` はメンバー1人分のユーザー名を表示
 
 ### ファイル配置
 
 | 種別 | パス | 役割 |
 |---|---|---|
-| 新規View | `LocalPackage/Sources/Features/SettingFeature/SubViews/GroupMemberListView.swift` | メンバー名一覧の表示コンポーネント |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantContext.swift` | グループID・メンバー一覧・othersを保持 |
+| 新規View | `LocalPackage/Sources/Features/SettingFeature/SubViews/GroupMemberListView.swift` | メンバー一覧の表示コンポーネント |
+| 新規View | `LocalPackage/Sources/Features/SettingFeature/SubViews/GroupMemberRow.swift` | メンバー1行の表示コンポーネント |
 | 修正View | `LocalPackage/Sources/Features/SettingFeature/SettingView.swift` | ユーザー名直下に `GroupMemberListView` を配置 |
-
-## 未決定事項
-
-### 1. 「自分以外」のメンバー取得方法
-
-`CohabitantMemberList.value` は `ownId` を内部に持つが外部から取得できず、`value` プロパティは「自分 + 他メンバー」を返す仕様（自分がメンバーに含まれない場合は空配列）。
-
-| 案 | 内容 | メリット | デメリット |
-|---|---|---|---|
-| **案A** | `CohabitantMemberList` に `var others: [CohabitantMember]` を追加 | 責務が綺麗。他Featureから再利用可 | HometeDomainに変更が入る |
-| **案B** | SettingView内で `value.filter { $0.id != loginContext.account.id }` | HometeDomain無変更 | フィルタロジックが View 側に漏れる |
-
-→ **要ユーザー判断**
-
-### 2. SubView の粒度
-
-| 案 | 内容 |
-|---|---|
-| **案X** | `GroupMemberListView` のみ作成（行表示はView内で完結） |
-| **案Y** | `GroupMemberListView` + `GroupMemberRow` を分離（SettingMenuItemButton と同粒度） |
-
-→ **要ユーザー判断**
+| 修正View | `LocalPackage/Sources/AppRoot/AppTabView.swift` | `\.cohabitantContext` Environment注入に置き換え |
+| 修正View | `ContributionFeature` 配下の `\.cohabitantMembers` 参照箇所 | `\.cohabitantContext.members` に置き換え |
 
 ## タスク
 
 ### Phase 1: 設計確定
 
-- [ ] 未決定事項1（自分以外の取得方法）を確定する
-- [ ] 未決定事項2（SubView粒度）を確定する
+- [x] 未決定事項1（自分以外の取得方法）を確定する → `CohabitantContext` を新設しEnvironment注入、`others` を提供
+- [x] 未決定事項2（SubView粒度）を確定する → 案Y（List + Row 分離）
 
 ### Phase 2: 実装
 
-- [ ] 案A採用時: `CohabitantMemberList` に `others` API を追加
-- [ ] 案A採用時: `HometeDomainTests/CohabitantMemberListTests` を追加
-- [ ] `GroupMemberListView` を新規作成
-- [ ] `GroupMemberListView` の Preview を複数バリエーション追加（複数件 / 1件 / 0件）
-- [ ] 案Y採用時: `GroupMemberRow` を新規作成 + Preview
-- [ ] `SettingView` に `@Environment(\.cohabitantMembers)` / `@Environment(\.loginContext)` を追加
+- [ ] `CohabitantContext` ドメインモデルを新規作成（id / members / others）
+- [ ] `CohabitantContext` 用のEnvironmentValue（`\.cohabitantContext`）を定義
+- [ ] `HometeDomainTests` に `CohabitantContext` のテストを追加
+- [ ] `AppTabView` で `\.cohabitantContext` の注入に置き換え
+- [ ] `ContributionFeature` 配下の `\.cohabitantMembers` 参照箇所を `\.cohabitantContext.members` に置き換え
+- [ ] 既存の `\.cohabitantMembers` Environment を撤去（または `CohabitantContext` 経由で参照する形に統一）
+- [ ] `GroupMemberRow` を新規作成 + Preview
+- [ ] `GroupMemberListView` を新規作成 + Preview（複数件 / 1件 / 0件）
+- [ ] `SettingView` に `@Environment(\.cohabitantContext)` を追加
 - [ ] `SettingView` のユーザー名直下に `GroupMemberListView` を配置
-- [ ] `SettingView` の Preview に環境値（`cohabitantMembers` / `loginContext`）をセット
+- [ ] `SettingView` の Preview に `\.cohabitantContext` をセット
 
 ### Phase 3: 検証
 
