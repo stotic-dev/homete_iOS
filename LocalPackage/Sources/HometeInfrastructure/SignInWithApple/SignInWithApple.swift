@@ -30,11 +30,4 @@ public final class SignInWithApple: NSObject, ASAuthorizationControllerDelegate 
         }
     }
 
-    public func authorizationController(
-        controller _: ASAuthorizationController,
-        didCompleteWithError error: any Error
-    ) {
-        continuation?.resume(throwing: error)
-    }
-
 }

@@ -14,9 +14,11 @@ public struct HomeView: View {
 
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
+    @Environment(\.adComponentResolver) var adComponentResolver
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
     let contributionStore: ContributionStore?
@@ -26,35 +28,39 @@ public struct HomeView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                if loginContext.hasCohabitant,
-                   let contributionStore,
-                   let cohabitantStore,
-                   let houseworkTemplateListStore {
-                    RegisteredContent()
-                        .environment(contributionStore)
-                        .environment(cohabitantStore)
-                        .environment(houseworkTemplateListStore)
+                VStack(spacing: .space16) {
+                    adComponentResolver.resolve(.banner(.dashboardTop))
+                        .frame(height: 150)
+                    if loginContext.hasCohabitant,
+                       let contributionStore,
+                       let cohabitantStore,
+                       let houseworkTemplateListStore {
+                        RegisteredContent()
+                            .environment(contributionStore)
+                            .environment(cohabitantStore)
+                            .environment(houseworkTemplateListStore)
+                            .task {
+                                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+                            }
+                    } else if !loginContext.hasCohabitant {
+                        NotRegisteredContent(
+                            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                        )
                         .task {
-                            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+                            await didAppearNotRegisteredContent()
                         }
-                } else if !loginContext.hasCohabitant {
-                    NotRegisteredContent(
-                        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
-                    )
-                    .task {
-                        await didAppearNotRegisteredContent()
                     }
                 }
-            }
-            .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
-                router.resolve(.cohabitantRegistration)
-            }
-            .sheet(isPresented: $isShowSetting) {
-                router.resolve(.setting)
-            }
-            .trailingToolbarItem {
-                NavigationBarButton(label: .settings) {
-                    isShowSetting = true
+                .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
+                    router.resolve(.cohabitantRegistration)
+                }
+                .sheet(isPresented: $isShowSetting) {
+                    router.resolve(.setting)
+                }
+                .trailingToolbarItem {
+                    NavigationBarButton(label: .settings) {
+                        isShowSetting = true
+                    }
                 }
             }
         }
