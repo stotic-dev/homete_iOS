@@ -114,13 +114,13 @@ TodayHouseworkSummary
 
 ### Phase 1: ドメインモデル
 
-- [ ] **T-1** `TodayHouseworkSummary` 値オブジェクトの実装
+- [x] **T-1** `TodayHouseworkSummary` 値オブジェクトの実装
   - 当日の `HouseworkItem` 配列から初期化
   - `incompleteItems`（incomplete + pendingApproval）の抽出
   - `progress`（達成率: completed / all）の算出
   - `displayState`（empty / allCompleted / hasIncomplete）の判定
   - `displayIncompleteItems`（最大4件）と `hasMoreIncomplete` フラグ
-- [ ] **T-2** `TodayHouseworkSummary` のユニットテスト
+- [x] **T-2** `TodayHouseworkSummary` のユニットテスト
   - 家事0件 → `.empty`
   - 全完了 → `.allCompleted`、progress = 1.0
   - 未完了あり → `.hasIncomplete`、progress 計算検証
