@@ -19,6 +19,22 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 ## 検証手順
 
+### 0. stale な swift-test プロセスの掃除（必須）
+
+`.build` ディレクトリは SwiftPM が排他ロックを取るため、過去セッションから残っている `swift-test` / `swiftpm-testing-helper` プロセスがあると、新しい `swift test` が "Another instance of SwiftPM ... is already running" で待機状態になり、永遠に進まなくなる。
+
+検証フローを始める前に、必ず以下を実行して掃除する:
+
+```bash
+# このプロジェクトの LocalPackage に紐づく古いプロセスのみを kill する（別worktreeは触らない）
+pkill -f "swift-test --package-path LocalPackage" 2>/dev/null
+pkill -f "/Users/taichisato/work/homete_iOS/LocalPackage/.build" 2>/dev/null
+# 残骸が無くなったか確認
+ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "/Users/taichisato/work/homete_iOS/LocalPackage" | grep -v grep
+```
+
+最後のチェックで何も出力されなければ OK。残っていた場合は PID を確認して `kill <PID>` する。
+
 ### 1. ビルド確認
 
 **LocalPackage配下のファイルを変更した場合（通常）:**
