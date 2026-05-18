@@ -13,6 +13,7 @@ public final class HouseworkTemplateListStore {
 
     public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
+    public private(set) var selectedTemplateId: String?
 
     private var daysObserveTask: Task<Void, Never>?
 
@@ -26,11 +27,26 @@ public final class HouseworkTemplateListStore {
     public init(
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
         templates: [HouseworkTemplateMeta] = [],
-        selectedDays: [HouseworkTemplateDay] = []
+        selectedDays: [HouseworkTemplateDay] = [],
+        selectedTemplateId: String? = nil
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
         self.templates = templates
         self.selectedDays = selectedDays
+        self.selectedTemplateId = selectedTemplateId
+    }
+
+    /// Storeの初回設定を行う
+    public func configure(cohabitantId: String) async throws {
+        try await loadTemplates(cohabitantId: cohabitantId)
+
+        if let selectedTemplateId = templates.first?.templateId {
+            self.selectedTemplateId = selectedTemplateId
+            try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+            await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+        } else {
+            // TODO: テンプレートリストを監視して、作成されたらテンプレートを選択してテンプレートの内容を監視する
+        }
     }
 
     /// テンプレート一覧をワンショット取得する

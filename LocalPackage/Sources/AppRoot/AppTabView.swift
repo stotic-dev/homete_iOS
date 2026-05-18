@@ -167,9 +167,13 @@ private extension AppTabView {
 
     func startObserveTemplateIfNeeded() async {
         guard let store = houseworkTemplateListStore,
-              let templateId = store.templates.first?.id,
               let cohabitantId = loginContext.cohabitantId else { return }
-        await store.startObservingDays(templateId: templateId, cohabitantId: cohabitantId)
+
+        do {
+            try await store.configure(cohabitantId: cohabitantId)
+        } catch {
+            // TODO: エラーハンドリング
+        }
     }
 
 }
