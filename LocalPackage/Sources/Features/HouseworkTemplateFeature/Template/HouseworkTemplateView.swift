@@ -11,6 +11,7 @@ import SwiftUI
 
 struct HouseworkTemplateView: View {
 
+    @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
 
@@ -21,7 +22,6 @@ struct HouseworkTemplateView: View {
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
 
-    let hasTemplate: Bool
     let initialDraft: HouseworkTemplateDraft
     /// 編集中の他ユーザー名（自分以外、アクティブなもの）
     let activeOtherEditorNames: [String]
@@ -238,6 +238,8 @@ private extension HouseworkTemplateView {
 
 }
 
+// MARK: - Preview
+
 #if DEBUG
 #Preview("HouseworkTemplateView_閲覧モード") {
     let templateData: [DayOfWeek: [HouseworkTemplateItem]] = [
@@ -313,11 +315,13 @@ private extension HouseworkTemplateView {
     NavigationStack {
         HouseworkTemplateView(
             draft: .init(days: templateData),
-            hasTemplate: true,
             initialDraft: .init(days: templateData),
             activeOtherEditorNames: []
         )
     }
+    .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
+        .init(dayOfWeek: 1, items: []),
+    ]))
     .apply(theme: .init())
 }
 
@@ -335,11 +339,13 @@ private extension HouseworkTemplateView {
     NavigationStack {
         HouseworkTemplateView(
             draft: .init(),
-            hasTemplate: true,
             initialDraft: .init(days: templateData),
             activeOtherEditorNames: ["Aさん", "Bさん"]
         )
     }
+    .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
+        .init(dayOfWeek: 1, items: []),
+    ]))
     .apply(theme: .init())
 }
 #endif

@@ -11,8 +11,6 @@ import SwiftUI
 
 public struct HouseworkTemplateScreen: View {
 
-    @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
-
     @State var initialDraft: HouseworkTemplateDraft = .init()
 
     public static func make() -> some View {
@@ -22,7 +20,6 @@ public struct HouseworkTemplateScreen: View {
     public var body: some View {
         NavigationStack {
             HouseworkTemplateView(
-                hasTemplate: hasTemplate,
                 initialDraft: initialDraft,
                 activeOtherEditorNames: []
             )
