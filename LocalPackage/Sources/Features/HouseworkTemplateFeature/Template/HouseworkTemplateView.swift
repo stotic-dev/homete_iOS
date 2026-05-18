@@ -86,6 +86,9 @@ struct HouseworkTemplateView: View {
                 }
             )
         }
+        .onChange(of: initialDraft) {
+            onChangeInitialDraft()
+        }
         .alert("変更を破棄します。よろしいですか？", isPresented: $presentingCancelAlert) {
             Button("破棄", role: .destructive) {
                 tappedDiscardChangesAlertButton()
@@ -233,7 +236,9 @@ private extension HouseworkTemplateView {
 
     func tappedDiscardChangesAlertButton() {
         // コンフリクトしたら、最新のテンプレート内容を再ロードして、編集内容は破棄する
-        draft = initialDraft
+        withAnimation {
+            draft = initialDraft
+        }
     }
 
     func tappedSaveButton(templateId: String) async {
@@ -264,6 +269,12 @@ private extension HouseworkTemplateView {
         } catch {
             // TODO: エラーハンドリング
         }
+    }
+
+    func onChangeInitialDraft() {
+        // 現在の編集内容と差分がある場合はコンフリクトとして処理する
+        guard initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
+        presentingCancelAlert = true
     }
 
 }

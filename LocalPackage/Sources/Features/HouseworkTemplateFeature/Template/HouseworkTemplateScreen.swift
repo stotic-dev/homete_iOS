@@ -48,7 +48,9 @@ public struct HouseworkTemplateScreen: View {
             onChangeEditors()
         }
         .onChange(of: templateEditStore.currentVersion) {
-            onChangeTemplateVersion()
+            Task {
+                await onChangeTemplateVersion()
+            }
         }
     }
 
@@ -106,9 +108,16 @@ private extension HouseworkTemplateScreen {
         )
     }
 
-    func onChangeTemplateVersion() {
-        // TODO: 他ユーザーによるテンプレートの変更を検知したので、最新のテンプレート内容をロードする
+    func onChangeTemplateVersion() async {
         editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
+              let cohabitantId = account.cohabitantId else { return }
+
+        do {
+            try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
+        } catch {
+            // TODO: エラーハンドリング
+        }
     }
 
 }
