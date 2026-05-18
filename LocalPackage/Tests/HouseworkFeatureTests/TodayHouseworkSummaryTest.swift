@@ -30,16 +30,19 @@ extension TodayHouseworkSummaryTest.EmptyCase {
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayState == .empty)
-        #expect(summary.progress == 0)
-        #expect(summary.allItems.isEmpty)
-        #expect(summary.incompleteItems.isEmpty)
-        #expect(summary.displayIncompleteItems.isEmpty)
-        #expect(summary.hasMoreIncomplete == false)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [],
+            incompleteItems: [],
+            progress: 0,
+            displayState: .empty,
+            displayIncompleteItems: [],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
 }
@@ -50,62 +53,79 @@ extension TodayHouseworkSummaryTest.AllCompletedCase {
     func allCompleted_whenAllItemsCompleted() {
         // Arrange
 
-        let input: [HouseworkItem] = [
-            .makeForTest(id: 1, state: .completed),
-            .makeForTest(id: 2, state: .completed),
-            .makeForTest(id: 3, state: .completed),
-        ]
+        let item1 = HouseworkItem.makeForTest(id: 1, state: .completed)
+        let item2 = HouseworkItem.makeForTest(id: 2, state: .completed)
+        let item3 = HouseworkItem.makeForTest(id: 3, state: .completed)
+        let input: [HouseworkItem] = [item1, item2, item3]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayState == .allCompleted)
-        #expect(summary.progress == 1.0)
-        #expect(summary.incompleteItems.isEmpty)
-        #expect(summary.displayIncompleteItems.isEmpty)
-        #expect(summary.hasMoreIncomplete == false)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [item1, item2, item3],
+            incompleteItems: [],
+            progress: 1.0,
+            displayState: .allCompleted,
+            displayIncompleteItems: [],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
 }
 
 extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
-    @Test("未完了の家事がある場合、displayStateは.hasIncompleteになる")
+    @Test("incompleteのみの場合、displayStateは.hasIncompleteになり未完了として集計される")
     func hasIncomplete_whenIncompleteItemExists() {
         // Arrange
 
-        let input: [HouseworkItem] = [
-            .makeForTest(id: 1, state: .incomplete),
-            .makeForTest(id: 2, state: .completed),
-        ]
+        let incomplete = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let completed = HouseworkItem.makeForTest(id: 2, state: .completed)
+        let input: [HouseworkItem] = [incomplete, completed]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayState == .hasIncomplete)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [incomplete, completed],
+            incompleteItems: [incomplete],
+            progress: 0.5,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [incomplete],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
-    @Test("pendingApprovalのみの場合でもdisplayStateは.hasIncompleteになる")
+    @Test("pendingApprovalのみの場合でもdisplayStateは.hasIncompleteになり未完了として集計される")
     func hasIncomplete_whenOnlyPendingApprovalExists() {
         // Arrange
 
-        let input: [HouseworkItem] = [
-            .makeForTest(id: 1, state: .pendingApproval),
-        ]
+        let pendingApproval = HouseworkItem.makeForTest(id: 1, state: .pendingApproval)
+        let input: [HouseworkItem] = [pendingApproval]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayState == .hasIncomplete)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [pendingApproval],
+            incompleteItems: [pendingApproval],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [pendingApproval],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
     @Test("incompleteとpendingApprovalの両方を未完了として集計する")
@@ -119,40 +139,75 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.incompleteItems == [incomplete, pendingApproval])
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [incomplete, pendingApproval, completed],
+            incompleteItems: [incomplete, pendingApproval],
+            progress: 1.0 / 3.0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [incomplete, pendingApproval],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
 }
 
 extension TodayHouseworkSummaryTest.ProgressCase {
 
-    @Test(
-        "進捗率は 完了数 / 全数 で算出する",
-        arguments: [
-            (states: [HouseworkState.completed, .completed, .incomplete, .incomplete], expected: 0.5),
-            (states: [HouseworkState.completed, .incomplete, .incomplete, .incomplete], expected: 0.25),
-            (states: [HouseworkState.completed, .pendingApproval], expected: 0.5),
-            (states: [HouseworkState.incomplete, .pendingApproval], expected: 0.0),
-        ]
-    )
-    func progress_iscompletedCountDividedByAllCount(states: [HouseworkState], expected: Double) {
+    @Test("進捗率は 完了数 / 全数 で算出する（2/4 = 0.5）")
+    func progress_twoOfFour() {
         // Arrange
 
-        let input: [HouseworkItem] = states.enumerated().map { index, state in
-            .makeForTest(id: index + 1, state: state)
-        }
+        let item1 = HouseworkItem.makeForTest(id: 1, state: .completed)
+        let item2 = HouseworkItem.makeForTest(id: 2, state: .completed)
+        let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
+        let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
+        let input: [HouseworkItem] = [item1, item2, item3, item4]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.progress == expected)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [item1, item2, item3, item4],
+            incompleteItems: [item3, item4],
+            progress: 0.5,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [item3, item4],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("pendingApprovalは未完了として進捗率に含まれない（1/2 = 0.5）")
+    func progress_pendingApprovalIsCountedAsIncomplete() {
+        // Arrange
+
+        let completed = HouseworkItem.makeForTest(id: 1, state: .completed)
+        let pendingApproval = HouseworkItem.makeForTest(id: 2, state: .pendingApproval)
+        let input: [HouseworkItem] = [completed, pendingApproval]
+
+        // Act
+
+        let actual = TodayHouseworkSummary(allItems: input)
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [completed, pendingApproval],
+            incompleteItems: [pendingApproval],
+            progress: 0.5,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [pendingApproval],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
 }
@@ -163,36 +218,55 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
     func hasMoreIncomplete_falseWhenIncompleteCountIsLessThanOrEqualToLimit() {
         // Arrange
 
-        let incompleteItems: [HouseworkItem] = (1 ... 4).map {
-            .makeForTest(id: $0, state: .incomplete)
-        }
+        let item1 = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let item2 = HouseworkItem.makeForTest(id: 2, state: .incomplete)
+        let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
+        let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
+        let input: [HouseworkItem] = [item1, item2, item3, item4]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: incompleteItems)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayIncompleteItems == incompleteItems)
-        #expect(summary.hasMoreIncomplete == false)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [item1, item2, item3, item4],
+            incompleteItems: [item1, item2, item3, item4],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [item1, item2, item3, item4],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
     }
 
     @Test("未完了が5件以上の場合はhasMoreIncompleteがtrueになり先頭4件のみ表示される")
     func hasMoreIncomplete_trueWhenIncompleteCountExceedsLimit() {
         // Arrange
 
-        let incompleteItems: [HouseworkItem] = (1 ... 5).map {
-            .makeForTest(id: $0, state: .incomplete)
-        }
+        let item1 = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let item2 = HouseworkItem.makeForTest(id: 2, state: .incomplete)
+        let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
+        let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
+        let item5 = HouseworkItem.makeForTest(id: 5, state: .incomplete)
+        let input: [HouseworkItem] = [item1, item2, item3, item4, item5]
 
         // Act
 
-        let summary = TodayHouseworkSummary(allItems: incompleteItems)
+        let actual = TodayHouseworkSummary(allItems: input)
 
         // Assert
 
-        #expect(summary.displayIncompleteItems == Array(incompleteItems.prefix(4)))
-        #expect(summary.hasMoreIncomplete == true)
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [item1, item2, item3, item4, item5],
+            incompleteItems: [item1, item2, item3, item4, item5],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [item1, item2, item3, item4],
+            hasMoreIncomplete: true
+        )
+        #expect(actual == expected)
     }
 
 }

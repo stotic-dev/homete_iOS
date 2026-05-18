@@ -27,7 +27,11 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
     /// 未完了家事が表示上限を超えるか
     public let hasMoreIncomplete: Bool
 
-    public init(allItems: [HouseworkItem]) {
+}
+
+public extension TodayHouseworkSummary {
+
+    init(allItems: [HouseworkItem]) {
         let incomplete = allItems.filter { item in
             item.state == .incomplete || item.state == .pendingApproval
         }
