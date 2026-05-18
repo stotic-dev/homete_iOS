@@ -61,7 +61,9 @@ public struct HouseworkTemplateScreen: View {
 private extension HouseworkTemplateScreen {
 
     func onAppear() async {
-        // TODO: テンプレートの変更監視を止める（currentVersionで変更検知するため）
+        // currentVersionで変更検知するためテンプレートの変更監視を止める
+        await houseworkTemplateListStore.stopObservingDays()
+
         guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
               let cohabitantId = account.cohabitantId else { return }
 
@@ -84,7 +86,6 @@ private extension HouseworkTemplateScreen {
     }
 
     func onDisappear() async {
-        // TODO: テンプレートの変更監視を再開する
         guard let templateId = houseworkTemplateListStore.templates.first?.templateId,
               let cohabitantId = account.cohabitantId else { return }
 
@@ -92,6 +93,12 @@ private extension HouseworkTemplateScreen {
             templateId: templateId,
             cohabitantId: cohabitantId,
             userId: account.id
+        )
+
+        // テンプレートの変更検知で家事の内容をリアルタイムに更新するために監視を再開する
+        await houseworkTemplateListStore.startObservingDays(
+            templateId: templateId,
+            cohabitantId: cohabitantId
         )
     }
 

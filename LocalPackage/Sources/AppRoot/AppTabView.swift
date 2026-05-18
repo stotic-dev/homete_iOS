@@ -37,7 +37,7 @@ struct AppTabView: View {
             )
             .environment(
                 \.houseworkTemplateContext,
-                houseworkTemplateListStore?.context ?? .init(houseworkTemplate: [])
+                houseworkTemplateListStore?.context ?? .init(metadata: nil, houseworkTemplate: [])
             )
     }
 
@@ -112,6 +112,7 @@ private extension AppTabView {
 
     func onAppear() async {
         setupStore()
+        await startObserveTemplateIfNeeded()
         await requestNotificationPermission()
     }
 
@@ -162,6 +163,13 @@ private extension AppTabView {
         houseworkTemplateListStore = .init(
             houseworkTemplateClient: appDependencies.houseworkTemplateClient
         )
+    }
+
+    func startObserveTemplateIfNeeded() async {
+        guard let store = houseworkTemplateListStore,
+              let templateId = store.templates.first?.id,
+              let cohabitantId = loginContext.cohabitantId else { return }
+        await store.startObservingDays(templateId: templateId, cohabitantId: cohabitantId)
     }
 
 }
