@@ -70,6 +70,9 @@ private extension HouseworkTemplateScreen {
                 userId: account.id,
                 now: now
             )
+
+            // 画面を開いたタイミングでの最新のテンプレート内容を設定
+            initialDraft = .make(houseworkTemplateListStore.selectedDays)
         } catch {
             // TODO: エラーハンドリング
         }

@@ -5,6 +5,9 @@
 //  Created by Taichi Sato on 2026/05/18.
 //
 
+import Foundation
+import HometeDomain
+
 struct TemplateEditorContext: Equatable {
 
     let currentActiveEditors: [TemplateActiveEditor]
