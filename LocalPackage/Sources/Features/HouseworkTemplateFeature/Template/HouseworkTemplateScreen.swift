@@ -32,7 +32,7 @@ public struct HouseworkTemplateScreen: View {
         NavigationStack {
             HouseworkTemplateView(
                 initialDraft: initialDraft,
-                activeOtherEditorNames: editorContext.currentActiveEditors.map(\.userName)
+                editorContext: editorContext
             )
         }
         .environment(templateEditStore)

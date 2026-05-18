@@ -23,8 +23,7 @@ struct HouseworkTemplateView: View {
     @State var bannerDismissedInSession = false
 
     let initialDraft: HouseworkTemplateDraft
-    /// 編集中の他ユーザー名（自分以外、アクティブなもの）
-    let activeOtherEditorNames: [String]
+    let editorContext: TemplateEditorContext
 
     var body: some View {
         ZStack {
@@ -53,7 +52,7 @@ struct HouseworkTemplateView: View {
         .safeAreaInset(edge: .top) {
             HouseworkTemplateEditorsLabel(
                 bannerDismissedInSession: $bannerDismissedInSession,
-                editorNames: activeOtherEditorNames
+                activeEditors: editorContext.currentActiveEditors
             )
             .padding(.horizontal, .space16)
         }
@@ -316,7 +315,7 @@ private extension HouseworkTemplateView {
         HouseworkTemplateView(
             draft: .init(days: templateData),
             initialDraft: .init(days: templateData),
-            activeOtherEditorNames: []
+            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero)
         )
     }
     .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
@@ -340,7 +339,13 @@ private extension HouseworkTemplateView {
         HouseworkTemplateView(
             draft: .init(),
             initialDraft: .init(days: templateData),
-            activeOtherEditorNames: ["Aさん", "Bさん"]
+            editorContext: .init(
+                currentActiveEditors: [
+                    .init(id: "1", userName: "Aさん"),
+                    .init(id: "2", userName: "Bさん"),
+                ],
+                currentTemplateVersion: .zero
+            )
         )
     }
     .environment(\.houseworkTemplateContext, .init(houseworkTemplate: [
