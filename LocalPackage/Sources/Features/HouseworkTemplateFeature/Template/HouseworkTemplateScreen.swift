@@ -109,12 +109,14 @@ private extension HouseworkTemplateScreen {
     }
 
     func onChangeTemplateVersion() async {
-        editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
         guard let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
 
         do {
+            // バージョンが変わったらテンプレートの内容を再ロードする
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
+            initialDraft = .make(houseworkTemplateListStore.selectedDays)
+            editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
         } catch {
             // TODO: エラーハンドリング
         }
