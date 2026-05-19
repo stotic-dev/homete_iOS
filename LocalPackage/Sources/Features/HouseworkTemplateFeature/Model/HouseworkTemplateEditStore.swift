@@ -67,7 +67,8 @@ final class HouseworkTemplateEditStore {
         editorsObserveTask = Task {
 
             for await currentEditors in editorsStream {
-                self.editors = currentEditors
+                // 自分以外のユーザーを現在の編集者として保存する
+                self.editors = currentEditors.filter { $0.userId != userId }
             }
         }
 
