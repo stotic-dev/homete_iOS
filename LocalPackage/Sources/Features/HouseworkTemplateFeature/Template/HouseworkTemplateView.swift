@@ -21,6 +21,7 @@ struct HouseworkTemplateView: View {
     @State var presentingCancelAlert = false
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
+    @State var presentingDismissAlert = false
 
     @Binding var initialDraft: HouseworkTemplateDraft?
     @Binding var draft: HouseworkTemplateDraft
@@ -90,11 +91,19 @@ struct HouseworkTemplateView: View {
         .onChange(of: initialDraft) {
             onChangeInitialDraft()
         }
-        .alert("変更を破棄します。よろしいですか？", isPresented: $presentingCancelAlert) {
+        .alert("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？", isPresented: $presentingCancelAlert) {
             Button("破棄", role: .destructive) {
                 tappedDiscardChangesAlertButton()
             }
             Button("キャンセル", role: .cancel) {}
+        }
+        .alert("変更内容はまだ確定していません", isPresented: $presentingDismissAlert) {
+            Button("閉じる", role: .destructive) {
+                tappedDismissAlertButton()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。")
         }
     }
 
@@ -232,6 +241,15 @@ private extension HouseworkTemplateView {
     }
 
     func tappedCancelButton() {
+        if initialDraft?.hasUnsavedChanges(comparedTo: draft) == true {
+            // 保存していない変更内容がある場合に、閉じようとした時はアラートを表示する
+            presentingDismissAlert = true
+        } else {
+            dismiss()
+        }
+    }
+
+    func tappedDismissAlertButton() {
         dismiss()
     }
 
