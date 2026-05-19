@@ -22,6 +22,7 @@ struct HouseworkTemplateView: View {
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
     @State var presentingDismissAlert = false
+    @State var presentingResetAlert = false
 
     @Binding var initialDraft: HouseworkTemplateDraft?
     @Binding var draft: HouseworkTemplateDraft
@@ -104,6 +105,14 @@ struct HouseworkTemplateView: View {
             Button("キャンセル", role: .cancel) {}
         } message: {
             Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。")
+        }
+        .alert("編集前の状態に戻しますか？", isPresented: $presentingResetAlert) {
+            Button("戻す", role: .destructive) {
+                tappedResetAlertButton()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("現在の編集内容は破棄されます。")
         }
     }
 
@@ -208,12 +217,23 @@ private extension HouseworkTemplateView {
     }
 
     func trailingNavigationItem(templateId: String, initialDraft: HouseworkTemplateDraft) -> some View {
-        NavigationBarPrimaryActionButton(systemImage: "checkmark") {
-            Task {
-                await tappedSaveButton(templateId: templateId)
+        let isEditing = draft.hasUnsavedChanges(comparedTo: initialDraft)
+        return HStack(spacing: .space8) {
+            if isEditing {
+                Button {
+                    presentingResetAlert = true
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .foregroundStyle(.onSurface)
             }
+            NavigationBarPrimaryActionButton(systemImage: "checkmark") {
+                Task {
+                    await tappedSaveButton(templateId: templateId)
+                }
+            }
+            .disabled(!isEditing)
         }
-        .disabled(!draft.hasUnsavedChanges(comparedTo: initialDraft))
     }
 
 }
@@ -256,6 +276,13 @@ private extension HouseworkTemplateView {
     func tappedDiscardChangesAlertButton() {
         guard let initialDraft else { return }
         // コンフリクトしたら、最新のテンプレート内容を再ロードして、編集内容は破棄する
+        withAnimation {
+            draft = initialDraft
+        }
+    }
+
+    func tappedResetAlertButton() {
+        guard let initialDraft else { return }
         withAnimation {
             draft = initialDraft
         }

@@ -20,7 +20,7 @@ struct HouseworkTemplateContextTest {
     func templateOfDay(inputDate: Date) throws {
         // Arrange
         let calendar = Calendar.japanese
-        let context = HouseworkTemplateContext(houseworkTemplate: [
+        let context = HouseworkTemplateContext(metadata: nil, houseworkTemplate: [
             .init(dayOfWeek: 1, items: [
                 .init(id: .init(id: "1"), title: "1", point: 1, updatedAt: .now),
             ]),
