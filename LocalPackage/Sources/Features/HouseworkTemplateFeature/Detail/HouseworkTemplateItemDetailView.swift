@@ -12,10 +12,11 @@ import SwiftUI
 struct HouseworkTemplateItemDetailView: View {
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.now) var now
 
     @State var isPresentingEditModal = false
+    @State var item: HouseworkTemplateItem
 
-    let item: HouseworkTemplateItem
     let registeredDays: [DayOfWeek]
     let onEdit: (TemplateItemEditInput) -> Void
     let onDelete: () -> Void
@@ -43,7 +44,7 @@ struct HouseworkTemplateItemDetailView: View {
                     selectedDays: .init(registeredDays)
                 )),
                 onConfirm: { input in
-                    onEdit(input)
+                    onEdited(input)
                 }
             )
         }
@@ -109,6 +110,16 @@ private extension HouseworkTemplateItemDetailView {
 
     func tappedEditButton() {
         isPresentingEditModal = true
+    }
+
+    func onEdited(_ editedInput: TemplateItemEditInput) {
+        item = .init(
+            id: editedInput.itemId,
+            title: editedInput.title,
+            point: Int(editedInput.point),
+            updatedAt: now
+        )
+        onEdit(editedInput)
     }
 
 }
