@@ -51,6 +51,8 @@ struct HouseworkTemplateItemDetailView: View {
 
 }
 
+// MARK: - UI定義
+
 private extension HouseworkTemplateItemDetailView {
 
     func row(label: String, @ViewBuilder valueContent: () -> some View) -> some View {
@@ -83,16 +85,30 @@ private extension HouseworkTemplateItemDetailView {
     func editingButton() -> some View {
         HStack(spacing: .space8) {
             Button {
-                isPresentingEditModal = true
+                tappedEditButton()
             } label: {
                 Image(systemName: "pencil")
                     .foregroundStyle(.onSurface)
             }
             NavigationBarButton(label: .delete) {
-                onDelete()
-                dismiss()
+                tappedDeleteButton()
             }
         }
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension HouseworkTemplateItemDetailView {
+
+    func tappedDeleteButton() {
+        onDelete()
+        dismiss()
+    }
+
+    func tappedEditButton() {
+        isPresentingEditModal = true
     }
 
 }
