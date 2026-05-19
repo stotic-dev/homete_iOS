@@ -37,7 +37,7 @@ struct HouseworkTemplateItemDetailView: View {
             editingButton()
         }
         .sheet(isPresented: $isPresentingEditModal) {
-            HouseworkTemplateItemEditModal(
+            HouseworkTemplateItemEditModalScreen(
                 mode: .edit(before: .init(
                     item: item,
                     selectedDays: .init(registeredDays)

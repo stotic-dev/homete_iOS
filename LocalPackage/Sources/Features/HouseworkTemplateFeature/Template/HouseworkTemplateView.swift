@@ -61,12 +61,12 @@ struct HouseworkTemplateView: View {
             .padding(.horizontal, .space16)
         }
         .sheet(isPresented: $presentingAddModal) {
-            HouseworkTemplateItemEditModal(mode: .create) { input in
+            HouseworkTemplateItemEditModalScreen(mode: .create) { input in
                 tappedCreateItemButton(input: input)
             }
         }
         .sheet(item: $presentingEditModal) { item in
-            HouseworkTemplateItemEditModal(
+            HouseworkTemplateItemEditModalScreen(
                 mode: .edit(before: .init(
                     item: item,
                     selectedDays: Set(draft.registeredDays(for: item.id))
