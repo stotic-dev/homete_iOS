@@ -7,13 +7,27 @@
 
 import SwiftUI
 
-public enum SettingMenuItem: Equatable, CaseIterable {
+enum SettingMenuItem: Equatable, CaseIterable {
 
     case taskTemplate
     case privacyPolicy
     case license
+    
+    static func displayItems(_ isRegisteredGroup: Bool) -> [Self] {
+        
+        Self.allCases.filter {
+            
+            if $0 == .taskTemplate {
+                // テンプレート設定項目はグループ参加状態の時のみ表示する
+                return isRegisteredGroup
+            } else {
+                
+                return true
+            }
+        }
+    }
 
-    public var title: LocalizedStringKey {
+    var title: LocalizedStringKey {
         switch self {
         case .taskTemplate:
             "家事テンプレート"
@@ -26,7 +40,7 @@ public enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    public var iconName: String {
+    var iconName: String {
         switch self {
         case .taskTemplate:
             "house"

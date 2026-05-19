@@ -13,7 +13,7 @@ public struct SettingView: View {
 
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
-    @Environment(\.loginContext.account.userName) var userName
+    @Environment(\.loginContext) var loginContext
     @Environment(\.dismiss) var dismiss
     @Environment(\.routeResolver) var router
     @LoadingState var loadingState
@@ -28,12 +28,15 @@ public struct SettingView: View {
         NavigationStack {
             VStack(spacing: .space32) {
                 VStack(spacing: .space24) {
-                    Text(userName)
+                    Text(loginContext.account.userName)
                         .font(with: .headLineM)
                     Spacer()
                         .frame(height: .space16)
                     VStack(spacing: .zero) {
-                        ForEach(SettingMenuItem.allCases, id: \.self) { item in
+                        ForEach(
+                            SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                            id: \.self
+                        ) { item in
                             SettingMenuItemButton(item: item) {
                                 tappedSettingMenuItem(item)
                             }
