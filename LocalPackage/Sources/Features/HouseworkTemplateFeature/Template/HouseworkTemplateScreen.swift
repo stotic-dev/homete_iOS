@@ -17,7 +17,8 @@ public struct HouseworkTemplateScreen: View {
     @Environment(\.cohabitantMembers) var members
 
     @State var templateEditStore: HouseworkTemplateEditStore
-    @State var initialDraft: HouseworkTemplateDraft = .init()
+    @State var initialDraft: HouseworkTemplateDraft?
+    @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
 
     public static func make() -> some View {
@@ -32,6 +33,7 @@ public struct HouseworkTemplateScreen: View {
         NavigationStack {
             HouseworkTemplateView(
                 initialDraft: $initialDraft,
+                draft: $editingDraft,
                 editorContext: editorContext
             )
         }
@@ -77,7 +79,9 @@ private extension HouseworkTemplateScreen {
             )
 
             // 画面を開いたタイミングでの最新のテンプレート内容を設定
-            initialDraft = .make(houseworkTemplateListStore.selectedDays)
+            let initialDraftOnAppear = HouseworkTemplateDraft.make(houseworkTemplateListStore.selectedDays)
+            editingDraft = initialDraftOnAppear
+            initialDraft = initialDraftOnAppear
         } catch {
             // TODO: エラーハンドリング
         }

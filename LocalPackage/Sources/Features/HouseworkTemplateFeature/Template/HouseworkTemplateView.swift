@@ -16,19 +16,20 @@ struct HouseworkTemplateView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.cohabitantId) var cohabitantId
 
-    @State var draft: HouseworkTemplateDraft = .init()
     @State var presentingAddModal = false
     @State var presentingEditModal: HouseworkTemplateItem?
     @State var presentingCancelAlert = false
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
 
-    @Binding var initialDraft: HouseworkTemplateDraft
+    @Binding var initialDraft: HouseworkTemplateDraft?
+    @Binding var draft: HouseworkTemplateDraft
     let editorContext: TemplateEditorContext
 
     var body: some View {
         ZStack {
-            if let templateId = templateListStore.selectedTemplateId {
+            if let templateId = templateListStore.selectedTemplateId,
+               let initialDraft {
                 ZStack {
                     mainContent()
                     addItemButton()
@@ -37,7 +38,7 @@ struct HouseworkTemplateView: View {
                         .padding(.bottom, .space8)
                 }
                 .trailingToolbarItem {
-                    trailingNavigationItem(templateId: templateId)
+                    trailingNavigationItem(templateId: templateId, initialDraft: initialDraft)
                 }
             } else {
                 HouseworkTemplateEmptyView {
@@ -197,7 +198,7 @@ private extension HouseworkTemplateView {
         .foregroundStyle(.onSurface)
     }
 
-    func trailingNavigationItem(templateId: String) -> some View {
+    func trailingNavigationItem(templateId: String, initialDraft: HouseworkTemplateDraft) -> some View {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             Task {
                 await tappedSaveButton(templateId: templateId)
@@ -235,6 +236,7 @@ private extension HouseworkTemplateView {
     }
 
     func tappedDiscardChangesAlertButton() {
+        guard let initialDraft else { return }
         // コンフリクトしたら、最新のテンプレート内容を再ロードして、編集内容は破棄する
         withAnimation {
             draft = initialDraft
@@ -273,7 +275,8 @@ private extension HouseworkTemplateView {
 
     func onChangeInitialDraft() {
         // 現在の編集内容と差分がある場合はコンフリクトとして処理する
-        guard initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
+        guard let initialDraft,
+              initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
         presentingCancelAlert = true
     }
 
@@ -355,8 +358,8 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            draft: .init(days: templateData),
             initialDraft: .constant(.init(days: templateData)),
+            draft: .constant(.init(days: templateData)),
             editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero)
         )
     }
@@ -386,8 +389,8 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            draft: .init(),
             initialDraft: .constant(.init(days: templateData)),
+            draft: .constant(.init()),
             editorContext: .init(
                 currentActiveEditors: [
                     .init(id: "1", userName: "Aさん"),
