@@ -20,10 +20,14 @@ public struct IncompleteHouseworkListView: View {
     }
 
     public var body: some View {
-        let summary = TodayHouseworkSummary(allItems: todayItems)
-        contentView(summary: summary)
-            .navigationTitle("未完了の家事")
-            .inlineNavigationBarTitleDisplayMode()
+        contentView(summary: TodayHouseworkSummary.make(
+            storedAllItems: houseworkListStore.items,
+            now: now,
+            calendar: calendar
+        )
+        )
+        .navigationTitle("未完了の家事")
+        .inlineNavigationBarTitleDisplayMode()
     }
 
 }
@@ -52,13 +56,6 @@ private extension IncompleteHouseworkListView {
         }
     }
 
-    var todayItems: [HouseworkItem] {
-        let today = calendar.startOfDay(for: now)
-        return houseworkListStore.items.value
-            .first { $0.metaData.indexedDate.value == today }?
-            .items ?? []
-    }
-
 }
 
 #if DEBUG
@@ -73,33 +70,11 @@ private extension IncompleteHouseworkListView {
                 items: [
                     .init(
                         items: [
-                            .init(
-                                id: "1",
-                                title: "洗濯",
-                                point: 20,
-                                metaData: .init(
-                                    indexedDate: .init(value: today),
-                                    expiredAt: .distantFuture
-                                )
-                            ),
-                            .init(
-                                id: "2",
-                                title: "掃除",
-                                point: 30,
-                                metaData: .init(
-                                    indexedDate: .init(value: today),
-                                    expiredAt: .distantFuture
-                                ),
-                                state: .pendingApproval
-                            ),
-                            .init(
-                                id: "3",
+                            .makeForPreview(title: "洗濯", point: 20),
+                            .makeForPreview(title: "掃除", point: 30),
+                            .makeForPreview(
                                 title: "料理",
                                 point: 50,
-                                metaData: .init(
-                                    indexedDate: .init(value: today),
-                                    expiredAt: .distantFuture
-                                ),
                                 state: .completed
                             ),
                         ],
