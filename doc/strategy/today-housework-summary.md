@@ -129,10 +129,10 @@ TodayHouseworkSummary
 
 ### Phase 2: 未完了家事詳細画面
 
-- [ ] **T-3** `IncompleteHouseworkListView` の実装
+- [x] **T-3** `IncompleteHouseworkListView` の実装
   - 当日の全未完了家事をリスト表示
   - 既存 `HouseBoardListRow` の流用 or 同等の行ビュー追加
-- [ ] **T-4** ナビゲーションルートの追加（push遷移用）
+- [x] **T-4** ナビゲーションルートの追加（push遷移用）
 
 ### Phase 3: サマリーコンポーネント
 
