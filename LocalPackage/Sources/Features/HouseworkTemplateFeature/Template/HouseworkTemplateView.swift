@@ -39,8 +39,12 @@ struct HouseworkTemplateView: View {
                         .padding(.trailing, .space24)
                         .padding(.bottom, .space8)
                 }
-                .trailingToolbarItem {
-                    trailingNavigationItem(templateId: templateId, initialDraft: initialDraft)
+                .toolbar {
+                    trailingNavigationItem(
+                        templateId: templateId,
+                        initialDraft: initialDraft,
+                        isEditing: initialDraft.hasUnsavedChanges(comparedTo: draft)
+                    )
                 }
             } else {
                 HouseworkTemplateEmptyView {
@@ -216,10 +220,14 @@ private extension HouseworkTemplateView {
         .foregroundStyle(.onSurface)
     }
 
-    func trailingNavigationItem(templateId: String, initialDraft: HouseworkTemplateDraft) -> some View {
-        let isEditing = draft.hasUnsavedChanges(comparedTo: initialDraft)
-        return HStack(spacing: .space8) {
-            if isEditing {
+    @ToolbarContentBuilder
+    func trailingNavigationItem(
+        templateId: String,
+        initialDraft: HouseworkTemplateDraft,
+        isEditing: Bool
+    ) -> some ToolbarContent {
+        if draft.hasUnsavedChanges(comparedTo: initialDraft) {
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     presentingResetAlert = true
                 } label: {
@@ -227,6 +235,11 @@ private extension HouseworkTemplateView {
                 }
                 .foregroundStyle(.onSurface)
             }
+        }
+        if #available(iOS 26.0, *) {
+            ToolbarSpacer()
+        }
+        ToolbarItem(placement: .topBarTrailing) {
             NavigationBarPrimaryActionButton(systemImage: "checkmark") {
                 Task {
                     await tappedSaveButton(templateId: templateId)
