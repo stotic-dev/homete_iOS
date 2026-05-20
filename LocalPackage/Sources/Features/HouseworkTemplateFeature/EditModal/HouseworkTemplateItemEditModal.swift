@@ -42,7 +42,7 @@ struct HouseworkTemplateItemEditModalScreen: View {
 
 }
 
-// MAKR: - プレゼンテーションロジック
+// MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateItemEditModalScreen {
 
@@ -63,7 +63,7 @@ private extension HouseworkTemplateItemEditModalScreen {
 }
 
 /// 家事追加・編集モーダル（ハーフモーダル / 新規・編集兼用）。
-private struct HouseworkTemplateItemEditModal: View {
+struct HouseworkTemplateItemEditModal: View {
 
     @Environment(\.dismiss) var dismiss
 

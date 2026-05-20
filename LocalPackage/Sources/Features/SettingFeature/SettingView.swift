@@ -139,8 +139,20 @@ private extension SettingView {
 
 }
 
-#Preview {
+#Preview("SettingView_グループ未登録") {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+}
+
+#Preview("SettingView_グループ登録済み") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
 }
