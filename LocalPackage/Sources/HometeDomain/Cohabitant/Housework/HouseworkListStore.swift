@@ -39,11 +39,15 @@ public final class HouseworkListStore {
         }
     }
 
-    public func register(newItem: HouseworkItem, cohabitantId: String) async throws {
+    public func register(
+        newItem: HouseworkItem,
+        cohabitantId: String,
+        notification: PushNotificationContent? = nil
+    ) async throws {
         try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
 
         Task.detached {
-            let notificationContent = PushNotificationContent.addNewHouseworkItem(newItem.title)
+            let notificationContent = notification ?? PushNotificationContent.addNewHouseworkItem(newItem.title)
             try await self.cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
         }
     }
@@ -52,12 +56,24 @@ public final class HouseworkListStore {
         target: HouseworkItem,
         now: Date,
         executor: String,
-        cohabitantId: String
+        cohabitantId: String,
+        isRegistered: Bool
     ) async throws {
-        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-            $0.updatePendingApproval(at: now, changer: executor)
-        } notification: {
-            .requestReviewMessage(houseworkTitle: target.title)
+        if isRegistered {
+            // Houseworksコレクションに登録されている家事の場合はステータスを更新する
+            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                $0.updatePendingApproval(at: now, changer: executor)
+            } notification: {
+                .requestReviewMessage(houseworkTitle: target.title)
+            }
+        } else {
+            // 登録されていない場合はドキュメントを新規作成する
+            let updatedItem = target.updatePendingApproval(at: now, changer: executor)
+            try await register(
+                newItem: updatedItem,
+                cohabitantId: cohabitantId,
+                notification: .requestReviewMessage(houseworkTitle: target.title)
+            )
         }
     }
 
@@ -89,13 +105,19 @@ public final class HouseworkListStore {
         }
     }
 
-    public func returnToIncomplete(target: HouseworkItem, cohabitantId: String) async throws {
+    public func returnToIncomplete(
+        target: HouseworkItem,
+        cohabitantId: String
+    ) async throws {
         try await updateAndSave(target: target, cohabitantId: cohabitantId) {
             $0.updateIncomplete()
         }
     }
 
-    public func remove(target: HouseworkItem, cohabitantId: String) async throws {
+    public func remove(
+        target: HouseworkItem,
+        cohabitantId: String
+    ) async throws {
         try await houseworkClient.removeItem(target, cohabitantId)
     }
 

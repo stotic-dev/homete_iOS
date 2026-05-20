@@ -99,7 +99,8 @@ private extension HouseworkDetailActionContent {
                 target: item.originalItem,
                 now: .now,
                 executor: account.id,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                isRegistered: item.isRegistered
             )
         } catch {
             commonErrorContent = .init(error: error)

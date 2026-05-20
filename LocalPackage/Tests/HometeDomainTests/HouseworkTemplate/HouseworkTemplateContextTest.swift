@@ -55,7 +55,7 @@ extension HouseworkTemplateContextTest.TemplateOfDayCase {
         let actual = context.templateOfDay(by: inputDate, calendar: calendar)
 
         // Assert
-        let dayOfWeek = calendar.component(.weekday, from: inputDate)
+        let dayOfWeek = calendar.component(.weekday, from: inputDate) - 1
         let expected = try #require(context.houseworkTemplate.first { $0.dayOfWeek == dayOfWeek })
         #expect(actual == expected)
     }
