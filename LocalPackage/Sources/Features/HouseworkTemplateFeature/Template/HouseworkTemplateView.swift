@@ -272,7 +272,7 @@ private extension HouseworkTemplateView {
     }
 
     func onDropItem(itemId: HouseworkTemplateItem.ItemId, to destination: DayOfWeek) {
-        draft.moveItem(itemId, to: destination, now: now)
+        draft.addDay(to: itemId, destination: destination, now: now)
     }
 
     func tappedCancelButton() {

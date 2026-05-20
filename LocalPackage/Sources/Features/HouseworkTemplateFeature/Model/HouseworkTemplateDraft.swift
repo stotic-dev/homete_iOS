@@ -74,33 +74,32 @@ struct HouseworkTemplateDraft: Equatable {
         }
     }
 
-    /// アイテムを指定された曜日に移動する。同じ曜日へのドロップは何もしない。
-    /// 異なる曜日へ移動した場合は `updatedAt` を `now` に更新する。
-    mutating func moveItem(
-        _ itemId: HouseworkTemplateItem.ItemId,
-        to destination: DayOfWeek,
+    /// アイテムの登録曜日に `destination` を追加する。
+    /// 既に `destination` に同じアイテムが登録されている、もしくはアイテム自体が見つからない場合は何もしない。
+    /// 追加した曜日の新エントリは `updatedAt` を `now` で作成する（既存曜日の `updatedAt` は変更しない）。
+    mutating func addDay(
+        to itemId: HouseworkTemplateItem.ItemId,
+        destination: DayOfWeek,
         now: Date
     ) {
-        var movingItem: HouseworkTemplateItem?
+        if days[destination]?.contains(where: { $0.id == itemId }) == true {
+            return
+        }
+        var sourceItem: HouseworkTemplateItem?
         for day in DayOfWeek.allCases {
-            if let index = days[day]?.firstIndex(where: { $0.id == itemId }) {
-                movingItem = days[day]?.remove(at: index)
-                if day == destination {
-                    if let movingItem {
-                        days[day, default: []].insert(movingItem, at: index)
-                    }
-                    return
-                }
+            if let item = days[day]?.first(where: { $0.id == itemId }) {
+                sourceItem = item
+                break
             }
         }
-        guard let movingItem else { return }
-        let updated = HouseworkTemplateItem(
-            id: movingItem.id,
-            title: movingItem.title,
-            point: movingItem.point,
+        guard let sourceItem else { return }
+        let added = HouseworkTemplateItem(
+            id: sourceItem.id,
+            title: sourceItem.title,
+            point: sourceItem.point,
             updatedAt: now
         )
-        days[destination, default: []].append(updated)
+        days[destination, default: []].append(added)
     }
 
 }
