@@ -157,8 +157,20 @@ private extension TodayHouseworkSummaryComponent {
             HouseworkListStore(items: [
                 .init(
                     items: [
-                        previewItem(id: "1", title: "洗濯", point: 20, indexedDate: today, state: .completed),
-                        previewItem(id: "2", title: "掃除", point: 30, indexedDate: today, state: .completed),
+                        .makeForTest(
+                            id: 1,
+                            indexedDate: today,
+                            title: "洗濯",
+                            point: 20,
+                            state: .completed
+                        ),
+                        .makeForTest(
+                            id: 2,
+                            indexedDate: today,
+                            title: "掃除",
+                            point: 30,
+                            state: .completed
+                        ),
                     ],
                     metaData: .init(
                         indexedDate: .init(value: today),
@@ -181,9 +193,27 @@ private extension TodayHouseworkSummaryComponent {
             HouseworkListStore(items: [
                 .init(
                     items: [
-                        previewItem(id: "1", title: "洗濯", point: 20, indexedDate: today),
-                        previewItem(id: "2", title: "掃除", point: 30, indexedDate: today),
-                        previewItem(id: "3", title: "料理", point: 50, indexedDate: today, state: .completed),
+                        .makeForTest(
+                            id: 1,
+                            indexedDate: today,
+                            title: "洗濯",
+                            point: 20,
+                            state: .incomplete
+                        ),
+                        .makeForTest(
+                            id: 2,
+                            indexedDate: today,
+                            title: "掃除",
+                            point: 30,
+                            state: .pendingApproval
+                        ),
+                        .makeForTest(
+                            id: 3,
+                            indexedDate: today,
+                            title: "掃除",
+                            point: 30,
+                            state: .completed
+                        ),
                     ],
                     metaData: .init(
                         indexedDate: .init(value: today),
@@ -206,12 +236,48 @@ private extension TodayHouseworkSummaryComponent {
             HouseworkListStore(items: [
                 .init(
                     items: [
-                        previewItem(id: "1", title: "洗濯", point: 20, indexedDate: today),
-                        previewItem(id: "2", title: "掃除", point: 30, indexedDate: today),
-                        previewItem(id: "3", title: "料理", point: 50, indexedDate: today),
-                        previewItem(id: "4", title: "ゴミ出し", point: 10, indexedDate: today),
-                        previewItem(id: "5", title: "買い物", point: 40, indexedDate: today),
-                        previewItem(id: "6", title: "アイロン", point: 25, indexedDate: today, state: .completed),
+                        .makeForTest(
+                            id: 1,
+                            indexedDate: today,
+                            title: "洗濯",
+                            point: 20,
+                            state: .incomplete
+                        ),
+                        .makeForTest(
+                            id: 2,
+                            indexedDate: today,
+                            title: "掃除",
+                            point: 30,
+                            state: .pendingApproval
+                        ),
+                        .makeForTest(
+                            id: 3,
+                            indexedDate: today,
+                            title: "掃除",
+                            point: 30,
+                            state: .incomplete
+                        ),
+                        .makeForTest(
+                            id: 4,
+                            indexedDate: today,
+                            title: "ゴミ出し",
+                            point: 20,
+                            state: .incomplete
+                        ),
+                        .makeForTest(
+                            id: 5,
+                            indexedDate: today,
+                            title: "買い物",
+                            point: 30,
+                            state: .pendingApproval
+                        ),
+                        .makeForTest(
+                            id: 6,
+                            indexedDate: today,
+                            title: "アイロン",
+                            point: 30,
+                            state: .incomplete
+                        ),
                     ],
                     metaData: .init(
                         indexedDate: .init(value: today),
@@ -221,24 +287,5 @@ private extension TodayHouseworkSummaryComponent {
             ])
         )
         .setupEnvironmentForPreview()
-    }
-
-    private func previewItem(
-        id: String,
-        title: String,
-        point: Int,
-        indexedDate: Date,
-        state: HouseworkState = .incomplete
-    ) -> HouseworkItem {
-        .init(
-            id: id,
-            title: title,
-            point: point,
-            metaData: .init(
-                indexedDate: .init(value: indexedDate),
-                expiredAt: .distantFuture
-            ),
-            state: state
-        )
     }
 #endif
