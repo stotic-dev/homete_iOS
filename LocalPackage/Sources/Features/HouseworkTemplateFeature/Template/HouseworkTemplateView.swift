@@ -18,7 +18,7 @@ struct HouseworkTemplateView: View {
 
     @State var presentingAddModal = false
     @State var presentingEditModal: HouseworkTemplateItem?
-    @State var presentingCancelAlert = false
+    @State var presentingConflictDraftAlert = false
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
     @State var presentingDismissAlert = false
@@ -26,7 +26,7 @@ struct HouseworkTemplateView: View {
 
     @Binding var initialDraft: HouseworkTemplateDraft?
     @Binding var draft: HouseworkTemplateDraft
-    let editorContext: TemplateEditorContext
+    @Binding var editorContext: TemplateEditorContext
 
     var body: some View {
         ZStack {
@@ -96,7 +96,7 @@ struct HouseworkTemplateView: View {
         .onChange(of: initialDraft) {
             onChangeInitialDraft()
         }
-        .alert("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？", isPresented: $presentingCancelAlert) {
+        .alert("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？", isPresented: $presentingConflictDraftAlert) {
             Button("破棄", role: .destructive) {
                 tappedDiscardChangesAlertButton()
             }
@@ -176,14 +176,12 @@ private extension HouseworkTemplateView {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
     func itemRow(_ item: HouseworkTemplateItem, in day: DayOfWeek) -> some View {
-        let row = HouseworkTemplateItemRow(item: item)
+        HouseworkTemplateItemRow(item: item)
             .contentShape(Rectangle())
             .onTapGesture {
                 presentingDetailItem = item
             }
-        row
             .draggable(item.id.id)
             .contextMenu {
                 Button("編集") {
@@ -310,7 +308,9 @@ private extension HouseworkTemplateView {
                 cohabitantId: cohabitantId,
                 currentVersion: editorContext.currentTemplateVersion
             )
+            print("saved template(draft: \(draft), initialDraft: \(initialDraft))")
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
+            editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
             initialDraft = draft
         } catch {
             // TODO: エラーハンドリング
@@ -332,10 +332,11 @@ private extension HouseworkTemplateView {
     }
 
     func onChangeInitialDraft() {
+        print("onChangeInitialDraft(draft: \(draft), initialDraft: \(initialDraft))")
         // 現在の編集内容と差分がある場合はコンフリクトとして処理する
         guard let initialDraft,
               initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
-        presentingCancelAlert = true
+        presentingConflictDraftAlert = true
     }
 
 }
@@ -418,7 +419,7 @@ private extension HouseworkTemplateView {
         HouseworkTemplateView(
             initialDraft: .constant(.init(days: templateData)),
             draft: .constant(.init(days: templateData)),
-            editorContext: .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+            editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
         )
     }
     .environment(
@@ -449,13 +450,13 @@ private extension HouseworkTemplateView {
         HouseworkTemplateView(
             initialDraft: .constant(.init(days: templateData)),
             draft: .constant(.init()),
-            editorContext: .init(
+            editorContext: .constant(.init(
                 currentActiveEditors: [
                     .init(id: "1", userName: "Aさん"),
                     .init(id: "2", userName: "Bさん"),
                 ],
                 currentTemplateVersion: .zero
-            )
+            ))
         )
     }
     .environment(

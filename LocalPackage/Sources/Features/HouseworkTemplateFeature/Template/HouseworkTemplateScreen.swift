@@ -34,7 +34,7 @@ public struct HouseworkTemplateScreen: View {
             HouseworkTemplateView(
                 initialDraft: $initialDraft,
                 draft: $editingDraft,
-                editorContext: editorContext
+                editorContext: $editorContext
             )
         }
         .environment(templateEditStore)
@@ -113,7 +113,9 @@ private extension HouseworkTemplateScreen {
     }
 
     func onChangeTemplateVersion() async {
-        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
+        // ローカルで保持しているテンプレートバージョンよりも大きいバージョンの場合に、コンフリクトが発生したとみなす
+        guard editorContext.currentTemplateVersion < templateEditStore.currentVersion,
+              let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
 
         do {
@@ -121,6 +123,7 @@ private extension HouseworkTemplateScreen {
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
             initialDraft = .make(houseworkTemplateListStore.selectedDays)
             editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            print("onChangeTemplateVersion(editingDraft: \(editingDraft), initialDraft: \(initialDraft))")
         } catch {
             // TODO: エラーハンドリング
         }
