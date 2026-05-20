@@ -12,7 +12,12 @@ public struct CohabitantMemberList: Sendable, Equatable {
 
     public var value: [CohabitantMember] {
         guard let own = _value.first(where: { $0.id == ownId }) else { return [] }
-        return [own] + .init(_value)
+        return [own] + others
+    }
+
+    /// 自分以外のメンバー一覧（ユーザーID昇順）
+    public var others: [CohabitantMember] {
+        _value
             .filter { $0.id != ownId }
             .sorted { $0.id < $1.id }
     }
