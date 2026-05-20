@@ -39,6 +39,7 @@ struct HouseworkTemplateView: View {
                         .padding(.trailing, .space24)
                         .padding(.bottom, .space8)
                 }
+                #if os(iOS)
                 .toolbar {
                     trailingNavigationItem(
                         templateId: templateId,
@@ -46,6 +47,7 @@ struct HouseworkTemplateView: View {
                         isEditing: initialDraft.hasUnsavedChanges(comparedTo: draft)
                     )
                 }
+                #endif
             } else {
                 HouseworkTemplateEmptyView {
                     Task {
@@ -218,6 +220,7 @@ private extension HouseworkTemplateView {
         .foregroundStyle(.onSurface)
     }
 
+    #if os(iOS)
     @ToolbarContentBuilder
     func trailingNavigationItem(
         templateId: String,
@@ -246,6 +249,7 @@ private extension HouseworkTemplateView {
             .disabled(!isEditing)
         }
     }
+    #endif
 
 }
 
@@ -308,7 +312,6 @@ private extension HouseworkTemplateView {
                 cohabitantId: cohabitantId,
                 currentVersion: editorContext.currentTemplateVersion
             )
-            print("saved template(draft: \(draft), initialDraft: \(initialDraft))")
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
             editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
             initialDraft = draft
@@ -332,7 +335,6 @@ private extension HouseworkTemplateView {
     }
 
     func onChangeInitialDraft() {
-        print("onChangeInitialDraft(draft: \(draft), initialDraft: \(initialDraft))")
         // 現在の編集内容と差分がある場合はコンフリクトとして処理する
         guard let initialDraft,
               initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }

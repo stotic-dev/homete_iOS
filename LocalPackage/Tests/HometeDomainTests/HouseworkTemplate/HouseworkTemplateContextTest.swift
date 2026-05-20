@@ -9,7 +9,14 @@ import Foundation
 @testable import HometeDomain
 import Testing
 
-struct HouseworkTemplateContextTest {
+enum HouseworkTemplateContextTest {
+
+    struct TemplateOfDayCase {}
+    struct HasTemplateCase {}
+
+}
+
+extension HouseworkTemplateContextTest.TemplateOfDayCase {
 
     @Test(
         "指定した日付に対応した曜日のテンプレートを返す",
@@ -51,6 +58,37 @@ struct HouseworkTemplateContextTest {
         let dayOfWeek = calendar.component(.weekday, from: inputDate)
         let expected = try #require(context.houseworkTemplate.first { $0.dayOfWeek == dayOfWeek })
         #expect(actual == expected)
+    }
+
+}
+
+extension HouseworkTemplateContextTest.HasTemplateCase {
+
+    @Test("metadataがnilの場合はfalseを返す")
+    func returnsFalseWhenMetadataIsNil() {
+        // Arrange
+        let context = HouseworkTemplateContext(metadata: nil, houseworkTemplate: [])
+
+        // Act
+        let actual = context.hasTemplate
+
+        // Assert
+        #expect(actual == false)
+    }
+
+    @Test("metadataが指定されている場合はtrueを返す（houseworkTemplateが空でも）")
+    func returnsTrueWhenMetadataExists() {
+        // Arrange
+        let context = HouseworkTemplateContext(
+            metadata: .init(templateId: "templateId", name: "テンプレ"),
+            houseworkTemplate: []
+        )
+
+        // Act
+        let actual = context.hasTemplate
+
+        // Assert
+        #expect(actual == true)
     }
 
 }

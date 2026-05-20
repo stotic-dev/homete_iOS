@@ -123,7 +123,6 @@ private extension HouseworkTemplateScreen {
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
             initialDraft = .make(houseworkTemplateListStore.selectedDays)
             editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
-            print("onChangeTemplateVersion(editingDraft: \(editingDraft), initialDraft: \(initialDraft))")
         } catch {
             // TODO: エラーハンドリング
         }
