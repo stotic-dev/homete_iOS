@@ -8,6 +8,7 @@
 import ContributionFeature
 import HometeDomain
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 
 public struct HomeView: View {
@@ -21,11 +22,13 @@ public struct HomeView: View {
 
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
+    @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
     let cohabitantStore: CohabitantStore?
+    let houseworkListStore: HouseworkListStore?
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $registeredContentNavigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
                     adComponentResolver.resolve(.banner(.dashboardTop))
@@ -60,6 +63,11 @@ public struct HomeView: View {
                     }
                 }
             }
+            .navigationDestination(for: RegisteredContentRoute.self) { route in
+                navigationHandler(route)
+            }
+            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
+            .environment(houseworkListStore)
         }
     }
 
@@ -69,12 +77,28 @@ public extension HomeView {
 
     static func make(
         contributionStore: ContributionStore?,
-        cohabitantStore: CohabitantStore?
+        cohabitantStore: CohabitantStore?,
+        houseworkListStore: HouseworkListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
-            cohabitantStore: cohabitantStore
+            cohabitantStore: cohabitantStore,
+            houseworkListStore: houseworkListStore
         )
+    }
+
+}
+
+// MARK: UI定義
+
+private extension HomeView {
+
+    @ViewBuilder
+    func navigationHandler(_ route: RegisteredContentRoute) -> some View {
+        switch route {
+        case .incompleteHouseworkList:
+            IncompleteHouseworkListView.make()
+        }
     }
 
 }

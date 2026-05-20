@@ -8,6 +8,7 @@
 import ContributionFeature
 import HometeDomain
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 
 struct RegisteredContent: View {
@@ -59,6 +60,7 @@ private extension RegisteredContent {
         RegisteredContent()
             .environment(ContributionStore())
             .environment(CohabitantStore())
+            .environment(HouseworkListStore())
             .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
             .setupEnvironmentForPreview()
     }
