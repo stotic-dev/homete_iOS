@@ -9,11 +9,15 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HouseBoardListRow: View {
+public struct HouseBoardListRow: View {
 
-    let houseworkItem: HouseworkItem
+    public let houseworkItem: HouseworkItem
 
-    var body: some View {
+    public init(houseworkItem: HouseworkItem) {
+        self.houseworkItem = houseworkItem
+    }
+
+    public var body: some View {
         HStack(spacing: .space16) {
             PointLabel(point: houseworkItem.point)
             Text(houseworkItem.title)

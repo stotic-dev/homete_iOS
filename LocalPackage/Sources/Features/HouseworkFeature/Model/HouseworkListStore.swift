@@ -14,7 +14,7 @@ import SwiftUI
 @Observable
 public final class HouseworkListStore {
 
-    private(set) var items: StoredAllHouseworkList
+    public private(set) var items: StoredAllHouseworkList
     private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
