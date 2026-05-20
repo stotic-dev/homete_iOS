@@ -136,12 +136,12 @@ TodayHouseworkSummary
 
 ### Phase 3: サマリーコンポーネント
 
-- [ ] **T-5** `TodayHouseworkSummaryComponent` の実装
+- [x] **T-5** `TodayHouseworkSummaryComponent` の実装
   - 進捗バー / ラベル表示
   - 未完了アイテムのリスト（最大4件）
   - 「もっと表示する」ボタン（条件付き表示）
   - 空状態のメッセージ + アクション（モーダル表示 or なし）
-- [ ] **T-6** 既存 `TodayHouseworkListContent.swift` の削除
+- [x] **T-6** 既存 `TodayHouseworkListContent.swift` の削除
 
 ### Phase 4: 組み込み
 
