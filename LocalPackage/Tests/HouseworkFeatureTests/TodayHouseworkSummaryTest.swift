@@ -5,6 +5,8 @@
 //  Created by 佐藤汰一 on 2026/05/18.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 import HometeDomain
 @testable import HouseworkFeature
@@ -12,25 +14,45 @@ import Testing
 
 enum TodayHouseworkSummaryTest {
 
+    static let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    static let calendar = Calendar.japanese
+
     struct EmptyCase {}
     struct AllCompletedCase {}
     struct HasIncompleteCase {}
     struct ProgressCase {}
     struct DisplayIncompleteItemsCase {}
+    struct DateFilterCase {}
+
+    static func makeStoredForToday(items: [HouseworkItem]) -> StoredAllHouseworkList {
+        StoredAllHouseworkList(value: [
+            DailyHouseworkList(
+                items: items,
+                metaData: DailyHouseworkMetaData(
+                    indexedDate: .init(value: today),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+    }
 
 }
 
 extension TodayHouseworkSummaryTest.EmptyCase {
 
-    @Test("家事が0件の場合、displayStateは.empty・progressは0・未完了リストも空になる")
+    @Test("当日の家事が0件の場合、displayStateは.empty・progressは0・未完了リストも空になる")
     func empty_whenNoItems() {
         // Arrange
 
-        let input: [HouseworkItem] = []
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -56,11 +78,15 @@ extension TodayHouseworkSummaryTest.AllCompletedCase {
         let item1 = HouseworkItem.makeForTest(id: 1, state: .completed)
         let item2 = HouseworkItem.makeForTest(id: 2, state: .completed)
         let item3 = HouseworkItem.makeForTest(id: 3, state: .completed)
-        let input: [HouseworkItem] = [item1, item2, item3]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [item1, item2, item3])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -85,11 +111,15 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let incomplete = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let completed = HouseworkItem.makeForTest(id: 2, state: .completed)
-        let input: [HouseworkItem] = [incomplete, completed]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [incomplete, completed])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -109,11 +139,15 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
         // Arrange
 
         let pendingApproval = HouseworkItem.makeForTest(id: 1, state: .pendingApproval)
-        let input: [HouseworkItem] = [pendingApproval]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [pendingApproval])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -135,11 +169,17 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
         let incomplete = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let pendingApproval = HouseworkItem.makeForTest(id: 2, state: .pendingApproval)
         let completed = HouseworkItem.makeForTest(id: 3, state: .completed)
-        let input: [HouseworkItem] = [incomplete, pendingApproval, completed]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(
+            items: [incomplete, pendingApproval, completed]
+        )
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -166,11 +206,15 @@ extension TodayHouseworkSummaryTest.ProgressCase {
         let item2 = HouseworkItem.makeForTest(id: 2, state: .completed)
         let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
         let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
-        let input: [HouseworkItem] = [item1, item2, item3, item4]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [item1, item2, item3, item4])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -191,11 +235,15 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
         let completed = HouseworkItem.makeForTest(id: 1, state: .completed)
         let pendingApproval = HouseworkItem.makeForTest(id: 2, state: .pendingApproval)
-        let input: [HouseworkItem] = [completed, pendingApproval]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [completed, pendingApproval])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -222,11 +270,15 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
         let item2 = HouseworkItem.makeForTest(id: 2, state: .incomplete)
         let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
         let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
-        let input: [HouseworkItem] = [item1, item2, item3, item4]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [item1, item2, item3, item4])
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -250,11 +302,17 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
         let item3 = HouseworkItem.makeForTest(id: 3, state: .incomplete)
         let item4 = HouseworkItem.makeForTest(id: 4, state: .incomplete)
         let item5 = HouseworkItem.makeForTest(id: 5, state: .incomplete)
-        let input: [HouseworkItem] = [item1, item2, item3, item4, item5]
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(
+            items: [item1, item2, item3, item4, item5]
+        )
 
         // Act
 
-        let actual = TodayHouseworkSummary(allItems: input)
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
 
         // Assert
 
@@ -265,6 +323,164 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
             displayState: .hasIncomplete,
             displayIncompleteItems: [item1, item2, item3, item4],
             hasMoreIncomplete: true
+        )
+        #expect(actual == expected)
+    }
+
+}
+
+extension TodayHouseworkSummaryTest.DateFilterCase {
+
+    @Test("storedAllItemsが空の場合、displayStateは.emptyになる")
+    func make_whenStoredAllItemsIsEmpty() {
+        // Arrange
+
+        let input = StoredAllHouseworkList(value: [])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [],
+            incompleteItems: [],
+            progress: 0,
+            displayState: .empty,
+            displayIncompleteItems: [],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("当日の日付エントリが含まれない場合、displayStateは.emptyになる")
+    func make_whenStoredAllItemsHasNoTodayEntry() {
+        // Arrange
+
+        let otherDate = Date.previewDate(year: 2026, month: 5, day: 17)
+        let otherDayItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let input = StoredAllHouseworkList(value: [
+            DailyHouseworkList(
+                items: [otherDayItem],
+                metaData: DailyHouseworkMetaData(
+                    indexedDate: .init(value: otherDate),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [],
+            incompleteItems: [],
+            progress: 0,
+            displayState: .empty,
+            displayIncompleteItems: [],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("複数日エントリのうち当日のもののみがサマリーに反映される")
+    func make_picksOnlyTodayEntryFromMultipleDates() {
+        // Arrange
+
+        let yesterday = Date.previewDate(year: 2026, month: 5, day: 17)
+        let tomorrow = Date.previewDate(year: 2026, month: 5, day: 19)
+        let yesterdayItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let todayItem = HouseworkItem.makeForTest(id: 2, state: .incomplete)
+        let tomorrowItem = HouseworkItem.makeForTest(id: 3, state: .incomplete)
+        let input = StoredAllHouseworkList(value: [
+            DailyHouseworkList(
+                items: [yesterdayItem],
+                metaData: DailyHouseworkMetaData(
+                    indexedDate: .init(value: yesterday),
+                    expiredAt: .distantFuture
+                )
+            ),
+            DailyHouseworkList(
+                items: [todayItem],
+                metaData: DailyHouseworkMetaData(
+                    indexedDate: .init(value: TodayHouseworkSummaryTest.today),
+                    expiredAt: .distantFuture
+                )
+            ),
+            DailyHouseworkList(
+                items: [tomorrowItem],
+                metaData: DailyHouseworkMetaData(
+                    indexedDate: .init(value: tomorrow),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [todayItem],
+            incompleteItems: [todayItem],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [todayItem],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("nowに時刻成分がある場合でも、startOfDayで正規化された日付エントリを参照する")
+    func make_normalizesNowToStartOfDay() {
+        // Arrange
+
+        let nowWithTime = Date.previewDate(
+            year: 2026,
+            month: 5,
+            day: 18,
+            hour: 15,
+            minute: 30,
+            second: 45
+        )
+        let todayItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [todayItem])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            now: nowWithTime,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [todayItem],
+            incompleteItems: [todayItem],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [todayItem],
+            hasMoreIncomplete: false
         )
         #expect(actual == expected)
     }
