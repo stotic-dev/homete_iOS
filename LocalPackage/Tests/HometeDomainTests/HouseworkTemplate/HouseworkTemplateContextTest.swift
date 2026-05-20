@@ -28,25 +28,25 @@ extension HouseworkTemplateContextTest.TemplateOfDayCase {
         // Arrange
         let calendar = Calendar.japanese
         let context = HouseworkTemplateContext(metadata: nil, houseworkTemplate: [
-            .init(dayOfWeek: 1, items: [
+            .init(dayOfWeek: 0, items: [
                 .init(id: .init(id: "1"), title: "1", point: 1, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 2, items: [
+            .init(dayOfWeek: 1, items: [
                 .init(id: .init(id: "2"), title: "2", point: 2, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 3, items: [
+            .init(dayOfWeek: 2, items: [
                 .init(id: .init(id: "3"), title: "3", point: 3, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 4, items: [
+            .init(dayOfWeek: 3, items: [
                 .init(id: .init(id: "4"), title: "4", point: 4, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 5, items: [
+            .init(dayOfWeek: 4, items: [
                 .init(id: .init(id: "5"), title: "5", point: 5, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 6, items: [
+            .init(dayOfWeek: 5, items: [
                 .init(id: .init(id: "6"), title: "6", point: 6, updatedAt: .now),
             ]),
-            .init(dayOfWeek: 7, items: [
+            .init(dayOfWeek: 6, items: [
                 .init(id: .init(id: "7"), title: "7", point: 7, updatedAt: .now),
             ]),
         ])

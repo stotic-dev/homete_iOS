@@ -49,7 +49,12 @@ struct HouseworkBoardListTest {
         )
 
         // Assert
-        let expected = HouseworkBoardList(items: inputSelectedDateItemList)
+        let expected = HouseworkBoardList(
+            items: inputSelectedDateItemList.map { .init(
+                originalItem: $0,
+                isRegistered: true
+            ) }
+        )
         #expect(actual == expected)
     }
 
@@ -73,7 +78,10 @@ struct HouseworkBoardListTest {
         let actual = houseworkBoardList.items(matching: expectedState)
 
         // Assert
-        let expected = inputHouseworkItem.filter { $0.state == expectedState }
+        let expected: [HouseworkBoardItem] = inputHouseworkItem.filter { $0.state == expectedState }
+            .map {
+                .init(originalItem: $0, isRegistered: true)
+            }
         #expect(actual == expected)
     }
 

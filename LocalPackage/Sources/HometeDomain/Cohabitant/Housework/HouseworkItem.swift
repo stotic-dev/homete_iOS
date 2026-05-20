@@ -61,25 +61,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.templateHouseworkItemId = templateHouseworkItemId
     }
 
-    public func formattedIndexedDate(calendar: Calendar) -> String {
-        let formatStyle = Date.FormatStyle(
-            date: .numeric,
-            time: .omitted,
-            locale: calendar.locale ?? .autoupdatingCurrent,
-            calendar: calendar,
-            timeZone: calendar.timeZone
-        )
-        .year(.extended(minimumLength: 4))
-        .month(.twoDigits)
-        .day(.twoDigits)
-        return indexedDate.value.formatted(formatStyle)
-    }
-
-    /// レビュー可能かどうか
-    public func canReview(ownUserId: String) -> Bool {
-        executorId != ownUserId && state != .completed
-    }
-
     public func updatePendingApproval(at now: Date, changer: String) -> Self {
         .init(
             id: id,

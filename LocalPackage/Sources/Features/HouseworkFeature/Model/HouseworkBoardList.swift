@@ -10,9 +10,9 @@ import HometeDomain
 
 struct HouseworkBoardList: Equatable {
 
-    private(set) var items: [HouseworkItem]
+    private(set) var items: [HouseworkBoardItem]
 
-    func items(matching state: HouseworkState) -> [HouseworkItem] {
+    func items(matching state: HouseworkState) -> [HouseworkBoardItem] {
         items.filter { $0.state == state }
     }
 
@@ -34,7 +34,7 @@ extension HouseworkBoardList {
 
         // テンプレートが存在するときは、条件に合ったテンプレートの家事を未完了で追加する
         guard let selectedDateTemplate else {
-            self.items = items
+            self.items = items.map { .init(originalItem: $0, isRegistered: true) }
             return
         }
 
@@ -44,6 +44,7 @@ extension HouseworkBoardList {
             calendar: calendar,
             uuidGenerator: uuidGenerator
         )
+        .map { .init(originalItem: $0, isRegistered: false) }
     }
 
 }

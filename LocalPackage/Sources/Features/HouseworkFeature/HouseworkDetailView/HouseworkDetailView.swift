@@ -17,7 +17,7 @@ struct HouseworkDetailView: View {
     @Environment(CohabitantStore.self) var cohabitantStore
     @LoadingState var loadingState
 
-    @State var item: HouseworkItem
+    @State var item: HouseworkBoardItem
 
     @CommonError var commonErrorContent
 
@@ -72,7 +72,7 @@ private extension HouseworkDetailView {
 
         do {
             try await houseworkListStore.remove(
-                target: item,
+                target: item.originalItem,
                 cohabitantId: cohabitantId
             )
             dismiss()
@@ -82,10 +82,10 @@ private extension HouseworkDetailView {
     }
 
     func didChangeItems() {
-        guard let targetItem = houseworkListStore.items.item(item) else { return }
+        guard let targetItem = houseworkListStore.items.item(item.originalItem) else { return }
 
         withAnimation {
-            item = targetItem
+            item = .init(originalItem: targetItem, isRegistered: true)
         }
     }
 
@@ -94,11 +94,9 @@ private extension HouseworkDetailView {
 #Preview {
     NavigationStack {
         HouseworkDetailView(
-            item: .init(
-                id: "",
+            item: .makeForPreview(
                 title: "洗濯",
-                point: 10,
-                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
+                point: 10
             )
         )
     }
@@ -110,11 +108,9 @@ private extension HouseworkDetailView {
     NavigationStack {
         HouseworkDetailView(
             loadingState: .init(store: .init(isLoading: true)),
-            item: .init(
-                id: "",
+            item: .makeForPreview(
                 title: "洗濯",
-                point: 10,
-                metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
+                point: 10
             )
         )
     }

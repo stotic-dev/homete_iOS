@@ -21,11 +21,7 @@ public struct HouseworkApprovalView: View {
 
     @State var inputMessage = ""
 
-    let item: HouseworkItem
-
-    public init(item: HouseworkItem) {
-        self.item = item
-    }
+    let item: HouseworkBoardItem
 
     public var body: some View {
         NavigationStack {
@@ -138,7 +134,7 @@ private extension HouseworkApprovalView {
 
         do {
             try await houseworkListStore.approved(
-                target: item,
+                target: item.originalItem,
                 now: .now,
                 reviwer: account,
                 comment: inputMessage,
@@ -155,7 +151,7 @@ private extension HouseworkApprovalView {
 
         do {
             try await houseworkListStore.rejected(
-                target: item,
+                target: item.originalItem,
                 now: .now,
                 reviwer: account,
                 comment: inputMessage,
@@ -171,14 +167,10 @@ private extension HouseworkApprovalView {
 
 #if DEBUG
 #Preview {
-    HouseworkApprovalView(item: .init(
-        id: "",
+    HouseworkApprovalView(item: .makeForPreview(
         title: "洗濯",
         point: 10,
-        metaData: .init(
-            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
-            expiredAt: .init(timeIntervalSince1970: 0)
-        ),
+        indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
         executorId: "test",
         executedAt: .distantFuture
     ))

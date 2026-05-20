@@ -121,14 +121,9 @@ private extension HouseworkBoardView {
 #if DEBUG
 #Preview {
     let list = HouseworkBoardList(items: [
-        .init(
-            id: "1",
+        .makeForPreview(
             title: "洗濯",
-            point: 20,
-            metaData: .init(
-                indexedDate: .init(value: .distantPast),
-                expiredAt: .distantPast
-            )
+            point: 20
         ),
     ])
     HouseworkBoardView(
