@@ -35,6 +35,8 @@ struct HouseworkDetailActionContent: View {
                 }
             case .completed:
                 undoChangeStateButton()
+            case .notTodo:
+                EmptyView()
             }
         }
         .disabled(isLoading)

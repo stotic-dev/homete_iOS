@@ -14,11 +14,19 @@ struct HouseworkBoardSegmentedControl: View {
 
     var body: some View {
         Picker("", selection: $selectedHouseworkState) {
-            ForEach(HouseworkState.allCases) { state in
+            ForEach(segmentCases) { state in
                 Text(state.segmentTitle).tag(state)
             }
         }
         .pickerStyle(.segmented)
+    }
+
+}
+
+private extension HouseworkBoardSegmentedControl {
+
+    var segmentCases: [HouseworkState] {
+        [.incomplete, .pendingApproval, .completed]
     }
 
 }
@@ -30,6 +38,7 @@ extension HouseworkState {
         case .incomplete: "未完了"
         case .pendingApproval: "承認待ち"
         case .completed: "完了"
+        case .notTodo: "やらない"
         }
     }
 

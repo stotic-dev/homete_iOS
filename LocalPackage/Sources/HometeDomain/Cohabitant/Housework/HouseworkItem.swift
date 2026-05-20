@@ -129,6 +129,23 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    public func updateNotTodo() -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .notTodo,
+            executorId: executorId,
+            executedAt: executedAt,
+            reviewerId: reviewerId,
+            approvedAt: approvedAt,
+            reviewerComment: reviewerComment,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
+        )
+    }
+
 }
 
 public extension HouseworkItem {

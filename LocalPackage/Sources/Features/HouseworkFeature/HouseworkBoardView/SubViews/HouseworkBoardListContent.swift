@@ -60,36 +60,6 @@ private extension HouseworkBoardListContent {
         } label: {
             HouseBoardListRow(houseworkItem: item)
         }
-        #if os(iOS)
-        .swipeActions(edge: .trailing) {
-            Button {
-                Task {
-                    await didSwipeDeleteItemAction(item)
-                }
-            } label: {
-                Text("削除")
-            }
-            .tint(.red)
-        }
-        #endif
-    }
-
-}
-
-// プレゼンテーションロジック
-
-private extension HouseworkBoardListContent {
-
-    func didSwipeDeleteItemAction(_ item: HouseworkBoardItem) async {
-        guard let cohabitantId = loginContext.cohabitantId else { return }
-        do {
-            try await houseworkListStore.remove(
-                target: item.originalItem,
-                cohabitantId: cohabitantId
-            )
-        } catch {
-            commonError = .init(error: error)
-        }
     }
 
 }

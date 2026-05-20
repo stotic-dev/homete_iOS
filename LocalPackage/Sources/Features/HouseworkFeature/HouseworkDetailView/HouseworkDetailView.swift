@@ -73,7 +73,8 @@ private extension HouseworkDetailView {
         do {
             try await houseworkListStore.remove(
                 target: item.originalItem,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                isRegistered: item.isRegistered
             )
             dismiss()
         } catch {

@@ -69,10 +69,10 @@ public final class HouseworkListStore {
         } else {
             // 登録されていない場合はドキュメントを新規作成する
             let updatedItem = target.updatePendingApproval(at: now, changer: executor)
-            try await register(
-                newItem: updatedItem,
-                cohabitantId: cohabitantId,
-                notification: .requestReviewMessage(houseworkTitle: target.title)
+            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+            pushNotificationWithAsync(
+                notification: .requestReviewMessage(houseworkTitle: target.title),
+                cohabitantId: cohabitantId
             )
         }
     }
@@ -116,9 +116,17 @@ public final class HouseworkListStore {
 
     public func remove(
         target: HouseworkItem,
-        cohabitantId: String
+        cohabitantId: String,
+        isRegistered: Bool
     ) async throws {
-        try await houseworkClient.removeItem(target, cohabitantId)
+        if isRegistered {
+            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                $0.updateNotTodo()
+            }
+        } else {
+            let updatedItem = target.updateNotTodo()
+            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+        }
     }
 
 }
@@ -154,12 +162,16 @@ private extension HouseworkListStore {
 
         if let notification {
             let content = notification()
-            Task.detached {
-                try await self.cohabitantPushNotificationClient.send(
-                    cohabitantId,
-                    content
-                )
-            }
+            pushNotificationWithAsync(notification: content, cohabitantId: cohabitantId)
+        }
+    }
+
+    func pushNotificationWithAsync(notification: PushNotificationContent, cohabitantId: String) {
+        Task.detached {
+            try await self.cohabitantPushNotificationClient.send(
+                cohabitantId,
+                notification
+            )
         }
     }
 
