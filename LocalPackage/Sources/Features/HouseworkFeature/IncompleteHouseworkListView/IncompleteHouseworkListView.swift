@@ -59,7 +59,7 @@ private extension IncompleteHouseworkListView {
 }
 
 #if DEBUG
-    #Preview("未完了あり") {
+    #Preview("IncompleteHouseworkListView_未完了あり") {
         let today = Date.previewDate(year: 2026, month: 5, day: 18)
         NavigationStack {
             IncompleteHouseworkListView()
@@ -89,7 +89,7 @@ private extension IncompleteHouseworkListView {
         .setupEnvironmentForPreview()
     }
 
-    #Preview("未完了なし") {
+    #Preview("IncompleteHouseworkListView_未完了なし") {
         let today = Date.previewDate(year: 2026, month: 5, day: 18)
         NavigationStack {
             IncompleteHouseworkListView()
