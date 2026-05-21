@@ -11,7 +11,7 @@ import SwiftUI
 
 struct HouseBoardListRow: View {
 
-    let houseworkItem: HouseworkItem
+    let houseworkItem: HouseworkBoardItem
 
     var body: some View {
         HStack(spacing: .space16) {
@@ -28,14 +28,10 @@ struct HouseBoardListRow: View {
 #if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     HouseBoardListRow(
-        houseworkItem: .init(
-            id: "1",
+        houseworkItem: .makeForPreview(
             title: "洗濯",
             point: 20,
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .distantPast
-            )
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
         )
     )
 }

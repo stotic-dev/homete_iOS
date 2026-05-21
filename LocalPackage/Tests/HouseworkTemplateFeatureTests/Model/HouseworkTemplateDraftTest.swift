@@ -349,7 +349,7 @@ extension HouseworkTemplateDraftTest.SaveDaysCase {
         let item = TestCase.makeItem(id: "1")
         let draft = HouseworkTemplateDraft(days: [.monday: [item]])
         let expected: [HouseworkTemplateDay] = [
-            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [item]),
+            .init(dayOfWeek: DayOfWeek.monday, items: [item]),
         ]
 
         // Act
@@ -369,8 +369,8 @@ extension HouseworkTemplateDraftTest.SaveDaysCase {
             .friday: [fridayItem],
         ])
         let expected: Set<HouseworkTemplateDay> = [
-            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [mondayItem]),
-            .init(dayOfWeek: DayOfWeek.friday.rawValue, items: [fridayItem]),
+            .init(dayOfWeek: DayOfWeek.monday, items: [mondayItem]),
+            .init(dayOfWeek: DayOfWeek.friday, items: [fridayItem]),
         ]
 
         // Act
@@ -402,32 +402,12 @@ extension HouseworkTemplateDraftTest.MakeCase {
         let mondayItem = TestCase.makeItem(id: "1")
         let fridayItem = TestCase.makeItem(id: "2")
         let template: [HouseworkTemplateDay] = [
-            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [mondayItem]),
-            .init(dayOfWeek: DayOfWeek.friday.rawValue, items: [fridayItem]),
+            .init(dayOfWeek: DayOfWeek.monday, items: [mondayItem]),
+            .init(dayOfWeek: DayOfWeek.friday, items: [fridayItem]),
         ]
         let expected = HouseworkTemplateDraft(days: [
             .monday: [mondayItem],
             .friday: [fridayItem],
-        ])
-
-        // Act
-        let actual = HouseworkTemplateDraft.make(template)
-
-        // Assert
-        #expect(actual == expected)
-    }
-
-    @Test("DayOfWeekに変換できないdayOfWeekは無視される")
-    func ignoresInvalidDayOfWeek() {
-        // Arrange
-        let validItem = TestCase.makeItem(id: "1")
-        let invalidItem = TestCase.makeItem(id: "2")
-        let template: [HouseworkTemplateDay] = [
-            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [validItem]),
-            .init(dayOfWeek: 99, items: [invalidItem]),
-        ]
-        let expected = HouseworkTemplateDraft(days: [
-            .monday: [validItem],
         ])
 
         // Act

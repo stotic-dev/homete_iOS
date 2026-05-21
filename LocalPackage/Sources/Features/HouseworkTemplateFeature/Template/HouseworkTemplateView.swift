@@ -429,7 +429,7 @@ private extension HouseworkTemplateView {
         .init(
             metadata: .init(templateId: "", name: ""),
             houseworkTemplate: [
-                .init(dayOfWeek: 1, items: []),
+                .init(dayOfWeek: .monday, items: []),
             ]
         )
     )
@@ -466,7 +466,7 @@ private extension HouseworkTemplateView {
         .init(
             metadata: .init(templateId: "", name: ""),
             houseworkTemplate: [
-                .init(dayOfWeek: 1, items: []),
+                .init(dayOfWeek: .monday, items: []),
             ]
         )
     )

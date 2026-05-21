@@ -37,7 +37,7 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_nil_when_filtered_items_is_not_empty() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .incomplete),
+                .makeForPreview(id: "1", state: .incomplete),
             ])
 
             // Act
@@ -51,8 +51,8 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_allCompletedOrPending_when_incomplete_is_empty_but_items_exist() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .pendingApproval),
-                .makeForTest(id: 2, state: .completed),
+                .makeForPreview(id: "1", state: .pendingApproval),
+                .makeForPreview(id: "2", state: .completed),
             ])
 
             // Act
@@ -70,8 +70,8 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_noPendingApproval_hasIncomplete_true_when_incomplete_exists() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .incomplete),
-                .makeForTest(id: 2, state: .completed),
+                .makeForPreview(id: "1", state: .incomplete),
+                .makeForPreview(id: "2", state: .completed),
             ])
 
             // Act
@@ -85,7 +85,7 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_noPendingApproval_hasIncomplete_false_when_incomplete_not_exists() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .completed),
+                .makeForPreview(id: "1", state: .completed),
             ])
 
             // Act
@@ -104,7 +104,7 @@ enum HouseworkBoardEmptyReasonTest {
             // Arrange
             // executorId が ownUserId と異なる → canReview = true
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .pendingApproval, executorId: "other"),
+                .makeForPreview(id: "1", state: .pendingApproval, executorId: "other"),
             ])
 
             // Act
@@ -119,8 +119,8 @@ enum HouseworkBoardEmptyReasonTest {
             // Arrange
             // executorId が ownUserId と同じ → canReview = false
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .pendingApproval, executorId: "user1"),
-                .makeForTest(id: 2, state: .pendingApproval, executorId: "user1"),
+                .makeForPreview(id: "1", state: .pendingApproval, executorId: "user1"),
+                .makeForPreview(id: "2", state: .pendingApproval, executorId: "user1"),
             ])
 
             // Act
@@ -134,7 +134,7 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_hasIncompleteHousework_when_no_pending_but_incomplete_exists() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .incomplete),
+                .makeForPreview(id: "1", state: .incomplete),
             ])
 
             // Act
@@ -148,8 +148,8 @@ enum HouseworkBoardEmptyReasonTest {
         func returns_canReviewPendingApproval_when_both_pending_and_incomplete_exist() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForTest(id: 1, state: .pendingApproval, executorId: "other"),
-                .makeForTest(id: 2, state: .incomplete),
+                .makeForPreview(id: "1", state: .pendingApproval, executorId: "other"),
+                .makeForPreview(id: "2", state: .incomplete),
             ])
 
             // Act

@@ -20,7 +20,7 @@ struct HouseworkDetailActionContent: View {
     @Binding var commonErrorContent: DomainErrorAlertContent
 
     let account: Account
-    let item: HouseworkItem
+    let item: HouseworkBoardItem
 
     var body: some View {
         VStack(spacing: .space16) {
@@ -35,6 +35,8 @@ struct HouseworkDetailActionContent: View {
                 }
             case .completed:
                 undoChangeStateButton()
+            case .notTodo:
+                EmptyView()
             }
         }
         .disabled(isLoading)
@@ -96,10 +98,11 @@ private extension HouseworkDetailActionContent {
 
         do {
             try await houseworkListStore.requestReview(
-                target: item,
+                target: item.originalItem,
                 now: .now,
                 executor: account.id,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                isRegistered: item.isRegistered
             )
         } catch {
             commonErrorContent = .init(error: error)
@@ -110,7 +113,10 @@ private extension HouseworkDetailActionContent {
         guard let cohabitantId else { return }
 
         do {
-            try await houseworkListStore.returnToIncomplete(target: item, cohabitantId: cohabitantId)
+            try await houseworkListStore.returnToIncomplete(
+                target: item.originalItem,
+                cohabitantId: cohabitantId
+            )
         } catch {
             commonErrorContent = .init(error: error)
         }
@@ -124,14 +130,10 @@ private extension HouseworkDetailActionContent {
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
         account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil),
-        item: .init(
-            id: "",
+        item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .distantFuture
-            )
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
         )
     )
     .environment(HouseworkListStore())

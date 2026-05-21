@@ -113,7 +113,63 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         target: inputHouseworkItem,
                         now: requestedAt,
                         executor: inputExecutor,
-                        cohabitantId: inputCohabitantId
+                        cohabitantId: inputCohabitantId,
+                        isRegistered: true
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("テンプレートから生成された家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
+    func requestReview_with_created_template() async {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        let expectedNotificationContent = PushNotificationContent(
+            title: "確認が必要な家事があります",
+            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        )
+        let requestedAt = Date()
+        let inputExecutor = "dummyExecutor"
+        let updatedHouseworkItem = inputHouseworkItem.updateProperties(
+            state: .pendingApproval,
+            executorId: inputExecutor,
+            executedAt: requestedAt
+        )
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(
+                        insertOrUpdateItemHandler: { item, cohabitantId in
+                            // Assert
+
+                            #expect(item == updatedHouseworkItem)
+                            #expect(cohabitantId == inputCohabitantId)
+                            confirmation()
+                        }
+                    ),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedNotificationContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    items: []
+                )
+
+                // Act
+
+                Task {
+                    try await store.requestReview(
+                        target: inputHouseworkItem,
+                        now: requestedAt,
+                        executor: inputExecutor,
+                        cohabitantId: inputCohabitantId,
+                        isRegistered: false
                     )
                 }
             }
@@ -167,10 +223,18 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(removeItemHandler: { item, cohabitantId in
+                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
                     // Assert
 
-                    #expect(item == inputHouseworkItem)
+                    let expected: HouseworkItem = .makeForTest(
+                        id: inputHouseworkItem.id,
+                        indexedDate: inputHouseworkItem.indexedDate.value,
+                        title: inputHouseworkItem.title,
+                        point: inputHouseworkItem.point,
+                        state: .notTodo,
+                        expiredAt: inputHouseworkItem.expiredAt
+                    )
+                    #expect(item == expected)
                     #expect(cohabitantId == inputCohabitantId)
                     confirmation()
                 }),
@@ -180,7 +244,48 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
             // Act
 
-            try await store.remove(target: inputHouseworkItem, cohabitantId: inputCohabitantId)
+            try await store.remove(
+                target: inputHouseworkItem,
+                cohabitantId: inputCohabitantId,
+                isRegistered: true
+            )
+        }
+    }
+
+    @Test("テンプレートから生成された家事削除時は家事を削除するAPIを実行する")
+    func remove_with_created_template() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                    // Assert
+
+                    let expected: HouseworkItem = .makeForTest(
+                        id: inputHouseworkItem.id,
+                        indexedDate: inputHouseworkItem.indexedDate.value,
+                        title: inputHouseworkItem.title,
+                        point: inputHouseworkItem.point,
+                        state: .notTodo,
+                        expiredAt: inputHouseworkItem.expiredAt
+                    )
+                    #expect(item == expected)
+                    #expect(cohabitantId == inputCohabitantId)
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .previewValue,
+                items: []
+            )
+
+            // Act
+
+            try await store.remove(
+                target: inputHouseworkItem,
+                cohabitantId: inputCohabitantId,
+                isRegistered: false
+            )
         }
     }
 

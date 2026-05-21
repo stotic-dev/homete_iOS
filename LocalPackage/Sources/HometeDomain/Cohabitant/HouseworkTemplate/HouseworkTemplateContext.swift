@@ -24,9 +24,8 @@ public struct HouseworkTemplateContext {
 
     /// 指定日付のテンプレートを返す
     public func templateOfDay(by date: Date, calendar: Calendar) -> HouseworkTemplateDay? {
-        houseworkTemplate.first {
-            calendar.component(.weekday, from: date) == $0.dayOfWeek
-        }
+        guard let dayOfWeek = DayOfWeek.of(date: date, calendar: calendar) else { return nil }
+        return houseworkTemplate.first { $0.dayOfWeek == dayOfWeek }
     }
 
 }
