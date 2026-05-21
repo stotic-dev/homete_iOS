@@ -32,7 +32,6 @@ struct RegisteredContent: View {
                         .redacted(reason: loadingState.isLoading ? .placeholder : [])
                     // TODO: テンプレート未設定の場合のみ表示する
                     PromoteHouseworkTemplateBanner()
-                    TimelineContent()
                 }
                 .padding(.horizontal, .space16)
             }
@@ -78,12 +77,12 @@ private extension RegisteredContent {
 }
 
 #if DEBUG
-    #Preview {
-        RegisteredContent()
-            .environment(ContributionStore())
-            .environment(CohabitantStore())
-            .environment(HouseworkListStore())
-            .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-            .setupEnvironmentForPreview()
-    }
+#Preview {
+    RegisteredContent()
+        .environment(ContributionStore())
+        .environment(CohabitantStore())
+        .environment(HouseworkListStore())
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+        .setupEnvironmentForPreview()
+}
 #endif
