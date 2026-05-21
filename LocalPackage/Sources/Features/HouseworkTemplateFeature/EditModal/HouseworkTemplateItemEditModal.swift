@@ -9,12 +9,65 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
+struct HouseworkTemplateItemEditModalScreen: View {
+
+    @State var input: TemplateItemEditInput = .initial(UUID())
+    @FocusState var isShowingKeyboard: Bool
+
+    let mode: EditMode
+    let onConfirm: (TemplateItemEditInput) -> Void
+
+    var body: some View {
+        HouseworkTemplateItemEditModal(
+            input: $input,
+            isShowingKeyboard: _isShowingKeyboard,
+            mode: mode,
+            onConfirm: onConfirm
+        )
+        .background {
+            if isShowingKeyboard {
+                Color.clear
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        tappedBackgroundArea()
+                    }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .onAppear {
+            onAppear()
+        }
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension HouseworkTemplateItemEditModalScreen {
+
+    func onAppear() {
+        if case let .edit(before) = mode {
+            // 編集時は元の入力値を表示しておく
+            input = before
+        } else {
+            // 新規作成時はテキストフィールドを最初から表示しておく
+            isShowingKeyboard = true
+        }
+    }
+
+    func tappedBackgroundArea() {
+        isShowingKeyboard = false
+    }
+
+}
+
 /// 家事追加・編集モーダル（ハーフモーダル / 新規・編集兼用）。
 struct HouseworkTemplateItemEditModal: View {
 
     @Environment(\.dismiss) var dismiss
 
-    @State var input: TemplateItemEditInput = .initial(UUID())
+    @Binding var input: TemplateItemEditInput
     @FocusState var isShowingKeyboard: Bool
 
     let mode: EditMode
@@ -29,18 +82,7 @@ struct HouseworkTemplateItemEditModal: View {
                 Spacer()
             }
             .padding(.horizontal, .space16)
-            .padding(.top, .space24)
-            .padding(.bottom, .space24)
-            .background {
-                if isShowingKeyboard {
-                    Color.clear
-                        .ignoresSafeArea()
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            isShowingKeyboard = false
-                        }
-                }
-            }
+            .padding(.vertical, .space24)
             .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
@@ -52,7 +94,6 @@ struct HouseworkTemplateItemEditModal: View {
                 trailingNavigationItem()
             }
         }
-        .presentationDetents([.medium, .large])
     }
 
 }
@@ -106,10 +147,12 @@ private extension HouseworkTemplateItemEditModal {
             tappedConfirmButton()
         }
         .foregroundStyle(.onPrimary1)
-        .disabled(!input.canConfirm)
+        .disabled(!input.canConfirm(mode))
     }
 
 }
+
+// MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateItemEditModal {
 
@@ -122,18 +165,22 @@ private extension HouseworkTemplateItemEditModal {
 
 #if DEBUG
 #Preview("HouseworkTemplateItemEditModal_未入力") {
-    HouseworkTemplateItemEditModal(mode: .create) { _ in }
+    HouseworkTemplateItemEditModal(
+        input: .constant(.initial(UUID())),
+        mode: .create
+    ) { _ in }
 }
 
 #Preview("HouseworkTemplateItemEditModal_入力済み") {
+    let beforeInput = TemplateItemEditInput(
+        itemId: .init(id: "1"),
+        title: "hoge",
+        point: 10,
+        days: [.monday, .friday]
+    )
     HouseworkTemplateItemEditModal(
-        input: .init(
-            itemId: .init(id: "1"),
-            title: "hoge",
-            point: 10,
-            days: [.monday, .friday]
-        ),
-        mode: .create
+        input: .constant(beforeInput),
+        mode: .edit(before: beforeInput)
     ) { _ in }
 }
 #endif

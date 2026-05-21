@@ -36,12 +36,15 @@ public struct HomeView: View {
                        let cohabitantStore,
                        let houseworkTemplateListStore {
                         RegisteredContent()
-                            .environment(contributionStore)
-                            .environment(cohabitantStore)
-                            .environment(houseworkTemplateListStore)
                             .task {
                                 await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
                             }
+                            .sheet(isPresented: $isShowSetting) {
+                                router.resolve(.setting)
+                            }
+                            .environment(contributionStore)
+                            .environment(cohabitantStore)
+                            .environment(houseworkTemplateListStore)
                     } else if !loginContext.hasCohabitant {
                         NotRegisteredContent(
                             isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
@@ -49,13 +52,13 @@ public struct HomeView: View {
                         .task {
                             await didAppearNotRegisteredContent()
                         }
+                        .sheet(isPresented: $isShowSetting) {
+                            router.resolve(.setting)
+                        }
                     }
                 }
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
                     router.resolve(.cohabitantRegistration)
-                }
-                .sheet(isPresented: $isShowSetting) {
-                    router.resolve(.setting)
                 }
                 .trailingToolbarItem {
                     NavigationBarButton(label: .settings) {

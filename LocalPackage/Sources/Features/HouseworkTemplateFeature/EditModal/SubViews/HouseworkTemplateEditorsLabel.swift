@@ -11,22 +11,22 @@ import SwiftUI
 struct HouseworkTemplateEditorsLabel: View {
 
     @Binding var bannerDismissedInSession: Bool
-    let editorNames: [String]
+    let activeEditors: [TemplateActiveEditor]
 
     var body: some View {
-        if editorNames.isEmpty {
+        if activeEditors.isEmpty {
             EmptyView()
         } else {
             VStack(spacing: .space8) {
                 HStack(spacing: .space8) {
                     Image(systemName: "person.fill")
                         .foregroundStyle(.onSubSurface)
-                    Text("編集中: \(editorNames.joined(separator: ", "))")
+                    Text("編集中: \(activeEditors.map(\.userName).joined(separator: ", "))")
                         .font(with: .caption)
                         .foregroundStyle(.onSubSurface)
                     Spacer(minLength: .zero)
                 }
-                if !editorNames.isEmpty, !bannerDismissedInSession {
+                if !bannerDismissedInSession {
                     HouseworkTemplateConflictBanner {
                         withAnimation {
                             bannerDismissedInSession = true
@@ -44,11 +44,14 @@ struct HouseworkTemplateEditorsLabel: View {
     VStack(alignment: .leading) {
         HouseworkTemplateEditorsLabel(
             bannerDismissedInSession: .constant(false),
-            editorNames: ["Aさん", "Bさん"]
+            activeEditors: [
+                .init(id: "1", userName: "Aさん"),
+                .init(id: "2", userName: "Bさん"),
+            ]
         )
         HouseworkTemplateEditorsLabel(
             bannerDismissedInSession: .constant(false),
-            editorNames: []
+            activeEditors: []
         )
     }
     .padding()

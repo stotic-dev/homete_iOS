@@ -11,24 +11,27 @@ import SwiftUI
 
 struct HouseworkTemplateView: View {
 
+    @Environment(HouseworkTemplateListStore.self) var templateListStore
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
+    @Environment(\.loginContext.cohabitantId) var cohabitantId
 
-    @State var draft: HouseworkTemplateDraft = .init()
     @State var presentingAddModal = false
     @State var presentingEditModal: HouseworkTemplateItem?
-    @State var presentingCancelAlert = false
+    @State var presentingConflictDraftAlert = false
     @State var presentingDetailItem: HouseworkTemplateItem?
     @State var bannerDismissedInSession = false
+    @State var presentingDismissAlert = false
+    @State var presentingResetAlert = false
 
-    let hasTemplate: Bool
-    let initialDraft: HouseworkTemplateDraft
-    /// 編集中の他ユーザー名（自分以外、アクティブなもの）
-    let activeOtherEditorNames: [String]
+    @Binding var initialDraft: HouseworkTemplateDraft?
+    @Binding var draft: HouseworkTemplateDraft
+    @Binding var editorContext: TemplateEditorContext
 
     var body: some View {
         ZStack {
-            if hasTemplate {
+            if let templateId = templateListStore.selectedTemplateId,
+               let initialDraft {
                 ZStack {
                     mainContent()
                     addItemButton()
@@ -36,9 +39,20 @@ struct HouseworkTemplateView: View {
                         .padding(.trailing, .space24)
                         .padding(.bottom, .space8)
                 }
+                #if os(iOS)
+                .toolbar {
+                    trailingNavigationItem(
+                        templateId: templateId,
+                        initialDraft: initialDraft,
+                        isEditing: initialDraft.hasUnsavedChanges(comparedTo: draft)
+                    )
+                }
+                #endif
             } else {
                 HouseworkTemplateEmptyView {
-                    // TODO: テンプレート作成処理
+                    Task {
+                        await tappedCreateTemplateButton()
+                    }
                 }
             }
         }
@@ -47,23 +61,20 @@ struct HouseworkTemplateView: View {
         .leadingToolbarItem {
             leadingNavigationItem()
         }
-        .trailingToolbarItem {
-            trailingNavigationItem()
-        }
         .safeAreaInset(edge: .top) {
             HouseworkTemplateEditorsLabel(
                 bannerDismissedInSession: $bannerDismissedInSession,
-                editorNames: activeOtherEditorNames
+                activeEditors: editorContext.currentActiveEditors
             )
             .padding(.horizontal, .space16)
         }
         .sheet(isPresented: $presentingAddModal) {
-            HouseworkTemplateItemEditModal(mode: .create) { input in
+            HouseworkTemplateItemEditModalScreen(mode: .create) { input in
                 tappedCreateItemButton(input: input)
             }
         }
         .sheet(item: $presentingEditModal) { item in
-            HouseworkTemplateItemEditModal(
+            HouseworkTemplateItemEditModalScreen(
                 mode: .edit(before: .init(
                     item: item,
                     selectedDays: Set(draft.registeredDays(for: item.id))
@@ -84,11 +95,30 @@ struct HouseworkTemplateView: View {
                 }
             )
         }
-        .alert("変更を破棄します。よろしいですか？", isPresented: $presentingCancelAlert) {
+        .onChange(of: initialDraft) {
+            onChangeInitialDraft()
+        }
+        .alert("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？", isPresented: $presentingConflictDraftAlert) {
             Button("破棄", role: .destructive) {
                 tappedDiscardChangesAlertButton()
             }
             Button("キャンセル", role: .cancel) {}
+        }
+        .alert("変更内容はまだ確定していません", isPresented: $presentingDismissAlert) {
+            Button("閉じる", role: .destructive) {
+                tappedDismissAlertButton()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。")
+        }
+        .alert("編集前の状態に戻しますか？", isPresented: $presentingResetAlert) {
+            Button("戻す", role: .destructive) {
+                tappedResetAlertButton()
+            }
+            Button("キャンセル", role: .cancel) {}
+        } message: {
+            Text("現在の編集内容は破棄されます。")
         }
     }
 
@@ -148,14 +178,12 @@ private extension HouseworkTemplateView {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
     func itemRow(_ item: HouseworkTemplateItem, in day: DayOfWeek) -> some View {
-        let row = HouseworkTemplateItemRow(item: item)
+        HouseworkTemplateItemRow(item: item)
             .contentShape(Rectangle())
             .onTapGesture {
                 presentingDetailItem = item
             }
-        row
             .draggable(item.id.id)
             .contextMenu {
                 Button("編集") {
@@ -192,12 +220,36 @@ private extension HouseworkTemplateView {
         .foregroundStyle(.onSurface)
     }
 
-    func trailingNavigationItem() -> some View {
-        NavigationBarPrimaryActionButton(systemImage: "checkmark") {
-            tappedSaveButton()
+    #if os(iOS)
+    @ToolbarContentBuilder
+    func trailingNavigationItem(
+        templateId: String,
+        initialDraft: HouseworkTemplateDraft,
+        isEditing: Bool
+    ) -> some ToolbarContent {
+        if draft.hasUnsavedChanges(comparedTo: initialDraft) {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    presentingResetAlert = true
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .foregroundStyle(.onSurface)
+            }
         }
-        .disabled(!draft.hasUnsavedChanges(comparedTo: initialDraft))
+        if #available(iOS 26.0, *) {
+            ToolbarSpacer()
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            NavigationBarPrimaryActionButton(systemImage: "checkmark") {
+                Task {
+                    await tappedSaveButton(templateId: templateId)
+                }
+            }
+            .disabled(!isEditing)
+        }
     }
+    #endif
 
 }
 
@@ -224,19 +276,74 @@ private extension HouseworkTemplateView {
     }
 
     func tappedCancelButton() {
+        if initialDraft?.hasUnsavedChanges(comparedTo: draft) == true {
+            // 保存していない変更内容がある場合に、閉じようとした時はアラートを表示する
+            presentingDismissAlert = true
+        } else {
+            dismiss()
+        }
+    }
+
+    func tappedDismissAlertButton() {
         dismiss()
     }
 
     func tappedDiscardChangesAlertButton() {
+        guard let initialDraft else { return }
         // コンフリクトしたら、最新のテンプレート内容を再ロードして、編集内容は破棄する
-        draft = initialDraft
+        withAnimation {
+            draft = initialDraft
+        }
     }
 
-    func tappedSaveButton() {
-        // TODO: 後続で Store 経由の保存処理に置き換える。
+    func tappedResetAlertButton() {
+        guard let initialDraft else { return }
+        withAnimation {
+            draft = initialDraft
+        }
+    }
+
+    func tappedSaveButton(templateId: String) async {
+        guard let cohabitantId else { return }
+        do {
+            try await templateListStore.saveDays(
+                draft.saveDays,
+                templateId: templateId,
+                cohabitantId: cohabitantId,
+                currentVersion: editorContext.currentTemplateVersion
+            )
+            // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
+            editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
+            initialDraft = draft
+        } catch {
+            // TODO: エラーハンドリング
+        }
+    }
+
+    func tappedCreateTemplateButton() async {
+        guard let cohabitantId else { return }
+
+        do {
+            try await templateListStore.createTemplate(
+                templateId: UUID().uuidString,
+                name: "default",
+                cohabitantId: cohabitantId
+            )
+        } catch {
+            // TODO: エラーハンドリング
+        }
+    }
+
+    func onChangeInitialDraft() {
+        // 現在の編集内容と差分がある場合はコンフリクトとして処理する
+        guard let initialDraft,
+              initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
+        presentingConflictDraftAlert = true
     }
 
 }
+
+// MARK: - Preview
 
 #if DEBUG
 #Preview("HouseworkTemplateView_閲覧モード") {
@@ -312,12 +419,21 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            draft: .init(days: templateData),
-            hasTemplate: true,
-            initialDraft: .init(days: templateData),
-            activeOtherEditorNames: []
+            initialDraft: .constant(.init(days: templateData)),
+            draft: .constant(.init(days: templateData)),
+            editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
         )
     }
+    .environment(
+        \.houseworkTemplateContext,
+        .init(
+            metadata: .init(templateId: "", name: ""),
+            houseworkTemplate: [
+                .init(dayOfWeek: 1, items: []),
+            ]
+        )
+    )
+    .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .apply(theme: .init())
 }
 
@@ -334,12 +450,27 @@ private extension HouseworkTemplateView {
     ]
     NavigationStack {
         HouseworkTemplateView(
-            draft: .init(),
-            hasTemplate: true,
-            initialDraft: .init(days: templateData),
-            activeOtherEditorNames: ["Aさん", "Bさん"]
+            initialDraft: .constant(.init(days: templateData)),
+            draft: .constant(.init()),
+            editorContext: .constant(.init(
+                currentActiveEditors: [
+                    .init(id: "1", userName: "Aさん"),
+                    .init(id: "2", userName: "Bさん"),
+                ],
+                currentTemplateVersion: .zero
+            ))
         )
     }
+    .environment(
+        \.houseworkTemplateContext,
+        .init(
+            metadata: .init(templateId: "", name: ""),
+            houseworkTemplate: [
+                .init(dayOfWeek: 1, items: []),
+            ]
+        )
+    )
+    .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .apply(theme: .init())
 }
 #endif

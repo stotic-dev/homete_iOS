@@ -5,12 +5,13 @@
 //  Created by Taichi Sato on 2026/05/16.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @testable import HometeDomain
 @testable import HouseworkTemplateFeature
 import Testing
 
-// swiftlint:disable:next convenience_type
 enum HouseworkTemplateDraftTest {
 
     static func makeItem(
@@ -34,6 +35,8 @@ enum HouseworkTemplateDraftTest {
     struct ReplaceItemCase {}
     struct RemoveItemCase {}
     struct MoveItemCase {}
+    struct SaveDaysCase {}
+    struct MakeCase {}
 
 }
 
@@ -301,6 +304,117 @@ extension HouseworkTemplateDraftTest.MoveItemCase {
 
         // Assert
         #expect(draft == expected)
+    }
+
+}
+
+extension HouseworkTemplateDraftTest.SaveDaysCase {
+
+    @Test("単一曜日のアイテムから、DayOfWeekのrawValueをdayOfWeekに持つ配列を返す")
+    func returnsSingleDay() {
+        // Arrange
+        let item = TestCase.makeItem(id: "1")
+        let draft = HouseworkTemplateDraft(days: [.monday: [item]])
+        let expected: [HouseworkTemplateDay] = [
+            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [item]),
+        ]
+
+        // Act
+        let actual = draft.saveDays
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("複数曜日のアイテムから、それぞれをHouseworkTemplateDayに変換した配列を返す")
+    func returnsMultipleDays() {
+        // Arrange
+        let mondayItem = TestCase.makeItem(id: "1")
+        let fridayItem = TestCase.makeItem(id: "2")
+        let draft = HouseworkTemplateDraft(days: [
+            .monday: [mondayItem],
+            .friday: [fridayItem],
+        ])
+        let expected: Set<HouseworkTemplateDay> = [
+            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [mondayItem]),
+            .init(dayOfWeek: DayOfWeek.friday.rawValue, items: [fridayItem]),
+        ]
+
+        // Act
+        let actual = Set(draft.saveDays)
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("空のdraftでは空配列を返す")
+    func returnsEmptyWhenNoDays() {
+        // Arrange
+        let draft = HouseworkTemplateDraft(days: [:])
+
+        // Act
+        let actual = draft.saveDays
+
+        // Assert
+        #expect(actual == [])
+    }
+
+}
+
+extension HouseworkTemplateDraftTest.MakeCase {
+
+    @Test("HouseworkTemplateDayの配列から、曜日をキーとしたDraftを生成する")
+    func createsDraftFromTemplates() {
+        // Arrange
+        let mondayItem = TestCase.makeItem(id: "1")
+        let fridayItem = TestCase.makeItem(id: "2")
+        let template: [HouseworkTemplateDay] = [
+            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [mondayItem]),
+            .init(dayOfWeek: DayOfWeek.friday.rawValue, items: [fridayItem]),
+        ]
+        let expected = HouseworkTemplateDraft(days: [
+            .monday: [mondayItem],
+            .friday: [fridayItem],
+        ])
+
+        // Act
+        let actual = HouseworkTemplateDraft.make(template)
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("DayOfWeekに変換できないdayOfWeekは無視される")
+    func ignoresInvalidDayOfWeek() {
+        // Arrange
+        let validItem = TestCase.makeItem(id: "1")
+        let invalidItem = TestCase.makeItem(id: "2")
+        let template: [HouseworkTemplateDay] = [
+            .init(dayOfWeek: DayOfWeek.monday.rawValue, items: [validItem]),
+            .init(dayOfWeek: 99, items: [invalidItem]),
+        ]
+        let expected = HouseworkTemplateDraft(days: [
+            .monday: [validItem],
+        ])
+
+        // Act
+        let actual = HouseworkTemplateDraft.make(template)
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("空の配列から空のDraftを生成する")
+    func createsEmptyDraftFromEmptyTemplate() {
+        // Arrange
+        let template: [HouseworkTemplateDay] = []
+        let expected = HouseworkTemplateDraft(days: [:])
+
+        // Act
+        let actual = HouseworkTemplateDraft.make(template)
+
+        // Assert
+        #expect(actual == expected)
     }
 
 }

@@ -12,7 +12,6 @@ import Testing
 
 private typealias TestCase = HouseworkTemplateEditStoreTest
 
-// swiftlint:disable:next convenience_type
 enum HouseworkTemplateEditStoreTest {
 
     static let inputCohabitantId = "cohabitantId"
@@ -125,6 +124,66 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
             }
         }
         editorsContinuation.yield(expectedEditors)
+        await waiter.value
+        #expect(store.editors == expectedEditors)
+
+        // Cleanup
+
+        editorsContinuation.finish()
+        await store.stopEditing(
+            templateId: TestCase.inputTemplateId,
+            cohabitantId: TestCase.inputCohabitantId,
+            userId: TestCase.inputUserId
+        )
+    }
+
+    @Test("Editorsリスナーで受け取った値のうち、自身のuserIdに一致するEditorはeditorsから除外される")
+    func startEditing_excludesOwnEditorFromListener() async throws {
+        // Arrange
+
+        let now = Date()
+        let otherEditor = HouseworkTemplateEditor(
+            userId: "otherUser",
+            updatedAt: now,
+            expiredAt: now.addingTimeInterval(300)
+        )
+        let ownEditor = HouseworkTemplateEditor(
+            userId: TestCase.inputUserId,
+            updatedAt: now,
+            expiredAt: now.addingTimeInterval(300)
+        )
+        let expectedEditors: [HouseworkTemplateEditor] = [otherEditor]
+        let (editorsStream, editorsContinuation) = AsyncStream<[HouseworkTemplateEditor]>.makeStream()
+        let store = HouseworkTemplateEditStore(
+            houseworkTemplateClient: .init(
+                addEditorsSnapshotListener: { _, _, _ in editorsStream },
+                addMetaVersionSnapshotListener: { _, _, _ in
+                    AsyncStream { $0.finish() }
+                }
+            )
+        )
+
+        // Act
+
+        try await store.startEditing(
+            templateId: TestCase.inputTemplateId,
+            cohabitantId: TestCase.inputCohabitantId,
+            userId: TestCase.inputUserId,
+            now: now
+        )
+
+        // Assert
+
+        let waiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.editors
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        editorsContinuation.yield([otherEditor, ownEditor])
         await waiter.value
         #expect(store.editors == expectedEditors)
 

@@ -12,7 +12,7 @@ public struct HouseworkTemplateEditor: Identifiable, Codable, Sendable, Equatabl
     }
 
     /// updatedAt が5分以上古ければ離席済みと判断する
-    func isActive(now: Date) -> Bool {
+    public func isActive(now: Date) -> Bool {
         now.timeIntervalSince(updatedAt) < 5 * 60
     }
 

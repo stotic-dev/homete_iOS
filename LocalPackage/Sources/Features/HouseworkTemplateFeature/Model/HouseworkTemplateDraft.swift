@@ -13,8 +13,24 @@ struct HouseworkTemplateDraft: Equatable {
 
     private(set) var days: [DayOfWeek: [HouseworkTemplateItem]]
 
+    /// 保存するテンプレートのモデルを返す
+    var saveDays: [HouseworkTemplateDay] {
+        days.map { .init(dayOfWeek: $0.key.rawValue, items: $0.value) }
+    }
+
     init(days: [DayOfWeek: [HouseworkTemplateItem]] = [:]) {
         self.days = days
+    }
+
+    /// 入力されたテンプレートから編集用のモデルを生成
+    static func make(_ template: [HouseworkTemplateDay]) -> Self {
+        let days: [DayOfWeek: [HouseworkTemplateItem]] = template.reduce([:]) { partialResult, day in
+            guard let dayOfWeek = DayOfWeek(rawValue: day.dayOfWeek) else { return partialResult }
+            var partialResult = partialResult
+            partialResult.updateValue(day.items, forKey: dayOfWeek)
+            return partialResult
+        }
+        return .init(days: days)
     }
 
     /// 指定された曜日に登録されているアイテム一覧を返す

@@ -9,14 +9,16 @@ import Foundation
 
 public struct HouseworkTemplateContext {
 
+    public let metadata: HouseworkTemplateMeta?
     public let houseworkTemplate: [HouseworkTemplateDay]
 
     /// テンプレートが設定されているかどうか
     public var hasTemplate: Bool {
-        !houseworkTemplate.isEmpty
+        metadata != nil
     }
 
-    public init(houseworkTemplate: [HouseworkTemplateDay]) {
+    public init(metadata: HouseworkTemplateMeta?, houseworkTemplate: [HouseworkTemplateDay]) {
+        self.metadata = metadata
         self.houseworkTemplate = houseworkTemplate
     }
 

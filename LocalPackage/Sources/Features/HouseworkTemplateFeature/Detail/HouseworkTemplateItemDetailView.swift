@@ -12,10 +12,11 @@ import SwiftUI
 struct HouseworkTemplateItemDetailView: View {
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.now) var now
 
     @State var isPresentingEditModal = false
+    @State var item: HouseworkTemplateItem
 
-    let item: HouseworkTemplateItem
     let registeredDays: [DayOfWeek]
     let onEdit: (TemplateItemEditInput) -> Void
     let onDelete: () -> Void
@@ -37,19 +38,21 @@ struct HouseworkTemplateItemDetailView: View {
             editingButton()
         }
         .sheet(isPresented: $isPresentingEditModal) {
-            HouseworkTemplateItemEditModal(
+            HouseworkTemplateItemEditModalScreen(
                 mode: .edit(before: .init(
                     item: item,
                     selectedDays: .init(registeredDays)
                 )),
                 onConfirm: { input in
-                    onEdit(input)
+                    onEdited(input)
                 }
             )
         }
     }
 
 }
+
+// MARK: - UI定義
 
 private extension HouseworkTemplateItemDetailView {
 
@@ -83,16 +86,40 @@ private extension HouseworkTemplateItemDetailView {
     func editingButton() -> some View {
         HStack(spacing: .space8) {
             Button {
-                isPresentingEditModal = true
+                tappedEditButton()
             } label: {
                 Image(systemName: "pencil")
                     .foregroundStyle(.onSurface)
             }
             NavigationBarButton(label: .delete) {
-                onDelete()
-                dismiss()
+                tappedDeleteButton()
             }
         }
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension HouseworkTemplateItemDetailView {
+
+    func tappedDeleteButton() {
+        onDelete()
+        dismiss()
+    }
+
+    func tappedEditButton() {
+        isPresentingEditModal = true
+    }
+
+    func onEdited(_ editedInput: TemplateItemEditInput) {
+        item = .init(
+            id: editedInput.itemId,
+            title: editedInput.title,
+            point: Int(editedInput.point),
+            updatedAt: now
+        )
+        onEdit(editedInput)
     }
 
 }
