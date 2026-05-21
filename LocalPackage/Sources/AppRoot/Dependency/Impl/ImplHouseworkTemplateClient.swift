@@ -41,7 +41,7 @@ extension HouseworkTemplateClient {
                 let daysRef = Firestore.firestore()
                     .houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
                 for day in days {
-                    let dayRef = daysRef.document("\(day.dayOfWeek)")
+                    let dayRef = daysRef.document("\(day.dayOfWeek.rawValue)")
                     try transaction.setData(from: day, forDocument: dayRef)
                 }
                 let updatedDocument = HouseworkTemplateMetaDocument(

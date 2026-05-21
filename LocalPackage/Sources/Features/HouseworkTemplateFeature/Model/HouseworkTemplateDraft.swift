@@ -15,7 +15,7 @@ struct HouseworkTemplateDraft: Equatable {
 
     /// 保存するテンプレートのモデルを返す
     var saveDays: [HouseworkTemplateDay] {
-        days.map { .init(dayOfWeek: $0.key.rawValue, items: $0.value) }
+        days.map { .init(dayOfWeek: $0.key, items: $0.value) }
     }
 
     init(days: [DayOfWeek: [HouseworkTemplateItem]] = [:]) {
@@ -24,11 +24,8 @@ struct HouseworkTemplateDraft: Equatable {
 
     /// 入力されたテンプレートから編集用のモデルを生成
     static func make(_ template: [HouseworkTemplateDay]) -> Self {
-        let days: [DayOfWeek: [HouseworkTemplateItem]] = template.reduce([:]) { partialResult, day in
-            guard let dayOfWeek = DayOfWeek(rawValue: day.dayOfWeek) else { return partialResult }
-            var partialResult = partialResult
-            partialResult.updateValue(day.items, forKey: dayOfWeek)
-            return partialResult
+        let days: [DayOfWeek: [HouseworkTemplateItem]] = template.reduce(into: [:]) { partialResult, day in
+            partialResult.updateValue(day.items, forKey: day.dayOfWeek)
         }
         return .init(days: days)
     }

@@ -48,7 +48,7 @@ struct HouseworkTemplateDayTest {
     func applyTemplate() throws {
         // Arrange
         let template = HouseworkTemplateDay(
-            dayOfWeek: 1,
+            dayOfWeek: .monday,
             items: inputTemplateItems
         )
 

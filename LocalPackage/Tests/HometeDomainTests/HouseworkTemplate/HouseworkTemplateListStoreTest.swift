@@ -47,7 +47,7 @@ struct HouseworkTemplateListStoreTest {
 
         let expectedDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "id"), title: "ゴミ出し", point: 10, updatedAt: .now)]
             ),
         ]
@@ -114,21 +114,21 @@ struct HouseworkTemplateListStoreTest {
 
         let initialDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "old"), title: "古い家事", point: 1, updatedAt: .now)]
             ),
             .init(
-                dayOfWeek: 3,
+                dayOfWeek: .wednesday,
                 items: [.init(id: .init(id: "wed"), title: "水曜", point: 2, updatedAt: .now)]
             ),
         ]
         let inputDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "new"), title: "新しい家事", point: 5, updatedAt: .now)]
             ),
             .init(
-                dayOfWeek: 5,
+                dayOfWeek: .friday,
                 items: [.init(id: .init(id: "fri"), title: "金曜", point: 3, updatedAt: .now)]
             ),
         ]
@@ -174,7 +174,7 @@ struct HouseworkTemplateListStoreTest {
 
         let initialDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "mon"), title: "月曜", point: 1, updatedAt: .now)]
             ),
         ]
@@ -208,13 +208,13 @@ struct HouseworkTemplateListStoreTest {
 
         let initialDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "mon"), title: "月曜", point: 1, updatedAt: .now)]
             ),
         ]
         let inputDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "new"), title: "新", point: 9, updatedAt: .now)]
             ),
         ]
@@ -244,7 +244,7 @@ struct HouseworkTemplateListStoreTest {
 
         let expectedDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 2,
+                dayOfWeek: .tuesday,
                 items: [.init(id: .init(id: "id"), title: "火曜", point: 4, updatedAt: .now)]
             ),
         ]
@@ -318,7 +318,7 @@ extension HouseworkTemplateListStoreTest {
         let inputName = "新しいテンプレ"
         let initialDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "old"), title: "古い家事", point: 1, updatedAt: .now)]
             ),
         ]
@@ -353,7 +353,7 @@ extension HouseworkTemplateListStoreTest {
         ]
         let expectedDays: [HouseworkTemplateDay] = [
             .init(
-                dayOfWeek: 1,
+                dayOfWeek: .monday,
                 items: [.init(id: .init(id: "id"), title: "ゴミ出し", point: 10, updatedAt: .now)]
             ),
         ]
