@@ -12,17 +12,14 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case taskTemplate
     case privacyPolicy
     case license
-    
+
     static func displayItems(_ isRegisteredGroup: Bool) -> [Self] {
-        
-        Self.allCases.filter {
-            
+        allCases.filter {
             if $0 == .taskTemplate {
                 // テンプレート設定項目はグループ参加状態の時のみ表示する
-                return isRegisteredGroup
+                isRegisteredGroup
             } else {
-                
-                return true
+                true
             }
         }
     }

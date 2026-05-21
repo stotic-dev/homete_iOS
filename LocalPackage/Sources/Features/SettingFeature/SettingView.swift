@@ -14,6 +14,7 @@ public struct SettingView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext) var loginContext
+    @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.dismiss) var dismiss
     @Environment(\.routeResolver) var router
     @LoadingState var loadingState
@@ -30,6 +31,7 @@ public struct SettingView: View {
                 VStack(spacing: .space24) {
                     Text(loginContext.account.userName)
                         .font(with: .headLineM)
+                    GroupMemberListView(members: cohabitantMembers.others)
                     Spacer()
                         .frame(height: .space16)
                     VStack(spacing: .zero) {
@@ -143,6 +145,17 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
 }
 
 #Preview("SettingView_グループ登録済み") {
