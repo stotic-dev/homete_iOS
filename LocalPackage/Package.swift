@@ -58,7 +58,7 @@ let package = Package(
 
         feature(name: "AuthFeature"),
         feature(name: "SettingFeature"),
-        feature(name: "HomeFeature", extraDeps: ["ContributionFeature"]),
+        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
         feature(name: "HouseworkFeature"),
         feature(name: "ContributionFeature"),
 
