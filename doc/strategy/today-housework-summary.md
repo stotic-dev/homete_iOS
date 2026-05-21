@@ -145,8 +145,8 @@ TodayHouseworkSummary
 
 ### Phase 4: 組み込み
 
-- [ ] **T-7** `RegisteredContent` への組み込み + `HouseworkListStore` の環境注入経路追加
-- [ ] **T-8** `HomeView` の引数追加と `AppTabView` 側の呼び出し更新
+- [x] **T-7** `RegisteredContent` への組み込み + `HouseworkListStore` の環境注入経路追加
+- [x] **T-8** `HomeView` の引数追加と `AppTabView` 側の呼び出し更新
 
 ### Phase 5: 検証
 

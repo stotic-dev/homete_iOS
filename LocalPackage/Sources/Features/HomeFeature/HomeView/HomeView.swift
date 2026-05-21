@@ -8,44 +8,39 @@
 import ContributionFeature
 import HometeDomain
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 
 public struct HomeView: View {
 
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
-    @Environment(\.adComponentResolver) var adComponentResolver
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
+    @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
     let cohabitantStore: CohabitantStore?
+    let houseworkListStore: HouseworkListStore?
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $registeredContentNavigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    adComponentResolver.resolve(.banner(.dashboardTop))
-                        .frame(height: 150)
                     if loginContext.hasCohabitant,
                        let contributionStore,
-                       let cohabitantStore {
-                        RegisteredContent()
-                            .environment(contributionStore)
-                            .environment(cohabitantStore)
-                            .task {
-                                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
-                            }
-                    } else if !loginContext.hasCohabitant {
-                        NotRegisteredContent(
-                            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                       let cohabitantStore,
+                       let houseworkListStore {
+                        registeredContent(
+                            contributionStore: contributionStore,
+                            cohabitantStore: cohabitantStore,
+                            houseworkListStore: houseworkListStore
                         )
-                        .task {
-                            await didAppearNotRegisteredContent()
-                        }
+                    } else if !loginContext.hasCohabitant {
+                        notRegisteredContent()
                     }
                 }
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
@@ -69,12 +64,42 @@ public extension HomeView {
 
     static func make(
         contributionStore: ContributionStore?,
-        cohabitantStore: CohabitantStore?
+        cohabitantStore: CohabitantStore?,
+        houseworkListStore: HouseworkListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
-            cohabitantStore: cohabitantStore
+            cohabitantStore: cohabitantStore,
+            houseworkListStore: houseworkListStore
         )
+    }
+
+}
+
+private extension HomeView {
+
+    func registeredContent(
+        contributionStore: ContributionStore,
+        cohabitantStore: CohabitantStore,
+        houseworkListStore: HouseworkListStore
+    ) -> some View {
+        RegisteredContent()
+            .environment(contributionStore)
+            .environment(cohabitantStore)
+            .environment(houseworkListStore)
+            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
+            .task {
+                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+            }
+    }
+
+    func notRegisteredContent() -> some View {
+        NotRegisteredContent(
+            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+        )
+        .task {
+            await didAppearNotRegisteredContent()
+        }
     }
 
 }

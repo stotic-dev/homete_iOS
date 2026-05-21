@@ -52,7 +52,8 @@ private extension AppTabView {
                     ) {
                         HomeView.make(
                             contributionStore: contributionStore,
-                            cohabitantStore: cohabitantStore
+                            cohabitantStore: cohabitantStore,
+                            houseworkListStore: houseworkListStore
                         )
                     }
                     Tab(
@@ -67,7 +68,8 @@ private extension AppTabView {
                 TabView(selection: $type) {
                     HomeView.make(
                         contributionStore: contributionStore,
-                        cohabitantStore: cohabitantStore
+                        cohabitantStore: cohabitantStore,
+                        houseworkListStore: houseworkListStore
                     )
                     .tag(TabType.dashboard)
                     .tabItem {
