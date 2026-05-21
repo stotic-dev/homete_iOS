@@ -14,6 +14,7 @@ public struct SettingView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext.account.userName) var userName
+    @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.dismiss) var dismiss
     @LoadingState var loadingState
 
@@ -28,6 +29,7 @@ public struct SettingView: View {
                 VStack(spacing: .space24) {
                     Text(userName)
                         .font(with: .headLineM)
+                    GroupMemberListView(members: cohabitantMembers.others)
                     Spacer()
                         .frame(height: .space16)
                     VStack(spacing: .zero) {
@@ -124,4 +126,15 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
 }
