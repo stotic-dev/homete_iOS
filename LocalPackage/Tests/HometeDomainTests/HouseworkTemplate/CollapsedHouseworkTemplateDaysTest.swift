@@ -44,7 +44,7 @@ struct CollapsedHouseworkTemplateDaysTest {
         sut.toggle(.tuesday)
 
         // Assert
-        #expect(sut == expected)
+        #expect(sut.days == expected.days)
     }
 
     @Test("折りたたみ中の曜日をtoggleすると展開状態になる")
@@ -57,19 +57,19 @@ struct CollapsedHouseworkTemplateDaysTest {
         sut.toggle(.monday)
 
         // Assert
-        #expect(sut == expected)
+        #expect(sut.days == expected.days)
     }
 
     @Test("rawValueとinit(rawValue:)で値が往復できる")
-    func rawValueRoundTrip() {
+    func rawValueRoundTrip() throws {
         // Arrange
         let sut = CollapsedHouseworkTemplateDays(days: [.monday, .friday, .sunday])
 
         // Act
-        let restored = CollapsedHouseworkTemplateDays(rawValue: sut.rawValue)
+        let restored = try #require(CollapsedHouseworkTemplateDays(rawValue: sut.rawValue))
 
         // Assert
-        #expect(restored == sut)
+        #expect(restored.days == sut.days)
     }
 
     @Test("不正なrawValueからinitすると失敗する")
