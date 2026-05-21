@@ -26,7 +26,7 @@ struct RegisteredContent: View {
                         .redacted(reason: loadingState.isLoading ? .placeholder : [])
                     // TODO: テンプレート未設定の場合のみ表示する
                     PromoteHouseworkTemplateBanner()
-                    TodayHouseworkListContent()
+                    TodayHouseworkSummaryComponent.make()
                     TimelineContent()
                 }
                 .padding(.horizontal, .space16)

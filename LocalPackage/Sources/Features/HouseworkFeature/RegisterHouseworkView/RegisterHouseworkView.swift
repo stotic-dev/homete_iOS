@@ -10,7 +10,7 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-struct RegisterHouseworkView: View {
+public struct RegisterHouseworkView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -28,7 +28,11 @@ struct RegisterHouseworkView: View {
 
     let dailyHouseworkList: DailyHouseworkList
 
-    var body: some View {
+    public static func make(dailyHouseworkList: DailyHouseworkList) -> some View {
+        RegisterHouseworkView(dailyHouseworkList: dailyHouseworkList)
+    }
+
+    public var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: .space16) {
                 Spacer()
