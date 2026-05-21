@@ -31,14 +31,18 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
 
 public extension TodayHouseworkSummary {
 
-    init(allItems: [HouseworkItem]) {
+    static func make(storedAllItems: StoredAllHouseworkList, now: Date, calendar: Calendar) -> Self {
+        let today = calendar.startOfDay(for: now)
+        let allItems = storedAllItems.value
+            .first { $0.metaData.indexedDate.value == today }?
+            .items ?? []
+
         let incomplete = allItems.filter { item in
             item.state == .incomplete || item.state == .pendingApproval
         }
 
-        self.allItems = allItems
-        incompleteItems = incomplete
-
+        let progress: Double
+        let displayState: DisplayState
         if allItems.isEmpty {
             progress = 0
             displayState = .empty
@@ -48,8 +52,17 @@ public extension TodayHouseworkSummary {
             displayState = incomplete.isEmpty ? .allCompleted : .hasIncomplete
         }
 
-        displayIncompleteItems = Array(incomplete.prefix(Self.displayIncompleteLimit))
-        hasMoreIncomplete = incomplete.count > Self.displayIncompleteLimit
+        let displayIncompleteItems = Array(incomplete.prefix(Self.displayIncompleteLimit))
+        let hasMoreIncomplete = incomplete.count > Self.displayIncompleteLimit
+
+        return .init(
+            allItems: allItems,
+            incompleteItems: incomplete,
+            progress: progress,
+            displayState: displayState,
+            displayIncompleteItems: displayIncompleteItems,
+            hasMoreIncomplete: hasMoreIncomplete
+        )
     }
 
 }
