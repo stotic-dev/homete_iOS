@@ -15,7 +15,6 @@ public struct HomeView: View {
 
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
-    @Environment(\.adComponentResolver) var adComponentResolver
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
@@ -31,24 +30,17 @@ public struct HomeView: View {
         NavigationStack(path: $registeredContentNavigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    adComponentResolver.resolve(.banner(.dashboardTop))
-                        .frame(height: 150)
                     if loginContext.hasCohabitant,
                        let contributionStore,
-                       let cohabitantStore {
-                        RegisteredContent()
-                            .environment(contributionStore)
-                            .environment(cohabitantStore)
-                            .task {
-                                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
-                            }
-                    } else if !loginContext.hasCohabitant {
-                        NotRegisteredContent(
-                            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                       let cohabitantStore,
+                       let houseworkListStore {
+                        registeredContent(
+                            contributionStore: contributionStore,
+                            cohabitantStore: cohabitantStore,
+                            houseworkListStore: houseworkListStore
                         )
-                        .task {
-                            await didAppearNotRegisteredContent()
-                        }
+                    } else if !loginContext.hasCohabitant {
+                        notRegisteredContent()
                     }
                 }
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
@@ -63,11 +55,6 @@ public struct HomeView: View {
                     }
                 }
             }
-            .navigationDestination(for: RegisteredContentRoute.self) { route in
-                navigationHandler(route)
-            }
-            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
-            .environment(houseworkListStore)
         }
     }
 
@@ -89,15 +76,29 @@ public extension HomeView {
 
 }
 
-// MARK: UI定義
-
 private extension HomeView {
 
-    @ViewBuilder
-    func navigationHandler(_ route: RegisteredContentRoute) -> some View {
-        switch route {
-        case .incompleteHouseworkList:
-            IncompleteHouseworkListView.make()
+    func registeredContent(
+        contributionStore: ContributionStore,
+        cohabitantStore: CohabitantStore,
+        houseworkListStore: HouseworkListStore
+    ) -> some View {
+        RegisteredContent()
+            .environment(contributionStore)
+            .environment(cohabitantStore)
+            .environment(houseworkListStore)
+            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
+            .task {
+                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+            }
+    }
+
+    func notRegisteredContent() -> some View {
+        NotRegisteredContent(
+            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+        )
+        .task {
+            await didAppearNotRegisteredContent()
         }
     }
 
