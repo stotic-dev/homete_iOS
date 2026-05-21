@@ -122,6 +122,7 @@ struct HouseworkTemplateView: View {
         } message: {
             Text("現在の編集内容は破棄されます。")
         }
+        .animation(.default, value: collapsedDays)
     }
 
 }
@@ -171,8 +172,11 @@ private extension HouseworkTemplateView {
                     onDropItem(itemId: .init(id: droppedId), to: day)
                     return true
                 }
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
+        .clipped()
+//        .animation(.default, value: isCollapsed)
     }
 
     func dayHeader(_ day: DayOfWeek, itemCount: Int, isCollapsed: Bool) -> some View {
