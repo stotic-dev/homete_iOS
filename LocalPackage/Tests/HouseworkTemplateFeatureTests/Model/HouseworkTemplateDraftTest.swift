@@ -34,7 +34,7 @@ enum HouseworkTemplateDraftTest {
     struct AddItemCase {}
     struct ReplaceItemCase {}
     struct RemoveItemCase {}
-    struct MoveItemCase {}
+    struct AddDayCase {}
     struct SaveDaysCase {}
     struct MakeCase {}
 
@@ -249,35 +249,64 @@ extension HouseworkTemplateDraftTest.RemoveItemCase {
 
 }
 
-extension HouseworkTemplateDraftTest.MoveItemCase {
+extension HouseworkTemplateDraftTest.AddDayCase {
 
-    @Test("異なる曜日に移動するとupdatedAtがnowに更新される")
-    func updatesUpdatedAtOnMove() {
+    @Test("追加先の新エントリはupdatedAtがnowで、既存曜日のアイテムは維持される")
+    func addsDestinationDayKeepingSourceDays() {
         // Arrange
         let baseDate = Date(timeIntervalSince1970: 0)
         let now = Date(timeIntervalSince1970: 1000)
         let item = TestCase.makeItem(id: "1", title: "task", point: 5, updatedAt: baseDate)
         var draft = HouseworkTemplateDraft(days: [.monday: [item]])
-        let movedItem = HouseworkTemplateItem(
+        let addedItem = HouseworkTemplateItem(
             id: .init(id: "1"),
             title: "task",
             point: 5,
             updatedAt: now
         )
         let expected = HouseworkTemplateDraft(days: [
-            .monday: [],
-            .wednesday: [movedItem],
+            .monday: [item],
+            .wednesday: [addedItem],
         ])
 
         // Act
-        draft.moveItem(.init(id: "1"), to: .wednesday, now: now)
+        draft.addDay(to: .init(id: "1"), destination: .wednesday, now: now)
 
         // Assert
         #expect(draft == expected)
     }
 
-    @Test("同じ曜日へのドロップは状態を変えない")
-    func doesNotChangeWhenSameDay() {
+    @Test("複数曜日に登録済みのアイテムを別曜日へ追加しても既存曜日は維持される")
+    func addsDestinationWhenItemBelongsToMultipleDays() {
+        // Arrange
+        let baseDate = Date(timeIntervalSince1970: 0)
+        let now = Date(timeIntervalSince1970: 1000)
+        let item = TestCase.makeItem(id: "1", title: "task", point: 5, updatedAt: baseDate)
+        var draft = HouseworkTemplateDraft(days: [
+            .monday: [item],
+            .tuesday: [item],
+        ])
+        let addedItem = HouseworkTemplateItem(
+            id: .init(id: "1"),
+            title: "task",
+            point: 5,
+            updatedAt: now
+        )
+        let expected = HouseworkTemplateDraft(days: [
+            .monday: [item],
+            .tuesday: [item],
+            .wednesday: [addedItem],
+        ])
+
+        // Act
+        draft.addDay(to: .init(id: "1"), destination: .wednesday, now: now)
+
+        // Assert
+        #expect(draft == expected)
+    }
+
+    @Test("ドロップ先に既に同じアイテムが登録されている場合は何もしない")
+    func doesNothingWhenItemAlreadyInDestination() {
         // Arrange
         let baseDate = Date(timeIntervalSince1970: 0)
         let now = Date(timeIntervalSince1970: 1000)
@@ -286,7 +315,7 @@ extension HouseworkTemplateDraftTest.MoveItemCase {
         let expected = HouseworkTemplateDraft(days: [.monday: [item]])
 
         // Act
-        draft.moveItem(.init(id: "1"), to: .monday, now: now)
+        draft.addDay(to: .init(id: "1"), destination: .monday, now: now)
 
         // Assert
         #expect(draft == expected)
@@ -300,7 +329,11 @@ extension HouseworkTemplateDraftTest.MoveItemCase {
         let expected = HouseworkTemplateDraft(days: [.monday: [item]])
 
         // Act
-        draft.moveItem(.init(id: "missing"), to: .friday, now: Date(timeIntervalSince1970: 1000))
+        draft.addDay(
+            to: .init(id: "missing"),
+            destination: .friday,
+            now: Date(timeIntervalSince1970: 1000)
+        )
 
         // Assert
         #expect(draft == expected)
