@@ -39,6 +39,9 @@ public enum AppStorageCustomTypeKey: String {
     /// 家事入力の履歴
     case houseworkEntryHistoryList
 
+    /// 家事テンプレートで折りたたまれている曜日
+    case collapsedHouseworkTemplateDays
+
 }
 
 // MARK: - Preview用のDIヘルパー

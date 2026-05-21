@@ -24,6 +24,8 @@ struct HouseworkTemplateView: View {
     @State var presentingDismissAlert = false
     @State var presentingResetAlert = false
 
+    @AppStorage(key: .collapsedHouseworkTemplateDays) var collapsedDays = CollapsedHouseworkTemplateDays()
+
     @Binding var initialDraft: HouseworkTemplateDraft?
     @Binding var draft: HouseworkTemplateDraft
     @Binding var editorContext: TemplateEditorContext
@@ -120,6 +122,7 @@ struct HouseworkTemplateView: View {
         } message: {
             Text("現在の編集内容は破棄されます。")
         }
+        .animation(.default, value: collapsedDays)
     }
 
 }
@@ -132,7 +135,11 @@ private extension HouseworkTemplateView {
         ScrollView {
             VStack(alignment: .leading, spacing: .space16) {
                 ForEach(DayOfWeek.displayOrdered) { day in
-                    daySection(day)
+                    daySection(
+                        day,
+                        isCollapsed: collapsedDays.isCollapsed(day),
+                        items: draft.items(in: day)
+                    )
                 }
             }
             .padding(.horizontal, .space16)
@@ -141,32 +148,71 @@ private extension HouseworkTemplateView {
         }
     }
 
-    func daySection(_ day: DayOfWeek) -> some View {
+    func daySection(_ day: DayOfWeek, isCollapsed: Bool, items: [HouseworkTemplateItem]) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text(day.fullLabel)
-                .font(with: .headLineS)
-                .foregroundStyle(.onSubSurface)
-            VStack(spacing: .space8) {
-                let items = draft.items(in: day)
-                if !items.isEmpty {
-                    ForEach(items, id: \.id) { item in
-                        itemRow(item, in: day)
+            dayHeader(day, itemCount: items.count, isCollapsed: isCollapsed)
+            if !isCollapsed {
+                VStack(spacing: .space8) {
+                    if !items.isEmpty {
+                        ForEach(items, id: \.id) { item in
+                            itemRow(item, in: day)
+                        }
+                    } else {
+                        emptyDayRow()
                     }
-                } else {
-                    emptyDayRow()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.space8)
+                .background {
+                    RoundedRectangle(radius: .radius8)
+                        .fill(.subSurface)
+                }
+                .dropDestination(for: String.self) { ids, _ in
+                    guard let droppedId = ids.first else { return false }
+                    onDropItem(itemId: .init(id: droppedId), to: day)
+                    return true
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .clipped()
+//        .animation(.default, value: isCollapsed)
+    }
+
+    func dayHeader(_ day: DayOfWeek, itemCount: Int, isCollapsed: Bool) -> some View {
+        Button {
+            withAnimation {
+                tappedDayHeaderButton(day)
+            }
+        } label: {
+            HStack(spacing: .space8) {
+                Image(systemName: "chevron.right")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSubSurface)
+                    .rotationEffect(.degrees(isCollapsed ? 0 : 90))
+                Text(day.fullLabel)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSubSurface)
+                if isCollapsed,
+                   itemCount > 0 {
+                    Text("(\(itemCount))")
+                        .font(with: .caption)
+                        .foregroundStyle(.onSubSurface)
+                }
+                Spacer()
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .dropDestination(for: String.self) { ids, _ in
+            guard let droppedId = ids.first else { return false }
+            onDropItem(itemId: .init(id: droppedId), to: day)
+            if isCollapsed {
+                withAnimation {
+                    collapsedDays.toggle(day)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.space8)
-            .background {
-                RoundedRectangle(radius: .radius8)
-                    .fill(.subSurface)
-            }
-            .dropDestination(for: String.self) { ids, _ in
-                guard let droppedId = ids.first else { return false }
-                onDropItem(itemId: .init(id: droppedId), to: day)
-                return true
-            }
+            return true
         }
     }
 
@@ -339,6 +385,10 @@ private extension HouseworkTemplateView {
         guard let initialDraft,
               initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
         presentingConflictDraftAlert = true
+    }
+
+    func tappedDayHeaderButton(_ day: DayOfWeek) {
+        collapsedDays.toggle(day)
     }
 
 }
