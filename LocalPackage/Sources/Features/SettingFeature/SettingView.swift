@@ -15,13 +15,14 @@ public struct SettingView: View {
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
-    @Environment(\.dismiss) var dismiss
     @Environment(\.routeResolver) var router
+    @Environment(\.dismiss) var dismiss
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
     @State var isShowHouseworkTemplate = false
+    @State var isShowMemberRegistration = false
 
     public init() {}
 
@@ -71,6 +72,9 @@ public struct SettingView: View {
                 leadingNavigationBarContent()
             }
         }
+        .fullScreenCoverOnIOS(isPresented: $isShowMemberRegistration) {
+            router.resolve(.cohabitantRegistration)
+        }
         .fullScreenLoadingIndicator(loadingState)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
@@ -112,6 +116,9 @@ private extension SettingView {
         case .taskTemplate:
             isShowHouseworkTemplate = true
 
+        case .memberRegistration:
+            isShowMemberRegistration = true
+            
         case .privacyPolicy, .license:
             // TODO: 各画面への遷移処理
             break
@@ -145,17 +152,6 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
-        .environment(
-            \.cohabitantMembers,
-            .init(
-                value: [
-                    .init(id: "ownId", userName: "自分"),
-                    .init(id: "user1", userName: "山田太郎"),
-                    .init(id: "user2", userName: "佐藤花子"),
-                ],
-                ownId: "ownId"
-            )
-        )
 }
 
 #Preview("SettingView_グループ登録済み") {
@@ -168,4 +164,15 @@ private extension SettingView {
             fcmToken: "",
             cohabitantId: ""
         )))
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
 }

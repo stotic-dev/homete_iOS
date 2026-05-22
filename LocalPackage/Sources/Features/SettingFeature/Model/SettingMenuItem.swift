@@ -9,6 +9,7 @@ import SwiftUI
 
 enum SettingMenuItem: Equatable, CaseIterable {
 
+    case memberRegistration
     case taskTemplate
     case privacyPolicy
     case license
@@ -26,6 +27,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     var title: LocalizedStringKey {
         switch self {
+        case .memberRegistration:
+            "メンバー追加"
+
         case .taskTemplate:
             "家事テンプレート"
 
@@ -39,6 +43,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     var iconName: String {
         switch self {
+        case .memberRegistration:
+            "person.badge.plus"
+
         case .taskTemplate:
             "house"
 
