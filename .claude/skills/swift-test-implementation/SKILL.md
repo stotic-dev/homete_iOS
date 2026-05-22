@@ -384,6 +384,42 @@ let sut = AllUserViewablePointList<PointOfWeek>(
 
 ---
 
+## Assertion のルール
+
+- **Equatable 型はインスタンス同士で比較する**: `ClosedRange<Date>`、`[Date]` などの複合型や独自の Equatable 型は、プロパティ毎に `#expect` を分けず `#expect(result == expected)` で丸ごと比較する
+- **一部プロパティだけの検証は禁止**: `result.count == 2` や `result.total.value == 80` のような部分検証は行わない
+  - 検証漏れが起きやすい（他のプロパティが期待通りでなくても気づけない）
+  - 失敗時に「どのプロパティが違うか」だけ見て全体像を把握しづらい
+- **Equatable な型に memberwise init がない場合**: テスト用の internal memberwise initializer（または DEBUG only の `makeForTest` ヘルパー）を追加して、expected を組み立てる
+
+```swift
+// OK: 戻り値の型を直接比較
+let expected = [april1, april6, april11, april30]
+#expect(result == expected)
+
+// OK: 独自Equatable型もインスタンス同士で比較
+let expected = TodayHouseworkSummary.makeForTest(
+    allItems: items,
+    incompleteItems: [item1, item2],
+    progress: 0.5,
+    displayState: .hasIncomplete,
+    displayIncompleteItems: [item1, item2],
+    hasMoreIncomplete: false
+)
+#expect(actual == expected)
+
+// NG: 部分プロパティの検証
+#expect(result.count == 4)
+#expect(result.first == april1)
+
+// NG: 独自Equatable型をプロパティ毎に分割検証
+#expect(summary.displayState == .hasIncomplete)
+#expect(summary.progress == 0.5)
+#expect(summary.incompleteItems == [item1, item2])
+```
+
+---
+
 ## 制約・規約
 
 | 項目 | ルール |

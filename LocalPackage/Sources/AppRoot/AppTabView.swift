@@ -93,7 +93,8 @@ private extension AppTabView {
         HomeView.make(
             contributionStore: contributionStore,
             cohabitantStore: cohabitantStore,
-            houseworkTemplateListStore: houseworkTemplateListStore
+            houseworkTemplateListStore: houseworkTemplateListStore,
+            houseworkListStore: houseworkListStore
         )
     }
 

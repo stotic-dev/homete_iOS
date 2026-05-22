@@ -58,7 +58,7 @@ private extension HouseworkBoardListContent {
         Button {
             navigationPath.push(.houseworkDetail(item))
         } label: {
-            HouseBoardListRow(houseworkItem: item)
+            HouseBoardListRow(houseworkItem: item.originalItem)
         }
     }
 

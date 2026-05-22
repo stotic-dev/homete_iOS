@@ -8,53 +8,42 @@
 import ContributionFeature
 import HometeDomain
 import HometeUI
+import HouseworkFeature
 import SwiftUI
 
 public struct HomeView: View {
 
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
-    @Environment(\.adComponentResolver) var adComponentResolver
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
+    @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
     let cohabitantStore: CohabitantStore?
     let houseworkTemplateListStore: HouseworkTemplateListStore?
+    let houseworkListStore: HouseworkListStore?
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $registeredContentNavigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    adComponentResolver.resolve(.banner(.dashboardTop))
-                        .frame(height: 150)
                     if loginContext.hasCohabitant,
                        let contributionStore,
                        let cohabitantStore,
+                       let houseworkListStore,
                        let houseworkTemplateListStore {
-                        RegisteredContent()
-                            .task {
-                                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
-                            }
-                            .sheet(isPresented: $isShowSetting) {
-                                router.resolve(.setting)
-                            }
-                            .environment(contributionStore)
-                            .environment(cohabitantStore)
-                            .environment(houseworkTemplateListStore)
-                    } else if !loginContext.hasCohabitant {
-                        NotRegisteredContent(
-                            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+                        registeredContent(
+                            contributionStore: contributionStore,
+                            cohabitantStore: cohabitantStore,
+                            houseworkTemplateListStore: houseworkTemplateListStore,
+                            houseworkListStore: houseworkListStore
                         )
-                        .task {
-                            await didAppearNotRegisteredContent()
-                        }
-                        .sheet(isPresented: $isShowSetting) {
-                            router.resolve(.setting)
-                        }
+                    } else if !loginContext.hasCohabitant {
+                        notRegisteredContent()
                     }
                 }
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
@@ -76,13 +65,47 @@ public extension HomeView {
     static func make(
         contributionStore: ContributionStore?,
         cohabitantStore: CohabitantStore?,
-        houseworkTemplateListStore: HouseworkTemplateListStore?
+        houseworkTemplateListStore: HouseworkTemplateListStore?,
+        houseworkListStore: HouseworkListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
             cohabitantStore: cohabitantStore,
-            houseworkTemplateListStore: houseworkTemplateListStore
+            houseworkTemplateListStore: houseworkTemplateListStore,
+            houseworkListStore: houseworkListStore
         )
+    }
+
+}
+
+private extension HomeView {
+
+    func registeredContent(
+        contributionStore: ContributionStore,
+        cohabitantStore: CohabitantStore,
+        houseworkTemplateListStore: HouseworkTemplateListStore,
+        houseworkListStore: HouseworkListStore
+    ) -> some View {
+        RegisteredContent()
+            .task {
+                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+            }
+            .sheet(isPresented: $isShowSetting) {
+                router.resolve(.setting)
+            }
+            .environment(contributionStore)
+            .environment(cohabitantStore)
+            .environment(houseworkTemplateListStore)
+            .environment(houseworkListStore)
+    }
+
+    func notRegisteredContent() -> some View {
+        NotRegisteredContent(
+            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+        )
+        .task {
+            await didAppearNotRegisteredContent()
+        }
     }
 
 }
