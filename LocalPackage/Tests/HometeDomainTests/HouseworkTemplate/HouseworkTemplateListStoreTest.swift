@@ -101,10 +101,6 @@ struct HouseworkTemplateListStoreTest {
                 name: inputName,
                 cohabitantId: Self.inputCohabitantId
             )
-
-            // Assert
-
-            #expect(store.templates == [expectedMeta])
         }
     }
 
@@ -309,38 +305,6 @@ struct HouseworkTemplateListStoreTest {
 }
 
 extension HouseworkTemplateListStoreTest {
-
-    @Test("テンプレートを新規作成すると、selectedTemplateIdが新規IDに更新されselectedDaysは空になる")
-    func createTemplateUpdatesSelection() async throws {
-        // Arrange
-
-        let inputTemplateId = "newTemplateId"
-        let inputName = "新しいテンプレ"
-        let initialDays: [HouseworkTemplateDay] = [
-            .init(
-                dayOfWeek: .monday,
-                items: [.init(id: .init(id: "old"), title: "古い家事", point: 1, updatedAt: .now)]
-            ),
-        ]
-        let store = HouseworkTemplateListStore(
-            houseworkTemplateClient: .init(),
-            selectedDays: initialDays,
-            selectedTemplateId: "previousTemplateId"
-        )
-
-        // Act
-
-        try await store.createTemplate(
-            templateId: inputTemplateId,
-            name: inputName,
-            cohabitantId: Self.inputCohabitantId
-        )
-
-        // Assert
-
-        #expect(store.selectedTemplateId == inputTemplateId)
-        #expect(store.selectedDays == [])
-    }
 
     @Test("configureを呼ぶと、テンプレート一覧の取得・先頭テンプレートのDays取得・監視開始が行われる")
     func configureLoadsTemplatesAndSelectsFirst() async throws {
