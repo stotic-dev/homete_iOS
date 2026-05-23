@@ -72,10 +72,6 @@ public final class HouseworkTemplateListStore {
             name: name
         )
         try await houseworkTemplateClient.upsertTemplate(newMeta, cohabitantId)
-        templates.append(newMeta)
-        // 選択中のテンプレートを作成したテンプレートに更新
-        selectedDays = []
-        selectedTemplateId = templateId
     }
 
     /// 指定テンプレートの Days SnapshotListener を開始する
