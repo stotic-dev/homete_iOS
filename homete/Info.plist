@@ -11,6 +11,8 @@
 	<true/>
 	<key>GADApplicationIdentifier</key>
 	<string>$(SAMPLE_APP_ID)</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_register._tcp</string>

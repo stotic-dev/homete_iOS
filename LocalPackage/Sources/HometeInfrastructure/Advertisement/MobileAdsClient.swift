@@ -10,6 +10,12 @@ import Foundation
 import GoogleMobileAds
 #endif
 
+public protocol MobileAdsClientProtocol: Sendable {
+
+    func initialize() async
+
+}
+
 public final class MobileAdsClient: Sendable {
 
     public static let shared = MobileAdsClient()

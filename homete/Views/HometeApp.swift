@@ -65,7 +65,7 @@ private extension AppDelegate {
 
     func setupGoogleMobileAds() {
         Task {
-            await MobileAdsClient.shared.initialize()
+            await AdsSetupUseCase.live.setup()
         }
     }
 
