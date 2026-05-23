@@ -16,9 +16,11 @@ public final class HouseworkTemplateListStore {
     public private(set) var selectedTemplateId: String?
 
     private var daysObserveTask: Task<Void, Never>?
+    private var templatesObserveTask: Task<Void, Never>?
 
     private let houseworkTemplateClient: HouseworkTemplateClient
     private let daysListenerKey = "houseworkTemplateDaysListener"
+    private let templatesListenerKey = "houseworkTemplatesListener"
 
     public var context: HouseworkTemplateContext {
         .init(metadata: templates.first, houseworkTemplate: selectedDays)
@@ -45,7 +47,7 @@ public final class HouseworkTemplateListStore {
             try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
             await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
         } else {
-            // TODO: テンプレートリストを監視して、作成されたらテンプレートを選択してテンプレートの内容を監視する
+            await startObservingTemplates(cohabitantId)
         }
     }
 
@@ -122,6 +124,35 @@ public final class HouseworkTemplateListStore {
                 selectedDays.append(day)
             }
         }
+    }
+
+}
+
+private extension HouseworkTemplateListStore {
+
+    func startObservingTemplates(_ cohabitantId: String) async {
+        let stream = await houseworkTemplateClient.addTemplatesSnapshotListener(
+            templatesListenerKey,
+            cohabitantId
+        )
+
+        templatesObserveTask = Task {
+            for await templates in stream {
+                // テンプレートが空の場合は何もしない
+                guard let selectedTemplate = templates.first else { continue }
+
+                // テンプレートが設定されたことを検知したら選択テンプレートを更新して、テンプレートの監視を終了する
+                self.templates = templates
+                self.selectedTemplateId = selectedTemplate.templateId
+                await stopObservingTemplates()
+            }
+        }
+    }
+
+    func stopObservingTemplates() async {
+        templatesObserveTask?.cancel()
+        templatesObserveTask = nil
+        await houseworkTemplateClient.removeListener(templatesListenerKey)
     }
 
 }
