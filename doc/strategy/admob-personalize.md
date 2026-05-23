@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -177,28 +177,28 @@ func setupGoogleMobileAds() {
 
 ### Phase 2: 実装
 
-- [ ] `Package.swift` に UMP SDK 依存を追加
-- [ ] `Package.swift` に `HometeInfrastructureTests` テストターゲットを追加
-- [ ] `ConsentClient` (protocol + 実装) を追加
-- [ ] `AppTrackingClient` (protocol + 実装) を追加
-- [ ] `MobileAdsClient` を `MobileAdsClientProtocol` に準拠させる
-- [ ] `AdsSetupUseCase` を実装
-- [ ] `HometeApp.swift` の `setupGoogleMobileAds()` を `AdsSetupUseCase` 呼び出しに変更
-- [ ] `Info.plist` に `NSUserTrackingUsageDescription` を追加
+- [x] `Package.swift` に UMP SDK 依存を追加
+- [x] `Package.swift` に `HometeInfrastructureTests` テストターゲットを追加
+- [x] `ConsentClient` (protocol + 実装) を追加
+- [x] `AppTrackingClient` (protocol + 実装) を追加
+- [x] `MobileAdsClient` を `MobileAdsClientProtocol` に準拠させる
+- [x] `AdsSetupUseCase` を実装
+- [x] `HometeApp.swift` の `setupGoogleMobileAds()` を `AdsSetupUseCase` 呼び出しに変更
+- [x] `Info.plist` に `NSUserTrackingUsageDescription` を追加
 
 ### Phase 3: テスト
 
-- [ ] `AdsSetupUseCaseTests` を追加（モッククラス含む）
-- [ ] 正常系：全Client成功 → MobileAds起動
-- [ ] 異常系：同意取得失敗 → 後続シーケンス継続
-- [ ] 出し分け：`canRequestAds == false` → MobileAds起動しない
-- [ ] 順序：同意フォーム → ATT → MobileAds
+- [x] `AdsSetupUseCaseTests` を追加（モッククラス含む）
+- [x] 正常系：全Client成功 → MobileAds起動
+- [x] 異常系：同意取得失敗 → 後続シーケンス継続
+- [x] 出し分け：`canRequestAds == false` → MobileAds起動しない
+- [x] 順序：同意フォーム → ATT → MobileAds
 
 ### Phase 4: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
 - [ ] 実機で動作確認（ATT・UMPダイアログが表示されること、広告が表示されること）
 
 ### Phase 5: PR
