@@ -138,11 +138,6 @@ let package = Package(
             name: "ContributionFeatureTests",
             dependencies: ["ContributionFeature"],
             plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "HometeInfrastructureTests",
-            dependencies: ["HometeInfrastructure"],
-            plugins: [swiftLintPlugin()]
         )
     ]
 )

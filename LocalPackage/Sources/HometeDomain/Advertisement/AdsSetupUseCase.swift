@@ -5,18 +5,16 @@
 //  Created by Taichi Sato on 2026/05/23.
 //
 
-import Foundation
-
 public final class AdsSetupUseCase: Sendable {
 
-    private let consentClient: any ConsentClientProtocol
-    private let appTrackingClient: any AppTrackingClientProtocol
-    private let mobileAdsClient: any MobileAdsClientProtocol
+    private let consentClient: ConsentClient
+    private let appTrackingClient: AppTrackingClient
+    private let mobileAdsClient: MobileAdsClient
 
     public init(
-        consentClient: any ConsentClientProtocol,
-        appTrackingClient: any AppTrackingClientProtocol,
-        mobileAdsClient: any MobileAdsClientProtocol
+        consentClient: ConsentClient,
+        appTrackingClient: AppTrackingClient,
+        mobileAdsClient: MobileAdsClient
     ) {
         self.consentClient = consentClient
         self.appTrackingClient = appTrackingClient
@@ -39,15 +37,3 @@ public final class AdsSetupUseCase: Sendable {
     }
 
 }
-
-#if os(iOS)
-    public extension AdsSetupUseCase {
-
-        static let live = AdsSetupUseCase(
-            consentClient: ConsentClient(),
-            appTrackingClient: AppTrackingClient(),
-            mobileAdsClient: MobileAdsClient.shared
-        )
-
-    }
-#endif
