@@ -118,7 +118,7 @@ private extension SettingView {
 
         case .memberRegistration:
             isShowMemberRegistration = true
-            
+
         case .privacyPolicy, .license:
             // TODO: 各画面への遷移処理
             break
