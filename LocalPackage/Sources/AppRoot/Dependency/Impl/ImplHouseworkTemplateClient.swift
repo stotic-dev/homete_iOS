@@ -69,6 +69,11 @@ extension HouseworkTemplateClient {
                 firestore.houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
             }
         },
+        addTemplatesSnapshotListener: { id, cohabitantId in
+            await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
+                firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
+            }
+        },
         addEditorsSnapshotListener: { id, templateId, cohabitantId in
             await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                 firestore.houseworkTemplateEditorsRef(cohabitantId: cohabitantId, templateId: templateId)

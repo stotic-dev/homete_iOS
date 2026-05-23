@@ -44,6 +44,12 @@ public struct HouseworkTemplateClient: Sendable {
         _ cohabitantId: String
     ) async -> AsyncStream<[HouseworkTemplateDay]>
 
+    /// Tesmplates の SnapshotListener
+    public let addTemplatesSnapshotListener: @Sendable (
+        _ id: String,
+        _ cohabitantId: String
+    ) async -> AsyncStream<[HouseworkTemplateMeta]>
+
     /// Editors の SnapshotListener（編集中のみ使用）
     public let addEditorsSnapshotListener: @Sendable (
         _ id: String,
@@ -94,6 +100,10 @@ public struct HouseworkTemplateClient: Sendable {
             _ templateId: String,
             _ cohabitantId: String
         ) async -> AsyncStream<[HouseworkTemplateDay]> = { _, _, _ in .makeStream().stream },
+        addTemplatesSnapshotListener: @Sendable @escaping (
+            _ id: String,
+            _ cohabitantId: String
+        ) async -> AsyncStream<[HouseworkTemplateMeta]> = { _, _ in .makeStream().stream },
         addEditorsSnapshotListener: @Sendable @escaping (
             _ id: String,
             _ templateId: String,
@@ -113,6 +123,7 @@ public struct HouseworkTemplateClient: Sendable {
         self.upsertEditor = upsertEditor
         self.removeEditor = removeEditor
         self.addDaysSnapshotListener = addDaysSnapshotListener
+        self.addTemplatesSnapshotListener = addTemplatesSnapshotListener
         self.addEditorsSnapshotListener = addEditorsSnapshotListener
         self.addMetaVersionSnapshotListener = addMetaVersionSnapshotListener
         self.removeListener = removeListener

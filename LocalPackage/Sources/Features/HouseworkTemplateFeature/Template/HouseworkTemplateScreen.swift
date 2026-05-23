@@ -54,6 +54,11 @@ public struct HouseworkTemplateScreen: View {
                 await onChangeTemplateVersion()
             }
         }
+        .onChange(of: houseworkTemplateListStore.selectedTemplateId) { oldValue, newValue in
+            Task {
+                await onChangeSelectedTemplateId(oldValue: oldValue, newValue: newValue)
+            }
+        }
     }
 
 }
@@ -118,6 +123,20 @@ private extension HouseworkTemplateScreen {
               let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
 
+        await loadCurrentTemplate(templateId: templateId, cohabitantId: cohabitantId)
+    }
+
+    func onChangeSelectedTemplateId(oldValue: String?, newValue: String?) async {
+        // テンプレート画面内でテンプレートがない状態からテンプレートが作成されたことを検知したら、
+        // 現在のテンプレートの内容をロードする
+        guard oldValue == nil,
+              let newValue,
+              let cohabitantId = account.cohabitantId else { return }
+
+        await loadCurrentTemplate(templateId: newValue, cohabitantId: cohabitantId)
+    }
+
+    func loadCurrentTemplate(templateId: String, cohabitantId: String) async {
         do {
             // バージョンが変わったらテンプレートの内容を再ロードする
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
