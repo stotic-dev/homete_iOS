@@ -18,7 +18,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
     let adsSetupUseCase = AdsSetupUseCase(
         consentClient: .liveValue,
-        appTrackingClient: .liveValue,
         mobileAdsClient: .liveValue
     )
 

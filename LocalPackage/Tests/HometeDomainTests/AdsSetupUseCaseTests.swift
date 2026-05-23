@@ -16,7 +16,6 @@ struct AdsSetupUseCaseTests {
         let recorder = CallRecorder()
         let sut = AdsSetupUseCase(
             consentClient: makeConsentClient(recorder: recorder, canRequestAdsValue: true),
-            appTrackingClient: makeAppTrackingClient(recorder: recorder),
             mobileAdsClient: makeMobileAdsClient(recorder: recorder)
         )
 
@@ -29,7 +28,6 @@ struct AdsSetupUseCaseTests {
             requestConsentInfoUpdateCount: 1,
             loadAndPresentConsentFormIfRequiredCount: 1,
             canRequestAdsCount: 1,
-            requestTrackingAuthorizationCount: 1,
             initializeCount: 1
         )
         #expect(actual == expected)
@@ -45,7 +43,6 @@ struct AdsSetupUseCaseTests {
                 canRequestAdsValue: true,
                 requestConsentInfoUpdateError: MockError.testError
             ),
-            appTrackingClient: makeAppTrackingClient(recorder: recorder),
             mobileAdsClient: makeMobileAdsClient(recorder: recorder)
         )
 
@@ -58,7 +55,6 @@ struct AdsSetupUseCaseTests {
             requestConsentInfoUpdateCount: 1,
             loadAndPresentConsentFormIfRequiredCount: 0,
             canRequestAdsCount: 1,
-            requestTrackingAuthorizationCount: 1,
             initializeCount: 1
         )
         #expect(actual == expected)
@@ -70,7 +66,6 @@ struct AdsSetupUseCaseTests {
         let recorder = CallRecorder()
         let sut = AdsSetupUseCase(
             consentClient: makeConsentClient(recorder: recorder, canRequestAdsValue: false),
-            appTrackingClient: makeAppTrackingClient(recorder: recorder),
             mobileAdsClient: makeMobileAdsClient(recorder: recorder)
         )
 
@@ -83,7 +78,6 @@ struct AdsSetupUseCaseTests {
             requestConsentInfoUpdateCount: 1,
             loadAndPresentConsentFormIfRequiredCount: 1,
             canRequestAdsCount: 1,
-            requestTrackingAuthorizationCount: 1,
             initializeCount: 0
         )
         #expect(actual == expected)
@@ -95,7 +89,6 @@ struct AdsSetupUseCaseTests {
         let recorder = CallRecorder()
         let sut = AdsSetupUseCase(
             consentClient: makeConsentClient(recorder: recorder, canRequestAdsValue: true),
-            appTrackingClient: makeAppTrackingClient(recorder: recorder),
             mobileAdsClient: makeMobileAdsClient(recorder: recorder)
         )
 
@@ -107,7 +100,6 @@ struct AdsSetupUseCaseTests {
         let expected: [CallRecorder.Entry] = [
             .consentRequestConsentInfoUpdate,
             .consentLoadAndPresentConsentFormIfRequired,
-            .appTrackingRequestTrackingAuthorization,
             .consentCanRequestAds,
             .mobileAdsInitialize,
         ]
@@ -129,7 +121,6 @@ private struct CallSnapshot: Equatable {
     let requestConsentInfoUpdateCount: Int
     let loadAndPresentConsentFormIfRequiredCount: Int
     let canRequestAdsCount: Int
-    let requestTrackingAuthorizationCount: Int
     let initializeCount: Int
 
 }
@@ -141,7 +132,6 @@ private actor CallRecorder {
         case consentRequestConsentInfoUpdate
         case consentLoadAndPresentConsentFormIfRequired
         case consentCanRequestAds
-        case appTrackingRequestTrackingAuthorization
         case mobileAdsInitialize
 
     }
@@ -155,9 +145,6 @@ private actor CallRecorder {
                 $0 == .consentLoadAndPresentConsentFormIfRequired
             }.count,
             canRequestAdsCount: entries.filter { $0 == .consentCanRequestAds }.count,
-            requestTrackingAuthorizationCount: entries.filter {
-                $0 == .appTrackingRequestTrackingAuthorization
-            }.count,
             initializeCount: entries.filter { $0 == .mobileAdsInitialize }.count
         )
     }
@@ -190,18 +177,6 @@ private func makeConsentClient(
         canRequestAds: {
             await recorder.append(.consentCanRequestAds)
             return canRequestAdsValue
-        }
-    )
-}
-
-private func makeAppTrackingClient(
-    recorder: CallRecorder,
-    returnStatus: AppTrackingAuthorizationStatus = .authorized
-) -> AppTrackingClient {
-    AppTrackingClient(
-        requestTrackingAuthorization: {
-            await recorder.append(.appTrackingRequestTrackingAuthorization)
-            return returnStatus
         }
     )
 }

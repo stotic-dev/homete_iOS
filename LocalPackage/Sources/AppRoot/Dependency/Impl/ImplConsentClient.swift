@@ -19,29 +19,33 @@ public extension ConsentClient {
 
 }
 
-@MainActor
-private func requestConsentInfoUpdateOnMain() async throws {
-    let parameters = RequestParameters()
-    try await ConsentInformation.shared.requestConsentInfoUpdate(with: parameters)
-}
+private extension ConsentClient {
 
-@MainActor
-private func loadAndPresentConsentFormIfRequiredOnMain() async throws {
-    guard let rootViewController = rootViewController() else { return }
-    try await ConsentForm.loadAndPresentIfRequired(from: rootViewController)
-}
+    @MainActor
+    static func requestConsentInfoUpdateOnMain() async throws {
+        let parameters = RequestParameters()
+        try await ConsentInformation.shared.requestConsentInfoUpdate(with: parameters)
+    }
 
-@MainActor
-private func canRequestAdsOnMain() -> Bool {
-    ConsentInformation.shared.canRequestAds
-}
+    @MainActor
+    static func loadAndPresentConsentFormIfRequiredOnMain() async throws {
+        guard let rootViewController = rootViewController() else { return }
+        try await ConsentForm.loadAndPresentIfRequired(from: rootViewController)
+    }
 
-@MainActor
-private func rootViewController() -> UIViewController? {
-    UIApplication.shared.connectedScenes
-        .compactMap { $0 as? UIWindowScene }
-        .flatMap(\.windows)
-        .first(where: \.isKeyWindow)?
-        .rootViewController
+    @MainActor
+    static func canRequestAdsOnMain() -> Bool {
+        ConsentInformation.shared.canRequestAds
+    }
+
+    @MainActor
+    static func rootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)?
+            .rootViewController
+    }
+
 }
 #endif
