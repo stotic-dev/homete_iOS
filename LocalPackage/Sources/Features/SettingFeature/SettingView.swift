@@ -15,11 +15,13 @@ public struct SettingView: View {
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.cohabitantMembers) var cohabitantMembers
+    @Environment(\.routeResolver) var router
     @Environment(\.dismiss) var dismiss
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
+    @State var isShowMemberRegistration = false
 
     public init() {}
 
@@ -35,7 +37,7 @@ public struct SettingView: View {
                     VStack(spacing: .zero) {
                         ForEach(SettingMenuItem.allCases, id: \.self) { item in
                             SettingMenuItemButton(item: item) {
-                                // TODO: メニューボタンタップ時の処理
+                                tappedSettingMenuItem(item)
                             }
                         }
                     }
@@ -65,6 +67,9 @@ public struct SettingView: View {
             .trailingToolbarItem {
                 leadingNavigationBarContent()
             }
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowMemberRegistration) {
+            router.resolve(.cohabitantRegistration)
         }
         .fullScreenLoadingIndicator(loadingState)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
@@ -98,6 +103,17 @@ private extension SettingView {
 // MARK: プレゼンテーションロジック
 
 private extension SettingView {
+
+    func tappedSettingMenuItem(_ item: SettingMenuItem) {
+        switch item {
+        case .memberRegistration:
+            isShowMemberRegistration = true
+
+        case .taskTemplate, .privacyPolicy, .license:
+            // TODO: 各メニューの遷移処理
+            break
+        }
+    }
 
     func tappedLogoutRowButton() {
         isPresentedLogoutConfirmAlert = true
