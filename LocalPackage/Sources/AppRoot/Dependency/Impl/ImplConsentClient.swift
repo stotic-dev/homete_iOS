@@ -3,9 +3,9 @@
 //
 
 #if os(iOS)
-    import HometeDomain
-    import UIKit
-    import UserMessagingPlatform
+import HometeDomain
+import UIKit
+import UserMessagingPlatform
 
     public extension ConsentClient {
 
