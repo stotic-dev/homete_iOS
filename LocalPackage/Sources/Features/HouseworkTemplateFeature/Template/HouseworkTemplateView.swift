@@ -24,6 +24,8 @@ struct HouseworkTemplateView: View {
     @State var presentingDismissAlert = false
     @State var presentingResetAlert = false
 
+    @CommonError var commonErrorContent
+
     @AppStorage(key: .collapsedHouseworkTemplateDays) var collapsedDays = CollapsedHouseworkTemplateDays()
 
     @Binding var initialDraft: HouseworkTemplateDraft?
@@ -123,6 +125,7 @@ struct HouseworkTemplateView: View {
             Text("現在の編集内容は破棄されます。")
         }
         .animation(.default, value: collapsedDays)
+        .commonError(content: $commonErrorContent)
     }
 
 }
@@ -361,8 +364,11 @@ private extension HouseworkTemplateView {
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
             editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
             initialDraft = draft
+        } catch HouseworkTemplateError.versionConflict {
+            // 保存タイミングと metaVersion 監視のレースで versionConflict を先に検知した場合の保険
+            presentingConflictDraftAlert = true
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 
@@ -376,7 +382,7 @@ private extension HouseworkTemplateView {
                 cohabitantId: cohabitantId
             )
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 
