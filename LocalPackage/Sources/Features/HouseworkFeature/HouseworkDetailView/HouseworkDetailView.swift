@@ -103,6 +103,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .setupEnvironmentForPreview()
 }
 
 #Preview("HouseworkDetailView_通信中") {
