@@ -18,12 +18,14 @@ struct HouseworkTemplateItemEditModalScreen: View {
     let onConfirm: (TemplateItemEditInput) -> Void
 
     var body: some View {
-        HouseworkTemplateItemEditModal(
-            input: $input,
-            isShowingKeyboard: _isShowingKeyboard,
-            mode: mode,
-            onConfirm: onConfirm
-        )
+        NavigationStack {
+            HouseworkTemplateItemEditModal(
+                input: $input,
+                isShowingKeyboard: _isShowingKeyboard,
+                mode: mode,
+                onConfirm: onConfirm
+            )
+        }
         .background {
             if isShowingKeyboard {
                 Color.clear
@@ -74,25 +76,23 @@ struct HouseworkTemplateItemEditModal: View {
     let onConfirm: (TemplateItemEditInput) -> Void
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: .space16) {
-                inputTitleField()
-                inputPointSlider()
-                inputDaysSelector()
-                Spacer()
+        VStack(alignment: .leading, spacing: .space16) {
+            inputTitleField()
+            inputPointSlider()
+            inputDaysSelector()
+            Spacer()
+        }
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space24)
+        .navigationTitle(navigationTitle)
+        .inlineNavigationBarTitleDisplayMode()
+        .leadingToolbarItem {
+            NavigationBarButton(label: .close) {
+                dismiss()
             }
-            .padding(.horizontal, .space16)
-            .padding(.vertical, .space24)
-            .navigationTitle(navigationTitle)
-            .inlineNavigationBarTitleDisplayMode()
-            .leadingToolbarItem {
-                NavigationBarButton(label: .close) {
-                    dismiss()
-                }
-            }
-            .trailingToolbarItem {
-                trailingNavigationItem()
-            }
+        }
+        .trailingToolbarItem {
+            trailingNavigationItem()
         }
     }
 
@@ -165,10 +165,12 @@ private extension HouseworkTemplateItemEditModal {
 
 #if DEBUG
 #Preview("HouseworkTemplateItemEditModal_未入力") {
-    HouseworkTemplateItemEditModal(
-        input: .constant(.initial(UUID())),
-        mode: .create
-    ) { _ in }
+    NavigationStack {
+        HouseworkTemplateItemEditModal(
+            input: .constant(.initial(UUID())),
+            mode: .create
+        ) { _ in }
+    }
 }
 
 #Preview("HouseworkTemplateItemEditModal_入力済み") {
@@ -178,9 +180,11 @@ private extension HouseworkTemplateItemEditModal {
         point: 10,
         days: [.monday, .friday]
     )
-    HouseworkTemplateItemEditModal(
-        input: .constant(beforeInput),
-        mode: .edit(before: beforeInput)
-    ) { _ in }
+    NavigationStack {
+        HouseworkTemplateItemEditModal(
+            input: .constant(beforeInput),
+            mode: .edit(before: beforeInput)
+        ) { _ in }
+    }
 }
 #endif

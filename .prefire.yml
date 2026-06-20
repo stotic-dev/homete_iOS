@@ -27,4 +27,5 @@ test_configuration:
     - HouseworkFeature
     - HouseworkTemplateFeature
     - ContributionFeature
+  - draw_hierarchy_in_key_window_default_enabled: true
 
