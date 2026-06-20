@@ -117,6 +117,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .setupEnvironmentForPreview()
     #if canImport(Prefire)
         .prefireIgnored()
     #endif
