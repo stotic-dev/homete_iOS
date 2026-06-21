@@ -140,8 +140,9 @@ import SnapshotTesting
                     {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
                     drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
                     {% endif %}
-                    precision: preferences.precision,
-                    perceptualPrecision: preferences.perceptualPrecision,
+                    // Xcode Cloudだとわずかな差分が発生するので、最低2%の差分は許容する
+                    precision: min(0.98, preferences.precision),
+                    perceptualPrecision: min(0.98, preferences.perceptualPrecision),
                     layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
                     traits: prefireSnapshot.traits
                 )
