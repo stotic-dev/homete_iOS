@@ -1,8 +1,8 @@
 test_configuration:
   - target: homete
   - test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
-  - simulator_device: "iPhone17,3"
-  - required_os: 27
+  - simulator_device: "iPhone15,4"
+  - required_os: 17
   - preview_default_enabled: true
   - template_file_path: generateTestTemplate.stencil 
   - use_grouped_snapshots: true
