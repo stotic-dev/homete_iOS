@@ -194,7 +194,7 @@ extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
-    #if DEBUG
+    #if canImport(Prefire)
         .prefireIgnored()
     #endif
 }
