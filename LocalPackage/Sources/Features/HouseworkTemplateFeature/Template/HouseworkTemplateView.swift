@@ -473,13 +473,11 @@ private extension HouseworkTemplateView {
             ),
         ],
     ]
-    NavigationStack {
-        HouseworkTemplateView(
-            initialDraft: .constant(.init(days: templateData)),
-            draft: .constant(.init(days: templateData)),
-            editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
-        )
-    }
+    HouseworkTemplateView(
+        initialDraft: .constant(.init(days: templateData)),
+        draft: .constant(.init(days: templateData)),
+        editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
+    )
     .environment(
         \.houseworkTemplateContext,
         .init(
@@ -504,19 +502,17 @@ private extension HouseworkTemplateView {
             ),
         ],
     ]
-    NavigationStack {
-        HouseworkTemplateView(
-            initialDraft: .constant(.init(days: templateData)),
-            draft: .constant(.init()),
-            editorContext: .constant(.init(
-                currentActiveEditors: [
-                    .init(id: "1", userName: "Aさん"),
-                    .init(id: "2", userName: "Bさん"),
-                ],
-                currentTemplateVersion: .zero
-            ))
-        )
-    }
+    HouseworkTemplateView(
+        initialDraft: .constant(.init(days: templateData)),
+        draft: .constant(.init()),
+        editorContext: .constant(.init(
+            currentActiveEditors: [
+                .init(id: "1", userName: "Aさん"),
+                .init(id: "2", userName: "Bさん"),
+            ],
+            currentTemplateVersion: .zero
+        ))
+    )
     .environment(
         \.houseworkTemplateContext,
         .init(
