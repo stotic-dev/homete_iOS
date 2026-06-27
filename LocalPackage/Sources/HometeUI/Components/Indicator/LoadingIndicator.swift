@@ -36,7 +36,4 @@ public extension View {
 
 #Preview {
     LoadingIndicator()
-    #if canImport(Prefire)
-        .prefireIgnored()
-    #endif
 }
