@@ -170,6 +170,8 @@ private extension ContributionSummaryContent {
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
     .setupEnvironmentForPreview()
+    .background(.surface)
+    .compositingGroup()
 }
 
 #Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {

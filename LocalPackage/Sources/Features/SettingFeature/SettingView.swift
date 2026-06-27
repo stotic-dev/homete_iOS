@@ -156,6 +156,8 @@ private extension SettingView {
                 ownId: "ownId"
             )
         )
+        .background(.surface)
+        .compositingGroup()
 }
 
 #Preview("SettingView_グループ登録済み") {
@@ -168,4 +170,6 @@ private extension SettingView {
             fcmToken: "",
             cohabitantId: ""
         )))
+        .background(.surface)
+        .compositingGroup()
 }

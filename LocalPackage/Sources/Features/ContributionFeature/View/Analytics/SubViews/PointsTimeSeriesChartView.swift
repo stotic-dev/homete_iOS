@@ -193,6 +193,8 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
+    .background(.surface)
+    .compositingGroup()
     // Xcode Cloudでわずかに差分が出てしまうので必要とする一致率を下げる
     .snapshotForPreview(precision: 0.95, perceptualPrecision: 0.95)
 }
