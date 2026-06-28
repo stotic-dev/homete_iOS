@@ -213,7 +213,6 @@ private extension CumulativePointsAreaChartView {
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
-    .background(.surface)
-    .compositingGroup()
+    .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 #endif

@@ -489,6 +489,7 @@ private extension HouseworkTemplateView {
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .apply(theme: .init())
+    .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("HouseworkTemplateView_アクティブユーザー有り") {

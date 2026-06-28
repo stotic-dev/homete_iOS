@@ -32,6 +32,7 @@ public extension View {
 #Preview("DestructiveButtonStyle_Enabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .destructiveButtonStyle()
+        .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("DestructiveButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
