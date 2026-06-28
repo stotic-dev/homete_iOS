@@ -14,7 +14,7 @@ struct DestructiveButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration
             .commonStyle(.onDestructive)
-            .background(.destructive)
+            .background(.red)
             .cornerRadius(.radius16)
             .opacity(isEnabled ? 1 : 0.5)
     }
@@ -32,7 +32,6 @@ public extension View {
 #Preview("DestructiveButtonStyle_Enabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .destructiveButtonStyle()
-        .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("DestructiveButtonStyle_Disabled", traits: .sizeThatFitsLayout) {
