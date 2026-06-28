@@ -178,6 +178,7 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
+    .snapshotForPreview(delay: 5)
 }
 
 #Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
@@ -193,8 +194,7 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
-    // Xcode CloudとローカルでMetal GPU描画差が出るため精度を下げる
-    .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
+    .snapshotForPreview(delay: 5)
 }
 
 #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
@@ -210,5 +210,6 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
+    .snapshotForPreview(delay: 5)
 }
 #endif
