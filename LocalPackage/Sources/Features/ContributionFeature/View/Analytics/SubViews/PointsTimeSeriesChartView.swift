@@ -178,7 +178,6 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
-    .snapshotForPreview(delay: 5)
 }
 
 #Preview("PointsTimeSeriesChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
@@ -194,7 +193,6 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
-    .snapshotForPreview(delay: 5)
 }
 
 #Preview("PointsTimeSeriesChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
@@ -210,6 +208,5 @@ private extension PointsTimeSeriesChartView {
     .setupEnvironmentForPreview()
     .padding(.horizontal, .space16)
     .padding(.vertical, .space56)
-    .snapshotForPreview(delay: 5)
 }
 #endif

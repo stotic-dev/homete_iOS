@@ -120,7 +120,6 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
-    .snapshotForPreview(delay: 5)
 }
 
 #Preview("ContributionAnalyticsView_月間", traits: .sizeThatFitsLayout) {
@@ -135,7 +134,6 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
-    .snapshotForPreview(delay: 5)
 }
 
 #Preview("ContributionAnalyticsView_年間", traits: .sizeThatFitsLayout) {
@@ -150,7 +148,6 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
-    .snapshotForPreview(delay: 5)
 }
 
 #Preview("ContributionAnalyticsView_空表示", traits: .sizeThatFitsLayout) {

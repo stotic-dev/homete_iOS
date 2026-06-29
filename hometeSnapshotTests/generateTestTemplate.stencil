@@ -69,21 +69,15 @@ import SnapshotTesting
 
     {% for macroModel in argument.previewsMacrosDict %}
     func test_{{ macroModel.componentTestName }}_Preview() {
-        {% if macroModel.properties %}
         struct PreviewWrapper{{ macroModel.componentTestName }}: SwiftUI.View {
             {{ macroModel.properties }}
             var body: some View {
                 {{ macroModel.body|indent:12 }}
             }
         }
-        {% endif %}
         let prefireSnapshot = PrefireSnapshot(
             {
-                {% if macroModel.properties %}
                 PreviewWrapper{{ macroModel.componentTestName }}()
-                {% else %}
-                {{ macroModel.body|indent:12 }}
-                {% endif %}
             },
             name: "{{ macroModel.displayName }}",
             isScreen: {% if macroModel.isScreen == 1 %}true{% else %}false{% endif %},
@@ -130,23 +124,23 @@ import SnapshotTesting
     }
 
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
-        let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
+        let (previewView, _) = prefireSnapshot.loadViewWithPreferences()
 
+        // Prefire の `.snapshot(precision:)` モディファイア値は SwiftUI の
+        // `.onPreferenceChange` が headless テスト環境で同期発火しないため伝播しない。
+        // 代わりに precision/perceptualPrecision を 0.85 固定で適用し、Xcode Cloud と
+        // ローカル間の Metal GPU / Liquid Glass 由来の微差を吸収する。
         let failure = verifySnapshot(
             of: previewView,
-            as: .wait(
-                for: preferences.delay,
-                on: .image(
-                    {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
-                    drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
-                    {% endif %}
-                    precision: preferences.precision,
-                    perceptualPrecision: preferences.perceptualPrecision,
-                    layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
-                    traits: prefireSnapshot.traits
-                )
+            as: .image(
+                {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
+                drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
+                {% endif %}
+                precision: 0.85,
+                perceptualPrecision: 0.85,
+                layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
+                traits: prefireSnapshot.traits
             ),
-            record: preferences.record,
             snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
             file: file{% endif %},
             testName: prefireSnapshot.name
@@ -158,9 +152,8 @@ import SnapshotTesting
 
             SnapshotTesting.assertSnapshot(
                 matching: vc,
-                as: .wait(for: preferences.delay, on: .accessibilityImage(showActivationPoints: .always)),
+                as: .accessibilityImage(showActivationPoints: .always),
                 snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
-                record: preferences.record,
                 file: file{% endif %},
                 testName: prefireSnapshot.name + ".accessibility"
             )

@@ -153,7 +153,6 @@ private extension HouseworkDetailActionContent {
         )
     )
     .environment(HouseworkListStore())
-    .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("HouseworkDetailActionContent_承認待ち_確認者アカウント", traits: .sizeThatFitsLayout) {

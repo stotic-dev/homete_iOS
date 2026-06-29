@@ -183,7 +183,6 @@ private extension RegisterHouseworkView {
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
-    .snapshotForPreview(delay: 1, precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("RegisterHouseworkView_通信中") {

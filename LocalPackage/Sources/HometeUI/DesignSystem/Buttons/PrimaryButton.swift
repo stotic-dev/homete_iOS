@@ -37,7 +37,6 @@ public extension View {
 #Preview("PrimaryButtonStyle_Enabled", traits: .sizeThatFitsLayout) {
     Button("Button") {}
         .primaryButtonStyle()
-        .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("PrimaryButtonStyle_Disabled", traits: .sizeThatFitsLayout) {

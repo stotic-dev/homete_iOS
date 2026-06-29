@@ -156,7 +156,6 @@ private extension SettingView {
                 ownId: "ownId"
             )
         )
-        .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
 
 #Preview("SettingView_グループ登録済み") {
@@ -169,5 +168,4 @@ private extension SettingView {
             fcmToken: "",
             cohabitantId: ""
         )))
-        .snapshotForPreview(precision: 0.85, perceptualPrecision: 0.85)
 }
