@@ -124,8 +124,9 @@ import SnapshotTesting
     }
 
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
-        let (previewView, _) = prefireSnapshot.loadViewWithPreferences()
+        let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
 
+        print("[Prefire preferences debug print] delay: \(preferences.delay), precision: \(preferences.precision), perceptualPrecision: \(preferences.perceptualPrecision), record: \(preferences.record)")
         // Prefire の `.snapshot(precision:)` モディファイア値は SwiftUI の
         // `.onPreferenceChange` が headless テスト環境で同期発火しないため伝播しない。
         // 代わりに precision/perceptualPrecision を 0.85 固定で適用し、Xcode Cloud と
@@ -136,8 +137,8 @@ import SnapshotTesting
                 {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
                 drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
                 {% endif %}
-                precision: 0.85,
-                perceptualPrecision: 0.85,
+                precision: preferences.precision,
+                perceptualPrecision: preferences.perceptualPrecision,
                 layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
                 traits: prefireSnapshot.traits
             ),

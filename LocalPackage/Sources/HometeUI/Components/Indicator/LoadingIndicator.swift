@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 struct LoadingIndicator: View {
 
