@@ -126,21 +126,20 @@ import SnapshotTesting
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
         let (previewView, _) = prefireSnapshot.loadViewWithPreferences()
 
-        // Prefire の `.snapshot(precision:delay:)` モディファイア値は SwiftUI の
+        // Prefire の `.snapshot(precision:)` モディファイア値は SwiftUI の
         // `.onPreferenceChange` が headless テスト環境で同期発火しないため伝播しない。
-        // 代わりに stencil 側で一律 2 秒の delay を挟み、Chart / Liquid Glass などの
-        // 非同期 render が完了してから snapshot を撮ることで Xcode Cloud との差分を抑える。
+        // 代わりに precision/perceptualPrecision を 0.85 固定で適用し、Xcode Cloud と
+        // ローカル間の Metal GPU / Liquid Glass 由来の微差を吸収する。
         let failure = verifySnapshot(
             of: previewView,
-            as: .wait(
-                for: 2.0,
-                on: .image(
-                    {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
-                    drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
-                    {% endif %}
-                    layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
-                    traits: prefireSnapshot.traits
-                )
+            as: .image(
+                {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
+                drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
+                {% endif %}
+                precision: 0.85,
+                perceptualPrecision: 0.85,
+                layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
+                traits: prefireSnapshot.traits
             ),
             snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
             file: file{% endif %},
@@ -153,7 +152,7 @@ import SnapshotTesting
 
             SnapshotTesting.assertSnapshot(
                 matching: vc,
-                as: .wait(for: 2.0, on: .accessibilityImage(showActivationPoints: .always)),
+                as: .accessibilityImage(showActivationPoints: .always),
                 snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
                 file: file{% endif %},
                 testName: prefireSnapshot.name + ".accessibility"
