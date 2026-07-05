@@ -112,8 +112,15 @@ import SnapshotTesting
             // Ignore specific device safe area
             snapshot.device.safeArea = .zero
 
-            // Ignore specific device display scale
-            snapshot.traits = UITraitCollection(displayScale: 2.0)
+            // Ignore specific device display scale.
+            // displayGamut を SRGB に固定し、スナップショットのレンダリング色空間を
+            // ローカル（Display P3 の Mac）と Xcode Cloud（sRGB）で統一する。
+            // これが無いと参照PNG（P3）とCIレンダリング（sRGB）の生ピクセル値が
+            // 彩度の高い色で大きくずれ、知覚比較が誤検出する。
+            snapshot.traits = UITraitCollection(traitsFrom: [
+                UITraitCollection(displayScale: 2.0),
+                UITraitCollection(displayGamut: .SRGB),
+            ])
 
             if let failure = assertSnapshot(for: snapshot) {
                 XCTFail(failure)
@@ -126,19 +133,17 @@ import SnapshotTesting
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
         let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
 
-        print("[Prefire preferences debug print] delay: \(preferences.delay), precision: \(preferences.precision), perceptualPrecision: \(preferences.perceptualPrecision), record: \(preferences.record)")
-        // Prefire の `.snapshot(precision:)` モディファイア値は SwiftUI の
-        // `.onPreferenceChange` が headless テスト環境で同期発火しないため伝播しない。
-        // 代わりに precision/perceptualPrecision を 0.85 固定で適用し、Xcode Cloud と
-        // ローカル間の Metal GPU / Liquid Glass 由来の微差を吸収する。
+        // Xcode Cloud とローカルの GPU 差（アンチエイリアス・マテリアル描画）による
+        // 微小差分を吸収するため、precision / perceptualPrecision は 0.95 を上限に適用する。
+        // Preview 側の .snapshot() モディファイアでさらに緩和することは可能。
         let failure = verifySnapshot(
             of: previewView,
             as: .image(
                 {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
                 drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
                 {% endif %}
-                precision: preferences.precision,
-                perceptualPrecision: preferences.perceptualPrecision,
+                precision: min(preferences.precision, 0.95),
+                perceptualPrecision: min(preferences.perceptualPrecision, 0.95),
                 layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
                 traits: prefireSnapshot.traits
             ),
