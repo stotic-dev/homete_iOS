@@ -133,9 +133,13 @@ import SnapshotTesting
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
         let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
 
-        // precision / perceptualPrecision は Preview 側の .snapshot() モディファイアの値を
-        // そのまま使う。Xcode Cloud も Apple Silicon の Mac でレンダリングするため、
-        // GPU 差による微小差分を許容する一律の緩和は不要。
+        // perceptualPrecision は一律 0.98（deltaE <= 2、人間の知覚限界未満）でキャップする。
+        // ローカルと Xcode Cloud では macOS ビルド差により CoreGraphics の
+        // アンチエイリアス縁のラスタライズ丸めが ±1/255 ずれることがあり
+        // （実測: 数ピクセルが 1 チャンネルだけ 1 ずれる、deltaE < 0.5）、
+        // 完全一致（1.0）ではこの環境差で誤検出する。
+        // precision（deltaE 条件を満たすべきピクセルの割合）は緩めないため、
+        // 知覚可能な見た目の変化は引き続き全ピクセルで検出される。
         let failure = verifySnapshot(
             of: previewView,
             as: .image(
@@ -143,7 +147,7 @@ import SnapshotTesting
                 drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
                 {% endif %}
                 precision: preferences.precision,
-                perceptualPrecision: preferences.perceptualPrecision,
+                perceptualPrecision: min(preferences.perceptualPrecision, 0.98),
                 layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
                 traits: prefireSnapshot.traits
             ),
