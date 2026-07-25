@@ -18,6 +18,7 @@ homete にサブスクリプション課金機能を導入するにあたり、A
 * サードパーティ依存は `HometeInfrastructure` のみが持つという既存の[マルチモジュール構成のルール](../multimodules_structure.md)に従い、RevenueCat SDK への直接依存は `HometeInfrastructure` に閉じ込める
 * `HometeDomain` には RevenueCat に依存しない `PurchaseClient`（Client プロトコル）と `SubscriptionStore` を定義し、既存の `AccountAuthClient` / `AccountAuthStore` と同様の Client + Store パターンでエンタイトルメント状態を扱う
 * ユーザーのログイン/ログアウトと連動して `Purchases.shared.logIn` / `logOut` を呼び出し、匿名ユーザーIDとアカウントIDを紐付ける
+* ローカルのDebug構成では、Apple Sandboxの代わりに RevenueCat の [Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox#test-store) を使用する。Test Store はストアアカウント（Sandboxテスター）なしで課金処理をテストできるため、開発時のデバッグ効率を優先する。Stg（TestFlight配信）/Release（本番）構成では従来通り実際のApple Sandbox/Productionを使用する
 
 ## 考慮した選択肢
 
@@ -36,9 +37,11 @@ homete にサブスクリプション課金機能を導入するにあたり、A
 ### 決定にあたり考慮したデメリット
 
 * RevenueCat への外部依存が増え、料金プラン（MTR無料枠超過時の課金等）や障害時のリスクを負う
-* エンタイトルメント/プロダクト/オファリングの実体は RevenueCat ダッシュボード側の設定に依存するため、コード側だけでは完結しない（本ADR時点ではダッシュボード未設定のため、Entitlement識別子は仮で `"premium"` を使用している）
+* エンタイトルメント/プロダクト/オファリングの実体は RevenueCat ダッシュボード側の設定に依存するため、コード側だけでは完結しない
+* Test Store 用のAPIキーを別途管理する必要があり、Secret.xcconfig の管理項目が増える
 
 ## 参考
 
 * [RevenueCat Quickstart](https://www.revenuecat.com/docs/getting-started/quickstart)
 * [purchases-ios-spm](https://github.com/RevenueCat/purchases-ios-spm)
+* [RevenueCat Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox#test-store)
