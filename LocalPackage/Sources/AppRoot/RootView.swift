@@ -9,13 +9,14 @@ import SwiftUI
 
 public struct RootView: View {
 
+    let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
+
     @State var theme = Theme()
     @State var fcmToken: String?
     @State var launchState = LaunchState.launching
 
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
-    @Environment(SubscriptionStore.self) var subscriptionStore
 
     public var body: some View {
         ZStack {
@@ -60,8 +61,15 @@ public extension RootView {
 
     static func make(dependencies: AppDependencies) -> some View {
         DependenciesInjectLayer {
-            RootView()
-                .environment(AccountStore(accountInfoClient: $0.accountInfoClient))
+            let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
+            let subscriptionStore = SubscriptionStore(purchaseClient: $0.purchaseClient)
+            let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
+                accountStore: accountStore,
+                subscriptionStore: subscriptionStore
+            )
+
+            RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
+                .environment(accountStore)
                 .environment(AccountAuthStore(
                     accountAuthClient: $0.accountAuthClient,
                     analyticsClient: $0.analyticsClient,
@@ -72,7 +80,7 @@ public extension RootView {
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient
                 ))
-                .environment(SubscriptionStore(purchaseClient: $0.purchaseClient))
+                .environment(subscriptionStore)
                 .routeResolverInjection()
                 .adComponentResolverInjection()
         }
@@ -93,13 +101,12 @@ private extension RootView {
     func onChangeAuth() async {
         guard let authResult = accountAuthStore.currentAuth.result else {
             launchState = .notLoggedIn
-            await subscriptionStore.logOut()
+            await authSubscriptionSyncUseCase.syncOnSignedOut()
             return
         }
 
-        if let account = await accountStore.load(authResult) {
+        if let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) {
             await updateFcmTokenIfNeeded()
-            await subscriptionStore.logIn(account.id)
             launchState = .loggedIn(context: .init(account: account))
         } else {
             launchState = .preLoggedIn(auth: authResult)
