@@ -9,11 +9,10 @@
 #   ASC_API_KEY_PATH  秘密鍵ファイル(.p8)へのパス
 #
 # 注意:
-#   `call` サブコマンドと `subscriptions get/prices/localizations` 系のGET系は
-#   JSON:API仕様上とても安定しているため信頼度が高いですが、
-#   価格/ローカリゼーション作成やスクリーンショットアップロードのリクエストボディ形式は
-#   Apple公式ドキュメント（SPAでスクレイピング困難だったため今回未実機検証）を基にした
-#   ベストエフォート実装です。エラー時はレスポンスのJSON:APIエラーメッセージを見ながら
+#   `call` サブコマンドと `subscriptions get/prices/localizations` 系のGET系、
+#   価格/ローカリゼーション作成、スクリーンショットアップロードは全て実機確認済みです。
+#   それ以外の未検証箇所はコマンドごとのコメントに明記しています。
+#   エラー時はレスポンスのJSON:APIエラーメッセージを見ながら
 #   https://developer.apple.com/documentation/appstoreconnectapi と照合してください。
 
 set -e
@@ -81,7 +80,7 @@ Usage: appstoreconnect.sh <command> [args...]
     ファイル内の subscriptions[].localizations / inAppPurchases[].localizations を読み込み、
     localeごとに既存ローカライズの有無を確認してPOST(新規)/PATCH(更新)を自動実行します(upsert)。
 
-スクリーンショットアップロード（予約 → バイナリアップロード → コミットの3ステップを自動実行）:
+スクリーンショットアップロード（予約 → バイナリアップロード → コミットの3ステップを自動実行、実機確認済み）:
   subscriptions screenshot upload <subscription_id> <file_path>
 
 Env:
@@ -388,7 +387,7 @@ parse_body_args() {
   fi
 }
 
-# subscriptions screenshot upload <subscription_id> <file_path>
+# subscriptions screenshot upload <subscription_id> <file_path>（実機確認済み）
 upload_screenshot() {
   local subscription_id="$1"
   local file_path="$2"
