@@ -79,6 +79,7 @@ homete/Resouces/Secret.xcconfig
 homete/Resouces/Secret_dev.xcconfig
 .env
 scripts/revenuecat.env
+scripts/appstoreconnect.env
 
 # other
 

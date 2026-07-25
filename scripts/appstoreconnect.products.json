@@ -1,0 +1,33 @@
+{
+  "appId": "6759321417",
+  "subscriptionGroupId": "22263200",
+  "subscriptions": [
+    {
+      "productId": "monthly",
+      "subscriptionId": "6794541936",
+      "displayName": "プレミアムプラン（1ヶ月更新）",
+      "prices": [
+        { "territory": "JPN", "amount": "450" }
+      ]
+    },
+    {
+      "productId": "yearly",
+      "subscriptionId": "6794559719",
+      "displayName": "プレミアムプラン（1年更新）",
+      "prices": [
+        { "territory": "JPN", "amount": "3600" }
+      ]
+    }
+  ],
+  "inAppPurchases": [
+    {
+      "productId": "onetime_yearly",
+      "inAppPurchaseId": "6794541732",
+      "displayName": "プレミアムプラン（1年間）",
+      "baseTerritory": "JPN",
+      "prices": [
+        { "territory": "JPN", "amount": "3600" }
+      ]
+    }
+  ]
+}
