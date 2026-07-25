@@ -18,7 +18,7 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 case .cohabitantRegistration:
                     CohabitantRegistrationView()
                 case .setting:
-                    SettingView()
+                    SettingViewScreen()
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
                 }

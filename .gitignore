@@ -84,6 +84,9 @@ Build/
 # Prefire generated test file
 hometeSnapshotTests/PreviewTests.generated.swift
 
+# Xcode Cloud (machine-local manifest)
+**/xcshareddata/xcodecloud/
+
 # VS Code
 
 .vscode/

@@ -98,6 +98,5 @@ private extension HouseworkDateHeaderContent {
     )
     .setupEnvironmentForPreview()
     .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
-    .snapshotForPreview(delay: 2)
 }
 #endif

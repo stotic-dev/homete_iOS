@@ -2,6 +2,13 @@
 
 set -e
 
+# Xcode Cloudランナーのアーキテクチャ（Intel / Apple Silicon）を確認する
+echo "=== Runner architecture ==="
+echo "uname -m: $(uname -m)"
+echo "arch: $(arch)"
+echo "CPU brand: $(sysctl -n machdep.cpu.brand_string)"
+echo "==========================="
+
 # Xcode CloudでSwift Package Managerプラグインの検証をスキップする
 # SwiftGenPlugin、PrefireTestsPluginなどのBuild Tool Pluginを許可するために必要
 # どのワークフローでも共通で必要なため、switch-caseの外で実行する

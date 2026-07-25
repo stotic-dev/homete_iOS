@@ -136,7 +136,6 @@
 				BC1BB2642E909B8C001D168F /* Sources */,
 				BC1BB2652E909B8C001D168F /* Frameworks */,
 				BC1BB2662E909B8C001D168F /* Resources */,
-				04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */,
 			);
 			buildRules = (
 			);
@@ -250,25 +249,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Set UIDesignRequiresCompatibility";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/libexec/PlistBuddy -c \"Set :UIDesignRequiresCompatibility YES\" \"${BUILT_PRODUCTS_DIR}/homete.app/Info.plist\"\n";
-		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
