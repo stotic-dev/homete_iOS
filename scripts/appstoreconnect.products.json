@@ -8,6 +8,13 @@
       "displayName": "プレミアムプラン（1ヶ月更新）",
       "prices": [
         { "territory": "JPN", "amount": "450" }
+      ],
+      "localizations": [
+        {
+          "locale": "ja",
+          "name": "プレミアムプラン",
+          "description": "有償版で使用できる機能全て利用できるようになります"
+        }
       ]
     },
     {
@@ -16,6 +23,13 @@
       "displayName": "プレミアムプラン（1年更新）",
       "prices": [
         { "territory": "JPN", "amount": "3600" }
+      ],
+      "localizations": [
+        {
+          "locale": "ja",
+          "name": "プレミアムプラン（年額）",
+          "description": "年額でお得な料金で、有償版の全機能が使い放題になります"
+        }
       ]
     }
   ],
@@ -27,6 +41,13 @@
       "baseTerritory": "JPN",
       "prices": [
         { "territory": "JPN", "amount": "3600" }
+      ],
+      "localizations": [
+        {
+          "locale": "ja",
+          "name": "プレミアムプラン（買い切り）",
+          "description": "1年間、有償版の全機能をご利用いただけます（自動更新なし）"
+        }
       ]
     }
   ]

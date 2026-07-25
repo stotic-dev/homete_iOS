@@ -54,6 +54,9 @@ Usage: appstoreconnect.sh <command> [args...]
   inapp price set-base <in_app_purchase_id> <price_point_id> <territory>
     ※ 初回のPrice Schedule作成のみ確認済み。既存Schedule更新は未検証
   inapp localizations list <in_app_purchase_id>
+  inapp localizations set <in_app_purchase_id> <locale> <name> <description>
+    ※ 既存localeがあればPATCH、無ければPOSTで作成（upsert、実機確認済み）
+    ※ 初回はinAppPurchaseVersionsが未作成のため自動的に作成してから紐付けます
 
   例: 月額プランをJPY 450にする
     price_point=$(appstoreconnect.sh subscriptions price-points find 6794541936 JPN 450 | jq -r .id)
@@ -63,12 +66,20 @@ Usage: appstoreconnect.sh <command> [args...]
     price_point=$(appstoreconnect.sh inapp price-points find 6794541732 JPN 3600 | jq -r .id)
     appstoreconnect.sh inapp price set-base 6794541732 "$price_point" JPN
 
-設定ファイルによる一括反映（価格の一元管理）:
+  例: サブスクリプションの日本語ローカライズを設定する
+    appstoreconnect.sh subscriptions localizations set 6794541936 ja "プレミアムプラン（月額）" "全機能が使い放題の月額プラン"
+
+設定ファイルによる一括反映（価格・ローカリゼーションの一元管理）:
   apply-prices [config_path]
     デフォルト: scripts/appstoreconnect.products.json
     ファイル内の subscriptions[].prices / inAppPurchases[].prices を読み込み、
     price-points find → prices set (またはinapp price set-base) を自動実行します。
     ※ inAppPurchasesはbaseTerritory分の初回設定のみ対応（複数territory・Schedule更新後の反映は未対応）
+
+  apply-localizations [config_path]
+    デフォルト: scripts/appstoreconnect.products.json
+    ファイル内の subscriptions[].localizations / inAppPurchases[].localizations を読み込み、
+    localeごとに既存ローカライズの有無を確認してPOST(新規)/PATCH(更新)を自動実行します(upsert)。
 
 スクリーンショットアップロード（予約 → バイナリアップロード → コミットの3ステップを自動実行）:
   subscriptions screenshot upload <subscription_id> <file_path>
@@ -186,13 +197,17 @@ call() {
   http_status=$(echo "$response" | tail -n1)
   response_body=$(echo "$response" | sed '$d')
 
-  if [ -n "$response_body" ]; then
-    echo "$response_body" | jq .
-  fi
-
   if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
+    # 呼び出し元が `call ... > /dev/null` するケースでもエラー内容が見えるようstderrに出す
+    if [ -n "$response_body" ]; then
+      echo "$response_body" | jq . >&2
+    fi
     echo "エラー: HTTP ${http_status}" >&2
     exit 1
+  fi
+
+  if [ -n "$response_body" ]; then
+    echo "$response_body" | jq .
   fi
 }
 
@@ -219,6 +234,132 @@ find_price_point() {
       return 1
     fi
     path="${next#${API_HOST}}"
+  done
+}
+
+# locale に一致する既存ローカライズのidを検索する（無ければ空文字）
+# 使い方: find_localization_id <ローカライズ一覧のパス> <locale>
+find_localization_id() {
+  local list_path="$1"
+  local locale="$2"
+  local result
+
+  generate_jwt
+  result=$(curl -sS "${API_HOST}${list_path}" -H "Authorization: Bearer ${JWT}")
+  echo "$result" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id' | head -n1
+}
+
+# subscriptionLocalizations を upsert する（実機確認済み）
+# 使い方: apply_subscription_localization <subscription_id> <locale> <name> <description>
+apply_subscription_localization() {
+  local subscription_id="$1"
+  local locale="$2"
+  local name="$3"
+  local description="$4"
+  local existing_id body
+
+  existing_id=$(find_localization_id "/v1/subscriptions/${subscription_id}/subscriptionLocalizations" "$locale")
+
+  if [ -n "$existing_id" ]; then
+    body=$(jq -n --arg id "$existing_id" --arg name "$name" --arg description "$description" \
+      '{data:{type:"subscriptionLocalizations",id:$id,attributes:{name:$name,description:$description}}}')
+    call PATCH "/v1/subscriptionLocalizations/${existing_id}" "$body" > /dev/null
+  else
+    body=$(jq -n --arg sub "$subscription_id" --arg locale "$locale" --arg name "$name" --arg description "$description" \
+      '{data:{type:"subscriptionLocalizations",attributes:{locale:$locale,name:$name,description:$description},relationships:{subscription:{data:{type:"subscriptions",id:$sub}}}}}')
+    call POST /v1/subscriptionLocalizations "$body" > /dev/null
+  fi
+}
+
+# IAPの inAppPurchaseVersions を取得、無ければ作成してidを返す（実機確認済み）
+# inAppPurchaseLocalizations は inAppPurchase に直接ぶら下がらず、
+# inAppPurchaseVersions 経由の relationships.version が必須（実機確認で判明）
+# 使い方: get_or_create_iap_version <in_app_purchase_id>
+get_or_create_iap_version() {
+  local in_app_purchase_id="$1"
+  local existing_id body
+
+  generate_jwt
+  existing_id=$(curl -sS "${API_HOST}/v2/inAppPurchases/${in_app_purchase_id}/versions" \
+    -H "Authorization: Bearer ${JWT}" | jq -r '.data[0].id // empty')
+
+  if [ -n "$existing_id" ]; then
+    echo "$existing_id"
+    return 0
+  fi
+
+  body=$(jq -n --arg iap "$in_app_purchase_id" \
+    '{data:{type:"inAppPurchaseVersions",relationships:{inAppPurchase:{data:{type:"inAppPurchases",id:$iap}}}}}')
+  call POST /v1/inAppPurchaseVersions "$body" | jq -r '.data.id'
+}
+
+# inAppPurchaseLocalizations を upsert する（実機確認済み）
+# 使い方: apply_iap_localization <in_app_purchase_id> <locale> <name> <description>
+apply_iap_localization() {
+  local in_app_purchase_id="$1"
+  local locale="$2"
+  local name="$3"
+  local description="$4"
+  local existing_id version_id body
+
+  existing_id=$(find_localization_id "/v2/inAppPurchases/${in_app_purchase_id}/inAppPurchaseLocalizations" "$locale")
+
+  if [ -n "$existing_id" ]; then
+    body=$(jq -n --arg id "$existing_id" --arg name "$name" --arg description "$description" \
+      '{data:{type:"inAppPurchaseLocalizations",id:$id,attributes:{name:$name,description:$description}}}')
+    call PATCH "/v2/inAppPurchaseLocalizations/${existing_id}" "$body" > /dev/null
+  else
+    version_id=$(get_or_create_iap_version "$in_app_purchase_id")
+    body=$(jq -n --arg version "$version_id" --arg locale "$locale" --arg name "$name" --arg description "$description" \
+      '{data:{type:"inAppPurchaseLocalizations",attributes:{locale:$locale,name:$name,description:$description},relationships:{version:{data:{type:"inAppPurchaseVersions",id:$version}}}}}')
+    call POST /v2/inAppPurchaseLocalizations "$body" > /dev/null
+  fi
+}
+
+# appstoreconnect.products.json を読み込んでローカリゼーションを一括反映する
+# 使い方: apply_localizations [config_path]
+apply_localizations() {
+  local config_path="${1:-$(dirname "$0")/appstoreconnect.products.json}"
+
+  if [ ! -f "$config_path" ]; then
+    echo "エラー: 設定ファイルが見つかりません: ${config_path}" >&2
+    exit 1
+  fi
+
+  local sub product_id subscription_id display_name
+  jq -c '.subscriptions[]' "$config_path" | while read -r sub; do
+    product_id=$(echo "$sub" | jq -r '.productId')
+    subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
+    display_name=$(echo "$sub" | jq -r '.displayName')
+
+    echo "$sub" | jq -c '.localizations[]?' | while read -r loc; do
+      local locale name description
+      locale=$(echo "$loc" | jq -r '.locale')
+      name=$(echo "$loc" | jq -r '.name')
+      description=$(echo "$loc" | jq -r '.description')
+
+      echo "[subscriptions localizations] ${display_name} (${product_id} / ${subscription_id}): ${locale} を設定中..." >&2
+      apply_subscription_localization "$subscription_id" "$locale" "$name" "$description"
+      echo "[subscriptions localizations] ${display_name} (${locale}): 完了" >&2
+    done
+  done
+
+  local iap in_app_purchase_id
+  jq -c '.inAppPurchases[]' "$config_path" | while read -r iap; do
+    product_id=$(echo "$iap" | jq -r '.productId')
+    in_app_purchase_id=$(echo "$iap" | jq -r '.inAppPurchaseId')
+    display_name=$(echo "$iap" | jq -r '.displayName')
+
+    echo "$iap" | jq -c '.localizations[]?' | while read -r loc; do
+      local locale name description
+      locale=$(echo "$loc" | jq -r '.locale')
+      name=$(echo "$loc" | jq -r '.name')
+      description=$(echo "$loc" | jq -r '.description')
+
+      echo "[inapp localizations] ${display_name} (${product_id} / ${in_app_purchase_id}): ${locale} を設定中..." >&2
+      apply_iap_localization "$in_app_purchase_id" "$locale" "$name" "$description"
+      echo "[inapp localizations] ${display_name} (${locale}): 完了" >&2
+    done
   done
 }
 
@@ -482,12 +623,19 @@ main() {
           esac
           ;;
         localizations)
-          if [ "$1" = "list" ]; then
-            call GET "/v1/subscriptions/$2/subscriptionLocalizations"
-          else
-            usage
-            exit 1
-          fi
+          case "$1" in
+            list)
+              call GET "/v1/subscriptions/$2/subscriptionLocalizations"
+              ;;
+            set)
+              # subscriptions localizations set <subscription_id> <locale> <name> <description>  (実機確認済み)
+              apply_subscription_localization "$2" "$3" "$4" "$5"
+              ;;
+            *)
+              usage
+              exit 1
+              ;;
+          esac
           ;;
         screenshot)
           if [ "$1" = "upload" ]; then
@@ -550,12 +698,19 @@ main() {
           fi
           ;;
         localizations)
-          if [ "$1" = "list" ]; then
-            call GET "/v2/inAppPurchases/$2/inAppPurchaseLocalizations"
-          else
-            usage
-            exit 1
-          fi
+          case "$1" in
+            list)
+              call GET "/v2/inAppPurchases/$2/inAppPurchaseLocalizations"
+              ;;
+            set)
+              # inapp localizations set <in_app_purchase_id> <locale> <name> <description>  (実機確認済み)
+              apply_iap_localization "$2" "$3" "$4" "$5"
+              ;;
+            *)
+              usage
+              exit 1
+              ;;
+          esac
           ;;
         *)
           usage
@@ -566,6 +721,10 @@ main() {
 
     apply-prices)
       apply_prices "$1"
+      ;;
+
+    apply-localizations)
+      apply_localizations "$1"
       ;;
 
     -h|--help|help)
