@@ -13,6 +13,9 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+## Xcode Cloud
+homete.xcodeproj/xcshareddata/xcodecloud/
+
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace
@@ -76,6 +79,10 @@ private_keys/
 GoogleService-Info.plist
 GoogleService-Info-dev.plist
 .env
+scripts/appstoreconnect.env
+scripts/revenuecat.env
+homete/Resouces/Secret.xcconfig
+homete/Resouces/Secret_dev.xcconfig
 
 # other
 
