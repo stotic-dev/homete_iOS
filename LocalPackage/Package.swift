@@ -25,6 +25,7 @@ let package = Package(
         .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
+        .package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", from: "5.81.2"),
     ],
     targets: [
 
@@ -73,7 +74,8 @@ let package = Package(
                 .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
-                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS]))
+                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS])),
+                .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
             ],
             plugins: [swiftLintPlugin()]
         ),
