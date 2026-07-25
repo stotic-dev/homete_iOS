@@ -78,6 +78,7 @@ GoogleService-Info-dev.plist
 homete/Resouces/Secret.xcconfig
 homete/Resouces/Secret_dev.xcconfig
 .env
+scripts/revenuecat.env
 
 # other
 
