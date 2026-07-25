@@ -10,3 +10,5 @@ GoogleService-Info-dev.plist
 fastlane/.env
 scripts/appstoreconnect.env
 scripts/revenuecat.env
+homete/Resouces/Secret.xcconfig
+homete/Resouces/Secret_dev.xcconfig
