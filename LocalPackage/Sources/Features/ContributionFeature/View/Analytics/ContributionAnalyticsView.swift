@@ -6,8 +6,10 @@
 //
 
 import HometeUI
-import Prefire
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 struct ContributionAnalyticsView: View {
 
