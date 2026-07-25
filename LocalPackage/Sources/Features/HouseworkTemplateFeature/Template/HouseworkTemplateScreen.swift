@@ -153,8 +153,13 @@ private extension HouseworkTemplateScreen {
         do {
             // バージョンが変わったらテンプレートの内容を再ロードする
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
+            // 未保存の変更が残っている場合はコンフリクトアラートで解決されるまでバージョンを進めない
+            // （先にバージョンを進めてしまうと、アラートを「キャンセル」した後の保存で楽観ロックが素通りしてしまうため）
+            let hasUnresolvedConflict = initialDraft?.hasUnsavedChanges(comparedTo: editingDraft) ?? false
             initialDraft = .make(houseworkTemplateListStore.selectedDays)
-            editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            if !hasUnresolvedConflict {
+                editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            }
         } catch {
             commonErrorContent = .init(error: error)
         }

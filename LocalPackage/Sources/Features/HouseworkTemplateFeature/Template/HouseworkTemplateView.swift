@@ -12,6 +12,7 @@ import SwiftUI
 struct HouseworkTemplateView: View {
 
     @Environment(HouseworkTemplateListStore.self) var templateListStore
+    @Environment(HouseworkTemplateEditStore.self) var templateEditStore
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.cohabitantId) var cohabitantId
@@ -343,6 +344,8 @@ private extension HouseworkTemplateView {
         withAnimation {
             draft = initialDraft
         }
+        // draftを最新内容に追従させたタイミングで初めて楽観ロックのバージョンを進める
+        editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
     }
 
     func tappedResetAlertButton() {
@@ -488,6 +491,7 @@ private extension HouseworkTemplateView {
         )
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
+    .environment(HouseworkTemplateEditStore())
     .apply(theme: .init())
 }
 
@@ -523,6 +527,7 @@ private extension HouseworkTemplateView {
         )
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
+    .environment(HouseworkTemplateEditStore())
     .apply(theme: .init())
 }
 #endif
