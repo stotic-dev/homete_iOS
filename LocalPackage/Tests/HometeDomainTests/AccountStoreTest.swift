@@ -68,6 +68,19 @@ struct AccountStoreTest {
         }
     }
 
+    @Test("保持しているアカウント情報をクリアする")
+    func clear() {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let store = AccountStore(account: initialAccount)
+
+        // Act
+        store.clear()
+
+        // Assert
+        #expect(store.account == nil)
+    }
+
     @Test("パートナーの登録で保持しているアカウントにパートナーグループIDの情報を更新する")
     func registerCohabitantId() async throws {
         try await confirmation(expectedCount: 1) { confirmation in
