@@ -397,7 +397,7 @@
 		04B961F12FB8235200ECAB4B /* Stg */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/Admob_dev.xcconfig;
+			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
@@ -654,7 +654,7 @@
 		BCC854172DB74BBF00C9A44B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/Admob_dev.xcconfig;
+			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
@@ -701,7 +701,7 @@
 		BCC854182DB74BBF00C9A44B /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
-			baseConfigurationReferenceRelativePath = Resouces/Admob.xcconfig;
+			baseConfigurationReferenceRelativePath = Resouces/Secret.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;

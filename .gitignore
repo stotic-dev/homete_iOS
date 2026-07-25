@@ -75,6 +75,8 @@ vendor/
 private_keys/
 GoogleService-Info.plist
 GoogleService-Info-dev.plist
+homete/Resouces/Secret.xcconfig
+homete/Resouces/Secret_dev.xcconfig
 .env
 
 # other

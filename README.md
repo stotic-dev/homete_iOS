@@ -7,6 +7,21 @@ homete の iOS アプリリポジトリ
 - [コードスタイル統一: SwiftFormat & SwiftLint](doc/tech/code-style.md) — フォーマッタ/リンタの役割分担と使い方
 - [マルチモジュール構成](doc/multimodules_structure.md) — SPM モジュール構成
 
+## ローカル環境構築
+
+### xcconfig（シークレット設定）
+
+`homete/Resouces/Secret.xcconfig`（本番用）・`homete/Resouces/Secret_dev.xcconfig`（開発用）はAdMobアプリID・広告ユニットID・RevenueCatのCustom Scheme URLなどのシークレット値を含むため、gitignoreされておりリポジトリには含まれません。
+
+初回セットアップ時は、同ディレクトリの `.xcconfig.sample` をコピーして値を埋めてください。
+
+```bash
+cp homete/Resouces/Secret.xcconfig.sample homete/Resouces/Secret.xcconfig
+cp homete/Resouces/Secret_dev.xcconfig.sample homete/Resouces/Secret_dev.xcconfig
+```
+
+実際の値はチームメンバーに確認してください。ファイルが無い状態でもビルド自体は通りますが、AdMob/RevenueCatの初期化に必要な値が空になります。
+
 ## 証明書・プロビジョニングプロファイルの管理
 
 証明書管理には [Fastlane Match](https://docs.fastlane.tools/actions/match/) を使用しています。

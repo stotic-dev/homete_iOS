@@ -7,6 +7,15 @@
 		<key>BANNER_DASHBOARD_TOP_AD_UNIT_ID</key>
 		<string>$(BANNER_DASHBOARD_TOP_AD_UNIT_ID)</string>
 	</dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(REVENUECAT_URL_SCHEME)</string>
+			</array>
+		</dict>
+	</array>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
 	<key>GADApplicationIdentifier</key>

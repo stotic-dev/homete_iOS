@@ -44,6 +44,14 @@ case "$CI_WORKFLOW" in
         fi
         echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info.plist"
         echo "✓ GoogleService-Info.plist decoded and placed"
+
+        # 本番用xcconfig（AdMob/RevenueCat設定）をsecretからデコードして配置
+        if [ -z "$SECRET_XCCONFIG" ]; then
+            echo "ERROR: SECRET_XCCONFIG environment variable is not set"
+            exit 1
+        fi
+        echo "$SECRET_XCCONFIG" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/Resouces/Secret.xcconfig"
+        echo "✓ Secret.xcconfig decoded and placed"
         echo "==========================="
         ;;
 
@@ -57,6 +65,14 @@ case "$CI_WORKFLOW" in
         fi
         echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info-dev.plist"
         echo "✓ GoogleService-Info-dev.plist decoded and placed"
+
+        # 開発用xcconfig（AdMob/RevenueCat設定）をsecretからデコードして配置
+        if [ -z "$SECRET_XCCONFIG_DEV" ]; then
+            echo "ERROR: SECRET_XCCONFIG_DEV environment variable is not set"
+            exit 1
+        fi
+        echo "$SECRET_XCCONFIG_DEV" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/Resouces/Secret_dev.xcconfig"
+        echo "✓ Secret_dev.xcconfig decoded and placed"
         echo "==========================="
         ;;
 
