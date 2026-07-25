@@ -6,7 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
-    platforms: [.iOS(.v17), .macOS(.v15)],
+    platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
         lib("HometeDomain"),
         lib("HometeUI"),

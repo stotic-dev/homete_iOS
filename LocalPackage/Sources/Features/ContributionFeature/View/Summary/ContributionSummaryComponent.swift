@@ -8,6 +8,9 @@
 import HometeDomain
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 public struct ContributionSummaryComponent: View {
 
@@ -170,6 +173,9 @@ private extension ContributionSummaryContent {
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
     .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {

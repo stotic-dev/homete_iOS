@@ -18,12 +18,14 @@ struct HouseworkTemplateItemEditModalScreen: View {
     let onConfirm: (TemplateItemEditInput) -> Void
 
     var body: some View {
-        HouseworkTemplateItemEditModal(
-            input: $input,
-            isShowingKeyboard: _isShowingKeyboard,
-            mode: mode,
-            onConfirm: onConfirm
-        )
+        NavigationStack {
+            HouseworkTemplateItemEditModal(
+                input: $input,
+                isShowingKeyboard: _isShowingKeyboard,
+                mode: mode,
+                onConfirm: onConfirm
+            )
+        }
         .background {
             if isShowingKeyboard {
                 Color.clear
@@ -74,25 +76,23 @@ struct HouseworkTemplateItemEditModal: View {
     let onConfirm: (TemplateItemEditInput) -> Void
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: .space16) {
-                inputTitleField()
-                inputPointSlider()
-                inputDaysSelector()
-                Spacer()
+        VStack(alignment: .leading, spacing: .space16) {
+            inputTitleField()
+            inputPointSlider()
+            inputDaysSelector()
+            Spacer()
+        }
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space24)
+        .navigationTitle(navigationTitle)
+        .inlineNavigationBarTitleDisplayMode()
+        .leadingToolbarItem {
+            NavigationBarButton(label: .close) {
+                dismiss()
             }
-            .padding(.horizontal, .space16)
-            .padding(.vertical, .space24)
-            .navigationTitle(navigationTitle)
-            .inlineNavigationBarTitleDisplayMode()
-            .leadingToolbarItem {
-                NavigationBarButton(label: .close) {
-                    dismiss()
-                }
-            }
-            .trailingToolbarItem {
-                trailingNavigationItem()
-            }
+        }
+        .trailingToolbarItem {
+            trailingNavigationItem()
         }
     }
 

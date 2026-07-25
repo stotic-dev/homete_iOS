@@ -7,6 +7,9 @@
 
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 struct ContributionAnalyticsView: View {
 
@@ -120,6 +123,9 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("ContributionAnalyticsView_月間", traits: .sizeThatFitsLayout) {
@@ -134,6 +140,9 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("ContributionAnalyticsView_年間", traits: .sizeThatFitsLayout) {
@@ -148,6 +157,9 @@ private extension ContributionAnalyticsView {
         latestAchievedDate: nil
     )
     .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("ContributionAnalyticsView_空表示", traits: .sizeThatFitsLayout) {

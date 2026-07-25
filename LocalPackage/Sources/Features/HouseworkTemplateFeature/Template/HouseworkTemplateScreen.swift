@@ -12,14 +12,18 @@ import SwiftUI
 public struct HouseworkTemplateScreen: View {
 
     @Environment(\.now) var now
+    @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
     @Environment(\.cohabitantMembers) var members
+
+    @CommonError var commonErrorContent
 
     @State var templateEditStore: HouseworkTemplateEditStore
     @State var initialDraft: HouseworkTemplateDraft?
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+    @State var shouldDismissOnErrorClose = false
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -38,6 +42,7 @@ public struct HouseworkTemplateScreen: View {
             )
         }
         .environment(templateEditStore)
+        .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
         .task {
             await onAppear()
         }
@@ -88,8 +93,16 @@ private extension HouseworkTemplateScreen {
             editingDraft = initialDraftOnAppear
             initialDraft = initialDraftOnAppear
         } catch {
-            // TODO: エラーハンドリング
+            // 編集状態の監視・登録ができないと編集機能が成立しないため、アラート確認後に画面を閉じる
+            shouldDismissOnErrorClose = true
+            commonErrorContent = .init(error: error)
         }
+    }
+
+    func onDismissErrorAlert() {
+        guard shouldDismissOnErrorClose else { return }
+        shouldDismissOnErrorClose = false
+        dismiss()
     }
 
     func onDisappear() async {
@@ -143,7 +156,7 @@ private extension HouseworkTemplateScreen {
             initialDraft = .make(houseworkTemplateListStore.selectedDays)
             editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 
