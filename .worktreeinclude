@@ -8,3 +8,5 @@ GoogleService-Info.plist
 GoogleService-Info-dev.plist
 .env
 fastlane/.env
+scripts/appstoreconnect.env
+scripts/revenuecat.env

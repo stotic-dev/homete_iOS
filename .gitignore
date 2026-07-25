@@ -76,6 +76,8 @@ private_keys/
 GoogleService-Info.plist
 GoogleService-Info-dev.plist
 .env
+scripts/appstoreconnect.env
+scripts/revenuecat.env
 
 # other
 
