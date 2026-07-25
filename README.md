@@ -11,7 +11,9 @@ homete の iOS アプリリポジトリ
 
 ### xcconfig（シークレット設定）
 
-`homete/Resouces/Secret.xcconfig`（本番用）・`homete/Resouces/Secret_dev.xcconfig`（開発用）はAdMobアプリID・広告ユニットID・RevenueCatのCustom Scheme URLなどのシークレット値を含むため、gitignoreされておりリポジトリには含まれません。
+`homete/Resouces/Secret.xcconfig`（本番用）・`homete/Resouces/Secret_dev.xcconfig`（開発用）はAdMobアプリID・広告ユニットID・RevenueCatのCustom Scheme URL・RevenueCatのAPIキー（`REVENUECAT_API_KEY`）などのシークレット値を含むため、gitignoreされておりリポジトリには含まれません。
+
+`REVENUECAT_API_KEY`はRevenueCatダッシュボードの Project settings > API keys から発行される、iOSアプリ用のPublic SDK Keyを設定してください。
 
 初回セットアップ時は、同ディレクトリの `.xcconfig.sample` をコピーして値を埋めてください。
 
