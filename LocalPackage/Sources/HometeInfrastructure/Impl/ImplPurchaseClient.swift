@@ -24,6 +24,5 @@
 
     }
 
-    // TODO: RevenueCatダッシュボードでEntitlementを作成後、実際の識別子に置き換える
-    private let premiumEntitlementId = "premium"
+    private let premiumEntitlementId = "taichi sato Pro"
 #endif
