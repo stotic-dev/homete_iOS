@@ -28,6 +28,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // Initialize Google Mobile Ads
         setupGoogleMobileAds()
 
+        // Initialize RevenueCat
+        setupRevenueCat()
+
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
 
@@ -64,9 +67,15 @@ private extension AppDelegate {
     }
 
     func setupGoogleMobileAds() {
+        guard !isXcodePreview, !isUnitTestMode else { return }
         Task {
             await MobileAdsClient.shared.initialize()
         }
+    }
+
+    func setupRevenueCat() {
+        guard !isXcodePreview, !isUnitTestMode else { return }
+        RevenueCatClient.shared.initialize()
     }
 
 }

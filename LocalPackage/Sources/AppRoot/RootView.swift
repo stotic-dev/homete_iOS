@@ -15,6 +15,7 @@ public struct RootView: View {
 
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     public var body: some View {
         ZStack {
@@ -71,6 +72,7 @@ public extension RootView {
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient
                 ))
+                .environment(SubscriptionStore(purchaseClient: $0.purchaseClient))
                 .routeResolverInjection()
                 .adComponentResolverInjection()
         }
@@ -91,11 +93,13 @@ private extension RootView {
     func onChangeAuth() async {
         guard let authResult = accountAuthStore.currentAuth.result else {
             launchState = .notLoggedIn
+            await subscriptionStore.logOut()
             return
         }
 
         if let account = await accountStore.load(authResult) {
             await updateFcmTokenIfNeeded()
+            await subscriptionStore.logIn(account.id)
             launchState = .loggedIn(context: .init(account: account))
         } else {
             launchState = .preLoggedIn(auth: authResult)
