@@ -35,7 +35,7 @@ struct HouseworkBoardView: View {
                     VStack(spacing: .space16) {
                         HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                         TabView(selection: $selectedHouseworkState) {
-                            ForEach(HouseworkState.allCases) { state in
+                            ForEach(HouseworkState.pageableCases) { state in
                                 HouseworkBoardListContent(
                                     houseworkListStore: houseworkListStore,
                                     state: state,
