@@ -46,6 +46,9 @@ public struct HouseworkTemplateScreen: View {
         .task {
             await onAppear()
         }
+        .task {
+            await observeEditorExpiry()
+        }
         .onDisappear {
             Task {
                 await onDisappear()
@@ -128,6 +131,20 @@ private extension HouseworkTemplateScreen {
             members: members,
             now: now
         )
+    }
+
+    /// editorsのスナップショットに変化が無くても、経過時間で編集者バッジを再評価する
+    /// （相手のアプリがクラッシュ等でpresence更新が止まった場合、Firestore側のTTL削除（最大24時間）を待たずに表示から外すため）
+    func observeEditorExpiry() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(30))
+            guard !Task.isCancelled else { return }
+            editorContext = editorContext.applyEditors(
+                editors: templateEditStore.editors,
+                members: members,
+                now: .now
+            )
+        }
     }
 
     func onChangeTemplateVersion() async {
