@@ -13,6 +13,9 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+## Xcode Cloud
+homete.xcodeproj/xcshareddata/xcodecloud/
+
 ## Playgrounds
 timeline.xctimeline
 playground.xcworkspace

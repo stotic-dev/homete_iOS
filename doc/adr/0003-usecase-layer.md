@@ -3,7 +3,7 @@
 * **承認済**
 * stotic-dev
 * 日付: 2026-07-25
-* 技術的背景: RevenueCat SDK導入（[ADR-0002](0002-revenuecat-sdk-adoption.md)）に伴う認証⇔サブスクリプション連携ロジックの置き場所検討
+* 技術的背景: RevenueCat SDK導入（[ADR-0004](0004-revenuecat-sdk-adoption.md)）に伴う認証⇔サブスクリプション連携ロジックの置き場所検討
 
 ## 文脈、背景や問題点の説明
 
@@ -41,4 +41,4 @@ RevenueCat連携の実装で、ログイン/ログアウトに応じて `Subscri
 ## 参考
 
 * [ADR-0001: マルチモジュール構成の採用](0001-spm-multimodule-structure.md)
-* [ADR-0002: RevenueCat SDKの採用](0002-revenuecat-sdk-adoption.md)
+* [ADR-0004: RevenueCat SDKの採用](0004-revenuecat-sdk-adoption.md)

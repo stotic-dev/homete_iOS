@@ -1,0 +1,8 @@
+# wt (worktrunk) プロジェクト設定
+# https://worktrunk.dev
+
+[pre-start]
+# GoogleService-Info*.plist / .env / private_keys など、git管理外の秘密情報を
+# 新規worktreeへコピーする。対象は .worktreeinclude で限定している。
+# ビルド・実行に必要なため pre-start（worktree作成をブロックしてでも先に完了させる）で実行する。
+copy-secrets = "wt step copy-ignored"
