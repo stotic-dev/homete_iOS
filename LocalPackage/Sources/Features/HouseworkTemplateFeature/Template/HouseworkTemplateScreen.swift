@@ -173,8 +173,12 @@ private extension HouseworkTemplateScreen {
             // 未保存の変更が残っている場合はコンフリクトアラートで解決されるまでバージョンを進めない
             // （先にバージョンを進めてしまうと、アラートを「キャンセル」した後の保存で楽観ロックが素通りしてしまうため）
             let hasUnresolvedConflict = initialDraft?.hasUnsavedChanges(comparedTo: editingDraft) ?? false
-            initialDraft = .make(houseworkTemplateListStore.selectedDays)
+            let latestDraft = HouseworkTemplateDraft.make(houseworkTemplateListStore.selectedDays)
+            initialDraft = latestDraft
             if !hasUnresolvedConflict {
+                // 未保存の変更が無い場合は編集中の内容も最新化する
+                // （editingDraftを更新しないとinitialDraftとの差分検知で誤ってコンフリクトアラートが表示されてしまうため）
+                editingDraft = latestDraft
                 editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
             }
         } catch {
