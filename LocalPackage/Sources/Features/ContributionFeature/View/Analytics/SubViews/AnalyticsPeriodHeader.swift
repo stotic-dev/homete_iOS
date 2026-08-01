@@ -43,7 +43,7 @@ private extension AnalyticsPeriodHeader {
             } label: {
                 Image(systemName: "chevron.left")
                     .foregroundStyle(.onSurface)
-                    .padding(.space16)
+                    .padding(.space8)
             }
             Spacer()
             Text(periodTitle())

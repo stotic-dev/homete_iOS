@@ -57,14 +57,14 @@
 一度に全部を入れず、以下の順で検証する。各段階が通ってから次に進む。
 
 1. **書き込み可否の確認 ✅ 確認済み（Build 212, 2026-08-01）**: 当初は既存 `test-without-building` ワークフロー上での記録可否を検証する想定だったが、実測により当該ランナーには `$CI_PRIMARY_REPOSITORY_PATH` が空（gitチェックアウトが存在しない）ことが判明したため、`build-for-testing` ランナー上で `xcodebuild test-without-building` を自己呼び出しする構成（上記「実装構成」3.参照）に変更した。参照PNGを1枚意図的に削除した状態で push し、自己呼び出し実行後の `git status --short` にその新規ファイルが `??` として検出されることを確認した。
-2. **push の確認 🔶 一部確認・修正中**: `git fetch --unshallow` の要否（shallow clone からの push が `shallow update not allowed` で拒否されないか）と、PR ブランチへの push 成否を確認する。GitHub Actions 起点で機能していた `GITHUB_TOKEN`/`GITHUB_REPOSITORY` は Xcode Cloud の環境変数がワークフロー単位のスコープであるため、「VRT」ワークフロー側にも別途登録が必要だった点に注意（実測で判明、`Upload For AppStore` ワークフローには元々設定済みだった）。登録後、push 自体は成功したが、Xcode Cloud の PR ビルドが main とのマージプレビューコミットを checkout している影響で、push の度に main が PR ブランチへマージされてしまう事象を実測で発見した（上記「実装構成」3.参照）。記録前に実 HEAD へ checkout し直す対策を実装済みで、次回ビルドで単一コミットになることを再確認する。
+2. **push の確認 ✅ 確認済み（2026-08-01）**: GitHub Actions 起点で機能していた `GITHUB_TOKEN`/`GITHUB_REPOSITORY` は Xcode Cloud の環境変数がワークフロー単位のスコープであるため、「VRT」ワークフロー側にも別途登録が必要だった点に注意（実測で判明、`Upload For AppStore` ワークフローには元々設定済みだった）。登録後、push 自体は成功したが、Xcode Cloud の PR ビルドが main とのマージプレビューコミットを checkout している影響で、push の度に main が PR ブランチへマージされてしまう事象を実測で発見した（上記「実装構成」3.参照）。記録前に実 HEAD へ checkout し直す対策を実装し、次回ビルドの bot commit（`071c1a7`）の親が単一（直前の push commit）であることを `git log --graph` で確認し、マージコミット混入が解消されたことを確認した。`git fetch --unshallow` は今のところ問題になっていない（pushは通常どおり成功している）。
    * **追加変更（未検証）**: push 認証を長期有効な `GITHUB_TOKEN`（PAT）から GitHub App のインストールアクセストークン方式に切り替えた（上記「実装構成」3.参照）。GitHub App は新規作成のため、以下がユーザー側の対応として必要:
      1. GitHub の Organization/個人アカウント設定から新規 GitHub App を作成する（Webhookは無効でよい、Repository permissions は `Contents: Read and write` のみ、Where can this GitHub App be installed は `Only on this account`）。
      2. 作成後に秘密鍵（.pem）を生成・ダウンロードし、App ID を控える。
      3. 対象リポジトリ（`stotic-dev/homete_iOS`）に App をインストールする。
      4. 秘密鍵を base64エンコードし（例: `base64 -i downloaded-key.pem | pbcopy`）、Xcode Cloud の「VRT」ワークフローの環境変数に `GH_APP_ID`（App ID）と `GH_APP_PRIVATE_KEY_BASE64`（Secret指定）として登録する。`GITHUB_REPOSITORY` は既存のものをそのまま使う。
      5. 登録後、次回ビルドで installation access token の取得ログ（`✓ Obtained GitHub App installation access token`）が出ることと、push が成功することを確認する。
-3. **既存参照との差分（modified）ケースの確認**: ステップ1では「参照PNGが存在しない（missing）」ケースのみ検証した。View に意図的な変更を加え、古い参照PNGを残したまま実行し、ミスマッチとして検出・再記録され、その差分が commit・push されることを確認する。
+3. **既存参照との差分（modified）ケースの確認 ✅ 確認済み（2026-08-01）**: `AnalyticsPeriodHeader` の余白を意図的に変更（`.space8` → `.space16`）した状態で push したところ、既存の参照PNGを残したままミスマッチとして検出・再記録され、`AnalyticsPeriodHeader` を利用する20ファイル（iPhone 16 / iPhone SE 2nd generation の2デバイス分）が commit・push されることを確認した（`071c1a7`）。確認後、View の変更は元に戻した（次回ビルドで参照PNGも元の見た目に再記録される想定）。
 4. **ループ停止の確認**: Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
 
 ## 考慮した選択肢
