@@ -38,6 +38,18 @@ import SnapshotTesting
         return "\(repositoryPath)/ci_scripts/__Snapshots__"
     }
 
+    /// 参照PNGを再記録する専用ワークフロー（doc/adr/0005）でのみ SNAPSHOT_TESTING_RECORD が
+    /// 明示的に設定される。この間は不一致 = 記録対象であり失敗ではないため XCTFail を発生させない。
+    /// ローカル実行および通常の VRT 検証ワークフローでは空文字に解決されるため従来通り失敗する
+    /// （xctestplan の environmentVariableEntries は未解決でもキー自体は空文字で必ず設定されるため、
+    /// isEmpty ではなく nil のみで判定すると常に true になってしまう点に注意）。
+    private var isRecordingSnapshots: Bool {
+        guard let value = ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] else {
+            return false
+        }
+        return !value.isEmpty
+    }
+
     {% if argument.file %}
 
     private var file: StaticString { .init(stringLiteral: "{{ argument.file }}") }
@@ -55,7 +67,7 @@ import SnapshotTesting
     {% for type in types.types where type.implements.PrefireProvider or type.based.PrefireProvider or type|annotated:"PrefireProvider" %}
     func test_{{ type.name|lowerFirstLetter|replace:"_Previews", "" }}() {
         for preview in {{ type.name }}._allPreviews {
-            if let failure = assertSnapshots(for: PrefireSnapshot(preview, device: preview.device?.snapshotDevice() ?? deviceConfig)) {
+            if let failure = assertSnapshots(for: PrefireSnapshot(preview, device: preview.device?.snapshotDevice() ?? deviceConfig)), !isRecordingSnapshots {
                 XCTFail(failure)
             }
         }
@@ -84,7 +96,7 @@ import SnapshotTesting
             device: deviceConfig
         )
 
-        if let failure = assertSnapshots(for: prefireSnapshot) {
+        if let failure = assertSnapshots(for: prefireSnapshot), !isRecordingSnapshots {
             XCTFail(failure)
         }
     }
@@ -122,7 +134,7 @@ import SnapshotTesting
                 UITraitCollection(displayGamut: .SRGB),
             ])
 
-            if let failure = assertSnapshot(for: snapshot) {
+            if let failure = assertSnapshot(for: snapshot), !isRecordingSnapshots {
                 XCTFail(failure)
             }
         }
