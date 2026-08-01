@@ -28,4 +28,11 @@ public struct AuthSubscriptionSyncUseCase {
         await subscriptionStore.logOut()
     }
 
+    /// アカウント新規登録時にアカウントを登録し、サブスクリプション状態を同期する
+    public func syncOnRegistered(auth: AccountAuthResult, userName: UserName) async throws -> Account {
+        let account = try await accountStore.registerAccount(auth: auth, userName: userName)
+        await subscriptionStore.logIn(account.id)
+        return account
+    }
+
 }

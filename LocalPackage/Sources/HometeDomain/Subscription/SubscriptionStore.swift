@@ -51,4 +51,12 @@ public final class SubscriptionStore {
         }
     }
 
+    /// エンタイトルメント状態の更新を監視し続け、都度反映する
+    /// - Note: 呼び出し元でTaskとして起動し、Store生存期間中バックグラウンドで購読させる想定
+    public func observeEntitlementUpdates() async {
+        for await info in purchaseClient.entitlementInfoUpdates() {
+            entitlementInfo = info
+        }
+    }
+
 }

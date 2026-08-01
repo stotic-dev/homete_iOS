@@ -24,7 +24,7 @@ public struct RootView: View {
             case .launching:
                 LaunchScreenView()
             case let .preLoggedIn(auth):
-                RegistrationAccountView(authInfo: auth)
+                RegistrationAccountView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                     .transition(.asymmetric(
                         insertion: .push(from: .leading),
                         removal: .opacity
@@ -81,6 +81,9 @@ public extension RootView {
                     accountInfoClient: $0.accountInfoClient
                 ))
                 .environment(subscriptionStore)
+                .task {
+                    await subscriptionStore.observeEntitlementUpdates()
+                }
                 .routeResolverInjection()
                 .adComponentResolverInjection()
         }
