@@ -34,9 +34,13 @@ public struct LoginView: View {
             .frame(height: .space48)
             .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
             Spacer()
-            Text("続行すると、利用規約とプライバシーポリシーに同意したことになります。")
-                .font(with: .caption)
-                .foregroundStyle(.primary2)
+            // swiftlint:disable:next line_length
+            Text(
+                "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。"
+            )
+            .font(with: .caption)
+            .foregroundStyle(.primary2)
+            .tint(.primary2)
             Spacer()
                 .frame(height: .space32)
         }

@@ -1,0 +1,160 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1c1c1e;
+  --muted: #6b6b70;
+  --accent: #3b7dd8;
+  --border: #e5e5ea;
+  --card-bg: #f7f7f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316;
+    --fg: #eceded;
+    --muted: #9a9aa0;
+    --accent: #6fa8ff;
+    --border: #2c2c30;
+    --card-bg: #1c1c1f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
+  line-height: 1.8;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 20px 96px;
+}
+
+header.site-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+header.site-header .logo {
+  font-size: 1.4rem;
+}
+
+header.site-header a {
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin-top: 2.2em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+h3 {
+  font-size: 1rem;
+  margin-top: 1.6em;
+}
+
+p, li {
+  color: var(--fg);
+  font-size: 0.95rem;
+}
+
+ul, ol {
+  padding-left: 1.4em;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 2em;
+}
+
+.card-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.card-list a {
+  display: block;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--fg);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.card-list a:hover {
+  border-color: var(--accent);
+}
+
+.card-list span {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9rem;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--card-bg);
+  white-space: nowrap;
+}
+
+a {
+  color: var(--accent);
+}
+
+footer.site-footer {
+  margin-top: 4em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+nav.crumb {
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+}
+
+nav.crumb a {
+  color: var(--muted);
+}

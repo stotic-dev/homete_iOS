@@ -29,6 +29,7 @@ struct SettingView: View {
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var openURL
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
@@ -129,8 +130,18 @@ private extension SettingView {
         case .memberRegistration:
             isShowMemberRegistration = true
 
-        case .privacyPolicy, .license:
-            // TODO: 各メニューの遷移処理
+        case .termsOfService:
+            if let url = URL(string: Constants.termsOfServiceURLString) {
+                openURL(url)
+            }
+
+        case .privacyPolicy:
+            if let url = URL(string: Constants.privacyPolicyURLString) {
+                openURL(url)
+            }
+
+        case .license:
+            // TODO: ライセンス画面の遷移処理
             break
         }
     }
