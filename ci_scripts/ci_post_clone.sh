@@ -19,6 +19,18 @@ case "$CI_WORKFLOW" in
     "VRT")
         echo "=== VRT workflow ==="
 
+        # 開発用xcconfig（AdMob/RevenueCat設定）をsecretからデコードして配置
+        # Info.plistのGADApplicationIdentifierがDebug構成のSAMPLE_APP_ID設定を参照しており、
+        # このファイルが無いと未定義のままとなる。Google Mobile Ads SDKはリンクされているだけで
+        # 起動後にApplication IDの妥当性を検証し、無効だとGADInvalidInitializationExceptionで
+        # クラッシュするため、テストのbootstrapping中に落ちる原因になる
+        if [ -z "$SECRET_XCCONFIG_DEV" ]; then
+            echo "ERROR: SECRET_XCCONFIG_DEV environment variable is not set"
+            exit 1
+        fi
+        echo "$SECRET_XCCONFIG_DEV" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/Resouces/Secret_dev.xcconfig"
+        echo "✓ Secret_dev.xcconfig decoded and placed"
+
         # スナップショット参照ファイルの確認
         SNAPSHOT_DIR="$CI_PRIMARY_REPOSITORY_PATH/hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
         CI_SCRIPTS_SNAPSHOT_DIR="$CI_PRIMARY_REPOSITORY_PATH/ci_scripts/__Snapshots__"
