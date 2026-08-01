@@ -40,51 +40,65 @@ case "$CI_WORKFLOW" in
     "VRT")
         echo "=== VRT workflow ==="
 
-        # doc/adr/0005 検証ステップ1: SNAPSHOT_TESTING_RECORD=failed 実行時に
-        # シミュレータプロセスが $CI_PRIMARY_REPOSITORY_PATH 配下（参照PNG）へ
-        # 書き込めているかを確認する。push は行わずログ出力のみ。
-        # xcodebuildはbuild-for-testingとtest-without-buildingの2アクションに分かれるため、
-        # 実際にテストが実行された後（test-without-building）の1回だけ確認する。
+        # doc/adr/0005 検証ステップ1（改訂）: 実測の結果、test-without-building は
+        # build-for-testing とは別の使い捨てランナーで動いており、$CI_PRIMARY_REPOSITORY_PATH
+        # が空文字（gitチェックアウトが一切存在しない）ことが判明した。Apple公式フォーラムでも
+        # 「テストを実行する環境にはソースコードがクローンされない」と明記されており、
+        # test-without-building 側での記録・push は構造的に成立しない。
         #
-        # 実測: test-without-building は build-for-testing とは別のランナーで動いており、
-        # $CI_PRIMARY_REPOSITORY_PATH に .git が存在しない（git status/diff が使えない）。
-        # そのため git に依存せず、ci_scripts/__Snapshots__（../hometeSnapshotTests/__Snapshots__/
-        # PreviewTests.generated への相対シンボリックリンク、リポジトリにコミット済み）経由で
-        # ディレクトリの実在・ファイル数・更新時刻を確認する。
-        if [ "$CI_XCODEBUILD_ACTION" != "test-without-building" ]; then
-            echo "Skipping snapshot write-access check (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
+        # そこで、gitチェックアウトが存在する build-for-testing 側の ci_post_xcodebuild.sh から、
+        # 直前のビルドで既に生成済みの -testProductsPath を使い、自前で
+        # `xcodebuild test-without-building` を実行する。同一ランナー内で完結するため、
+        # SNAPSHOT_TESTING_RECORD=failed による書き込みがそのまま git 差分として検出できるはず。
+        # 現段階では commit/push はまだ行わず、書き込みが実際に発生するかをログ出力のみで確認する。
+        if [ "$CI_XCODEBUILD_ACTION" != "build-for-testing" ]; then
+            echo "Skipping VRT CLI re-run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
         fi
 
         echo "CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
         echo "SNAPSHOT_TESTING_RECORD=$SNAPSHOT_TESTING_RECORD"
+        echo "CI_XCODE_CLOUD=$CI_XCODE_CLOUD"
 
         cd "$CI_PRIMARY_REPOSITORY_PATH"
 
         if [ -d .git ]; then
-            echo "✓ .git exists on this runner"
+            echo "✓ .git exists on this runner (build-for-testing)"
         else
-            echo "✗ .git NOT found on this runner (test-without-building may run on a separate runner from build-for-testing)"
+            echo "✗ .git NOT found (unexpected on build-for-testing runner)"
         fi
+
+        TEST_PRODUCTS_PATH="/Volumes/workspace/TestProducts.xctestproducts"
+        if [ ! -d "$TEST_PRODUCTS_PATH" ]; then
+            echo "✗ $TEST_PRODUCTS_PATH not found. Skipping VRT record run."
+            exit 0
+        fi
+        echo "✓ $TEST_PRODUCTS_PATH exists"
+
+        DEVICE_LINE=$(xcrun simctl list devices available | grep -m1 "iPhone 16 (")
+        DEVICE_ID=$(echo "$DEVICE_LINE" | grep -oE '[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}')
+
+        if [ -z "$DEVICE_ID" ]; then
+            echo "✗ iPhone 16 simulator not found. Skipping VRT record run."
+            exit 0
+        fi
+        echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
+
+        echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
+        xcodebuild test-without-building \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -testProductsPath "$TEST_PRODUCTS_PATH" \
+            -testPlan hometeSnapshotTestsForCI \
+            -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult \
+            || echo "xcodebuild test-without-building exited non-zero (isRecordingSnapshotsが真ならXCTFailは抑止されるはずなので要調査)"
 
         SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
         CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
 
-        for DIR in "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"; do
-            echo "--- $DIR ---"
-            if [ -d "$DIR" ]; then
-                echo "✓ exists. File count: $(find "$DIR" -name '*.png' | wc -l | tr -d ' ')"
-                echo "newest 5 files by mtime:"
-                find "$DIR" -name '*.png' -exec stat -f '%Sm %N' -t '%Y-%m-%dT%H:%M:%S' {} \; | sort -r | head -5
-            else
-                echo "✗ NOT found"
-            fi
-        done
-
-        if [ -d .git ]; then
-            echo "--- git status (short) for $SNAPSHOT_DIR ---"
-            git status --short -- "$SNAPSHOT_DIR" || true
-        fi
+        echo "--- git status (short) for snapshot dirs ---"
+        git status --short -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
+        echo "--- git diff --stat for snapshot dirs ---"
+        git diff --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
         echo "==========================="
         ;;
 
