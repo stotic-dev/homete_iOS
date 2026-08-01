@@ -85,8 +85,11 @@ case "$CI_WORKFLOW" in
         fi
         echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
 
+        # SNAPSHOT_TESTING_RECORD はワークフロー全体（自己呼び出し版・Xcode Cloud公式の
+        # 別ランナー版）で共有される xctestplan の環境変数のため、ここで明示的に failed を
+        # 指定し、ワークフロー側の設定値に関わらず自己呼び出し実行では常に記録モードで動かす。
         echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
-        xcodebuild test-without-building \
+        SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -testProductsPath "$TEST_PRODUCTS_PATH" \
             -testPlan hometeSnapshotTestsForCI \
