@@ -48,10 +48,15 @@ case "$CI_WORKFLOW" in
         #
         # そこで、gitチェックアウトが存在する build-for-testing 側の ci_post_xcodebuild.sh から、
         # 直前のビルドで既に生成済みの -testProductsPath を使い、自前で
-        # `xcodebuild test-without-building` を実行する。同一ランナー内で完結するため、
-        # SNAPSHOT_TESTING_RECORD=failed による書き込みがそのまま git 差分として検出できる
-        # （検証ステップ1・Build 212で確認済み）。検証ステップ2として、実際に差分があれば
-        # [ci skip] 付きでcommitし、PRブランチへpushする。
+        # `xcodebuild test-without-building` を2回実行する（① verify専用パスで純粋比較のみ行い
+        # ログで可視化 → ② 記録パスで実際にミスマッチ/未記録分を書き込む）。同一ランナー内で
+        # 完結するため、書き込みがそのまま git 差分として検出できる（検証ステップ1・Build 212で確認済み）。
+        # 差分があれば通常のcommitメッセージでcommitし、PRブランチへpushする（検証ステップ2）。
+        #
+        # このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、[ci skip] ではなく
+        # Xcode Cloud側のワークフロー起動条件（Custom Conditions）で「スナップショットディレクトリのみの
+        # 変更では起動しない」設定を別途入れている。[ci skip] を使わないのは、それがGitHub Actions側の
+        # Dangerワークフローの起動も止めてしまうため。
         if [ "$CI_XCODEBUILD_ACTION" != "build-for-testing" ]; then
             echo "Skipping VRT CLI re-run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
@@ -86,9 +91,23 @@ case "$CI_WORKFLOW" in
         echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
 
         # SNAPSHOT_TESTING_RECORD はワークフロー全体（自己呼び出し版・Xcode Cloud公式の
-        # 別ランナー版）で共有される xctestplan の環境変数のため、ここで明示的に failed を
-        # 指定し、ワークフロー側の設定値に関わらず自己呼び出し実行では常に記録モードで動かす。
-        echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
+        # 別ランナー版）で共有される xctestplan の環境変数のため、ここでは自己呼び出しの
+        # 各回ごとに明示的に値を指定し、ワークフロー側の設定値に依存させない。
+
+        # ① verify専用パス: 明示的に空を指定して純粋比較のみを行う（記録は一切しない）。
+        # ここでの失敗はミスマッチ/未記録の存在を意味し、後続の記録パスで解消される想定のため
+        # スクリプト自体は継続する（set -e に引っかからないよう || で握りつぶす）。
+        echo "--- xcodebuild test-without-building (self-invoked, verify-only pass) ---"
+        SNAPSHOT_TESTING_RECORD= xcodebuild test-without-building \
+            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+            -testProductsPath "$TEST_PRODUCTS_PATH" \
+            -testPlan hometeSnapshotTestsForCI \
+            -resultBundlePath /Volumes/workspace/vrt-verify-resultbundle.xcresult \
+            && echo "✓ verify pass: all snapshots already match" \
+            || echo "✗ verify pass: mismatch or missing snapshot detected (record pass will follow)"
+
+        # ② 記録パス: 明示的に failed を指定し、①で検出されたミスマッチ/未記録分のみを書き込む。
+        echo "--- xcodebuild test-without-building (self-invoked, record pass) ---"
         SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -testProductsPath "$TEST_PRODUCTS_PATH" \
@@ -137,7 +156,7 @@ case "$CI_WORKFLOW" in
         git config user.name "stotic-dev"
 
         git commit -m "$(cat <<'COMMIT_MSG'
-chore: VRT参照スナップショットを自動更新 [ci skip]
+chore: VRT参照スナップショットを自動更新
 
 doc/adr/0005: Xcode Cloud上で記録した参照PNGの自動commitです。
 PRコメントのDangerによるbefore/after画像差分でレビューしてください。

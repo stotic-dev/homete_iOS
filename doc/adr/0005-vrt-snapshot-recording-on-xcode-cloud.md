@@ -36,9 +36,9 @@
 
 3. **`ci_post_xcodebuild.sh` で自己呼び出し + commit & push**
    * **実測により判明した制約**: `test-without-building` action は `build-for-testing` とは別の使い捨てランナーで実行され、`$CI_PRIMARY_REPOSITORY_PATH` が空文字（gitチェックアウトが一切存在しない）。Apple公式フォーラムでも「テストを実行する環境にはソースコードがクローンされない」と明記されている（[thread 722923](https://developer.apple.com/forums/thread/722923)）。そのため `test-without-building` 側での記録・commit・pushは構造的に成立しない。
-   * **採用する構成**: gitチェックアウトが存在する `build-for-testing` 側の `ci_post_xcodebuild.sh`（`CI_XCODEBUILD_ACTION == "build-for-testing"`）から、直前のビルドで生成済みの `-testProductsPath`（`/Volumes/workspace/TestProducts.xctestproducts`）を使い、`xcodebuild test-without-building` を自前で実行する。同一ランナー内で完結するため、`SNAPSHOT_TESTING_RECORD=failed` による書き込みがそのまま同じシェルのgit差分として検出できる（Build 212で実測確認済み）。
+   * **採用する構成**: gitチェックアウトが存在する `build-for-testing` 側の `ci_post_xcodebuild.sh`（`CI_XCODEBUILD_ACTION == "build-for-testing"`）から、直前のビルドで生成済みの `-testProductsPath`（`/Volumes/workspace/TestProducts.xctestproducts`）を使い、`xcodebuild test-without-building` を2回自前で実行する。`SNAPSHOT_TESTING_RECORD` はワークフロー全体で共有される xctestplan の環境変数のため、各回の呼び出し直前に明示的に値を指定し、ワークフロー側の設定値に依存させない。① 空文字を指定した verify専用パスで純粋比較のみ行いログに可視化し、② `failed` を指定した記録パスでミスマッチ/未記録分のみ書き込む。同一ランナー内で完結するため、書き込みがそのまま同じシェルのgit差分として検出できる（Build 212で実測確認済み）。
    * ガード条件: `CI_WORKFLOW` が記録用ワークフロー、`CI_XCODEBUILD_ACTION == "build-for-testing"`、`CI_PULL_REQUEST_NUMBER` が存在、`CI_PULL_REQUEST_SOURCE_REPO == CI_PULL_REQUEST_TARGET_REPO`（fork 除外）。
-   * 差分がなければ何もせず終了。差分があれば `[ci skip]` 付きでコミットし、`HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH` へ push する。新規（未追跡）ファイルも記録対象になるため、まず `git add` してから差分検出・commitする（`git diff --stat` は追跡済みファイルの変更のみを見るため、新規ファイルはこれだけでは検出できない点に注意。実測でも新規記録は `git status --short` の `??` としてのみ現れた）。
+   * 差分がなければ何もせず終了。差分があれば通常のコミットメッセージ（`[ci skip]` は付けない。理由は後述「ループ対策」）でコミットし、`HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH` へ push する。新規（未追跡）ファイルも記録対象になるため、まず `git add` してから差分検出・commitする（`git diff --stat` は追跡済みファイルの変更のみを見るため、新規ファイルはこれだけでは検出できない点に注意。実測でも新規記録は `git status --short` の `??` としてのみ現れた）。
    * push の認証は既存のタグ push（`ci_post_xcodebuild.sh:29-35`）と同じ `GITHUB_TOKEN` 方式を流用する。
    * Xcode Cloud 公式の `test-without-building` action は引き続き別ランナーで実行される（現状は結果を使わずスキップするのみ）。記録自体は自己呼び出し側で完結するため機能上の問題はないが、コンピュート時間が二重に消費される。今後、ワークフロー構成の見直し（`test-without-building` の無効化など）を検討する。
 
@@ -47,17 +47,18 @@
    * リポジトリが public のため raw URL がコメント内でそのままレンダリングされる。**報告側の新規実装は不要**。
    * bot の push は PAT 経由のため GitHub Actions の `pull_request: synchronize` が発火し、Danger が自動で走る。
 
-5. **ループ対策は二重に掛ける**
-   * コミットメッセージへの `[ci skip]`（Apple 公式サポート）
-   * Pull Request Changes の Custom Conditions（ファイル/フォルダ条件）で `__Snapshots__` 配下以外のソース変更時のみ起動する
+5. **ループ対策は Custom Conditions のみで行う**
+   * Pull Request Changes の Custom Conditions（ファイル/フォルダ条件）で `__Snapshots__` 配下のみの変更では起動しない設定を入れる。
+   * 当初はコミットメッセージへの `[ci skip]`（Apple 公式サポート）との二重掛けを想定していたが、`[ci skip]` は GitHub Actions 側にも解釈され `ci_danger.yml`（Danger によるコードレビュー自動化）まで止めてしまうため不採用とした。ループ対策は Custom Conditions 側のみに一本化する。
 
 ### 段階的な検証順序
 
 一度に全部を入れず、以下の順で検証する。各段階が通ってから次に進む。
 
 1. **書き込み可否の確認 ✅ 確認済み（Build 212, 2026-08-01）**: 当初は既存 `test-without-building` ワークフロー上での記録可否を検証する想定だったが、実測により当該ランナーには `$CI_PRIMARY_REPOSITORY_PATH` が空（gitチェックアウトが存在しない）ことが判明したため、`build-for-testing` ランナー上で `xcodebuild test-without-building` を自己呼び出しする構成（上記「実装構成」3.参照）に変更した。参照PNGを1枚意図的に削除した状態で push し、自己呼び出し実行後の `git status --short` にその新規ファイルが `??` として検出されることを確認した。
-2. **push の確認**: `git fetch --unshallow` の要否（shallow clone からの push が `shallow update not allowed` で拒否されないか）と、PR ブランチへの push 成否を確認する。
-3. **ループ停止の確認**: `[ci skip]` と Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
+2. **push の確認**: `git fetch --unshallow` の要否（shallow clone からの push が `shallow update not allowed` で拒否されないか）と、PR ブランチへの push 成否を確認する。GitHub Actions 起点で機能していた `GITHUB_TOKEN`/`GITHUB_REPOSITORY` は Xcode Cloud の環境変数がワークフロー単位のスコープであるため、「VRT」ワークフロー側にも別途登録が必要だった点に注意（実測で判明、`Upload For AppStore` ワークフローには元々設定済みだった）。
+3. **既存参照との差分（modified）ケースの確認**: ステップ1では「参照PNGが存在しない（missing）」ケースのみ検証した。View に意図的な変更を加え、古い参照PNGを残したまま実行し、① verify専用パスでミスマッチとして検出され、② 記録パスで再記録され、③ その差分が commit・push されることを確認する。
+4. **ループ停止の確認**: Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
 
 ## 考慮した選択肢
 
