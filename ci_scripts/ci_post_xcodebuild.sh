@@ -40,17 +40,18 @@ case "$CI_WORKFLOW" in
     "VRT")
         echo "=== VRT workflow ==="
 
-        # doc/adr/0005 検証ステップ1（改訂）: 実測の結果、test-without-building は
-        # build-for-testing とは別の使い捨てランナーで動いており、$CI_PRIMARY_REPOSITORY_PATH
-        # が空文字（gitチェックアウトが一切存在しない）ことが判明した。Apple公式フォーラムでも
+        # doc/adr/0005: 実測の結果、test-without-building は build-for-testing とは
+        # 別の使い捨てランナーで動いており、$CI_PRIMARY_REPOSITORY_PATH が空文字
+        # （gitチェックアウトが一切存在しない）ことが判明した。Apple公式フォーラムでも
         # 「テストを実行する環境にはソースコードがクローンされない」と明記されており、
         # test-without-building 側での記録・push は構造的に成立しない。
         #
         # そこで、gitチェックアウトが存在する build-for-testing 側の ci_post_xcodebuild.sh から、
         # 直前のビルドで既に生成済みの -testProductsPath を使い、自前で
         # `xcodebuild test-without-building` を実行する。同一ランナー内で完結するため、
-        # SNAPSHOT_TESTING_RECORD=failed による書き込みがそのまま git 差分として検出できるはず。
-        # 現段階では commit/push はまだ行わず、書き込みが実際に発生するかをログ出力のみで確認する。
+        # SNAPSHOT_TESTING_RECORD=failed による書き込みがそのまま git 差分として検出できる
+        # （検証ステップ1・Build 212で確認済み）。検証ステップ2として、実際に差分があれば
+        # [ci skip] 付きでcommitし、PRブランチへpushする。
         if [ "$CI_XCODEBUILD_ACTION" != "build-for-testing" ]; then
             echo "Skipping VRT CLI re-run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
@@ -95,10 +96,54 @@ case "$CI_WORKFLOW" in
         SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
         CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
 
+        # fork PR は secret 環境変数（GITHUB_TOKEN）が渡らずpush先も他人のリポジトリになるため対象外。
+        # PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
+        if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
+            echo "Skipping commit/push (not associated with a pull request)"
+            exit 0
+        fi
+        if [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
+            echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
+            exit 0
+        fi
+
+        git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
+
         echo "--- git status (short) for snapshot dirs ---"
         git status --short -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
-        echo "--- git diff --stat for snapshot dirs ---"
-        git diff --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
+
+        # git diff --stat は追跡済みファイルの変更しか見ないため、新規（missing→記録）ファイルを
+        # 見落とす。git add 後の --cached --quiet でステージ済み差分の有無を判定する。
+        if git diff --cached --quiet -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"; then
+            echo "No snapshot changes to commit."
+            echo "==========================="
+            exit 0
+        fi
+
+        echo "--- git diff --cached --stat for snapshot dirs ---"
+        git diff --cached --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
+
+        if [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPOSITORY" ]; then
+            echo "WARNING: GITHUB_TOKEN or GITHUB_REPOSITORY is not set. Skipping commit/push."
+            echo "==========================="
+            exit 0
+        fi
+
+        # Xcode CloudではGit設定がされていないため最低限の設定を行う
+        git config user.email "taichis844@gmail.com"
+        git config user.name "stotic-dev"
+
+        git commit -m "$(cat <<'COMMIT_MSG'
+chore: VRT参照スナップショットを自動更新 [ci skip]
+
+doc/adr/0005: Xcode Cloud上で記録した参照PNGの自動commitです。
+PRコメントのDangerによるbefore/after画像差分でレビューしてください。
+COMMIT_MSG
+)"
+
+        REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        git push "$REMOTE_URL" "HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH"
+        echo "✓ Pushed snapshot updates to $CI_PULL_REQUEST_SOURCE_BRANCH"
         echo "==========================="
         ;;
 
