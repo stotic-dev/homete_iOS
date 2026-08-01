@@ -34,10 +34,13 @@
    * `failed` モードでも `verifySnapshot` は失敗メッセージを返す。`generateTestTemplate.stencil` は戻り値を受けて自前で `XCTFail` を呼ぶ構造のため、記録モード時は `XCTFail` をスキップしてテストアクションを成功させる。
    * これは後述の「失敗時に `ci_post_xcodebuild.sh` が実行されない実測報告」への回避策であり、必須。
 
-3. **`ci_post_xcodebuild.sh` で commit & push**
-   * ガード条件: `CI_WORKFLOW` が記録用ワークフロー、`CI_XCODEBUILD_ACTION == "test-without-building"`（Xcode Cloud はテストを2回の xcodebuild に分割するため）、`CI_PULL_REQUEST_NUMBER` が存在、`CI_PULL_REQUEST_SOURCE_REPO == CI_PULL_REQUEST_TARGET_REPO`（fork 除外）。
-   * 差分がなければ何もせず終了。差分があれば `[ci skip]` 付きでコミットし、`HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH` へ push する。
+3. **`ci_post_xcodebuild.sh` で自己呼び出し + commit & push**
+   * **実測により判明した制約**: `test-without-building` action は `build-for-testing` とは別の使い捨てランナーで実行され、`$CI_PRIMARY_REPOSITORY_PATH` が空文字（gitチェックアウトが一切存在しない）。Apple公式フォーラムでも「テストを実行する環境にはソースコードがクローンされない」と明記されている（[thread 722923](https://developer.apple.com/forums/thread/722923)）。そのため `test-without-building` 側での記録・commit・pushは構造的に成立しない。
+   * **採用する構成**: gitチェックアウトが存在する `build-for-testing` 側の `ci_post_xcodebuild.sh`（`CI_XCODEBUILD_ACTION == "build-for-testing"`）から、直前のビルドで生成済みの `-testProductsPath`（`/Volumes/workspace/TestProducts.xctestproducts`）を使い、`xcodebuild test-without-building` を自前で実行する。同一ランナー内で完結するため、`SNAPSHOT_TESTING_RECORD=failed` による書き込みがそのまま同じシェルのgit差分として検出できる（Build 212で実測確認済み）。
+   * ガード条件: `CI_WORKFLOW` が記録用ワークフロー、`CI_XCODEBUILD_ACTION == "build-for-testing"`、`CI_PULL_REQUEST_NUMBER` が存在、`CI_PULL_REQUEST_SOURCE_REPO == CI_PULL_REQUEST_TARGET_REPO`（fork 除外）。
+   * 差分がなければ何もせず終了。差分があれば `[ci skip]` 付きでコミットし、`HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH` へ push する。新規（未追跡）ファイルも記録対象になるため、まず `git add` してから差分検出・commitする（`git diff --stat` は追跡済みファイルの変更のみを見るため、新規ファイルはこれだけでは検出できない点に注意。実測でも新規記録は `git status --short` の `??` としてのみ現れた）。
    * push の認証は既存のタグ push（`ci_post_xcodebuild.sh:29-35`）と同じ `GITHUB_TOKEN` 方式を流用する。
+   * Xcode Cloud 公式の `test-without-building` action は引き続き別ランナーで実行される（現状は結果を使わずスキップするのみ）。記録自体は自己呼び出し側で完結するため機能上の問題はないが、コンピュート時間が二重に消費される。今後、ワークフロー構成の見直し（`test-without-building` の無効化など）を検討する。
 
 4. **報告は既存の Danger をそのまま使う**
    * `DangerTools/Dangerfile.swift:15-58` が既に、PR で変更/追加された `__Snapshots__/PreviewTests.generated/*.png` について `raw.githubusercontent.com` の base/head SHA を使った before/after 画像比較テーブルを PR コメントに投稿する実装を持つ。
@@ -52,7 +55,7 @@
 
 一度に全部を入れず、以下の順で検証する。各段階が通ってから次に進む。
 
-1. **書き込み可否の確認**: 既存 VRT ワークフローに `SNAPSHOT_TESTING_RECORD=failed` + XCTFail 抑止を入れ、**push はせず** `git status` をログ出力するだけの状態にする。シミュレータプロセスが `$CI_PRIMARY_REPOSITORY_PATH` 配下（`ci_scripts/__Snapshots__` シンボリックリンク経由）へ書き込めることを確認する。
+1. **書き込み可否の確認 ✅ 確認済み（Build 212, 2026-08-01）**: 当初は既存 `test-without-building` ワークフロー上での記録可否を検証する想定だったが、実測により当該ランナーには `$CI_PRIMARY_REPOSITORY_PATH` が空（gitチェックアウトが存在しない）ことが判明したため、`build-for-testing` ランナー上で `xcodebuild test-without-building` を自己呼び出しする構成（上記「実装構成」3.参照）に変更した。参照PNGを1枚意図的に削除した状態で push し、自己呼び出し実行後の `git status --short` にその新規ファイルが `??` として検出されることを確認した。
 2. **push の確認**: `git fetch --unshallow` の要否（shallow clone からの push が `shallow update not allowed` で拒否されないか）と、PR ブランチへの push 成否を確認する。
 3. **ループ停止の確認**: `[ci skip]` と Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
 
@@ -96,3 +99,6 @@
 * [Configuring start conditions](https://developer.apple.com/documentation/xcode/configuring-start-conditions/) — Custom Conditions、`[ci skip]`
 * [Writing custom build scripts](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts) — `ci_post_xcodebuild.sh` の実行タイミング
 * [25 hours of Xcode Cloud now included with the Apple Developer Program](https://developer.apple.com/news/?id=ik9z4ll6)
+* [Apple Developer Forums thread 722923](https://developer.apple.com/forums/thread/722923) — 「テストを実行する環境にはソースコードがクローンされない」旨の公式回答。`test-without-building` ランナーでの記録・pushが構造的に成立しない根拠
+* [Apple Developer Forums thread 716993](https://developer.apple.com/forums/thread/716993) — `test-without-building` 側からの参照アセット取り込み（読み込み専用）のワークアラウンド事例
+* [jaanus.com: Snapshot testing on Xcode Cloud](https://jaanus.com/snapshot-testing-xcode-cloud/) — 参照PNGをSPMリソースとしてテストバンドルに同梱するアプローチ。`ci_scripts` シンボリックリンク方式を「過度に工夫された方法」と評する
