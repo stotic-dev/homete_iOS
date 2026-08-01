@@ -45,6 +45,7 @@ struct HouseworkDetailItemListContent: View {
 
 }
 
+#if DEBUG
 #Preview("HouseworkDetailItemListContent_未完了時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
         cohabitantMemberList: .init(value: [], ownId: ""),
@@ -71,3 +72,4 @@ struct HouseworkDetailItemListContent: View {
     )
     .setupEnvironmentForPreview()
 }
+#endif

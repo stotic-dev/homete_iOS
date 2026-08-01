@@ -10,6 +10,8 @@
       "Read(**/*firebase-adminsdk*.json)",
       "Read(**/service-account*.json)",
       "Read(**/google-services.json)",
+      "Read(homete/Resouces/Secret.xcconfig)",
+      "Read(homete/Resouces/Secret_dev.xcconfig)",
       "Edit(./.env)",
       "Edit(./.env.*)",
       "Edit(**/.env)",
@@ -18,7 +20,9 @@
       "Edit(**/private_keys/**)",
       "Edit(**/*firebase-adminsdk*.json)",
       "Edit(**/service-account*.json)",
-      "Edit(**/google-services.json)"
+      "Edit(**/google-services.json)",
+      "Edit(homete/Resouces/Secret.xcconfig)",
+      "Edit(homete/Resouces/Secret_dev.xcconfig)"
     ]
   }
 }
