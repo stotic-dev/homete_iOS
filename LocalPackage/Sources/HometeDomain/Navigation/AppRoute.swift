@@ -9,5 +9,7 @@ public enum AppRoute: Hashable, Sendable {
     case cohabitantRegistration
     /// 設定画面
     case setting
+    /// 家事テンプレート画面
+    case houseworkTemplate
 
 }

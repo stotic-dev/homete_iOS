@@ -5,16 +5,28 @@
 //  Created by Taichi Sato on 2026/05/09.
 //
 
+import HometeDomain
 import SwiftUI
 
 public struct HouseworkBoardScreen: View {
 
-    @State var houseworkListStore: HouseworkListStore?
+    @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
+
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
 
-    public static func make(houseworkListStore: HouseworkListStore?) -> some View {
-        HouseworkBoardScreen(houseworkListStore: houseworkListStore)
+    let houseworkListStore: HouseworkListStore?
+    let houseworkTemplateListStore: HouseworkTemplateListStore?
+
+    public static func make(
+        houseworkListStore: HouseworkListStore?,
+        houseworkTemplateListStore: HouseworkTemplateListStore?
+    ) -> some View {
+        HouseworkBoardScreen(
+            houseworkListStore: houseworkListStore,
+            houseworkTemplateListStore: houseworkTemplateListStore
+        )
     }
 
     public var body: some View {
@@ -22,8 +34,11 @@ public struct HouseworkBoardScreen: View {
             HouseworkBoardView(
                 houseworkBoardList: $houseworkBoardList,
                 dateList: $dateList
-            )
+            ) {
+                updateHouseboardList(with: houseworkListStore)
+            }
             .environment(houseworkListStore)
+            .environment(houseworkTemplateListStore)
             .onAppear {
                 withAnimation {
                     onAppeare(with: houseworkListStore)
@@ -45,9 +60,17 @@ public struct HouseworkBoardScreen: View {
 private extension HouseworkBoardScreen {
 
     func onAppeare(with store: HouseworkListStore) {
+        updateHouseboardList(with: store)
+    }
+
+    func updateHouseboardList(with store: HouseworkListStore) {
+        let selectedDate = dateList.selectedDate
         houseworkBoardList = .init(
             dailyList: store.items.value,
-            selectedDate: dateList.selectedDate
+            selectedDateTemplate: templateContext.templateOfDay(by: selectedDate, calendar: calendar),
+            selectedDate: dateList.selectedDate,
+            calendar: calendar,
+            uuidGenerator: { UUID() }
         )
     }
 

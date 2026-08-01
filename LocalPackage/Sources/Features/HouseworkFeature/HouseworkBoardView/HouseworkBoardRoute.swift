@@ -10,7 +10,7 @@ import SwiftUI
 enum HouseworkBoardRoute: Hashable {
 
     /// 家事詳細画面
-    case houseworkDetail(HouseworkItem)
+    case houseworkDetail(HouseworkBoardItem)
 
 }
 

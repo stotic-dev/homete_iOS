@@ -57,26 +57,26 @@ private extension AllUserDataAnnotation {
 }
 
 #if DEBUG
-    #Preview("AllUserDataAnnotation_データ有り", traits: .sizeThatFitsLayout) {
-        AllUserDataAnnotation(
-            entries: [
-                .init(id: "1", userName: "佐藤", point: 20),
-                .init(id: "2", userName: "佐藤2", point: 1_000_000),
-            ],
-            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-            displayPeriod: .week
-        )
-        .setupEnvironmentForPreview()
-        .padding(.space16)
-    }
+#Preview("AllUserDataAnnotation_データ有り", traits: .sizeThatFitsLayout) {
+    AllUserDataAnnotation(
+        entries: [
+            .init(id: "1", userName: "佐藤", point: 20),
+            .init(id: "2", userName: "佐藤2", point: 1_000_000),
+        ],
+        selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+        displayPeriod: .week
+    )
+    .setupEnvironmentForPreview()
+    .padding(.space16)
+}
 
-    #Preview("AllUserDataAnnotation_データ無し", traits: .sizeThatFitsLayout) {
-        AllUserDataAnnotation(
-            entries: [],
-            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-            displayPeriod: .week
-        )
-        .setupEnvironmentForPreview()
-        .padding(.space16)
-    }
+#Preview("AllUserDataAnnotation_データ無し", traits: .sizeThatFitsLayout) {
+    AllUserDataAnnotation(
+        entries: [],
+        selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+        displayPeriod: .week
+    )
+    .setupEnvironmentForPreview()
+    .padding(.space16)
+}
 #endif

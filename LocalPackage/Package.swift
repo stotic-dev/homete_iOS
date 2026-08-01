@@ -6,7 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
-    platforms: [.iOS(.v17), .macOS(.v15)],
+    platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
         lib("HometeDomain"),
         lib("HometeUI"),
@@ -17,6 +17,7 @@ let package = Package(
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
+        lib("HouseworkTemplateFeature"),
         lib("AppRoot")
     ],
     dependencies: [
@@ -66,6 +67,25 @@ let package = Package(
         // MARK: Infrastructure / Root
 
         .target(
+            name: "HouseworkTemplateFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            path: "./Sources/Features/HouseworkTemplateFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .testTarget(
+            name: "HouseworkTemplateFeatureTests",
+            dependencies: ["HouseworkTemplateFeature"],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
             name: "HometeInfrastructure",
             dependencies: [
                 "HometeDomain",
@@ -88,6 +108,7 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "HouseworkTemplateFeature",
                 "ContributionFeature",
                 "HometeInfrastructure"
             ],

@@ -24,6 +24,7 @@ public struct HomeView: View {
     @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
     let cohabitantStore: CohabitantStore?
+    let houseworkTemplateListStore: HouseworkTemplateListStore?
     let houseworkListStore: HouseworkListStore?
 
     public var body: some View {
@@ -33,10 +34,12 @@ public struct HomeView: View {
                     if loginContext.hasCohabitant,
                        let contributionStore,
                        let cohabitantStore,
-                       let houseworkListStore {
+                       let houseworkListStore,
+                       let houseworkTemplateListStore {
                         registeredContent(
                             contributionStore: contributionStore,
                             cohabitantStore: cohabitantStore,
+                            houseworkTemplateListStore: houseworkTemplateListStore,
                             houseworkListStore: houseworkListStore
                         )
                     } else if !loginContext.hasCohabitant {
@@ -46,13 +49,13 @@ public struct HomeView: View {
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
                     router.resolve(.cohabitantRegistration)
                 }
-                .sheet(isPresented: $isShowSetting) {
-                    router.resolve(.setting)
-                }
                 .trailingToolbarItem {
                     NavigationBarButton(label: .settings) {
                         isShowSetting = true
                     }
+                }
+                .sheet(isPresented: $isShowSetting) {
+                    router.resolve(.setting)
                 }
             }
         }
@@ -65,11 +68,13 @@ public extension HomeView {
     static func make(
         contributionStore: ContributionStore?,
         cohabitantStore: CohabitantStore?,
+        houseworkTemplateListStore: HouseworkTemplateListStore?,
         houseworkListStore: HouseworkListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
             cohabitantStore: cohabitantStore,
+            houseworkTemplateListStore: houseworkTemplateListStore,
             houseworkListStore: houseworkListStore
         )
     }
@@ -81,16 +86,20 @@ private extension HomeView {
     func registeredContent(
         contributionStore: ContributionStore,
         cohabitantStore: CohabitantStore,
+        houseworkTemplateListStore: HouseworkTemplateListStore,
         houseworkListStore: HouseworkListStore
     ) -> some View {
         RegisteredContent()
-            .environment(contributionStore)
-            .environment(cohabitantStore)
-            .environment(houseworkListStore)
-            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
             .task {
                 await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
             }
+            .sheet(isPresented: $isShowSetting) {
+                router.resolve(.setting)
+            }
+            .environment(contributionStore)
+            .environment(cohabitantStore)
+            .environment(houseworkTemplateListStore)
+            .environment(houseworkListStore)
     }
 
     func notRegisteredContent() -> some View {
