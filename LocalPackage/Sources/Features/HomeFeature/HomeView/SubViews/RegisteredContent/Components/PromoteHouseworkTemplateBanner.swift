@@ -11,6 +11,8 @@ import SwiftUI
 
 struct PromoteHouseworkTemplateBanner: View {
 
+    let action: () -> Void
+
     var body: some View {
         VStack(alignment: .center, spacing: .space24) {
             Image(.promoteHouseworkTemplateBannerIcon)
@@ -26,7 +28,7 @@ struct PromoteHouseworkTemplateBanner: View {
                     .multilineTextAlignment(.center)
             }
             Button("テンプレートを設定する") {
-                // TODO: テンプレート設定画面へ遷移
+                action()
             }
             .primaryButtonStyle()
         }
@@ -35,5 +37,5 @@ struct PromoteHouseworkTemplateBanner: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    PromoteHouseworkTemplateBanner()
+    PromoteHouseworkTemplateBanner {}
 }

@@ -9,11 +9,23 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-public struct SettingView: View {
+public struct SettingViewScreen: View {
+
+    public init() {}
+
+    public var body: some View {
+        NavigationStack {
+            SettingView()
+        }
+    }
+
+}
+
+struct SettingView: View {
 
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
-    @Environment(\.loginContext.account.userName) var userName
+    @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
     @Environment(\.dismiss) var dismiss
@@ -21,52 +33,54 @@ public struct SettingView: View {
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
+    @State var isShowHouseworkTemplate = false
     @State var isShowMemberRegistration = false
 
-    public init() {}
+    init() {}
 
-    public var body: some View {
-        NavigationStack {
-            VStack(spacing: .space32) {
-                VStack(spacing: .space24) {
-                    Text(userName)
-                        .font(with: .headLineM)
-                    GroupMemberListView(members: cohabitantMembers.others)
-                    Spacer()
-                        .frame(height: .space16)
-                    VStack(spacing: .zero) {
-                        ForEach(SettingMenuItem.allCases, id: \.self) { item in
-                            SettingMenuItemButton(item: item) {
-                                tappedSettingMenuItem(item)
-                            }
+    var body: some View {
+        VStack(spacing: .space32) {
+            VStack(spacing: .space24) {
+                Text(loginContext.account.userName)
+                    .font(with: .headLineM)
+                GroupMemberListView(members: cohabitantMembers.others)
+                Spacer()
+                    .frame(height: .space16)
+                VStack(spacing: .zero) {
+                    ForEach(
+                        SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                        id: \.self
+                    ) { item in
+                        SettingMenuItemButton(item: item) {
+                            tappedSettingMenuItem(item)
                         }
                     }
                 }
-                VStack(spacing: .space24) {
-                    Button {
-                        tappedLogoutRowButton()
-                    } label: {
-                        Text("ログアウト")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .primaryButtonStyle()
-                    Button {
-                        tappedAccountDeletionRowButton()
-                    } label: {
-                        Text("退会")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .destructiveButtonStyle()
+            }
+            VStack(spacing: .space24) {
+                Button {
+                    tappedLogoutRowButton()
+                } label: {
+                    Text("ログアウト")
+                        .frame(maxWidth: .infinity)
                 }
-                Spacer()
+                .primaryButtonStyle()
+                Button {
+                    tappedAccountDeletionRowButton()
+                } label: {
+                    Text("退会")
+                        .frame(maxWidth: .infinity)
+                }
+                .destructiveButtonStyle()
             }
-            .padding(.horizontal, .space16)
-            .padding(.bottom, .space16)
-            .navigationTitle("設定")
-            .inlineNavigationBarTitleDisplayMode()
-            .trailingToolbarItem {
-                leadingNavigationBarContent()
-            }
+            Spacer()
+        }
+        .padding(.horizontal, .space16)
+        .padding(.bottom, .space16)
+        .navigationTitle("設定")
+        .inlineNavigationBarTitleDisplayMode()
+        .trailingToolbarItem {
+            leadingNavigationBarContent()
         }
         .fullScreenCoverOnIOS(isPresented: $isShowMemberRegistration) {
             router.resolve(.cohabitantRegistration)
@@ -85,6 +99,9 @@ public struct SettingView: View {
             }
         } message: {
             Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
         }
     }
 
@@ -106,10 +123,13 @@ private extension SettingView {
 
     func tappedSettingMenuItem(_ item: SettingMenuItem) {
         switch item {
+        case .taskTemplate:
+            isShowHouseworkTemplate = true
+
         case .memberRegistration:
             isShowMemberRegistration = true
 
-        case .taskTemplate, .privacyPolicy, .license:
+        case .privacyPolicy, .license:
             // TODO: 各メニューの遷移処理
             break
         }
@@ -138,10 +158,22 @@ private extension SettingView {
 
 }
 
-#Preview {
+#Preview("SettingView_グループ未登録") {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+}
+
+#Preview("SettingView_グループ登録済み") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
         .environment(
             \.cohabitantMembers,
             .init(

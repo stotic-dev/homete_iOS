@@ -16,7 +16,11 @@ struct RegisteredContent: View {
     @Environment(\.adComponentResolver) var adComponentResolver
     @Environment(CohabitantStore.self) var cohabiantStore
     @Environment(ContributionStore.self) var contributionStore
-    @Environment(HouseworkListStore.self) var hoseworkListstore
+    @Environment(HouseworkListStore.self) var houseworkListstore
+    @Environment(\.routeResolver) var router
+    @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
+
+    @State var isShowHouseworkTemplate = false
 
     @LoadingState var loadingState
 
@@ -30,11 +34,17 @@ struct RegisteredContent: View {
                     ContributionSummaryComponent.make()
                         .padding(.vertical, .space16)
                         .redacted(reason: loadingState.isLoading ? .placeholder : [])
-                    // TODO: テンプレート未設定の場合のみ表示する
-                    PromoteHouseworkTemplateBanner()
+                    if !hasTemplate {
+                        PromoteHouseworkTemplateBanner {
+                            isShowHouseworkTemplate = true
+                        }
+                    }
                 }
                 .padding(.horizontal, .space16)
             }
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
         }
         .onChange(of: contributionStore.isInitialLoaded) {
             onChangeStoreInitialLoadedStatus()
@@ -44,7 +54,7 @@ struct RegisteredContent: View {
         }
         .navigationDestination(for: RegisteredContentRoute.self) { route in
             navigationHandler(route)
-                .environment(hoseworkListstore)
+                .environment(houseworkListstore)
         }
         .fullScreenLoadingIndicator(loadingState)
     }

@@ -20,7 +20,7 @@ struct HouseworkDetailActionContent: View {
     @Binding var commonErrorContent: DomainErrorAlertContent
 
     let account: Account
-    let item: HouseworkItem
+    let item: HouseworkBoardItem
 
     var body: some View {
         VStack(spacing: .space16) {
@@ -35,6 +35,8 @@ struct HouseworkDetailActionContent: View {
                 }
             case .completed:
                 undoChangeStateButton()
+            case .notTodo:
+                EmptyView()
             }
         }
         .disabled(isLoading)
@@ -96,10 +98,11 @@ private extension HouseworkDetailActionContent {
 
         do {
             try await houseworkListStore.requestReview(
-                target: item,
+                target: item.originalItem,
                 now: .now,
                 executor: account.id,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                isRegistered: item.isRegistered
             )
         } catch {
             commonErrorContent = .init(error: error)
@@ -110,7 +113,10 @@ private extension HouseworkDetailActionContent {
         guard let cohabitantId else { return }
 
         do {
-            try await houseworkListStore.returnToIncomplete(target: item, cohabitantId: cohabitantId)
+            try await houseworkListStore.returnToIncomplete(
+                target: item.originalItem,
+                cohabitantId: cohabitantId
+            )
         } catch {
             commonErrorContent = .init(error: error)
         }
@@ -119,53 +125,49 @@ private extension HouseworkDetailActionContent {
 }
 
 #if DEBUG
-    #Preview("HouseworkDetailActionContent_未完了", traits: .sizeThatFitsLayout) {
-        HouseworkDetailActionContent(
-            isLoading: .constant(false),
-            commonErrorContent: .constant(.initial),
-            account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil),
-            item: .init(
-                id: "",
-                title: "洗濯",
-                point: 10,
-                metaData: .init(
-                    indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                    expiredAt: .distantFuture
-                )
-            )
+#Preview("HouseworkDetailActionContent_未完了", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
         )
-        .environment(HouseworkListStore())
-    }
+    )
+    .environment(HouseworkListStore())
+}
 
-    #Preview("HouseworkDetailActionContent_承認待ち_実施者アカウント", traits: .sizeThatFitsLayout) {
-        HouseworkDetailActionContent(
-            isLoading: .constant(false),
-            commonErrorContent: .constant(.initial),
-            account: .init(id: "dummy", userName: "", fcmToken: nil, cohabitantId: nil),
-            item: .makeForPreview(
-                title: "洗濯",
-                point: 10,
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                state: .pendingApproval,
-                executorId: "dummy"
-            )
+#Preview("HouseworkDetailActionContent_承認待ち_実施者アカウント", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "dummy", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .pendingApproval,
+            executorId: "dummy"
         )
-        .environment(HouseworkListStore())
-    }
+    )
+    .environment(HouseworkListStore())
+}
 
-    #Preview("HouseworkDetailActionContent_承認待ち_確認者アカウント", traits: .sizeThatFitsLayout) {
-        HouseworkDetailActionContent(
-            isLoading: .constant(false),
-            commonErrorContent: .constant(.initial),
-            account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
-            item: .makeForPreview(
-                title: "洗濯",
-                point: 10,
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                state: .pendingApproval,
-                executorId: "executorAccount"
-            )
+#Preview("HouseworkDetailActionContent_承認待ち_確認者アカウント", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .pendingApproval,
+            executorId: "executorAccount"
         )
-        .environment(HouseworkListStore())
-    }
+    )
+    .environment(HouseworkListStore())
+}
 #endif

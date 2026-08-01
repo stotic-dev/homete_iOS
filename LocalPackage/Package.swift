@@ -6,7 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
-    platforms: [.iOS(.v17), .macOS(.v15)],
+    platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
         lib("HometeDomain"),
         lib("HometeUI"),
@@ -17,6 +17,7 @@ let package = Package(
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
+        lib("HouseworkTemplateFeature"),
         lib("AppRoot")
     ],
     dependencies: [
@@ -65,14 +66,33 @@ let package = Package(
         // MARK: Infrastructure / Root
 
         .target(
+            name: "HouseworkTemplateFeature",
+            dependencies: [
+                "HometeDomain",
+                "HometeUI",
+                "HometeResources",
+            ],
+            path: "./Sources/Features/HouseworkTemplateFeature",
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .testTarget(
+            name: "HouseworkTemplateFeatureTests",
+            dependencies: ["HouseworkTemplateFeature"],
+            plugins: [
+                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
+            ]
+        ),
+        .target(
             name: "HometeInfrastructure",
             dependencies: [
                 "HometeDomain",
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
-                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk", condition: .when(platforms: [.iOS])),
+                .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS]))
             ],
             plugins: [swiftLintPlugin()]
@@ -86,6 +106,7 @@ let package = Package(
                 "SettingFeature",
                 "HomeFeature",
                 "HouseworkFeature",
+                "HouseworkTemplateFeature",
                 "ContributionFeature",
                 "HometeInfrastructure"
             ],

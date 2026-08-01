@@ -96,24 +96,24 @@ private extension HouseworkDateCell {
 }
 
 #if DEBUG
-    #Preview("HouseworkDateCell_今日の日付", traits: .sizeThatFitsLayout) {
-        HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
-            .setupEnvironmentForPreview()
-            .environment(\.now, .distantPast)
-    }
+#Preview("HouseworkDateCell_今日の日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
+        .setupEnvironmentForPreview()
+        .environment(\.now, .distantPast)
+}
 
-    #Preview("HouseworkDateCell_選択中の日付", traits: .sizeThatFitsLayout) {
-        HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
-            .setupEnvironmentForPreview()
-    }
+#Preview("HouseworkDateCell_選択中の日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .selected) { _ in }
+        .setupEnvironmentForPreview()
+}
 
-    #Preview("HouseworkDateCell_選択可能な日付", traits: .sizeThatFitsLayout) {
-        HouseworkDateCell(date: .distantPast, state: .selectable) { _ in }
-            .setupEnvironmentForPreview()
-    }
+#Preview("HouseworkDateCell_選択可能な日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .selectable) { _ in }
+        .setupEnvironmentForPreview()
+}
 
-    #Preview("HouseworkDateCell_選択不可な日付", traits: .sizeThatFitsLayout) {
-        HouseworkDateCell(date: .distantPast, state: .unselectable) { _ in }
-            .setupEnvironmentForPreview()
-    }
+#Preview("HouseworkDateCell_選択不可な日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .unselectable) { _ in }
+        .setupEnvironmentForPreview()
+}
 #endif

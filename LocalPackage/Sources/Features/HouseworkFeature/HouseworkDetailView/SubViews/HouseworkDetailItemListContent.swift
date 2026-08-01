@@ -15,7 +15,7 @@ struct HouseworkDetailItemListContent: View {
     @Environment(\.calendar) var calendar
 
     let cohabitantMemberList: CohabitantMemberList
-    let item: HouseworkItem
+    let item: HouseworkBoardItem
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
@@ -48,13 +48,12 @@ struct HouseworkDetailItemListContent: View {
 #Preview("HouseworkDetailItemListContent_未完了時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
         cohabitantMemberList: .init(value: [], ownId: ""),
-        item: .init(
-            id: "",
+        item: .makeForPreview(
             title: "洗濯",
-            point: 10,
-            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture)
+            point: 10
         )
     )
+    .setupEnvironmentForPreview()
 }
 
 #Preview("HouseworkDetailItemListContent_承認確認時", traits: .sizeThatFitsLayout) {
@@ -63,13 +62,12 @@ struct HouseworkDetailItemListContent: View {
             value: [.init(id: "test", userName: "hogehoge")],
             ownId: "test"
         ),
-        item: .init(
-            id: "",
+        item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            metaData: .init(indexedDate: .init(value: .distantPast), expiredAt: .distantFuture),
             executorId: "test",
             executedAt: .distantPast
         )
     )
+    .setupEnvironmentForPreview()
 }

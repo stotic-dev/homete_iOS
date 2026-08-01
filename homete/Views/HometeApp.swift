@@ -47,19 +47,19 @@ private extension AppDelegate {
 
     func setupFirebase() {
         #if DEBUG
-            if !isXcodePreview, !isUnitTestMode {
-                guard let devPlistFilePath = (
-                    Bundle.main.url(
-                        forResource: "GoogleService-Info-dev",
-                        withExtension: "plist"
-                    )?
-                        .path()
-                ),
-                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
-                FirebaseApp.configure(options: firebaseOption)
-            }
+        if !isXcodePreview, !isUnitTestMode {
+            guard let devPlistFilePath = (
+                Bundle.main.url(
+                    forResource: "GoogleService-Info-dev",
+                    withExtension: "plist"
+                )?
+                    .path()
+            ),
+                let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
+            FirebaseApp.configure(options: firebaseOption)
+        }
         #else
-            FirebaseApp.configure()
+        FirebaseApp.configure()
         #endif
     }
 

@@ -42,11 +42,19 @@ struct HouseworkBoardListTest {
         // Act
         let actual = HouseworkBoardList(
             dailyList: inputList,
-            selectedDate: selectTime
+            selectedDateTemplate: nil,
+            selectedDate: selectTime,
+            calendar: .japanese,
+            uuidGenerator: { UUID() }
         )
 
         // Assert
-        let expected = HouseworkBoardList(items: inputSelectedDateItemList)
+        let expected = HouseworkBoardList(
+            items: inputSelectedDateItemList.map { .init(
+                originalItem: $0,
+                isRegistered: true
+            ) }
+        )
         #expect(actual == expected)
     }
 
@@ -60,14 +68,20 @@ struct HouseworkBoardListTest {
         let inputHouseworkItem = makeHouseworkItemListWithAllState(targetDate)
         let houseworkBoardList = HouseworkBoardList(
             dailyList: [.makeForTest(items: inputHouseworkItem)],
-            selectedDate: targetDate
+            selectedDateTemplate: nil,
+            selectedDate: targetDate,
+            calendar: .japanese,
+            uuidGenerator: { UUID() }
         )
 
         // Act
         let actual = houseworkBoardList.items(matching: expectedState)
 
         // Assert
-        let expected = inputHouseworkItem.filter { $0.state == expectedState }
+        let expected: [HouseworkBoardItem] = inputHouseworkItem.filter { $0.state == expectedState }
+            .map {
+                .init(originalItem: $0, isRegistered: true)
+            }
         #expect(actual == expected)
     }
 

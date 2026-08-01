@@ -7,10 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04B371992F40526F00820C62 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 04B371982F40526F00820C62 /* HometeDomain */; };
 		04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */ = {isa = PBXBuildFile; productRef = 04FD07782F77AEA500BEC61C /* ProjectToolsDummy */; };
 		2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */ = {isa = PBXBuildFile; productRef = 5735E0CC5DF34B1AADF7A805 /* AppRoot */; };
-		7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */; };
 		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
@@ -89,8 +87,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
-				04B371992F40526F00820C62 /* HometeDomain in Frameworks */,
-				7FA7B2C634CC406F82C0EFE6 /* HometeInfrastructure in Frameworks */,
 				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
 				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
@@ -140,7 +136,6 @@
 				BC1BB2642E909B8C001D168F /* Sources */,
 				BC1BB2652E909B8C001D168F /* Frameworks */,
 				BC1BB2662E909B8C001D168F /* Resources */,
-				04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */,
 			);
 			buildRules = (
 			);
@@ -180,8 +175,6 @@
 			name = homete;
 			packageProductDependencies = (
 				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
-				04B371982F40526F00820C62 /* HometeDomain */,
-				02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */,
 				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
 				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
@@ -256,25 +249,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		04B80001300000000000FFAB /* Set UIDesignRequiresCompatibility */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Set UIDesignRequiresCompatibility";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/libexec/PlistBuddy -c \"Set :UIDesignRequiresCompatibility YES\" \"${BUILT_PRODUCTS_DIR}/homete.app/Info.plist\"\n";
-		};
 		BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -819,14 +793,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		02AE0F1E847342CB8A77D0C1 /* HometeInfrastructure */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HometeInfrastructure;
-		};
-		04B371982F40526F00820C62 /* HometeDomain */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = HometeDomain;
-		};
 		04B783702F4996860080EFAC /* PrefireTestsPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;

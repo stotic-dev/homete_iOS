@@ -50,6 +50,13 @@
         "identifier" : "ContributionFeatureTests",
         "name" : "ContributionFeatureTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "HouseworkTemplateFeatureTests",
+        "name" : "HouseworkTemplateFeatureTests"
+      }
     }
   ],
   "version" : 1
