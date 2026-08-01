@@ -48,10 +48,16 @@ case "$CI_WORKFLOW" in
         #
         # そこで、gitチェックアウトが存在する build-for-testing 側の ci_post_xcodebuild.sh から、
         # 直前のビルドで既に生成済みの -testProductsPath を使い、自前で
-        # `xcodebuild test-without-building` を2回実行する（① verify専用パスで純粋比較のみ行い
-        # ログで可視化 → ② 記録パスで実際にミスマッチ/未記録分を書き込む）。同一ランナー内で
-        # 完結するため、書き込みがそのまま git 差分として検出できる（検証ステップ1・Build 212で確認済み）。
-        # 差分があれば通常のcommitメッセージでcommitし、PRブランチへpushする（検証ステップ2）。
+        # `SNAPSHOT_TESTING_RECORD=failed` で `xcodebuild test-without-building` を実行する。
+        # 同一ランナー内で完結するため、書き込みがそのまま git 差分として検出できる
+        # （検証ステップ1・Build 212で確認済み）。差分があれば通常のcommitメッセージでcommitし、
+        # PRブランチへpushする（検証ステップ2）。
+        #
+        # 注意: Xcode Cloud の PR ビルドは、PR ブランチの実 HEAD ではなくターゲットブランチ
+        # （main）との「マージプレビューコミット」を checkout している（実測で確認済み）。
+        # そのため、記録処理の前に PR ブランチの実 HEAD へ checkout し直してから記録・commit・push
+        # する。これにより push が main を巻き込んだマージコミットにならず、実HEADのみを親とする
+        # 単一コミットになる。
         #
         # このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、[ci skip] ではなく
         # Xcode Cloud側のワークフロー起動条件（Custom Conditions）で「スナップショットディレクトリのみの
@@ -90,44 +96,47 @@ case "$CI_WORKFLOW" in
         fi
         echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
 
+        SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+        CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
+
+        # fork PR は secret 環境変数（GITHUB_TOKEN）が渡らずpush先も他人のリポジトリになるため対象外。
+        # PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
+        # 記録処理より前に判定し、pushする場合は記録前に実HEADへcheckoutし直す（後述）。
+        PUSH_ENABLED=1
+        if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
+            echo "Skipping commit/push (not associated with a pull request)"
+            PUSH_ENABLED=0
+        elif [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
+            echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
+            PUSH_ENABLED=0
+        elif [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPOSITORY" ]; then
+            echo "WARNING: GITHUB_TOKEN or GITHUB_REPOSITORY is not set. Skipping commit/push."
+            PUSH_ENABLED=0
+        fi
+
+        if [ "$PUSH_ENABLED" = "1" ]; then
+            REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+            # Xcode Cloud の PR ビルドは PR ブランチの実 HEAD ではなく、ターゲットブランチ（main）との
+            # マージプレビューコミットを checkout している（実測で確認済み）。記録処理より前に
+            # PR ブランチの実 HEAD へ checkout し直しておくことで、後続の `git commit` + `git push HEAD:...`
+            # が自然に「実HEADのみを親とする単一コミット」になり、mainを巻き込むマージコミットが
+            # PRブランチへ混入するのを防ぐ。
+            git fetch "$REMOTE_URL" "$CI_PULL_REQUEST_SOURCE_BRANCH"
+            git checkout -B "$CI_PULL_REQUEST_SOURCE_BRANCH" FETCH_HEAD
+            echo "✓ Checked out real HEAD of $CI_PULL_REQUEST_SOURCE_BRANCH (merge previewから離脱): $(git rev-parse HEAD)"
+        fi
+
         # SNAPSHOT_TESTING_RECORD はワークフロー全体（自己呼び出し版・Xcode Cloud公式の
-        # 別ランナー版）で共有される xctestplan の環境変数のため、ここでは自己呼び出しの
-        # 各回ごとに明示的に値を指定し、ワークフロー側の設定値に依存させない。
-
-        # ① verify専用パス: 明示的に空を指定して純粋比較のみを行う（記録は一切しない）。
-        # ここでの失敗はミスマッチ/未記録の存在を意味し、後続の記録パスで解消される想定のため
-        # スクリプト自体は継続する（set -e に引っかからないよう || で握りつぶす）。
-        echo "--- xcodebuild test-without-building (self-invoked, verify-only pass) ---"
-        SNAPSHOT_TESTING_RECORD= xcodebuild test-without-building \
-            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
-            -testProductsPath "$TEST_PRODUCTS_PATH" \
-            -testPlan hometeSnapshotTestsForCI \
-            -resultBundlePath /Volumes/workspace/vrt-verify-resultbundle.xcresult \
-            && echo "✓ verify pass: all snapshots already match" \
-            || echo "✗ verify pass: mismatch or missing snapshot detected (record pass will follow)"
-
-        # ② 記録パス: 明示的に failed を指定し、①で検出されたミスマッチ/未記録分のみを書き込む。
-        echo "--- xcodebuild test-without-building (self-invoked, record pass) ---"
+        # 別ランナー版）で共有される xctestplan の環境変数のため、ここで明示的に failed を
+        # 指定し、ワークフロー側の設定値に依存させない。
+        echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
         SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -testProductsPath "$TEST_PRODUCTS_PATH" \
             -testPlan hometeSnapshotTestsForCI \
             -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult \
             || echo "xcodebuild test-without-building exited non-zero (isRecordingSnapshotsが真ならXCTFailは抑止されるはずなので要調査)"
-
-        SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
-        CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
-
-        # fork PR は secret 環境変数（GITHUB_TOKEN）が渡らずpush先も他人のリポジトリになるため対象外。
-        # PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
-        if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
-            echo "Skipping commit/push (not associated with a pull request)"
-            exit 0
-        fi
-        if [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
-            echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
-            exit 0
-        fi
 
         git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
 
@@ -145,8 +154,8 @@ case "$CI_WORKFLOW" in
         echo "--- git diff --cached --stat for snapshot dirs ---"
         git diff --cached --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
 
-        if [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPOSITORY" ]; then
-            echo "WARNING: GITHUB_TOKEN or GITHUB_REPOSITORY is not set. Skipping commit/push."
+        if [ "$PUSH_ENABLED" != "1" ]; then
+            echo "Snapshot changes detected, but push is skipped (see above)."
             echo "==========================="
             exit 0
         fi
@@ -163,7 +172,6 @@ PRコメントのDangerによるbefore/after画像差分でレビューしてく
 COMMIT_MSG
 )"
 
-        REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
         git push "$REMOTE_URL" "HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH"
         echo "✓ Pushed snapshot updates to $CI_PULL_REQUEST_SOURCE_BRANCH"
         echo "==========================="
