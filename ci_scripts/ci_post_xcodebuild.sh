@@ -42,23 +42,49 @@ case "$CI_WORKFLOW" in
 
         # doc/adr/0005 検証ステップ1: SNAPSHOT_TESTING_RECORD=failed 実行時に
         # シミュレータプロセスが $CI_PRIMARY_REPOSITORY_PATH 配下（参照PNG）へ
-        # 書き込めているかを git status で確認する。push は行わずログ出力のみ。
+        # 書き込めているかを確認する。push は行わずログ出力のみ。
         # xcodebuildはbuild-for-testingとtest-without-buildingの2アクションに分かれるため、
         # 実際にテストが実行された後（test-without-building）の1回だけ確認する。
+        #
+        # 実測: test-without-building は build-for-testing とは別のランナーで動いており、
+        # $CI_PRIMARY_REPOSITORY_PATH に .git が存在しない（git status/diff が使えない）。
+        # そのため git に依存せず、ci_scripts/__Snapshots__（../hometeSnapshotTests/__Snapshots__/
+        # PreviewTests.generated への相対シンボリックリンク、リポジトリにコミット済み）経由で
+        # ディレクトリの実在・ファイル数・更新時刻を確認する。
         if [ "$CI_XCODEBUILD_ACTION" != "test-without-building" ]; then
             echo "Skipping snapshot write-access check (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
         fi
 
+        echo "CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
+        echo "SNAPSHOT_TESTING_RECORD=$SNAPSHOT_TESTING_RECORD"
+
         cd "$CI_PRIMARY_REPOSITORY_PATH"
 
-        SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+        if [ -d .git ]; then
+            echo "✓ .git exists on this runner"
+        else
+            echo "✗ .git NOT found on this runner (test-without-building may run on a separate runner from build-for-testing)"
+        fi
 
-        echo "SNAPSHOT_TESTING_RECORD=$SNAPSHOT_TESTING_RECORD"
-        echo "--- git status (short) for $SNAPSHOT_DIR ---"
-        git status --short -- "$SNAPSHOT_DIR" || true
-        echo "--- git diff --stat for $SNAPSHOT_DIR ---"
-        git diff --stat -- "$SNAPSHOT_DIR" || true
+        SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+        CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
+
+        for DIR in "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"; do
+            echo "--- $DIR ---"
+            if [ -d "$DIR" ]; then
+                echo "✓ exists. File count: $(find "$DIR" -name '*.png' | wc -l | tr -d ' ')"
+                echo "newest 5 files by mtime:"
+                find "$DIR" -name '*.png' -exec stat -f '%Sm %N' -t '%Y-%m-%dT%H:%M:%S' {} \; | sort -r | head -5
+            else
+                echo "✗ NOT found"
+            fi
+        done
+
+        if [ -d .git ]; then
+            echo "--- git status (short) for $SNAPSHOT_DIR ---"
+            git status --short -- "$SNAPSHOT_DIR" || true
+        fi
         echo "==========================="
         ;;
 
