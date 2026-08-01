@@ -38,9 +38,9 @@
    * **実測により判明した制約**: `test-without-building` action は `build-for-testing` とは別の使い捨てランナーで実行され、`$CI_PRIMARY_REPOSITORY_PATH` が空文字（gitチェックアウトが一切存在しない）。Apple公式フォーラムでも「テストを実行する環境にはソースコードがクローンされない」と明記されている（[thread 722923](https://developer.apple.com/forums/thread/722923)）。そのため `test-without-building` 側での記録・commit・pushは構造的に成立しない。
    * **採用する構成**: gitチェックアウトが存在する `build-for-testing` 側の `ci_post_xcodebuild.sh`（`CI_XCODEBUILD_ACTION == "build-for-testing"`）から、直前のビルドで生成済みの `-testProductsPath`（`/Volumes/workspace/TestProducts.xctestproducts`）を使い、`SNAPSHOT_TESTING_RECORD=failed` を明示指定して `xcodebuild test-without-building` を自前で実行する。ワークフロー全体で共有される xctestplan の環境変数に依存させないため、呼び出し直前にシェル上で明示的に値を指定する。同一ランナー内で完結するため、書き込みがそのまま同じシェルのgit差分として検出できる（Build 212で実測確認済み）。
    * **マージプレビューコミット問題と対策**: Xcode Cloud の PR ビルドは PR ブランチの実 HEAD ではなく、ターゲットブランチ（main）との「マージプレビューコミット」を checkout している（実測で確認済み）。素朴に `git commit` + `git push HEAD:...` すると、意図せず main を取り込むマージコミットごと PR ブランチへ push してしまう（実測でも push 後に main のマージがPRブランチへ混入する事象を確認）。これを避けるため、記録処理より前に PR ブランチの実 HEAD を `git fetch` し、`git checkout -B "$CI_PULL_REQUEST_SOURCE_BRANCH" FETCH_HEAD` で作業ディレクトリを実 HEAD へ切り替えてから記録・commit・push する。ビルド済みの `-testProductsPath` を使い回すだけなので、記録処理の前に checkout し直しても支障はない。
-   * ガード条件: `CI_WORKFLOW` が記録用ワークフロー、`CI_XCODEBUILD_ACTION == "build-for-testing"`、`CI_PULL_REQUEST_NUMBER` が存在、`CI_PULL_REQUEST_SOURCE_REPO == CI_PULL_REQUEST_TARGET_REPO`（fork 除外）、`GITHUB_TOKEN`/`GITHUB_REPOSITORY` が設定済み。これらは記録処理より前に判定し、満たさない場合は checkout をスキップして記録処理のみログ用に実行する。
+   * ガード条件: `CI_WORKFLOW` が記録用ワークフロー、`CI_XCODEBUILD_ACTION == "build-for-testing"`、`CI_PULL_REQUEST_NUMBER` が存在、`CI_PULL_REQUEST_SOURCE_REPO == CI_PULL_REQUEST_TARGET_REPO`（fork 除外）、GitHub Appのinstallation access tokenが取得できる。これらは記録処理より前に判定し、満たさない場合は checkout をスキップして記録処理のみログ用に実行する。
    * 差分がなければ何もせず終了。差分があれば通常のコミットメッセージ（`[ci skip]` は付けない。理由は後述「ループ対策」）でコミットし、`HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH` へ push する。新規（未追跡）ファイルも記録対象になるため、まず `git add` してから差分検出・commitする（`git diff --stat` は追跡済みファイルの変更のみを見るため、新規ファイルはこれだけでは検出できない点に注意。実測でも新規記録は `git status --short` の `??` としてのみ現れた）。
-   * push の認証は既存のタグ push（`ci_post_xcodebuild.sh:29-35`）と同じ `GITHUB_TOKEN` 方式を流用する。
+   * **push の認証は GitHub App のインストールアクセストークン方式にする（長期有効な PAT は使わない）**。`ci_post_xcodebuild.sh` 冒頭の `resolve_github_app_token()` が、Xcode Cloud の環境変数 `GH_APP_ID` / `GH_APP_PRIVATE_KEY_BASE64`（秘密鍵をbase64エンコードしたもの、Secret指定） / `GITHUB_REPOSITORY` から都度 JWT（`openssl dgst -sha256 -sign` でRS256署名、有効期限9分）を生成し、GitHub API（`GET /repos/{owner}/{repo}/installation` → `POST /app/installations/{id}/access_tokens`）でinstallation access token（有効期限1時間）に交換する。取得したトークンは `x-access-token` ユーザー名で HTTPS push に使う（GitHub Appのトークンで規定されたユーザー名）。既存のタグ push（`Upload For AppStore` ワークフロー）は対象外とし、引き続き既存の `GITHUB_TOKEN` Secret（PAT）方式を使う。GitHub App はリポジトリにインストール済みで `Contents: Read and write` 権限が必要。PATより短命なトークンになる分、漏洩時の影響範囲と有効期間を抑えられる。
    * Xcode Cloud 公式の `test-without-building` action は引き続き別ランナーで実行される（現状は結果を使わずスキップするのみ）。記録自体は自己呼び出し側で完結するため機能上の問題はないが、コンピュート時間が二重に消費される。今後、ワークフロー構成の見直し（`test-without-building` の無効化など）を検討する。
 
 4. **報告は既存の Danger をそのまま使う**
@@ -58,6 +58,12 @@
 
 1. **書き込み可否の確認 ✅ 確認済み（Build 212, 2026-08-01）**: 当初は既存 `test-without-building` ワークフロー上での記録可否を検証する想定だったが、実測により当該ランナーには `$CI_PRIMARY_REPOSITORY_PATH` が空（gitチェックアウトが存在しない）ことが判明したため、`build-for-testing` ランナー上で `xcodebuild test-without-building` を自己呼び出しする構成（上記「実装構成」3.参照）に変更した。参照PNGを1枚意図的に削除した状態で push し、自己呼び出し実行後の `git status --short` にその新規ファイルが `??` として検出されることを確認した。
 2. **push の確認 🔶 一部確認・修正中**: `git fetch --unshallow` の要否（shallow clone からの push が `shallow update not allowed` で拒否されないか）と、PR ブランチへの push 成否を確認する。GitHub Actions 起点で機能していた `GITHUB_TOKEN`/`GITHUB_REPOSITORY` は Xcode Cloud の環境変数がワークフロー単位のスコープであるため、「VRT」ワークフロー側にも別途登録が必要だった点に注意（実測で判明、`Upload For AppStore` ワークフローには元々設定済みだった）。登録後、push 自体は成功したが、Xcode Cloud の PR ビルドが main とのマージプレビューコミットを checkout している影響で、push の度に main が PR ブランチへマージされてしまう事象を実測で発見した（上記「実装構成」3.参照）。記録前に実 HEAD へ checkout し直す対策を実装済みで、次回ビルドで単一コミットになることを再確認する。
+   * **追加変更（未検証）**: push 認証を長期有効な `GITHUB_TOKEN`（PAT）から GitHub App のインストールアクセストークン方式に切り替えた（上記「実装構成」3.参照）。GitHub App は新規作成のため、以下がユーザー側の対応として必要:
+     1. GitHub の Organization/個人アカウント設定から新規 GitHub App を作成する（Webhookは無効でよい、Repository permissions は `Contents: Read and write` のみ、Where can this GitHub App be installed は `Only on this account`）。
+     2. 作成後に秘密鍵（.pem）を生成・ダウンロードし、App ID を控える。
+     3. 対象リポジトリ（`stotic-dev/homete_iOS`）に App をインストールする。
+     4. 秘密鍵を base64エンコードし（例: `base64 -i downloaded-key.pem | pbcopy`）、Xcode Cloud の「VRT」ワークフローの環境変数に `GH_APP_ID`（App ID）と `GH_APP_PRIVATE_KEY_BASE64`（Secret指定）として登録する。`GITHUB_REPOSITORY` は既存のものをそのまま使う。
+     5. 登録後、次回ビルドで installation access token の取得ログ（`✓ Obtained GitHub App installation access token`）が出ることと、push が成功することを確認する。
 3. **既存参照との差分（modified）ケースの確認**: ステップ1では「参照PNGが存在しない（missing）」ケースのみ検証した。View に意図的な変更を加え、古い参照PNGを残したまま実行し、ミスマッチとして検出・再記録され、その差分が commit・push されることを確認する。
 4. **ループ停止の確認**: Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
 
@@ -94,7 +100,8 @@
 * [ADR-0004: Xcode Cloud VRT（Prefireスナップショットテスト）の誤検出解消](0004-vrt-snapshot-precision-tuning.md)
 * `hometeSnapshotTests/generateTestTemplate.stencil` — Prefire のテスト生成テンプレート（XCTFail 抑止の改修対象）
 * `hometeSnapshotTestsForCI.xctestplan` — Xcode Cloud 用テストプラン（`SNAPSHOT_TESTING_RECORD` の追加先）
-* `ci_scripts/ci_post_xcodebuild.sh` — commit & push の実装先。既存のタグ push が `GITHUB_TOKEN` 方式の実績
+* `ci_scripts/ci_post_xcodebuild.sh` — commit & push の実装先。`resolve_github_app_token()` がGitHub Appのinstallation access token発行を担う。既存のタグ push（`Upload For AppStore`）は引き続き `GITHUB_TOKEN` 方式
+* [Generating an installation access token for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app) — JWT生成 → installation id解決 → access token交換の公式手順
 * `DangerTools/Dangerfile.swift` — before/after 画像比較コメントの実装（変更不要）
 * swift-snapshot-testing `AssertSnapshot.swift` — `SNAPSHOT_TESTING_RECORD` の解決（L76）、`record == .failed` 時の再記録（L484）
 * [Xcode Cloud environment variable reference](https://developer.apple.com/documentation/xcode/environment-variable-reference) — `CI_PULL_REQUEST_*`、`CI_XCODEBUILD_ACTION` 等

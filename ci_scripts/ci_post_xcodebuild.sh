@@ -2,6 +2,62 @@
 
 set -e
 
+# doc/adr/0005: VRTワークフローのpushには、長期有効なPAT（GITHUB_TOKEN Secret）ではなく
+# GitHub Appのインストールアクセストークン（有効期限1時間、ビルド毎に都度発行）を使う。
+# 事前にVRTワークフローのXcode Cloud環境変数として以下を設定しておく必要がある:
+#   GH_APP_ID                 : GitHub AppのApp ID
+#   GH_APP_PRIVATE_KEY_BASE64 : GitHub Appの秘密鍵(.pem)をbase64エンコードした文字列（Secret）
+#   GITHUB_REPOSITORY         : 対象リポジトリ（owner/repo形式）
+# GitHub App側は対象リポジトリにインストール済みで、Contents: Read and write 権限が必要。
+#
+# 成功時は installation access token を標準出力に出す（呼び出し側で `TOKEN=$(resolve_github_app_token)`
+# のように変数へ代入して受け取る）。診断ログは標準エラーへ出し、標準出力を汚さない。
+# 必要な環境変数が無い、またはAPI呼び出しに失敗した場合は非0を返す。
+resolve_github_app_token() {
+    if [ -z "$GH_APP_ID" ] || [ -z "$GH_APP_PRIVATE_KEY_BASE64" ] || [ -z "$GITHUB_REPOSITORY" ]; then
+        echo "GH_APP_ID / GH_APP_PRIVATE_KEY_BASE64 / GITHUB_REPOSITORY のいずれかが未設定です" >&2
+        return 1
+    fi
+
+    PRIVATE_KEY_PATH=$(mktemp)
+    echo "$GH_APP_PRIVATE_KEY_BASE64" | base64 -d > "$PRIVATE_KEY_PATH"
+
+    NOW=$(date +%s)
+    IAT=$((NOW - 60))
+    EXP=$((NOW + 540))
+
+    JWT_HEADER=$(printf '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '\n=' | tr '+/' '-_')
+    JWT_PAYLOAD=$(printf '{"iat":%s,"exp":%s,"iss":%s}' "$IAT" "$EXP" "$GH_APP_ID" | base64 | tr -d '\n=' | tr '+/' '-_')
+    JWT_UNSIGNED="${JWT_HEADER}.${JWT_PAYLOAD}"
+    JWT_SIGNATURE=$(printf '%s' "$JWT_UNSIGNED" | openssl dgst -sha256 -sign "$PRIVATE_KEY_PATH" -binary | base64 | tr -d '\n=' | tr '+/' '-_')
+    APP_JWT="${JWT_UNSIGNED}.${JWT_SIGNATURE}"
+    rm -f "$PRIVATE_KEY_PATH"
+
+    INSTALLATION_ID=$(curl -s \
+        -H "Authorization: Bearer $APP_JWT" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/repos/${GITHUB_REPOSITORY}/installation" \
+        | python3 -c 'import json,sys; print(json.load(sys.stdin).get("id",""))')
+
+    if [ -z "$INSTALLATION_ID" ]; then
+        echo "GitHub Appのinstallation id取得に失敗しました（$GITHUB_REPOSITORY にAppがインストールされているか確認してください）" >&2
+        return 1
+    fi
+
+    INSTALLATION_TOKEN=$(curl -s -X POST \
+        -H "Authorization: Bearer $APP_JWT" \
+        -H "Accept: application/vnd.github+json" \
+        "https://api.github.com/app/installations/${INSTALLATION_ID}/access_tokens" \
+        | python3 -c 'import json,sys; print(json.load(sys.stdin).get("token",""))')
+
+    if [ -z "$INSTALLATION_TOKEN" ]; then
+        echo "GitHub Appのinstallation access token取得に失敗しました" >&2
+        return 1
+    fi
+
+    echo "$INSTALLATION_TOKEN"
+}
+
 case "$CI_WORKFLOW" in
     "Upload For AppStore")
         echo "=== Upload For AppStore workflow ==="
@@ -99,8 +155,8 @@ case "$CI_WORKFLOW" in
         SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
         CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
 
-        # fork PR は secret 環境変数（GITHUB_TOKEN）が渡らずpush先も他人のリポジトリになるため対象外。
-        # PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
+        # fork PR は secret 環境変数（GH_APP_PRIVATE_KEY_BASE64等）が渡らずpush先も他人のリポジトリに
+        # なるため対象外。PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
         # 記録処理より前に判定し、pushする場合は記録前に実HEADへcheckoutし直す（後述）。
         PUSH_ENABLED=1
         if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
@@ -109,9 +165,14 @@ case "$CI_WORKFLOW" in
         elif [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
             echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
             PUSH_ENABLED=0
-        elif [ -z "$GITHUB_TOKEN" ] || [ -z "$GITHUB_REPOSITORY" ]; then
-            echo "WARNING: GITHUB_TOKEN or GITHUB_REPOSITORY is not set. Skipping commit/push."
+        elif [ -z "$GITHUB_REPOSITORY" ]; then
+            echo "WARNING: GITHUB_REPOSITORY is not set. Skipping commit/push."
             PUSH_ENABLED=0
+        elif ! GITHUB_TOKEN=$(resolve_github_app_token); then
+            echo "WARNING: Failed to obtain GitHub App installation token. Skipping commit/push."
+            PUSH_ENABLED=0
+        else
+            echo "✓ Obtained GitHub App installation access token"
         fi
 
         if [ "$PUSH_ENABLED" = "1" ]; then
