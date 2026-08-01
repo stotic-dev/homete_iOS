@@ -130,6 +130,11 @@ private extension SettingView {
         case .memberRegistration:
             isShowMemberRegistration = true
 
+        case .termsOfService:
+            if let url = URL(string: Constants.termsOfServiceURLString) {
+                openURL(url)
+            }
+
         case .privacyPolicy:
             if let url = URL(string: Constants.privacyPolicyURLString) {
                 openURL(url)
