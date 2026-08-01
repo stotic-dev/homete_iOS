@@ -92,6 +92,7 @@ private extension HouseworkDetailView {
 
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         HouseworkDetailView(
@@ -123,3 +124,4 @@ private extension HouseworkDetailView {
         .prefireIgnored()
     #endif
 }
+#endif

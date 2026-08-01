@@ -3,7 +3,6 @@
 //
 
 import HometeDomain
-import HometeInfrastructure
 
 // MARK: Live用の定義
 
