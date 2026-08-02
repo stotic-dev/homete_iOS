@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -29,7 +29,9 @@ GDPR等のプライバシー規制に対応するため、UMP (User Messaging Pl
    - 同意状態は SDK 側で自動的に保存され、次回起動以降は不要な場合は表示しない
 
 2. **ATT ダイアログの表示**
-   - UMP 同意フォーム表示後に ATT 許可リクエストを表示する
+   - AdMobコンソール（Privacy & messaging）で App Tracking Transparency メッセージを設定済み
+   - `ConsentForm.loadAndPresentIfRequired` 実行時に、このコンソール設定に基づきIDFAメッセージ→システムのATT許可ダイアログが自動的に提示される
+   - アプリコード側で `ATTrackingManager.requestTrackingAuthorization` を明示的に呼び出す実装は行わない（AdMobコンソール設定に委譲する方針に変更、実機確認済み）
    - `NSUserTrackingUsageDescription` 文言: 「より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。」
    - 一度回答済みの場合は再表示しない（iOSのATT標準挙動）
 
@@ -57,13 +59,11 @@ GDPR等のプライバシー規制に対応するため、UMP (User Messaging Pl
 
 | 型 | 種別 | 役割 |
 |---|---|---|
-| `ConsentClientProtocol` | 新規 protocol | UMP の同意情報取得・同意フォーム表示・`canRequestAds` 状態の提供 |
-| `ConsentClient` | 新規 class | `ConsentClientProtocol` の本番実装。UMP SDK の `ConsentInformation` を使用 |
-| `AppTrackingClientProtocol` | 新規 protocol | ATT 状態取得・許可リクエスト |
-| `AppTrackingClient` | 新規 class | `AppTrackingClientProtocol` の本番実装。`AppTrackingTransparency` framework を使用 |
-| `MobileAdsClientProtocol` | 新規 protocol | `MobileAds.shared.start()` の抽象 |
-| `MobileAdsClient` | **既存修正** | `MobileAdsClientProtocol` に準拠させる（実装はそのまま） |
-| `AdsSetupUseCase` | 新規 class | 上記3つを束ねて起動シーケンスを実行する。**テスト対象** |
+| `ConsentClient` | 新規（クロージャベースClient） | UMP の同意情報取得・同意フォーム表示（ATTダイアログ提示を含む）・`canRequestAds` 状態の提供 |
+| `MobileAdsClient` | 新規（クロージャベースClient） | `MobileAds.shared.start()` の抽象 |
+| `AdsSetupUseCase` | 新規 class | 上記2つを束ねて起動シーケンスを実行する。**テスト対象** |
+
+**注:** 当初 `AppTrackingClientProtocol`/`AppTrackingClient` を新規実装する設計だったが、AdMobコンソールの App Tracking Transparency メッセージ設定により `ConsentClient.loadAndPresentConsentFormIfRequired` の中でATTダイアログが自動提示されることを確認できたため、専用Clientの実装は行わない方針に変更した。
 
 ### 2. 起動シーケンス
 
@@ -74,35 +74,39 @@ public func setup() async {
     // 1. UMP同意情報の取得・更新
     do {
         try await consentClient.requestConsentInfoUpdate()
-        // 2. 必要なら同意フォームを表示
+        // 2. 必要なら同意フォームを表示（AdMobコンソール設定によりATTダイアログもここで提示される）
         try await consentClient.loadAndPresentConsentFormIfRequired()
     } catch {
         // ログ出力のみ。失敗してもMobileAds起動は試みる
     }
 
-    // 3. ATT許可リクエスト（UMP同意フォーム後に表示するのがGoogle推奨）
-    _ = await appTrackingClient.requestTrackingAuthorization()
-
-    // 4. canRequestAdsがtrueならMobileAds起動
-    if await consentClient.canRequestAds {
+    // 3. canRequestAdsがtrueならMobileAds起動
+    if await consentClient.canRequestAds() {
         await mobileAdsClient.initialize()
     }
 }
 ```
 
 **設計意図:**
-- UMP 同意フォーム → ATT → MobileAds の順序は [Google公式ガイド](https://developers.google.com/admob/ios/privacy?hl=ja) に沿う
+- UMP 同意フォーム → MobileAds の順序は [Google公式ガイド](https://developers.google.com/admob/ios/privacy?hl=ja) に沿う
+- ATT許可リクエストはアプリコードで明示的に呼ばず、AdMobコンソールの App Tracking Transparency メッセージ設定により `loadAndPresentConsentFormIfRequired` の内部で提示される（実機確認済み）
 - 同意取得が失敗してもアプリ自体は起動継続させたいため、try-catch で広く受ける
 - `canRequestAds` が `false`（同意必須地域で同意拒否など）の場合は `MobileAds.start` を呼ばない
 
 ### 3. AppDelegate 修正
 
-`homete/Views/HometeApp.swift` の `setupGoogleMobileAds()` を以下のように変更:
+`homete/Views/HometeApp.swift` の `AppDelegate` に `AdsSetupUseCase` インスタンスを保持し、`setupGoogleMobileAds()` から呼び出す:
 
 ```swift
+let adsSetupUseCase = AdsSetupUseCase(
+    consentClient: .liveValue,
+    mobileAdsClient: .liveValue
+)
+
 func setupGoogleMobileAds() {
+    guard !isXcodePreview, !isUnitTestMode else { return }
     Task {
-        await AdsSetupUseCase.live.setup()
+        await adsSetupUseCase.setup()
     }
 }
 ```
@@ -120,11 +124,11 @@ func setupGoogleMobileAds() {
 ),
 ```
 
-`HometeInfrastructure` ターゲットに依存追加:
+`AppRoot` ターゲットに依存追加（プロダクト名は `GoogleUserMessagingPlatform`）:
 
 ```swift
 .product(
-    name: "UserMessagingPlatform",
+    name: "GoogleUserMessagingPlatform",
     package: "swift-package-manager-google-user-messaging-platform",
     condition: .when(platforms: [.iOS])
 ),
@@ -141,29 +145,33 @@ func setupGoogleMobileAds() {
 
 ### 6. テスト方針
 
-新規追加: `LocalPackage/Tests/HometeInfrastructureTests/AdsSetupUseCaseTests.swift`
+新規追加: `LocalPackage/Tests/HometeDomainTests/AdsSetupUseCaseTests.swift`
 
-- `HometeInfrastructureTests` テストターゲットを `Package.swift` に追加
+- `HometeDomainTests` テストターゲット（既存）に追加
 - `AdsSetupUseCase` の以下ケースをテスト:
   - 全て成功: `mobileAdsClient.initialize()` が呼ばれる
-  - 同意情報取得失敗: ATT・MobileAds起動の流れは継続する
+  - 同意情報取得失敗: MobileAds起動の流れは継続する
   - `canRequestAds == false`: `mobileAdsClient.initialize()` が呼ばれない
-  - 呼び出し順序: 同意フォーム → ATT → MobileAds の順で実行される
+  - 呼び出し順序: 同意フォーム → MobileAds の順で実行される
+  - ATTはコード上で明示的に扱わない（AdMobコンソール設定に委譲するためテスト対象外）
 
-モッククラス（`MockConsentClient`、`MockAppTrackingClient`、`MockMobileAdsClient`）を作成し、各メソッドの呼び出し回数・引数・順序を検証する。
+クロージャベースの `ConsentClient` / `MobileAdsClient` を直接テスト用インスタンスとして組み立て、`actor` の `CallRecorder` で各メソッドの呼び出し回数・順序を検証する。
 
 ### ファイル配置
 
 | 種別 | パス | 役割 |
 |---|---|---|
-| 新規Protocol | `LocalPackage/Sources/HometeInfrastructure/Advertisement/Consent/ConsentClient.swift` | UMP同意Client（protocol + 実装） |
-| 新規Protocol | `LocalPackage/Sources/HometeInfrastructure/Advertisement/AppTracking/AppTrackingClient.swift` | ATT Client（protocol + 実装） |
-| 修正 | `LocalPackage/Sources/HometeInfrastructure/Advertisement/MobileAdsClient.swift` | `MobileAdsClientProtocol` に準拠 |
-| 新規UseCase | `LocalPackage/Sources/HometeInfrastructure/Advertisement/AdsSetupUseCase.swift` | 起動シーケンスの集約 |
-| 新規テスト | `LocalPackage/Tests/HometeInfrastructureTests/AdsSetupUseCaseTests.swift` | UseCaseのユニットテスト |
-| 修正 | `LocalPackage/Package.swift` | UMP SDK 依存・テストターゲット追加 |
+| 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/ConsentClient.swift` | UMP同意Client（protocol定義・クロージャベース） |
+| 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/MobileAdsClient.swift` | `MobileAds.shared.start()` の抽象（クロージャベース） |
+| 新規UseCase | `LocalPackage/Sources/HometeDomain/Advertisement/AdsSetupUseCase.swift` | 起動シーケンスの集約 |
+| 新規実装 | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplConsentClient.swift` | `ConsentClient.liveValue`（UMP SDK使用） |
+| 新規実装 | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplMobileAdsClient.swift` | `MobileAdsClient.liveValue`（GoogleMobileAds SDK使用） |
+| 新規テスト | `LocalPackage/Tests/HometeDomainTests/AdsSetupUseCaseTests.swift` | UseCaseのユニットテスト |
+| 修正 | `LocalPackage/Package.swift` | UMP SDK 依存追加 |
 | 修正 | `homete/Views/HometeApp.swift` | `AdsSetupUseCase` 呼び出しに変更 |
 | 修正 | `homete/Info.plist` | `NSUserTrackingUsageDescription` 追加 |
+
+**注:** 上記は当初設計からモジュール構成（`HometeInfrastructure` → `HometeDomain`/`AppRoot` へのマルチモジュール分割）に合わせて実態を反映したもの。`AppTrackingClient` は前述の理由により実装していない。
 
 ## タスク
 
@@ -173,47 +181,51 @@ func setupGoogleMobileAds() {
 - [x] 拒否時の挙動を決定（非パーソナライズ広告を表示）
 - [x] プライバシー再表示導線はスコープ外と決定
 - [x] ATT文言を決定
-- [x] クラス設計（ConsentClient/AppTrackingClient/AdsSetupUseCase）を決定
+- [x] クラス設計（ConsentClient/AdsSetupUseCase）を決定。ATTはAppTrackingClientを実装せずAdMobコンソール設定に委譲する方針に変更
 
 ### Phase 2: 実装
 
-- [ ] `Package.swift` に UMP SDK 依存を追加
-- [ ] `Package.swift` に `HometeInfrastructureTests` テストターゲットを追加
-- [ ] `ConsentClient` (protocol + 実装) を追加
-- [ ] `AppTrackingClient` (protocol + 実装) を追加
-- [ ] `MobileAdsClient` を `MobileAdsClientProtocol` に準拠させる
-- [ ] `AdsSetupUseCase` を実装
-- [ ] `HometeApp.swift` の `setupGoogleMobileAds()` を `AdsSetupUseCase` 呼び出しに変更
-- [ ] `Info.plist` に `NSUserTrackingUsageDescription` を追加
+- [x] `Package.swift` に UMP SDK 依存を追加
+- [x] `ConsentClient` （クロージャベースClient + `liveValue`実装）を追加
+- [x] `MobileAdsClient` （クロージャベースClient + `liveValue`実装）を追加
+- [x] `AdsSetupUseCase` を実装
+- [x] `HometeApp.swift` の `setupGoogleMobileAds()` を `AdsSetupUseCase` 呼び出しに変更
+- [x] `Info.plist` に `NSUserTrackingUsageDescription` を追加
+- [x] AdMobコンソールで App Tracking Transparency メッセージを設定（コード外の作業）
 
 ### Phase 3: テスト
 
-- [ ] `AdsSetupUseCaseTests` を追加（モッククラス含む）
-- [ ] 正常系：全Client成功 → MobileAds起動
-- [ ] 異常系：同意取得失敗 → 後続シーケンス継続
-- [ ] 出し分け：`canRequestAds == false` → MobileAds起動しない
-- [ ] 順序：同意フォーム → ATT → MobileAds
+- [x] `AdsSetupUseCaseTests` を追加
+- [x] 正常系：全Client成功 → MobileAds起動
+- [x] 異常系：同意取得失敗 → 後続シーケンス継続
+- [x] 出し分け：`canRequestAds == false` → MobileAds起動しない
+- [x] 順序：同意フォーム → MobileAds
 
 ### Phase 4: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
-- [ ] 実機で動作確認（ATT・UMPダイアログが表示されること、広告が表示されること）
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
+- [x] 実機で動作確認（ATT・UMPダイアログが表示されること、広告が表示されることを確認済み）
 
 ### Phase 5: PR
 
-- [ ] PR作成（`pr-create` スキル使用）
-- [ ] Danger / CI通過
-- [ ] レビュー対応
+- [x] PR作成（`pr-create` スキル使用、PR #181）
+- [x] Danger / CI通過
+- [ ] レビュー対応（未アサイン。レビュワー依頼が必要）
 - [ ] マージ
 
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/175
+- PR: https://github.com/stotic-dev/homete_iOS/pull/181
 - Google公式ガイド: https://developers.google.com/admob/ios/privacy?hl=ja
+- ATT/IDFAメッセージの挙動: https://developers.google.com/admob/ios/privacy/idfa
 - UMP SDK SPM: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
 - 既存実装（参考）:
-  - `LocalPackage/Sources/HometeInfrastructure/Advertisement/MobileAdsClient.swift`
-  - `LocalPackage/Sources/HometeInfrastructure/Advertisement/AdView/BannerViewContainer.swift`
+  - `LocalPackage/Sources/HometeDomain/Dependencies/ConsentClient.swift`
+  - `LocalPackage/Sources/HometeDomain/Dependencies/MobileAdsClient.swift`
+  - `LocalPackage/Sources/HometeDomain/Advertisement/AdsSetupUseCase.swift`
+  - `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplConsentClient.swift`
+  - `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplMobileAdsClient.swift`
   - `homete/Views/HometeApp.swift`

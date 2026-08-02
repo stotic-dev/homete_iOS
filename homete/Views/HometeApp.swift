@@ -16,6 +16,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
+    let adsSetupUseCase = AdsSetupUseCase(
+        consentClient: .liveValue,
+        mobileAdsClient: .liveValue
+    )
 
     func application(
         _: UIApplication,
@@ -69,7 +73,7 @@ private extension AppDelegate {
     func setupGoogleMobileAds() {
         guard !isXcodePreview, !isUnitTestMode else { return }
         Task {
-            await MobileAdsClient.shared.initialize()
+            await adsSetupUseCase.setup()
         }
     }
 

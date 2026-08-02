@@ -18,10 +18,13 @@ test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
 build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド
-	swift build --package-path LocalPackage --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
+	swift build --package-path $(CURDIR)/LocalPackage --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 
-test-packages: ## LocalPackageのテストを実行
-	swift test --package-path LocalPackage --enable-code-coverage
+test-packages: ## LocalPackageのテストを実行（自worktreeのstaleプロセスのみ掃除してから実行、他worktreeには影響しない）
+	-pkill -f "swift-test --package-path $(CURDIR)/LocalPackage" 2>/dev/null
+	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
+	swift test --package-path $(CURDIR)/LocalPackage --enable-code-coverage
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks
