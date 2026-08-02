@@ -23,14 +23,18 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 `.build` ディレクトリは SwiftPM が排他ロックを取るため、過去セッションから残っている `swift-test` / `swiftpm-testing-helper` プロセスがあると、新しい `swift test` が "Another instance of SwiftPM ... is already running" で待機状態になり、永遠に進まなくなる。
 
+**worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
+
 検証フローを始める前に、必ず以下を実行して掃除する:
 
 ```bash
-# このプロジェクトの LocalPackage に紐づく古いプロセスのみを kill する（別worktreeは触らない）
-pkill -f "swift-test --package-path LocalPackage" 2>/dev/null
-pkill -f "/Users/taichisato/work/homete_iOS/LocalPackage/.build" 2>/dev/null
+# 現在のworktreeのLocalPackage絶対パスを基準にする
+LOCAL_PACKAGE_PATH="$(pwd)/LocalPackage"
+# このworktreeに紐づく古いプロセスのみを kill する（絶対パスで一致するため他worktreeは触らない）
+pkill -f "swift-test --package-path ${LOCAL_PACKAGE_PATH}" 2>/dev/null
+pkill -f "${LOCAL_PACKAGE_PATH}/.build" 2>/dev/null
 # 残骸が無くなったか確認
-ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "/Users/taichisato/work/homete_iOS/LocalPackage" | grep -v grep
+ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "${LOCAL_PACKAGE_PATH}" | grep -v grep
 ```
 
 最後のチェックで何も出力されなければ OK。残っていた場合は PID を確認して `kill <PID>` する。
@@ -40,7 +44,7 @@ ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "/Users/taichisato/w
 **LocalPackage配下のファイルを変更した場合（通常）:**
 
 ```bash
-swift build --package-path LocalPackage --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+swift build --package-path "$(pwd)/LocalPackage" --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 ```
 
 **メインターゲット（`homete/`配下）を変更した場合のみ:**
@@ -64,7 +68,7 @@ ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 ### 3. ユニットテスト実行（省略不可）
 
 ```bash
-swift test --package-path LocalPackage --enable-code-coverage
+swift test --package-path "$(pwd)/LocalPackage" --enable-code-coverage
 ```
 
 特定のテストだけ流したいときは `--filter "TestSuite名"` を追加する。
