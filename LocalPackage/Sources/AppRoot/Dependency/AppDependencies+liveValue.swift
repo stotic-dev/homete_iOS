@@ -17,7 +17,14 @@ public extension AppDependencies {
         houseworkClient: .liveValue,
         cohabitantPushNotificationClient: .liveValue,
         signInWithAppleClient: .liveValue,
+        purchaseClient: livePurchaseClient,
         houseworkTemplateClient: .liveValue
     )
 
 }
+
+#if os(iOS)
+private let livePurchaseClient: PurchaseClient = .liveValue
+#else
+private let livePurchaseClient: PurchaseClient = .previewValue
+#endif

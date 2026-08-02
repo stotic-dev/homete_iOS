@@ -38,6 +38,18 @@ import SnapshotTesting
         return "\(repositoryPath)/ci_scripts/__Snapshots__"
     }
 
+    /// 参照PNGを再記録する専用ワークフロー（doc/adr/0005）でのみ SNAPSHOT_TESTING_RECORD が
+    /// 明示的に設定される。この間は不一致 = 記録対象であり失敗ではないため XCTFail を発生させない。
+    /// ローカル実行および通常の VRT 検証ワークフローでは空文字に解決されるため従来通り失敗する
+    /// （xctestplan の environmentVariableEntries は未解決でもキー自体は空文字で必ず設定されるため、
+    /// isEmpty ではなく nil のみで判定すると常に true になってしまう点に注意）。
+    private var isRecordingSnapshots: Bool {
+        guard let value = ProcessInfo.processInfo.environment["SNAPSHOT_TESTING_RECORD"] else {
+            return false
+        }
+        return !value.isEmpty
+    }
+
     {% if argument.file %}
 
     private var file: StaticString { .init(stringLiteral: "{{ argument.file }}") }
@@ -55,7 +67,7 @@ import SnapshotTesting
     {% for type in types.types where type.implements.PrefireProvider or type.based.PrefireProvider or type|annotated:"PrefireProvider" %}
     func test_{{ type.name|lowerFirstLetter|replace:"_Previews", "" }}() {
         for preview in {{ type.name }}._allPreviews {
-            if let failure = assertSnapshots(for: PrefireSnapshot(preview, device: preview.device?.snapshotDevice() ?? deviceConfig)) {
+            if let failure = assertSnapshots(for: PrefireSnapshot(preview, device: preview.device?.snapshotDevice() ?? deviceConfig)), !isRecordingSnapshots {
                 XCTFail(failure)
             }
         }
@@ -69,28 +81,22 @@ import SnapshotTesting
 
     {% for macroModel in argument.previewsMacrosDict %}
     func test_{{ macroModel.componentTestName }}_Preview() {
-        {% if macroModel.properties %}
         struct PreviewWrapper{{ macroModel.componentTestName }}: SwiftUI.View {
             {{ macroModel.properties }}
             var body: some View {
                 {{ macroModel.body|indent:12 }}
             }
         }
-        {% endif %}
         let prefireSnapshot = PrefireSnapshot(
             {
-                {% if macroModel.properties %}
                 PreviewWrapper{{ macroModel.componentTestName }}()
-                {% else %}
-                {{ macroModel.body|indent:12 }}
-                {% endif %}
             },
             name: "{{ macroModel.displayName }}",
             isScreen: {% if macroModel.isScreen == 1 %}true{% else %}false{% endif %},
             device: deviceConfig
         )
 
-        if let failure = assertSnapshots(for: prefireSnapshot) {
+        if let failure = assertSnapshots(for: prefireSnapshot), !isRecordingSnapshots {
             XCTFail(failure)
         }
     }
@@ -118,10 +124,17 @@ import SnapshotTesting
             // Ignore specific device safe area
             snapshot.device.safeArea = .zero
 
-            // Ignore specific device display scale
-            snapshot.traits = UITraitCollection(displayScale: 2.0)
+            // Ignore specific device display scale.
+            // displayGamut を SRGB に固定し、スナップショットのレンダリング色空間を
+            // ローカル（Display P3 の Mac）と Xcode Cloud（sRGB）で統一する。
+            // これが無いと参照PNG（P3）とCIレンダリング（sRGB）の生ピクセル値が
+            // 彩度の高い色で大きくずれ、知覚比較が誤検出する。
+            snapshot.traits = UITraitCollection(traitsFrom: [
+                UITraitCollection(displayScale: 2.0),
+                UITraitCollection(displayGamut: .SRGB),
+            ])
 
-            if let failure = assertSnapshot(for: snapshot) {
+            if let failure = assertSnapshot(for: snapshot), !isRecordingSnapshots {
                 XCTFail(failure)
             }
         }
@@ -132,22 +145,24 @@ import SnapshotTesting
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
         let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
 
+        // perceptualPrecision は一律 0.98（deltaE <= 2、人間の知覚限界未満）でキャップする。
+        // ローカルと Xcode Cloud では macOS ビルド差により CoreGraphics の
+        // アンチエイリアス縁のラスタライズ丸めが ±1/255 ずれることがあり
+        // （実測: 数ピクセルが 1 チャンネルだけ 1 ずれる、deltaE < 0.5）、
+        // 完全一致（1.0）ではこの環境差で誤検出する。
+        // precision（deltaE 条件を満たすべきピクセルの割合）は緩めないため、
+        // 知覚可能な見た目の変化は引き続き全ピクセルで検出される。
         let failure = verifySnapshot(
             of: previewView,
-            as: .wait(
-                for: preferences.delay,
-                on: .image(
-                    {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
-                    drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
-                    {% endif %}
-                    // Xcode Cloudだとわずかな差分が発生するので、最低2%の差分は許容する
-                    precision: min(0.98, preferences.precision),
-                    perceptualPrecision: min(0.98, preferences.perceptualPrecision),
-                    layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
-                    traits: prefireSnapshot.traits
-                )
+            as: .image(
+                {% if argument.drawHierarchyInKeyWindowDefaultEnabled %}
+                drawHierarchyInKeyWindow: {{ argument.drawHierarchyInKeyWindowDefaultEnabled }},
+                {% endif %}
+                precision: preferences.precision,
+                perceptualPrecision: min(preferences.perceptualPrecision, 0.98),
+                layout: prefireSnapshot.isScreen ? .device(config: prefireSnapshot.device.imageConfig) : .sizeThatFits,
+                traits: prefireSnapshot.traits
             ),
-            record: preferences.record,
             snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
             file: file{% endif %},
             testName: prefireSnapshot.name
@@ -159,9 +174,8 @@ import SnapshotTesting
 
             SnapshotTesting.assertSnapshot(
                 matching: vc,
-                as: .wait(for: preferences.delay, on: .accessibilityImage(showActivationPoints: .always)),
+                as: .accessibilityImage(showActivationPoints: .always),
                 snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
-                record: preferences.record,
                 file: file{% endif %},
                 testName: prefireSnapshot.name + ".accessibility"
             )

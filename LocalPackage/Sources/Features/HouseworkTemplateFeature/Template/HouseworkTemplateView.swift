@@ -12,6 +12,7 @@ import SwiftUI
 struct HouseworkTemplateView: View {
 
     @Environment(HouseworkTemplateListStore.self) var templateListStore
+    @Environment(HouseworkTemplateEditStore.self) var templateEditStore
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.cohabitantId) var cohabitantId
@@ -23,6 +24,8 @@ struct HouseworkTemplateView: View {
     @State var bannerDismissedInSession = false
     @State var presentingDismissAlert = false
     @State var presentingResetAlert = false
+
+    @CommonError var commonErrorContent
 
     @AppStorage(key: .collapsedHouseworkTemplateDays) var collapsedDays = CollapsedHouseworkTemplateDays()
 
@@ -123,6 +126,7 @@ struct HouseworkTemplateView: View {
             Text("現在の編集内容は破棄されます。")
         }
         .animation(.default, value: collapsedDays)
+        .commonError(content: $commonErrorContent)
     }
 
 }
@@ -340,6 +344,8 @@ private extension HouseworkTemplateView {
         withAnimation {
             draft = initialDraft
         }
+        // draftを最新内容に追従させたタイミングで初めて楽観ロックのバージョンを進める
+        editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
     }
 
     func tappedResetAlertButton() {
@@ -361,8 +367,11 @@ private extension HouseworkTemplateView {
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
             editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
             initialDraft = draft
+        } catch HouseworkTemplateError.versionConflict {
+            // 保存タイミングと metaVersion 監視のレースで versionConflict を先に検知した場合の保険
+            presentingConflictDraftAlert = true
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 
@@ -376,7 +385,7 @@ private extension HouseworkTemplateView {
                 cohabitantId: cohabitantId
             )
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 
@@ -467,13 +476,11 @@ private extension HouseworkTemplateView {
             ),
         ],
     ]
-    NavigationStack {
-        HouseworkTemplateView(
-            initialDraft: .constant(.init(days: templateData)),
-            draft: .constant(.init(days: templateData)),
-            editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
-        )
-    }
+    HouseworkTemplateView(
+        initialDraft: .constant(.init(days: templateData)),
+        draft: .constant(.init(days: templateData)),
+        editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
+    )
     .environment(
         \.houseworkTemplateContext,
         .init(
@@ -484,6 +491,7 @@ private extension HouseworkTemplateView {
         )
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
+    .environment(HouseworkTemplateEditStore())
     .apply(theme: .init())
 }
 
@@ -498,19 +506,17 @@ private extension HouseworkTemplateView {
             ),
         ],
     ]
-    NavigationStack {
-        HouseworkTemplateView(
-            initialDraft: .constant(.init(days: templateData)),
-            draft: .constant(.init()),
-            editorContext: .constant(.init(
-                currentActiveEditors: [
-                    .init(id: "1", userName: "Aさん"),
-                    .init(id: "2", userName: "Bさん"),
-                ],
-                currentTemplateVersion: .zero
-            ))
-        )
-    }
+    HouseworkTemplateView(
+        initialDraft: .constant(.init(days: templateData)),
+        draft: .constant(.init()),
+        editorContext: .constant(.init(
+            currentActiveEditors: [
+                .init(id: "1", userName: "Aさん"),
+                .init(id: "2", userName: "Bさん"),
+            ],
+            currentTemplateVersion: .zero
+        ))
+    )
     .environment(
         \.houseworkTemplateContext,
         .init(
@@ -521,6 +527,7 @@ private extension HouseworkTemplateView {
         )
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
+    .environment(HouseworkTemplateEditStore())
     .apply(theme: .init())
 }
 #endif

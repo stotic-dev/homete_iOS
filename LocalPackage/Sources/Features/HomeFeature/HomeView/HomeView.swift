@@ -54,6 +54,9 @@ public struct HomeView: View {
                         isShowSetting = true
                     }
                 }
+                .sheet(isPresented: $isShowSetting) {
+                    router.resolve(.setting)
+                }
             }
         }
     }

@@ -12,14 +12,18 @@ import SwiftUI
 public struct HouseworkTemplateScreen: View {
 
     @Environment(\.now) var now
+    @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
     @Environment(\.cohabitantMembers) var members
+
+    @CommonError var commonErrorContent
 
     @State var templateEditStore: HouseworkTemplateEditStore
     @State var initialDraft: HouseworkTemplateDraft?
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+    @State var shouldDismissOnErrorClose = false
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -38,8 +42,12 @@ public struct HouseworkTemplateScreen: View {
             )
         }
         .environment(templateEditStore)
+        .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
         .task {
             await onAppear()
+        }
+        .task {
+            await observeEditorExpiry()
         }
         .onDisappear {
             Task {
@@ -52,6 +60,11 @@ public struct HouseworkTemplateScreen: View {
         .onChange(of: templateEditStore.currentVersion) {
             Task {
                 await onChangeTemplateVersion()
+            }
+        }
+        .onChange(of: houseworkTemplateListStore.selectedTemplateId) { oldValue, newValue in
+            Task {
+                await onChangeSelectedTemplateId(oldValue: oldValue, newValue: newValue)
             }
         }
     }
@@ -83,8 +96,16 @@ private extension HouseworkTemplateScreen {
             editingDraft = initialDraftOnAppear
             initialDraft = initialDraftOnAppear
         } catch {
-            // TODO: エラーハンドリング
+            // 編集状態の監視・登録ができないと編集機能が成立しないため、アラート確認後に画面を閉じる
+            shouldDismissOnErrorClose = true
+            commonErrorContent = .init(error: error)
         }
+    }
+
+    func onDismissErrorAlert() {
+        guard shouldDismissOnErrorClose else { return }
+        shouldDismissOnErrorClose = false
+        dismiss()
     }
 
     func onDisappear() async {
@@ -112,19 +133,56 @@ private extension HouseworkTemplateScreen {
         )
     }
 
+    /// editorsのスナップショットに変化が無くても、経過時間で編集者バッジを再評価する
+    /// （相手のアプリがクラッシュ等でpresence更新が止まった場合、Firestore側のTTL削除（最大24時間）を待たずに表示から外すため）
+    func observeEditorExpiry() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(30))
+            guard !Task.isCancelled else { return }
+            editorContext = editorContext.applyEditors(
+                editors: templateEditStore.editors,
+                members: members,
+                now: .now
+            )
+        }
+    }
+
     func onChangeTemplateVersion() async {
         // ローカルで保持しているテンプレートバージョンよりも大きいバージョンの場合に、コンフリクトが発生したとみなす
         guard editorContext.currentTemplateVersion < templateEditStore.currentVersion,
               let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
 
+        await loadCurrentTemplate(templateId: templateId, cohabitantId: cohabitantId)
+    }
+
+    func onChangeSelectedTemplateId(oldValue: String?, newValue: String?) async {
+        // テンプレート画面内でテンプレートがない状態からテンプレートが作成されたことを検知したら、
+        // 現在のテンプレートの内容をロードする
+        guard oldValue == nil,
+              let newValue,
+              let cohabitantId = account.cohabitantId else { return }
+
+        await loadCurrentTemplate(templateId: newValue, cohabitantId: cohabitantId)
+    }
+
+    func loadCurrentTemplate(templateId: String, cohabitantId: String) async {
         do {
             // バージョンが変わったらテンプレートの内容を再ロードする
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
-            initialDraft = .make(houseworkTemplateListStore.selectedDays)
-            editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            // 未保存の変更が残っている場合はコンフリクトアラートで解決されるまでバージョンを進めない
+            // （先にバージョンを進めてしまうと、アラートを「キャンセル」した後の保存で楽観ロックが素通りしてしまうため）
+            let hasUnresolvedConflict = initialDraft?.hasUnsavedChanges(comparedTo: editingDraft) ?? false
+            let latestDraft = HouseworkTemplateDraft.make(houseworkTemplateListStore.selectedDays)
+            initialDraft = latestDraft
+            if !hasUnresolvedConflict {
+                // 未保存の変更が無い場合は編集中の内容も最新化する
+                // （editingDraftを更新しないとinitialDraftとの差分検知で誤ってコンフリクトアラートが表示されてしまうため）
+                editingDraft = latestDraft
+                editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            }
         } catch {
-            // TODO: エラーハンドリング
+            commonErrorContent = .init(error: error)
         }
     }
 

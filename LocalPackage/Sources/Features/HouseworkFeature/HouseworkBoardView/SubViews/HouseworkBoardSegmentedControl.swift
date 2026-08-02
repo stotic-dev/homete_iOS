@@ -14,7 +14,7 @@ struct HouseworkBoardSegmentedControl: View {
 
     var body: some View {
         Picker("", selection: $selectedHouseworkState) {
-            ForEach(segmentCases) { state in
+            ForEach(HouseworkState.pageableCases) { state in
                 Text(state.segmentTitle).tag(state)
             }
         }
@@ -23,15 +23,12 @@ struct HouseworkBoardSegmentedControl: View {
 
 }
 
-private extension HouseworkBoardSegmentedControl {
+extension HouseworkState {
 
-    var segmentCases: [HouseworkState] {
+    /// セグメント/ページャーの表示対象とする状態一覧（notTodoはボードから除外済みのため対象外）
+    static var pageableCases: [HouseworkState] {
         [.incomplete, .pendingApproval, .completed]
     }
-
-}
-
-extension HouseworkState {
 
     var segmentTitle: LocalizedStringKey {
         switch self {

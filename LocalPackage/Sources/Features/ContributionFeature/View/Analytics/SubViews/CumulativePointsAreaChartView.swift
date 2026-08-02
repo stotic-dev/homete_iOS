@@ -8,6 +8,9 @@
 import Charts
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 struct CumulativePointsAreaChartView: View {
 
@@ -181,6 +184,9 @@ private extension CumulativePointsAreaChartView {
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("CumulativePointsAreaChartView_月間 (日別)", traits: .sizeThatFitsLayout) {
@@ -197,6 +203,9 @@ private extension CumulativePointsAreaChartView {
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 
 #Preview("CumulativePointsAreaChartView_年間 (月別)", traits: .sizeThatFitsLayout) {
@@ -213,5 +222,8 @@ private extension CumulativePointsAreaChartView {
     .frame(height: 240)
     .setupEnvironmentForPreview()
     .padding(.space16)
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 #endif

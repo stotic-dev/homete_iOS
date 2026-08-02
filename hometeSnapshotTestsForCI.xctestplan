@@ -25,6 +25,10 @@
       {
         "key" : "CI_PRIMARY_REPOSITORY_PATH",
         "value" : "$(CI_PRIMARY_REPOSITORY_PATH)"
+      },
+      {
+        "key" : "SNAPSHOT_TESTING_RECORD",
+        "value" : "$(SNAPSHOT_TESTING_RECORD)"
       }
     ],
     "targetForVariableExpansion" : {

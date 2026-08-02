@@ -6,7 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
-    platforms: [.iOS(.v17), .macOS(.v15)],
+    platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
         lib("HometeDomain"),
         lib("HometeUI"),
@@ -30,6 +30,7 @@ let package = Package(
             url: "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
             from: "3.0.0"
         ),
+        .package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", from: "5.81.2"),
     ],
     targets: [
 
@@ -102,7 +103,8 @@ let package = Package(
                     name: "GoogleUserMessagingPlatform",
                     package: "swift-package-manager-google-user-messaging-platform",
                     condition: .when(platforms: [.iOS])
-                )
+                ),
+                .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
             ],
             plugins: [swiftLintPlugin()]
         ),

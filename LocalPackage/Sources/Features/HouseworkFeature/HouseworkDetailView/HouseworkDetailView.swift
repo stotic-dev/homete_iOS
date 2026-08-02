@@ -92,6 +92,7 @@ private extension HouseworkDetailView {
 
 }
 
+#if DEBUG
 #Preview {
     NavigationStack {
         HouseworkDetailView(
@@ -103,6 +104,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .setupEnvironmentForPreview()
 }
 
 #Preview("HouseworkDetailView_通信中") {
@@ -117,7 +119,9 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .setupEnvironmentForPreview()
     #if canImport(Prefire)
         .prefireIgnored()
     #endif
 }
+#endif

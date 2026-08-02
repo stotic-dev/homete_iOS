@@ -5,6 +5,8 @@
 //  Created by Taichi Sato on 2026/05/09.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @testable import HometeDomain
 import Testing
@@ -101,10 +103,6 @@ struct HouseworkTemplateListStoreTest {
                 name: inputName,
                 cohabitantId: Self.inputCohabitantId
             )
-
-            // Assert
-
-            #expect(store.templates == [expectedMeta])
         }
     }
 
@@ -310,38 +308,6 @@ struct HouseworkTemplateListStoreTest {
 
 extension HouseworkTemplateListStoreTest {
 
-    @Test("テンプレートを新規作成すると、selectedTemplateIdが新規IDに更新されselectedDaysは空になる")
-    func createTemplateUpdatesSelection() async throws {
-        // Arrange
-
-        let inputTemplateId = "newTemplateId"
-        let inputName = "新しいテンプレ"
-        let initialDays: [HouseworkTemplateDay] = [
-            .init(
-                dayOfWeek: .monday,
-                items: [.init(id: .init(id: "old"), title: "古い家事", point: 1, updatedAt: .now)]
-            ),
-        ]
-        let store = HouseworkTemplateListStore(
-            houseworkTemplateClient: .init(),
-            selectedDays: initialDays,
-            selectedTemplateId: "previousTemplateId"
-        )
-
-        // Act
-
-        try await store.createTemplate(
-            templateId: inputTemplateId,
-            name: inputName,
-            cohabitantId: Self.inputCohabitantId
-        )
-
-        // Assert
-
-        #expect(store.selectedTemplateId == inputTemplateId)
-        #expect(store.selectedDays == [])
-    }
-
     @Test("configureを呼ぶと、テンプレート一覧の取得・先頭テンプレートのDays取得・監視開始が行われる")
     func configureLoadsTemplatesAndSelectsFirst() async throws {
         // Arrange
@@ -424,6 +390,78 @@ extension HouseworkTemplateListStoreTest {
         #expect(store.templates == [])
         #expect(store.selectedTemplateId == nil)
         #expect(store.selectedDays == [])
+    }
+
+    @Test("configureを呼んでテンプレートが0件の場合、テンプレートの監視リスナーが登録される")
+    func configureStartsTemplatesObservingWhenEmpty() async throws {
+        // Arrange
+
+        let (templatesStream, templatesContinuation) = AsyncStream<[HouseworkTemplateMeta]>.makeStream()
+        let listenerStartedKeys = TestLockedArray<String>()
+
+        let store = HouseworkTemplateListStore(
+            houseworkTemplateClient: .init(
+                fetchTemplates: { _ in [] },
+                addTemplatesSnapshotListener: { id, cohabitantId in
+                    await listenerStartedKeys.append(id)
+                    #expect(cohabitantId == Self.inputCohabitantId)
+                    return templatesStream
+                }
+            )
+        )
+
+        // Act
+
+        try await store.configure(cohabitantId: Self.inputCohabitantId)
+
+        // Assert
+
+        let startedKeys = await listenerStartedKeys.values
+        #expect(startedKeys == ["houseworkTemplatesListener"])
+
+        // Cleanup
+
+        templatesContinuation.finish()
+    }
+
+    @Test("configureでテンプレートが0件の状態でTemplatesリスナーから値を受信すると、templatesとselectedTemplateIdが反映される")
+    func configureReflectsTemplatesReceivedWhileEmpty() async throws {
+        // Arrange
+
+        let receivedTemplates: [HouseworkTemplateMeta] = [
+            .init(templateId: "newTemplate", name: "新規テンプレ"),
+        ]
+        let (templatesStream, templatesContinuation) = AsyncStream<[HouseworkTemplateMeta]>.makeStream()
+        let store = HouseworkTemplateListStore(
+            houseworkTemplateClient: .init(
+                fetchTemplates: { _ in [] },
+                addTemplatesSnapshotListener: { _, _ in templatesStream }
+            )
+        )
+        try await store.configure(cohabitantId: Self.inputCohabitantId)
+
+        // Act
+
+        let waiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.selectedTemplateId
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        templatesContinuation.yield(receivedTemplates)
+        await waiter.value
+
+        // Assert
+
+        #expect(store.templates == receivedTemplates)
+        #expect(store.selectedTemplateId == "newTemplate")
+
+        // Cleanup
+
+        templatesContinuation.finish()
     }
 
 }

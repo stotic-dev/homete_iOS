@@ -9,7 +9,19 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-public struct SettingView: View {
+public struct SettingViewScreen: View {
+
+    public init() {}
+
+    public var body: some View {
+        NavigationStack {
+            SettingView()
+        }
+    }
+
+}
+
+struct SettingView: View {
 
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
@@ -17,6 +29,7 @@ public struct SettingView: View {
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var openURL
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
@@ -24,53 +37,51 @@ public struct SettingView: View {
     @State var isShowHouseworkTemplate = false
     @State var isShowMemberRegistration = false
 
-    public init() {}
+    init() {}
 
-    public var body: some View {
-        NavigationStack {
-            VStack(spacing: .space32) {
-                VStack(spacing: .space24) {
-                    Text(loginContext.account.userName)
-                        .font(with: .headLineM)
-                    GroupMemberListView(members: cohabitantMembers.others)
-                    Spacer()
-                        .frame(height: .space16)
-                    VStack(spacing: .zero) {
-                        ForEach(
-                            SettingMenuItem.displayItems(loginContext.hasCohabitant),
-                            id: \.self
-                        ) { item in
-                            SettingMenuItemButton(item: item) {
-                                tappedSettingMenuItem(item)
-                            }
+    var body: some View {
+        VStack(spacing: .space32) {
+            VStack(spacing: .space24) {
+                Text(loginContext.account.userName)
+                    .font(with: .headLineM)
+                GroupMemberListView(members: cohabitantMembers.others)
+                Spacer()
+                    .frame(height: .space16)
+                VStack(spacing: .zero) {
+                    ForEach(
+                        SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                        id: \.self
+                    ) { item in
+                        SettingMenuItemButton(item: item) {
+                            tappedSettingMenuItem(item)
                         }
                     }
                 }
-                VStack(spacing: .space24) {
-                    Button {
-                        tappedLogoutRowButton()
-                    } label: {
-                        Text("ログアウト")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .primaryButtonStyle()
-                    Button {
-                        tappedAccountDeletionRowButton()
-                    } label: {
-                        Text("退会")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .destructiveButtonStyle()
+            }
+            VStack(spacing: .space24) {
+                Button {
+                    tappedLogoutRowButton()
+                } label: {
+                    Text("ログアウト")
+                        .frame(maxWidth: .infinity)
                 }
-                Spacer()
+                .primaryButtonStyle()
+                Button {
+                    tappedAccountDeletionRowButton()
+                } label: {
+                    Text("退会")
+                        .frame(maxWidth: .infinity)
+                }
+                .destructiveButtonStyle()
             }
-            .padding(.horizontal, .space16)
-            .padding(.bottom, .space16)
-            .navigationTitle("設定")
-            .inlineNavigationBarTitleDisplayMode()
-            .trailingToolbarItem {
-                leadingNavigationBarContent()
-            }
+            Spacer()
+        }
+        .padding(.horizontal, .space16)
+        .padding(.bottom, .space16)
+        .navigationTitle("設定")
+        .inlineNavigationBarTitleDisplayMode()
+        .trailingToolbarItem {
+            leadingNavigationBarContent()
         }
         .fullScreenCoverOnIOS(isPresented: $isShowMemberRegistration) {
             router.resolve(.cohabitantRegistration)
@@ -119,8 +130,18 @@ private extension SettingView {
         case .memberRegistration:
             isShowMemberRegistration = true
 
-        case .privacyPolicy, .license:
-            // TODO: 各画面への遷移処理
+        case .termsOfService:
+            if let url = URL(string: Constants.termsOfServiceURLString) {
+                openURL(url)
+            }
+
+        case .privacyPolicy:
+            if let url = URL(string: Constants.privacyPolicyURLString) {
+                openURL(url)
+            }
+
+        case .license:
+            // TODO: ライセンス画面の遷移処理
             break
         }
     }
