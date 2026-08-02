@@ -12,15 +12,16 @@ import SwiftUI
 
 public struct RegistrationAccountView: View {
 
-    @Environment(AccountStore.self) var accountStore
     @Environment(\.launchStateProxy) var launchStateProxy
     @LoadingState var loadingState
 
     @State var inputUserName = UserName()
     let authInfo: AccountAuthResult
+    let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
 
-    public init(authInfo: AccountAuthResult) {
+    public init(authInfo: AccountAuthResult, authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase) {
         self.authInfo = authInfo
+        self.authSubscriptionSyncUseCase = authSubscriptionSyncUseCase
     }
 
     public var body: some View {
@@ -85,7 +86,10 @@ private extension RegistrationAccountView {
 
     func tappedRegistrationButton() async {
         do {
-            let account = try await accountStore.registerAccount(auth: authInfo, userName: inputUserName)
+            let account = try await authSubscriptionSyncUseCase.syncOnRegistered(
+                auth: authInfo,
+                userName: inputUserName
+            )
             launchStateProxy(.loggedIn(context: .init(account: account)))
         } catch {
             print("occurred error: \(error)")
@@ -95,13 +99,15 @@ private extension RegistrationAccountView {
 }
 
 #Preview("RegistrationAccountView_未入力") {
-    RegistrationAccountView(authInfo: AccountAuthResult(id: ""))
-        .environment(AccountStore())
+    RegistrationAccountView(
+        authInfo: AccountAuthResult(id: ""),
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore())
+    )
 }
 
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
-        authInfo: AccountAuthResult(id: "Test")
+        authInfo: AccountAuthResult(id: "Test"),
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore())
     )
-    .environment(AccountStore())
 }

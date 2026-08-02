@@ -40,7 +40,7 @@ enum HouseworkBoardEmptyReason: Equatable {
             let hasIncomplete = !list.items(matching: .incomplete).isEmpty
             self = .noPendingApproval(hasIncomplete: hasIncomplete)
 
-        case .completed:
+        case .completed, .notTodo:
             let canReview = list.items(matching: .pendingApproval)
                 .contains { $0.canReview(ownUserId: ownUserId) }
             if canReview {

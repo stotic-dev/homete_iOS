@@ -1,0 +1,14 @@
+# wt step copy-ignored でコピーする対象を限定するファイル
+# gitignore対象 かつ ここに記載されたパターンに一致するファイルのみコピーされる
+# （Build/ などの巨大なビルド成果物を誤ってコピーしないため）
+
+# secret（.gitignoreの「# secret」セクションと対応）
+private_keys/
+GoogleService-Info.plist
+GoogleService-Info-dev.plist
+.env
+fastlane/.env
+scripts/appstoreconnect.env
+scripts/revenuecat.env
+homete/Resouces/Secret.xcconfig
+homete/Resouces/Secret_dev.xcconfig

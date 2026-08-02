@@ -88,16 +88,15 @@ private extension HouseworkDateHeaderContent {
 }
 
 #if DEBUG
-    #Preview(traits: .sizeThatFitsLayout) {
-        HouseworkDateHeaderContent(
-            dateList: .constant(.init(
-                anchorDate: .previewDate(year: 2026, month: 1, day: 1),
-                selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-                calendar: .japanese
-            ))
-        )
-        .setupEnvironmentForPreview()
-        .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
-        .snapshotForPreview(delay: 2)
-    }
+#Preview(traits: .sizeThatFitsLayout) {
+    HouseworkDateHeaderContent(
+        dateList: .constant(.init(
+            anchorDate: .previewDate(year: 2026, month: 1, day: 1),
+            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+            calendar: .japanese
+        ))
+    )
+    .setupEnvironmentForPreview()
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
+}
 #endif

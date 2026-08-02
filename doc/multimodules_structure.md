@@ -8,7 +8,7 @@
 
 | モジュール | 役割 | 依存先 |
 |---|---|---|
-| `HometeDomain` | ドメインモデル・Client プロトコル・Store・AppRoute | なし（最下層） |
+| `HometeDomain` | ドメインモデル・Client プロトコル・Store・UseCase・AppRoute | なし（最下層） |
 | `HometeResources` | アセット（色・画像）・SwiftGen 生成コード | なし |
 | `HometeUI` | デザインシステム・共通コンポーネント・View ユーティリティ | `HometeDomain`, `HometeResources` |
 | `AuthFeature` | 認証関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
@@ -26,6 +26,7 @@ HometeDomain/
   ├── Domain Models (Account, HouseworkItem, CohabitantData...)
   ├── Client Protocols + previewValue
   ├── Stores (AccountStore, HouseworkListStore, CohabitantStore, AccountAuthStore)
+  ├── UseCase (複数Storeを合成するオーケストレーションロジック)
   └── AppRoute + RouteResolver
 
 HometeResources/
@@ -236,6 +237,17 @@ Store は `HometeDomain` に配置する。理由:
 - 複数 Feature から共有される（例: `HouseworkListStore` は `HouseworkBoardView`、`HomeView` 等で利用）
 - Client Protocol に依存するが、これも `HometeDomain` 内にあるため整合性が取れる
 - メインターゲットで Store を初期化し、Environment 経由で各 Feature に注入
+
+## UseCase の配置方針
+
+> この層を採用した背景・意思決定の経緯は [ADR-0003](adr/0003-usecase-layer.md) を参照。
+
+複数の Store・ドメインモデル・Client を合成するオーケストレーションロジックは、`HometeDomain` の `UseCase` に配置する。
+
+- Store は単一ドメインの状態管理という責務に留め、Store 同士が直接依存し合うことは禁止のまま
+- 複数 Store を跨ぐ処理が必要な場合のみ UseCase を新設する。単一 Store で完結する処理は View から直接 Store を呼び出す
+- 命名は `〇〇UseCase` とし、メソッド名は用途が分かる名前にする（`execute` のような汎用名は避ける）
+- メインターゲット（または `AppRoot`）で必要な Store を組み立てて UseCase に注入し、View には UseCase を渡す
 
 ## 補足・制約事項
 

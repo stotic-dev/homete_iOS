@@ -9,25 +9,25 @@ import Observation
 
 #if DEBUG
 
-    public enum ObservationHelper {
+public enum ObservationHelper {
 
-        /// Observableなオブジェクトのプロパティが変更を検知する
-        /// - Parameters:
-        ///   - apply: 変更を検知したいプロパティを返す
-        ///   - onChange: 変更検知時に発火するクロージャ
-        @MainActor
-        public static func continuousObservationTracking(
-            _ apply: @escaping @MainActor @Sendable () -> some Sendable,
-            onChange: @escaping @Sendable () -> Void
-        ) {
-            _ = withObservationTracking { apply() } onChange: {
-                onChange()
-                Task { @MainActor in
-                    continuousObservationTracking(apply, onChange: onChange)
-                }
+    /// Observableなオブジェクトのプロパティが変更を検知する
+    /// - Parameters:
+    ///   - apply: 変更を検知したいプロパティを返す
+    ///   - onChange: 変更検知時に発火するクロージャ
+    @MainActor
+    public static func continuousObservationTracking(
+        _ apply: @escaping @MainActor @Sendable () -> some Sendable,
+        onChange: @escaping @Sendable () -> Void
+    ) {
+        _ = withObservationTracking { apply() } onChange: {
+            onChange()
+            Task { @MainActor in
+                continuousObservationTracking(apply, onChange: onChange)
             }
         }
-
     }
+
+}
 
 #endif

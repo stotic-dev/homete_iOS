@@ -28,6 +28,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // Initialize Google Mobile Ads
         setupGoogleMobileAds()
 
+        // Initialize RevenueCat
+        setupRevenueCat()
+
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
 
@@ -47,26 +50,32 @@ private extension AppDelegate {
 
     func setupFirebase() {
         #if DEBUG
-            if !isXcodePreview, !isUnitTestMode {
-                guard let devPlistFilePath = (
-                    Bundle.main.url(
-                        forResource: "GoogleService-Info-dev",
-                        withExtension: "plist"
-                    )?
-                        .path()
-                ),
-                    let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
-                FirebaseApp.configure(options: firebaseOption)
-            }
+        if !isXcodePreview, !isUnitTestMode {
+            guard let devPlistFilePath = (
+                Bundle.main.url(
+                    forResource: "GoogleService-Info-dev",
+                    withExtension: "plist"
+                )?
+                    .path()
+            ),
+                let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
+            FirebaseApp.configure(options: firebaseOption)
+        }
         #else
-            FirebaseApp.configure()
+        FirebaseApp.configure()
         #endif
     }
 
     func setupGoogleMobileAds() {
+        guard !isXcodePreview, !isUnitTestMode else { return }
         Task {
             await MobileAdsClient.shared.initialize()
         }
+    }
+
+    func setupRevenueCat() {
+        guard !isXcodePreview, !isUnitTestMode else { return }
+        RevenueCatClient.shared.initialize()
     }
 
 }

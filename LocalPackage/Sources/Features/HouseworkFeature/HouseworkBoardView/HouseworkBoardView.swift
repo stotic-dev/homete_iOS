@@ -13,6 +13,8 @@ struct HouseworkBoardView: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.now) var anchorDate
+    @Environment(\.routeResolver) var router
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @Binding var houseworkBoardList: HouseworkBoardList
@@ -21,6 +23,9 @@ struct HouseworkBoardView: View {
     @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var isPresentingAddHouseworkView = false
+    @State var isShowHouseworkTemplate = false
+
+    let onUpdateHouseboardList: () -> Void
 
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
@@ -30,7 +35,7 @@ struct HouseworkBoardView: View {
                     VStack(spacing: .space16) {
                         HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                         TabView(selection: $selectedHouseworkState) {
-                            ForEach(HouseworkState.allCases) { state in
+                            ForEach(HouseworkState.pageableCases) { state in
                                 HouseworkBoardListContent(
                                     houseworkListStore: houseworkListStore,
                                     state: state,
@@ -58,6 +63,11 @@ struct HouseworkBoardView: View {
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
             }
+            .trailingToolbarItem {
+                NavigationBarButton(label: .houseworkTemplate) {
+                    isShowHouseworkTemplate = true
+                }
+            }
             .environment(\.houseworkBoardNavigationPath, navigationPath)
         }
         .sheet(isPresented: $isPresentingAddHouseworkView) {
@@ -69,14 +79,17 @@ struct HouseworkBoardView: View {
                 )
             )
         }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
+        }
         .onChange(of: houseworkListStore.items) {
             withAnimation {
-                updateHouseworkBoardList()
+                onUpdateHouseboardList()
             }
         }
         .onChange(of: dateList.selectedDate) {
             withAnimation {
-                updateHouseworkBoardList()
+                onUpdateHouseboardList()
             }
         }
     }
@@ -105,41 +118,26 @@ private extension HouseworkBoardView {
 
 }
 
-private extension HouseworkBoardView {
-
-    func updateHouseworkBoardList() {
-        houseworkBoardList = .init(
-            dailyList: houseworkListStore.items.value,
-            selectedDate: dateList.selectedDate
-        )
-    }
-
-}
-
 #if DEBUG
-    #Preview {
-        let list = HouseworkBoardList(items: [
-            .init(
-                id: "1",
-                title: "洗濯",
-                point: 20,
-                metaData: .init(
-                    indexedDate: .init(value: .distantPast),
-                    expiredAt: .distantPast
-                )
-            ),
-        ])
-        HouseworkBoardView(
-            houseworkBoardList: .constant(list),
-            dateList: .constant(.init(
-                anchorDate: .distantPast,
-                selectedDate: .distantPast,
-                calendar: .japanese
-            ))
-        )
-        .apply(theme: .init())
-        .setupEnvironmentForPreview()
-        .environment(\.now, .distantPast)
-        .environment(HouseworkListStore())
-    }
+#Preview {
+    let list = HouseworkBoardList(items: [
+        .makeForPreview(
+            title: "洗濯",
+            point: 20
+        ),
+    ])
+    HouseworkBoardView(
+        houseworkBoardList: .constant(list),
+        dateList: .constant(.init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )),
+        onUpdateHouseboardList: {}
+    )
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .environment(HouseworkListStore())
+}
 #endif

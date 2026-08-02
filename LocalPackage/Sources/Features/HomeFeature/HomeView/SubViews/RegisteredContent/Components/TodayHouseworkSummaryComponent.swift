@@ -135,157 +135,157 @@ private extension TodayHouseworkSummaryComponent {
 }
 
 #if DEBUG
-    #Preview("TodayHouseworkSummaryComponent_家事なし") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        ScrollView {
-            TodayHouseworkSummaryComponent()
-                .padding(.horizontal, .space16)
-        }
-        .environment(\.now, today)
-        .environment(HouseworkListStore())
-        .setupEnvironmentForPreview()
+#Preview("TodayHouseworkSummaryComponent_家事なし") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    ScrollView {
+        TodayHouseworkSummaryComponent()
+            .padding(.horizontal, .space16)
     }
+    .environment(\.now, today)
+    .environment(HouseworkListStore())
+    .setupEnvironmentForPreview()
+}
 
-    #Preview("TodayHouseworkSummaryComponent_全て完了") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        ScrollView {
-            TodayHouseworkSummaryComponent()
-                .padding(.horizontal, .space16)
-        }
-        .environment(\.now, today)
-        .environment(
-            HouseworkListStore(items: [
-                .init(
-                    items: [
-                        .makeForTest(
-                            id: 1,
-                            indexedDate: today,
-                            title: "洗濯",
-                            point: 20,
-                            state: .completed
-                        ),
-                        .makeForTest(
-                            id: 2,
-                            indexedDate: today,
-                            title: "掃除",
-                            point: 30,
-                            state: .completed
-                        ),
-                    ],
-                    metaData: .init(
-                        indexedDate: .init(value: today),
-                        expiredAt: .distantFuture
-                    )
-                ),
-            ])
-        )
-        .setupEnvironmentForPreview()
+#Preview("TodayHouseworkSummaryComponent_全て完了") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    ScrollView {
+        TodayHouseworkSummaryComponent()
+            .padding(.horizontal, .space16)
     }
+    .environment(\.now, today)
+    .environment(
+        HouseworkListStore(items: [
+            .init(
+                items: [
+                    .makeForTest(
+                        id: 1,
+                        indexedDate: today,
+                        title: "洗濯",
+                        point: 20,
+                        state: .completed
+                    ),
+                    .makeForTest(
+                        id: 2,
+                        indexedDate: today,
+                        title: "掃除",
+                        point: 30,
+                        state: .completed
+                    ),
+                ],
+                metaData: .init(
+                    indexedDate: .init(value: today),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+    )
+    .setupEnvironmentForPreview()
+}
 
-    #Preview("TodayHouseworkSummaryComponent_未完了4件以下") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        ScrollView {
-            TodayHouseworkSummaryComponent()
-                .padding(.horizontal, .space16)
-        }
-        .environment(\.now, today)
-        .environment(
-            HouseworkListStore(items: [
-                .init(
-                    items: [
-                        .makeForTest(
-                            id: 1,
-                            indexedDate: today,
-                            title: "洗濯",
-                            point: 20,
-                            state: .incomplete
-                        ),
-                        .makeForTest(
-                            id: 2,
-                            indexedDate: today,
-                            title: "掃除",
-                            point: 30,
-                            state: .pendingApproval
-                        ),
-                        .makeForTest(
-                            id: 3,
-                            indexedDate: today,
-                            title: "掃除",
-                            point: 30,
-                            state: .completed
-                        ),
-                    ],
-                    metaData: .init(
-                        indexedDate: .init(value: today),
-                        expiredAt: .distantFuture
-                    )
-                ),
-            ])
-        )
-        .setupEnvironmentForPreview()
+#Preview("TodayHouseworkSummaryComponent_未完了4件以下") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    ScrollView {
+        TodayHouseworkSummaryComponent()
+            .padding(.horizontal, .space16)
     }
+    .environment(\.now, today)
+    .environment(
+        HouseworkListStore(items: [
+            .init(
+                items: [
+                    .makeForTest(
+                        id: 1,
+                        indexedDate: today,
+                        title: "洗濯",
+                        point: 20,
+                        state: .incomplete
+                    ),
+                    .makeForTest(
+                        id: 2,
+                        indexedDate: today,
+                        title: "掃除",
+                        point: 30,
+                        state: .pendingApproval
+                    ),
+                    .makeForTest(
+                        id: 3,
+                        indexedDate: today,
+                        title: "掃除",
+                        point: 30,
+                        state: .completed
+                    ),
+                ],
+                metaData: .init(
+                    indexedDate: .init(value: today),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+    )
+    .setupEnvironmentForPreview()
+}
 
-    #Preview("TodayHouseworkSummaryComponent_未完了5件以上") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        ScrollView {
-            TodayHouseworkSummaryComponent()
-                .padding(.horizontal, .space16)
-        }
-        .environment(\.now, today)
-        .environment(
-            HouseworkListStore(items: [
-                .init(
-                    items: [
-                        .makeForTest(
-                            id: 1,
-                            indexedDate: today,
-                            title: "洗濯",
-                            point: 20,
-                            state: .incomplete
-                        ),
-                        .makeForTest(
-                            id: 2,
-                            indexedDate: today,
-                            title: "掃除",
-                            point: 30,
-                            state: .pendingApproval
-                        ),
-                        .makeForTest(
-                            id: 3,
-                            indexedDate: today,
-                            title: "掃除",
-                            point: 30,
-                            state: .incomplete
-                        ),
-                        .makeForTest(
-                            id: 4,
-                            indexedDate: today,
-                            title: "ゴミ出し",
-                            point: 20,
-                            state: .incomplete
-                        ),
-                        .makeForTest(
-                            id: 5,
-                            indexedDate: today,
-                            title: "買い物",
-                            point: 30,
-                            state: .pendingApproval
-                        ),
-                        .makeForTest(
-                            id: 6,
-                            indexedDate: today,
-                            title: "アイロン",
-                            point: 30,
-                            state: .incomplete
-                        ),
-                    ],
-                    metaData: .init(
-                        indexedDate: .init(value: today),
-                        expiredAt: .distantFuture
-                    )
-                ),
-            ])
-        )
-        .setupEnvironmentForPreview()
+#Preview("TodayHouseworkSummaryComponent_未完了5件以上") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    ScrollView {
+        TodayHouseworkSummaryComponent()
+            .padding(.horizontal, .space16)
     }
+    .environment(\.now, today)
+    .environment(
+        HouseworkListStore(items: [
+            .init(
+                items: [
+                    .makeForTest(
+                        id: 1,
+                        indexedDate: today,
+                        title: "洗濯",
+                        point: 20,
+                        state: .incomplete
+                    ),
+                    .makeForTest(
+                        id: 2,
+                        indexedDate: today,
+                        title: "掃除",
+                        point: 30,
+                        state: .pendingApproval
+                    ),
+                    .makeForTest(
+                        id: 3,
+                        indexedDate: today,
+                        title: "掃除",
+                        point: 30,
+                        state: .incomplete
+                    ),
+                    .makeForTest(
+                        id: 4,
+                        indexedDate: today,
+                        title: "ゴミ出し",
+                        point: 20,
+                        state: .incomplete
+                    ),
+                    .makeForTest(
+                        id: 5,
+                        indexedDate: today,
+                        title: "買い物",
+                        point: 30,
+                        state: .pendingApproval
+                    ),
+                    .makeForTest(
+                        id: 6,
+                        indexedDate: today,
+                        title: "アイロン",
+                        point: 30,
+                        state: .incomplete
+                    ),
+                ],
+                metaData: .init(
+                    indexedDate: .init(value: today),
+                    expiredAt: .distantFuture
+                )
+            ),
+        ])
+    )
+    .setupEnvironmentForPreview()
+}
 #endif

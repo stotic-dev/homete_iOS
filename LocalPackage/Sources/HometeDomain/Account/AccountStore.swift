@@ -62,6 +62,11 @@ public final class AccountStore {
         }
     }
 
+    /// 保持しているアカウント情報をクリアする
+    public func clear() {
+        account = nil
+    }
+
     public func registerCohabitantId(_ cohabitantId: String) async throws {
         guard let account else {
             preconditionFailure("Not found account.")

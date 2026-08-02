@@ -59,43 +59,43 @@ private extension IncompleteHouseworkListView {
 }
 
 #if DEBUG
-    #Preview("IncompleteHouseworkListView_未完了あり") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        NavigationStack {
-            IncompleteHouseworkListView()
-        }
-        .environment(\.now, today)
-        .environment(
-            HouseworkListStore(
-                items: [
-                    .init(
-                        items: [
-                            .makeForPreview(title: "洗濯", point: 20),
-                            .makeForPreview(title: "掃除", point: 30),
-                            .makeForPreview(
-                                title: "料理",
-                                point: 50,
-                                state: .completed
-                            ),
-                        ],
-                        metaData: .init(
-                            indexedDate: .init(value: today),
-                            expiredAt: .distantFuture
-                        )
-                    ),
-                ]
-            )
+#Preview("IncompleteHouseworkListView_未完了あり") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    NavigationStack {
+        IncompleteHouseworkListView()
+    }
+    .environment(\.now, today)
+    .environment(
+        HouseworkListStore(
+            items: [
+                .init(
+                    items: [
+                        .makeForPreview(title: "洗濯", point: 20),
+                        .makeForPreview(title: "掃除", point: 30),
+                        .makeForPreview(
+                            title: "料理",
+                            point: 50,
+                            state: .completed
+                        ),
+                    ],
+                    metaData: .init(
+                        indexedDate: .init(value: today),
+                        expiredAt: .distantFuture
+                    )
+                ),
+            ]
         )
-        .setupEnvironmentForPreview()
-    }
+    )
+    .setupEnvironmentForPreview()
+}
 
-    #Preview("IncompleteHouseworkListView_未完了なし") {
-        let today = Date.previewDate(year: 2026, month: 5, day: 18)
-        NavigationStack {
-            IncompleteHouseworkListView()
-        }
-        .environment(\.now, today)
-        .environment(HouseworkListStore())
-        .setupEnvironmentForPreview()
+#Preview("IncompleteHouseworkListView_未完了なし") {
+    let today = Date.previewDate(year: 2026, month: 5, day: 18)
+    NavigationStack {
+        IncompleteHouseworkListView()
     }
+    .environment(\.now, today)
+    .environment(HouseworkListStore())
+    .setupEnvironmentForPreview()
+}
 #endif

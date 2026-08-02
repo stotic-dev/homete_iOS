@@ -13,9 +13,9 @@ public extension View {
         @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         #if os(iOS)
-            fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
+        fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
         #else
-            self
+        self
         #endif
     }
 

@@ -30,6 +30,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let reviewerComment: String?
     /// 有効期限
     public let expiredAt: Date
+    /// 紐づくテンプレートの家事ID
+    public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
 
     public init(
         id: String,
@@ -42,7 +44,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         reviewerId: String?,
         approvedAt: Date?,
         reviewerComment: String?,
-        expiredAt: Date
+        expiredAt: Date,
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -55,25 +58,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.approvedAt = approvedAt
         self.reviewerComment = reviewerComment
         self.expiredAt = expiredAt
-    }
-
-    public func formattedIndexedDate(calendar: Calendar) -> String {
-        let formatStyle = Date.FormatStyle(
-            date: .numeric,
-            time: .omitted,
-            locale: calendar.locale ?? .autoupdatingCurrent,
-            calendar: calendar,
-            timeZone: calendar.timeZone
-        )
-        .year(.extended(minimumLength: 4))
-        .month(.twoDigits)
-        .day(.twoDigits)
-        return indexedDate.value.formatted(formatStyle)
-    }
-
-    /// レビュー可能かどうか
-    public func canReview(ownUserId: String) -> Bool {
-        executorId != ownUserId && state != .completed
+        self.templateHouseworkItemId = templateHouseworkItemId
     }
 
     public func updatePendingApproval(at now: Date, changer: String) -> Self {
@@ -88,7 +73,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewerId,
             approvedAt: approvedAt,
             reviewerComment: reviewerComment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -104,7 +90,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewer,
             approvedAt: now,
             reviewerComment: comment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -120,7 +107,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: reviewer,
             approvedAt: now,
             reviewerComment: comment,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -136,7 +124,25 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             reviewerId: nil,
             approvedAt: nil,
             reviewerComment: nil,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
+        )
+    }
+
+    public func updateNotTodo() -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .notTodo,
+            executorId: executorId,
+            executedAt: executedAt,
+            reviewerId: reviewerId,
+            approvedAt: approvedAt,
+            reviewerComment: reviewerComment,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 
@@ -154,7 +160,8 @@ public extension HouseworkItem {
         executedAt: Date? = nil,
         reviewerId: String? = nil,
         approvedAt: Date? = nil,
-        reviewerComment: String? = nil
+        reviewerComment: String? = nil,
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) {
         self.init(
             id: id,
@@ -167,7 +174,8 @@ public extension HouseworkItem {
             reviewerId: reviewerId,
             approvedAt: approvedAt,
             reviewerComment: reviewerComment,
-            expiredAt: metaData.expiredAt
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 

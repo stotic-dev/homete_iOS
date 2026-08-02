@@ -58,15 +58,15 @@ public extension Theme {
 
     func applySegmentedControl() {
         #if canImport(UIKit)
-            UISegmentedControl.appearance().setTitleTextAttributes(
-                [.foregroundColor: UIColor(Color.primary2)],
-                for: .normal
-            )
-            UISegmentedControl.appearance().setTitleTextAttributes(
-                [.foregroundColor: UIColor(Color.onSurface)],
-                for: .selected
-            )
-            UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
+        UISegmentedControl.appearance().setTitleTextAttributes(
+            [.foregroundColor: UIColor(Color.primary2)],
+            for: .normal
+        )
+        UISegmentedControl.appearance().setTitleTextAttributes(
+            [.foregroundColor: UIColor(Color.onSurface)],
+            for: .selected
+        )
+        UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
         #endif
     }
 

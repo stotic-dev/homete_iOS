@@ -1,9 +1,124 @@
 ---
 name: swift-test-implementation
-description: homete iOSプロジェクトのSwiftテスト実装ガイド。Swift Testingフレームワークを使ったユニットテストの書き方、パターン、規約を定義する。新規テスト作成・既存テスト修正時に参照する。
+description: homete iOSプロジェクトのSwiftテスト実装ガイド。Swift Testingフレームワークを使ったユニットテストの書き方、パターン、アサーション必須ルール、規約を定義する。テストファイル（*Test.swift / *Tests.swift / Tests/**/*.swift）の新規作成・編集を行う前に必ず参照すること。
 ---
 
 # Swift テスト実装ガイド
+
+> **このスキルは、テストファイル（`*Test.swift` / `*Tests.swift` / `Tests/**/*.swift`）を編集する前に必ず読むこと。**
+> 実装後ではなく**実装前**に参照しないと、後述のアサーションルール違反で書き直しが発生する。
+
+---
+
+## 🚨 最優先：アサーション必須ルール（違反禁止）
+
+**過去に何度も違反が発生している最重要ルール。テスト実装時は必ず以下を守ること。**
+
+### ルール1: expected値の生成にテスト対象（プロダクションコード）を使わない
+
+expected値は**ピュアな`.init(...)`または`makeForTest`**で組み立てる。
+SUT（System Under Test）と同じファクトリ・同じメソッド・同じ計算ロジックで expected を作るのは禁止。
+
+**理由**: SUTと同じロジックで expected を作ると「actual と expected が同じロジックを通っている」だけになり、ロジックの正しさを検証できない（自分自身と比較しているのと等価）。
+
+### ルール2: プロパティ単体検証ではなく、戻り値型の全体比較を行う
+
+`#expect(result.count == 2)`、`#expect(item.id == ...)`、`#expect(item.title == ...)` のような**プロパティ単体の連続検証は禁止**。
+expected をピュア init で構築し、`#expect(actual == expected)` で型ごと丸ごと比較する。
+
+**理由**: プロパティ単体検証は検証漏れを生み、新規プロパティ追加時に自動検出できない。
+
+### ❌ NG パターン
+
+```swift
+// NG: プロダクションコードの make() で expected を生成
+let expected = await ContributionAnalytics.make(
+    contribution: contribution,
+    members: members,
+    displayPeriod: newPeriod,
+    calendar: calendar
+)
+#expect(result == expected)
+```
+
+```swift
+// NG: SUTと同じドメインメソッドで expected を加工
+let expected = HouseworkItem.makeForTest(id: 1).updatedToCompleted()  // updatedToCompleted がSUT
+```
+
+```swift
+// NG: プロパティ単体検証
+#expect(item.id == "generatedId")
+#expect(item.title == "週末掃除")
+#expect(item.point == 30)
+#expect(item.state == .incomplete)
+```
+
+### ✅ OK パターン
+
+```swift
+// OK: ピュア .init() で expected を組み立て、丸ごと比較
+let expected = HouseworkItem(
+    id: "generatedId",
+    indexedDate: HouseworkIndexedDate(value: Date.previewDate(year: 2026, month: 5, day: 9)),
+    title: "週末掃除",
+    point: 30,
+    state: .incomplete,
+    executorId: nil,
+    executedAt: nil,
+    reviewerId: nil,
+    approvedAt: nil,
+    reviewerComment: nil,
+    expiredAt: Date.previewDate(year: 2027, month: 5, day: 9)
+)
+#expect(actual == expected)
+```
+
+```swift
+// OK: makeForTest でデフォルト値を埋めて生成（SUTと無関係なヘルパー）
+let expected = HouseworkItem.makeForTest(id: 1, state: .completed)
+#expect(actual == expected)
+```
+
+```swift
+// OK: 入力側を簡単にして expected を簡単に書ける状態にする
+//   メンバー0人/空集計データなどにして、expected が空配列やゼロ値で決定論的に書ける状態に寄せる
+let expected = ContributionAnalytics(
+    weekPointList: [],
+    monthPointList: [],
+    yearPointList: [],
+    displayPeriod: newPeriod
+)
+#expect(result == expected)
+```
+
+### confirmation 内のアサーションも同じルール
+
+`confirmation` のクロージャ内で `#expect(item == ...)` する場合も、expected はピュア init で構築する:
+
+```swift
+// OK
+let expectedItem = HouseworkItem(
+    id: fixedItemId,
+    indexedDate: ...,
+    title: "週末掃除",
+    point: 30,
+    state: .incomplete,
+    // ...全プロパティ
+)
+try await confirmation { confirmation in
+    let store = HouseworkListStore(
+        houseworkClient: .init(insertOrUpdateItemHandler: { item, _ in
+            #expect(item == expectedItem)  // ← 全体比較
+            confirmation()
+        }),
+        idGenerator: { fixedItemId }
+    )
+    try await store.applyTemplate(plan: plan)
+}
+```
+
+---
 
 ## 基本構成
 
@@ -309,6 +424,7 @@ let expected = TodayHouseworkSummary.makeForTest(
 
 | 項目 | ルール |
 |---|---|
+| **アサーション（最重要）** | **expected はピュア init / makeForTest で生成。SUTのロジック使用禁止。プロパティ単体検証ではなく `#expect(actual == expected)` で全体比較。詳細は冒頭「🚨 最優先：アサーション必須ルール」参照** |
 | テスト名 | `@Test("日本語で何をテストするか")` |
 | Actの数 | 1テストにつき1つ。複数Actは別テストケースに分ける |
 | 関数名 | キャメルケース・英語（`setupObserver`, `streamUpdateIsUpserted`など） |

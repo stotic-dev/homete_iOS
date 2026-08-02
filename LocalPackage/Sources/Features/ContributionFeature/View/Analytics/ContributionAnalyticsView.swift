@@ -7,6 +7,9 @@
 
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 struct ContributionAnalyticsView: View {
 
@@ -108,59 +111,68 @@ private extension ContributionAnalyticsView {
 }
 
 #if DEBUG
-    #Preview("ContributionAnalyticsView_週間", traits: .sizeThatFitsLayout) {
-        @Previewable @State var selectedPeriod = DisplayPointPeriod(
-            type: .week,
-            anchor: .previewDate(year: 2026, month: 4, day: 30)
-        )
-        ContributionAnalyticsView(
-            selectedPeriod: $selectedPeriod,
-            analytics: .makeForPreview(type: .week),
-            myUserId: "user1",
-            latestAchievedDate: nil
-        )
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionAnalyticsView_週間", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .week,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .week),
+        myUserId: "user1",
+        latestAchievedDate: nil
+    )
+    .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
 
-    #Preview("ContributionAnalyticsView_月間", traits: .sizeThatFitsLayout) {
-        @Previewable @State var selectedPeriod = DisplayPointPeriod(
-            type: .month,
-            anchor: .previewDate(year: 2026, month: 4, day: 30)
-        )
-        ContributionAnalyticsView(
-            selectedPeriod: $selectedPeriod,
-            analytics: .makeForPreview(type: .month),
-            myUserId: "user1",
-            latestAchievedDate: nil
-        )
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionAnalyticsView_月間", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .month),
+        myUserId: "user1",
+        latestAchievedDate: nil
+    )
+    .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
 
-    #Preview("ContributionAnalyticsView_年間", traits: .sizeThatFitsLayout) {
-        @Previewable @State var selectedPeriod = DisplayPointPeriod(
-            type: .year,
-            anchor: .previewDate(year: 2026, month: 4, day: 30)
-        )
-        ContributionAnalyticsView(
-            selectedPeriod: $selectedPeriod,
-            analytics: .makeForPreview(type: .year),
-            myUserId: "user1",
-            latestAchievedDate: nil
-        )
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionAnalyticsView_年間", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .year,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .year),
+        myUserId: "user1",
+        latestAchievedDate: nil
+    )
+    .setupEnvironmentForPreview()
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
 
-    #Preview("ContributionAnalyticsView_空表示", traits: .sizeThatFitsLayout) {
-        @Previewable @State var selectedPeriod = DisplayPointPeriod(
-            type: .month,
-            anchor: .previewDate(year: 2026, month: 4, day: 30)
-        )
-        ContributionAnalyticsView(
-            selectedPeriod: $selectedPeriod,
-            analytics: .makeForTest(displayPeriod: selectedPeriod),
-            myUserId: "user1",
-            latestAchievedDate: nil
-        )
-        .setupEnvironmentForPreview()
-    }
+#Preview("ContributionAnalyticsView_空表示", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2026, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForTest(displayPeriod: selectedPeriod),
+        myUserId: "user1",
+        latestAchievedDate: nil
+    )
+    .setupEnvironmentForPreview()
+}
 #endif
