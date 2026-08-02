@@ -33,7 +33,7 @@ struct AdsSetupUseCaseTests {
         #expect(actual == expected)
     }
 
-    @Test("同意情報取得が失敗してもATT・MobileAdsの起動シーケンスは継続する")
+    @Test("同意情報取得が失敗してもMobileAdsの起動シーケンスは継続する")
     func setup_consentInfoUpdateFails_continuesSequence() async {
         // Arrange
         let recorder = CallRecorder()
@@ -83,7 +83,9 @@ struct AdsSetupUseCaseTests {
         #expect(actual == expected)
     }
 
-    @Test("呼び出し順序は 同意フォーム → ATT → MobileAds の順")
+    /// ATT許可リクエストはAdMobコンソールのApp Tracking Transparencyメッセージ設定により
+    /// ConsentForm.loadAndPresentIfRequired内で提示されるため、コード上での明示呼び出しはない
+    @Test("呼び出し順序は 同意フォーム → MobileAds の順")
     func setup_callsInExpectedOrder() async {
         // Arrange
         let recorder = CallRecorder()
