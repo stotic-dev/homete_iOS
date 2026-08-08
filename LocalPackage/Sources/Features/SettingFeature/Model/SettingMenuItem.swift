@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
+import HometeDomain
 import SwiftUI
 
 enum SettingMenuItem: Equatable, CaseIterable {
@@ -27,7 +28,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    func title(isPremium: Bool) -> LocalizedStringKey {
+    func title(plan: SubscriptionPlan) -> LocalizedStringKey {
         switch self {
         case .memberRegistration:
             "メンバー追加"
@@ -36,7 +37,11 @@ enum SettingMenuItem: Equatable, CaseIterable {
             "家事テンプレート"
 
         case .premiumPlan:
-            isPremium ? "ご登録中のプラン" : "プレミアムプランに登録"
+            if case .free = plan {
+                "プレミアムプランに登録"
+            } else {
+                "ご登録中のプラン"
+            }
 
         case .termsOfService:
             "利用規約"
@@ -46,6 +51,22 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .license:
             "ライセンス"
+        }
+    }
+
+    /// 買い切りプランはサブスクリプションへの切り替えを技術的にサポートできないため、
+    /// プレミアムプラン項目のタップ導線自体を閉じる
+    func isEnabled(plan: SubscriptionPlan) -> Bool {
+        switch self {
+        case .premiumPlan:
+            if case .lifetime = plan {
+                false
+            } else {
+                true
+            }
+
+        default:
+            true
         }
     }
 

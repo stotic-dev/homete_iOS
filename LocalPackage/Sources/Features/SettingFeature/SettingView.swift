@@ -53,7 +53,7 @@ struct SettingView: View {
                         SettingMenuItem.displayItems(loginContext.hasCohabitant),
                         id: \.self
                     ) { item in
-                        SettingMenuItemButton(item: item, isPremium: subscriptionStore.isPremium) {
+                        SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
                             tappedSettingMenuItem(item)
                         }
                     }
@@ -174,13 +174,7 @@ private extension SettingView {
             isShowMemberRegistration = true
 
         case .premiumPlan:
-            if subscriptionStore.isPremium {
-                loadingState.task {
-                    await subscriptionStore.showManageSubscriptions()
-                }
-            } else {
-                isShowPaywall = true
-            }
+            tappedPremiumPlanItem()
 
         case .termsOfService:
             if let url = URL(string: Constants.termsOfServiceURLString) {
@@ -194,6 +188,23 @@ private extension SettingView {
 
         case .license:
             // TODO: ライセンス画面の遷移処理
+            break
+        }
+    }
+
+    func tappedPremiumPlanItem() {
+        switch subscriptionStore.plan {
+        case .free:
+            isShowPaywall = true
+
+        case .subscription:
+            loadingState.task {
+                await subscriptionStore.showManageSubscriptions()
+            }
+
+        case .lifetime:
+            // 買い切りプランはサブスクリプションへの切り替えを技術的にサポートできないため、
+            // ボタン自体が無効化されておりここには到達しない
             break
         }
     }

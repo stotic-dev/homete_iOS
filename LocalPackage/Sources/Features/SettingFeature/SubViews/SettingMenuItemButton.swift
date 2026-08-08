@@ -13,8 +13,12 @@ import SwiftUI
 struct SettingMenuItemButton: View {
 
     let item: SettingMenuItem
-    let isPremium: Bool
+    let plan: SubscriptionPlan
     let action: () -> Void
+
+    private var isEnabled: Bool {
+        item.isEnabled(plan: plan)
+    }
 
     var body: some View {
         Button {
@@ -28,7 +32,7 @@ struct SettingMenuItemButton: View {
                     .foregroundStyle(.onSurface)
                     .background(.primary3)
                     .cornerRadius(.radius8)
-                Text(item.title(isPremium: isPremium))
+                Text(item.title(plan: plan))
                     .font(with: .body)
                 Spacer()
             }
@@ -36,18 +40,27 @@ struct SettingMenuItemButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, .space8)
         }
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1.0 : 0.5)
     }
 
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .taskTemplate, isPremium: false) {}
+    SettingMenuItemButton(item: .taskTemplate, plan: .free) {}
 }
 
 #Preview("プレミアムプラン_未登録", traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .premiumPlan, isPremium: false) {}
+    SettingMenuItemButton(item: .premiumPlan, plan: .free) {}
 }
 
-#Preview("プレミアムプラン_登録済み", traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .premiumPlan, isPremium: true) {}
+#Preview("プレミアムプラン_登録済み_サブスク", traits: .sizeThatFitsLayout) {
+    SettingMenuItemButton(
+        item: .premiumPlan,
+        plan: .subscription(period: .monthly, nextRenewalDate: .now)
+    ) {}
+}
+
+#Preview("プレミアムプラン_登録済み_買い切り", traits: .sizeThatFitsLayout) {
+    SettingMenuItemButton(item: .premiumPlan, plan: .lifetime) {}
 }
