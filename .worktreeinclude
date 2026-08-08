@@ -12,3 +12,6 @@ scripts/appstoreconnect.env
 scripts/revenuecat.env
 homete/Resouces/Secret.xcconfig
 homete/Resouces/Secret_dev.xcconfig
+
+# Claude Code設定（sandbox無効化・Bash許可ルールをworktreeにも引き継ぐ）
+.claude/settings.local.json
