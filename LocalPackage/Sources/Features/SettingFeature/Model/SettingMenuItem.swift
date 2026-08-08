@@ -11,6 +11,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     case memberRegistration
     case taskTemplate
+    case premiumPlan
     case termsOfService
     case privacyPolicy
     case license
@@ -26,13 +27,16 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    var title: LocalizedStringKey {
+    func title(isPremium: Bool = false) -> LocalizedStringKey {
         switch self {
         case .memberRegistration:
             "メンバー追加"
 
         case .taskTemplate:
             "家事テンプレート"
+
+        case .premiumPlan:
+            isPremium ? "ご登録中のプラン" : "プレミアムプランに登録"
 
         case .termsOfService:
             "利用規約"
@@ -52,6 +56,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "house"
+
+        case .premiumPlan:
+            "crown.fill"
 
         case .termsOfService:
             "doc.text"

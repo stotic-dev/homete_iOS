@@ -25,6 +25,7 @@ struct SettingView: View {
 
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
@@ -36,6 +37,7 @@ struct SettingView: View {
     @State var isPresentedAccountDeletionConfirmAlert = false
     @State var isShowHouseworkTemplate = false
     @State var isShowMemberRegistration = false
+    @State var isShowPaywall = false
 
     init() {}
 
@@ -52,7 +54,7 @@ struct SettingView: View {
                         SettingMenuItem.displayItems(loginContext.hasCohabitant),
                         id: \.self
                     ) { item in
-                        SettingMenuItemButton(item: item) {
+                        SettingMenuItemButton(item: item, isPremium: subscriptionStore.isPremium) {
                             tappedSettingMenuItem(item)
                         }
                     }
@@ -104,6 +106,9 @@ struct SettingView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
+        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
+            router.resolve(.paywall)
+        }
     }
 
 }
@@ -129,6 +134,9 @@ private extension SettingView {
 
         case .memberRegistration:
             isShowMemberRegistration = true
+
+        case .premiumPlan:
+            isShowPaywall = true
 
         case .termsOfService:
             if let url = URL(string: Constants.termsOfServiceURLString) {
@@ -173,12 +181,38 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(SubscriptionStore())
 }
 
 #Preview("SettingView_グループ登録済み") {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(SubscriptionStore())
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
+}
+
+#Preview("SettingView_プレミアム登録済み") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(SubscriptionStore(entitlementInfo: .init(isActive: true)))
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "",
