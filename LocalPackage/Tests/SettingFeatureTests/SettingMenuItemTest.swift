@@ -4,6 +4,7 @@
 //
 
 @testable import SettingFeature
+import SwiftUI
 import Testing
 
 struct SettingMenuItemTest {
@@ -39,29 +40,55 @@ struct SettingMenuItemTest {
     }
 
     @Test(
-        "プレミアムプラン以外の項目は購入状態に関わらずタイトルが変化しない",
+        "プレミアムプラン以外の項目は未購入時に固定タイトルを返す",
         arguments: [
-            SettingMenuItem.memberRegistration,
-            .taskTemplate,
-            .termsOfService,
-            .privacyPolicy,
-            .license,
-        ]
+            (SettingMenuItem.memberRegistration, "メンバー追加"),
+            (SettingMenuItem.taskTemplate, "家事テンプレート"),
+            (SettingMenuItem.termsOfService, "利用規約"),
+            (SettingMenuItem.privacyPolicy, "プライバシーポリシー"),
+            (SettingMenuItem.license, "ライセンス"),
+        ] as [(SettingMenuItem, String)]
     )
-    func title_notPremiumPlanItem_titleIsUnaffectedByIsPremium(item: SettingMenuItem) {
+    func title_notPremiumPlanItem_isPremiumFalse_returnsFixedTitle(
+        item: SettingMenuItem,
+        expectedTitle: String
+    ) {
         // Arrange
         // Act
 
-        let notPremiumTitle = item.title(isPremium: false)
-        let premiumTitle = item.title(isPremium: true)
+        let actual = item.title(isPremium: false)
 
         // Assert
 
-        #expect(notPremiumTitle == premiumTitle)
+        #expect(actual == LocalizedStringKey(expectedTitle))
     }
 
-    @Test("プレミアムプラン項目は常に表示対象に含まれる")
-    func displayItems_containsPremiumPlan() {
+    @Test(
+        "プレミアムプラン以外の項目は購入済み時も固定タイトルを返す",
+        arguments: [
+            (SettingMenuItem.memberRegistration, "メンバー追加"),
+            (SettingMenuItem.taskTemplate, "家事テンプレート"),
+            (SettingMenuItem.termsOfService, "利用規約"),
+            (SettingMenuItem.privacyPolicy, "プライバシーポリシー"),
+            (SettingMenuItem.license, "ライセンス"),
+        ] as [(SettingMenuItem, String)]
+    )
+    func title_notPremiumPlanItem_isPremiumTrue_returnsFixedTitle(
+        item: SettingMenuItem,
+        expectedTitle: String
+    ) {
+        // Arrange
+        // Act
+
+        let actual = item.title(isPremium: true)
+
+        // Assert
+
+        #expect(actual == LocalizedStringKey(expectedTitle))
+    }
+
+    @Test("グループ参加済みの場合、家事テンプレート項目を含む表示項目が返る")
+    func displayItems_registeredGroup_includesTaskTemplate() {
         // Arrange
 
         let expected: [SettingMenuItem] = [
@@ -76,6 +103,27 @@ struct SettingMenuItemTest {
         // Act
 
         let actual = SettingMenuItem.displayItems(true)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test("グループ未参加の場合、家事テンプレート項目を除いた表示項目が返る")
+    func displayItems_notRegisteredGroup_excludesTaskTemplate() {
+        // Arrange
+
+        let expected: [SettingMenuItem] = [
+            .memberRegistration,
+            .premiumPlan,
+            .termsOfService,
+            .privacyPolicy,
+            .license,
+        ]
+
+        // Act
+
+        let actual = SettingMenuItem.displayItems(false)
 
         // Assert
 

@@ -13,7 +13,7 @@ import SwiftUI
 struct SettingMenuItemButton: View {
 
     let item: SettingMenuItem
-    var isPremium = false
+    let isPremium: Bool
     let action: () -> Void
 
     var body: some View {
@@ -41,7 +41,7 @@ struct SettingMenuItemButton: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .taskTemplate) {}
+    SettingMenuItemButton(item: .taskTemplate, isPremium: false) {}
 }
 
 #Preview("プレミアムプラン_未登録", traits: .sizeThatFitsLayout) {

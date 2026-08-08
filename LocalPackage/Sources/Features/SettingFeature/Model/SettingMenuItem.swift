@@ -27,7 +27,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    func title(isPremium: Bool = false) -> LocalizedStringKey {
+    func title(isPremium: Bool) -> LocalizedStringKey {
         switch self {
         case .memberRegistration:
             "メンバー追加"
