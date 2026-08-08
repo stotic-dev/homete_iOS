@@ -265,6 +265,14 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 **注意:** pdmエージェントとは独立して実行します。pdmはビジネス観点、ios-code-reviewerは技術観点のレビューを担当します。
 
+## ルール（.claude/rules/）の運用
+
+`.claude/rules/`配下にルールを追加・編集する際は、そのルールがどの作業でのみ必要かを明記し、必要最低限のスコープでのみ参照されるようにすること。
+
+- ルールファイルの冒頭（タイトル直後）に対象範囲を明記する。対象となるファイルパターンや作業内容を具体的に書く（例: `*.swift`の編集時のみ、`firebase/functions/`配下の変更時のみ、SwiftUIのpush遷移実装時のみ）
+- 無関係な言語・レイヤー・作業内容のときはそのルールを読みに行かない（例: TypeScript実装中にSwift専用ルールを参照しない、push遷移と無関係な変更でnavigationルールを参照しない）
+- 既存ルールも同様の書き方に従う: `swift-code-verification.md`（`*.swift`編集・作成・削除時）、`swift-test-implementation.md`（`*Test.swift`/`*Tests.swift`新規作成・編集時）、`swiftui-push-navigation.md`（SwiftUIのpush遷移実装時）
+
 ## ファイル整理の規約
 
 新機能を追加する際:
