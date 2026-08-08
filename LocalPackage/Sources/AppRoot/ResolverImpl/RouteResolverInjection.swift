@@ -23,11 +23,7 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
                 case .paywall:
-                    #if os(iOS)
                     PaywallScreen()
-                    #else
-                    EmptyView()
-                    #endif
                 }
             })
     }

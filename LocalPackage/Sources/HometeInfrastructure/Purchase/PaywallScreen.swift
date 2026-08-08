@@ -3,8 +3,12 @@
 //  LocalPackage
 //
 
-#if os(iOS)
+#if canImport(RevenueCat)
+import RevenueCat
+#endif
+#if canImport(RevenueCatUI)
 import RevenueCatUI
+#endif
 import SwiftUI
 
 public struct PaywallScreen: View {
@@ -14,11 +18,32 @@ public struct PaywallScreen: View {
     public init() {}
 
     public var body: some View {
-        PaywallView(displayCloseButton: true)
-            .onRequestedDismissal {
-                dismiss()
-            }
+        #if canImport(RevenueCatUI)
+        if Purchases.isConfigured {
+            PaywallView(displayCloseButton: true)
+                .onRequestedDismissal {
+                    dismiss()
+                }
+        } else {
+            unavailableContent
+        }
+        #else
+        unavailableContent
+        #endif
     }
 
 }
-#endif
+
+private extension PaywallScreen {
+
+    var unavailableContent: some View {
+        VStack(spacing: 16) {
+            Text("現在プレミアムプランをご利用いただけません")
+            Button("閉じる") {
+                dismiss()
+            }
+        }
+        .padding()
+    }
+
+}
