@@ -64,43 +64,46 @@ struct SettingView: View {
     init() {}
 
     var body: some View {
-        VStack(spacing: .space32) {
-            VStack(spacing: .space24) {
-                basicInfoSection(plan: subscriptionStore.plan)
-                GroupMemberListView(members: cohabitantMembers.others)
-                Spacer()
-                    .frame(height: .space16)
-                VStack(spacing: .zero) {
-                    ForEach(
-                        SettingMenuItem.displayItems(loginContext.hasCohabitant),
-                        id: \.self
-                    ) { item in
-                        SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
-                            tappedSettingMenuItem(item)
+        // 表示項目が画面高さを超えるとナビゲーションバー領域にコンテンツが食い込むためScrollViewで包む
+        ScrollView {
+            VStack(spacing: .space32) {
+                VStack(spacing: .space24) {
+                    basicInfoSection(plan: subscriptionStore.plan)
+                    GroupMemberListView(members: cohabitantMembers.others)
+                    Spacer()
+                        .frame(height: .space16)
+                    VStack(spacing: .zero) {
+                        ForEach(
+                            SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                            id: \.self
+                        ) { item in
+                            SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
+                                tappedSettingMenuItem(item)
+                            }
                         }
                     }
                 }
-            }
-            VStack(spacing: .space24) {
-                Button {
-                    tappedLogoutRowButton()
-                } label: {
-                    Text("ログアウト")
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: .space24) {
+                    Button {
+                        tappedLogoutRowButton()
+                    } label: {
+                        Text("ログアウト")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .primaryButtonStyle()
+                    Button {
+                        tappedAccountDeletionRowButton()
+                    } label: {
+                        Text("退会")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .destructiveButtonStyle()
                 }
-                .primaryButtonStyle()
-                Button {
-                    tappedAccountDeletionRowButton()
-                } label: {
-                    Text("退会")
-                        .frame(maxWidth: .infinity)
-                }
-                .destructiveButtonStyle()
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space16)
         }
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space16)
         .navigationTitle("設定")
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
