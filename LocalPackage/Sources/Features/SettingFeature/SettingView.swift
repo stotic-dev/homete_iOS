@@ -44,8 +44,7 @@ struct SettingView: View {
     var body: some View {
         VStack(spacing: .space32) {
             VStack(spacing: .space24) {
-                Text(loginContext.account.userName)
-                    .font(with: .headLineM)
+                basicInfoSection(plan: subscriptionStore.plan)
                 GroupMemberListView(members: cohabitantMembers.others)
                 Spacer()
                     .frame(height: .space16)
@@ -79,7 +78,7 @@ struct SettingView: View {
             Spacer()
         }
         .padding(.horizontal, .space16)
-        .padding(.bottom, .space16)
+        .padding(.vertical, .space16)
         .navigationTitle("設定")
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
@@ -121,6 +120,45 @@ private extension SettingView {
         }
     }
 
+    func basicInfoSection(plan: SubscriptionPlan) -> some View {
+        VStack(spacing: .space8) {
+            HStack(spacing: .zero) {
+                Text("ユーザー名:")
+                    .font(with: .headLineS)
+                Spacer()
+                Text(loginContext.account.userName)
+                    .font(with: .body)
+                    .lineLimit(1)
+            }
+            HStack(spacing: .zero) {
+                Text("ご利用中のプラン:")
+                    .font(with: .headLineS)
+                Spacer()
+                VStack(alignment: .trailing, spacing: .space4) {
+                    switch plan {
+                    case .free:
+                        Text("無料プラン")
+                            .font(with: .body)
+
+                    case let .subscription(period, nextRenewalDate):
+                        Text(period.displayName)
+                            .font(with: .body)
+                            .lineLimit(1)
+                        Text("次回更新日: \(nextRenewalDate.formatted(date: .abbreviated, time: .omitted))")
+                            .font(with: .caption)
+
+                    case .lifetime:
+                        Text("買い切りプラン")
+                            .font(with: .body)
+                            .lineLimit(1)
+                        Text("有効期限: なし")
+                            .font(with: .caption)
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -136,7 +174,13 @@ private extension SettingView {
             isShowMemberRegistration = true
 
         case .premiumPlan:
-            isShowPaywall = true
+            if subscriptionStore.isPremium {
+                loadingState.task {
+                    await subscriptionStore.showManageSubscriptions()
+                }
+            } else {
+                isShowPaywall = true
+            }
 
         case .termsOfService:
             if let url = URL(string: Constants.termsOfServiceURLString) {
@@ -182,6 +226,12 @@ private extension SettingView {
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "Hoge",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
 }
 
 #Preview("SettingView_グループ登録済み") {
@@ -191,7 +241,7 @@ private extension SettingView {
         .environment(SubscriptionStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
-            userName: "",
+            userName: "Hoge",
             fcmToken: "",
             cohabitantId: ""
         )))
@@ -212,10 +262,42 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
-        .environment(SubscriptionStore(entitlementInfo: .init(isActive: true)))
+        .environment(SubscriptionStore(entitlementInfo: .init(
+            isActive: true,
+            productIdentifier: "premium_monthly",
+            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 30)
+        )))
         .environment(\.loginContext, .init(account: .init(
             id: "",
-            userName: "",
+            userName: "Hoge",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
+}
+
+#Preview("SettingView_プレミアム登録済み_買い切り") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(SubscriptionStore(entitlementInfo: .init(
+            isActive: true,
+            productIdentifier: "premium_lifetime",
+            expirationDate: nil
+        )))
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "Hoge",
             fcmToken: "",
             cohabitantId: ""
         )))

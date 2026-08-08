@@ -105,7 +105,11 @@ private extension RegisteredContent {
         .environment(ContributionStore())
         .environment(CohabitantStore())
         .environment(HouseworkListStore())
-        .environment(SubscriptionStore(entitlementInfo: .init(isActive: true)))
+        .environment(SubscriptionStore(entitlementInfo: .init(
+            isActive: true,
+            productIdentifier: "premium_monthly",
+            expirationDate: nil
+        )))
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
 }

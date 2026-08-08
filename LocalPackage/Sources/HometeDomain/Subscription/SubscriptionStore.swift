@@ -25,6 +25,10 @@ public final class SubscriptionStore {
         entitlementInfo?.isActive ?? false
     }
 
+    public var plan: SubscriptionPlan {
+        entitlementInfo?.plan ?? .free
+    }
+
     public func logIn(_ accountId: String) async {
         do {
             try await purchaseClient.logIn(accountId)
@@ -56,6 +60,15 @@ public final class SubscriptionStore {
     public func observeEntitlementUpdates() async {
         for await info in purchaseClient.entitlementInfoUpdates() {
             entitlementInfo = info
+        }
+    }
+
+    /// 購入済みユーザー向けにOSのサブスクリプション管理画面を表示する
+    public func showManageSubscriptions() async {
+        do {
+            try await purchaseClient.showManageSubscriptions()
+        } catch {
+            print("failed to show manage subscriptions: \(error)")
         }
     }
 

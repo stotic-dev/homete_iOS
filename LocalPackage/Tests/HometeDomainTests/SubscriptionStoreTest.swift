@@ -20,7 +20,7 @@ struct SubscriptionStoreTest {
                 },
                 fetchEntitlementInfo: {
                     confirmation()
-                    return EntitlementInfo(isActive: true)
+                    return EntitlementInfo(isActive: true, productIdentifier: "premium_monthly", expirationDate: nil)
                 }
             )
             let store = SubscriptionStore(purchaseClient: purchaseClient)
@@ -39,7 +39,11 @@ struct SubscriptionStoreTest {
             })
             let store = SubscriptionStore(
                 purchaseClient: purchaseClient,
-                entitlementInfo: EntitlementInfo(isActive: true)
+                entitlementInfo: EntitlementInfo(
+                    isActive: true,
+                    productIdentifier: "premium_monthly",
+                    expirationDate: nil
+                )
             )
 
             await store.logOut()
@@ -51,7 +55,7 @@ struct SubscriptionStoreTest {
 
     @Test("エンタイトルメント取得に失敗した場合は状態を更新しない")
     func refreshFailure() async {
-        let existingInfo = EntitlementInfo(isActive: true)
+        let existingInfo = EntitlementInfo(isActive: true, productIdentifier: "premium_monthly", expirationDate: nil)
         let purchaseClient = PurchaseClient(fetchEntitlementInfo: {
             throw DomainError.other
         })
@@ -63,6 +67,18 @@ struct SubscriptionStoreTest {
         await store.refresh()
 
         #expect(store.entitlementInfo == existingInfo)
+    }
+
+    @Test("サブスクリプション管理画面の表示をPurchaseClientに委譲する")
+    func showManageSubscriptions() async {
+        await confirmation(expectedCount: 1) { confirmation in
+            let purchaseClient = PurchaseClient(showManageSubscriptions: {
+                confirmation()
+            })
+            let store = SubscriptionStore(purchaseClient: purchaseClient)
+
+            await store.showManageSubscriptions()
+        }
     }
 
 }
