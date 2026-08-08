@@ -17,6 +17,7 @@ struct RegisteredContent: View {
     @Environment(CohabitantStore.self) var cohabiantStore
     @Environment(ContributionStore.self) var contributionStore
     @Environment(HouseworkListStore.self) var houseworkListstore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.routeResolver) var router
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
 
@@ -29,8 +30,10 @@ struct RegisteredContent: View {
             ScrollView {
                 VStack(spacing: .space24) {
                     TodayHouseworkSummaryComponent.make()
-                    adComponentResolver.resolve(.banner(.dashboardTop))
-                        .frame(height: 150)
+                    if !subscriptionStore.isPremium {
+                        adComponentResolver.resolve(.banner(.dashboardTop))
+                            .frame(height: 150)
+                    }
                     ContributionSummaryComponent.make()
                         .padding(.vertical, .space16)
                         .redacted(reason: loadingState.isLoading ? .placeholder : [])
@@ -92,6 +95,17 @@ private extension RegisteredContent {
         .environment(ContributionStore())
         .environment(CohabitantStore())
         .environment(HouseworkListStore())
+        .environment(SubscriptionStore())
+        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
+        .setupEnvironmentForPreview()
+}
+
+#Preview("プレミアム登録済み_広告非表示") {
+    RegisteredContent()
+        .environment(ContributionStore())
+        .environment(CohabitantStore())
+        .environment(HouseworkListStore())
+        .environment(SubscriptionStore(entitlementInfo: .init(isActive: true)))
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
 }
