@@ -1,6 +1,9 @@
-# SwiftUI Push遷移の実装ルール
+---
+paths:
+  - "LocalPackage/Sources/**/*.swift"
+---
 
-**対象範囲**: このルールはSwiftの実装（`*.swift`、特に`LocalPackage/Sources/Features/`配下のView実装）でのみ参照する。TypeScript（`firebase/functions/`）など他言語の実装時は無関係なので読みに行かない。
+# SwiftUI Push遷移の実装ルール
 
 Swiftファイルで`NavigationStack`を用いたpush遷移を実装する際は、既存コードベースで確立されているパターンに従うこと。
 

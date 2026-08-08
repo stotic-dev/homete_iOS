@@ -267,11 +267,20 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 ## ルール（.claude/rules/）の運用
 
-`.claude/rules/`配下にルールを追加・編集する際は、そのルールがどの作業でのみ必要かを明記し、必要最低限のスコープでのみ参照されるようにすること。
+`.claude/rules/`配下にルールを追加・編集する際は、Claude Codeのpath-scoped rules機能を使い、対象パターンに一致するファイルを編集・参照するときだけ自動的に読み込まれるようにすること。
 
-- ルールファイルの冒頭（タイトル直後）に対象範囲を明記する。対象となるファイルパターンや作業内容を具体的に書く（例: `*.swift`の編集時のみ、`firebase/functions/`配下の変更時のみ、SwiftUIのpush遷移実装時のみ）
-- 無関係な言語・レイヤー・作業内容のときはそのルールを読みに行かない（例: TypeScript実装中にSwift専用ルールを参照しない、push遷移と無関係な変更でnavigationルールを参照しない）
-- 既存ルールも同様の書き方に従う: `swift-code-verification.md`（`*.swift`編集・作成・削除時）、`swift-test-implementation.md`（`*Test.swift`/`*Tests.swift`新規作成・編集時）、`swiftui-push-navigation.md`（SwiftUIのpush遷移実装時）
+- ルールファイル冒頭にYAML frontmatterで`paths:`を指定する（globパターン、複数指定可）
+
+  ```markdown
+  ---
+  paths:
+    - "LocalPackage/Sources/**/*.swift"
+  ---
+  ```
+
+- 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`firebase/functions/**`を含めない）
+- プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
+- 既存ルールも`paths:`を持つ: `swiftui-push-navigation.md`（`LocalPackage/Sources/**/*.swift`）
 
 ## ファイル整理の規約
 
