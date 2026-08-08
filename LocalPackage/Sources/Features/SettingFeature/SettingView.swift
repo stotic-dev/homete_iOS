@@ -11,11 +11,32 @@ import SwiftUI
 
 public struct SettingViewScreen: View {
 
+    @State var navigationPath = AppNavigationPath<SettingRoute>()
+
     public init() {}
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath.path) {
             SettingView()
+                .navigationDestination(for: SettingRoute.self) { route in
+                    navigationHandler(route)
+                }
+                .environment(\.settingNavigationPath, navigationPath)
+        }
+    }
+
+}
+
+private extension SettingViewScreen {
+
+    @ViewBuilder
+    func navigationHandler(_ route: SettingRoute) -> some View {
+        switch route {
+        case .licenseList:
+            LicenseListView()
+
+        case let .licenseDetail(license):
+            LicenseDetailView(license: license)
         }
     }
 
@@ -31,6 +52,7 @@ struct SettingView: View {
     @Environment(\.routeResolver) var router
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
+    @Environment(\.settingNavigationPath) var navigationPath
     @LoadingState var loadingState
 
     @State var isPresentedLogoutConfirmAlert = false
@@ -187,8 +209,7 @@ private extension SettingView {
             }
 
         case .license:
-            // TODO: ライセンス画面の遷移処理
-            break
+            navigationPath.push(.licenseList)
         }
     }
 
