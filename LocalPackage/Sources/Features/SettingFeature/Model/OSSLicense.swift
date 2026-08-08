@@ -25,7 +25,7 @@ extension OSSLicense {
             id: "purchases-ios-spm",
             name: "RevenueCat",
             licenseType: "MIT License",
-            licenseText: .mitLicense
+            licenseText: .revenueCatMitLicense
         ),
         .init(
             id: "swift-package-manager-google-mobile-ads",
