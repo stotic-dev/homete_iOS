@@ -31,6 +31,10 @@ extension PurchaseClient {
         },
         showManageSubscriptions: {
             try await Purchases.shared.showManageSubscriptions()
+        },
+        restorePurchases: {
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            return makeEntitlementInfo(from: customerInfo)
         }
     )
 
@@ -43,7 +47,8 @@ private func makeEntitlementInfo(from customerInfo: CustomerInfo) -> HometeDomai
     return HometeDomain.EntitlementInfo(
         isActive: entitlement?.isActive == true,
         productIdentifier: entitlement?.productIdentifier ?? "",
-        expirationDate: entitlement?.expirationDate
+        expirationDate: entitlement?.expirationDate,
+        willRenew: entitlement?.willRenew == true
     )
 }
 #endif

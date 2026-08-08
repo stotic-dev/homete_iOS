@@ -30,7 +30,12 @@ struct AuthSubscriptionSyncUseCaseTest {
                     #expect($0 == inputAccount.id)
                 },
                 fetchEntitlementInfo: {
-                    EntitlementInfo(isActive: true, productIdentifier: "premium_monthly", expirationDate: nil)
+                    EntitlementInfo(
+                        isActive: true,
+                        productIdentifier: "premium_monthly",
+                        expirationDate: nil,
+                        willRenew: true
+                    )
                 }
             )
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
@@ -113,7 +118,8 @@ struct AuthSubscriptionSyncUseCaseTest {
                 entitlementInfo: EntitlementInfo(
                     isActive: true,
                     productIdentifier: "premium_monthly",
-                    expirationDate: nil
+                    expirationDate: nil,
+                    willRenew: true
                 )
             )
             let useCase = AuthSubscriptionSyncUseCase(

@@ -108,7 +108,8 @@ private extension RegisteredContent {
         .environment(SubscriptionStore(entitlementInfo: .init(
             isActive: true,
             productIdentifier: "premium_monthly",
-            expirationDate: nil
+            expirationDate: nil,
+            willRenew: true
         )))
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()

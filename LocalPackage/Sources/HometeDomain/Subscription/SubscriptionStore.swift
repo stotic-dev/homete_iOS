@@ -63,13 +63,23 @@ public final class SubscriptionStore {
         }
     }
 
-    /// 購入済みユーザー向けにOSのサブスクリプション管理画面を表示する
+    /// 解約はStoreKitのAPIで実行できないため、OSのサブスクリプション管理画面へ委譲する
     public func showManageSubscriptions() async {
         do {
             try await purchaseClient.showManageSubscriptions()
         } catch {
             print("failed to show manage subscriptions: \(error)")
         }
+    }
+
+    /// 過去の購入を復元する
+    /// - Returns: 復元の結果、有効なエンタイトルメントが得られたか
+    /// - Note: 結果をユーザーに提示する必要があるため、他のメソッドと異なりエラーを握り潰さない
+    @discardableResult
+    public func restorePurchases() async throws -> Bool {
+        let restoredInfo = try await purchaseClient.restorePurchases()
+        entitlementInfo = restoredInfo
+        return restoredInfo.isActive
     }
 
 }

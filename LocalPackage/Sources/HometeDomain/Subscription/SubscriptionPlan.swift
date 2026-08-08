@@ -12,9 +12,10 @@ public enum SubscriptionPlan: Equatable, Sendable {
     /// 無料プラン（未購入）
     case free
     /// サブスクリプション（自動更新あり）
-    case subscription(period: SubscriptionPeriod, nextRenewalDate: Date)
-    /// 買い切り（非消費型・自動更新なし）
-    case lifetime
+    /// - Parameters:
+    ///   - nextRenewalDate: 次回更新日（`willRenew`がfalseの場合は失効日）。取得できない場合はnil
+    ///   - willRenew: 期間終了時に自動更新されるか。解約済みの場合はfalse
+    case subscription(period: SubscriptionPeriod, nextRenewalDate: Date?, willRenew: Bool)
 
 }
 
@@ -64,12 +65,11 @@ public extension EntitlementInfo {
     var plan: SubscriptionPlan {
         guard isActive else { return .free }
 
-        if let expirationDate {
-            let period = SubscriptionPeriod(productIdentifier: productIdentifier)
-            return .subscription(period: period, nextRenewalDate: expirationDate)
-        } else {
-            return .lifetime
-        }
+        return .subscription(
+            period: SubscriptionPeriod(productIdentifier: productIdentifier),
+            nextRenewalDate: expirationDate,
+            willRenew: willRenew
+        )
     }
 
 }

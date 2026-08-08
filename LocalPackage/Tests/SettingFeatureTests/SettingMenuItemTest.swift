@@ -31,7 +31,11 @@ struct SettingMenuItemTest {
         // Arrange
 
         let sut = SettingMenuItem.premiumPlan
-        let plan = SubscriptionPlan.subscription(period: .monthly, nextRenewalDate: .now)
+        let plan = SubscriptionPlan.subscription(
+            period: .monthly,
+            nextRenewalDate: .now,
+            willRenew: true
+        )
 
         // Act
 
@@ -42,15 +46,20 @@ struct SettingMenuItemTest {
         #expect(actual == "ご登録中のプラン")
     }
 
-    @Test("買い切り購入済みの場合、プレミアムプラン項目のタイトルは登録済み文言になる")
-    func title_premiumPlanLifetime_returnsRegisteredTitle() {
+    @Test("解約済みのサブスクリプションでも、プレミアムプラン項目のタイトルは登録済み文言になる")
+    func title_premiumPlanCanceledSubscription_returnsRegisteredTitle() {
         // Arrange
 
         let sut = SettingMenuItem.premiumPlan
+        let plan = SubscriptionPlan.subscription(
+            period: .yearly,
+            nextRenewalDate: .now,
+            willRenew: false
+        )
 
         // Act
 
-        let actual = sut.title(plan: .lifetime)
+        let actual = sut.title(plan: plan)
 
         // Assert
 
@@ -72,80 +81,20 @@ struct SettingMenuItemTest {
         expectedTitle: String
     ) {
         // Arrange
+
+        let plan = SubscriptionPlan.subscription(
+            period: .monthly,
+            nextRenewalDate: .now,
+            willRenew: true
+        )
+
         // Act
 
-        let actual = item.title(plan: .lifetime)
+        let actual = item.title(plan: plan)
 
         // Assert
 
         #expect(actual == LocalizedStringKey(expectedTitle))
-    }
-
-    @Test("未購入の場合、プレミアムプラン項目は有効になる")
-    func isEnabled_premiumPlanFree_returnsTrue() {
-        // Arrange
-
-        let sut = SettingMenuItem.premiumPlan
-
-        // Act
-
-        let actual = sut.isEnabled(plan: .free)
-
-        // Assert
-
-        #expect(actual == true)
-    }
-
-    @Test("サブスクリプション購入済みの場合、プレミアムプラン項目は有効になる")
-    func isEnabled_premiumPlanSubscription_returnsTrue() {
-        // Arrange
-
-        let sut = SettingMenuItem.premiumPlan
-        let plan = SubscriptionPlan.subscription(period: .yearly, nextRenewalDate: .now)
-
-        // Act
-
-        let actual = sut.isEnabled(plan: plan)
-
-        // Assert
-
-        #expect(actual == true)
-    }
-
-    @Test("買い切り購入済みの場合、プラン更新の導線を閉じるためプレミアムプラン項目は無効になる")
-    func isEnabled_premiumPlanLifetime_returnsFalse() {
-        // Arrange
-
-        let sut = SettingMenuItem.premiumPlan
-
-        // Act
-
-        let actual = sut.isEnabled(plan: .lifetime)
-
-        // Assert
-
-        #expect(actual == false)
-    }
-
-    @Test(
-        "プレミアムプラン以外の項目は買い切り購入済みでも常に有効になる",
-        arguments: [
-            SettingMenuItem.memberRegistration,
-            .taskTemplate,
-            .termsOfService,
-            .privacyPolicy,
-            .license,
-        ]
-    )
-    func isEnabled_notPremiumPlanItem_lifetimePlan_returnsTrue(item: SettingMenuItem) {
-        // Arrange
-        // Act
-
-        let actual = item.isEnabled(plan: .lifetime)
-
-        // Assert
-
-        #expect(actual == true)
     }
 
     @Test("グループ参加済みの場合、家事テンプレート項目を含む表示項目が返る")

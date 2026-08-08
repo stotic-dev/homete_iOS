@@ -37,6 +37,9 @@ private extension SettingViewScreen {
 
         case let .licenseDetail(license):
             LicenseDetailView(license: license)
+
+        case .subscriptionManagement:
+            SubscriptionManagementView()
         }
     }
 
@@ -165,22 +168,29 @@ private extension SettingView {
                         Text("無料プラン")
                             .font(with: .body)
 
-                    case let .subscription(period, nextRenewalDate):
+                    case let .subscription(period, nextRenewalDate, willRenew):
                         Text(period.displayName)
                             .font(with: .body)
                             .lineLimit(1)
-                        Text("次回更新日: \(nextRenewalDate.formatted(date: .abbreviated, time: .omitted))")
-                            .font(with: .caption)
-
-                    case .lifetime:
-                        Text("買い切りプラン")
-                            .font(with: .body)
-                            .lineLimit(1)
-                        Text("有効期限: なし")
-                            .font(with: .caption)
+                        if let nextRenewalDate {
+                            expirationText(date: nextRenewalDate, willRenew: willRenew)
+                                .font(with: .caption)
+                        }
                     }
                 }
             }
+        }
+    }
+
+    /// 解約済みの場合は更新されないため、日付の意味づけを切り替える
+    @ViewBuilder
+    func expirationText(date: Date, willRenew: Bool) -> some View {
+        let formattedDate = date.formatted(date: .abbreviated, time: .omitted)
+
+        if willRenew {
+            Text("次回更新日: \(formattedDate)")
+        } else {
+            Text("有効期限: \(formattedDate)")
         }
     }
 
@@ -222,14 +232,7 @@ private extension SettingView {
             isShowPaywall = true
 
         case .subscription:
-            loadingState.task {
-                await subscriptionStore.showManageSubscriptions()
-            }
-
-        case .lifetime:
-            // 買い切りプランはサブスクリプションへの切り替えを技術的にサポートできないため、
-            // ボタン自体が無効化されておりここには到達しない
-            break
+            navigationPath.push(.subscriptionManagement)
         }
     }
 
@@ -300,7 +303,8 @@ private extension SettingView {
         .environment(SubscriptionStore(entitlementInfo: .init(
             isActive: true,
             productIdentifier: "premium_monthly",
-            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 30)
+            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 30),
+            willRenew: true
         )))
         .environment(\.loginContext, .init(account: .init(
             id: "",
@@ -321,14 +325,15 @@ private extension SettingView {
         )
 }
 
-#Preview("SettingView_プレミアム登録済み_買い切り") {
+#Preview("SettingView_プレミアム登録済み_解約済み") {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore(entitlementInfo: .init(
             isActive: true,
-            productIdentifier: "premium_lifetime",
-            expirationDate: nil
+            productIdentifier: "premium_yearly",
+            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 10),
+            willRenew: false
         )))
         .environment(\.loginContext, .init(account: .init(
             id: "",

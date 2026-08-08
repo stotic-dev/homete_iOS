@@ -16,10 +16,6 @@ struct SettingMenuItemButton: View {
     let plan: SubscriptionPlan
     let action: () -> Void
 
-    private var isEnabled: Bool {
-        item.isEnabled(plan: plan)
-    }
-
     var body: some View {
         Button {
             action()
@@ -40,8 +36,6 @@ struct SettingMenuItemButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, .space8)
         }
-        .disabled(!isEnabled)
-        .opacity(isEnabled ? 1.0 : 0.5)
     }
 
 }
@@ -57,10 +51,6 @@ struct SettingMenuItemButton: View {
 #Preview("プレミアムプラン_登録済み_サブスク", traits: .sizeThatFitsLayout) {
     SettingMenuItemButton(
         item: .premiumPlan,
-        plan: .subscription(period: .monthly, nextRenewalDate: .now)
+        plan: .subscription(period: .monthly, nextRenewalDate: .now, willRenew: true)
     ) {}
-}
-
-#Preview("プレミアムプラン_登録済み_買い切り", traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .premiumPlan, plan: .lifetime) {}
 }

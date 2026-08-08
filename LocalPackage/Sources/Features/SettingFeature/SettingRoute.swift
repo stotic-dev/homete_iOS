@@ -12,6 +12,8 @@ enum SettingRoute: Hashable {
     case licenseList
     /// ライセンス詳細画面
     case licenseDetail(OSSLicense)
+    /// サブスクリプション管理画面
+    case subscriptionManagement
 
 }
 

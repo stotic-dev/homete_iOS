@@ -54,22 +54,6 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    /// 買い切りプランはサブスクリプションへの切り替えを技術的にサポートできないため、
-    /// プレミアムプラン項目のタップ導線自体を閉じる
-    func isEnabled(plan: SubscriptionPlan) -> Bool {
-        switch self {
-        case .premiumPlan:
-            if case .lifetime = plan {
-                false
-            } else {
-                true
-            }
-
-        default:
-            true
-        }
-    }
-
     var iconName: String {
         switch self {
         case .memberRegistration:

@@ -13,7 +13,12 @@ struct SubscriptionPlanTest {
     func plan_notActive_returnsFree() {
         // Arrange
 
-        let sut = EntitlementInfo(isActive: false, productIdentifier: "", expirationDate: nil)
+        let sut = EntitlementInfo(
+            isActive: false,
+            productIdentifier: "",
+            expirationDate: nil,
+            willRenew: false
+        )
 
         // Act
 
@@ -24,15 +29,16 @@ struct SubscriptionPlanTest {
         #expect(actual == .free)
     }
 
-    @Test("有効期限がある場合、planはsubscriptionになる")
-    func plan_activeWithExpirationDate_returnsSubscription() {
+    @Test("購入済みの場合、planはsubscriptionになる")
+    func plan_active_returnsSubscription() {
         // Arrange
 
         let expirationDate = Date(timeIntervalSince1970: 1_700_000_000)
         let sut = EntitlementInfo(
             isActive: true,
             productIdentifier: "premium_monthly",
-            expirationDate: expirationDate
+            expirationDate: expirationDate,
+            willRenew: true
         )
 
         // Act
@@ -41,15 +47,25 @@ struct SubscriptionPlanTest {
 
         // Assert
 
-        let expected = SubscriptionPlan.subscription(period: .monthly, nextRenewalDate: expirationDate)
+        let expected = SubscriptionPlan.subscription(
+            period: .monthly,
+            nextRenewalDate: expirationDate,
+            willRenew: true
+        )
         #expect(actual == expected)
     }
 
-    @Test("有効期限がない場合、planはlifetimeになる")
-    func plan_activeWithoutExpirationDate_returnsLifetime() {
+    @Test("解約済みの場合、planのwillRenewはfalseになる")
+    func plan_activeAndNotWillRenew_returnsSubscriptionWithoutRenewal() {
         // Arrange
 
-        let sut = EntitlementInfo(isActive: true, productIdentifier: "premium_lifetime", expirationDate: nil)
+        let expirationDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let sut = EntitlementInfo(
+            isActive: true,
+            productIdentifier: "premium_yearly",
+            expirationDate: expirationDate,
+            willRenew: false
+        )
 
         // Act
 
@@ -57,7 +73,37 @@ struct SubscriptionPlanTest {
 
         // Assert
 
-        #expect(actual == .lifetime)
+        let expected = SubscriptionPlan.subscription(
+            period: .yearly,
+            nextRenewalDate: expirationDate,
+            willRenew: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("有効期限が取得できない場合でも、購入済みならplanはsubscriptionになる")
+    func plan_activeWithoutExpirationDate_returnsSubscriptionWithNilRenewalDate() {
+        // Arrange
+
+        let sut = EntitlementInfo(
+            isActive: true,
+            productIdentifier: "premium_monthly",
+            expirationDate: nil,
+            willRenew: true
+        )
+
+        // Act
+
+        let actual = sut.plan
+
+        // Assert
+
+        let expected = SubscriptionPlan.subscription(
+            period: .monthly,
+            nextRenewalDate: nil,
+            willRenew: true
+        )
+        #expect(actual == expected)
     }
 
     @Test(
