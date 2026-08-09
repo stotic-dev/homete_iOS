@@ -24,5 +24,41 @@
       "Edit(homete/Resouces/Secret.xcconfig)",
       "Edit(homete/Resouces/Secret_dev.xcconfig)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-.}/scripts/claude-verify-swift.sh\"",
+            "asyncRewake": true,
+            "timeout": 1200,
+            "statusMessage": "Swift検証中（ビルド・SwiftLint・テスト）"
+          }
+        ]
+      }
+    ]
+  },
+  "sandbox": {
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "objects.githubusercontent.com",
+        "codeload.github.com",
+        "code.claude.com",
+        "docs.claude.com"
+      ]
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/org.swift.swiftpm",
+        "~/Library/Caches/org.swift.swiftpm",
+        "~/Library/Caches/SwiftLint",
+        "~/Library/Developer/Xcode/DerivedData"
+      ]
+    }
   }
 }

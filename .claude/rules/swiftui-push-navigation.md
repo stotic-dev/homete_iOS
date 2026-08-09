@@ -1,6 +1,6 @@
 ---
 paths:
-  - "LocalPackage/Sources/**/*.swift"
+  - "**/*.swift"
 ---
 
 # SwiftUI Push遷移の実装ルール

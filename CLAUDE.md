@@ -16,13 +16,23 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 ### iOS開発
 
 ```bash
-# SwiftLint（CIでDanger経由で実行、スタンドアロンでは実行しない）
-swift run --package-path ProjectTools swiftlint lint --config .swiftlint.yml
+# LocalPackageのユニットテスト（最も使う。xcodebuildは使わない）
+make test-packages
 
-# ProjectToolsのセットアップ（Danger、SwiftLint）
+# LocalPackageをiOSシミュレーター向けにビルド
+make build-local-package
+
+# SwiftFormatを全体にかける
+make format
+
+# SwiftLint（ビルド時にSPMプラグインとして自動実行される。単体で流す場合）
+ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
+
+# プロジェクトのセットアップ（ProjectToolsビルド、証明書、git hooks）
 make setup-project
-# または: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 ```
+
+`make` の各ターゲットには `--disable-sandbox` が付いている。理由は `.claude/skills/swift-code-verification/SKILL.md` を参照。
 
 ### Firebase Functions
 
@@ -81,17 +91,20 @@ Services（Firestore、SignInWithApple、P2P、NotificationCenter）
 Domain Models（Codable構造体）
 ```
 
+**マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/` に置かれている。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
+
 **主要ディレクトリ:**
-- `homete/Views/` - 機能別に整理されたSwiftUIビュー（Auth、HomeView、HouseworkBoardViewなど）
-- `homete/Model/Domain/` - ビジネスロジックモデル（Account、Housework、Cohabitant）
-- `homete/Model/Dependencies/` - Dependency Injection用のクライアントプロトコル
-- `homete/Model/Store/` - Observableな状態管理クラス（@Observableクラス）
-- `homete/Model/Service/` - インフラ層の実装（Firestore、SignInWithApple、P2P）
+- `LocalPackage/Sources/HometeDomain/` - ドメインモデル・Clientプロトコル・Store・UseCase（最下層、依存なし）
+- `LocalPackage/Sources/Features/` - 機能別SwiftUIビュー（Auth / Home / Housework / HouseworkTemplate / Setting / Contribution）
+- `LocalPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ
+- `LocalPackage/Sources/HometeInfrastructure/` - Clientの`liveValue`実装とService（Firestore、SignInWithApple、Purchase、Advertisement）
+- `LocalPackage/Sources/HometeResources/` - アセットとSwiftGen生成コード
+- `LocalPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
 
 **エントリーポイント:**
-- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化
-- `homete/Views/RootView/RootView.swift` - 起動状態マシン（launching → login → logged in）
-- `homete/Model/AppDependencies.swift` - Dependency Injectionコンテナ
+- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
+- `LocalPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
+- `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
 
 ### Dependency Injectionパターン
 
@@ -112,7 +125,7 @@ View → Store（AppDependenciesを受け取る）
 
 ### Firebase連携
 
-**Firestoreサービス** (`homete/Model/Service/Firestore/FirestoreService.swift`):
+**Firestoreサービス** (`LocalPackage/Sources/HometeInfrastructure/Firestore/FirestoreService.swift`):
 - スレッドセーフのためにactorベース
 - 汎用CRUD: `fetch()`, `insertOrUpdate()`, `delete()`
 - `AsyncStream`を使ったリアルタイムリスナー
@@ -123,7 +136,7 @@ View → Store（AppDependenciesを受け取る）
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 
 **認証:**
-- `homete/Model/Service/SignInWithApple/`経由でSign in with Apple
+- `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
 - `AccountAuthClient`がFirebase Auth操作をラップ
 
 ### 状態管理
@@ -133,7 +146,7 @@ View → Store（AppDependenciesを受け取る）
 - Swift 6のstrict concurrencyでアクター分離と`@Sendable`
 - 全体的にasync/await、completion handlerは使わない
 
-**起動状態マシン** （RootViewの`LaunchState` enum）:
+**起動状態マシン** （`HometeDomain/AppLaunch/LaunchState.swift` の enum を `AppRoot/RootView.swift` が分岐）:
 ```
 launching → notLoggedIn → Sign In with Apple
          ↓
@@ -144,15 +157,17 @@ launching → notLoggedIn → Sign In with Apple
 
 ### テスト戦略
 
-**ユニットテスト** (`hometeTests/`):
-- テストプラン: `CI.xctestplan`
-- ロケール: 日本語（ja/JP）、タイムゾーン: 東京
-- プラットフォーム: iOSシミュレーター（iPhone 16、iOS 18.6）
+**ユニットテスト** (`LocalPackage/Tests/`):
+- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`
+- 実行: `make test-packages`（`swift test`。xcodebuildは使わない）
+- Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記4ターゲットを含む）
+- CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
 
 **スナップショットテスト** (`hometeSnapshotTests/`):
 - ライブラリ: PointFreeのswift-snapshot-testing 1.18.7
-- テストプラン: `snapshotTesting.xctestplan`
-- Prefire連携（`.prefire.yml`）でプレビュースナップショット
+- テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
+- Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `homete/Views` と `LocalPackage/Sources`
+- 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
 
 **Firebase Functions E2Eテスト** (`firebase/functions/test/`):
@@ -199,7 +214,7 @@ launching → notLoggedIn → Sign In with Apple
 - `.swiftlint.yml`で設定
 - `force_unwrapping`、`multiline_arguments`、`trailing_closure`などのopt-inルールを有効化
 - `identifier_name`、`statement_position`などのルールを無効化
-- `homete/`と`hometeTests/`ディレクトリのみをlint（ProjectToolsは除外）
+- `ProjectTools`・`DangerTools`・`LocalPackage/.build`・`LocalPackage/Package.swift`・`vendor`を除外し、それ以外をlint
 
 ### Xcode 26対応
 
@@ -222,17 +237,22 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 
 ### カスタムビルドツール（ProjectTools）
 
-開発ツールを含むSwift Package:
-- **SwiftLint 0.59.1**: コードスタイル強制
-- **Danger Swift 3.22.0**: PR自動化
-- **danger-swift-coverage**: コードカバレッジレポート
+開発ツールは2つのSwift Packageに分かれている。
 
-**Dangerfile** (`ProjectTools/Dangerfile.swift`):
-- PRの変更が500行を超えると警告
-- `homete/`の変更ファイルでSwiftLintを実行
-- `Build/test.xcresult`からコードカバレッジをレポート
+**`ProjectTools/`** - ビルド時に走るツール:
+- **SwiftLint 0.59.1**: バイナリをSPMプラグイン（`SwiftLintPlugin`）としてビルドに組み込み、`swift build` / `swift test` 実行時に自動でlintされる
+- **SwiftFormat 0.61.1**: `make format` から呼ぶ
+- ビルド: `swift build --package-path ProjectTools --scratch-path ProjectTools/.build`
 
-ビルド: `swift build --package-path ProjectTools --scratch-path ProjectTools/.build`
+**`DangerTools/`** - PR自動化（CIのみ）:
+- **Danger Swift 3.22.0** + **danger-swift-coverage**
+- **Dangerfile** (`DangerTools/Dangerfile.swift`):
+  - PRの変更が500行を超えると警告
+  - `homete/`の変更ファイルでSwiftLintを実行
+  - `Build/test.xcresult`からコードカバレッジをレポート
+  - VRTスナップショット（`hometeSnapshotTests/__Snapshots__/PreviewTests.generated`）の差分を報告
+
+> 注意: Dangerの`lintTargets`は`homete`のみで、実装コードの大半がある`LocalPackage/`はPR時のDanger lint対象外。ローカルではSPMプラグインが同じlintを実行するため検知はできる。
 
 ## エージェント
 
@@ -280,18 +300,25 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 - 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`firebase/functions/**`を含めない）
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
-- 既存ルールも`paths:`を持つ: `swiftui-push-navigation.md`（`LocalPackage/Sources/**/*.swift`）
+- 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
+  - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`
+  - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
+  - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
+  - `adr.md`のみ`paths:`を持たない（技術選定はファイル種別に紐づかないため意図的に常時ロード）
 
 ## ファイル整理の規約
 
 新機能を追加する際:
 
-1. **Views**: `homete/Views/`の適切な機能フォルダに追加（例: `HomeView/`、`SettingView/`）
-2. **ドメインモデル**: ドメイン領域別に`homete/Model/Domain/`のサブフォルダに追加
-3. **Clients**: `homete/Model/Dependencies/`でプロトコル定義、`.liveValue`と`.previewValue`を実装
-4. **Services**: `homete/Model/Service/`のサブフォルダにインフラコードを追加
-5. **Stores**: `homete/Model/Store/`にObservable状態管理クラスを追加
-6. **Tests**: `hometeTests/`でメインアプリの構造をミラー
+1. **Views**: `LocalPackage/Sources/Features/<機能名>Feature/` に追加
+2. **ドメインモデル**: ドメイン領域別に `LocalPackage/Sources/HometeDomain/` のサブフォルダに追加
+3. **Clients**: `LocalPackage/Sources/HometeDomain/Dependencies/` でプロトコルと`.previewValue`を定義し、`.liveValue`は `LocalPackage/Sources/HometeInfrastructure/` に実装
+4. **Services**: `LocalPackage/Sources/HometeInfrastructure/` のサブフォルダにインフラコードを追加
+5. **Stores**: `LocalPackage/Sources/HometeDomain/` の該当ドメインフォルダにObservable状態管理クラスを追加（機能固有のものは Feature 配下の `Model/` でもよい）
+6. **共通UI**: `LocalPackage/Sources/HometeUI/` に追加
+7. **Tests**: `LocalPackage/Tests/<対象モジュール>Tests/` に対象モジュールの構造をミラー
+
+新しいモジュールを足す場合は `LocalPackage/Package.swift` と [doc/multimodules_structure.md](doc/multimodules_structure.md) の両方を更新する。
 
 常にDependency Injectionパターンを使用 - ViewからServiceに直接アクセスしない。
 

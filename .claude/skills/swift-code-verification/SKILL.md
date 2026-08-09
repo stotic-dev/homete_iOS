@@ -13,7 +13,39 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 このスキルは Bash コマンドを以下の許可ルール下で実行する想定（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
 
-サンドボックスはプロジェクト設定で無効化済み（Swift PM の sandbox-exec ネスト問題回避のため）。`dangerouslyDisableSandbox` を明示する必要はない。
+### サンドボックスの扱い（重要）
+
+プロジェクトの `.claude/settings.local.json` では**サンドボックスが有効**（`sandbox.enabled: true`、`autoAllowBashIfSandboxed: true`）。
+
+SwiftPM は Package.swift のマニフェスト評価を自前の `sandbox-exec` で行うため、Claude のサンドボックス内で実行するとネストになり失敗する:
+
+```
+sandbox-exec: sandbox_apply: Operation not permitted
+error: invalid manifests at [...]
+```
+
+**解決策は SwiftPM 側のサンドボックスを切ること（`--disable-sandbox`）であって、Claude 側のサンドボックスを切ること（`dangerouslyDisableSandbox: true`）ではない。**
+
+理由が重要で、`dangerouslyDisableSandbox: true` は allow ルールの有無に関係なく**必ず許可ゲートを通る**。`Bash(swift *)` が許可済みでも、この引数を付けた瞬間に毎回ユーザーへの確認（auto mode なら分類器）が走る。つまりこれを使い続ける限り、許可ルールをいくら足しても自律実行にならない。
+
+一方 `--disable-sandbox` は SwiftPM に渡す普通のフラグなので、コマンドは Claude のサンドボックス**内**で完結し、`autoAllowBashIfSandboxed: true` によって無確認で実行される。ネットワーク・ファイルシステムの隔離もそのまま効いたままになる。
+
+```bash
+swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
+swift test  --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
+```
+
+`make build-local-package` / `make test-packages` / `make format` には既に `--disable-sandbox` が入っているので、これらを使う場合は何も足さなくてよい。
+
+SwiftPM と SwiftLint はホームディレクトリ配下のキャッシュに書き込む。以下は `settings.local.json` の `sandbox.filesystem.allowWrite` で許可済み:
+
+- `~/Library/org.swift.swiftpm`、`~/Library/Caches/org.swift.swiftpm`（マニフェストキャッシュ。無いとビルドが毎回遅くなる）
+- `~/Library/Caches/SwiftLint`（SwiftLintプラグインのキャッシュ。無いとビルドが失敗する）
+- `~/Library/Developer/Xcode/DerivedData`（xcodebuild用）
+
+`attempt to write a readonly database` や `You don't have permission to save the file ...` が出たら、書き込み先を特定して `allowWrite` に足す。**この設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
+
+他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
 
 ---
 
@@ -25,7 +57,7 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 **worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
 
-検証フローを始める前に、必ず以下を実行して掃除する:
+**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準で同じ掃除を先頭で実行するので、make 経由なら手順0は不要。** `swift` を直接叩く場合のみ以下を実行する:
 
 ```bash
 # 現在のworktreeのLocalPackage絶対パスを基準にする
@@ -44,7 +76,7 @@ ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "${LOCAL_PACKAGE_PAT
 **LocalPackage配下のファイルを変更した場合（通常）:**
 
 ```bash
-swift build --package-path "$(pwd)/LocalPackage" --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 ```
 
 **メインターゲット（`homete/`配下）を変更した場合のみ:**
@@ -68,7 +100,7 @@ ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 ### 3. ユニットテスト実行（省略不可）
 
 ```bash
-swift test --package-path "$(pwd)/LocalPackage" --enable-code-coverage
+swift test --package-path "$(pwd)/LocalPackage" --disable-sandbox --enable-code-coverage
 ```
 
 特定のテストだけ流したいときは `--filter "TestSuite名"` を追加する。

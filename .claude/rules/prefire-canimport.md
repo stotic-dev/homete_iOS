@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.swift"
+---
+
 # Prefireインポートのルール
 
 `LocalPackage/Package.swift` で `Prefire` プロダクトは `condition: .when(platforms: [.iOS])` でiOSプラットフォーム限定でリンクされている。そのため、`swift test --package-path LocalPackage`（`make test-packages`）が実行するホストmacOS向けビルドでは `Prefire` モジュールが存在せず、無条件の `import Prefire` は `error: no such module 'Prefire'` でビルド失敗する。

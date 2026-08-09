@@ -1,5 +1,6 @@
 ---
-applyTo: "**/*Test.swift,**/*Tests.swift,**/Tests/**/*.swift"
+paths:
+  - "LocalPackage/Tests/**/*.swift"
 ---
 
 # Swiftテスト実装ルール

@@ -19,19 +19,19 @@ test-e2e: ## E2Eテストを実行
 
 build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド
 	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
-	swift build --package-path $(CURDIR)/LocalPackage --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+	swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 
 test-packages: ## LocalPackageのテストを実行（自worktreeのstaleプロセスのみ掃除してから実行、他worktreeには影響しない）
 	-pkill -f "swift-test --package-path $(CURDIR)/LocalPackage" 2>/dev/null
 	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
-	swift test --package-path $(CURDIR)/LocalPackage --enable-code-coverage
+	swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks
 	@echo "✅ git hooksを scripts/git-hooks に設定しました"
 
 format: ## プロダクション+テストコード全体にSwiftFormatを実行
-	swift package --package-path ProjectTools plugin \
+	swift package --package-path ProjectTools --disable-sandbox plugin \
 		--allow-writing-to-package-directory \
 		--allow-writing-to-directory $(CURDIR) \
 		swiftformat --config .swiftformat \
