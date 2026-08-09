@@ -19,6 +19,18 @@ public enum SubscriptionPlan: Equatable, Sendable {
 
 }
 
+public extension SubscriptionPlan {
+
+    /// 期間終了時に自動更新される契約中の状態か
+    /// - Note: 退会してもApp Storeの自動更新は停止されないため、退会前の警告要否の判定に使う
+    var willAutoRenew: Bool {
+        guard case let .subscription(_, _, willRenew) = self else { return false }
+
+        return willRenew
+    }
+
+}
+
 /// サブスクリプションの更新周期
 public enum SubscriptionPeriod: Equatable, Sendable {
 

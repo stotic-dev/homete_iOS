@@ -107,6 +107,25 @@ struct SubscriptionPlanTest {
     }
 
     @Test(
+        "自動更新されるかどうかがplanの状態から判定される",
+        arguments: [
+            (SubscriptionPlan.subscription(period: .monthly, nextRenewalDate: nil, willRenew: true), true),
+            (SubscriptionPlan.subscription(period: .monthly, nextRenewalDate: nil, willRenew: false), false),
+            (SubscriptionPlan.free, false),
+        ]
+    )
+    func willAutoRenew_returnsExpectedResult(plan: SubscriptionPlan, expected: Bool) {
+        // Arrange
+        // Act
+
+        let actual = plan.willAutoRenew
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test(
         "プロダクトIDに含まれるキーワードから周期が判定される",
         arguments: [
             ("premium_monthly", SubscriptionPeriod.monthly),

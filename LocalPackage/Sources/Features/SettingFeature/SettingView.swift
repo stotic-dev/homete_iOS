@@ -122,13 +122,9 @@ struct SettingView: View {
             }
         }
         .alert("退会しますか？", isPresented: $isPresentedAccountDeletionConfirmAlert) {
-            Button("退会する", role: .destructive) {
-                loadingState.task {
-                    await tappedAccountDeletionAlertOkButton()
-                }
-            }
+            accountDeletionAlertActions(plan: subscriptionStore.plan)
         } message: {
-            Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
+            Text(accountDeletionAlertMessage(plan: subscriptionStore.plan))
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
@@ -180,6 +176,35 @@ private extension SettingView {
                 }
             }
         }
+    }
+
+    /// 自動更新中の場合は、退会だけでは課金が止まらないため解約導線を併せて提示する
+    @ViewBuilder
+    func accountDeletionAlertActions(plan: SubscriptionPlan) -> some View {
+        if plan.willAutoRenew {
+            Button("解約手続きへ") {
+                tappedManageSubscriptionInDeletionAlert()
+            }
+        }
+        Button("退会する", role: .destructive) {
+            loadingState.task {
+                await tappedAccountDeletionAlertOkButton()
+            }
+        }
+    }
+
+    func accountDeletionAlertMessage(plan: SubscriptionPlan) -> LocalizedStringKey {
+        guard plan.willAutoRenew else {
+            return """
+            あなたのデータは全て削除され、復元することはできません。
+            また、現在参加しているグループが2名以下の場合は、グループごと削除されます。
+            """
+        }
+
+        return """
+        退会してもサブスクリプションは解約されず、料金の請求が続きます。先に解約手続きを行ってください。
+        また、あなたのデータは全て削除され、復元することはできません。現在参加しているグループが2名以下の場合は、グループごと削除されます。
+        """
     }
 
     /// 解約済みの場合は更新されないため、日付の意味づけを切り替える
@@ -246,6 +271,10 @@ private extension SettingView {
 
     func tappedAccountDeletionRowButton() {
         isPresentedAccountDeletionConfirmAlert = true
+    }
+
+    func tappedManageSubscriptionInDeletionAlert() {
+        navigationPath.push(.subscriptionManagement)
     }
 
     func tappedAccountDeletionAlertOkButton() async {
