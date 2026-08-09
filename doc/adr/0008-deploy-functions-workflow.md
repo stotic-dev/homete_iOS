@@ -42,10 +42,23 @@ Firestoreインデックスは `deploy-firestore-indexes.yml` で自動デプロ
 
 ### 決定にあたり考慮したデメリット
 
-* `workflow_run` はデフォルトブランチ上のワークフロー定義でしか動かないため、このワークフロー自体の変更はmainにマージするまで実際の挙動を検証できない
+* `workflow_run` はデフォルトブランチ上のワークフロー定義でしか動かないため、このワークフロー自体の変更はmainにマージするまで実際の挙動を検証できない。検証したい場合は作業ブランチの `push` を一時的にトリガーへ追加し、確認後にマージ前へrevertする運用とする
 * 発火元（`functions-e2e-test.yml`）の `name:` を変えると連鎖が黙って切れる。ワークフロー名が実質的な結合点になっている
 * デプロイのトリガーが間接的になり、GitHubのUI上で「このpushがデプロイした」という繋がりが追いにくい（サマリにcommit SHAを出して緩和する）
-* `FIREBASE_SERVICE_ACCOUNT` に Functions デプロイ相当の権限（Cloud Functions 管理者 / サービスアカウントユーザー / Cloud Build / Artifact Registry）が必要。インデックスデプロイ用の権限だけでは足りない可能性がある
+* `FIREBASE_SERVICE_ACCOUNT` にインデックスデプロイ用の権限だけでは足りず、GCP側の設定追加が必要だった（下記）
+
+## GCP側の前提設定
+
+`FIREBASE_SERVICE_ACCOUNT` のサービスアカウントに対し、`homete-ios-dev-e3ef7` で以下が必要（動作確認時に実際に不足していたもの）。
+
+* **サービス アカウント ユーザー**（`roles/iam.serviceAccountUser`）
+  * Functionsのデプロイは実行SA `homete-ios-dev-e3ef7@appspot.gserviceaccount.com` として振る舞う（`iam.serviceAccounts.actAs`）操作を含むため必須
+  * 「サービス アカウント トークン作成者」は別ロールで、`actAs` を含まないので代替にならない
+* **Cloud Billing API の有効化**
+  * firebase-toolsがデプロイ前に必要APIの有効化を試み、無効だと `Permissions denied enabling cloudbilling.googleapis.com` で落ちる
+  * SAに `roles/serviceusage.serviceUsageAdmin` を与えて自動有効化させる手もあるが、権限が広いためAPIを手動で有効化する方を選んだ
+
+Cloud Functions管理者・ストレージ管理者は付与済みだった。Cloud Build / Artifact Registry の権限は呼び出し側SAには不要で、Cloud Functionsのサービスエージェントが実行する。
 
 ## 参考
 
