@@ -41,6 +41,17 @@
     ]
   },
   "sandbox": {
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "objects.githubusercontent.com",
+        "codeload.github.com",
+        "code.claude.com",
+        "docs.claude.com"
+      ]
+    },
     "filesystem": {
       "allowWrite": [
         "~/Library/org.swift.swiftpm",
