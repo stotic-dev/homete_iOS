@@ -182,10 +182,25 @@ launching → notLoggedIn → Sign In with Apple
 1. **`ci_danger.yml`** - PR作成時に実行
    - Danger実行（SwiftLint、カバレッジレポート）
 
-2. **`functions-e2e-test.yml`** - Firebase Functionsテスト
-   - `firebase/dev/functions/**`への変更でトリガー
+2. **`ci_local_package.yml`** - LocalPackageのユニットテスト
+   - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
+
+3. **`functions-e2e-test.yml`** - Firebase Functionsテスト
+   - `firebase/functions/**`への変更でトリガー（PR / mainまたはrelease/*へのpush）
    - ESLintとE2Eテストを実行
    - Node.js 21とJava 21を使用
+
+4. **`deploy-functions.yml`** - Firebase FunctionsをSTGへデプロイ
+   - `functions-e2e-test.yml`の完了を`workflow_run`で受けて発火し、mainへのpushかつ成功時のみデプロイ
+   - `firebase deploy --only functions`（`firebase.json`のpredeployでlint+buildが走る）
+   - `workflow_dispatch`で手動デプロイも可能
+
+5. **`deploy-firestore-indexes.yml`** - Firestoreインデックスのデプロイ
+   - `firebase/firestore.indexes.json`のmainへのpushでトリガー
+
+6. **`create-release-note.yaml`** - リリースノート生成
+
+デプロイ先は`firebase/.firebaserc`のdefaultプロジェクト（`homete-ios-dev-e3ef7`）。認証は`FIREBASE_SERVICE_ACCOUNT` secretのサービスアカウントJSONを使う。
 
 **Xcode Cloudワークフロー:**
 

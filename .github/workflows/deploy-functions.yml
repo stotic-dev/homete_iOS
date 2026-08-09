@@ -1,0 +1,81 @@
+name: Deploy Functions
+
+# E2Eテストの成功を前提にデプロイしたいため、pushではなく
+# Firebase Functions E2E Test の完了を受けて発火する。
+# 発火元がpathsで firebase/functions/** に絞られているので、
+# このワークフロー側でpathsを指定しなくても対象変更時のみ動く。
+on:
+  workflow_run:
+    workflows: ["Firebase Functions E2E Test"]
+    types:
+      - completed
+  workflow_dispatch:
+
+# デプロイ同士が並走すると Cloud Functions 側で競合するため直列化する
+concurrency:
+  group: deploy-functions
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  FUNCTIONS_DIR: firebase/functions
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # workflow_dispatch（手動実行）か、mainへのpushで走ったE2Eが成功したときだけデプロイする。
+    # PR上のE2E成功で走らないよう event と head_branch も見る。
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
+
+    steps:
+      # workflow_run はデフォルトブランチのHEADをチェックアウトするため、
+      # 実際にテストが通ったコミットを明示的に指定する
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: ${{ env.FUNCTIONS_DIR }}/package-lock.json
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      # firebase.json の predeploy が npm run lint / build を実行するため、
+      # デプロイ前に functions 配下の依存を入れておく必要がある
+      - name: Install dependencies
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm ci
+
+      - name: Write Service Account JSON
+        run: |
+          if [ -z '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"
+            exit 1
+          fi
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+
+      - name: Deploy Functions
+        run: firebase deploy --only functions --non-interactive
+        working-directory: firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+
+      - name: Create deploy summary
+        if: always()
+        run: |
+          {
+            echo "## Deploy Functions"
+            echo ""
+            echo "- **Result**: ${{ job.status }}"
+            echo "- **Commit**: \`${{ github.event.workflow_run.head_sha || github.sha }}\`"
+            echo "- **Triggered by**: ${{ github.event_name }}"
+          } >> "$GITHUB_STEP_SUMMARY"
