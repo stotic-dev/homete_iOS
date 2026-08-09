@@ -24,9 +24,28 @@ sandbox-exec: sandbox_apply: Operation not permitted
 error: invalid manifests at [...]
 ```
 
-そのため **`swift build` / `swift test` / `swift package` は `dangerouslyDisableSandbox: true` を付けて実行する**。付けずに失敗した場合は、上記メッセージを確認したうえで即座に付け直して再実行してよい。
+**解決策は SwiftPM 側のサンドボックスを切ること（`--disable-sandbox`）であって、Claude 側のサンドボックスを切ること（`dangerouslyDisableSandbox: true`）ではない。**
 
-他のコマンド（swiftlint など）はサンドボックス内で動くので、原則そのまま実行し、`Operation not permitted` 系の失敗が出たときだけ同様に切り替える。
+理由が重要で、`dangerouslyDisableSandbox: true` は allow ルールの有無に関係なく**必ず許可ゲートを通る**。`Bash(swift *)` が許可済みでも、この引数を付けた瞬間に毎回ユーザーへの確認（auto mode なら分類器）が走る。つまりこれを使い続ける限り、許可ルールをいくら足しても自律実行にならない。
+
+一方 `--disable-sandbox` は SwiftPM に渡す普通のフラグなので、コマンドは Claude のサンドボックス**内**で完結し、`autoAllowBashIfSandboxed: true` によって無確認で実行される。ネットワーク・ファイルシステムの隔離もそのまま効いたままになる。
+
+```bash
+swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
+swift test  --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
+```
+
+`make build-local-package` / `make test-packages` / `make format` には既に `--disable-sandbox` が入っているので、これらを使う場合は何も足さなくてよい。
+
+SwiftPM と SwiftLint はホームディレクトリ配下のキャッシュに書き込む。以下は `settings.local.json` の `sandbox.filesystem.allowWrite` で許可済み:
+
+- `~/Library/org.swift.swiftpm`、`~/Library/Caches/org.swift.swiftpm`（マニフェストキャッシュ。無いとビルドが毎回遅くなる）
+- `~/Library/Caches/SwiftLint`（SwiftLintプラグインのキャッシュ。無いとビルドが失敗する）
+- `~/Library/Developer/Xcode/DerivedData`（xcodebuild用）
+
+`attempt to write a readonly database` や `You don't have permission to save the file ...` が出たら、書き込み先を特定して `allowWrite` に足す。**この設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
+
+他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
 
 ---
 
@@ -57,7 +76,7 @@ ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "${LOCAL_PACKAGE_PAT
 **LocalPackage配下のファイルを変更した場合（通常）:**
 
 ```bash
-swift build --package-path "$(pwd)/LocalPackage" --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 ```
 
 **メインターゲット（`homete/`配下）を変更した場合のみ:**
@@ -81,7 +100,7 @@ ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 ### 3. ユニットテスト実行（省略不可）
 
 ```bash
-swift test --package-path "$(pwd)/LocalPackage" --enable-code-coverage
+swift test --package-path "$(pwd)/LocalPackage" --disable-sandbox --enable-code-coverage
 ```
 
 特定のテストだけ流したいときは `--filter "TestSuite名"` を追加する。
