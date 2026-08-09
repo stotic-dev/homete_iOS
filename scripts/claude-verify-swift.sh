@@ -21,13 +21,26 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT" || exit 0
 
-STATE_DIR="$REPO_ROOT/.git/claude-verify"
+# 状態の置き場は git 経由で解決する。リンクされた worktree では $REPO_ROOT/.git が
+# ディレクトリではなくファイル（実体へのポインタ）なので、直に .git/ を掘ると失敗する。
+# --absolute-git-dir は worktree ごとの metadata ディレクトリを返すため、fingerprint と
+# 失敗カウントが worktree 間で混ざることもない。
+GIT_DIR="$(git rev-parse --absolute-git-dir 2>/dev/null)"
+if [[ -z "$GIT_DIR" ]]; then
+    printf '{"systemMessage":"Swift検証: git ディレクトリを解決できないため検証をスキップしました。"}\n'
+    exit 0
+fi
+
+STATE_DIR="$GIT_DIR/claude-verify"
 STAMP_FILE="$STATE_DIR/last-verified"
 FAIL_COUNT_FILE="$STATE_DIR/consecutive-failures"
 LOG_FILE="$STATE_DIR/last-run.log"
 MAX_CONSECUTIVE_FAILURES=3
 
-mkdir -p "$STATE_DIR" 2>/dev/null || exit 0
+if ! mkdir -p "$STATE_DIR" 2>/dev/null; then
+    printf '{"systemMessage":"Swift検証: 状態ディレクトリ %s を作成できないため検証をスキップしました。"}\n' "$STATE_DIR"
+    exit 0
+fi
 
 # --- 変更された Swift ファイルがあるか判定 --------------------------------
 
