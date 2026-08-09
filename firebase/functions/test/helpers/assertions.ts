@@ -109,22 +109,16 @@ export async function expectCohabitantMembers(
 }
 
 /**
- * サブコレクションが空であることを確認（ポーリング方式）
- * @param {string} cohabitantId - CohabitantドキュメントのID
- * @param {string} subcollection - サブコレクション名
+ * 指定パスのコレクションが空であることを確認（ポーリング方式）
+ * @param {string} path - コレクションへのパス
  * @param {number} timeoutMs - タイムアウト時間（ミリ秒）
  * @return {Promise<void>}
  */
-export async function expectSubcollectionEmpty(
-  cohabitantId: string,
-  subcollection: string,
+export async function expectCollectionEmpty(
+  path: string,
   timeoutMs = 5000
 ): Promise<void> {
   const db = getFirestore();
-  const path = FirestoreCollections.getCohabitantSubcollection(
-    cohabitantId,
-    subcollection
-  );
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
@@ -138,9 +132,22 @@ export async function expectSubcollectionEmpty(
   }
 
   // タイムアウト
-  const errorMsg = `Subcollection ${subcollection} for ${cohabitantId} ` +
-        `is not empty after ${timeoutMs}ms`;
-  throw new Error(errorMsg);
+  throw new Error(`Collection ${path} is not empty after ${timeoutMs}ms`);
+}
+
+/**
+ * 指定パスのコレクションが空でないことを確認
+ * グループ削除条件を満たさないケースで、データが消されていないことの検証に使う
+ * @param {string} path - コレクションへのパス
+ * @return {Promise<void>}
+ */
+export async function expectCollectionNotEmpty(path: string): Promise<void> {
+  const db = getFirestore();
+  const snapshot = await db.collection(path).get();
+
+  if (snapshot.empty) {
+    throw new Error(`Collection ${path} is unexpectedly empty`);
+  }
 }
 
 /**
