@@ -24,5 +24,15 @@
       "Edit(homete/Resouces/Secret.xcconfig)",
       "Edit(homete/Resouces/Secret_dev.xcconfig)"
     ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "allowWrite": [
+        "~/Library/org.swift.swiftpm",
+        "~/Library/Caches/org.swift.swiftpm",
+        "~/Library/Caches/SwiftLint",
+        "~/Library/Developer/Xcode/DerivedData"
+      ]
+    }
   }
 }
