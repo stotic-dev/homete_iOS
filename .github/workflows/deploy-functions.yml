@@ -10,6 +10,13 @@ on:
     types:
       - completed
   workflow_dispatch:
+  # TODO: マージ前に削除する。
+  # workflow_run はデフォルトブランチ上の定義でしか発火しないため、
+  # このワークフロー自体をPR上で動作確認する手段がない。
+  # 検証のあいだだけ作業ブランチのpushで発火させる。
+  push:
+    branches:
+      - "ci/deploy-functions"
 
 # デプロイ同士が並走すると Cloud Functions 側で競合するため直列化する
 concurrency:
@@ -25,8 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     # workflow_dispatch（手動実行）か、mainへのpushで走ったE2Eが成功したときだけデプロイする。
     # PR上のE2E成功で走らないよう event と head_branch も見る。
+    # `github.event_name == 'push'` は上のTODOと同じく検証用。マージ前に削除する。
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_branch == 'main')
