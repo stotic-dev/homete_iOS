@@ -40,6 +40,7 @@ struct SettingMenuItemButton: View {
 
 }
 
+#if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     SettingMenuItemButton(item: .taskTemplate, plan: .free) {}
 }
@@ -51,6 +52,12 @@ struct SettingMenuItemButton: View {
 #Preview("プレミアムプラン_登録済み_サブスク", traits: .sizeThatFitsLayout) {
     SettingMenuItemButton(
         item: .premiumPlan,
-        plan: .subscription(period: .monthly, nextRenewalDate: .now, willRenew: true)
+        plan: .subscription(
+            period: .monthly,
+            // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+            nextRenewalDate: .previewDate(year: 2026, month: 6, day: 17, hour: 12),
+            willRenew: true
+        )
     ) {}
 }
+#endif

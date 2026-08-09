@@ -288,6 +288,7 @@ private extension SettingView {
 
 }
 
+#if DEBUG
 #Preview("SettingView_グループ未登録") {
     SettingView()
         .environment(AccountAuthStore())
@@ -332,7 +333,8 @@ private extension SettingView {
         .environment(SubscriptionStore(entitlementInfo: .init(
             isActive: true,
             productIdentifier: "premium_monthly",
-            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 30),
+            // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+            expirationDate: .previewDate(year: 2026, month: 6, day: 17, hour: 12),
             willRenew: true
         )))
         .environment(\.loginContext, .init(account: .init(
@@ -361,7 +363,8 @@ private extension SettingView {
         .environment(SubscriptionStore(entitlementInfo: .init(
             isActive: true,
             productIdentifier: "premium_yearly",
-            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 10),
+            // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+            expirationDate: .previewDate(year: 2026, month: 5, day: 28, hour: 12),
             willRenew: false
         )))
         .environment(\.loginContext, .init(account: .init(
@@ -382,3 +385,4 @@ private extension SettingView {
             )
         )
 }
+#endif
