@@ -13,4 +13,4 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 許可ツール（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
-- サンドボックスは無効化済み（Swift PM の sandbox-exec ネスト問題のため）
+- **サンドボックスは有効**（`sandbox.enabled: true`）。SwiftPM系コマンドは `dangerouslyDisableSandbox: true` を付けて実行すること（理由はスキル参照）

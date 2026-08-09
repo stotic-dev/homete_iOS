@@ -13,7 +13,20 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 このスキルは Bash コマンドを以下の許可ルール下で実行する想定（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
 
-サンドボックスはプロジェクト設定で無効化済み（Swift PM の sandbox-exec ネスト問題回避のため）。`dangerouslyDisableSandbox` を明示する必要はない。
+### サンドボックスの扱い（重要）
+
+プロジェクトの `.claude/settings.local.json` では**サンドボックスが有効**（`sandbox.enabled: true`、`autoAllowBashIfSandboxed: true`）。
+
+SwiftPM は Package.swift のマニフェスト評価を自前の `sandbox-exec` で行うため、Claude のサンドボックス内で実行するとネストになり失敗する:
+
+```
+sandbox-exec: sandbox_apply: Operation not permitted
+error: invalid manifests at [...]
+```
+
+そのため **`swift build` / `swift test` / `swift package` は `dangerouslyDisableSandbox: true` を付けて実行する**。付けずに失敗した場合は、上記メッセージを確認したうえで即座に付け直して再実行してよい。
+
+他のコマンド（swiftlint など）はサンドボックス内で動くので、原則そのまま実行し、`Operation not permitted` 系の失敗が出たときだけ同様に切り替える。
 
 ---
 
