@@ -3,6 +3,12 @@ import {getFirestore} from "firebase-admin/firestore";
 import {FirestoreCollections} from "../../src/models/FirestoreCollections";
 import {Account} from "../../src/models/Account";
 import {Cohabitant} from "../../src/models/Cohabitant";
+import {
+  houseworksPath,
+  houseworkTemplatesPath,
+  houseworkTemplateDaysPath,
+  houseworkTemplateEditorsPath,
+} from "./clientCollections";
 
 export interface TestUser {
     uid: string;
@@ -90,8 +96,36 @@ export async function createTestHousework(
   data: Record<string, any>
 ): Promise<void> {
   const db = getFirestore();
-  const path = FirestoreCollections.getHouseworkPath(cohabitantId);
-  await db.collection(path).doc(houseworkId).set(data);
+  await db.collection(houseworksPath(cohabitantId)).doc(houseworkId).set(data);
+}
+
+/**
+ * 家事テンプレートのテストデータを追加
+ * メタドキュメントに加えて、ネストしたDays/Editorsサブコレクションも作成する
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @param {string} templateId - テンプレートドキュメントのID
+ * @return {Promise<void>}
+ */
+export async function createTestHouseworkTemplate(
+  cohabitantId: string,
+  templateId: string
+): Promise<void> {
+  const db = getFirestore();
+
+  await db
+    .collection(houseworkTemplatesPath(cohabitantId))
+    .doc(templateId)
+    .set({templateId, name: `Template ${templateId}`, version: 0});
+
+  await db
+    .collection(houseworkTemplateDaysPath(cohabitantId, templateId))
+    .doc("1")
+    .set({dayOfWeek: 1, items: []});
+
+  await db
+    .collection(houseworkTemplateEditorsPath(cohabitantId, templateId))
+    .doc("editor-1")
+    .set({userId: "editor-1"});
 }
 
 /**

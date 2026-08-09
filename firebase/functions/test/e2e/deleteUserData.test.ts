@@ -4,14 +4,21 @@ import {
   createTestAccount,
   createTestCohabitant,
   createTestHousework,
+  createTestHouseworkTemplate,
 } from "../helpers/testData";
 import {
   expectAccountNotExists,
   expectCohabitantNotExists,
   expectCohabitantMembers,
-  expectSubcollectionEmpty,
+  expectCollectionEmpty,
+  expectCollectionNotEmpty,
 } from "../helpers/assertions";
-import {FirestoreCollections} from "../../src/models/FirestoreCollections";
+import {
+  houseworksPath,
+  houseworkTemplatesPath,
+  houseworkTemplateDaysPath,
+  houseworkTemplateEditorsPath,
+} from "../helpers/clientCollections";
 
 describe("deleteUserData E2E Tests", () => {
   // 各テストで一意のIDを使用するためのカウンター
@@ -47,9 +54,41 @@ describe("deleteUserData E2E Tests", () => {
       // Assert: 検証（ポーリングで確認）
       await expectAccountNotExists(user1.uid);
       await expectCohabitantNotExists(cohabitantId);
-      await expectSubcollectionEmpty(
-        cohabitantId,
-        FirestoreCollections.HOUSEWORK
+      await expectCollectionEmpty(houseworksPath(cohabitantId));
+    });
+
+    it("2人グループで1人削除した場合、HouseworkTemplatesもネストごと削除される", async () => {
+      // Arrange
+      const uid1 = `test6-user-1-${testCounter}`;
+      const uid2 = `test6-user-2-${testCounter}`;
+      const user1 = await createTestUser(uid1, `${uid1}@example.com`);
+      const user2 = await createTestUser(uid2, `${uid2}@example.com`);
+
+      const cohabitantId = `test6-cohabitant-${testCounter}`;
+      await createTestCohabitant(cohabitantId, [user1.uid, user2.uid]);
+
+      await createTestAccount(user1.uid, cohabitantId, "token-1");
+      await createTestAccount(user2.uid, cohabitantId, "token-2");
+
+      const templateId = "template-1";
+      await createTestHousework(cohabitantId, "housework-1", {
+        title: "Test Housework",
+      });
+      await createTestHouseworkTemplate(cohabitantId, templateId);
+
+      // Act
+      const auth = getAuth();
+      await auth.deleteUser(user1.uid);
+
+      // Assert: Houseworks / HouseworkTemplates とネストが全て削除される
+      await expectCohabitantNotExists(cohabitantId);
+      await expectCollectionEmpty(houseworksPath(cohabitantId));
+      await expectCollectionEmpty(houseworkTemplatesPath(cohabitantId));
+      await expectCollectionEmpty(
+        houseworkTemplateDaysPath(cohabitantId, templateId)
+      );
+      await expectCollectionEmpty(
+        houseworkTemplateEditorsPath(cohabitantId, templateId)
       );
     });
   });
@@ -75,6 +114,12 @@ describe("deleteUserData E2E Tests", () => {
       await createTestAccount(user2.uid, cohabitantId, "token-2");
       await createTestAccount(user3.uid, cohabitantId, "token-3");
 
+      const templateId = "template-1";
+      await createTestHousework(cohabitantId, "housework-1", {
+        title: "Test Housework",
+      });
+      await createTestHouseworkTemplate(cohabitantId, templateId);
+
       // Act
       const auth = getAuth();
       await auth.deleteUser(user1.uid);
@@ -82,6 +127,13 @@ describe("deleteUserData E2E Tests", () => {
       // Assert（ポーリングで確認）
       await expectAccountNotExists(user1.uid);
       await expectCohabitantMembers(cohabitantId, [user2.uid, user3.uid]);
+
+      // グループは存続するため、家事データは削除されない
+      await expectCollectionNotEmpty(houseworksPath(cohabitantId));
+      await expectCollectionNotEmpty(houseworkTemplatesPath(cohabitantId));
+      await expectCollectionNotEmpty(
+        houseworkTemplateDaysPath(cohabitantId, templateId)
+      );
     });
   });
 
@@ -146,11 +198,7 @@ describe("deleteUserData E2E Tests", () => {
 
       // Assert（ポーリングで確認、大量データなのでタイムアウトを長めに）
       await expectCohabitantNotExists(cohabitantId, 10000);
-      await expectSubcollectionEmpty(
-        cohabitantId,
-        FirestoreCollections.HOUSEWORK,
-        10000
-      );
+      await expectCollectionEmpty(houseworksPath(cohabitantId), 10000);
     }, 20000); // タイムアウトを20秒に設定
   });
 });

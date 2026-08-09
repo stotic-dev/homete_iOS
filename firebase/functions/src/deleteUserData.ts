@@ -1,7 +1,6 @@
 import * as functions from "firebase-functions/v1";
 import * as logger from "firebase-functions/logger";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
-import {FirestoreCollections} from "./models/FirestoreCollections";
 import {FirestoreHelper} from "./models/FirestoreHelper";
 import {CohabitantFields} from "./models/Cohabitant";
 
@@ -52,8 +51,10 @@ export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
     // メンバーが2人以下の場合はグループごと削除
     if (memberList.length <= 2) {
       // グループ全体を削除
-      await removeCohabitantSubcollections(db, linkedCohabitantId);
-      await cohabitantSnapshot.ref.delete();
+      // Firestoreは親ドキュメントを消してもサブコレクションを消さないため、
+      // Cohabitant配下（Houseworks / HouseworkTemplates とそのネスト）を
+      // recursiveDeleteでまとめて削除する
+      await db.recursiveDelete(cohabitantSnapshot.ref);
       logger.info(
         `Cohabitant group ${linkedCohabitantId} fully removed. ` +
                 `Reason: Insufficient members (${memberList.length} members).`
@@ -74,61 +75,3 @@ export const deleteuserdata = functions.auth.user().onDelete(async (user) => {
     // トリガー関数ではthrowせず、ログに記録するのみ
   }
 });
-
-/**
- * Cohabitantのサブコレクションを削除
- * @param {FirebaseFirestore.Firestore} db Firestoreインスタンス
- * @param {string} cohabitantId CohabitantのID
- * @return {Promise<void>}
- */
-async function removeCohabitantSubcollections(
-  db: FirebaseFirestore.Firestore,
-  cohabitantId: string
-): Promise<void> {
-  const subcollections = [
-    FirestoreCollections.HOUSEWORK,
-    FirestoreCollections.HOUSEWORK_HISTORY,
-  ];
-
-  for (const subcollection of subcollections) {
-    const path = FirestoreCollections.getCohabitantSubcollection(
-      cohabitantId,
-      subcollection
-    );
-    await batchDeleteCollection(db, path, 500);
-  }
-}
-
-/**
- * コレクション内のドキュメントをバッチ削除
- * @param {FirebaseFirestore.Firestore} db Firestoreインスタンス
- * @param {string} path コレクションのパス
- * @param {number} limit 一度に削除する上限数
- * @return {Promise<void>}
- */
-async function batchDeleteCollection(
-  db: FirebaseFirestore.Firestore,
-  path: string,
-  limit: number
-): Promise<void> {
-  const collectionRef = db.collection(path);
-  const querySnapshot = await collectionRef.limit(limit).get();
-
-  if (querySnapshot.empty) {
-    logger.info(`No documents in ${path}`);
-    return;
-  }
-
-  const batchOperation = db.batch();
-  querySnapshot.docs.forEach((document) => {
-    batchOperation.delete(document.ref);
-  });
-  await batchOperation.commit();
-
-  logger.info(`Removed ${querySnapshot.size} documents from ${path}`);
-
-  // 再帰的に残りを削除
-  if (querySnapshot.size >= limit) {
-    await batchDeleteCollection(db, path, limit);
-  }
-}

@@ -5,14 +5,14 @@ on:
     branches:
       - "**"
     paths:
-      - "firebase/dev/functions/**"
+      - "firebase/functions/**"
       - ".github/workflows/functions-e2e-test.yml"
   push:
     branches:
       - "main"
       - "release/*"
     paths:
-      - "firebase/dev/functions/**"
+      - "firebase/functions/**"
   workflow_dispatch:
 
 env:

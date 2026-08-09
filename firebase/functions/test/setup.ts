@@ -34,12 +34,8 @@ async function clearFirestore() {
   const db = getFirestore();
   const collections = ["Account", "Cohabitant"];
 
+  // サブコレクションが残るとテスト間で状態が混ざるため再帰的に削除する
   for (const collectionName of collections) {
-    const snapshot = await db.collection(collectionName).get();
-    const batch = db.batch();
-    snapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
-    await batch.commit();
+    await db.recursiveDelete(db.collection(collectionName));
   }
 }
