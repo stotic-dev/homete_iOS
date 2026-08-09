@@ -4,6 +4,7 @@
 
 import HomeFeature
 import HometeDomain
+import HometeInfrastructure
 import HometeUI
 import HouseworkTemplateFeature
 import SettingFeature
@@ -21,6 +22,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     SettingViewScreen()
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
+                case .paywall:
+                    PaywallScreen()
                 }
             })
     }

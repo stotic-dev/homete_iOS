@@ -1,14 +1,36 @@
 {
-  "appId": "6759321417",
-  "subscriptionGroupId": "22263200",
+  "apps": {
+    "dev": { "appId": "6759321417", "bundleId": "taichi.satou.hometekure.dev", "subscriptionGroupId": "22263200" },
+    "prd": { "appId": "6744935314", "bundleId": "taichi.satou.hometekure", "subscriptionGroupId": "22263203" }
+  },
+  "subscriptionGroups": [
+    {
+      "env": "dev",
+      "groupId": "22263200",
+      "localizations": [
+        { "locale": "ja", "name": "プレミアムプラン" }
+      ]
+    },
+    {
+      "env": "prd",
+      "groupId": "22263203",
+      "localizations": [
+        { "locale": "ja", "name": "プレミアムプラン" }
+      ]
+    }
+  ],
   "subscriptions": [
     {
+      "env": "dev",
       "productId": "monthly",
       "subscriptionId": "6794541936",
       "displayName": "プレミアムプラン（1ヶ月更新）",
+      "availability": { "availableInNewTerritories": true, "territories": "all" },
       "prices": [
         { "territory": "JPN", "amount": "450" }
       ],
+      "equalizeFrom": "JPN",
+      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
       "localizations": [
         {
           "locale": "ja",
@@ -18,12 +40,54 @@
       ]
     },
     {
+      "env": "dev",
       "productId": "yearly",
       "subscriptionId": "6794559719",
       "displayName": "プレミアムプラン（1年更新）",
+      "availability": { "availableInNewTerritories": true, "territories": "all" },
       "prices": [
         { "territory": "JPN", "amount": "3600" }
       ],
+      "equalizeFrom": "JPN",
+      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "localizations": [
+        {
+          "locale": "ja",
+          "name": "プレミアムプラン（年額）",
+          "description": "年額でお得な料金で、有償版の全機能が使い放題になります"
+        }
+      ]
+    },
+    {
+      "env": "prd",
+      "productId": "monthly_prd",
+      "subscriptionId": "6794546023",
+      "displayName": "プレミアムプラン（1ヶ月更新）",
+      "availability": { "availableInNewTerritories": true, "territories": "all" },
+      "prices": [
+        { "territory": "JPN", "amount": "450" }
+      ],
+      "equalizeFrom": "JPN",
+      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "localizations": [
+        {
+          "locale": "ja",
+          "name": "プレミアムプラン",
+          "description": "有償版で使用できる機能全て利用できるようになります"
+        }
+      ]
+    },
+    {
+      "env": "prd",
+      "productId": "yearly_prd",
+      "subscriptionId": "6794546166",
+      "displayName": "プレミアムプラン（1年更新）",
+      "availability": { "availableInNewTerritories": true, "territories": "all" },
+      "prices": [
+        { "territory": "JPN", "amount": "3600" }
+      ],
+      "equalizeFrom": "JPN",
+      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
       "localizations": [
         {
           "locale": "ja",
@@ -33,22 +97,5 @@
       ]
     }
   ],
-  "inAppPurchases": [
-    {
-      "productId": "onetime_yearly",
-      "inAppPurchaseId": "6794541732",
-      "displayName": "プレミアムプラン（1年間）",
-      "baseTerritory": "JPN",
-      "prices": [
-        { "territory": "JPN", "amount": "3600" }
-      ],
-      "localizations": [
-        {
-          "locale": "ja",
-          "name": "プレミアムプラン（買い切り）",
-          "description": "1年間、有償版の全機能をご利用いただけます（自動更新なし）"
-        }
-      ]
-    }
-  ]
+  "inAppPurchases": []
 }

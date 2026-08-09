@@ -11,5 +11,7 @@ public enum AppRoute: Hashable, Sendable {
     case setting
     /// 家事テンプレート画面
     case houseworkTemplate
+    /// プレミアムプランのPaywall画面
+    case paywall
 
 }

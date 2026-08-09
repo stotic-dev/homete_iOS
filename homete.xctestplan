@@ -57,6 +57,13 @@
         "identifier" : "HouseworkTemplateFeatureTests",
         "name" : "HouseworkTemplateFeatureTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
+        "identifier" : "SettingFeatureTests",
+        "name" : "SettingFeatureTests"
+      }
     }
   ],
   "version" : 1

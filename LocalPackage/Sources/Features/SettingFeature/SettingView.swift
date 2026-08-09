@@ -37,6 +37,9 @@ private extension SettingViewScreen {
 
         case let .licenseDetail(license):
             LicenseDetailView(license: license)
+
+        case .subscriptionManagement:
+            SubscriptionManagementView()
         }
     }
 
@@ -46,6 +49,7 @@ struct SettingView: View {
 
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
@@ -58,48 +62,51 @@ struct SettingView: View {
     @State var isPresentedAccountDeletionConfirmAlert = false
     @State var isShowHouseworkTemplate = false
     @State var isShowMemberRegistration = false
+    @State var isShowPaywall = false
 
     init() {}
 
     var body: some View {
-        VStack(spacing: .space32) {
-            VStack(spacing: .space24) {
-                Text(loginContext.account.userName)
-                    .font(with: .headLineM)
-                GroupMemberListView(members: cohabitantMembers.others)
-                Spacer()
-                    .frame(height: .space16)
-                VStack(spacing: .zero) {
-                    ForEach(
-                        SettingMenuItem.displayItems(loginContext.hasCohabitant),
-                        id: \.self
-                    ) { item in
-                        SettingMenuItemButton(item: item) {
-                            tappedSettingMenuItem(item)
+        // 表示項目が画面高さを超えるとナビゲーションバー領域にコンテンツが食い込むためScrollViewで包む
+        ScrollView {
+            VStack(spacing: .space32) {
+                VStack(spacing: .space24) {
+                    basicInfoSection(plan: subscriptionStore.plan)
+                    GroupMemberListView(members: cohabitantMembers.others)
+                    Spacer()
+                        .frame(height: .space16)
+                    VStack(spacing: .zero) {
+                        ForEach(
+                            SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                            id: \.self
+                        ) { item in
+                            SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
+                                tappedSettingMenuItem(item)
+                            }
                         }
                     }
                 }
-            }
-            VStack(spacing: .space24) {
-                Button {
-                    tappedLogoutRowButton()
-                } label: {
-                    Text("ログアウト")
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: .space24) {
+                    Button {
+                        tappedLogoutRowButton()
+                    } label: {
+                        Text("ログアウト")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .primaryButtonStyle()
+                    Button {
+                        tappedAccountDeletionRowButton()
+                    } label: {
+                        Text("退会")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .destructiveButtonStyle()
                 }
-                .primaryButtonStyle()
-                Button {
-                    tappedAccountDeletionRowButton()
-                } label: {
-                    Text("退会")
-                        .frame(maxWidth: .infinity)
-                }
-                .destructiveButtonStyle()
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space16)
         }
-        .padding(.horizontal, .space16)
-        .padding(.bottom, .space16)
         .navigationTitle("設定")
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
@@ -115,16 +122,15 @@ struct SettingView: View {
             }
         }
         .alert("退会しますか？", isPresented: $isPresentedAccountDeletionConfirmAlert) {
-            Button("退会する", role: .destructive) {
-                loadingState.task {
-                    await tappedAccountDeletionAlertOkButton()
-                }
-            }
+            accountDeletionAlertActions(plan: subscriptionStore.plan)
         } message: {
-            Text("あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。")
+            Text(accountDeletionAlertMessage(plan: subscriptionStore.plan))
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
+            router.resolve(.paywall)
         }
     }
 
@@ -135,6 +141,81 @@ private extension SettingView {
     func leadingNavigationBarContent() -> some View {
         NavigationBarButton(label: .close) {
             dismiss()
+        }
+    }
+
+    func basicInfoSection(plan: SubscriptionPlan) -> some View {
+        VStack(spacing: .space8) {
+            HStack(spacing: .zero) {
+                Text("ユーザー名:")
+                    .font(with: .headLineS)
+                Spacer()
+                Text(loginContext.account.userName)
+                    .font(with: .body)
+                    .lineLimit(1)
+            }
+            HStack(spacing: .zero) {
+                Text("ご利用中のプラン:")
+                    .font(with: .headLineS)
+                Spacer()
+                VStack(alignment: .trailing, spacing: .space4) {
+                    switch plan {
+                    case .free:
+                        Text("無料プラン")
+                            .font(with: .body)
+
+                    case let .subscription(period, nextRenewalDate, willRenew):
+                        Text(period.displayName)
+                            .font(with: .body)
+                            .lineLimit(1)
+                        if let nextRenewalDate {
+                            expirationText(date: nextRenewalDate, willRenew: willRenew)
+                                .font(with: .caption)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// 自動更新中の場合は、退会だけでは課金が止まらないため解約導線を併せて提示する
+    @ViewBuilder
+    func accountDeletionAlertActions(plan: SubscriptionPlan) -> some View {
+        if plan.willAutoRenew {
+            Button("解約手続きへ") {
+                tappedManageSubscriptionInDeletionAlert()
+            }
+        }
+        Button("退会する", role: .destructive) {
+            loadingState.task {
+                await tappedAccountDeletionAlertOkButton()
+            }
+        }
+    }
+
+    func accountDeletionAlertMessage(plan: SubscriptionPlan) -> LocalizedStringKey {
+        guard plan.willAutoRenew else {
+            return """
+            あなたのデータは全て削除され、復元することはできません。
+            また、現在参加しているグループが2名以下の場合は、グループごと削除されます。
+            """
+        }
+
+        return """
+        退会してもサブスクリプションは解約されず、料金の請求が続きます。先に解約手続きを行ってください。
+        また、あなたのデータは全て削除され、復元することはできません。現在参加しているグループが2名以下の場合は、グループごと削除されます。
+        """
+    }
+
+    /// 解約済みの場合は更新されないため、日付の意味づけを切り替える
+    @ViewBuilder
+    func expirationText(date: Date, willRenew: Bool) -> some View {
+        let formattedDate = date.formatted(date: .abbreviated, time: .omitted)
+
+        if willRenew {
+            Text("次回更新日: \(formattedDate)")
+        } else {
+            Text("有効期限: \(formattedDate)")
         }
     }
 
@@ -152,6 +233,9 @@ private extension SettingView {
         case .memberRegistration:
             isShowMemberRegistration = true
 
+        case .premiumPlan:
+            tappedPremiumPlanItem()
+
         case .termsOfService:
             if let url = URL(string: Constants.termsOfServiceURLString) {
                 openURL(url)
@@ -167,6 +251,16 @@ private extension SettingView {
         }
     }
 
+    func tappedPremiumPlanItem() {
+        switch subscriptionStore.plan {
+        case .free:
+            isShowPaywall = true
+
+        case .subscription:
+            navigationPath.push(.subscriptionManagement)
+        }
+    }
+
     func tappedLogoutRowButton() {
         isPresentedLogoutConfirmAlert = true
     }
@@ -177,6 +271,10 @@ private extension SettingView {
 
     func tappedAccountDeletionRowButton() {
         isPresentedAccountDeletionConfirmAlert = true
+    }
+
+    func tappedManageSubscriptionInDeletionAlert() {
+        navigationPath.push(.subscriptionManagement)
     }
 
     func tappedAccountDeletionAlertOkButton() async {
@@ -194,15 +292,81 @@ private extension SettingView {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(SubscriptionStore())
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "Hoge",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
 }
 
 #Preview("SettingView_グループ登録済み") {
     SettingView()
         .environment(AccountAuthStore())
         .environment(AccountStore())
+        .environment(SubscriptionStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
-            userName: "",
+            userName: "Hoge",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
+}
+
+#Preview("SettingView_プレミアム登録済み") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(SubscriptionStore(entitlementInfo: .init(
+            isActive: true,
+            productIdentifier: "premium_monthly",
+            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 30),
+            willRenew: true
+        )))
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "Hoge",
+            fcmToken: "",
+            cohabitantId: ""
+        )))
+        .environment(
+            \.cohabitantMembers,
+            .init(
+                value: [
+                    .init(id: "ownId", userName: "自分"),
+                    .init(id: "user1", userName: "山田太郎"),
+                    .init(id: "user2", userName: "佐藤花子"),
+                ],
+                ownId: "ownId"
+            )
+        )
+}
+
+#Preview("SettingView_プレミアム登録済み_解約済み") {
+    SettingView()
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(SubscriptionStore(entitlementInfo: .init(
+            isActive: true,
+            productIdentifier: "premium_yearly",
+            expirationDate: .now.addingTimeInterval(60 * 60 * 24 * 10),
+            willRenew: false
+        )))
+        .environment(\.loginContext, .init(account: .init(
+            id: "",
+            userName: "Hoge",
             fcmToken: "",
             cohabitantId: ""
         )))

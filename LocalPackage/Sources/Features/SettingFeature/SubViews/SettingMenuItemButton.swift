@@ -13,6 +13,7 @@ import SwiftUI
 struct SettingMenuItemButton: View {
 
     let item: SettingMenuItem
+    let plan: SubscriptionPlan
     let action: () -> Void
 
     var body: some View {
@@ -27,7 +28,7 @@ struct SettingMenuItemButton: View {
                     .foregroundStyle(.onSurface)
                     .background(.primary3)
                     .cornerRadius(.radius8)
-                Text(item.title)
+                Text(item.title(plan: plan))
                     .font(with: .body)
                 Spacer()
             }
@@ -40,5 +41,16 @@ struct SettingMenuItemButton: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    SettingMenuItemButton(item: .taskTemplate) {}
+    SettingMenuItemButton(item: .taskTemplate, plan: .free) {}
+}
+
+#Preview("プレミアムプラン_未登録", traits: .sizeThatFitsLayout) {
+    SettingMenuItemButton(item: .premiumPlan, plan: .free) {}
+}
+
+#Preview("プレミアムプラン_登録済み_サブスク", traits: .sizeThatFitsLayout) {
+    SettingMenuItemButton(
+        item: .premiumPlan,
+        plan: .subscription(period: .monthly, nextRenewalDate: .now, willRenew: true)
+    ) {}
 }

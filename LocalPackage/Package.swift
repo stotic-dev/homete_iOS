@@ -104,7 +104,8 @@ let package = Package(
                     package: "swift-package-manager-google-user-messaging-platform",
                     condition: .when(platforms: [.iOS])
                 ),
-                .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
+                .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
+                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
             ],
             plugins: [swiftLintPlugin()]
         ),
@@ -139,6 +140,11 @@ let package = Package(
         .testTarget(
             name: "ContributionFeatureTests",
             dependencies: ["ContributionFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "SettingFeatureTests",
+            dependencies: ["SettingFeature"],
             plugins: [swiftLintPlugin()]
         )
     ]

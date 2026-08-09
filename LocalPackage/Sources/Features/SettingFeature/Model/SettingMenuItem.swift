@@ -5,12 +5,14 @@
 //  Created by 佐藤汰一 on 2025/08/11.
 //
 
+import HometeDomain
 import SwiftUI
 
 enum SettingMenuItem: Equatable, CaseIterable {
 
     case memberRegistration
     case taskTemplate
+    case premiumPlan
     case termsOfService
     case privacyPolicy
     case license
@@ -26,13 +28,20 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    var title: LocalizedStringKey {
+    func title(plan: SubscriptionPlan) -> LocalizedStringKey {
         switch self {
         case .memberRegistration:
             "メンバー追加"
 
         case .taskTemplate:
             "家事テンプレート"
+
+        case .premiumPlan:
+            if case .free = plan {
+                "プレミアムプランに登録"
+            } else {
+                "ご登録中のプラン"
+            }
 
         case .termsOfService:
             "利用規約"
@@ -52,6 +61,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "house"
+
+        case .premiumPlan:
+            "crown.fill"
 
         case .termsOfService:
             "doc.text"

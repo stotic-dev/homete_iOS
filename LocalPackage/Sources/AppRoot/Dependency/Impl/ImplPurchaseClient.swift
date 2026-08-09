@@ -17,23 +17,38 @@ extension PurchaseClient {
         },
         fetchEntitlementInfo: {
             let customerInfo = try await Purchases.shared.customerInfo()
-            let isActive = customerInfo.entitlements[premiumEntitlementId]?.isActive == true
-            return EntitlementInfo(isActive: isActive)
+            return makeEntitlementInfo(from: customerInfo)
         },
         entitlementInfoUpdates: {
             AsyncStream { continuation in
                 Task {
                     for await customerInfo in Purchases.shared.customerInfoStream {
-                        let isActive = customerInfo.entitlements[premiumEntitlementId]?.isActive == true
-                        continuation.yield(EntitlementInfo(isActive: isActive))
+                        continuation.yield(makeEntitlementInfo(from: customerInfo))
                     }
                     continuation.finish()
                 }
             }
+        },
+        showManageSubscriptions: {
+            try await Purchases.shared.showManageSubscriptions()
+        },
+        restorePurchases: {
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            return makeEntitlementInfo(from: customerInfo)
         }
     )
 
 }
 
 private let premiumEntitlementId = "taichi sato Pro"
+
+private func makeEntitlementInfo(from customerInfo: CustomerInfo) -> HometeDomain.EntitlementInfo {
+    let entitlement = customerInfo.entitlements[premiumEntitlementId]
+    return HometeDomain.EntitlementInfo(
+        isActive: entitlement?.isActive == true,
+        productIdentifier: entitlement?.productIdentifier ?? "",
+        expirationDate: entitlement?.expirationDate,
+        willRenew: entitlement?.willRenew == true
+    )
+}
 #endif
