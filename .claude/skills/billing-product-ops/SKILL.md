@@ -1,6 +1,6 @@
 ---
 name: billing-product-ops
-description: App Store Connect API（scripts/appstoreconnect.sh）とRevenueCat REST API v2（scripts/revenuecat.sh）を使って、サブスクリプション/App内課金の価格・ローカライズ・審査用スクリーンショット・RevenueCat側のProducts/Entitlements/Offerings設定を操作するスキル。課金プロダクトの追加・価格変更・メタデータ同期を行うときに使う。
+description: App Store Connect API（scripts/appstoreconnect.sh）とRevenueCat REST API v2（scripts/revenuecat.sh）を使って、サブスクリプション/App内課金の配信地域・価格・ローカライズ・サブスクグループ名・審査用スクリーンショット・RevenueCat側のProducts/Entitlements/Offerings設定を操作するスキル。課金プロダクトの追加・価格変更・メタデータ同期のほか、「ペイウォールに価格が表示されない」「stateがMISSING_METADATAのまま」といった課金プロダクトの状態調査を行うときにも使う。
 ---
 
 # 課金プロダクト運用スキル（App Store Connect / RevenueCat）
@@ -53,6 +53,8 @@ cp -p /Users/taichisato/work/homete_iOS/scripts/revenuecat.env scripts/revenueca
 
 スクリプト冒頭コメントに明記されている通り:
 - `call` サブコマンド、`subscriptions get/prices/localizations` 系のGET、価格/ローカリゼーション作成、スクリーンショットアップロードは実機確認済み
+- `apply-all` / `verify` および配下の `apply-group-localizations` / `apply-availability`（新規作成）/ `apply-prices` / `apply-localizations` / `apply-screenshots` は dev・prd 両方で実機確認済み（冪等性・再実行時のスキップ動作を含む）
+- `apply-availability` の「既存のavailabilityに地域を追加する」パスは未検証（`subscriptionAvailabilities` はPATCH不可のため、既存 + 不足分を全て含めてPOSTし直す実装）
 - `inapp price set-base` は初回のPrice Schedule作成のみ確認済み（既存Schedule更新は未検証）
 - それ以外は未検証箇所としてコマンド近くのコメントに明記されているので、実行前に該当箇所のコメントを確認する
 
@@ -89,54 +91,101 @@ price_point=$(scripts/appstoreconnect.sh subscriptions price-points find 6794541
 scripts/appstoreconnect.sh subscriptions prices set 6794541936 "$price_point" JPN
 ```
 
-### 1-3. 設定ファイルによる一括反映（`apply-prices` / `apply-localizations`）
+### 1-3. 設定ファイルによる一括反映（`apply-all` / `verify`）
 
-`scripts/appstoreconnect.products.json` にサブスク/App内課金の `productId` / `subscriptionId` (or `inAppPurchaseId`) / `prices` / `localizations` を一元管理しておき、以下のコマンドで一括反映できる。**プロダクトのメタデータ（価格・名前・説明文）を変更するときは、個別コマンドを都度叩くよりまずこのJSONを更新して一括反映するのが基本フロー。**
+`scripts/appstoreconnect.products.json` に**ASC側メタデータを一元管理**しておき、`apply-all` で「販売可能になるために必要なリソース」を依存順にまとめて反映できる。**ASC側のメタデータを変更するときは、個別コマンドを都度叩くのではなくまずこのJSONを更新して `apply-all` を叩くのが基本フロー。**
 
 ```bash
-# デフォルトで scripts/appstoreconnect.products.json を読む
+# 全プロダクトに反映して最後にverifyまで実行する（これ1本でよい）
+scripts/appstoreconnect.sh apply-all
+
+# 開発版だけ、本番だけ
+scripts/appstoreconnect.sh apply-all --env dev
+scripts/appstoreconnect.sh apply-all --env prd
+
+# 現在の状態だけ確認する（読み取り専用。販売可能でないものがあれば終了コード1）
+scripts/appstoreconnect.sh verify
+
+# 個別に実行することもできる（apply-all はこの順で実行している）
+scripts/appstoreconnect.sh apply-group-localizations
+scripts/appstoreconnect.sh apply-availability
 scripts/appstoreconnect.sh apply-prices
 scripts/appstoreconnect.sh apply-localizations
+scripts/appstoreconnect.sh apply-screenshots
 
 # 別ファイルを指定する場合
-scripts/appstoreconnect.sh apply-prices path/to/other.json
+scripts/appstoreconnect.sh apply-all path/to/other.json --env dev
 ```
 
-`appstoreconnect.products.json` の構造（実例）:
+`appstoreconnect.products.json` の構造:
 
 ```json
 {
-  "appId": "6759321417",
-  "subscriptionGroupId": "22263200",
+  "apps": {
+    "dev": { "appId": "6759321417", "bundleId": "taichi.satou.hometekure.dev", "subscriptionGroupId": "22263200" },
+    "prd": { "appId": "6744935314", "bundleId": "taichi.satou.hometekure", "subscriptionGroupId": "22263203" }
+  },
+  "subscriptionGroups": [
+    { "env": "dev", "groupId": "22263200", "localizations": [{ "locale": "ja", "name": "プレミアムプラン" }] }
+  ],
   "subscriptions": [
     {
+      "env": "dev",
       "productId": "monthly",
       "subscriptionId": "6794541936",
       "displayName": "プレミアムプラン（1ヶ月更新）",
+      "availability": { "availableInNewTerritories": true, "territories": "all" },
       "prices": [{ "territory": "JPN", "amount": "450" }],
+      "equalizeFrom": "JPN",
+      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
       "localizations": [
         { "locale": "ja", "name": "プレミアムプラン", "description": "..." }
       ]
     }
   ],
-  "inAppPurchases": [
-    {
-      "productId": "onetime_yearly",
-      "inAppPurchaseId": "6794541732",
-      "displayName": "プレミアムプラン（1年間）",
-      "baseTerritory": "JPN",
-      "prices": [{ "territory": "JPN", "amount": "3600" }],
-      "localizations": [
-        { "locale": "ja", "name": "...", "description": "..." }
-      ]
-    }
-  ]
+  "inAppPurchases": []
 }
 ```
 
+各フィールドの意味:
+
+| フィールド | 説明 |
+|---|---|
+| `apps` | env名 → App情報。`--env` で指定できる値はここのキー |
+| `subscriptionGroups[].localizations` | **サブスクグループ名**。商品側ローカライズとは別リソース（後述） |
+| `availability.territories` | `"all"`（ASCの全地域）または `["JPN","USA"]` |
+| `prices` | 個別に価格を指定するterritory |
+| `equalizeFrom` | 基準territory。その価格と等価な価格をequalizations API経由で配信対象の全地域へ自動展開する |
+| `reviewScreenshot` | 審査用スクショ。configファイルからの相対パス可 |
+
 注意:
-- `apply-prices` の `inAppPurchases` は `baseTerritory` 分の初回設定のみ対応（複数territory・Schedule更新後の反映は未対応）
-- 新しいsubscription/inAppPurchaseを追加する場合、事前にApp Store Connect側でリソース自体（productId等）を作成し、そのIDをこのJSONに追記してから反映コマンドを叩く
+- `apply-prices` / `apply-availability` / `apply-screenshots` は既に同じ状態ならスキップするため**何度実行しても安全（冪等）**
+- `apply-prices` の `inAppPurchases` は `baseTerritory` 分の初回設定のみ対応で**冪等ではない**（再実行に注意）
+- `apply-availability` の「既存に地域を追加する」パスは未検証（新規作成は実機確認済み）
+- 新しいsubscriptionを追加する場合、事前にApp Store Connect側でリソース自体（productId等）を作成し、そのIDをこのJSONに追記してから `apply-all` を叩く
+
+### 1-3-1. ASC側の落とし穴（実機確認で判明）
+
+**サブスクグループのローカライズが未設定だと、商品側を完璧にしても永久に `MISSING_METADATA` のまま。**
+`subscriptionGroupLocalizations` は商品の `subscriptionLocalizations` とは完全に別リソースで、ASCのWeb UIでも目立たない。価格もローカライズも入っているのに `MISSING_METADATA` が解消しないときは、まずここを疑う。`apply-group-localizations` が担当。
+
+**`state` が `MISSING_METADATA` だと、RevenueCat/StoreKitから商品情報を取得できない。**
+「ペイウォールに価格が出ない」「通貨がおかしい」の原因はたいていこれ。RevenueCatのApp Store製品には**そもそも価格フィールドが存在せず**、価格はASCから自動同期されるので、RevenueCat側をいくら見ても直らない。`verify` で `state` を確認するのが最短。
+
+**価格は「配信対象の全territory」に必要。**
+JPNだけ設定しても他の174地域が空だと未完了扱いになる。1地域ずつ price-points を引くのは非現実的なので、`/v1/subscriptionPricePoints/{id}/equalizations` で基準価格と等価な各国のprice pointを一括取得する（`equalizeFrom` がこれを行う）。
+
+**`territory` は `include` に明示しないと `relationships` に入ってこない。**
+`/v1/subscriptions/{id}/prices` も `/v1/subscriptionPricePoints/{id}/equalizations` も、`include=territory` を付けないと `relationships.territory` が省略される。付け忘れると「どのterritoryの価格か」が取れず、既存判定が全部すり抜ける。
+
+**審査用スクショの `fileName` はApple側で `SOURCE` に正規化される。**
+同一ファイルかどうかの判定にファイル名は使えない。アップロード時に送ったmd5が `sourceFileChecksum` に保持されるので、そちらで比較する。
+
+**スクショのアップロードが `AWAITING_UPLOAD` で止まることがある。**
+3ステップ（予約→PUT→PATCHコミット）の途中で中断すると予約レコードだけが残る。この状態はDELETEしてやり直すしかない（`apply-screenshots` は自動でこれを行う）。アップロード処理を `| jq` などにパイプするとSIGPIPEで中断されて発生しやすいので、出力はファイルか `/dev/null` に流す。
+
+**配信地域(availability)は属性ではなく別リソース。**
+`/v1/subscriptions/{id}/subscriptionAvailability` で、地域一覧はさらに `/v1/subscriptionAvailabilities/{id}/availableTerritories?limit=200`。`limit` を付けられないエンドポイントもあるので注意。
 
 ### 1-4. 汎用 `call` コマンド
 
@@ -196,14 +245,19 @@ scripts/revenuecat.sh offerings update-metadata proj_offering_id \
 
 ## 3. 典型ワークフロー: 新しい課金プロダクトの追加・同期
 
-1. App Store Connect側でSubscription/In-App Purchaseのリソース自体を作成（Web UIまたは`call`）し、`subscriptionId` / `inAppPurchaseId` を控える
-2. `scripts/appstoreconnect.products.json` に `productId` / 対応するASC ID / `prices` / `localizations` を追記
-3. `scripts/appstoreconnect.sh apply-prices` と `apply-localizations` で価格・ローカライズを一括反映
-4. 審査用スクリーンショットが必要なら `subscriptions screenshot upload` で個別アップロード
+1. App Store Connect側でSubscriptionのリソース自体を作成（Web UIまたは`call`）し、`subscriptionId` を控える
+2. `scripts/appstoreconnect.products.json` の `subscriptions` に1エントリ追記する
+   （`env` / `productId` / `subscriptionId` / `displayName` / `availability` / `prices` / `equalizeFrom` / `reviewScreenshot` / `localizations`）
+   新しいサブスクグループを使うなら `subscriptionGroups` にも追記する
+3. `scripts/appstoreconnect.sh apply-all --env <dev|prd>` を実行
+   → グループローカライズ・配信地域・価格（全地域へ展開）・商品ローカライズ・審査用スクショが依存順に反映され、最後に `verify` が走る
+4. `verify` の出力が全て `OK` かつ `state` が `READY_TO_SUBMIT` になっていることを確認する
 5. RevenueCat側で `products create` して同じ `productId`（App Store側のIDと一致させる）を登録
 6. 必要なEntitlementに `entitlements attach-products` で紐付け
 7. Offeringのpackageに `offerings attach-products` で紐付け、必要なら `offerings update-metadata` でpaywall用メタデータを設定
 8. `products list` / `offerings list-packages` 等で反映結果を確認
+
+ASC → RevenueCat の商品情報（`subscription.duration` や価格）の同期には**ラグがある**。反映直後にRevenueCatのペイウォールエディタで価格が出なくても、しばらく置いてから再確認する。またエディタのプレビューは既定でUSD表示になる点にも注意。
 
 ---
 

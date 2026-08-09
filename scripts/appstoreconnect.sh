@@ -68,17 +68,48 @@ Usage: appstoreconnect.sh <command> [args...]
   例: サブスクリプションの日本語ローカライズを設定する
     appstoreconnect.sh subscriptions localizations set 6794541936 ja "プレミアムプラン（月額）" "全機能が使い放題の月額プラン"
 
-設定ファイルによる一括反映（価格・ローカリゼーションの一元管理）:
-  apply-prices [config_path]
-    デフォルト: scripts/appstoreconnect.products.json
-    ファイル内の subscriptions[].prices / inAppPurchases[].prices を読み込み、
-    price-points find → prices set (またはinapp price set-base) を自動実行します。
-    ※ inAppPurchasesはbaseTerritory分の初回設定のみ対応（複数territory・Schedule更新後の反映は未対応）
+設定ファイルによる一括反映（ASC側メタデータの一元管理）:
+  共通オプション: [config_path] [--env dev|prd]
+    config_path のデフォルトは scripts/appstoreconnect.products.json
+    --env を付けると設定ファイルの apps のキーに一致する env のプロダクトだけを対象にします
 
-  apply-localizations [config_path]
-    デフォルト: scripts/appstoreconnect.products.json
-    ファイル内の subscriptions[].localizations / inAppPurchases[].localizations を読み込み、
-    localeごとに既存ローカライズの有無を確認してPOST(新規)/PATCH(更新)を自動実行します(upsert)。
+  apply-all [config_path] [--env dev|prd]
+    以下を「販売可能になるために必要な依存順」でまとめて実行し、最後に verify します。
+      1. apply-group-localizations
+      2. apply-availability
+      3. apply-prices
+      4. apply-localizations
+      5. apply-screenshots
+    新しいプロダクトを追加したら、ASC側でリソースを作ってIDをconfigに書き、これを叩けば済みます。
+
+  apply-group-localizations [config_path] [--env ...]
+    subscriptionGroups[].localizations を upsert します。
+    ※ サブスクグループ名は商品側ローカライズとは別リソースで、ここが未設定だと
+      商品の価格・ローカライズを全て埋めても state が MISSING_METADATA のままになります
+
+  apply-availability [config_path] [--env ...]
+    subscriptions[].availability を反映します。territories は "all"（ASCの全地域）か
+    ["JPN","USA"] のような配列で指定します。
+    ※ 新規作成は実機確認済み。既存に地域を追加するケースは未検証
+
+  apply-prices [config_path] [--env ...]
+    subscriptions[].prices / inAppPurchases[].prices を反映します。
+    subscriptions[].equalizeFrom に基準territoryを指定すると、その価格と等価な価格を
+    equalizations API 経由で配信対象の全地域へ展開します。
+    既に同じ価格が入っているterritoryはスキップするため再実行しても二重登録されません（冪等）。
+    ※ inAppPurchasesはbaseTerritory分の初回設定のみ対応（冪等ではないため再実行に注意）
+
+  apply-localizations [config_path] [--env ...]
+    subscriptions[].localizations / inAppPurchases[].localizations を localeごとに upsert します。
+
+  apply-screenshots [config_path] [--env ...]
+    subscriptions[].reviewScreenshot（configからの相対パス可）をアップロードします。
+    アップロード済みのものと内容が同じ（md5一致）なら何もせず、内容が異なる場合や
+    アップロードが途中で止まっている場合は既存アセットを削除してアップロードし直します。
+
+  verify [config_path] [--env ...]
+    configの全プロダクトについて state / 配信地域数 / 価格設定済み地域数 / ローカライズ /
+    審査用スクショの状態を一覧表示します。販売可能でないものがあれば終了コード1を返します。
 
 スクリーンショットアップロード（予約 → バイナリアップロード → コミットの3ステップを自動実行、実機確認済み）:
   subscriptions screenshot upload <subscription_id> <file_path>
@@ -210,6 +241,42 @@ call() {
   fi
 }
 
+# links.next を辿りながら全ページにjqフィルタを適用して出力する
+# 使い方: get_all_pages <path> <jqフィルタ>
+#   例: get_all_pages "/v1/territories?limit=200" '.data[].id'
+get_all_pages() {
+  local path="$1"
+  local filter="$2"
+  local result next
+
+  while [ -n "$path" ]; do
+    generate_jwt
+    result=$(curl -sS "${API_HOST}${path}" -H "Authorization: Bearer ${JWT}")
+    echo "$result" | jq -r "$filter"
+    next=$(echo "$result" | jq -r '.links.next // empty')
+    if [ -z "$next" ]; then
+      break
+    fi
+    path="${next#${API_HOST}}"
+  done
+}
+
+# GETしてHTTPエラー時は空文字を返す（リソース未作成の404を正常系として扱いたい箇所で使う）
+# 使い方: get_or_empty <path>
+get_or_empty() {
+  local path="$1"
+  local response http_status
+
+  generate_jwt
+  response=$(curl -sS -w '\n%{http_code}' "${API_HOST}${path}" -H "Authorization: Bearer ${JWT}")
+  http_status=$(echo "$response" | tail -n1)
+
+  if [ "$http_status" -lt 200 ] || [ "$http_status" -ge 300 ]; then
+    return 0
+  fi
+  echo "$response" | sed '$d'
+}
+
 # price_point_id を territory + customerPrice の完全一致で検索する（ページング対応）
 # 使い方: find_price_point <pricePointsのパス> <territory> <amount>
 find_price_point() {
@@ -248,6 +315,73 @@ find_localization_id() {
   echo "$result" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id' | head -n1
 }
 
+# apply-* 系コマンドの引数を解釈して CONFIG_PATH / ENV_FILTER にセットする
+# 使い方: parse_apply_args [config_path] [--env dev|prd]
+parse_apply_args() {
+  CONFIG_PATH=""
+  ENV_FILTER=""
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --env)
+        ENV_FILTER="$2"
+        shift 2
+        ;;
+      -*)
+        echo "エラー: 不明なオプションです: $1" >&2
+        exit 1
+        ;;
+      *)
+        CONFIG_PATH="$1"
+        shift
+        ;;
+    esac
+  done
+
+  CONFIG_PATH="${CONFIG_PATH:-$(dirname "$0")/appstoreconnect.products.json}"
+
+  if [ ! -f "$CONFIG_PATH" ]; then
+    echo "エラー: 設定ファイルが見つかりません: ${CONFIG_PATH}" >&2
+    exit 1
+  fi
+
+  if [ -n "$ENV_FILTER" ] && [ "$(jq -r --arg env "$ENV_FILTER" '.apps[$env] // empty' "$CONFIG_PATH")" = "" ]; then
+    echo "エラー: 設定ファイルの apps に env=${ENV_FILTER} がありません" >&2
+    exit 1
+  fi
+}
+
+# configのトップレベル配列から対象エントリを1行1JSONで出力する
+# ENV_FILTER が指定されていれば env が一致するものだけに絞る
+# 使い方: select_entries <トップレベルキー名>
+select_entries() {
+  jq -c --arg key "$1" --arg env "$ENV_FILTER" \
+    '.[$key][]? | select($env == "" or .env == $env)' "$CONFIG_PATH"
+}
+
+# 設定ファイルからの相対パスを解決する（reviewScreenshot用）
+# 使い方: resolve_config_path <path>
+resolve_config_path() {
+  local path="$1"
+
+  case "$path" in
+    /*) echo "$path" ;;
+    *) echo "$(cd "$(dirname "$CONFIG_PATH")" && pwd)/${path}" ;;
+  esac
+}
+
+# 配信対象territoryのIDを1行1件で出力する
+# 使い方: resolve_territories <"all" または JSON配列>
+resolve_territories() {
+  local spec="$1"
+
+  if [ "$spec" = '"all"' ] || [ "$spec" = "all" ]; then
+    get_all_pages "/v1/territories?limit=200" '.data[].id' | sort
+  else
+    echo "$spec" | jq -r '.[]' | sort
+  fi
+}
+
 # subscriptionLocalizations を upsert する（実機確認済み）
 # 使い方: apply_subscription_localization <subscription_id> <locale> <name> <description>
 apply_subscription_localization() {
@@ -267,6 +401,34 @@ apply_subscription_localization() {
     body=$(jq -n --arg sub "$subscription_id" --arg locale "$locale" --arg name "$name" --arg description "$description" \
       '{data:{type:"subscriptionLocalizations",attributes:{locale:$locale,name:$name,description:$description},relationships:{subscription:{data:{type:"subscriptions",id:$sub}}}}}')
     call POST /v1/subscriptionLocalizations "$body" > /dev/null
+  fi
+}
+
+# subscriptionGroupLocalizations を upsert する（実機確認済み）
+# サブスクグループ名（App内課金の「サブスクリプショングループの表示名」）は
+# 商品側のローカライズとは別リソースで、ここが未設定だと商品の価格・ローカライズを
+# 全て埋めても state が MISSING_METADATA のまま販売可能にならない
+# 使い方: apply_group_localization <subscription_group_id> <locale> <name> [custom_app_name]
+apply_group_localization() {
+  local group_id="$1"
+  local locale="$2"
+  local name="$3"
+  local custom_app_name="${4:-}"
+  local existing_id body attributes
+
+  existing_id=$(find_localization_id "/v1/subscriptionGroups/${group_id}/subscriptionGroupLocalizations" "$locale")
+
+  attributes=$(jq -n --arg name "$name" --arg custom "$custom_app_name" \
+    '{name:$name} + (if $custom == "" then {} else {customAppName:$custom} end)')
+
+  if [ -n "$existing_id" ]; then
+    body=$(jq -n --arg id "$existing_id" --argjson attributes "$attributes" \
+      '{data:{type:"subscriptionGroupLocalizations",id:$id,attributes:$attributes}}')
+    call PATCH "/v1/subscriptionGroupLocalizations/${existing_id}" "$body" > /dev/null
+  else
+    body=$(jq -n --arg group "$group_id" --arg locale "$locale" --argjson attributes "$attributes" \
+      '{data:{type:"subscriptionGroupLocalizations",attributes:($attributes + {locale:$locale}),relationships:{subscriptionGroup:{data:{type:"subscriptionGroups",id:$group}}}}}')
+    call POST /v1/subscriptionGroupLocalizations "$body" > /dev/null
   fi
 }
 
@@ -316,50 +478,69 @@ apply_iap_localization() {
 }
 
 # appstoreconnect.products.json を読み込んでローカリゼーションを一括反映する
-# 使い方: apply_localizations [config_path]
+# 使い方: parse_apply_args 済みの状態で apply_localizations
 apply_localizations() {
-  local config_path="${1:-$(dirname "$0")/appstoreconnect.products.json}"
+  local sub product_id subscription_id display_name env_name
+  local iap in_app_purchase_id
+  local loc locale name description
 
-  if [ ! -f "$config_path" ]; then
-    echo "エラー: 設定ファイルが見つかりません: ${config_path}" >&2
-    exit 1
-  fi
-
-  local sub product_id subscription_id display_name
-  jq -c '.subscriptions[]' "$config_path" | while read -r sub; do
+  while read -r sub; do
     product_id=$(echo "$sub" | jq -r '.productId')
     subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
     display_name=$(echo "$sub" | jq -r '.displayName')
+    env_name=$(echo "$sub" | jq -r '.env // "-"')
 
-    echo "$sub" | jq -c '.localizations[]?' | while read -r loc; do
-      local locale name description
+    while read -r loc; do
+      [ -z "$loc" ] && continue
       locale=$(echo "$loc" | jq -r '.locale')
       name=$(echo "$loc" | jq -r '.name')
       description=$(echo "$loc" | jq -r '.description')
 
-      echo "[subscriptions localizations] ${display_name} (${product_id} / ${subscription_id}): ${locale} を設定中..." >&2
+      echo "[subscriptions localizations] [${env_name}] ${display_name} (${product_id} / ${subscription_id}): ${locale} を設定中..." >&2
       apply_subscription_localization "$subscription_id" "$locale" "$name" "$description"
-      echo "[subscriptions localizations] ${display_name} (${locale}): 完了" >&2
-    done
-  done
+      echo "[subscriptions localizations] [${env_name}] ${display_name} (${locale}): 完了" >&2
+    done < <(echo "$sub" | jq -c '.localizations[]?')
+  done < <(select_entries subscriptions)
 
-  local iap in_app_purchase_id
-  jq -c '.inAppPurchases[]' "$config_path" | while read -r iap; do
+  while read -r iap; do
     product_id=$(echo "$iap" | jq -r '.productId')
     in_app_purchase_id=$(echo "$iap" | jq -r '.inAppPurchaseId')
     display_name=$(echo "$iap" | jq -r '.displayName')
+    env_name=$(echo "$iap" | jq -r '.env // "-"')
 
-    echo "$iap" | jq -c '.localizations[]?' | while read -r loc; do
-      local locale name description
+    while read -r loc; do
+      [ -z "$loc" ] && continue
       locale=$(echo "$loc" | jq -r '.locale')
       name=$(echo "$loc" | jq -r '.name')
       description=$(echo "$loc" | jq -r '.description')
 
-      echo "[inapp localizations] ${display_name} (${product_id} / ${in_app_purchase_id}): ${locale} を設定中..." >&2
+      echo "[inapp localizations] [${env_name}] ${display_name} (${product_id} / ${in_app_purchase_id}): ${locale} を設定中..." >&2
       apply_iap_localization "$in_app_purchase_id" "$locale" "$name" "$description"
-      echo "[inapp localizations] ${display_name} (${locale}): 完了" >&2
-    done
-  done
+      echo "[inapp localizations] [${env_name}] ${display_name} (${locale}): 完了" >&2
+    done < <(echo "$iap" | jq -c '.localizations[]?')
+  done < <(select_entries inAppPurchases)
+}
+
+# configの subscriptionGroups[].localizations を一括反映する
+# 使い方: parse_apply_args 済みの状態で apply_group_localizations
+apply_group_localizations() {
+  local group group_id env_name loc locale name custom_app_name
+
+  while read -r group; do
+    group_id=$(echo "$group" | jq -r '.groupId')
+    env_name=$(echo "$group" | jq -r '.env // "-"')
+
+    while read -r loc; do
+      [ -z "$loc" ] && continue
+      locale=$(echo "$loc" | jq -r '.locale')
+      name=$(echo "$loc" | jq -r '.name')
+      custom_app_name=$(echo "$loc" | jq -r '.customAppName // ""')
+
+      echo "[group localizations] [${env_name}] group=${group_id}: ${locale} \"${name}\" を設定中..." >&2
+      apply_group_localization "$group_id" "$locale" "$name" "$custom_app_name"
+      echo "[group localizations] [${env_name}] group=${group_id} (${locale}): 完了" >&2
+    done < <(echo "$group" | jq -c '.localizations[]?')
+  done < <(select_entries subscriptionGroups)
 }
 
 # 残り引数から --data / --data-file を取り出してBODYに格納する
@@ -472,63 +653,173 @@ upload_screenshot() {
   call PATCH "/v1/subscriptionAppStoreReviewScreenshots/${screenshot_id}" "$commit_body"
 }
 
-# appstoreconnect.products.json を読み込んで価格を一括反映する
-# 使い方: apply_prices [config_path]
-apply_prices() {
-  local config_path="${1:-$(dirname "$0")/appstoreconnect.products.json}"
+# subscriptionの現在の価格を "territory<TAB>pricePointId<TAB>customerPrice" 形式で出力する
+# territory は include に明示しないと relationships に含まれないため注意（実機確認済み）
+# 使い方: list_subscription_prices <subscription_id>
+list_subscription_prices() {
+  local subscription_id="$1"
 
-  if [ ! -f "$config_path" ]; then
-    echo "エラー: 設定ファイルが見つかりません: ${config_path}" >&2
+  get_all_pages "/v1/subscriptions/${subscription_id}/prices?include=subscriptionPricePoint,territory&limit=200" \
+    '. as $page
+     | (($page.included // []) | INDEX(.id)) as $points
+     | $page.data[]
+     | [ .relationships.territory.data.id,
+         .relationships.subscriptionPricePoint.data.id,
+         ($points[.relationships.subscriptionPricePoint.data.id].attributes.customerPrice // "") ]
+     | @tsv'
+}
+
+# subscriptionAvailabilities のidを返す（未作成なら空文字）
+# 使い方: find_subscription_availability_id <subscription_id>
+find_subscription_availability_id() {
+  local subscription_id="$1"
+
+  get_or_empty "/v1/subscriptions/${subscription_id}/subscriptionAvailability" | jq -r '.data.id // empty'
+}
+
+# subscriptionの配信対象territoryを1行1件で出力する（未作成なら何も出力しない）
+# 使い方: list_available_territories <subscription_id>
+list_available_territories() {
+  local subscription_id="$1"
+  local availability_id
+
+  availability_id=$(find_subscription_availability_id "$subscription_id")
+  if [ -z "$availability_id" ]; then
+    return 0
+  fi
+  get_all_pages "/v1/subscriptionAvailabilities/${availability_id}/availableTerritories?limit=200" '.data[].id'
+}
+
+# subscriptionPrices を1件POSTする
+# 使い方: create_subscription_price <subscription_id> <price_point_id> <territory>
+create_subscription_price() {
+  local body
+
+  body=$(jq -n --arg sub "$1" --arg pp "$2" --arg territory "$3" \
+    '{data:{type:"subscriptionPrices",attributes:{preserveCurrentPrice:false},relationships:{
+      subscription:{data:{type:"subscriptions",id:$sub}},
+      subscriptionPricePoint:{data:{type:"subscriptionPricePoints",id:$pp}},
+      territory:{data:{type:"territories",id:$territory}}
+    }}}')
+  call POST /v1/subscriptionPrices "$body" > /dev/null
+}
+
+# 基準price pointと等価な各国のprice pointを "territory<TAB>pricePointId" 形式で出力する（実機確認済み）
+# prices と同じく territory は include に明示しないと relationships に含まれない
+# 使い方: list_price_point_equalizations <price_point_id>
+list_price_point_equalizations() {
+  local price_point_id="$1"
+
+  get_all_pages "/v1/subscriptionPricePoints/${price_point_id}/equalizations?include=territory&limit=200" \
+    '.data[] | [ .relationships.territory.data.id, .id ] | @tsv'
+}
+
+# 基準territoryの価格と等価な価格を、配信対象の全territoryへ展開する
+# 使い方: equalize_subscription_prices <subscription_id> <base_price_point_id> <ラベル>
+equalize_subscription_prices() {
+  local subscription_id="$1"
+  local base_price_point_id="$2"
+  local label="$3"
+  local available existing equalizations territory price_point_id
+  local applied=0 skipped=0 out_of_scope=0
+
+  available=$(list_available_territories "$subscription_id")
+  if [ -z "$available" ]; then
+    echo "エラー: ${label}: 配信地域(subscriptionAvailability)が未作成のため価格を展開できません。先に apply-availability を実行してください" >&2
     exit 1
   fi
 
-  local sub product_id subscription_id display_name
-  jq -c '.subscriptions[]' "$config_path" | while read -r sub; do
+  existing=$(list_subscription_prices "$subscription_id" | cut -f1,2)
+  equalizations=$(list_price_point_equalizations "$base_price_point_id")
+
+  while IFS=$'\t' read -r territory price_point_id; do
+    if [ -z "$territory" ] || [ -z "$price_point_id" ]; then
+      echo "エラー: ${label}: equalizations のレスポンスからterritoryを取得できませんでした（include=territory の指定漏れの可能性）" >&2
+      exit 1
+    fi
+
+    if ! echo "$available" | grep -qx "$territory"; then
+      out_of_scope=$((out_of_scope + 1))
+      continue
+    fi
+    if echo "$existing" | grep -qx "${territory}	${price_point_id}"; then
+      skipped=$((skipped + 1))
+      continue
+    fi
+
+    create_subscription_price "$subscription_id" "$price_point_id" "$territory"
+    applied=$((applied + 1))
+  done < <(echo "$equalizations")
+
+  echo "[subscriptions prices] ${label}: 等価価格の展開 完了（適用 ${applied} / 設定済み ${skipped} / 配信対象外 ${out_of_scope}）" >&2
+}
+
+# appstoreconnect.products.json を読み込んで価格を一括反映する
+# 既に同じ価格が設定されているterritoryはスキップするため、何度実行しても安全（冪等）
+# 使い方: parse_apply_args 済みの状態で apply_prices
+apply_prices() {
+  local sub product_id subscription_id display_name env_name label
+  local existing price territory amount price_point_id
+  local equalize_from base_amount base_price_point_id
+  local iap in_app_purchase_id base_territory base_price body
+
+  while read -r sub; do
     product_id=$(echo "$sub" | jq -r '.productId')
     subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
     display_name=$(echo "$sub" | jq -r '.displayName')
+    env_name=$(echo "$sub" | jq -r '.env // "-"')
+    label="[${env_name}] ${display_name} (${product_id} / ${subscription_id})"
 
-    echo "$sub" | jq -c '.prices[]' | while read -r price; do
-      local territory amount price_point_id
+    existing=$(list_subscription_prices "$subscription_id")
+
+    while read -r price; do
+      [ -z "$price" ] && continue
       territory=$(echo "$price" | jq -r '.territory')
       amount=$(echo "$price" | jq -r '.amount')
 
-      echo "[subscriptions] ${display_name} (${product_id} / ${subscription_id}): ${territory} ${amount}円 を設定中..." >&2
+      if echo "$existing" | cut -f1,3 | grep -qx "${territory}	${amount}"; then
+        echo "[subscriptions prices] ${label}: ${territory} ${amount} は設定済みのためスキップ" >&2
+        continue
+      fi
+
+      echo "[subscriptions prices] ${label}: ${territory} ${amount} を設定中..." >&2
       price_point_id=$(find_price_point "/v1/subscriptions/${subscription_id}/pricePoints" "$territory" "$amount" | jq -r '.id')
+      create_subscription_price "$subscription_id" "$price_point_id" "$territory"
+      echo "[subscriptions prices] ${label}: ${territory} 完了" >&2
+    done < <(echo "$sub" | jq -c '.prices[]?')
 
-      local body
-      body=$(jq -n --arg sub "$subscription_id" --arg pp "$price_point_id" --arg territory "$territory" \
-        '{data:{type:"subscriptionPrices",attributes:{preserveCurrentPrice:false},relationships:{
-          subscription:{data:{type:"subscriptions",id:$sub}},
-          subscriptionPricePoint:{data:{type:"subscriptionPricePoints",id:$pp}},
-          territory:{data:{type:"territories",id:$territory}}
-        }}}')
-      call POST /v1/subscriptionPrices "$body" > /dev/null
-      echo "[subscriptions] ${display_name}: 完了" >&2
-    done
-  done
+    equalize_from=$(echo "$sub" | jq -r '.equalizeFrom // ""')
+    if [ -n "$equalize_from" ]; then
+      base_amount=$(echo "$sub" | jq -r --arg t "$equalize_from" '.prices[] | select(.territory == $t) | .amount')
+      if [ -z "$base_amount" ]; then
+        echo "エラー: ${label}: equalizeFrom(${equalize_from})に対応するpricesの指定がありません" >&2
+        exit 1
+      fi
 
-  local iap in_app_purchase_id base_territory
-  jq -c '.inAppPurchases[]' "$config_path" | while read -r iap; do
+      echo "[subscriptions prices] ${label}: ${equalize_from} ${base_amount} を基準に配信対象の全地域へ展開中..." >&2
+      base_price_point_id=$(find_price_point "/v1/subscriptions/${subscription_id}/pricePoints" "$equalize_from" "$base_amount" | jq -r '.id')
+      equalize_subscription_prices "$subscription_id" "$base_price_point_id" "$label"
+    fi
+  done < <(select_entries subscriptions)
+
+  while read -r iap; do
     product_id=$(echo "$iap" | jq -r '.productId')
     in_app_purchase_id=$(echo "$iap" | jq -r '.inAppPurchaseId')
     display_name=$(echo "$iap" | jq -r '.displayName')
+    env_name=$(echo "$iap" | jq -r '.env // "-"')
     base_territory=$(echo "$iap" | jq -r '.baseTerritory')
 
-    local base_price
     base_price=$(echo "$iap" | jq -c --arg t "$base_territory" '.prices[] | select(.territory == $t)')
     if [ -z "$base_price" ]; then
       echo "エラー: [inapp] ${display_name}: baseTerritory(${base_territory})に対応するpricesの指定がありません" >&2
       continue
     fi
 
-    local amount price_point_id
     amount=$(echo "$base_price" | jq -r '.amount')
 
-    echo "[inapp] ${display_name} (${product_id} / ${in_app_purchase_id}): base=${base_territory} ${amount}円 を設定中..." >&2
+    echo "[inapp prices] [${env_name}] ${display_name} (${product_id} / ${in_app_purchase_id}): base=${base_territory} ${amount} を設定中..." >&2
     price_point_id=$(find_price_point "/v2/inAppPurchases/${in_app_purchase_id}/pricePoints" "$base_territory" "$amount" | jq -r '.id')
 
-    local body
     body=$(jq -n --arg iap "$in_app_purchase_id" --arg pp "$price_point_id" --arg territory "$base_territory" \
       '{data:{type:"inAppPurchasePriceSchedules",relationships:{
         inAppPurchase:{data:{type:"inAppPurchases",id:$iap}},
@@ -541,8 +832,193 @@ apply_prices() {
         relationships:{inAppPurchasePricePoint:{data:{type:"inAppPurchasePricePoints",id:$pp}}}
       }]}')
     call POST /v1/inAppPurchasePriceSchedules "$body" > /dev/null
-    echo "[inapp] ${display_name}: 完了（baseTerritory分のみ。複数territory指定分の反映は未対応）" >&2
-  done
+    echo "[inapp prices] [${env_name}] ${display_name}: 完了（baseTerritory分のみ。冪等ではないので再実行に注意）" >&2
+  done < <(select_entries inAppPurchases)
+}
+
+# configの subscriptions[].availability を反映する
+# subscriptionAvailabilities はPATCH不可のため、地域を追加する場合も
+# 「既存 + 不足分」を全て含めてPOSTし直す
+# ※ 新規作成(未作成 → POST)は実機確認済み。既存への地域追加は未検証
+# 使い方: parse_apply_args 済みの状態で apply_availability
+apply_availability() {
+  local sub product_id subscription_id display_name env_name label
+  local spec available_in_new desired availability_id existing missing target body
+
+  while read -r sub; do
+    spec=$(echo "$sub" | jq -c '.availability // empty')
+    if [ -z "$spec" ]; then
+      continue
+    fi
+
+    product_id=$(echo "$sub" | jq -r '.productId')
+    subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
+    display_name=$(echo "$sub" | jq -r '.displayName')
+    env_name=$(echo "$sub" | jq -r '.env // "-"')
+    label="[${env_name}] ${display_name} (${product_id} / ${subscription_id})"
+
+    available_in_new=$(echo "$spec" | jq -r 'if .availableInNewTerritories == false then "false" else "true" end')
+    desired=$(resolve_territories "$(echo "$spec" | jq -c '.territories // "all"')")
+
+    availability_id=$(find_subscription_availability_id "$subscription_id")
+    if [ -n "$availability_id" ]; then
+      existing=$(get_all_pages "/v1/subscriptionAvailabilities/${availability_id}/availableTerritories?limit=200" '.data[].id' | sort)
+      missing=$(comm -23 <(echo "$desired") <(echo "$existing"))
+      if [ -z "$missing" ]; then
+        echo "[availability] ${label}: 設定済み（$(echo "$existing" | grep -c .)地域）のためスキップ" >&2
+        continue
+      fi
+      echo "[availability] ${label}: $(echo "$missing" | grep -c .)地域を追加中（既存 + 不足分を再POST）..." >&2
+      target=$(printf '%s\n%s\n' "$existing" "$missing" | grep . | sort -u)
+    else
+      echo "[availability] ${label}: 配信地域を新規作成中（$(echo "$desired" | grep -c .)地域）..." >&2
+      target="$desired"
+    fi
+
+    body=$(echo "$target" | jq -R -s -c --arg sub "$subscription_id" --argjson newTerritories "$available_in_new" \
+      'split("\n")
+       | map(select(length > 0))
+       | {data:{type:"subscriptionAvailabilities",
+           attributes:{availableInNewTerritories:$newTerritories},
+           relationships:{
+             subscription:{data:{type:"subscriptions",id:$sub}},
+             availableTerritories:{data: map({type:"territories", id:.})}
+           }}}')
+    call POST /v1/subscriptionAvailabilities "$body" > /dev/null
+    echo "[availability] ${label}: 完了" >&2
+  done < <(select_entries subscriptions)
+}
+
+# configの subscriptions[].reviewScreenshot を反映する
+# 既にCOMPLETEならスキップ、アップロード途中(AWAITING_UPLOAD等)で止まっていれば削除して再実行する
+# 使い方: parse_apply_args 済みの状態で apply_screenshots
+apply_screenshots() {
+  local sub product_id subscription_id display_name env_name label
+  local path_spec file_path existing screenshot_id state local_checksum
+
+  while read -r sub; do
+    path_spec=$(echo "$sub" | jq -r '.reviewScreenshot // ""')
+    if [ -z "$path_spec" ]; then
+      continue
+    fi
+
+    product_id=$(echo "$sub" | jq -r '.productId')
+    subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
+    display_name=$(echo "$sub" | jq -r '.displayName')
+    env_name=$(echo "$sub" | jq -r '.env // "-"')
+    label="[${env_name}] ${display_name} (${product_id} / ${subscription_id})"
+
+    existing=$(get_or_empty "/v1/subscriptions/${subscription_id}/appStoreReviewScreenshot")
+    screenshot_id=$(echo "$existing" | jq -r '.data.id // empty')
+    state=$(echo "$existing" | jq -r '.data.attributes.assetDeliveryState.state // empty')
+    file_path=$(resolve_config_path "$path_spec")
+
+    if [ ! -f "$file_path" ]; then
+      echo "エラー: ${label}: reviewScreenshot のファイルが存在しません: ${file_path}" >&2
+      exit 1
+    fi
+
+    # fileNameはApple側で "SOURCE" に正規化されるため同一性判定には使えない。
+    # アップロード時に送ったmd5が sourceFileChecksum に保持されるのでそれで比較する（実機確認済み）
+    local_checksum=$(md5 -q "$file_path" 2>/dev/null || md5sum "$file_path" | awk '{print $1}')
+    if [ "$state" = "COMPLETE" ] && [ "$(echo "$existing" | jq -r '.data.attributes.sourceFileChecksum // ""')" = "$local_checksum" ]; then
+      echo "[screenshot] ${label}: 同一ファイルがアップロード済み(COMPLETE)のためスキップ" >&2
+      continue
+    fi
+
+    if [ -n "$screenshot_id" ]; then
+      if [ "$state" = "COMPLETE" ]; then
+        echo "[screenshot] ${label}: アップロード済みのファイルと内容が異なるため差し替えます" >&2
+      else
+        echo "[screenshot] ${label}: 未完了(${state:-unknown})の既存アセットを削除します" >&2
+      fi
+      call DELETE "/v1/subscriptionAppStoreReviewScreenshots/${screenshot_id}" > /dev/null
+    fi
+
+    echo "[screenshot] ${label}: ${file_path} をアップロード中..." >&2
+    upload_screenshot "$subscription_id" "$file_path" > /dev/null
+    echo "[screenshot] ${label}: 完了" >&2
+  done < <(select_entries subscriptions)
+}
+
+# configの全プロダクトについてASC側の状態を確認する
+# 販売可能でないもの(MISSING_METADATA等)があれば終了コード1を返す
+# 使い方: parse_apply_args 済みの状態で verify
+verify() {
+  local ng=0
+  local group group_id env_name locales
+  local sub product_id subscription_id display_name label
+  local state territory_count price_count screenshot screenshot_state screenshot_source
+
+  while read -r group; do
+    group_id=$(echo "$group" | jq -r '.groupId')
+    env_name=$(echo "$group" | jq -r '.env // "-"')
+    locales=$(get_or_empty "/v1/subscriptionGroups/${group_id}/subscriptionGroupLocalizations" \
+      | jq -r '[.data[].attributes.locale] | join(",")')
+
+    if [ -z "$locales" ]; then
+      echo "NG   [${env_name}] subscriptionGroup ${group_id}: グループ名のローカライズが未設定（配下の商品が MISSING_METADATA になります）"
+      ng=1
+    else
+      echo "OK   [${env_name}] subscriptionGroup ${group_id}: ローカライズ ${locales}"
+    fi
+  done < <(select_entries subscriptionGroups)
+
+  while read -r sub; do
+    product_id=$(echo "$sub" | jq -r '.productId')
+    subscription_id=$(echo "$sub" | jq -r '.subscriptionId')
+    display_name=$(echo "$sub" | jq -r '.displayName')
+    env_name=$(echo "$sub" | jq -r '.env // "-"')
+    label="[${env_name}] ${product_id} (${display_name})"
+
+    state=$(get_or_empty "/v1/subscriptions/${subscription_id}" | jq -r '.data.attributes.state // "UNKNOWN"')
+    territory_count=$(list_available_territories "$subscription_id" | grep -c . || true)
+    price_count=$(list_subscription_prices "$subscription_id" | cut -f1 | sort -u | grep -c . || true)
+    locales=$(get_or_empty "/v1/subscriptions/${subscription_id}/subscriptionLocalizations" \
+      | jq -r '[.data[].attributes.locale] | join(",")')
+    screenshot=$(get_or_empty "/v1/subscriptions/${subscription_id}/appStoreReviewScreenshot")
+    screenshot_state=$(echo "$screenshot" | jq -r '.data.attributes.assetDeliveryState.state // "なし"')
+    screenshot_source=$(echo "$sub" | jq -r '.reviewScreenshot // ""')
+
+    case "$state" in
+      MISSING_METADATA|DEVELOPER_ACTION_NEEDED|REJECTED|UNKNOWN)
+        echo "NG   ${label}: ${state}"
+        ng=1
+        ;;
+      *)
+        echo "OK   ${label}: ${state}"
+        ;;
+    esac
+    echo "       配信地域 ${territory_count} / 価格設定済み ${price_count} 地域 / ローカライズ ${locales:-なし} / 審査用スクショ ${screenshot_state}"
+
+    if [ "$territory_count" -gt 0 ] && [ "$price_count" -lt "$territory_count" ]; then
+      echo "       警告: 価格が未設定の配信地域が $((territory_count - price_count)) 件あります（apply-prices の equalizeFrom で展開できます）"
+    fi
+    case "$screenshot_source" in
+      *placeholder*)
+        echo "       警告: 審査用スクリーンショットがプレースホルダのままです。審査提出前に実際のペイウォール画面に差し替えてください"
+        ;;
+    esac
+  done < <(select_entries subscriptions)
+
+  return "$ng"
+}
+
+# ASC側のメタデータをリソースの依存順にまとめて反映し、最後に状態を確認する
+# 使い方: parse_apply_args 済みの状態で apply_all
+apply_all() {
+  echo "=== 1/5 サブスクリプショングループのローカライズ ===" >&2
+  apply_group_localizations
+  echo "=== 2/5 配信地域 ===" >&2
+  apply_availability
+  echo "=== 3/5 価格 ===" >&2
+  apply_prices
+  echo "=== 4/5 商品のローカライズ ===" >&2
+  apply_localizations
+  echo "=== 5/5 審査用スクリーンショット ===" >&2
+  apply_screenshots
+  echo "=== 反映結果の確認 ===" >&2
+  verify
 }
 
 main() {
@@ -719,11 +1195,38 @@ main() {
       ;;
 
     apply-prices)
-      apply_prices "$1"
+      parse_apply_args "$@"
+      apply_prices
       ;;
 
     apply-localizations)
-      apply_localizations "$1"
+      parse_apply_args "$@"
+      apply_localizations
+      ;;
+
+    apply-group-localizations)
+      parse_apply_args "$@"
+      apply_group_localizations
+      ;;
+
+    apply-availability)
+      parse_apply_args "$@"
+      apply_availability
+      ;;
+
+    apply-screenshots)
+      parse_apply_args "$@"
+      apply_screenshots
+      ;;
+
+    apply-all)
+      parse_apply_args "$@"
+      apply_all
+      ;;
+
+    verify)
+      parse_apply_args "$@"
+      verify
       ;;
 
     -h|--help|help)
