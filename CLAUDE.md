@@ -280,7 +280,11 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 - 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`firebase/functions/**`を含めない）
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
-- 既存ルールも`paths:`を持つ: `swiftui-push-navigation.md`（`LocalPackage/Sources/**/*.swift`）
+- 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
+  - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`
+  - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
+  - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
+  - `adr.md`のみ`paths:`を持たない（技術選定はファイル種別に紐づかないため意図的に常時ロード）
 
 ## ファイル整理の規約
 

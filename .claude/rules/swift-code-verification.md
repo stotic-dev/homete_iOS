@@ -1,5 +1,6 @@
 ---
-applyTo: "**/*.swift"
+paths:
+  - "**/*.swift"
 ---
 
 # Swiftコード変更後の検証ルール
