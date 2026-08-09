@@ -42,7 +42,7 @@ Firestoreインデックスは `deploy-firestore-indexes.yml` で自動デプロ
 
 ### 決定にあたり考慮したデメリット
 
-* `workflow_run` はデフォルトブランチ上のワークフロー定義でしか動かないため、このワークフロー自体の変更はmainにマージするまで実際の挙動を検証できない。検証したい場合は作業ブランチの `push` を一時的にトリガーへ追加し、確認後にマージ前に外す運用とする
+* `workflow_run` はデフォルトブランチ上のワークフロー定義でしか動かないため、このワークフロー自体の変更はmainにマージするまで実際の挙動を検証できない
 * 発火元（`functions-e2e-test.yml`）の `name:` を変えると連鎖が黙って切れる。ワークフロー名が実質的な結合点になっている
 * デプロイのトリガーが間接的になり、GitHubのUI上で「このpushがデプロイした」という繋がりが追いにくい（サマリにcommit SHAを出して緩和する）
 * `FIREBASE_SERVICE_ACCOUNT` に Functions デプロイ相当の権限（Cloud Functions 管理者 / サービスアカウントユーザー / Cloud Build / Artifact Registry）が必要。インデックスデプロイ用の権限だけでは足りない可能性がある
