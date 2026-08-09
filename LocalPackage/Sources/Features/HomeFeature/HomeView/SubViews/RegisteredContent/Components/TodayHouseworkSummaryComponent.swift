@@ -16,6 +16,7 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.registeredContentNavigationPath) var navigationPath
 
     @State var isPresentingRegister = false
@@ -27,6 +28,7 @@ struct TodayHouseworkSummaryComponent: View {
     var body: some View {
         contentView(summary: TodayHouseworkSummary.make(
             storedAllItems: houseworkListStore.items,
+            template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
             calendar: calendar
         ))
