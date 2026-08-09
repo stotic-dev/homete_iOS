@@ -25,6 +25,21 @@
       "Edit(homete/Resouces/Secret_dev.xcconfig)"
     ]
   },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-.}/scripts/claude-verify-swift.sh\"",
+            "asyncRewake": true,
+            "timeout": 1200,
+            "statusMessage": "Swift検証中（ビルド・SwiftLint・テスト）"
+          }
+        ]
+      }
+    ]
+  },
   "sandbox": {
     "filesystem": {
       "allowWrite": [
