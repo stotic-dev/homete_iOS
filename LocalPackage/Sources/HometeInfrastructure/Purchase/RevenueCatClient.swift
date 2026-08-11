@@ -23,7 +23,13 @@ public final class RevenueCatClient: Sendable {
         }
 
         #if DEBUG
-        Purchases.logLevel = .debug
+        Purchases.logLevel = .verbose
+        #else
+        // Stg(Xcode実行/TestFlight配布)のビルドでも商品取得の失敗要因を追えるようログを出す。
+        // App Store配布のビルドだけレシート名がreceiptになるため、それ以外を対象にする。
+        if Bundle.main.appStoreReceiptURL?.lastPathComponent != "receipt" {
+            Purchases.logLevel = .verbose
+        }
         #endif
         Purchases.configure(withAPIKey: apiKey)
     }
