@@ -40,6 +40,15 @@ public final class ContributionStore {
         }
     }
 
+    /// 指定日まで遡って集計できるように、未取得の家事データを追加でフェッチする
+    public func fetchIfNeeded(until targetDate: Date, cohabitantId: String, calendar: Calendar) async {
+        await houseworkManager.fetchIfNeeded(
+            until: targetDate,
+            cohabitantId: cohabitantId,
+            calendar: calendar
+        )
+    }
+
 }
 
 // MARK: private

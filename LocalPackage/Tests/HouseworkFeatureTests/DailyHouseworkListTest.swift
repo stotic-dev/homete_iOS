@@ -21,8 +21,8 @@ enum DailyHouseworkListTest {
 
 extension DailyHouseworkListTest.MakeInitialValueCase {
 
-    @Test("一日の家事情報の保持期限は1年後になる")
-    func makeInitialValue() throws {
+    @Test("無料プランでは一日の家事情報の保持期限は1年後になる")
+    func makeInitialValueWithFreePlan() throws {
         // Arrange
         let calendar = Calendar.japanese
         let selectedDate = Date()
@@ -39,7 +39,34 @@ extension DailyHouseworkListTest.MakeInitialValueCase {
         let list = DailyHouseworkList.makeInitialValue(
             selectedDate: selectedDate,
             items: [],
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+        #expect(list == expectedList)
+    }
+
+    @Test("プレミアムプランでは一日の家事情報の保持期限は100年後になる")
+    func makeInitialValueWithPremiumPlan() throws {
+        // Arrange
+        let calendar = Calendar.japanese
+        let selectedDate = Date()
+        let selectedDay = calendar.startOfDay(for: selectedDate)
+        let expectedIndexedDate = HouseworkIndexedDate(value: selectedDay)
+        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 100, to: selectedDay))
+
+        let expectedList = DailyHouseworkList(
+            items: [],
+            metaData: .init(indexedDate: expectedIndexedDate, expiredAt: expectedExpiredAt)
+        )
+
+        // Act
+        let list = DailyHouseworkList.makeInitialValue(
+            selectedDate: selectedDate,
+            items: [],
+            calendar: calendar,
+            storagePolicy: .premium
         )
 
         // Assert

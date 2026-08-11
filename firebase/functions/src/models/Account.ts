@@ -5,6 +5,7 @@ export interface Account {
     id: string;
     cohabitantId?: string;
     fcmToken?: string;
+    isPremium: boolean;
 }
 
 /**
@@ -14,6 +15,7 @@ export class AccountFields {
   static readonly ID = "id";
   static readonly COHABITANT_ID = "cohabitantId";
   static readonly FCM_TOKEN = "fcmToken";
+  static readonly IS_PREMIUM = "isPremium";
 }
 
 /**
@@ -50,6 +52,9 @@ export class AccountConverter {
       id: data[AccountFields.ID] as string,
       cohabitantId: data[AccountFields.COHABITANT_ID] as string | undefined,
       fcmToken: data[AccountFields.FCM_TOKEN] as string | undefined,
+      // isPremium 導入前のドキュメントにはフィールドが無いため無料プラン扱いにする
+      isPremium:
+        (data[AccountFields.IS_PREMIUM] as boolean | undefined) ?? false,
     };
   }
 }

@@ -17,6 +17,8 @@ struct HouseworkDateHeaderContent: View {
 
     @Binding var dateList: HouseworkDateList
 
+    let onTapStorageLimit: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: .space4) {
             Text(yearMonthText)
@@ -25,7 +27,11 @@ struct HouseworkDateHeaderContent: View {
                 .padding(.horizontal, .space8)
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: .space8) {
+                    // 保存期間に応じて日付セルが数十〜数百件になるためLazyHStackで遅延生成する
+                    LazyHStack(spacing: .space8) {
+                        if dateList.hasStorageLimit {
+                            HouseworkStorageLimitCell(onTap: onTapStorageLimit)
+                        }
                         ForEach(dateList.items, id: \.date) { item in
                             createDateCell(item)
                         }
@@ -88,13 +94,29 @@ private extension HouseworkDateHeaderContent {
 }
 
 #if DEBUG
-#Preview(traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDateHeaderContent_無料プラン", traits: .sizeThatFitsLayout) {
     HouseworkDateHeaderContent(
         dateList: .constant(.init(
             anchorDate: .previewDate(year: 2026, month: 1, day: 1),
             selectedDate: .previewDate(year: 2026, month: 1, day: 1),
-            calendar: .japanese
-        ))
+            calendar: .japanese,
+            storagePolicy: .free
+        )),
+        onTapStorageLimit: {}
+    )
+    .setupEnvironmentForPreview()
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
+}
+
+#Preview("HouseworkDateHeaderContent_プレミアムプラン", traits: .sizeThatFitsLayout) {
+    HouseworkDateHeaderContent(
+        dateList: .constant(.init(
+            anchorDate: .previewDate(year: 2026, month: 1, day: 1),
+            selectedDate: .previewDate(year: 2026, month: 1, day: 1),
+            calendar: .japanese,
+            storagePolicy: .premium
+        )),
+        onTapStorageLimit: {}
     )
     .setupEnvironmentForPreview()
     .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))

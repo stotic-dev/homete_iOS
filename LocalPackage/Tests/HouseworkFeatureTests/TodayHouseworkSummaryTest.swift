@@ -58,7 +58,8 @@ extension TodayHouseworkSummaryTest.EmptyCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -93,7 +94,8 @@ extension TodayHouseworkSummaryTest.AllCompletedCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -127,7 +129,8 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -156,7 +159,8 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -189,7 +193,8 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -225,7 +230,8 @@ extension TodayHouseworkSummaryTest.ProgressCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -255,7 +261,8 @@ extension TodayHouseworkSummaryTest.ProgressCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -291,7 +298,8 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -326,7 +334,8 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -358,7 +367,8 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -396,7 +406,8 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -451,7 +462,8 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -488,7 +500,8 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: nowWithTime,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -532,7 +545,8 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -585,7 +599,8 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -624,7 +639,8 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert
@@ -663,7 +679,8 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
         )
 
         // Assert

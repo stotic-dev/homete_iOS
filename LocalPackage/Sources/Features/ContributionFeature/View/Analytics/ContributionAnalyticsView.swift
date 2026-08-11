@@ -16,17 +16,21 @@ struct ContributionAnalyticsView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
     @Environment(\.now) var now
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     @Binding var selectedPeriod: DisplayPointPeriod
 
     let analytics: ContributionAnalytics?
     let myUserId: String
     let latestAchievedDate: Date?
+    let onUpgradeTapped: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(spacing: .space16) {
-                if let analytics {
+                if isOverStoragePeriod {
+                    StoragePeriodLimitView(onUpgradeTapped: onUpgradeTapped)
+                } else if let analytics {
                     if analytics.isEmpty {
                         emptyContent()
                     } else {
@@ -102,6 +106,13 @@ private extension ContributionAnalyticsView {
 
 private extension ContributionAnalyticsView {
 
+    /// 表示中の期間が保存期間の上限より過去にはみ出しているか
+    var isOverStoragePeriod: Bool {
+        guard let range = selectedPeriod.calcDateRange(calendar: calendar) else { return false }
+
+        return !storagePolicy.isViewable(range.lowerBound, currentDate: now, calendar: calendar)
+    }
+
     func tappedLatestAchievedPeriodShowButton() {
         guard let latestDate = latestAchievedDate else { return }
         let clampedAnchor = min(latestDate, now)
@@ -120,7 +131,8 @@ private extension ContributionAnalyticsView {
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .week),
         myUserId: "user1",
-        latestAchievedDate: nil
+        latestAchievedDate: nil,
+        onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
     #if canImport(Prefire)
@@ -137,7 +149,8 @@ private extension ContributionAnalyticsView {
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
-        latestAchievedDate: nil
+        latestAchievedDate: nil,
+        onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
     #if canImport(Prefire)
@@ -154,7 +167,8 @@ private extension ContributionAnalyticsView {
         selectedPeriod: $selectedPeriod,
         analytics: .makeForPreview(type: .year),
         myUserId: "user1",
-        latestAchievedDate: nil
+        latestAchievedDate: nil,
+        onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
     #if canImport(Prefire)
@@ -171,8 +185,29 @@ private extension ContributionAnalyticsView {
         selectedPeriod: $selectedPeriod,
         analytics: .makeForTest(displayPeriod: selectedPeriod),
         myUserId: "user1",
-        latestAchievedDate: nil
+        latestAchievedDate: nil,
+        onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
+}
+
+#Preview("ContributionAnalyticsView_保存期間外", traits: .sizeThatFitsLayout) {
+    @Previewable @State var selectedPeriod = DisplayPointPeriod(
+        type: .month,
+        anchor: .previewDate(year: 2025, month: 4, day: 30)
+    )
+    ContributionAnalyticsView(
+        selectedPeriod: $selectedPeriod,
+        analytics: .makeForPreview(type: .month),
+        myUserId: "user1",
+        latestAchievedDate: nil,
+        onUpgradeTapped: {}
+    )
+    .setupEnvironmentForPreview()
+    .environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+    .environment(\.houseworkStoragePolicy, .free)
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
 }
 #endif

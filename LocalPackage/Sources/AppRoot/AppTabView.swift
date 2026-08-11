@@ -16,6 +16,7 @@ struct AppTabView: View {
     @Environment(\.appDependencies) var appDependencies
     @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
@@ -38,6 +39,10 @@ struct AppTabView: View {
             .environment(
                 \.houseworkTemplateContext,
                 houseworkTemplateListStore?.context ?? .init(metadata: nil, houseworkTemplate: [])
+            )
+            .environment(
+                \.houseworkStoragePolicy,
+                HouseworkStoragePolicy(isPremium: subscriptionStore.isPremium)
             )
     }
 

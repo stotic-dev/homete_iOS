@@ -15,11 +15,12 @@ public struct DailyHouseworkList: Equatable, Sendable {
     public static func makeInitialValue(
         selectedDate: Date,
         items: [HouseworkItem],
-        calendar: Calendar
+        calendar: Calendar,
+        storagePolicy: HouseworkStoragePolicy
     ) -> Self {
         .init(
             items: items,
-            metaData: .init(selectedDate: selectedDate, calendar: calendar)
+            metaData: .init(selectedDate: selectedDate, calendar: calendar, storagePolicy: storagePolicy)
         )
     }
 

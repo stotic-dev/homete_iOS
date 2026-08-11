@@ -23,6 +23,8 @@ public struct HouseworkClient: Sendable {
         _ from: Date,
         _ to: Date
     ) async throws -> [HouseworkItem]
+    /// 同居人グループの家事データの保持期限を、現在のプランに合わせて再計算する
+    public let syncRetention: @Sendable (_ cohabitantId: String) async throws -> Void
 
 }
 
@@ -48,13 +50,15 @@ public extension HouseworkClient {
             _ cohabitantId: String,
             _ from: Date,
             _ to: Date
-        ) async throws -> [HouseworkItem] = { _, _, _ in [] }
+        ) async throws -> [HouseworkItem] = { _, _, _ in [] },
+        syncRetentionHandler: @escaping @Sendable (_ cohabitantId: String) async throws -> Void = { _ in }
     ) {
         insertOrUpdateItem = insertOrUpdateItemHandler
         removeItem = removeItemHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler
         fetchItems = fetchItemsHandler
+        syncRetention = syncRetentionHandler
     }
 
     static let previewValue = HouseworkClient()

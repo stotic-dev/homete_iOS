@@ -17,6 +17,7 @@ public struct RootView: View {
 
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     public var body: some View {
         ZStack {
@@ -48,6 +49,11 @@ public struct RootView: View {
                 await onChangeAccount()
             }
         }
+        .onChange(of: subscriptionStore.isPremium) {
+            Task {
+                await authSubscriptionSyncUseCase.syncPremiumStateIfNeeded()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
             onReceiveFcmToken(notification)
         }
@@ -65,7 +71,8 @@ public extension RootView {
             let subscriptionStore = SubscriptionStore(purchaseClient: $0.purchaseClient)
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
-                subscriptionStore: subscriptionStore
+                subscriptionStore: subscriptionStore,
+                houseworkClient: $0.houseworkClient
             )
 
             RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)

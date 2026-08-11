@@ -11,7 +11,9 @@ import SwiftUI
 public struct HouseworkBoardScreen: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var now
     @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -44,6 +46,10 @@ public struct HouseworkBoardScreen: View {
                     onAppeare(with: houseworkListStore)
                 }
             }
+            // プランが確定・変化したタイミングで日付リストの選択可能範囲を組み直す
+            .task(id: storagePolicy) {
+                rebuildDateList()
+            }
         } else {
             // TODO: グループ登録前は利用できない旨の空表示を出す
             ContentUnavailableView(
@@ -63,6 +69,15 @@ private extension HouseworkBoardScreen {
         updateHouseboardList(with: store)
     }
 
+    func rebuildDateList() {
+        dateList = .init(
+            anchorDate: now,
+            selectedDate: dateList.selectedDate,
+            calendar: calendar,
+            storagePolicy: storagePolicy
+        )
+    }
+
     func updateHouseboardList(with store: HouseworkListStore) {
         let selectedDate = dateList.selectedDate
         houseworkBoardList = .init(
@@ -70,6 +85,7 @@ private extension HouseworkBoardScreen {
             selectedDateTemplate: templateContext.templateOfDay(by: selectedDate, calendar: calendar),
             selectedDate: dateList.selectedDate,
             calendar: calendar,
+            storagePolicy: storagePolicy,
             uuidGenerator: { UUID() }
         )
     }

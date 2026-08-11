@@ -3,6 +3,7 @@
 //
 
 import FirebaseFirestore
+import FirebaseFunctions
 import HometeDomain
 import HometeInfrastructure
 
@@ -39,6 +40,10 @@ extension HouseworkClient {
                 .whereField("indexedDate.value", isGreaterThanOrEqualTo: from)
                 .whereField("indexedDate.value", isLessThanOrEqualTo: to)
         }
+    } syncRetentionHandler: { cohabitantId in
+        _ = try await Functions.functions()
+            .httpsCallable("synchouseworkretention")
+            .call(["cohabitantId": cohabitantId])
     }
 
 }

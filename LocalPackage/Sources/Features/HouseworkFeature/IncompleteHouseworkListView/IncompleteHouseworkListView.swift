@@ -14,6 +14,7 @@ public struct IncompleteHouseworkListView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
     @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     public static func make() -> some View {
@@ -25,7 +26,8 @@ public struct IncompleteHouseworkListView: View {
             storedAllItems: houseworkListStore.items,
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: storagePolicy
         )
         )
         .navigationTitle("未完了の家事")
