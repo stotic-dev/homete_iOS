@@ -31,11 +31,26 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
 
 public extension TodayHouseworkSummary {
 
-    static func make(storedAllItems: StoredAllHouseworkList, now: Date, calendar: Calendar) -> Self {
+    /// 当日のサマリーを生成する
+    ///
+    /// - Parameter template: 当日のテンプレート。家事ボード画面と同様に、
+    ///   未登録のテンプレート家事もマージして「今日の家事」として扱う。
+    static func make(
+        storedAllItems: StoredAllHouseworkList,
+        template: HouseworkTemplateDay?,
+        now: Date,
+        calendar: Calendar
+    ) -> Self {
         let today = calendar.startOfDay(for: now)
-        let allItems = storedAllItems.value
+        let storedItems = storedAllItems.value
             .first { $0.metaData.indexedDate.value == today }?
             .items ?? []
+        let allItems = template?.applyTemplate(
+            registeredItems: storedItems,
+            selectedDate: today,
+            calendar: calendar,
+            idGenerator: { makeUnregisteredItemId(from: $0) }
+        ) ?? storedItems
 
         let incomplete = allItems.filter { item in
             item.state == .incomplete || item.state == .pendingApproval
@@ -63,6 +78,18 @@ public extension TodayHouseworkSummary {
             displayIncompleteItems: displayIncompleteItems,
             hasMoreIncomplete: hasMoreIncomplete
         )
+    }
+
+}
+
+private extension TodayHouseworkSummary {
+
+    /// 未登録のテンプレート家事に振るID
+    ///
+    /// 永続化されていないためFirestore上のIDを持たない。サマリーの再計算ごとにIDが変わらないよう、
+    /// テンプレートの家事IDから決定的に導出する。
+    static func makeUnregisteredItemId(from templateItem: HouseworkTemplateItem) -> String {
+        "template-\(templateItem.id.id)"
     }
 
 }

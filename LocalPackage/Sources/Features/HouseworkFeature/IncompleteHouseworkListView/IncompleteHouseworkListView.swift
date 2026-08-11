@@ -13,6 +13,7 @@ public struct IncompleteHouseworkListView: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     public static func make() -> some View {
@@ -22,6 +23,7 @@ public struct IncompleteHouseworkListView: View {
     public var body: some View {
         contentView(summary: TodayHouseworkSummary.make(
             storedAllItems: houseworkListStore.items,
+            template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
             calendar: calendar
         )

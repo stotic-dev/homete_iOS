@@ -23,6 +23,7 @@ enum TodayHouseworkSummaryTest {
     struct ProgressCase {}
     struct DisplayIncompleteItemsCase {}
     struct DateFilterCase {}
+    struct TemplateCase {}
 
     static func makeStoredForToday(items: [HouseworkItem]) -> StoredAllHouseworkList {
         StoredAllHouseworkList(value: [
@@ -34,6 +35,11 @@ enum TodayHouseworkSummaryTest {
                 )
             ),
         ])
+    }
+
+    /// テンプレートから生成される家事に設定される有効期限（当日の1年後）
+    static func expiredAtOfToday() throws -> Date {
+        try #require(calendar.date(byAdding: .year, value: 1, to: today))
     }
 
 }
@@ -50,6 +56,7 @@ extension TodayHouseworkSummaryTest.EmptyCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -84,6 +91,7 @@ extension TodayHouseworkSummaryTest.AllCompletedCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -117,6 +125,7 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -145,6 +154,7 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -177,6 +187,7 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -212,6 +223,7 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -241,6 +253,7 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -276,6 +289,7 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -310,6 +324,7 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -341,6 +356,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -378,6 +394,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -432,6 +449,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: TodayHouseworkSummaryTest.today,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -468,6 +486,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let actual = TodayHouseworkSummary.make(
             storedAllItems: input,
+            template: nil,
             now: nowWithTime,
             calendar: TodayHouseworkSummaryTest.calendar
         )
@@ -480,6 +499,190 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             progress: 0,
             displayState: .hasIncomplete,
             displayIncompleteItems: [todayItem],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+}
+
+extension TodayHouseworkSummaryTest.TemplateCase {
+
+    @Test("未登録のテンプレート家事も当日の家事としてサマリーに反映される")
+    func make_mergesUnregisteredTemplateItems() throws {
+        // Arrange
+
+        let registeredItem = HouseworkItem.makeForTest(id: 1, state: .completed)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [registeredItem])
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [
+                .init(
+                    id: .init(id: "templateId1"),
+                    title: "洗濯",
+                    point: 10,
+                    updatedAt: Date.previewDate(year: 2026, month: 5, day: 17)
+                ),
+            ]
+        )
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: template,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let templateItem = try HouseworkItem.makeForTest(
+            id: "template-templateId1",
+            indexedDate: TodayHouseworkSummaryTest.today,
+            title: "洗濯",
+            point: 10,
+            state: .incomplete,
+            expiredAt: TodayHouseworkSummaryTest.expiredAtOfToday(),
+            templateHouseworkItemId: .init(id: "templateId1")
+        )
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [registeredItem, templateItem],
+            incompleteItems: [templateItem],
+            progress: 0.5,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [templateItem],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("登録済みのテンプレート家事はテンプレート由来の家事として重複追加されない")
+    func make_doesNotDuplicateRegisteredTemplateItems() {
+        // Arrange
+
+        let registeredItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .incomplete,
+            templateHouseworkItemId: .init(id: "templateId1")
+        )
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [registeredItem])
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [
+                .init(
+                    id: .init(id: "templateId1"),
+                    title: "洗濯",
+                    point: 10,
+                    updatedAt: Date.previewDate(year: 2026, month: 5, day: 17)
+                ),
+            ]
+        )
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: template,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [registeredItem],
+            incompleteItems: [registeredItem],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [registeredItem],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("当日より後に更新されたテンプレート家事はサマリーに反映されない")
+    func make_excludesTemplateItemUpdatedAfterToday() {
+        // Arrange
+
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [])
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [
+                .init(
+                    id: .init(id: "templateId1"),
+                    title: "洗濯",
+                    point: 10,
+                    updatedAt: Date.previewDate(year: 2026, month: 5, day: 19)
+                ),
+            ]
+        )
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: template,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [],
+            incompleteItems: [],
+            progress: 0,
+            displayState: .empty,
+            displayIncompleteItems: [],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("当日の登録済み家事が0件でも、テンプレート家事があればサマリーに反映される")
+    func make_mergesTemplateItemsWhenNoStoredEntryForToday() throws {
+        // Arrange
+
+        let input = StoredAllHouseworkList(value: [])
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [
+                .init(
+                    id: .init(id: "templateId1"),
+                    title: "洗濯",
+                    point: 10,
+                    updatedAt: Date.previewDate(year: 2026, month: 5, day: 17)
+                ),
+            ]
+        )
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: template,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar
+        )
+
+        // Assert
+
+        let templateItem = try HouseworkItem.makeForTest(
+            id: "template-templateId1",
+            indexedDate: TodayHouseworkSummaryTest.today,
+            title: "洗濯",
+            point: 10,
+            state: .incomplete,
+            expiredAt: TodayHouseworkSummaryTest.expiredAtOfToday(),
+            templateHouseworkItemId: .init(id: "templateId1")
+        )
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [templateItem],
+            incompleteItems: [templateItem],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [templateItem],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
