@@ -311,17 +311,22 @@ export const synchouseworkretention = onCall(async (request) => { /* ... */ });
 3. グループメンバー全員のプレミアム状態を解決し、1人でもプレミアムなら「グループはプレミアム」と判定
 4. `Houseworks` 配下を500件ずつ `BulkWriter` / バッチで走査し `expiredAt` を再計算して更新
    - グループがプレミアム: 各家事の `indexedDate.value` + 100年
-   - グループが無料: **実行日（解約日相当）+ 1年**
+   - グループが無料: **実行日（解約日相当）+ 1年**。ただし既存の `expiredAt` がそれより手前なら据え置く
 5. 冪等に実装する（加入時・解約時とも同じ関数で「現在のプラン基準に揃える」処理にする）
+
+> 無料時に既存の期限を延ばさないのは、実行日起点のままだと呼ぶたびに期限が伸びて冪等でなくなるため。グループのメンバーが繰り返し呼ぶだけでTTLによる削除を無期限に先送りできてしまう。
 
 **プレミアム状態のサーバー側解決**: RevenueCat の状態はサーバーが直接持っていない。`Account` ドキュメントにプレミアム状態を書き込む必要があるため、`AuthSubscriptionSyncUseCase`（`LocalPackage/Sources/HometeDomain/UseCase/AuthSubscriptionSyncUseCase.swift`）でエンタイトルメント同期時に `Account.isPremium` を保存する形にする。Function はこのフィールドを参照してグループ判定を行う。
 
 > この `Account.isPremium` はクライアント書き込みになるため、Firestore Rules で「自分のドキュメントのみ書き込み可」を担保する。改竄されてもデータ保持期間が延びるだけで課金機能の解放には繋がらない（閲覧制限はクライアントのエンタイトルメント判定に依存）ため、リスクは限定的と判断する。
 
-**呼び出しタイミング**: `AuthSubscriptionSyncUseCase.syncPremiumStateIfNeeded()` が `Account.isPremium` と現在のエンタイトルメントを突き合わせ、**差分があるときだけ** Function を呼ぶ。呼び出し元は次の2箇所。
+**呼び出しタイミング**: `AuthSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()` が「同期済みの `(cohabitantId, isPremium)`」と現在の状態を突き合わせ、**差分があるときだけ** Function を呼ぶ。呼び出し元は次の3箇所。
 
 - `RootView` の `.onChange(of: subscriptionStore.isPremium)` — 起動中のプラン変更を拾う
 - `syncOnSignedIn` / `syncOnRegistered` — アプリ未起動の間に失効したケースは状態変化として検知できないため、サインイン時にも突き合わせる
+- `RootView` の `.onChange(of: accountStore.account)` — グループへの参加はアカウント更新として届くため、参加後の同期をここで拾う
+
+同期の完了状態は `Account.isPremium` の更新有無ではなく、`HouseworkRetentionSyncStateStore`（端末の `UserDefaults`）に独立して記録する。`Account.isPremium` の差分だけを条件にすると、**グループ未参加のままプレミアムになった場合**や**Function の呼び出しに失敗した場合**にプレミアム状態だけが先に確定してしまい、以降の呼び出しが「差分なし」で素通りして二度と同期されなくなるため。記録は同期成功時のみ残すことで、未完了なら次の起動・プラン変更で必ずやり直す。
 
 ### 7. 保存期間ポリシーのView階層への配布
 

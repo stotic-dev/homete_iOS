@@ -68,6 +68,24 @@ describe("syncHouseworkRetention E2E Tests", () => {
       // Assert
       expect(actual).toEqual(new Date("2027-09-01T00:00:00.000Z"));
     });
+
+    it("無料では既存の期限が猶予内なら延長せずそのまま返す", () => {
+      // Arrange: 解約直後の同期で 2027-09-01 が設定済みの状態を再現する
+      const indexedDate = new Date("2020-01-01T00:00:00.000Z");
+      const executedAt = new Date("2026-10-01T00:00:00.000Z");
+      const currentExpiredAt = new Date("2027-09-01T00:00:00.000Z");
+
+      // Act
+      const actual = HouseworkRetention.calcExpiredAt(
+        false,
+        indexedDate,
+        executedAt,
+        currentExpiredAt
+      );
+
+      // Assert: 実行日+1年(2027-10-01)へ延ばさない
+      expect(actual).toEqual(currentExpiredAt);
+    });
   });
 
   describe("updateHouseworkExpiredAt", () => {
@@ -113,6 +131,33 @@ describe("syncHouseworkRetention E2E Tests", () => {
 
       // Assert: 家事の日付(2020年)起点ではなく実行日起点になり、猶予が残る
       expect(updatedCount).toBe(1);
+      const actual = await fetchExpiredAt(cohabitantId, "housework-1");
+      expect(actual).toEqual(new Date("2027-09-01T00:00:00.000Z"));
+    });
+
+    it("無料で繰り返し実行しても期限が先送りされない（冪等）", async () => {
+      // Arrange
+      const cohabitantId = `sync-free-idempotent-cohabitant-${testCounter}`;
+      const indexedDate = new Date("2020-01-01T00:00:00.000Z");
+      await createTestHousework(cohabitantId, "housework-1", {
+        indexedDate: {value: Timestamp.fromDate(indexedDate)},
+        expiredAt: Timestamp.fromDate(new Date("2120-01-01T00:00:00.000Z")),
+      });
+      await updateHouseworkExpiredAt(
+        cohabitantId,
+        false,
+        new Date("2026-09-01T00:00:00.000Z")
+      );
+
+      // Act: 1ヶ月後に再度呼び出す
+      const updatedCount = await updateHouseworkExpiredAt(
+        cohabitantId,
+        false,
+        new Date("2026-10-01T00:00:00.000Z")
+      );
+
+      // Assert: 初回に決まった猶予期限のまま動かない
+      expect(updatedCount).toBe(0);
       const actual = await fetchExpiredAt(cohabitantId, "housework-1");
       expect(actual).toEqual(new Date("2027-09-01T00:00:00.000Z"));
     });

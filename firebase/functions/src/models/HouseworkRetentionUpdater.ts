@@ -57,14 +57,15 @@ export async function updateHouseworkExpiredAt(
         continue;
       }
 
-      const expiredAt = HouseworkRetention.calcExpiredAt(
-        isGroupPremium,
-        indexedDate,
-        executedAt
-      );
       const currentExpiredAt = (
         data[HouseworkFields.EXPIRED_AT] as Timestamp | undefined
       )?.toDate();
+      const expiredAt = HouseworkRetention.calcExpiredAt(
+        isGroupPremium,
+        indexedDate,
+        executedAt,
+        currentExpiredAt
+      );
 
       // 差分がないドキュメントは書き込みコストを避けるためスキップする
       if (
