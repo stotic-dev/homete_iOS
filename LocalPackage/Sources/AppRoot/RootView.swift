@@ -129,6 +129,8 @@ private extension RootView {
 
         await updateFcmTokenIfNeeded()
         launchState = .loggedIn(context: .init(account: account))
+        // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
+        await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
     }
 
     func updateFcmTokenIfNeeded() async {

@@ -3,11 +3,19 @@
 //  hometeTests
 //
 
+import Foundation
 @testable import HometeDomain
 import Testing
 
 @MainActor
 struct AuthSubscriptionSyncUseCaseTest {
+
+    /// テストごとに独立したUserDefaultsを用意する
+    private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncStateStore {
+        let userDefaults = UserDefaults(suiteName: suiteName) ?? .standard
+        userDefaults.removePersistentDomain(forName: suiteName)
+        return HouseworkRetentionSyncStateStore(userDefaults: userDefaults)
+    }
 
     @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
     func syncOnSignedInSuccess() async {
@@ -175,7 +183,8 @@ struct AuthSubscriptionSyncUseCaseTest {
                 houseworkClient: .init(syncRetentionHandler: {
                     #expect($0 == inputCohabitantId)
                     confirmation()
-                })
+                }),
+                retentionSyncStateStore: makeSyncStateStore(#function)
             )
 
             await useCase.syncPremiumStateIfNeeded()
@@ -184,28 +193,85 @@ struct AuthSubscriptionSyncUseCaseTest {
         }
     }
 
-    @Test("プレミアム状態が変化していない場合は保持期限の同期を行わない")
-    func syncPremiumStateIfNeededWhenNotChanged() async {
+    @Test("同期済みの内容と一致する場合は保持期限の同期を行わない")
+    func syncPremiumStateIfNeededWhenAlreadySynced() async {
         await confirmation(expectedCount: 0) { confirmation in
+            let inputCohabitantId = "cohabitantId"
             let inputAccount = Account(
                 id: "testAccountId",
                 userName: "testUserName",
                 fcmToken: nil,
-                cohabitantId: "cohabitantId",
+                cohabitantId: inputCohabitantId,
                 isPremium: false
             )
+            let syncStateStore = makeSyncStateStore(#function)
+            syncStateStore.save(.init(cohabitantId: inputCohabitantId, isPremium: false))
             let accountStore = AccountStore(account: inputAccount)
             let useCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
                 subscriptionStore: SubscriptionStore(),
                 houseworkClient: .init(syncRetentionHandler: { _ in
                     confirmation()
-                })
+                }),
+                retentionSyncStateStore: syncStateStore
             )
 
             await useCase.syncPremiumStateIfNeeded()
 
             #expect(accountStore.account == inputAccount)
+        }
+    }
+
+    @Test("グループ未参加で同期をスキップした場合、グループ参加後に同期される")
+    func syncHouseworkRetentionAfterJoiningCohabitant() async {
+        await confirmation(expectedCount: 1) { confirmation in
+            let inputCohabitantId = "cohabitantId"
+            let accountStore = AccountStore(account: Account(
+                id: "testAccountId",
+                userName: "testUserName",
+                fcmToken: nil,
+                cohabitantId: nil,
+                isPremium: true
+            ))
+            let useCase = AuthSubscriptionSyncUseCase(
+                accountStore: accountStore,
+                subscriptionStore: SubscriptionStore(),
+                houseworkClient: .init(syncRetentionHandler: {
+                    #expect($0 == inputCohabitantId)
+                    confirmation()
+                }),
+                retentionSyncStateStore: makeSyncStateStore(#function)
+            )
+            // グループ未参加の状態では同期先が無いためスキップされる
+            await useCase.syncHouseworkRetentionIfNeeded()
+            try? await accountStore.registerCohabitantId(inputCohabitantId)
+
+            await useCase.syncHouseworkRetentionIfNeeded()
+        }
+    }
+
+    @Test("保持期限の同期に失敗した場合は次の機会に再試行される")
+    func syncHouseworkRetentionRetriesAfterFailure() async {
+        await confirmation(expectedCount: 2) { confirmation in
+            let accountStore = AccountStore(account: Account(
+                id: "testAccountId",
+                userName: "testUserName",
+                fcmToken: nil,
+                cohabitantId: "cohabitantId",
+                isPremium: true
+            ))
+            let useCase = AuthSubscriptionSyncUseCase(
+                accountStore: accountStore,
+                subscriptionStore: SubscriptionStore(),
+                houseworkClient: .init(syncRetentionHandler: { _ in
+                    confirmation()
+                    throw DomainError.other
+                }),
+                retentionSyncStateStore: makeSyncStateStore(#function)
+            )
+            await useCase.syncHouseworkRetentionIfNeeded()
+
+            await useCase.syncHouseworkRetentionIfNeeded()
         }
     }
 
