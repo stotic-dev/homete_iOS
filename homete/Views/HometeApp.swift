@@ -16,10 +16,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
-    let adsSetupUseCase = AdsSetupUseCase(
-        consentClient: .liveValue,
-        mobileAdsClient: .liveValue
-    )
 
     func application(
         _: UIApplication,
@@ -28,9 +24,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         // Initialize Firebase
         setupFirebase()
-
-        // Initialize Google Mobile Ads
-        setupGoogleMobileAds()
 
         // Initialize RevenueCat
         setupRevenueCat()
@@ -68,13 +61,6 @@ private extension AppDelegate {
         #else
         FirebaseApp.configure()
         #endif
-    }
-
-    func setupGoogleMobileAds() {
-        guard !isXcodePreview, !isUnitTestMode else { return }
-        Task {
-            await adsSetupUseCase.setup()
-        }
     }
 
     func setupRevenueCat() {
