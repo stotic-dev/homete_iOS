@@ -25,10 +25,14 @@ echo "🎨 SwiftFormatを実行中..."
 echo "$STAGED_FILES" | sed 's/^/  - /'
 
 # ProjectToolsのSwiftPMプラグイン経由でSwiftFormatを実行
+# - --disable-sandbox: SwiftPM自身のsandbox-execを無効化する（`make format` と同じ）。
+#   これが無いと、サンドボックス下のシェルから呼ばれた際にネストしたsandbox-execが
+#   "sandbox_apply: Operation not permitted" で落ち、commitが通らなくなる。
+#   プラグインには下の --allow-writing-to-* で書き込みを許可済みなので実害はない。
 # - --allow-writing-to-package-directory: プラグインが自パッケージ内のソースを処理するため
 # - --allow-writing-to-directory: リポジトリ全体（パッケージ外）を整形対象にするため
 echo "$STAGED_FILES" \
-    | xargs swift package --package-path ProjectTools plugin \
+    | xargs swift package --package-path ProjectTools --disable-sandbox plugin \
         --allow-writing-to-package-directory \
         --allow-writing-to-directory "$REPO_ROOT" \
         swiftformat --config "$REPO_ROOT/.swiftformat"

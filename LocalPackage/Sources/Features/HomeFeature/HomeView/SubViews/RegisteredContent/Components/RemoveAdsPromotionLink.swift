@@ -24,7 +24,9 @@ struct RemoveAdsPromotionLink: View {
                     .font(with: .caption)
             }
             .foregroundStyle(.primary2)
-            .frame(maxWidth: .infinity)
+            // テキストリンク風の見た目のまま、タップ領域だけHIG推奨の44pt四方を確保する
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
         }
     }
 
