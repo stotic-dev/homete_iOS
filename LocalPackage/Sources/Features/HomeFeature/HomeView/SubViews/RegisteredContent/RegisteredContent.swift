@@ -22,6 +22,7 @@ struct RegisteredContent: View {
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
 
     @State var isShowHouseworkTemplate = false
+    @State var isShowPaywall = false
 
     @LoadingState var loadingState
 
@@ -31,8 +32,13 @@ struct RegisteredContent: View {
                 VStack(spacing: .space24) {
                     TodayHouseworkSummaryComponent.make()
                     if !subscriptionStore.isPremium {
-                        adComponentResolver.resolve(.banner(.dashboardTop))
-                            .frame(height: 150)
+                        VStack(spacing: .space8) {
+                            adComponentResolver.resolve(.banner(.dashboardTop))
+                                .frame(height: 150)
+                            RemoveAdsPromotionLink {
+                                isShowPaywall = true
+                            }
+                        }
                     }
                     ContributionSummaryComponent.make()
                         .padding(.vertical, .space16)
@@ -48,6 +54,9 @@ struct RegisteredContent: View {
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
+            router.resolve(.paywall)
         }
         .onChange(of: contributionStore.isInitialLoaded) {
             onChangeStoreInitialLoadedStatus()
