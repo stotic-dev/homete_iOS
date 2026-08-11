@@ -10,27 +10,17 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-public struct RegistrationAccountView: View {
+struct RegistrationAccountView: View {
 
-    @Environment(\.launchStateProxy) var launchStateProxy
-    @Environment(\.routeResolver) var router
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
-    @Environment(SubscriptionStore.self) var subscriptionStore
     @LoadingState var loadingState
 
     @State var inputUserName = UserName()
-    /// 登録完了したアカウント（Paywallを閉じた後にログイン状態へ遷移させるために保持する）
-    @State var registeredAccount: Account?
-    @State var isShowPaywall = false
     let authInfo: AccountAuthResult
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
+    /// アカウント登録が完了したときに呼ばれる
+    let onRegistered: (Account) -> Void
 
-    public init(authInfo: AccountAuthResult, authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase) {
-        self.authInfo = authInfo
-        self.authSubscriptionSyncUseCase = authSubscriptionSyncUseCase
-    }
-
-    public var body: some View {
+    var body: some View {
         NavigationStack {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
@@ -67,11 +57,6 @@ public struct RegistrationAccountView: View {
             .inlineNavigationBarTitleDisplayMode()
         }
         .fullScreenLoadingIndicator(loadingState)
-        .fullScreenCoverOnIOS(
-            isPresented: $isShowPaywall,
-            onDismiss: { finishOnboarding() },
-            content: { router.resolve(.paywall) }
-        )
     }
 
 }
@@ -101,38 +86,26 @@ private extension RegistrationAccountView {
                 auth: authInfo,
                 userName: inputUserName
             )
-            registeredAccount = account
-            analyticsClient.log(.onboardingPaywallShown())
-            isShowPaywall = true
+            onRegistered(account)
         } catch {
             print("occurred error: \(error)")
         }
     }
 
-    /// Paywallを閉じた後にログイン状態へ遷移する
-    /// - Note: Paywallは購入を強制しないため、購入有無に関わらずここでオンボーディングを完了させる
-    func finishOnboarding() {
-        guard let registeredAccount else { return }
-        analyticsClient.log(.onboardingPaywallClosed(isPremium: subscriptionStore.isPremium))
-        launchStateProxy(.loggedIn(context: .init(account: registeredAccount)))
-    }
-
 }
 
 #Preview("RegistrationAccountView_未入力") {
-    let subscriptionStore = SubscriptionStore()
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: ""),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: subscriptionStore)
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        onRegistered: { _ in }
     )
-    .environment(subscriptionStore)
 }
 
 #Preview("RegistrationAccountView_入力済み") {
-    let subscriptionStore = SubscriptionStore()
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: subscriptionStore)
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        onRegistered: { _ in }
     )
-    .environment(subscriptionStore)
 }

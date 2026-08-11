@@ -18,13 +18,20 @@ public extension AppDependencies {
         cohabitantPushNotificationClient: .liveValue,
         signInWithAppleClient: .liveValue,
         purchaseClient: livePurchaseClient,
-        houseworkTemplateClient: .liveValue
+        houseworkTemplateClient: .liveValue,
+        consentClient: liveConsentClient,
+        mobileAdsClient: .liveValue,
+        notificationPermissionClient: liveNotificationPermissionClient
     )
 
 }
 
 #if os(iOS)
 private let livePurchaseClient: PurchaseClient = .liveValue
+private let liveConsentClient: ConsentClient = .liveValue
+private let liveNotificationPermissionClient: NotificationPermissionClient = .liveValue
 #else
 private let livePurchaseClient: PurchaseClient = .previewValue
+private let liveConsentClient: ConsentClient = .previewValue
+private let liveNotificationPermissionClient: NotificationPermissionClient = .previewValue
 #endif

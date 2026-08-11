@@ -9,7 +9,7 @@ import AuthFeature
 import HometeDomain
 import SwiftUI
 
-/// オンボーディング（アカウント登録→Paywall）を実データに影響を与えずに確認するためのデバッグ画面
+/// オンボーディング（アカウント登録→特典説明→通知権限）を実データに影響を与えずに確認するためのデバッグ画面
 /// - Note: Store類は`previewValue`のクライアントで生成しているため、登録操作をしてもFirestoreやRevenueCatには一切書き込まれない
 struct DebugOnboardingScreen: View {
 
@@ -22,7 +22,7 @@ struct DebugOnboardingScreen: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RegistrationAccountView(
+            OnboardingFlowView(
                 authInfo: AccountAuthResult(id: "debug-onboarding"),
                 authSubscriptionSyncUseCase: .init(
                     accountStore: accountStore,
@@ -34,7 +34,7 @@ struct DebugOnboardingScreen: View {
             .onChange(of: launchState) {
                 dismiss()
             }
-            // 実フローの登録画面は閉じる導線を持たないため、途中で抜けられるようデバッグ画面側で重ねる
+            // 実フローのオンボーディングは閉じる導線を持たないため、途中で抜けられるようデバッグ画面側で重ねる
             Button {
                 dismiss()
             } label: {
