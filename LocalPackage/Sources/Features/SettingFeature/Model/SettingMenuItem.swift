@@ -16,6 +16,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case termsOfService
     case privacyPolicy
     case license
+    #if DEBUG
+    case debugMenu
+    #endif
 
     static func displayItems(_ isRegisteredGroup: Bool) -> [Self] {
         allCases.filter {
@@ -51,6 +54,11 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .license:
             "ライセンス"
+
+        #if DEBUG
+        case .debugMenu:
+            "デバッグメニュー"
+        #endif
         }
     }
 
@@ -73,6 +81,11 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .license:
             "cube.box"
+
+        #if DEBUG
+        case .debugMenu:
+            "ladybug"
+        #endif
         }
     }
 

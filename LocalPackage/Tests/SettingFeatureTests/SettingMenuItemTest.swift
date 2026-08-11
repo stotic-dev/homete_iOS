@@ -101,7 +101,7 @@ struct SettingMenuItemTest {
     func displayItems_registeredGroup_includesTaskTemplate() {
         // Arrange
 
-        let expected: [SettingMenuItem] = [
+        var expected: [SettingMenuItem] = [
             .memberRegistration,
             .taskTemplate,
             .premiumPlan,
@@ -109,6 +109,10 @@ struct SettingMenuItemTest {
             .privacyPolicy,
             .license,
         ]
+        // デバッグメニュー項目はDEBUGビルドにのみ存在する
+        #if DEBUG
+        expected.append(.debugMenu)
+        #endif
 
         // Act
 
@@ -123,13 +127,17 @@ struct SettingMenuItemTest {
     func displayItems_notRegisteredGroup_excludesTaskTemplate() {
         // Arrange
 
-        let expected: [SettingMenuItem] = [
+        var expected: [SettingMenuItem] = [
             .memberRegistration,
             .premiumPlan,
             .termsOfService,
             .privacyPolicy,
             .license,
         ]
+        // デバッグメニュー項目はDEBUGビルドにのみ存在する
+        #if DEBUG
+        expected.append(.debugMenu)
+        #endif
 
         // Act
 
