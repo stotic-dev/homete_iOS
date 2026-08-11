@@ -40,4 +40,21 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// アカウント登録直後のオンボーディングでPaywallを表示した
+    static func onboardingPaywallShown() -> Self {
+        .init(
+            name: "onboarding_paywall_shown",
+            parameters: [:]
+        )
+    }
+
+    /// アカウント登録直後のオンボーディングで表示したPaywallを閉じた
+    /// - Parameter isPremium: 閉じた時点でプレミアムプランが有効かどうか（購入せずスキップした場合はfalse）
+    static func onboardingPaywallClosed(isPremium: Bool) -> Self {
+        .init(
+            name: "onboarding_paywall_closed",
+            parameters: ["isPremium": "\(isPremium)"]
+        )
+    }
+
 }
