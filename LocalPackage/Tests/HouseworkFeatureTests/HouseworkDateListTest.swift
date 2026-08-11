@@ -91,6 +91,76 @@ struct HouseworkDateListTest {
         #expect(sut.oldestSelectableDate(calendar: Self.calendar) == expected)
     }
 
+    // MARK: - selectedDateのクランプ
+
+    @Test("プレミアムから無料に切り替わった場合、選択中の日付は選択可能な最古の日付に丸められる")
+    func selectedDate_clamped_toOldestSelectableDate() throws {
+        // Arrange: プレミアムでしか選べない90日前を選択している状態を再現する
+        let selectedDate = try #require(
+            Self.calendar.date(byAdding: .day, value: -90, to: Self.anchorDate)
+        )
+        let expected = Self.calendar.date(
+            byAdding: .day,
+            value: -30,
+            to: Self.calendar.startOfDay(for: Self.anchorDate)
+        )
+
+        // Act
+        let sut = makeSut(selectedDate: selectedDate, storagePolicy: .free)
+
+        // Assert
+        #expect(sut.selectedDate == expected)
+    }
+
+    @Test("選択可能な範囲より未来の日付は選択可能な最新の日付に丸められる")
+    func selectedDate_clamped_toNewestSelectableDate() throws {
+        // Arrange
+        let selectedDate = try #require(
+            Self.calendar.date(byAdding: .day, value: 30, to: Self.anchorDate)
+        )
+        let expected = Self.calendar.date(
+            byAdding: .day,
+            value: 7,
+            to: Self.calendar.startOfDay(for: Self.anchorDate)
+        )
+
+        // Act
+        let sut = makeSut(selectedDate: selectedDate, storagePolicy: .free)
+
+        // Assert
+        #expect(sut.selectedDate == expected)
+    }
+
+    @Test("丸められた選択日はアイテムリスト上でもselectedになる")
+    func selectedDate_clamped_itemStateIsSelected() throws {
+        // Arrange
+        let selectedDate = try #require(
+            Self.calendar.date(byAdding: .day, value: -90, to: Self.anchorDate)
+        )
+
+        // Act
+        let sut = makeSut(selectedDate: selectedDate, storagePolicy: .free)
+
+        // Assert
+        let selectedItems = sut.items.filter { $0.state == .selected }
+        #expect(selectedItems.map(\.date) == [sut.selectedDate])
+    }
+
+    @Test("選択可能な範囲内の日付は丸められない")
+    func selectedDate_notClamped_whenSelectable() throws {
+        // Arrange
+        let selectedDate = try #require(
+            Self.calendar.date(byAdding: .day, value: -90, to: Self.anchorDate)
+        )
+        let expected = Self.calendar.startOfDay(for: selectedDate)
+
+        // Act
+        let sut = makeSut(selectedDate: selectedDate, storagePolicy: .premium)
+
+        // Assert
+        #expect(sut.selectedDate == expected)
+    }
+
     // MARK: - state: selected
 
     @Test(
@@ -98,7 +168,7 @@ struct HouseworkDateListTest {
         arguments: [
             Date.previewDate(year: 2026, month: 4, day: 15), // anchor当日
             Date.previewDate(year: 2026, month: 4, day: 12), // anchor-3（selectable範囲内）
-            Date.previewDate(year: 2026, month: 4, day: 18) // anchor+3（selectable範囲内）
+            Date.previewDate(year: 2026, month: 4, day: 18), // anchor+3（selectable範囲内）
         ]
     )
     func state_returns_selected(selectedDate: Date) {

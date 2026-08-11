@@ -39,11 +39,17 @@ struct HouseworkDateList: Equatable {
         calendar: Calendar = .autoupdatingCurrent,
         storagePolicy: HouseworkStoragePolicy = .free
     ) {
-        let selectedDay = calendar.startOfDay(for: selectedDate)
         self.anchorDate = anchorDate
-        self.selectedDate = selectedDay
         backwardSelectableDays = storagePolicy.boardBackwardDays ?? Self.premiumBackwardDays
         hasStorageLimit = storagePolicy.boardBackwardDays != nil
+        // 解約で選択可能範囲が狭まったとき、選択中の日付が範囲外に取り残されないよう丸める
+        let selectedDay = Self.clampToSelectableRange(
+            calendar.startOfDay(for: selectedDate),
+            anchorDate: anchorDate,
+            calendar: calendar,
+            backwardSelectableDays: backwardSelectableDays
+        )
+        self.selectedDate = selectedDay
         items = Self.buildItems(
             anchorDate: anchorDate,
             selectedDate: selectedDay,
@@ -98,6 +104,23 @@ private extension HouseworkDateList {
 
     static func isSelectableOffset(_ delta: Int, backwardSelectableDays: Int) -> Bool {
         delta >= 0 ? delta <= forwardSelectableOffset : -delta <= backwardSelectableDays
+    }
+
+    /// 選択可能な範囲に収まらない日付を、範囲の端まで引き寄せる
+    static func clampToSelectableRange(
+        _ selectedDay: Date,
+        anchorDate: Date,
+        calendar: Calendar,
+        backwardSelectableDays: Int
+    ) -> Date {
+        let anchorDay = calendar.startOfDay(for: anchorDate)
+        guard let delta = calendar.dateComponents([.day], from: anchorDay, to: selectedDay).day,
+              !isSelectableOffset(delta, backwardSelectableDays: backwardSelectableDays) else {
+            return selectedDay
+        }
+
+        let clampedOffset = delta > 0 ? forwardSelectableOffset : -backwardSelectableDays
+        return calendar.date(byAdding: .day, value: clampedOffset, to: anchorDay) ?? selectedDay
     }
 
     func isSelectable(_ date: Date, calendar: Calendar) -> Bool {
