@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/01.
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 #if canImport(Prefire)
