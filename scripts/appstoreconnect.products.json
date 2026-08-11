@@ -1,7 +1,7 @@
 {
   "apps": {
     "dev": { "appId": "6759321417", "bundleId": "taichi.satou.hometekure.dev", "subscriptionGroupId": "22263200" },
-    "prd": { "appId": "6744935314", "bundleId": "taichi.satou.hometekure", "subscriptionGroupId": "22263203" }
+    "prd": { "appId": "6744935314", "bundleId": "taichi.satou.hometekure", "subscriptionGroupId": "22263192" }
   },
   "subscriptionGroups": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "env": "prd",
-      "groupId": "22263203",
+      "groupId": "22263192",
       "localizations": [
         { "locale": "ja", "name": "プレミアムプラン" }
       ]
@@ -30,7 +30,7 @@
         { "territory": "JPN", "amount": "450" }
       ],
       "equalizeFrom": "JPN",
-      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "reviewScreenshot": "assets/review_screenshot_paywall.png",
       "localizations": [
         {
           "locale": "ja",
@@ -49,7 +49,7 @@
         { "territory": "JPN", "amount": "3600" }
       ],
       "equalizeFrom": "JPN",
-      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "reviewScreenshot": "assets/review_screenshot_paywall.png",
       "localizations": [
         {
           "locale": "ja",
@@ -68,7 +68,7 @@
         { "territory": "JPN", "amount": "450" }
       ],
       "equalizeFrom": "JPN",
-      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "reviewScreenshot": "assets/review_screenshot_paywall.png",
       "localizations": [
         {
           "locale": "ja",
@@ -87,7 +87,7 @@
         { "territory": "JPN", "amount": "3600" }
       ],
       "equalizeFrom": "JPN",
-      "reviewScreenshot": "assets/review_screenshot_placeholder.png",
+      "reviewScreenshot": "assets/review_screenshot_paywall.png",
       "localizations": [
         {
           "locale": "ja",
