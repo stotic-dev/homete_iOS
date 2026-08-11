@@ -12,6 +12,10 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 **ユニットテストは省略不可。必ず実行すること。**
 
+**同じ検証コマンドを2回流さない。** 検証は1回が高コスト（ビルド約80秒、`make test-packages` は5テストターゲット）
+なので、出力は `tee` でログに残してからフィルタし、絞り方が足りなければ再実行ではなく保存済みログを読み直す。
+`tail` はテスト結果の判定には使わない（最後のターゲットしか映らず他が見えない）。フィルタの具体例はスキル参照。
+
 許可ツール（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
 - **サンドボックスは有効**（`sandbox.enabled: true`）。SwiftPM系コマンドには **`--disable-sandbox` フラグ**を付けて、Claudeのサンドボックス**内**で実行すること。`dangerouslyDisableSandbox: true` は使わない（allowルールを迂回して必ず許可プロンプトが出るため、自律実行が止まる）。理由と許可済みキャッシュパスはスキル参照

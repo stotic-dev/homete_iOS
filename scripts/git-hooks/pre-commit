@@ -27,8 +27,9 @@ echo "$STAGED_FILES" | sed 's/^/  - /'
 # ProjectToolsのSwiftPMプラグイン経由でSwiftFormatを実行
 # - --allow-writing-to-package-directory: プラグインが自パッケージ内のソースを処理するため
 # - --allow-writing-to-directory: リポジトリ全体（パッケージ外）を整形対象にするため
+# - --disable-sandbox: SwiftPM自身のsandbox-execを切る（サンドボックス内から実行するとネストして失敗するため）
 echo "$STAGED_FILES" \
-    | xargs swift package --package-path ProjectTools plugin \
+    | xargs swift package --package-path ProjectTools --disable-sandbox plugin \
         --allow-writing-to-package-directory \
         --allow-writing-to-directory "$REPO_ROOT" \
         swiftformat --config "$REPO_ROOT/.swiftformat"
