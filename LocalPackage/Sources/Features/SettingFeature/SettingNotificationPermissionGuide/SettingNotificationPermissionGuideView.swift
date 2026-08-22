@@ -12,6 +12,7 @@ import SwiftUI
 struct SettingNotificationPermissionGuideView: View {
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.openURL) var oepnURL
     @Environment(\.appDependencies.notificationPermissionClient) var notificationPermissionClient
 
     var body: some View {
@@ -32,7 +33,7 @@ private extension SettingNotificationPermissionGuideView {
 
     func tappedEnableNotificationButton() async {
         if await notificationPermissionClient.isAuthorizationDetermined() {
-            // TODO: 設定アプリの通知を開く
+            oepnURL(URL(string: UIApplication.openNotificationSettingsURLString)!)
         } else {
             _ = await notificationPermissionClient.requestAuthorization()
             dismiss()
