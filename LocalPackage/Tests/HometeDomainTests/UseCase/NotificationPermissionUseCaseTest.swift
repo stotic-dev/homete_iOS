@@ -9,9 +9,8 @@ import Testing
 struct NotificationPermissionUseCaseTest {
 
     @Test("権限が許可された場合、リモート通知の登録まで行う")
-    func request_authorizationGranted_registersForRemoteNotifications() async {
+    func requestOnOnboarding_authorizationGranted_registersForRemoteNotifications() async {
         // Arrange
-
         let recorder = CallRecorder()
         let sut = NotificationPermissionUseCase(
             notificationPermissionClient: makeClient(recorder: recorder, isGranted: true)
@@ -23,7 +22,7 @@ struct NotificationPermissionUseCaseTest {
 
         // Act
 
-        let isGranted = await sut.request()
+        let isGranted = await sut.requestOnOnboarding()
 
         // Assert
 
@@ -32,9 +31,8 @@ struct NotificationPermissionUseCaseTest {
     }
 
     @Test("権限が拒否された場合、リモート通知の登録は行わない")
-    func request_authorizationDenied_doesNotRegisterForRemoteNotifications() async {
+    func requestOnOnboarding_authorizationDenied_doesNotRegisterForRemoteNotifications() async {
         // Arrange
-
         let recorder = CallRecorder()
         let sut = NotificationPermissionUseCase(
             notificationPermissionClient: makeClient(recorder: recorder, isGranted: false)
@@ -46,11 +44,73 @@ struct NotificationPermissionUseCaseTest {
 
         // Act
 
-        let isGranted = await sut.request()
+        let isGranted = await sut.requestOnOnboarding()
 
         // Assert
 
         let actual = await CallSnapshot(entries: recorder.entries, result: isGranted)
+        #expect(actual == expected)
+    }
+
+    @Test("オンボーディングで案内していない場合は、権限をリクエストする")
+    func requestIfNeeded_notGuidedOnOnboarding_requestsAuthorization() async {
+        // Arrange
+        let recorder = CallRecorder()
+        let sut = NotificationPermissionUseCase(
+            notificationPermissionClient: makeClient(recorder: recorder, isGranted: true)
+        )
+        let expected = CallSnapshot(
+            entries: [.requestAuthorization, .registerForRemoteNotifications],
+            result: nil
+        )
+
+        // Act
+
+        await sut.requestIfNeeded()
+
+        // Assert
+
+        let actual = await CallSnapshot(entries: recorder.entries, result: nil)
+        #expect(actual == expected)
+    }
+
+    @Test("オンボーディングでスキップされた場合は、権限をリクエストしない")
+    func requestIfNeeded_skippedOnOnboarding_doesNotRequestAuthorization() async {
+        // Arrange
+        let recorder = CallRecorder()
+        let sut = NotificationPermissionUseCase(
+            notificationPermissionClient: makeClient(recorder: recorder, isGranted: true)
+        )
+        await sut.skipOnOnboarding()
+        let expected = CallSnapshot(entries: [], result: nil)
+
+        // Act
+
+        await sut.requestIfNeeded()
+
+        // Assert
+
+        let actual = await CallSnapshot(entries: recorder.entries, result: nil)
+        #expect(actual == expected)
+    }
+
+    @Test("オンボーディングで権限をリクエスト済みの場合は、ホーム着地時に再度リクエストしない")
+    func requestIfNeeded_alreadyRequestedOnOnboarding_doesNotRequestAgain() async {
+        // Arrange
+        let recorder = CallRecorder()
+        let sut = NotificationPermissionUseCase(
+            notificationPermissionClient: makeClient(recorder: recorder, isGranted: false)
+        )
+        await sut.requestOnOnboarding()
+        let expected = CallSnapshot(entries: [.requestAuthorization], result: nil)
+
+        // Act
+
+        await sut.requestIfNeeded()
+
+        // Assert
+
+        let actual = await CallSnapshot(entries: recorder.entries, result: nil)
         #expect(actual == expected)
     }
 
@@ -61,7 +121,7 @@ struct NotificationPermissionUseCaseTest {
 private struct CallSnapshot: Equatable {
 
     let entries: [CallRecorder.Entry]
-    let result: Bool
+    let result: Bool?
 
 }
 

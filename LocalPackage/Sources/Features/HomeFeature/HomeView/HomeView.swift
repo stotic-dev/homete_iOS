@@ -123,10 +123,11 @@ private extension HomeView {
 
     /// ホーム着地のたびに、権限まわりのリクエストを順番に行う
     /// - Note: オンボーディングを途中で抜けたユーザーにも権限を案内するため、着地のたびに実行する。
+    ///         ただし通知権限はオンボーディングで案内済みなら`requestIfNeeded`側でスキップされる（直前のスキップ操作を尊重するため）。
     ///         いずれもOSの仕様上、決定済みの場合はダイアログが出ずに即座に完了する。
     ///         ダイアログが重ならないよう、通知権限 → 広告の同意（ATT含む）の順に直列で実行する
     func onAppear() async {
-        await appDependencies.notificationPermissionUseCase.request()
+        await appDependencies.notificationPermissionUseCase.requestIfNeeded()
         await appDependencies.adsSetupUseCase.setup()
     }
 

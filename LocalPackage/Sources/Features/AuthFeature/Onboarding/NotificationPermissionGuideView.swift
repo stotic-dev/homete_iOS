@@ -42,7 +42,9 @@ struct NotificationPermissionGuideView: View {
                 }
                 .subPrimaryButtonStyle()
                 Button("あとで設定する") {
-                    tappedSkipButton()
+                    Task {
+                        await tappedSkipButton()
+                    }
                 }
                 .font(with: .body)
                 .foregroundStyle(.primary2)
@@ -63,12 +65,14 @@ private extension NotificationPermissionGuideView {
 
     /// 権限が許可されたかどうかに関わらず、リクエストを終えたらオンボーディングを完了する
     func tappedEnableNotificationButton() async {
-        let isGranted = await appDependencies.notificationPermissionUseCase.request()
+        let isGranted = await appDependencies.notificationPermissionUseCase.requestOnOnboarding()
         appDependencies.analyticsClient.log(.onboardingNotificationPermissionRequested(isGranted: isGranted))
         onNext()
     }
 
-    func tappedSkipButton() {
+    /// スキップした直後にホームで再びダイアログが出ないよう、案内済みであることをUseCaseに記録してから次へ進む
+    func tappedSkipButton() async {
+        await appDependencies.notificationPermissionUseCase.skipOnOnboarding()
         appDependencies.analyticsClient.log(.onboardingNotificationPermissionSkipped())
         onNext()
     }
