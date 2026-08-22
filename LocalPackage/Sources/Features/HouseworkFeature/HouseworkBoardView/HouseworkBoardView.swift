@@ -15,6 +15,7 @@ struct HouseworkBoardView: View {
     @Environment(\.now) var anchorDate
     @Environment(\.routeResolver) var router
     @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @Binding var houseworkBoardList: HouseworkBoardList
@@ -24,6 +25,7 @@ struct HouseworkBoardView: View {
     @State var selectedHouseworkState = HouseworkState.incomplete
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
+    @State var isShowPaywall = false
 
     let onUpdateHouseboardList: () -> Void
 
@@ -31,7 +33,9 @@ struct HouseworkBoardView: View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 VStack(spacing: .space16) {
-                    HouseworkDateHeaderContent(dateList: $dateList)
+                    HouseworkDateHeaderContent(dateList: $dateList) {
+                        isShowPaywall = true
+                    }
                     VStack(spacing: .space16) {
                         HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                         TabView(selection: $selectedHouseworkState) {
@@ -75,12 +79,16 @@ struct HouseworkBoardView: View {
                 dailyHouseworkList: .makeInitialValue(
                     selectedDate: dateList.selectedDate,
                     items: [],
-                    calendar: calendar
+                    calendar: calendar,
+                    storagePolicy: storagePolicy
                 )
             )
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
+            router.resolve(.paywall)
         }
         .onChange(of: houseworkListStore.items) {
             withAnimation {

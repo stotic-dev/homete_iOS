@@ -57,6 +57,9 @@ private extension AnalyticsPeriodHeader {
                     .foregroundStyle(.onSurface)
                     .padding(.space8)
             }
+            // `foregroundStyle`でtintを上書きしているとdisabled時の自動ディムが効かず、
+            // 押せないのに押せるように見えるため、無効状態はデザインシステムのボタンと同じ0.5で明示する
+            .opacity(isAtCurrentDate ? 0.5 : 1)
             .disabled(isAtCurrentDate)
         }
     }

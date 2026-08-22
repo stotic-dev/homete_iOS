@@ -25,6 +25,9 @@ make build-local-package
 # SwiftFormatを全体にかける
 make format
 
+# VRT(Prefire)のビルドが壊れる#Previewを静的に検出
+make check-previews
+
 # SwiftLint（ビルド時にSPMプラグインとして自動実行される。単体で流す場合）
 ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 

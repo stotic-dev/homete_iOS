@@ -14,13 +14,13 @@ struct HouseworkManagerTest {
 
     private let inputCohabitantId = "cohabitantId"
 
-    @Test("setupObserverを呼び出すと直近1年分をフェッチしリスナーを起動してallItemsに反映する")
+    @Test("setupObserverを呼び出すとプレミアムでは直近1年分をフェッチしリスナーを起動してallItemsに反映する")
     func setupObserver() async {
         // Arrange
 
-        let now = Date()
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
         let calendar = Calendar.japanese
-        let expectedFrom = calendar.date(byAdding: .year, value: -1, to: now) ?? now
+        let expectedFrom = Date.previewDate(year: 2025, month: 8, day: 11)
         let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
         let (stream, _) = AsyncStream<[HouseworkItem]>.makeStream()
 
@@ -49,7 +49,8 @@ struct HouseworkManagerTest {
         await manager.setupObserver(
             currentTime: now,
             cohabitantId: inputCohabitantId,
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: .premium
         )
 
         // Assert
@@ -87,7 +88,8 @@ struct HouseworkManagerTest {
         await manager.setupObserver(
             currentTime: now,
             cohabitantId: inputCohabitantId,
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: .premium
         )
 
         // フェッチ結果の通知を消費
@@ -115,6 +117,132 @@ struct HouseworkManagerTest {
         #expect(allItems.contains(where: { $0.id == existingItem.id && $0.title == "updated title" }))
         #expect(allItems.contains(where: { $0.id == newItem.id }))
         #expect(receivedItems.count == 2)
+    }
+
+    @Test("無料プランのsetupObserverは直近3ヶ月分のみをフェッチする")
+    func setupObserverWithFreePlan() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+        let expectedFrom = Date.previewDate(year: 2026, month: 5, day: 11)
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                fetchItemsHandler: { _, from, _ in
+                    #expect(from == expectedFrom)
+                    return []
+                }
+            )
+        )
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let fetchedRange = await manager.fetchedRange
+        #expect(fetchedRange == expectedFrom ... now)
+    }
+
+    @Test("fetchIfNeededは取得済み範囲より過去を要求されると不足分をフェッチしてマージする")
+    func fetchIfNeededFetchesMissingPeriod() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+        let initialFrom = Date.previewDate(year: 2025, month: 8, day: 11)
+        let targetDate = Date.previewDate(year: 2025, month: 1, day: 1)
+        // 取得済み範囲と重複しないよう、その前日までが取得されること
+        let expectedTo = Date.previewDate(year: 2025, month: 8, day: 10)
+        let initialItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let additionalItem = HouseworkItem.makeForTest(id: 2, indexedDate: targetDate, expiredAt: targetDate)
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                fetchItemsHandler: { _, from, to in
+                    guard from != initialFrom else { return [initialItem] }
+
+                    #expect(from == targetDate)
+                    #expect(to == expectedTo)
+                    return [additionalItem]
+                }
+            )
+        )
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        await manager.fetchIfNeeded(
+            until: targetDate,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar
+        )
+
+        // Assert
+
+        let allItems = await manager.allItems
+        let fetchedRange = await manager.fetchedRange
+        #expect(allItems.count == 2)
+        #expect(allItems.contains(where: { $0.id == additionalItem.id }))
+        #expect(fetchedRange == targetDate ... now)
+    }
+
+    @Test("fetchIfNeededは取得済み範囲内の日付を要求されても再フェッチしない")
+    func fetchIfNeededSkipsFetchedPeriod() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+        let initialFrom = Date.previewDate(year: 2025, month: 8, day: 11)
+        let targetDate = Date.previewDate(year: 2026, month: 1, day: 1)
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                fetchItemsHandler: { _, from, _ in
+                    // 初回フェッチ以外は呼ばれてはいけない
+                    if from != initialFrom {
+                        Issue.record()
+                    }
+                    return []
+                }
+            )
+        )
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        await manager.fetchIfNeeded(
+            until: targetDate,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar
+        )
+
+        // Assert
+
+        let fetchedRange = await manager.fetchedRange
+        #expect(fetchedRange == initialFrom ... now)
     }
 
 }

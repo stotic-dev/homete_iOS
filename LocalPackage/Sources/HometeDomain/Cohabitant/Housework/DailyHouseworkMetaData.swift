@@ -21,11 +21,15 @@ public struct DailyHouseworkMetaData: Equatable, Sendable {
 
 public extension DailyHouseworkMetaData {
 
-    init(selectedDate: Date, calendar: Calendar) {
+    /// 家事を新規登録する際のメタデータを生成する
+    /// - Parameter storagePolicy: 保持期限の算出に使う保存期間ポリシー
+    init(selectedDate: Date, calendar: Calendar, storagePolicy: HouseworkStoragePolicy) {
         let selectedDay = calendar.startOfDay(for: selectedDate)
         let indexedDate = HouseworkIndexedDate(value: selectedDay)
-        let expiredAt = calendar.date(byAdding: .year, value: 1, to: selectedDay) ?? selectedDay
-        self.init(indexedDate: indexedDate, expiredAt: expiredAt)
+        self.init(
+            indexedDate: indexedDate,
+            expiredAt: storagePolicy.expiredAt(from: selectedDay, calendar: calendar)
+        )
     }
 
 }

@@ -66,6 +66,7 @@ struct HouseworkTemplateDayTest {
             registeredItems: registeredItems,
             selectedDate: selectedDate,
             calendar: .japanese,
+            storagePolicy: .free,
             uuidGenerator: { uuid }
         )
 

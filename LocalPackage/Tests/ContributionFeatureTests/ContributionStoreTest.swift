@@ -51,7 +51,12 @@ extension ContributionStoreTest {
         }
 
         // Act
-        await manager.setupObserver(currentTime: now, cohabitantId: inputCohabitantId, calendar: calendar)
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
         await waiterForContribution.value
 
         // Assert: 完了済み家事のみ集計される

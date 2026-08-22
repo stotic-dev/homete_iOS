@@ -15,6 +15,7 @@ struct TodayHouseworkSummaryComponent: View {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.now) var now
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.registeredContentNavigationPath) var navigationPath
@@ -30,14 +31,16 @@ struct TodayHouseworkSummaryComponent: View {
             storedAllItems: houseworkListStore.items,
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: storagePolicy
         ))
         .sheet(isPresented: $isPresentingRegister) {
             RegisterHouseworkView.make(
                 dailyHouseworkList: .makeInitialValue(
                     selectedDate: now,
                     items: [],
-                    calendar: calendar
+                    calendar: calendar,
+                    storagePolicy: storagePolicy
                 )
             )
         }

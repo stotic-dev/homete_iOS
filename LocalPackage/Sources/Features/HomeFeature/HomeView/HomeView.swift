@@ -20,6 +20,7 @@ public struct HomeView: View {
     @Environment(\.appDependencies.adsSetupUseCase) var adsSetupUseCase
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     @State var isShowCohabitantRegistrationModal = false
     @State var isShowSetting = false
@@ -142,7 +143,8 @@ private extension HomeView {
         await houseworkManager.setupObserver(
             currentTime: now,
             cohabitantId: cohabitantId,
-            calendar: calendar
+            calendar: calendar,
+            storagePolicy: storagePolicy
         )
     }
 

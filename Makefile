@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e build-local-package test-packages setup-project install-hooks format
+.PHONY: help lint deploy emulator test-e2e build-local-package test-packages check-previews setup-project install-hooks format
 
 .DEFAULT_GOAL := setup-project
 
@@ -25,6 +25,9 @@ test-packages: ## LocalPackageのテストを実行（自worktreeのstaleプロ�
 	-pkill -f "swift-test --package-path $(CURDIR)/LocalPackage" 2>/dev/null
 	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
 	swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
+
+check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
+	python3 scripts/check-prefire-previews.py
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks

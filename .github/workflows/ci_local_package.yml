@@ -39,6 +39,11 @@ jobs:
           restore-keys: |
             local-package-${{ runner.os }}-
 
+      # Prefireの生成コードはここではビルドされないため、#Preview のアクセス修飾子ミスは
+      # Xcode Cloud の VRT まで検出できない。静的検査で先に落とす。
+      - name: Check Prefire previews
+        run: make check-previews
+
       - name: Build LocalPackage for iOS Simulator
         run: make build-local-package
 

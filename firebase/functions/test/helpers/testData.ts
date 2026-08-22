@@ -36,12 +36,14 @@ export async function createTestUser(
  * @param {string} userId - ユーザーID
  * @param {string} cohabitantId - CohabitantドキュメントのID（オプション）
  * @param {string} fcmToken - FCMトークン（オプション）
+ * @param {boolean} isPremium - プレミアム加入状態（省略時はfalse）
  * @return {Promise<void>}
  */
 export async function createTestAccount(
   userId: string,
   cohabitantId?: string,
-  fcmToken?: string
+  fcmToken?: string,
+  isPremium = false
 ): Promise<void> {
   const db = getFirestore();
 
@@ -50,6 +52,7 @@ export async function createTestAccount(
     id: userId,
     cohabitantId,
     fcmToken,
+    isPremium,
   };
 
   // undefinedフィールドを除外してFirestoreに保存

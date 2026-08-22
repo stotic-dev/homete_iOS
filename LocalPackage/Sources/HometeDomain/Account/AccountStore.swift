@@ -53,7 +53,8 @@ public final class AccountStore {
                 id: account.id,
                 userName: account.userName,
                 fcmToken: fcmToken,
-                cohabitantId: account.cohabitantId
+                cohabitantId: account.cohabitantId,
+                isPremium: account.isPremium
             )
             try await accountInfoClient.insertOrUpdate(updatedAccount)
             self.account = updatedAccount
@@ -76,10 +77,29 @@ public final class AccountStore {
             id: account.id,
             userName: account.userName,
             fcmToken: account.fcmToken,
-            cohabitantId: cohabitantId
+            cohabitantId: cohabitantId,
+            isPremium: account.isPremium
         )
         try await accountInfoClient.insertOrUpdate(updatedAccount)
         self.account = updatedAccount
+    }
+
+    /// プレミアム加入状態が変わっている場合のみアカウント情報を更新する
+    /// - Returns: 更新が発生したかどうか
+    @discardableResult
+    public func updateIsPremiumIfNeeded(_ isPremium: Bool) async -> Bool {
+        guard let account,
+              account.isPremium != isPremium else { return false }
+
+        do {
+            let updatedAccount = account.updateIsPremium(isPremium)
+            try await accountInfoClient.insertOrUpdate(updatedAccount)
+            self.account = updatedAccount
+            return true
+        } catch {
+            print("failed to update isPremium: \(error)")
+            return false
+        }
     }
 
 }

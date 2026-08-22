@@ -5,4 +5,7 @@ export class FirestoreCollections {
   // ルートコレクション
   static readonly ACCOUNT = "Account";
   static readonly COHABITANT = "Cohabitant";
+
+  // Cohabitant配下のサブコレクション
+  static readonly HOUSEWORKS = "Houseworks";
 }
