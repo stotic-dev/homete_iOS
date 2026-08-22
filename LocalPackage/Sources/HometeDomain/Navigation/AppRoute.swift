@@ -13,5 +13,9 @@ public enum AppRoute: Hashable, Sendable {
     case houseworkTemplate
     /// プレミアムプランのPaywall画面
     case paywall
+    #if DEBUG
+    /// オンボーディング（アカウント登録→Paywall）の確認用デバッグ画面
+    case debugOnboarding
+    #endif
 
 }

@@ -10,21 +10,17 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-public struct RegistrationAccountView: View {
+struct RegistrationAccountView: View {
 
-    @Environment(\.launchStateProxy) var launchStateProxy
     @LoadingState var loadingState
 
     @State var inputUserName = UserName()
     let authInfo: AccountAuthResult
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
+    /// アカウント登録が完了したときに呼ばれる
+    let onRegistered: (Account) -> Void
 
-    public init(authInfo: AccountAuthResult, authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase) {
-        self.authInfo = authInfo
-        self.authSubscriptionSyncUseCase = authSubscriptionSyncUseCase
-    }
-
-    public var body: some View {
+    var body: some View {
         NavigationStack {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
@@ -90,7 +86,7 @@ private extension RegistrationAccountView {
                 auth: authInfo,
                 userName: inputUserName
             )
-            launchStateProxy(.loggedIn(context: .init(account: account)))
+            onRegistered(account)
         } catch {
             print("occurred error: \(error)")
         }
@@ -101,13 +97,15 @@ private extension RegistrationAccountView {
 #Preview("RegistrationAccountView_未入力") {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: ""),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore())
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        onRegistered: { _ in }
     )
 }
 
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore())
+        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        onRegistered: { _ in }
     )
 }

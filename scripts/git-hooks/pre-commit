@@ -31,6 +31,7 @@ echo "$STAGED_FILES" | sed 's/^/  - /'
 #   プラグインには下の --allow-writing-to-* で書き込みを許可済みなので実害はない。
 # - --allow-writing-to-package-directory: プラグインが自パッケージ内のソースを処理するため
 # - --allow-writing-to-directory: リポジトリ全体（パッケージ外）を整形対象にするため
+# - --disable-sandbox: SwiftPM自身のsandbox-execを切る（サンドボックス内から実行するとネストして失敗するため）
 echo "$STAGED_FILES" \
     | xargs swift package --package-path ProjectTools --disable-sandbox plugin \
         --allow-writing-to-package-directory \

@@ -40,4 +40,14 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// オンボーディング中の行動
+    /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
+    ///         意図は`OnboardingAnalyticsAction`を参照
+    static func onboarding(_ action: OnboardingAnalyticsAction) -> Self {
+        .init(
+            name: "onboarding",
+            parameters: action.parameters
+        )
+    }
+
 }

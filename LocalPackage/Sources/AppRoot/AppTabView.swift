@@ -9,7 +9,6 @@ import HometeUI
 import HouseworkFeature
 import HouseworkTemplateFeature
 import SwiftUI
-import UserNotifications
 
 struct AppTabView: View {
 
@@ -135,7 +134,6 @@ private extension AppTabView {
     func onAppear() async {
         setupStore()
         await startObserveTemplateIfNeeded()
-        await requestNotificationPermission()
     }
 
     func onChangeCohabitantId() {
@@ -145,22 +143,6 @@ private extension AppTabView {
 }
 
 private extension AppTabView {
-
-    func requestNotificationPermission() async {
-        let center = UNUserNotificationCenter.current()
-        do {
-            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
-            guard granted else {
-                print("[Notifications] Authorization not granted.")
-                return
-            }
-            #if os(iOS)
-            UIApplication.shared.registerForRemoteNotifications()
-            #endif
-        } catch {
-            print("[Notifications] Authorization error: \(error)")
-        }
-    }
 
     func setupStore() {
         guard loginContext.hasCohabitant else {
