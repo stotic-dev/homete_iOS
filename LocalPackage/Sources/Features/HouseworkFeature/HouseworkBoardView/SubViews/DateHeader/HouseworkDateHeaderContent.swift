@@ -31,7 +31,6 @@ struct HouseworkDateHeaderContent: View {
 
     init(dateList: Binding<HouseworkDateList>, onTapStorageLimit: @escaping () -> Void) {
         _dateList = dateList
-        _scrolledDate = State(initialValue: dateList.wrappedValue.selectedDate)
         self.onTapStorageLimit = onTapStorageLimit
     }
 
@@ -60,6 +59,9 @@ struct HouseworkDateHeaderContent: View {
                 withAnimation {
                     scrolledDate = dateList.selectedDate
                 }
+            }
+            .onAppear {
+                scrolledDate = dateList.selectedDate
             }
         }
     }
