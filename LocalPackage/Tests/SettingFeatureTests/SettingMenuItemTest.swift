@@ -104,6 +104,7 @@ struct SettingMenuItemTest {
         var expected: [SettingMenuItem] = [
             .memberRegistration,
             .taskTemplate,
+            .notificationPermission,
             .premiumPlan,
             .termsOfService,
             .privacyPolicy,
@@ -129,6 +130,7 @@ struct SettingMenuItemTest {
 
         var expected: [SettingMenuItem] = [
             .memberRegistration,
+            .notificationPermission,
             .premiumPlan,
             .termsOfService,
             .privacyPolicy,
