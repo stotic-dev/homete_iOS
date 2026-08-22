@@ -50,7 +50,7 @@ public struct OnboardingFlowView: View {
                     .transition(stepTransition)
 
                 case .notificationPermission:
-                    NotificationPermissionGuideView {
+                    OnboardingNotificationPermissionGuideView {
                         moveToNextStep()
                     }
                     .transition(stepTransition)
