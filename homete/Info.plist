@@ -4,8 +4,12 @@
 <dict>
 	<key>AdUnitIdList</key>
 	<dict>
+		<key>BANNER_ANALYTICS_BOTTOM_AD_UNIT_ID</key>
+		<string>$(BANNER_ANALYTICS_BOTTOM_AD_UNIT_ID)</string>
 		<key>BANNER_DASHBOARD_TOP_AD_UNIT_ID</key>
 		<string>$(BANNER_DASHBOARD_TOP_AD_UNIT_ID)</string>
+		<key>BANNER_HOUSEWORK_TEMPLATE_BOTTOM_AD_UNIT_ID</key>
+		<string>$(BANNER_HOUSEWORK_TEMPLATE_BOTTOM_AD_UNIT_ID)</string>
 	</dict>
 	<key>CFBundleURLTypes</key>
 	<array>

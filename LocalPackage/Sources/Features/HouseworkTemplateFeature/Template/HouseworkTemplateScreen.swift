@@ -15,7 +15,9 @@ public struct HouseworkTemplateScreen: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.cohabitantMembers) var members
+    @Environment(\.routeResolver) var router
 
     @CommonError var commonErrorContent
 
@@ -24,6 +26,7 @@ public struct HouseworkTemplateScreen: View {
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
     @State var shouldDismissOnErrorClose = false
+    @State var isShowPaywall = false
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -42,7 +45,13 @@ public struct HouseworkTemplateScreen: View {
             )
         }
         .environment(templateEditStore)
+        .bottomAdBanner(.houseworkTemplateBottom, isPresented: !subscriptionStore.isPremium) {
+            isShowPaywall = true
+        }
         .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
+        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
+            router.resolve(.paywall)
+        }
         .task {
             await onAppear()
         }
