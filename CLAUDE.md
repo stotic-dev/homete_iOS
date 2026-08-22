@@ -324,7 +324,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
   - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`
   - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
-  - `adr.md`のみ`paths:`を持たない（技術選定はファイル種別に紐づかないため意図的に常時ロード）
+  - `adr.md` / `git-commit.md` は`paths:`を持たない（技術選定・コミット粒度はファイル種別に紐づかないため意図的に常時ロード）
 
 ## ファイル整理の規約
 
