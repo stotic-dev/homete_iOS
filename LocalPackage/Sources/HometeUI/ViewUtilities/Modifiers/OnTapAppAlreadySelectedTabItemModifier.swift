@@ -26,7 +26,7 @@ struct OnTapAppAlreadySelectedTabItemModifier: ViewModifier {
 public extension View {
 
     /// すでに選択済みのタブをタップされた時の実行される処理
-    func onTapAppTabItem(_ action: @escaping (TabType) -> Void) -> some View {
+    func onAppTapAlreadySelectedTabItem(_ action: @escaping (TabType) -> Void) -> some View {
         modifier(OnTapAppAlreadySelectedTabItemModifier(onTapAction: action))
     }
 

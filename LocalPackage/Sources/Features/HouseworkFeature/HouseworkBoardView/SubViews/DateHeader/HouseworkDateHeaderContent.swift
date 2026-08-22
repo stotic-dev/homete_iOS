@@ -63,6 +63,14 @@ struct HouseworkDateHeaderContent: View {
             .onAppear {
                 scrolledDate = dateList.selectedDate
             }
+            .onAppTapAlreadySelectedTabItem { type in
+                // 家事タブ表示中にタブタップされたら洗濯中の日付に自動スクロールする
+                guard type == .homework else { return }
+                withAnimation {
+                    scrolledDate = nil
+                    scrolledDate = dateList.selectedDate
+                }
+            }
         }
     }
 
