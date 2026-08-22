@@ -1,6 +1,6 @@
 ---
 name: swift-code-verification
-description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。ビルド・SwiftLint・ユニットテスト（および必要ならVRT）を順番に実行する。Swiftファイルを編集・作成・削除した直後に必ず使う。
+description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。ビルド・SwiftLint・ユニットテストを順番に実行する（VRT/スナップショットテストはCIに任せてローカルでは実行しない）。Swiftファイルを編集・作成・削除した直後に必ず使う。
 ---
 
 # Swiftコード変更後の検証スキル
@@ -64,6 +64,28 @@ clangのモジュールキャッシュ（`/var/folders/<user-hash>/C/clang/Modul
 **`sandbox` の設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
 
 他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
+
+#### Build Tool Plugin が `.build` に書けない場合（既知の症状）
+
+Xcode 27 / Swift 6.2 環境で、`--disable-sandbox` を付けていても **SwiftPM の prebuild plugin（SwiftGenPlugin / SwiftLintPlugin）だけが書き込みに失敗する**ことがある:
+
+```
+error: failed: PrebuildCommand(... displayName: Optional("SwiftGen BuildTool Plugin") ...)
+Error: You don’t have permission to save the file “Assets.swift” in the folder “SwiftGenPlugin”.
+```
+
+`allowWrite` の不足ではない。切り分け方は次の2つで、**どちらも成功するのに `swift build` 経由だけ失敗するなら nested sandbox が原因**:
+
+```bash
+# 1) シェルから同じディレクトリに直接書けるか
+touch LocalPackage/.build/plugins/outputs/localpackage/HometeResources/destination/SwiftGenPlugin/__probe.txt
+# 2) プラグインのバイナリを手で叩いて同じ出力先に書けるか
+LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.build/plugins/.../Cache" <file.swift>
+```
+
+対処は `settings.local.json` の `sandbox.enableWeakerNestedSandbox: true`（設定済み）。**セッション開始時にしか読まれない**ので、追加直後のセッションでは効かない。
+
+それでも失敗し、かつ上記の切り分けで nested sandbox が原因と確認できた場合に限り、その1コマンドだけ `dangerouslyDisableSandbox: true` で実行してよい。ただし**許可プロンプトが出て自律実行が止まる**ため、常用しないこと。恒久対応が必要になったら `sandbox.excludedCommands` に `swift` / `make` を入れる方を検討する。
 
 ---
 
@@ -155,7 +177,13 @@ xcodebuild build \
 ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint
 ```
 
-`ProjectTools/.build/arm64-apple-macosx/debug/swiftlint` が存在しない場合は先に `make setup-project` または `swift build --package-path ProjectTools --scratch-path ProjectTools/.build` を実行。
+このパスが無い場合は先に `make setup-project` または `swift build --package-path ProjectTools --scratch-path ProjectTools/.build` を実行する。ただし SwiftLint はソースからビルドされるのではなく artifactbundle で配布されるため、`swift build` してもこのシンボリックリンクは作られないことがある。その場合は実体を直接叩く:
+
+```bash
+ProjectTools/.build/artifacts/projecttools/SwiftLintPluginBinary/SwiftLintBinary.artifactbundle/swiftlint-0.59.1-macos/bin/swiftlint lint
+```
+
+なお手順1のビルドが通っていれば SwiftLintPlugin が同じ lint を実行済みなので、この手順は「ビルド対象外のファイル（`homete/` 配下など）も含めて全体を確認する」ためのもの。
 
 ### 3. ユニットテスト実行（省略不可）
 
@@ -165,18 +193,19 @@ swift test --package-path "$(pwd)/LocalPackage" --disable-sandbox --enable-code-
 
 特定のテストだけ流したいときは `--filter "TestSuite名"` を追加する。
 
-### 4. UIデグレ確認（SwiftUIのViewを変更した場合のみ）
+### 4. UIデグレ確認（VRT / スナップショットテスト）
 
-`.prefire.yml` の指定（`simulator_device: "iPhone17,3"`、`required_os: 26`）に従う。
+**ローカルでは実行しない。** VRT は Xcode Cloud の `VRT` ワークフローで回す運用になっているので、SwiftUI の View を変更した場合も**参照スナップショットの更新はCIに任せる**。
 
-```bash
-xcodebuild test \
-  -scheme homete \
-  -testPlan snapshotTesting \
-  -destination 'platform=iOS Simulator,id=$(xcrun simctl list devices | grep "iPhone 16" | grep "iOS 26" | head -1 | grep -oE "[0-9A-F-]{36}")' \
-  -quiet \
-  2>&1 | tail -30
-```
+ローカル実行を避ける理由:
+
+- 完走に数十分かかる上、`homete/Resouces/Secret_dev.xcconfig` と iOS 27 シミュレータが揃っていないと途中で落ちる
+- 途中で止めると、走り切った分の PNG だけが `hometeSnapshotTests/__Snapshots__/PreviewTests.generated/` に生成され、**参照スナップショットが中途半端な状態でコミットされる**
+- 参照の更新は CI が `chore: VRT参照スナップショットを自動更新` のコミットで行うため、ローカル生成分と競合する
+
+もしローカル実行で PNG を生成してしまったら、コミット前に `git status` で確認して**削除する**。
+
+View を変更した場合にやることは「PR を出して CI の VRT 結果を見る」だけでよい。既存スナップショットとの差分は Danger が PR にレポートする。
 
 ---
 
