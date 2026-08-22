@@ -17,7 +17,23 @@ struct HouseworkDateHeaderContent: View {
 
     @Binding var dateList: HouseworkDateList
 
+    /// スクロール位置として表示中の日付
+    ///
+    /// `ScrollViewReader.scrollTo`は`LazyHStack`の未生成セルには届かず、初期表示が
+    /// リストの先頭（＝最古の日付）で止まってしまうため、初期値を持てる
+    /// `scrollPosition(id:)`で最初のレイアウトから選択日に合わせる。
+    @State private var scrolledDate: Date?
+
     let onTapStorageLimit: () -> Void
+
+    /// 日付セルの高さ。`LazyHStack`は縦方向に提案された高さいっぱいまで広がるため明示する
+    private static let cellHeight: CGFloat = 64
+
+    init(dateList: Binding<HouseworkDateList>, onTapStorageLimit: @escaping () -> Void) {
+        _dateList = dateList
+        _scrolledDate = State(initialValue: dateList.wrappedValue.selectedDate)
+        self.onTapStorageLimit = onTapStorageLimit
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space4) {
@@ -25,27 +41,24 @@ struct HouseworkDateHeaderContent: View {
                 .font(with: .headLineS)
                 .foregroundStyle(.onSurface)
                 .padding(.horizontal, .space8)
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    // 保存期間に応じて日付セルが数十〜数百件になるためLazyHStackで遅延生成する
-                    LazyHStack(spacing: .space8) {
-                        if dateList.hasStorageLimit {
-                            HouseworkStorageLimitCell(onTap: onTapStorageLimit)
-                        }
-                        ForEach(dateList.items, id: \.date) { item in
-                            createDateCell(item)
-                        }
+            ScrollView(.horizontal, showsIndicators: false) {
+                // 保存期間に応じて日付セルが数十〜数百件になるためLazyHStackで遅延生成する
+                LazyHStack(spacing: .space8) {
+                    if dateList.hasStorageLimit {
+                        HouseworkStorageLimitCell(onTap: onTapStorageLimit)
                     }
-                    .scrollTargetLayout()
-                }
-                .scrollTargetBehavior(.viewAligned)
-                .onAppear {
-                    proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
-                }
-                .onChange(of: dateList.selectedDate) {
-                    withAnimation {
-                        proxy.scrollTo(calendar.startOfDay(for: dateList.selectedDate), anchor: .center)
+                    ForEach(dateList.items, id: \.date) { item in
+                        createDateCell(item)
                     }
+                }
+                .scrollTargetLayout()
+            }
+            .frame(height: Self.cellHeight)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $scrolledDate, anchor: .center)
+            .onChange(of: dateList.selectedDate) {
+                withAnimation {
+                    scrolledDate = dateList.selectedDate
                 }
             }
         }
