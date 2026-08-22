@@ -24,6 +24,22 @@ struct AppTabView: View {
     @State var houseworkTemplateListStore: HouseworkTemplateListStore?
     @State var type: TabType = .dashboard
 
+    var handler: Binding<TabType> {
+        Binding(
+            get: { type },
+            set: {
+                if $0 == type {
+                    NotificationCenter.default.post(
+                        name: .onTapAppAlreadySelectedTabItem,
+                        object: nil,
+                        userInfo: OnTapAppAlreadySelectedTabItemContext.makeUserInfo(from: $0)
+                    )
+                }
+                type = $0
+            }
+        )
+    }
+
     var body: some View {
         tabView()
             .task {
@@ -55,7 +71,7 @@ private extension AppTabView {
     func tabView() -> some View {
         ZStack {
             if #available(iOS 18.0, *) {
-                TabView(selection: $type) {
+                TabView(selection: handler) {
                     Tab(
                         "ダッシュボード",
                         systemImage: "list.bullet.clipboard.fill",
@@ -72,7 +88,7 @@ private extension AppTabView {
                     }
                 }
             } else {
-                TabView(selection: $type) {
+                TabView(selection: handler) {
                     homeScreen
                         .tag(TabType.dashboard)
                         .tabItem {
@@ -180,17 +196,6 @@ private extension AppTabView {
         } catch {
             // TODO: エラーハンドリング
         }
-    }
-
-}
-
-extension AppTabView {
-
-    enum TabType {
-
-        case dashboard
-        case homework
-
     }
 
 }
