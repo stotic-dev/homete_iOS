@@ -123,6 +123,20 @@ private extension ContributionAnalyticsView {
 }
 
 #if DEBUG
+private extension View {
+
+    /// 保存期間の判定に関わる環境値をプレビュー用に固定する
+    ///
+    /// `\.now`の既定値は実行時の現在日時のため、固定のanchorを持つプレビューは
+    /// 時間が経つだけでグラフから「保存期間外」表示へ勝手に切り替わってしまう。
+    /// プランの出し分けは専用のプレビューで確認するため、ここではプレミアム固定にする。
+    func setupStorageEnvironmentForPreview() -> some View {
+        environment(\.now, .previewDate(year: 2026, month: 4, day: 30))
+            .environment(\.houseworkStoragePolicy, .premium)
+    }
+
+}
+
 #Preview("ContributionAnalyticsView_週間", traits: .sizeThatFitsLayout) {
     @Previewable @State var selectedPeriod = DisplayPointPeriod(
         type: .week,
@@ -136,6 +150,7 @@ private extension ContributionAnalyticsView {
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
+    .setupStorageEnvironmentForPreview()
     #if canImport(Prefire)
         .snapshot(perceptualPrecision: 0.95)
     #endif
@@ -154,6 +169,7 @@ private extension ContributionAnalyticsView {
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
+    .setupStorageEnvironmentForPreview()
     #if canImport(Prefire)
         .snapshot(perceptualPrecision: 0.95)
     #endif
@@ -172,6 +188,7 @@ private extension ContributionAnalyticsView {
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
+    .setupStorageEnvironmentForPreview()
     #if canImport(Prefire)
         .snapshot(perceptualPrecision: 0.95)
     #endif
@@ -190,6 +207,7 @@ private extension ContributionAnalyticsView {
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
+    .setupStorageEnvironmentForPreview()
 }
 
 #Preview("ContributionAnalyticsView_保存期間外", traits: .sizeThatFitsLayout) {
