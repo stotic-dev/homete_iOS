@@ -86,7 +86,8 @@ private extension HouseworkDateHeaderContent {
         )
         .year()
         .month()
-        return dateList.selectedDate.formatted(format)
+        let targetDate = scrolledDate ?? dateList.selectedDate
+        return targetDate.formatted(format)
     }
 
     func createDateCell(_ item: HouseworkDateList.Item) -> some View {
