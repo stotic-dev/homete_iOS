@@ -19,6 +19,13 @@ public final class NotificationPermissionUseCase: Sendable {
         self.notificationGuideStateClient = notificationGuideStateClient
     }
 
+    /// オンボーディングでプッシュ通知の案内をする必要があるかどうか
+    /// - Note: 権限が決定済みの場合は案内画面を出してもOSのダイアログが表示されないため、案内自体を省く
+    public func shouldGuideOnOnboarding() async -> Bool {
+        let isDetermined = await notificationPermissionClient.isAuthorizationDetermined()
+        return !isDetermined
+    }
+
     /// オンボーディングの案内画面から権限をリクエストする
     /// - Returns: 権限が許可されているかどうか
     @discardableResult

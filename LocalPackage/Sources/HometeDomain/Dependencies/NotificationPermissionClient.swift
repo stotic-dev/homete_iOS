@@ -12,13 +12,18 @@ public struct NotificationPermissionClient: Sendable {
     public let requestAuthorization: @Sendable () async -> Bool
     /// リモート通知（APNs）のデバイストークン登録を要求する
     public let registerForRemoteNotifications: @Sendable () async -> Void
+    /// プッシュ通知の権限が決定済み（許可・拒否のいずれか）かどうかを返す
+    /// - Note: ダイアログを出さずに状態だけを知りたい場面で使う
+    public let isAuthorizationDetermined: @Sendable () async -> Bool
 
     public init(
         requestAuthorization: @Sendable @escaping () async -> Bool = { false },
-        registerForRemoteNotifications: @Sendable @escaping () async -> Void = {}
+        registerForRemoteNotifications: @Sendable @escaping () async -> Void = {},
+        isAuthorizationDetermined: @Sendable @escaping () async -> Bool = { false }
     ) {
         self.requestAuthorization = requestAuthorization
         self.registerForRemoteNotifications = registerForRemoteNotifications
+        self.isAuthorizationDetermined = isAuthorizationDetermined
     }
 
 }

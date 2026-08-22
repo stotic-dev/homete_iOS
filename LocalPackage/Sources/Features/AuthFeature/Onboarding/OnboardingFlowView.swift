@@ -15,8 +15,11 @@ import Prefire
 public struct OnboardingFlowView: View {
 
     @Environment(\.launchStateProxy) var launchStateProxy
+    @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
 
     @State var step = OnboardingStep.registration
+    /// 実際に案内するステップの並び（案内が不要なステップは除かれる）
+    @State var steps = OnboardingStep.allCases
     /// 登録が完了したアカウント（オンボーディング完了時にログイン状態へ渡すために保持する）
     @State var registeredAccount: Account?
 
@@ -42,22 +45,25 @@ public struct OnboardingFlowView: View {
 
                 case .premiumIntroduction:
                     PremiumIntroductionView {
-                        step = .notificationPermission
+                        moveToNextStep()
                     }
                     .transition(stepTransition)
 
                 case .notificationPermission:
                     NotificationPermissionGuideView {
-                        finishOnboarding()
+                        moveToNextStep()
                     }
                     .transition(stepTransition)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            OnboardingProgressIndicator(currentStep: step)
+            OnboardingProgressIndicator(steps: steps, currentStep: step)
         }
         .padding(.bottom, .space16)
         .animation(.spring, value: step)
+        .task {
+            await loadSteps()
+        }
     }
 
 }
@@ -77,9 +83,28 @@ private extension OnboardingFlowView {
 
 private extension OnboardingFlowView {
 
+    /// 案内が不要なステップを除いて、進捗の分母を実際に表示する画面数と一致させる
+    func loadSteps() async {
+        let shouldGuideNotification = await notificationPermissionUseCase.shouldGuideOnOnboarding()
+        guard !shouldGuideNotification else { return }
+
+        steps = OnboardingStep.allCases.filter { $0 != .notificationPermission }
+    }
+
     func completedRegistration(_ account: Account) {
         registeredAccount = account
-        step = .premiumIntroduction
+        moveToNextStep()
+    }
+
+    /// 次のステップへ進む。残りのステップがなければオンボーディングを完了する
+    func moveToNextStep() {
+        let nextIndex = (steps.firstIndex(of: step) ?? 0) + 1
+        guard steps.indices.contains(nextIndex) else {
+            finishOnboarding()
+            return
+        }
+
+        step = steps[nextIndex]
     }
 
     func finishOnboarding() {

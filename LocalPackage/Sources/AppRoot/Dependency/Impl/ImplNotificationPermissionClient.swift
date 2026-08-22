@@ -9,11 +9,11 @@ import UserNotifications
 
 public extension NotificationPermissionClient {
 
-    static let liveValue: NotificationPermissionClient = .init {
-        await requestAuthorization()
-    } registerForRemoteNotifications: {
-        await registerForRemoteNotificationsOnMain()
-    }
+    static let liveValue: NotificationPermissionClient = .init(
+        requestAuthorization: { await requestAuthorization() },
+        registerForRemoteNotifications: { await registerForRemoteNotificationsOnMain() },
+        isAuthorizationDetermined: { await isAuthorizationDetermined() }
+    )
 
 }
 
@@ -32,6 +32,11 @@ private extension NotificationPermissionClient {
     @MainActor
     static func registerForRemoteNotificationsOnMain() {
         UIApplication.shared.registerForRemoteNotifications()
+    }
+
+    static func isAuthorizationDetermined() async -> Bool {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        return settings.authorizationStatus != .notDetermined
     }
 
 }

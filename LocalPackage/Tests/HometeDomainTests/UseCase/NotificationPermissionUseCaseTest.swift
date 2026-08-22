@@ -8,6 +8,47 @@ import Testing
 
 struct NotificationPermissionUseCaseTest {
 
+    @Test("通知の権限が未決定の場合は、オンボーディングで通知の案内を行う")
+    func shouldGuideOnOnboarding_authorizationNotDetermined_returnsTrue() async {
+        // Arrange
+        let recorder = CallRecorder()
+        let guideState = GuideStateStore()
+        let sut = makeSUT(recorder: recorder, guideState: guideState, isGranted: true)
+        let expected = CallSnapshot(entries: [], hasGuidedOnOnboarding: false, result: true)
+
+        // Act
+
+        let shouldGuide = await sut.shouldGuideOnOnboarding()
+
+        // Assert
+
+        let actual = await CallSnapshot(recorder: recorder, guideState: guideState, result: shouldGuide)
+        #expect(actual == expected)
+    }
+
+    @Test("通知の権限が決定済みの場合は、オンボーディングで通知の案内を行わない")
+    func shouldGuideOnOnboarding_authorizationDetermined_returnsFalse() async {
+        // Arrange
+        let recorder = CallRecorder()
+        let guideState = GuideStateStore()
+        let sut = makeSUT(
+            recorder: recorder,
+            guideState: guideState,
+            isGranted: true,
+            isAuthorizationDetermined: true
+        )
+        let expected = CallSnapshot(entries: [], hasGuidedOnOnboarding: false, result: false)
+
+        // Act
+
+        let shouldGuide = await sut.shouldGuideOnOnboarding()
+
+        // Assert
+
+        let actual = await CallSnapshot(recorder: recorder, guideState: guideState, result: shouldGuide)
+        #expect(actual == expected)
+    }
+
     @Test("権限が許可された場合、リモート通知の登録まで行う")
     func requestOnOnboarding_authorizationGranted_registersForRemoteNotifications() async {
         // Arrange
@@ -193,7 +234,8 @@ private actor GuideStateStore {
 private func makeSUT(
     recorder: CallRecorder,
     guideState: GuideStateStore,
-    isGranted: Bool
+    isGranted: Bool,
+    isAuthorizationDetermined: Bool = false
 ) -> NotificationPermissionUseCase {
     NotificationPermissionUseCase(
         notificationPermissionClient: NotificationPermissionClient(
@@ -203,7 +245,8 @@ private func makeSUT(
             },
             registerForRemoteNotifications: {
                 await recorder.append(.registerForRemoteNotifications)
-            }
+            },
+            isAuthorizationDetermined: { isAuthorizationDetermined }
         ),
         notificationGuideStateClient: NotificationGuideStateClient(
             loadHasGuidedOnOnboarding: { await guideState.hasGuidedOnOnboarding },
