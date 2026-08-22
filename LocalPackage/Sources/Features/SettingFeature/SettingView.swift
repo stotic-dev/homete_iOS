@@ -40,6 +40,11 @@ private extension SettingViewScreen {
 
         case .subscriptionManagement:
             SubscriptionManagementView()
+
+        #if DEBUG
+        case .debugMenu:
+            DebugMenuView()
+        #endif
         }
     }
 
@@ -248,6 +253,11 @@ private extension SettingView {
 
         case .license:
             navigationPath.push(.licenseList)
+
+        #if DEBUG
+        case .debugMenu:
+            navigationPath.push(.debugMenu)
+        #endif
         }
     }
 

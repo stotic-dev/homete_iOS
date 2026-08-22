@@ -24,6 +24,10 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     HouseworkTemplateScreen.make()
                 case .paywall:
                     PaywallScreen()
+                #if DEBUG
+                case .debugOnboarding:
+                    DebugOnboardingScreen()
+                #endif
                 }
             })
     }

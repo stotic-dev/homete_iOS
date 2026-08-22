@@ -24,7 +24,7 @@ public struct RootView: View {
             case .launching:
                 LaunchScreenView()
             case let .preLoggedIn(auth):
-                RegistrationAccountView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
+                OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                     .transition(.asymmetric(
                         insertion: .push(from: .leading),
                         removal: .opacity

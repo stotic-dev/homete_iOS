@@ -37,13 +37,31 @@ swift test  --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
 
 `make build-local-package` / `make test-packages` / `make format` には既に `--disable-sandbox` が入っているので、これらを使う場合は何も足さなくてよい。
 
-SwiftPM と SwiftLint はホームディレクトリ配下のキャッシュに書き込む。以下は `settings.local.json` の `sandbox.filesystem.allowWrite` で許可済み:
+ビルドツールが書き込む先は `settings.local.json` の `sandbox.filesystem.allowWrite` で許可済み:
 
+- `/var/folders/<user-hash>/T`・`/C`（`/private/var/folders/...` 版も）— **最重要**。下記参照
 - `~/Library/org.swift.swiftpm`、`~/Library/Caches/org.swift.swiftpm`（マニフェストキャッシュ。無いとビルドが毎回遅くなる）
-- `~/Library/Caches/SwiftLint`（SwiftLintプラグインのキャッシュ。無いとビルドが失敗する）
+- `~/Library/Caches/SwiftLint`、`~/Library/Caches/com.charcoaldesign.swiftformat`（lint/formatキャッシュ）
 - `~/Library/Developer/Xcode/DerivedData`（xcodebuild用）
 
-`attempt to write a readonly database` や `You don't have permission to save the file ...` が出たら、書き込み先を特定して `allowWrite` に足す。**この設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
+### `You don't have permission to save the file ...` の正体
+
+Claudeのサンドボックスは `TMPDIR` を `/tmp/claude-501` に差し替えるが、Foundation の atomic write
+（`write(atomically: true)` 系）は `TMPDIR` を見ず `confstr(_CS_DARWIN_USER_TEMP_DIR)`＝
+`/var/folders/<user-hash>/T/TemporaryItems/` に中間ファイルを作ってから rename する。
+ここが不許可だと、**書き込み先ディレクトリ自体はサンドボックス的に書けるのに EPERM で落ちる**。
+`touch` は通るのに SwiftPM・SwiftGen・SwiftLint が「保存する権限がありません」で落ちる、という一見矛盾した症状はこれ。
+clangのモジュールキャッシュ（`/var/folders/<user-hash>/C/clang/ModuleCache`）も同じ理由で `/C` の許可が要る。
+
+実際の拒否内容はカーネルログで確認できる（`dangerouslyDisableSandbox: true` が必要）:
+
+```bash
+/usr/bin/log show --predicate 'senderImagePath CONTAINS "Sandbox"' --last 10m --style compact | grep deny
+```
+
+`deny(1) sysctl-read kern.iossupportversion` は大量に出るが無害（ビルドは通る）。
+
+**`sandbox` の設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
 
 他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
 
@@ -68,6 +86,48 @@ LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.bui
 対処は `settings.local.json` の `sandbox.enableWeakerNestedSandbox: true`（設定済み）。**セッション開始時にしか読まれない**ので、追加直後のセッションでは効かない。
 
 それでも失敗し、かつ上記の切り分けで nested sandbox が原因と確認できた場合に限り、その1コマンドだけ `dangerouslyDisableSandbox: true` で実行してよい。ただし**許可プロンプトが出て自律実行が止まる**ため、常用しないこと。恒久対応が必要になったら `sandbox.excludedCommands` に `swift` / `make` を入れる方を検討する。
+
+---
+
+## 出力の絞り方（再実行しないために）
+
+検証コマンドは1回が高コスト（ビルド約80秒、`make test-packages` は5つのテストターゲットを順に実行）。
+**絞り方を誤って結果が読めず「もう一度流す」のは、待ち時間が丸ごと無駄になる。** 実行する前にフィルタを決め、
+どう転んでも1回で合否を判定できる形にする。
+
+### ログをファイルに残してからフィルタする
+
+`tee` を挟んでおけば、絞り方を間違えてもコマンドを流し直さずログを読み直すだけで済む。判断に必要な情報が
+足りないと分かった時点では既にビルド成果物もログも手元にあるので、再実行する理由はない。
+
+```bash
+LOG="$TMPDIR/verify-test.log"
+make test-packages 2>&1 | tee "$LOG" | grep -E "Test run with|✘|error:|failed"
+# 情報が足りなければ、再実行せず保存済みログを読む
+grep -n -B5 -A20 "✘" "$LOG"
+```
+
+### `tail` を合否判定に使わない
+
+`make test-packages` はテストターゲットごとに `Test run with N tests in M suites passed` を出す。
+`tail -25` だと最後のターゲットの出力しか映らず、**残りが通ったのか落ちたのか分からない**。
+`tail` が妥当なのは、末尾にだけ結論が出るコマンド（`swift build` の `Build complete!` など）に限る。
+
+### コマンド別の推奨フィルタ
+
+- `swift build` / `make build-local-package`
+  → `grep -E "error:|Build complete"`。`Build complete!` が出ていれば OK
+- `make test-packages` / `swift test`
+  → `grep -E "Test run with|✘|error:"`。`Test run with ... passed` がテストターゲットの数だけ並べば OK
+  （現在は HometeDomainTests / HouseworkFeatureTests / HouseworkTemplateFeatureTests / SettingFeatureTests /
+  ContributionFeatureTests の5行。1行でも欠けていたらログ本体を確認する）
+- `swiftlint lint`
+  → 元々短いので絞らなくてよい。絞るなら `grep -E "warning:|error:"` で、自分が触ったファイルの行が無いことを見る
+- `xcodebuild ... -quiet`
+  → `grep -E "error:|\*\* TEST|\*\* BUILD"`。`** BUILD SUCCEEDED **` / `** TEST SUCCEEDED **` を確認
+
+grep はマッチ0件で終了コード1を返すため、コマンド全体が失敗したように見えることがある。合否は終了コードでは
+なく出力内容で判断する（気になるなら `|| true` を付ける）。
 
 ---
 
