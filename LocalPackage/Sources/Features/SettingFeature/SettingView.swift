@@ -41,6 +41,9 @@ private extension SettingViewScreen {
         case .subscriptionManagement:
             SubscriptionManagementView()
 
+        case .notificationPermission:
+            SettingNotificationPermissionGuideView()
+
         #if DEBUG
         case .debugMenu:
             DebugMenuView()
@@ -234,6 +237,9 @@ private extension SettingView {
         switch item {
         case .taskTemplate:
             isShowHouseworkTemplate = true
+
+        case .notificationPermission:
+            navigationPath.push(.notificationPermission)
 
         case .memberRegistration:
             isShowMemberRegistration = true

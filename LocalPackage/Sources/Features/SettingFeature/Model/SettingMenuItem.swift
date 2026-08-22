@@ -12,6 +12,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     case memberRegistration
     case taskTemplate
+    case notificationPermission
     case premiumPlan
     case termsOfService
     case privacyPolicy
@@ -38,6 +39,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "家事テンプレート"
+
+        case .notificationPermission:
+            "通知設定"
 
         case .premiumPlan:
             if case .free = plan {
@@ -69,6 +73,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "house"
+
+        case .notificationPermission:
+            "bell.badge.fill"
 
         case .premiumPlan:
             "crown.fill"

@@ -2,21 +2,32 @@
 //  NotificationPermissionGuideView.swift
 //  LocalPackage
 //
+//  Created by Taichi Sato on 2026/08/22.
+//
 
 import HometeDomain
-import HometeUI
 import SwiftUI
 
-/// オンボーディングでプッシュ通知の役割を説明し、権限リクエストのダイアログを出す画面
-struct NotificationPermissionGuideView: View {
+/// プッシュ通知の役割を説明し、通知設定の導線を提供するUI
+public struct NotificationPermissionGuideView: View {
 
     @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
 
-    /// この画面での操作が終わり、オンボーディングを完了するときに呼ばれる
-    let onNext: () -> Void
+    /// スキップボタンタップ時の処理
+    let onTapSkipButton: () -> Void
+    /// 通知設定タップ時の処理
+    let onTapEnableNotificationButton: () -> Void
+    
+    public init(
+        onTapSkipButton: @escaping () -> Void,
+        onTapEnableNotificationButton: @escaping () -> Void
+    ) {
+        self.onTapSkipButton = onTapSkipButton
+        self.onTapEnableNotificationButton = onTapEnableNotificationButton
+    }
 
-    var body: some View {
+    public var body: some View {
         VStack(spacing: .space32) {
             VStack(spacing: .space16) {
                 Image(systemName: "bell.badge.fill")
@@ -33,9 +44,7 @@ struct NotificationPermissionGuideView: View {
             Spacer(minLength: .space24)
             VStack(spacing: .space16) {
                 Button {
-                    Task {
-                        await tappedEnableNotificationButton()
-                    }
+                    onTapEnableNotificationButton()
                 } label: {
                     Text("通知を受け取る")
                         .padding(.vertical, .space8)
@@ -43,9 +52,7 @@ struct NotificationPermissionGuideView: View {
                 }
                 .subPrimaryButtonStyle()
                 Button("あとで設定する") {
-                    Task {
-                        await tappedSkipButton()
-                    }
+                    onTapSkipButton()
                 }
                 .font(with: .body)
                 .foregroundStyle(.primary2)
@@ -60,26 +67,9 @@ struct NotificationPermissionGuideView: View {
 
 }
 
-// MARK: プレゼンテーションロジック
-
-private extension NotificationPermissionGuideView {
-
-    /// 権限が許可されたかどうかに関わらず、リクエストを終えたらオンボーディングを完了する
-    func tappedEnableNotificationButton() async {
-        let isGranted = await notificationPermissionUseCase.requestOnOnboarding()
-        analyticsClient.log(.onboarding(.notificationPermissionRequested(isGranted: isGranted)))
-        onNext()
-    }
-
-    /// スキップした直後にホームで再びダイアログが出ないよう、案内済みであることをUseCaseに記録してから次へ進む
-    func tappedSkipButton() async {
-        await notificationPermissionUseCase.skipOnOnboarding()
-        analyticsClient.log(.onboarding(.notificationPermissionSkipped))
-        onNext()
-    }
-
-}
-
 #Preview("NotificationPermissionGuideView") {
-    NotificationPermissionGuideView {}
+    NotificationPermissionGuideView(
+        onTapSkipButton: {},
+        onTapEnableNotificationButton: {}
+    )
 }
