@@ -29,29 +29,34 @@ public struct OnboardingFlowView: View {
     }
 
     public var body: some View {
-        ZStack {
-            switch step {
-            case .registration:
-                RegistrationAccountView(
-                    authInfo: authInfo,
-                    authSubscriptionSyncUseCase: authSubscriptionSyncUseCase
-                ) { account in
-                    completedRegistration(account)
-                }
+        VStack(spacing: .space8) {
+            ZStack {
+                switch step {
+                case .registration:
+                    RegistrationAccountView(
+                        authInfo: authInfo,
+                        authSubscriptionSyncUseCase: authSubscriptionSyncUseCase
+                    ) { account in
+                        completedRegistration(account)
+                    }
 
-            case .premiumIntroduction:
-                PremiumIntroductionView {
-                    step = .notificationPermission
-                }
-                .transition(stepTransition)
+                case .premiumIntroduction:
+                    PremiumIntroductionView {
+                        step = .notificationPermission
+                    }
+                    .transition(stepTransition)
 
-            case .notificationPermission:
-                NotificationPermissionGuideView {
-                    finishOnboarding()
+                case .notificationPermission:
+                    NotificationPermissionGuideView {
+                        finishOnboarding()
+                    }
+                    .transition(stepTransition)
                 }
-                .transition(stepTransition)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            OnboardingProgressIndicator(currentStep: step)
         }
+        .padding(.bottom, .space16)
         .animation(.spring, value: step)
     }
 
