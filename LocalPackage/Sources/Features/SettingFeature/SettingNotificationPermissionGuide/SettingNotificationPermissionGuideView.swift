@@ -33,7 +33,11 @@ private extension SettingNotificationPermissionGuideView {
 
     func tappedEnableNotificationButton() async {
         if await notificationPermissionClient.isAuthorizationDetermined() {
-            oepnURL(URL(string: UIApplication.openNotificationSettingsURLString)!)
+            #if canImport(UIKit)
+            if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                oepnURL(url)
+            }
+            #endif
         } else {
             _ = await notificationPermissionClient.requestAuthorization()
             dismiss()
