@@ -21,7 +21,8 @@ public extension AppDependencies {
         houseworkTemplateClient: .liveValue,
         consentClient: liveConsentClient,
         mobileAdsClient: .liveValue,
-        notificationPermissionClient: liveNotificationPermissionClient
+        notificationPermissionClient: liveNotificationPermissionClient,
+        notificationGuideStateClient: .liveValue
     )
 
 }

@@ -4,36 +4,40 @@
 //
 
 /// プッシュ通知の権限リクエストと、オンボーディングでの案内状況を管理するUseCase
-/// - Note: 案内済みかどうかはアプリ起動中のみ保持する。オンボーディングで「あとで設定する」を選んだ直後に
-///         ホームで再びダイアログが出るのを防ぎつつ、次回起動以降は改めて案内できるようにするため
-public actor NotificationPermissionUseCase {
+/// - Note: 案内済みかどうかは`NotificationGuideStateClient`で永続化する。オンボーディングで「あとで設定する」を
+///         選んだユーザーに対し、その後の起動でも勝手にダイアログを出さないようにするため
+public final class NotificationPermissionUseCase: Sendable {
 
     private let notificationPermissionClient: NotificationPermissionClient
+    private let notificationGuideStateClient: NotificationGuideStateClient
 
-    /// この起動中にオンボーディングで通知の案内を行ったかどうか
-    private var hasGuidedOnOnboarding = false
-
-    public init(notificationPermissionClient: NotificationPermissionClient) {
+    public init(
+        notificationPermissionClient: NotificationPermissionClient,
+        notificationGuideStateClient: NotificationGuideStateClient
+    ) {
         self.notificationPermissionClient = notificationPermissionClient
+        self.notificationGuideStateClient = notificationGuideStateClient
     }
 
     /// オンボーディングの案内画面から権限をリクエストする
     /// - Returns: 権限が許可されているかどうか
     @discardableResult
     public func requestOnOnboarding() async -> Bool {
-        hasGuidedOnOnboarding = true
+        await notificationGuideStateClient.saveHasGuidedOnOnboarding(true)
         return await request()
     }
 
     /// オンボーディングの案内画面で権限リクエストがスキップされたことを記録する
-    public func skipOnOnboarding() {
-        hasGuidedOnOnboarding = true
+    public func skipOnOnboarding() async {
+        await notificationGuideStateClient.saveHasGuidedOnOnboarding(true)
     }
 
     /// オンボーディングで案内していない場合に限り、権限をリクエストする
-    /// - Note: ホーム着地のたびに呼ばれる想定。ユーザーが直前に案内をスキップしたときは、その判断を尊重してリクエストしない
+    /// - Note: ホーム着地のたびに呼ばれる想定。一度でも案内していれば、その判断を尊重してリクエストしない
     public func requestIfNeeded() async {
-        guard !hasGuidedOnOnboarding else { return }
+        let hasGuided = await notificationGuideStateClient.loadHasGuidedOnOnboarding()
+        guard !hasGuided else { return }
+
         await request()
     }
 
