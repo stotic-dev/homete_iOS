@@ -15,8 +15,9 @@ public struct HomeView: View {
 
     @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
-    @Environment(\.appDependencies) var appDependencies
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
+    @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
+    @Environment(\.appDependencies.adsSetupUseCase) var adsSetupUseCase
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
@@ -127,8 +128,8 @@ private extension HomeView {
     ///         いずれもOSの仕様上、決定済みの場合はダイアログが出ずに即座に完了する。
     ///         ダイアログが重ならないよう、通知権限 → 広告の同意（ATT含む）の順に直列で実行する
     func onAppear() async {
-        await appDependencies.notificationPermissionUseCase.requestIfNeeded()
-        await appDependencies.adsSetupUseCase.setup()
+        await notificationPermissionUseCase.requestIfNeeded()
+        await adsSetupUseCase.setup()
     }
 
     func didAppearRegisteredContent(cohabitantStore: CohabitantStore) async {

@@ -8,58 +8,47 @@ import Testing
 
 struct AnalyticsEventTest {
 
-    @Test("オンボーディングの特典説明画面表示イベントを生成する")
-    func onboardingPremiumIntroductionShown() {
-        let actual = AnalyticsEvent.onboardingPremiumIntroductionShown()
-
-        #expect(actual == AnalyticsEvent(name: "onboarding_premium_introduction_shown", parameters: [:]))
-    }
-
-    @Test("オンボーディングの特典説明画面スキップイベントを生成する")
-    func onboardingPremiumIntroductionSkipped() {
-        let actual = AnalyticsEvent.onboardingPremiumIntroductionSkipped()
-
-        #expect(actual == AnalyticsEvent(name: "onboarding_premium_introduction_skipped", parameters: [:]))
-    }
-
-    @Test("オンボーディングのPaywall表示イベントを生成する")
-    func onboardingPaywallShown() {
-        let actual = AnalyticsEvent.onboardingPaywallShown()
-
-        #expect(actual == AnalyticsEvent(name: "onboarding_paywall_shown", parameters: [:]))
-    }
-
     @Test(
-        "オンボーディングのPaywallを閉じたイベントに、閉じた時点のプレミアム状態を含める",
-        arguments: [true, false]
+        "オンボーディング中の行動を、step/action/resultのパラメータを持つonboardingイベントに変換する",
+        arguments: [
+            (
+                OnboardingAnalyticsAction.premiumIntroductionShown,
+                ["step": "premium_introduction", "action": "shown"]
+            ),
+            (
+                OnboardingAnalyticsAction.paywallShown,
+                ["step": "premium_introduction", "action": "paywall_shown"]
+            ),
+            (
+                OnboardingAnalyticsAction.paywallClosed(isPremium: true),
+                ["step": "premium_introduction", "action": "paywall_closed", "result": "purchased"]
+            ),
+            (
+                OnboardingAnalyticsAction.paywallClosed(isPremium: false),
+                ["step": "premium_introduction", "action": "paywall_closed", "result": "not_purchased"]
+            ),
+            (
+                OnboardingAnalyticsAction.premiumIntroductionSkipped,
+                ["step": "premium_introduction", "action": "skipped"]
+            ),
+            (
+                OnboardingAnalyticsAction.notificationPermissionRequested(isGranted: true),
+                ["step": "notification_permission", "action": "permission_requested", "result": "granted"]
+            ),
+            (
+                OnboardingAnalyticsAction.notificationPermissionRequested(isGranted: false),
+                ["step": "notification_permission", "action": "permission_requested", "result": "denied"]
+            ),
+            (
+                OnboardingAnalyticsAction.notificationPermissionSkipped,
+                ["step": "notification_permission", "action": "skipped"]
+            ),
+        ]
     )
-    func onboardingPaywallClosed(isPremium: Bool) {
-        let actual = AnalyticsEvent.onboardingPaywallClosed(isPremium: isPremium)
+    func onboarding(action: OnboardingAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.onboarding(action)
 
-        #expect(actual == AnalyticsEvent(
-            name: "onboarding_paywall_closed",
-            parameters: ["isPremium": "\(isPremium)"]
-        ))
-    }
-
-    @Test(
-        "オンボーディングの通知権限リクエストイベントに、許可されたかどうかを含める",
-        arguments: [true, false]
-    )
-    func onboardingNotificationPermissionRequested(isGranted: Bool) {
-        let actual = AnalyticsEvent.onboardingNotificationPermissionRequested(isGranted: isGranted)
-
-        #expect(actual == AnalyticsEvent(
-            name: "onboarding_notification_permission_requested",
-            parameters: ["isGranted": "\(isGranted)"]
-        ))
-    }
-
-    @Test("オンボーディングの通知権限スキップイベントを生成する")
-    func onboardingNotificationPermissionSkipped() {
-        let actual = AnalyticsEvent.onboardingNotificationPermissionSkipped()
-
-        #expect(actual == AnalyticsEvent(name: "onboarding_notification_permission_skipped", parameters: [:]))
+        #expect(actual == AnalyticsEvent(name: "onboarding", parameters: expectedParameters))
     }
 
 }

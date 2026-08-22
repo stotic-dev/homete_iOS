@@ -40,53 +40,13 @@ public extension AnalyticsEvent {
         )
     }
 
-    /// オンボーディングでプレミアムプランの特典説明画面を表示した
-    static func onboardingPremiumIntroductionShown() -> Self {
+    /// オンボーディング中の行動
+    /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
+    ///         意図は`OnboardingAnalyticsAction`を参照
+    static func onboarding(_ action: OnboardingAnalyticsAction) -> Self {
         .init(
-            name: "onboarding_premium_introduction_shown",
-            parameters: [:]
-        )
-    }
-
-    /// オンボーディングでプレミアムプランの特典説明画面からPaywallを開かずに次へ進んだ
-    static func onboardingPremiumIntroductionSkipped() -> Self {
-        .init(
-            name: "onboarding_premium_introduction_skipped",
-            parameters: [:]
-        )
-    }
-
-    /// アカウント登録直後のオンボーディングでPaywallを表示した
-    static func onboardingPaywallShown() -> Self {
-        .init(
-            name: "onboarding_paywall_shown",
-            parameters: [:]
-        )
-    }
-
-    /// アカウント登録直後のオンボーディングで表示したPaywallを閉じた
-    /// - Parameter isPremium: 閉じた時点でプレミアムプランが有効かどうか（購入せずスキップした場合はfalse）
-    static func onboardingPaywallClosed(isPremium: Bool) -> Self {
-        .init(
-            name: "onboarding_paywall_closed",
-            parameters: ["isPremium": "\(isPremium)"]
-        )
-    }
-
-    /// オンボーディングでプッシュ通知の権限をリクエストした
-    /// - Parameter isGranted: 権限が許可されたかどうか
-    static func onboardingNotificationPermissionRequested(isGranted: Bool) -> Self {
-        .init(
-            name: "onboarding_notification_permission_requested",
-            parameters: ["isGranted": "\(isGranted)"]
-        )
-    }
-
-    /// オンボーディングでプッシュ通知の権限をリクエストせずにスキップした
-    static func onboardingNotificationPermissionSkipped() -> Self {
-        .init(
-            name: "onboarding_notification_permission_skipped",
-            parameters: [:]
+            name: "onboarding",
+            parameters: action.parameters
         )
     }
 

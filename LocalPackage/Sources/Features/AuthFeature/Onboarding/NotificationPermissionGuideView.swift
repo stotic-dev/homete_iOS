@@ -10,7 +10,8 @@ import SwiftUI
 /// オンボーディングでプッシュ通知の役割を説明し、権限リクエストのダイアログを出す画面
 struct NotificationPermissionGuideView: View {
 
-    @Environment(\.appDependencies) var appDependencies
+    @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
 
     /// この画面での操作が終わり、オンボーディングを完了するときに呼ばれる
     let onNext: () -> Void
@@ -65,15 +66,15 @@ private extension NotificationPermissionGuideView {
 
     /// 権限が許可されたかどうかに関わらず、リクエストを終えたらオンボーディングを完了する
     func tappedEnableNotificationButton() async {
-        let isGranted = await appDependencies.notificationPermissionUseCase.requestOnOnboarding()
-        appDependencies.analyticsClient.log(.onboardingNotificationPermissionRequested(isGranted: isGranted))
+        let isGranted = await notificationPermissionUseCase.requestOnOnboarding()
+        analyticsClient.log(.onboarding(.notificationPermissionRequested(isGranted: isGranted)))
         onNext()
     }
 
     /// スキップした直後にホームで再びダイアログが出ないよう、案内済みであることをUseCaseに記録してから次へ進む
     func tappedSkipButton() async {
-        await appDependencies.notificationPermissionUseCase.skipOnOnboarding()
-        appDependencies.analyticsClient.log(.onboardingNotificationPermissionSkipped())
+        await notificationPermissionUseCase.skipOnOnboarding()
+        analyticsClient.log(.onboarding(.notificationPermissionSkipped))
         onNext()
     }
 

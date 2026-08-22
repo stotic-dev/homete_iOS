@@ -250,6 +250,10 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 - **HouseworkBoardList**: 日付で整理された家事のコレクション
 - **DailyHouseworkList**: 特定の日の家事アイテム
 
+### Analyticsイベント
+
+Firebase Analytics（GA4）へ送るイベントの一覧・送信タイミング・パラメータ定義は **[doc/analytics_events.md](doc/analytics_events.md)** が正。イベント名は行動ごとに増やさず機能単位で定義し、パラメータで区別する（[ADR-0009](doc/adr/0009-analytics-event-parameter-design.md)）。イベントを追加・変更したら同ドキュメントも必ず更新する。
+
 ### カスタムビルドツール（ProjectTools）
 
 開発ツールは2つのSwift Packageに分かれている。
@@ -317,6 +321,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
   - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`
+  - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`
   - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
   - `adr.md`のみ`paths:`を持たない（技術選定はファイル種別に紐づかないため意図的に常時ロード）

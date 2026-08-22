@@ -107,22 +107,22 @@ private extension PremiumIntroductionView {
 private extension PremiumIntroductionView {
 
     func onAppearView() {
-        analyticsClient.log(.onboardingPremiumIntroductionShown())
+        analyticsClient.log(.onboarding(.premiumIntroductionShown))
     }
 
     func tappedShowPaywallButton() {
-        analyticsClient.log(.onboardingPaywallShown())
+        analyticsClient.log(.onboarding(.paywallShown))
         isShowPaywall = true
     }
 
     func tappedSkipButton() {
-        analyticsClient.log(.onboardingPremiumIntroductionSkipped())
+        analyticsClient.log(.onboarding(.premiumIntroductionSkipped))
         onNext()
     }
 
     /// Paywallを閉じた後は、購入有無に関わらず次のステップへ進む
     func dismissedPaywall() {
-        analyticsClient.log(.onboardingPaywallClosed(isPremium: subscriptionStore.isPremium))
+        analyticsClient.log(.onboarding(.paywallClosed(isPremium: subscriptionStore.isPremium)))
         onNext()
     }
 
