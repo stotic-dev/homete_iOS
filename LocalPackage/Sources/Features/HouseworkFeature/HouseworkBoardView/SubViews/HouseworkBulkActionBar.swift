@@ -50,3 +50,37 @@ private extension HouseworkBulkActionBar {
     }
 
 }
+
+#if DEBUG
+#Preview("HouseworkBulkActionBar_未完了_未選択", traits: .sizeThatFitsLayout) {
+    HouseworkBulkActionBar(
+        actions: [.requestReview, .remove],
+        isEnabled: false,
+        onTap: { _ in }
+    )
+}
+
+#Preview("HouseworkBulkActionBar_未完了_選択あり", traits: .sizeThatFitsLayout) {
+    HouseworkBulkActionBar(
+        actions: [.requestReview, .remove],
+        isEnabled: true,
+        onTap: { _ in }
+    )
+}
+
+#Preview("HouseworkBulkActionBar_承認待ち_確認者", traits: .sizeThatFitsLayout) {
+    HouseworkBulkActionBar(
+        actions: [.approve, .reject],
+        isEnabled: true,
+        onTap: { _ in }
+    )
+}
+
+#Preview("HouseworkBulkActionBar_承認待ち_実施者本人", traits: .sizeThatFitsLayout) {
+    HouseworkBulkActionBar(
+        actions: [.returnToIncomplete],
+        isEnabled: true,
+        onTap: { _ in }
+    )
+}
+#endif

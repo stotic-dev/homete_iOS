@@ -157,4 +157,47 @@ private extension HouseworkBoardListContent {
     )
     .setupLoginContextForPreview()
 }
+
+#Preview("HouseworkBoardListContent_選択モード") {
+    @Previewable @State var selectedState = HouseworkState.pendingApproval
+    @Previewable @State var isSelecting = true
+    HouseworkBoardListContent(
+        houseworkListStore: .init(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ),
+        state: .pendingApproval,
+        list: .init(items: [
+            .makeForPreview(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "2",
+                title: "掃除",
+                point: 100,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "3",
+                title: "料理",
+                point: 1,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "ownUserId"
+            ),
+        ]),
+        selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
+        onCreateTapped: {},
+        selectedIDs: ["1"]
+    )
+    .setupLoginContextForPreview()
+}
 #endif
