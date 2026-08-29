@@ -57,23 +57,27 @@ public final class HouseworkListStore {
         now: Date,
         executor: String,
         cohabitantId: String,
-        isRegistered: Bool
+        isRegistered: Bool,
+        notify: Bool = true
     ) async throws {
         if isRegistered {
             // Houseworksコレクションに登録されている家事の場合はステータスを更新する
-            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                $0.updatePendingApproval(at: now, changer: executor)
-            } notification: {
-                .requestReviewMessage(houseworkTitle: target.title)
-            }
+            try await updateAndSave(
+                target: target,
+                cohabitantId: cohabitantId,
+                transform: { $0.updatePendingApproval(at: now, changer: executor) },
+                notification: notify ? { .requestReviewMessage(houseworkTitle: target.title) } : nil
+            )
         } else {
             // 登録されていない場合はドキュメントを新規作成する
             let updatedItem = target.updatePendingApproval(at: now, changer: executor)
             try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-            pushNotificationWithAsync(
-                notification: .requestReviewMessage(houseworkTitle: target.title),
-                cohabitantId: cohabitantId
-            )
+            if notify {
+                pushNotificationWithAsync(
+                    notification: .requestReviewMessage(houseworkTitle: target.title),
+                    cohabitantId: cohabitantId
+                )
+            }
         }
     }
 
@@ -82,13 +86,17 @@ public final class HouseworkListStore {
         now: Date,
         reviwer: Account,
         comment: String,
-        cohabitantId: String
+        cohabitantId: String,
+        notify: Bool = true
     ) async throws {
-        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-            $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment)
-        } notification: {
-            .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
-        }
+        try await updateAndSave(
+            target: target,
+            cohabitantId: cohabitantId,
+            transform: { $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment) },
+            notification: notify
+                ? { .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment) }
+                : nil
+        )
     }
 
     public func rejected(
@@ -96,13 +104,17 @@ public final class HouseworkListStore {
         now: Date,
         reviwer: Account,
         comment: String,
-        cohabitantId: String
+        cohabitantId: String,
+        notify: Bool = true
     ) async throws {
-        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-            $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment)
-        } notification: {
-            .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
-        }
+        try await updateAndSave(
+            target: target,
+            cohabitantId: cohabitantId,
+            transform: { $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment) },
+            notification: notify
+                ? { .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment) }
+                : nil
+        )
     }
 
     public func returnToIncomplete(
@@ -127,6 +139,13 @@ public final class HouseworkListStore {
             let updatedItem = target.updateNotTodo()
             try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         }
+    }
+
+    /// 任意の通知内容を相手へ送信する
+    ///
+    /// 一括操作のように、複数件の更新をまとめて1件の通知にしたい場合に使う。
+    public func sendNotification(_ content: PushNotificationContent, cohabitantId: String) {
+        pushNotificationWithAsync(notification: content, cohabitantId: cohabitantId)
     }
 
 }

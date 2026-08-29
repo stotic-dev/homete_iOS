@@ -47,4 +47,25 @@ public extension PushNotificationContent {
         )
     }
 
+    static func requestReviewBulkMessage(count: Int) -> Self {
+        .init(
+            title: "確認が必要な家事があります",
+            message: "\(count)件の家事の完了に感謝を伝えましょう！"
+        )
+    }
+
+    static func approvedBulkMessage(reviwerName: String, count: Int) -> Self {
+        .init(
+            title: "\(reviwerName)が家事を承認しました！",
+            message: "\(count)件の家事が完了として承認されました"
+        )
+    }
+
+    static func rejectedBulkMessage(count: Int) -> Self {
+        .init(
+            title: "家事を再確認してください",
+            message: "\(count)件の家事について再確認をお願いします"
+        )
+    }
+
 }
