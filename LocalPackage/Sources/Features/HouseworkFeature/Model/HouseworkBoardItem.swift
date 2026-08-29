@@ -8,41 +8,46 @@
 import Foundation
 import HometeDomain
 
-struct HouseworkBoardItem: Equatable, Identifiable, Hashable {
+public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
 
-    let originalItem: HouseworkItem
-    let isRegistered: Bool
+    public let originalItem: HouseworkItem
+    public let isRegistered: Bool
 
-    var id: String {
+    public init(originalItem: HouseworkItem, isRegistered: Bool) {
+        self.originalItem = originalItem
+        self.isRegistered = isRegistered
+    }
+
+    public var id: String {
         originalItem.id
     }
 
-    var title: String {
+    public var title: String {
         originalItem.title
     }
 
-    var state: HouseworkState {
+    public var state: HouseworkState {
         originalItem.state
     }
 
-    var point: Int {
+    public var point: Int {
         originalItem.point
     }
 
-    var executorId: String? {
+    public var executorId: String? {
         originalItem.executorId
     }
 
-    var executedAt: Date? {
+    public var executedAt: Date? {
         originalItem.executedAt
     }
 
     /// レビュー可能かどうか
-    func canReview(ownUserId: String) -> Bool {
+    public func canReview(ownUserId: String) -> Bool {
         originalItem.executorId != ownUserId && state != .completed
     }
 
-    func formattedIndexedDate(calendar: Calendar) -> String {
+    public func formattedIndexedDate(calendar: Calendar) -> String {
         let formatStyle = Date.FormatStyle(
             date: .numeric,
             time: .omitted,

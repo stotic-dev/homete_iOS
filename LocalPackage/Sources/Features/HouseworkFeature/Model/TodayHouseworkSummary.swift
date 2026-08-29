@@ -17,13 +17,13 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
     /// 当日の全家事
     public let allItems: [HouseworkItem]
     /// 未完了家事（`incomplete` + `pendingApproval`）
-    public let incompleteItems: [HouseworkItem]
+    public let incompleteItems: [HouseworkBoardItem]
     /// 達成率（0.0〜1.0）。家事が0件のときは0
     public let progress: Double
     /// 表示状態
     public let displayState: DisplayState
     /// サマリーに表示する未完了家事（最大 `displayIncompleteLimit` 件）
-    public let displayIncompleteItems: [HouseworkItem]
+    public let displayIncompleteItems: [HouseworkBoardItem]
     /// 未完了家事が表示上限を超えるか
     public let hasMoreIncomplete: Bool
 
@@ -51,12 +51,12 @@ public extension TodayHouseworkSummary {
             selectedDate: today,
             calendar: calendar,
             storagePolicy: storagePolicy,
-            idGenerator: { makeUnregisteredItemId(from: $0) }
+            idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
         ) ?? storedItems
 
-        let incomplete = allItems.filter { item in
-            item.state == .incomplete || item.state == .pendingApproval
-        }
+        let incomplete = allItems
+            .filter { $0.state == .incomplete || $0.state == .pendingApproval }
+            .sorted(by: isIncompleteDisplayOrderedBefore)
 
         let progress: Double
         let displayState: DisplayState
@@ -69,12 +69,16 @@ public extension TodayHouseworkSummary {
             displayState = incomplete.isEmpty ? .allCompleted : .hasIncomplete
         }
 
-        let displayIncompleteItems = Array(incomplete.prefix(Self.displayIncompleteLimit))
+        let storedItemIds = Set(storedItems.map(\.id))
+        let incompleteBoardItems = incomplete.map {
+            HouseworkBoardItem(originalItem: $0, isRegistered: storedItemIds.contains($0.id))
+        }
+        let displayIncompleteItems = Array(incompleteBoardItems.prefix(Self.displayIncompleteLimit))
         let hasMoreIncomplete = incomplete.count > Self.displayIncompleteLimit
 
         return .init(
             allItems: allItems,
-            incompleteItems: incomplete,
+            incompleteItems: incompleteBoardItems,
             progress: progress,
             displayState: displayState,
             displayIncompleteItems: displayIncompleteItems,
@@ -86,12 +90,40 @@ public extension TodayHouseworkSummary {
 
 private extension TodayHouseworkSummary {
 
+    /// 未完了家事の表示順（ステータス順→ポイント降順）を決める比較関数
+    ///
+    /// Firestoreの取得順は安定しないため、表示のたびに並び順が変わっていた。
+    /// 未完了（`incomplete`）を承認待ち（`pendingApproval`）より先に表示し、ユーザーが
+    /// 対応すべき家事をファーストビューで見つけやすくする。
+    static func isIncompleteDisplayOrderedBefore(_ lhs: HouseworkItem, _ rhs: HouseworkItem) -> Bool {
+        if lhs.state != rhs.state {
+            return lhs.state == .incomplete
+        }
+        if lhs.point != rhs.point {
+            return lhs.point > rhs.point
+        }
+        return lhs.id < rhs.id
+    }
+
     /// 未登録のテンプレート家事に振るID
     ///
     /// 永続化されていないためFirestore上のIDを持たない。サマリーの再計算ごとにIDが変わらないよう、
-    /// テンプレートの家事IDから決定的に導出する。
-    static func makeUnregisteredItemId(from templateItem: HouseworkTemplateItem) -> String {
-        "template-\(templateItem.id.id)"
+    /// テンプレートの家事IDから決定的に導出する。テンプレートは毎週同じ曜日に繰り返されるため、
+    /// 発生日を含めないとクイックアクション実行時に前回の発生分と同じFirestoreドキュメントを
+    /// 上書きしてしまう。発生日を含めて一意にする。
+    static func makeUnregisteredItemId(
+        from templateItem: HouseworkTemplateItem,
+        occurrenceDate: Date,
+        calendar: Calendar
+    ) -> String {
+        let components = calendar.dateComponents([.year, .month, .day], from: occurrenceDate)
+        let dateSuffix = String(
+            format: "%04d%02d%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
+        return "template-\(templateItem.id.id)-\(dateSuffix)"
     }
 
 }

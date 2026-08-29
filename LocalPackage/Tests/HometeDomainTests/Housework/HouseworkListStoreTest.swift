@@ -62,6 +62,32 @@ struct HouseworkListStoreTest {
         }
     }
 
+    @Test("sendNotificationを実行すると、渡した内容がそのまま通知として送信される")
+    func sendNotification() async {
+        // Arrange
+
+        let inputContent = PushNotificationContent(title: "3件の家事が完了しました", message: "確認してください")
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == inputContent)
+                        confirmation()
+                        continuation.resume()
+                    }
+                )
+
+                // Act
+
+                store.sendNotification(inputContent, cohabitantId: inputCohabitantId)
+            }
+        }
+    }
+
 }
 
 extension HouseworkListStoreTest.UpdateStatusCase {

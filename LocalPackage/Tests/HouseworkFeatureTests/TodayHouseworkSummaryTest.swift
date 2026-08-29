@@ -24,6 +24,7 @@ enum TodayHouseworkSummaryTest {
     struct DisplayIncompleteItemsCase {}
     struct DateFilterCase {}
     struct TemplateCase {}
+    struct DisplayOrderCase {}
 
     static func makeStoredForToday(items: [HouseworkItem]) -> StoredAllHouseworkList {
         StoredAllHouseworkList(value: [
@@ -137,10 +138,10 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [incomplete, completed],
-            incompleteItems: [incomplete],
+            incompleteItems: [.init(originalItem: incomplete, isRegistered: true)],
             progress: 0.5,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [incomplete],
+            displayIncompleteItems: [.init(originalItem: incomplete, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -167,10 +168,10 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [pendingApproval],
-            incompleteItems: [pendingApproval],
+            incompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [pendingApproval],
+            displayIncompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -201,10 +202,16 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [incomplete, pendingApproval, completed],
-            incompleteItems: [incomplete, pendingApproval],
+            incompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
             progress: 1.0 / 3.0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [incomplete, pendingApproval],
+            displayIncompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -238,10 +245,16 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [item1, item2, item3, item4],
-            incompleteItems: [item3, item4],
+            incompleteItems: [
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+            ],
             progress: 0.5,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [item3, item4],
+            displayIncompleteItems: [
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+            ],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -269,10 +282,10 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [completed, pendingApproval],
-            incompleteItems: [pendingApproval],
+            incompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
             progress: 0.5,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [pendingApproval],
+            displayIncompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -306,10 +319,20 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [item1, item2, item3, item4],
-            incompleteItems: [item1, item2, item3, item4],
+            incompleteItems: [
+                .init(originalItem: item1, isRegistered: true),
+                .init(originalItem: item2, isRegistered: true),
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+            ],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [item1, item2, item3, item4],
+            displayIncompleteItems: [
+                .init(originalItem: item1, isRegistered: true),
+                .init(originalItem: item2, isRegistered: true),
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+            ],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -342,10 +365,21 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [item1, item2, item3, item4, item5],
-            incompleteItems: [item1, item2, item3, item4, item5],
+            incompleteItems: [
+                .init(originalItem: item1, isRegistered: true),
+                .init(originalItem: item2, isRegistered: true),
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+                .init(originalItem: item5, isRegistered: true),
+            ],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [item1, item2, item3, item4],
+            displayIncompleteItems: [
+                .init(originalItem: item1, isRegistered: true),
+                .init(originalItem: item2, isRegistered: true),
+                .init(originalItem: item3, isRegistered: true),
+                .init(originalItem: item4, isRegistered: true),
+            ],
             hasMoreIncomplete: true
         )
         #expect(actual == expected)
@@ -470,10 +504,10 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [todayItem],
-            incompleteItems: [todayItem],
+            incompleteItems: [.init(originalItem: todayItem, isRegistered: true)],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [todayItem],
+            displayIncompleteItems: [.init(originalItem: todayItem, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -508,10 +542,10 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [todayItem],
-            incompleteItems: [todayItem],
+            incompleteItems: [.init(originalItem: todayItem, isRegistered: true)],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [todayItem],
+            displayIncompleteItems: [.init(originalItem: todayItem, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -552,7 +586,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         // Assert
 
         let templateItem = try HouseworkItem.makeForTest(
-            id: "template-templateId1",
+            id: "template-templateId1-20260518",
             indexedDate: TodayHouseworkSummaryTest.today,
             title: "洗濯",
             point: 10,
@@ -562,10 +596,10 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         )
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [registeredItem, templateItem],
-            incompleteItems: [templateItem],
+            incompleteItems: [.init(originalItem: templateItem, isRegistered: false)],
             progress: 0.5,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [templateItem],
+            displayIncompleteItems: [.init(originalItem: templateItem, isRegistered: false)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -607,10 +641,10 @@ extension TodayHouseworkSummaryTest.TemplateCase {
 
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [registeredItem],
-            incompleteItems: [registeredItem],
+            incompleteItems: [.init(originalItem: registeredItem, isRegistered: true)],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [registeredItem],
+            displayIncompleteItems: [.init(originalItem: registeredItem, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -686,7 +720,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         // Assert
 
         let templateItem = try HouseworkItem.makeForTest(
-            id: "template-templateId1",
+            id: "template-templateId1-20260518",
             indexedDate: TodayHouseworkSummaryTest.today,
             title: "洗濯",
             point: 10,
@@ -696,10 +730,88 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         )
         let expected = TodayHouseworkSummary.makeForTest(
             allItems: [templateItem],
-            incompleteItems: [templateItem],
+            incompleteItems: [.init(originalItem: templateItem, isRegistered: false)],
             progress: 0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [templateItem],
+            displayIncompleteItems: [.init(originalItem: templateItem, isRegistered: false)],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+}
+
+extension TodayHouseworkSummaryTest.DisplayOrderCase {
+
+    @Test("未完了家事は取得順によらず、未完了→承認待ちのステータス順で並ぶ")
+    func incompleteItems_orderedByStateBeforePoint() {
+        // Arrange
+
+        let pendingApproval = HouseworkItem.makeForTest(id: 1, point: 100, state: .pendingApproval)
+        let incomplete = HouseworkItem.makeForTest(id: 2, point: 10, state: .incomplete)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [pendingApproval, incomplete])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: nil,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [pendingApproval, incomplete],
+            incompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("同一ステータス内は取得順によらず、ポイントの降順で並ぶ")
+    func incompleteItems_orderedByPointDescendingWithinSameState() {
+        // Arrange
+
+        let lowPoint = HouseworkItem.makeForTest(id: 1, point: 10, state: .incomplete)
+        let highPoint = HouseworkItem.makeForTest(id: 2, point: 50, state: .incomplete)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [lowPoint, highPoint])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: nil,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [lowPoint, highPoint],
+            incompleteItems: [
+                .init(originalItem: highPoint, isRegistered: true),
+                .init(originalItem: lowPoint, isRegistered: true),
+            ],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [
+                .init(originalItem: highPoint, isRegistered: true),
+                .init(originalItem: lowPoint, isRegistered: true),
+            ],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)

@@ -13,13 +13,16 @@ struct HouseworkBoardListContent: View {
 
     @Environment(\.houseworkBoardNavigationPath) var navigationPath
     @Environment(\.loginContext) var loginContext
+    @Environment(\.now) var now
 
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
     @Binding var selectedHouseworkState: HouseworkState
+    @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
 
+    @State var selectedIDs: Set<String> = []
     @CommonError var commonError
 
     var body: some View {
@@ -34,10 +37,19 @@ struct HouseworkBoardListContent: View {
                 onSwitchTab: { selectedHouseworkState = $0 }
             )
         } else {
-            List {
-                ForEach(list.items(matching: state)) { item in
+            List(selection: isSelecting ? $selectedIDs : .constant([])) {
+                ForEach(selection.items) { item in
+                    let isSelectionDisabled = isSelecting && !selection.isSelectable(item)
                     houseworkItemRow(item)
                         .padding(.vertical, .space8)
+                        .opacity(isSelectionDisabled ? 0.4 : 1)
+                        .selectionDisabled(isSelectionDisabled)
+                        .contextMenu {
+                            HouseworkQuickActionMenuContent(
+                                item: item,
+                                onError: { commonError = .init(error: $0) }
+                            )
+                        }
                 }
                 .listRowBackground(Color.clear)
                 #if os(iOS)
@@ -46,13 +58,58 @@ struct HouseworkBoardListContent: View {
                 #endif
             }
             .listStyle(.plain)
-            .commonError(content: $commonError)
+            #if os(iOS)
+                .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+            #endif
+                .safeAreaInset(edge: .bottom) {
+                    if isSelecting {
+                        HouseworkBulkActionBar(
+                            actions: selection.availableActions,
+                            isEnabled: !selection.isEmpty,
+                            onTap: { action in
+                                Task {
+                                    await performBulk(action)
+                                }
+                            }
+                        )
+                    }
+                }
+                .onChange(of: isSelecting) {
+                    selectedIDs = []
+                }
+                .commonError(content: $commonError)
         }
     }
 
 }
 
 private extension HouseworkBoardListContent {
+
+    var selection: HouseworkSelection {
+        .init(
+            items: list.items(matching: state),
+            state: state,
+            selectedIDs: selectedIDs,
+            ownUserId: loginContext.account.id
+        )
+    }
+
+    func performBulk(_ action: HouseworkQuickAction) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.performBulk(
+                action,
+                on: selection.targets(for: action),
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId
+            )
+            selectedIDs = []
+        } catch {
+            commonError = .init(error: error)
+        }
+    }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
         Button {
@@ -67,6 +124,7 @@ private extension HouseworkBoardListContent {
 #if DEBUG
 #Preview {
     @Previewable @State var selectedState = HouseworkState.incomplete
+    @Previewable @State var isSelecting = false
     HouseworkBoardListContent(
         houseworkListStore: .init(
             houseworkClient: .previewValue,
@@ -94,7 +152,52 @@ private extension HouseworkBoardListContent {
             ),
         ]),
         selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
         onCreateTapped: {}
     )
+    .setupLoginContextForPreview()
+}
+
+#Preview("HouseworkBoardListContent_選択モード") {
+    @Previewable @State var selectedState = HouseworkState.pendingApproval
+    @Previewable @State var isSelecting = true
+    HouseworkBoardListContent(
+        houseworkListStore: .init(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ),
+        state: .pendingApproval,
+        list: .init(items: [
+            .makeForPreview(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "2",
+                title: "掃除",
+                point: 100,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "3",
+                title: "料理",
+                point: 1,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .pendingApproval,
+                executorId: "ownUserId"
+            ),
+        ]),
+        selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
+        onCreateTapped: {},
+        selectedIDs: ["1"]
+    )
+    .setupLoginContextForPreview()
 }
 #endif

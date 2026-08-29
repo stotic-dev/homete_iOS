@@ -21,6 +21,7 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(\.registeredContentNavigationPath) var navigationPath
 
     @State var isPresentingRegister = false
+    @CommonError var commonError
 
     static func make() -> some View {
         TodayHouseworkSummaryComponent()
@@ -44,6 +45,7 @@ struct TodayHouseworkSummaryComponent: View {
                 )
             )
         }
+        .commonError(content: $commonError)
     }
 
 }
@@ -126,7 +128,13 @@ private extension TodayHouseworkSummaryComponent {
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
             ForEach(summary.displayIncompleteItems) { item in
-                HouseBoardListRow(houseworkItem: item)
+                HouseBoardListRow(houseworkItem: item.originalItem)
+                    .contextMenu {
+                        HouseworkQuickActionMenuContent(
+                            item: item,
+                            onError: { commonError = .init(error: $0) }
+                        )
+                    }
             }
             if summary.hasMoreIncomplete {
                 Button("もっと表示する") {
@@ -149,6 +157,7 @@ private extension TodayHouseworkSummaryComponent {
     .environment(\.now, today)
     .environment(HouseworkListStore())
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_全て完了") {
@@ -185,6 +194,7 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_未完了4件以下") {
@@ -210,7 +220,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 3,
@@ -228,6 +239,7 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_未完了5件以上") {
@@ -253,7 +265,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 3,
@@ -274,7 +287,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "買い物",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 6,
@@ -292,5 +306,6 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 #endif
