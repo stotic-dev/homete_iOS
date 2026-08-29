@@ -2,7 +2,7 @@
 
 > 関連Issue: [#182 グループ作成、メンバー追加時のアプリ共有機能](https://github.com/stotic-dev/homete_iOS/issues/182)
 > ブランチ: `feat/join-group`
-> 技術選定の経緯は [ADR-0012](../adr/0012-cohabitant-invitation-universal-link.md) を参照。
+> 技術選定の経緯は [ADR-0013](../adr/0013-cohabitant-invitation-universal-link.md) を参照。
 
 ## ステータス
 
@@ -314,7 +314,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationInitialStateView.swift` | 「リンクで招待」導線 |
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationScanningStateView.swift` | 招待トークンの発行と共有シート表示 |
 | 修正（Doc） | `doc/analytics_events.md` | イベント追加 |
-| 新規（Doc） | `doc/adr/0012-cohabitant-invitation-universal-link.md` | 技術選定のADR |
+| 新規（Doc） | `doc/adr/0013-cohabitant-invitation-universal-link.md` | 技術選定のADR |
 
 ## タスク
 
@@ -346,7 +346,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 - [x] `ShareSheet` の追加
 - [x] `CohabitantRegistrationInitialStateView` に「リンクで招待」導線を追加 + Preview
 - [x] `doc/analytics_events.md` の更新
-- [x] ADR-0012 の作成
+- [x] ADR-0013 の作成
 
 ### Phase 3: 検証
 
