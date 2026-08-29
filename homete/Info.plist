@@ -24,19 +24,17 @@
 	<true/>
 	<key>GADApplicationIdentifier</key>
 	<string>$(SAMPLE_APP_ID)</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。</string>
-	<key>REVENUECAT_API_KEY</key>
-	<string>$(REVENUECAT_API_KEY)</string>
-	<key>REVENUECAT_TEST_STORE_ENABLED</key>
-	<string>$(REVENUECAT_TEST_STORE_ENABLED)</string>
-	<key>REVENUECAT_TEST_STORE_API_KEY</key>
-	<string>$(REVENUECAT_TEST_STORE_API_KEY)</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_register._tcp</string>
 		<string>_register._udp</string>
 	</array>
+	<key>REVENUECAT_API_KEY</key>
+	<string>$(REVENUECAT_API_KEY)</string>
+	<key>REVENUECAT_TEST_STORE_API_KEY</key>
+	<string>$(REVENUECAT_TEST_STORE_API_KEY)</string>
+	<key>REVENUECAT_TEST_STORE_ENABLED</key>
+	<string>$(REVENUECAT_TEST_STORE_ENABLED)</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
