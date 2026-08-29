@@ -585,7 +585,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         // Assert
 
         let templateItem = try HouseworkItem.makeForTest(
-            id: "template-templateId1",
+            id: "template-templateId1-20260518",
             indexedDate: TodayHouseworkSummaryTest.today,
             title: "洗濯",
             point: 10,
@@ -719,7 +719,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
         // Assert
 
         let templateItem = try HouseworkItem.makeForTest(
-            id: "template-templateId1",
+            id: "template-templateId1-20260518",
             indexedDate: TodayHouseworkSummaryTest.today,
             title: "洗濯",
             point: 10,

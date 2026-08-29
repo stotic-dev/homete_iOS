@@ -51,7 +51,7 @@ public extension TodayHouseworkSummary {
             selectedDate: today,
             calendar: calendar,
             storagePolicy: storagePolicy,
-            idGenerator: { makeUnregisteredItemId(from: $0) }
+            idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
         ) ?? storedItems
 
         let incomplete = allItems.filter { item in
@@ -93,9 +93,22 @@ private extension TodayHouseworkSummary {
     /// 未登録のテンプレート家事に振るID
     ///
     /// 永続化されていないためFirestore上のIDを持たない。サマリーの再計算ごとにIDが変わらないよう、
-    /// テンプレートの家事IDから決定的に導出する。
-    static func makeUnregisteredItemId(from templateItem: HouseworkTemplateItem) -> String {
-        "template-\(templateItem.id.id)"
+    /// テンプレートの家事IDから決定的に導出する。テンプレートは毎週同じ曜日に繰り返されるため、
+    /// 発生日を含めないとクイックアクション実行時に前回の発生分と同じFirestoreドキュメントを
+    /// 上書きしてしまう。発生日を含めて一意にする。
+    static func makeUnregisteredItemId(
+        from templateItem: HouseworkTemplateItem,
+        occurrenceDate: Date,
+        calendar: Calendar
+    ) -> String {
+        let components = calendar.dateComponents([.year, .month, .day], from: occurrenceDate)
+        let dateSuffix = String(
+            format: "%04d%02d%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
+        return "template-\(templateItem.id.id)-\(dateSuffix)"
     }
 
 }
