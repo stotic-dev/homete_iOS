@@ -54,9 +54,9 @@ public extension TodayHouseworkSummary {
             idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
         ) ?? storedItems
 
-        let incomplete = allItems.filter { item in
-            item.state == .incomplete || item.state == .pendingApproval
-        }
+        let incomplete = allItems
+            .filter { $0.state == .incomplete || $0.state == .pendingApproval }
+            .sorted(by: isIncompleteDisplayOrderedBefore)
 
         let progress: Double
         let displayState: DisplayState
@@ -89,6 +89,21 @@ public extension TodayHouseworkSummary {
 }
 
 private extension TodayHouseworkSummary {
+
+    /// 未完了家事の表示順（ステータス順→ポイント降順）を決める比較関数
+    ///
+    /// Firestoreの取得順は安定しないため、表示のたびに並び順が変わっていた。
+    /// 未完了（`incomplete`）を承認待ち（`pendingApproval`）より先に表示し、ユーザーが
+    /// 対応すべき家事をファーストビューで見つけやすくする。
+    static func isIncompleteDisplayOrderedBefore(_ lhs: HouseworkItem, _ rhs: HouseworkItem) -> Bool {
+        if lhs.state != rhs.state {
+            return lhs.state == .incomplete
+        }
+        if lhs.point != rhs.point {
+            return lhs.point > rhs.point
+        }
+        return lhs.id < rhs.id
+    }
 
     /// 未登録のテンプレート家事に振るID
     ///

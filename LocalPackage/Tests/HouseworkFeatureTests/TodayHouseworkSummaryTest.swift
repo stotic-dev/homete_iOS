@@ -24,6 +24,7 @@ enum TodayHouseworkSummaryTest {
     struct DisplayIncompleteItemsCase {}
     struct DateFilterCase {}
     struct TemplateCase {}
+    struct DisplayOrderCase {}
 
     static func makeStoredForToday(items: [HouseworkItem]) -> StoredAllHouseworkList {
         StoredAllHouseworkList(value: [
@@ -733,6 +734,84 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             progress: 0,
             displayState: .hasIncomplete,
             displayIncompleteItems: [.init(originalItem: templateItem, isRegistered: false)],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+}
+
+extension TodayHouseworkSummaryTest.DisplayOrderCase {
+
+    @Test("未完了家事は取得順によらず、未完了→承認待ちのステータス順で並ぶ")
+    func incompleteItems_orderedByStateBeforePoint() {
+        // Arrange
+
+        let pendingApproval = HouseworkItem.makeForTest(id: 1, point: 100, state: .pendingApproval)
+        let incomplete = HouseworkItem.makeForTest(id: 2, point: 10, state: .incomplete)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [pendingApproval, incomplete])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: nil,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [pendingApproval, incomplete],
+            incompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [
+                .init(originalItem: incomplete, isRegistered: true),
+                .init(originalItem: pendingApproval, isRegistered: true),
+            ],
+            hasMoreIncomplete: false
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("同一ステータス内は取得順によらず、ポイントの降順で並ぶ")
+    func incompleteItems_orderedByPointDescendingWithinSameState() {
+        // Arrange
+
+        let lowPoint = HouseworkItem.makeForTest(id: 1, point: 10, state: .incomplete)
+        let highPoint = HouseworkItem.makeForTest(id: 2, point: 50, state: .incomplete)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [lowPoint, highPoint])
+
+        // Act
+
+        let actual = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: nil,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let expected = TodayHouseworkSummary.makeForTest(
+            allItems: [lowPoint, highPoint],
+            incompleteItems: [
+                .init(originalItem: highPoint, isRegistered: true),
+                .init(originalItem: lowPoint, isRegistered: true),
+            ],
+            progress: 0,
+            displayState: .hasIncomplete,
+            displayIncompleteItems: [
+                .init(originalItem: highPoint, isRegistered: true),
+                .init(originalItem: lowPoint, isRegistered: true),
+            ],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
