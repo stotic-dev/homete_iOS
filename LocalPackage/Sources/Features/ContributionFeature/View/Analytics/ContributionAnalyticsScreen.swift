@@ -12,6 +12,7 @@ import SwiftUI
 public struct ContributionAnalyticsScreen: View {
 
     @Environment(ContributionStore.self) var contributionStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.cohabitantMembers) var members
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
@@ -34,6 +35,7 @@ public struct ContributionAnalyticsScreen: View {
             analytics: analytics,
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
+            isPremium: subscriptionStore.isPremium,
             onUpgradeTapped: { isShowPaywall = true }
         )
         .navigationTitle("家事分析")
