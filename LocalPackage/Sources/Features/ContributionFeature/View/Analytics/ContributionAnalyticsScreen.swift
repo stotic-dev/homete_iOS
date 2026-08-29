@@ -37,6 +37,7 @@ public struct ContributionAnalyticsScreen: View {
             onUpgradeTapped: { isShowPaywall = true }
         )
         .navigationTitle("家事分析")
+        .softTopScrollEdgeEffect()
         .task(id: contributionStore.contiribution) {
             await onChangeContribution()
         }
