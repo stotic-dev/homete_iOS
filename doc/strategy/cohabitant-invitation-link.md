@@ -373,16 +373,21 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 ## 残課題（今回のスコープ外）
 
-- 本番Firebaseプロジェクトへの Hosting 追加と `hometeRelease.entitlements` の設定
-- Apple Developer の App ID に Associated Domains capability を有効化
-- App Store ID 確定後、フォールバックLPのインストールリンクを差し替え
-- `Invitation` コレクションの TTLポリシー設定（Firebaseコンソール）
-- Hostingデプロイ後、実機でのUniversal Link動作確認（インストール済み／未インストール／期限切れ）
+以下はIssueに切り出し済み。
+
+- [#229 本番環境で招待リンク(Universal Link)を有効化する](https://github.com/stotic-dev/homete_iOS/issues/229)
+  - 本番Hosting・AASA・`hometeRelease.entitlements`・`productionHost`・App IDのAssociated Domains capability・実機確認
+- [#230 招待リンクのフォールバックページにApp Storeへの導線を設定する](https://github.com/stotic-dev/homete_iOS/issues/230)
+- [#231 招待トークン(Invitationコレクション)のTTLポリシーを設定する](https://github.com/stotic-dev/homete_iOS/issues/231)
+
+その他:
+
 - `deleteuserdata` で最後のメンバーが退会した場合の招待ドキュメントのクリーンアップ（TTLで自然消滅するため優先度低）
 
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/182
+- PR: https://github.com/stotic-dev/homete_iOS/pull/228
 - 既存実装（参考）:
   - `LocalPackage/Sources/Features/HomeFeature/RegisterCohabitantView/CohabitantRegistrationView.swift`
   - `LocalPackage/Sources/Features/HomeFeature/RegisterCohabitantView/SubViews/ProcessingState/CohabitantRegistrationProcessingLeader.swift`
