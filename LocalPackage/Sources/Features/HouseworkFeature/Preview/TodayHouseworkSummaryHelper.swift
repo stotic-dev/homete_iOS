@@ -11,10 +11,10 @@ extension TodayHouseworkSummary {
 
     static func makeForTest(
         allItems: [HouseworkItem] = [],
-        incompleteItems: [HouseworkItem] = [],
+        incompleteItems: [HouseworkBoardItem] = [],
         progress: Double = 0,
         displayState: DisplayState = .empty,
-        displayIncompleteItems: [HouseworkItem] = [],
+        displayIncompleteItems: [HouseworkBoardItem] = [],
         hasMoreIncomplete: Bool = false
     ) -> Self {
         .init(
