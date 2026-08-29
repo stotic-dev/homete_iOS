@@ -120,6 +120,20 @@ extension HouseworkQuickAction {
         return allCases.filter(available.contains)
     }
 
+    /// すでに選択されている家事と一緒に選択できるかどうか
+    ///
+    /// 対応可能アクションが異なる家事を混ぜて選択できてしまうと、一括操作が選択したうちの一部の
+    /// 家事にしか適用されず、何が実行されたのか分からなくなる。行えるアクションの組み合わせが
+    /// 一致する家事だけを同時に選択できるようにする。
+    static func isCoSelectable(
+        _ item: HouseworkBoardItem,
+        with selectedItems: [HouseworkBoardItem],
+        ownUserId: String
+    ) -> Bool {
+        guard let selected = selectedItems.first else { return true }
+        return actions(for: item, ownUserId: ownUserId) == actions(for: selected, ownUserId: ownUserId)
+    }
+
     /// 状態のみに応じたクイックアクションを返す
     ///
     /// 一括操作バーで、まだ何も選択されていないときに表示する既定のボタンを決めるために使う。

@@ -12,6 +12,7 @@ enum HouseworkQuickActionTest {
     struct ActionsForItemCase {}
     struct ActionsForStateCase {}
     struct AvailableActionsCase {}
+    struct IsCoSelectableCase {}
     struct BulkNotificationCase {}
 
 }
@@ -191,6 +192,73 @@ extension HouseworkQuickActionTest.AvailableActionsCase {
         // Assert
 
         #expect(actual == [.requestReview, .remove])
+    }
+
+}
+
+extension HouseworkQuickActionTest.IsCoSelectableCase {
+
+    @Test("まだ何も選択されていない場合は、どの家事も選択できる")
+    func isCoSelectable_noSelection_returnsTrue() {
+        // Arrange
+
+        let item = HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId")
+
+        // Act
+
+        let actual = HouseworkQuickAction.isCoSelectable(item, with: [], ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == true)
+    }
+
+    @Test("対応可能アクションが同じ家事は一緒に選択できる")
+    func isCoSelectable_sameActions_returnsTrue() {
+        // Arrange
+
+        let selected = HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "otherUserId")
+        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "otherUserId")
+
+        // Act
+
+        let actual = HouseworkQuickAction.isCoSelectable(item, with: [selected], ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == true)
+    }
+
+    @Test("承認待ちでも実行者が異なり対応可能アクションが変わる家事は一緒に選択できない")
+    func isCoSelectable_differentActionsInSameState_returnsFalse() {
+        // Arrange
+
+        let selected = HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "otherUserId")
+        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "ownUserId")
+
+        // Act
+
+        let actual = HouseworkQuickAction.isCoSelectable(item, with: [selected], ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == false)
+    }
+
+    @Test("ステータスが異なり対応可能アクションが変わる家事は一緒に選択できない")
+    func isCoSelectable_differentState_returnsFalse() {
+        // Arrange
+
+        let selected = HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete)
+        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .completed)
+
+        // Act
+
+        let actual = HouseworkQuickAction.isCoSelectable(item, with: [selected], ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == false)
     }
 
 }
