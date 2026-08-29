@@ -17,13 +17,13 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
     /// 当日の全家事
     public let allItems: [HouseworkItem]
     /// 未完了家事（`incomplete` + `pendingApproval`）
-    public let incompleteItems: [HouseworkItem]
+    public let incompleteItems: [HouseworkBoardItem]
     /// 達成率（0.0〜1.0）。家事が0件のときは0
     public let progress: Double
     /// 表示状態
     public let displayState: DisplayState
     /// サマリーに表示する未完了家事（最大 `displayIncompleteLimit` 件）
-    public let displayIncompleteItems: [HouseworkItem]
+    public let displayIncompleteItems: [HouseworkBoardItem]
     /// 未完了家事が表示上限を超えるか
     public let hasMoreIncomplete: Bool
 
@@ -69,12 +69,16 @@ public extension TodayHouseworkSummary {
             displayState = incomplete.isEmpty ? .allCompleted : .hasIncomplete
         }
 
-        let displayIncompleteItems = Array(incomplete.prefix(Self.displayIncompleteLimit))
+        let storedItemIds = Set(storedItems.map(\.id))
+        let incompleteBoardItems = incomplete.map {
+            HouseworkBoardItem(originalItem: $0, isRegistered: storedItemIds.contains($0.id))
+        }
+        let displayIncompleteItems = Array(incompleteBoardItems.prefix(Self.displayIncompleteLimit))
         let hasMoreIncomplete = incomplete.count > Self.displayIncompleteLimit
 
         return .init(
             allItems: allItems,
-            incompleteItems: incomplete,
+            incompleteItems: incompleteBoardItems,
             progress: progress,
             displayState: displayState,
             displayIncompleteItems: displayIncompleteItems,
