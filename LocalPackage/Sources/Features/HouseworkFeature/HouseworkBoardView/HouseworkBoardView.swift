@@ -69,6 +69,7 @@ struct HouseworkBoardView: View {
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
             }
+            .softTopScrollEdgeEffect()
             .trailingToolbarItem {
                 HStack(spacing: .space16) {
                     Button(isSelecting ? "完了" : "選択") {

@@ -35,6 +35,7 @@ struct DebugMenuView: View {
         }
         .navigationTitle("デバッグメニュー")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
         .fullScreenCoverOnIOS(isPresented: $isShowOnboarding) {
             router.resolve(.debugOnboarding)
         }

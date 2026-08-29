@@ -25,4 +25,8 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 ## 自動検証（Stopフック）
 
-ターン終了時に `scripts/claude-verify-swift.sh` が走り、Swiftに変更があれば `make test-packages` を実行する。失敗すると exit 2 で作業が差し戻されるので、**手順を飛ばしても最終的には検証される**。ただし差し戻しは遅く、3回連続失敗で自動検証は止まるため、フックに頼らず上記の手順を自分で実行すること。設計は [ADR-0006](../../doc/adr/0006-claude-code-autonomous-execution.md)。
+ターン終了時に `scripts/claude-verify-swift.sh` が走り、Swiftに変更があれば `make check-previews` を実行する。失敗すると exit 2 で作業が差し戻される。3回連続失敗で自動検証は止まる。
+
+**フックが見るのは `#Preview` の静的検査だけで、ビルド・SwiftLint・ユニットテストは実行されない。** これらはローカルで落ちるので Claude 自身が上記の手順で実行すればよく、フックで重ねると SwiftPM の `.build` ロックが手動実行とぶつかるうえ、ターン終了が数分単位で伸びるため。逆に `#Preview` の誤りはローカルのビルドでは絶対に落ちず Xcode Cloud の VRT まで気付けないので、フック側に残している。
+
+設計は [ADR-0006](../../doc/adr/0006-claude-code-autonomous-execution.md) と [ADR-0010](../../doc/adr/0010-stop-hook-scope-preview-check-only.md)。

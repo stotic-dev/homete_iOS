@@ -34,6 +34,7 @@ public struct IncompleteHouseworkListView: View {
         )
         .navigationTitle("未完了の家事")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
         .commonError(content: $commonError)
     }
 

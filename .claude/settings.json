@@ -33,8 +33,8 @@
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-.}/scripts/claude-verify-swift.sh\"",
             "asyncRewake": true,
-            "timeout": 1200,
-            "statusMessage": "Swift検証中（ビルド・SwiftLint・テスト）"
+            "timeout": 120,
+            "statusMessage": "Swift検証中（#Previewの静的チェック）"
           }
         ]
       }

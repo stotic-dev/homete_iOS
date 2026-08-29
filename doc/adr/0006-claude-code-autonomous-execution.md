@@ -16,6 +16,7 @@ Claude Code に実装を任せても、`swift build` / `swift test` のたびに
 * **SwiftPM は `--disable-sandbox`（SwiftPM 自身のフラグ）で Claude のサンドボックス内で実行する**。`dangerouslyDisableSandbox: true` は使わない
 * **`permissions.defaultMode` を `auto` にする**（`~/.claude/settings.json`。project / local 設定では仕様上無視されるため）
 * **`Stop` フックで `make test-packages` を実行し、失敗時は exit 2 で Claude を起こす**（`scripts/claude-verify-swift.sh`）
+    * この決定は [ADR-0010](0010-stop-hook-scope-preview-check-only.md) で変更した。現在フックが実行するのは `make check-previews` のみ
 * SwiftPM / SwiftLint のキャッシュ書き込み先を `sandbox.filesystem.allowWrite` で許可し、コミット対象の `.claude/settings.json` に置いてチームで共有する
 
 ### なぜ `dangerouslyDisableSandbox` が問題だったか

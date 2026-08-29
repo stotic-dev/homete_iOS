@@ -27,9 +27,7 @@ public struct LoginView: View {
             Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
                 .font(with: .body)
             SignInUpWithAppleButton { result in
-                loadingState.task {
-                    await onSignInWithApple(result)
-                }
+                await onSignInWithApple(result)
             }
             .frame(height: .space48)
             .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
@@ -57,9 +55,15 @@ private extension LoginView {
     func onSignInWithApple(_ result: Result<SignInWithAppleResult, any Error>) async {
         switch result {
         case let .success(success):
+            loadingState.isLoading = true
             do {
                 try await accountAuthStore.login(success)
+                // 成功時はcurrentAuthの変化を受けてRootView側でlaunchStateが切り替わり、
+                // LoginView自体が画面から取り除かれる。ここでisLoadingをfalseに戻すと、
+                // 実際の遷移（Firestoreからのアカウント取得等）が終わるより先にインジケータが消え、
+                // 遷移完了までの間ログイン画面に戻ったように見えてしまうため、意図的に戻さない。
             } catch {
+                loadingState.isLoading = false
                 commonErrorContent = .init(error: error)
             }
 
