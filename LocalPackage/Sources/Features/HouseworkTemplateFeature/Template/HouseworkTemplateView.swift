@@ -63,6 +63,7 @@ struct HouseworkTemplateView: View {
         }
         .navigationTitle("家事テンプレート")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
         .leadingToolbarItem {
             leadingNavigationItem()
         }
