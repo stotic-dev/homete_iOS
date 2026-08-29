@@ -41,7 +41,31 @@ import Prefire
 
 `.prefire.yml` の `testable_imports`（Feature系モジュール）または `imports`（`HometeDomain` など）に列挙されていないモジュールのViewは、生成されたテストから参照できない。
 
-### 4. プレビューの描画を実行日時に依存させない
+### 4. `contextMenu` / `alert` / `sheet` など提示系モディファイアはPreviewでラップしない
+
+VRT（Prefireのスナップショット撮影）は画面を静的にレンダリングするだけなので、`.contextMenu { }` の中身、`.alert(...)`、`.sheet(...)` のように**ユーザー操作（長押し・ボタンタップなど）をトリガーに表示される内容はスナップショットに映らない**。これらでラップした`#Preview`を書いても、実際にはラップの外側（何もトリガーしていない状態の画面）しか撮影されず、中身の見た目はVRTで一切検証できない。
+
+対応方針: 提示される中身が独立した`View`として切り出せるなら、**その中身のView自体を`#Preview`の対象にする**（親Viewの`.contextMenu { }`等でラップしない）。`HouseworkQuickActionMenuContent`（`.contextMenu { }`の中身として使うView）がこの形の実例で、Previewは`HouseworkQuickActionMenuContent`をトップレベルにそのまま描画し、`.contextMenu`では包まない。
+
+```swift
+// ✅ 中身のViewを直接Previewする（VRTで見た目を検証できる）
+#Preview("HouseworkQuickActionMenuContent_未完了", traits: .sizeThatFitsLayout) {
+    HouseworkQuickActionMenuContent(item: .makeForPreview(state: .incomplete), onError: { _ in })
+        .environment(HouseworkListStore())
+}
+
+// ❌ contextMenuでラップしても中身はVRTに映らない
+#Preview {
+    Text("家事セル")
+        .contextMenu {
+            HouseworkQuickActionMenuContent(item: .makeForPreview(state: .incomplete), onError: { _ in })
+        }
+}
+```
+
+呼び出し元Viewの`.contextMenu { HouseworkQuickActionMenuContent(...) }`自体は実装として必要なので残してよい。避けるべきなのは「Preview側でも同じラップ構造を再現すること」。
+
+### 5. プレビューの描画を実行日時に依存させない
 
 `\.now` の既定値は実行時の現在日時のため、固定日付を前提にしたプレビューは**時間が経つだけで表示が変わり**、意図しないVRT差分になる。保存期間やバッジ表示など日時で分岐するViewのプレビューでは `setupStorageEnvironmentForPreview(now:storagePolicy:)` などで現在日時とプランを固定する。
 
