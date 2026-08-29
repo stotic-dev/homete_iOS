@@ -17,14 +17,13 @@ emulator: ## エミュレーターを起動
 test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
 
-build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド
-	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
-	swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
+	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
+		swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 
-test-packages: ## LocalPackageのテストを実行（自worktreeのstaleプロセスのみ掃除してから実行、他worktreeには影響しない）
-	-pkill -f "swift-test --package-path $(CURDIR)/LocalPackage" 2>/dev/null
-	-pkill -f "$(CURDIR)/LocalPackage/.build" 2>/dev/null
-	swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
+test-packages: ## LocalPackageのテストを実行（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
+	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
+		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
 
 check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
 	python3 scripts/check-prefire-previews.py
