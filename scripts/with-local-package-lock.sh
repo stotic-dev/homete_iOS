@@ -48,7 +48,14 @@ while ! acquire_lock; do
 
     if [[ -z "$holder_pid" ]]; then
         # mkdir直後・PID書き込み前の初期化中の可能性がある。stale扱いにせず少し待つ。
-        sleep 0.2
+        # ただしPID書き込みが永久に来ない異常系（ロック保持者がmkdir直後に死んだ等）で
+        # 無限ループしないよう、この待機もタイムアウトに含める。
+        if (( waited >= WAIT_TIMEOUT_SECONDS )); then
+            echo "${WAIT_TIMEOUT_SECONDS}秒待ってもロックのPIDファイルが書き込まれませんでした。${LOCK_DIR} の状況を確認してください。" >&2
+            exit 1
+        fi
+        sleep 1
+        waited=$((waited + 1))
         continue
     fi
 
@@ -66,12 +73,24 @@ while ! acquire_lock; do
     fi
 
     # ロック保持者が死んでいる = staleなロック。
-    # mvはatomicなので、複数プロセスが同時にstale判定しても掃除を実行できるのは1つだけになる
+    # mvはatomicなので、複数プロセスが同時にstale判定しても移動を実行できるのは1つだけになる
     # （rm -rfだと非存在でも成功扱いになり排他できず、後発が先発の再取得済みプロセスを殺しうる）。
+    #
+    # ただしmvはパスが一致していれば無条件で成功するため、「自分がholder_pidを読んでから
+    # mvするまでの間に、別プロセスが同じstaleロックをmvで奪取→掃除→再取得し、新しい
+    # 生存ロックを作っていた」ケース（ABA）では、その新しい生存ロックごと奪ってしまう。
+    # 移動後のPIDが自分の観測したholder_pidと一致するかを確認し、一致しない場合は
+    # 別プロセスの生存ロックを奪ってしまったとみなして元の場所に戻す。
     reclaim_dir="${LOCK_DIR}.reclaim.$$"
     if mv "$LOCK_DIR" "$reclaim_dir" 2>/dev/null; then
-        rm -rf "$reclaim_dir" 2>/dev/null
-        "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
+        reclaimed_pid="$(cat "$reclaim_dir/pid" 2>/dev/null || true)"
+        if [[ "$reclaimed_pid" == "$holder_pid" ]]; then
+            rm -rf "$reclaim_dir" 2>/dev/null
+            "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
+        elif ! mv "$reclaim_dir" "$LOCK_DIR" 2>/dev/null; then
+            # 戻す前に別プロセスが新規にロックを取得していた場合はそちらを優先する。
+            rm -rf "$reclaim_dir" 2>/dev/null
+        fi
     fi
 done
 
