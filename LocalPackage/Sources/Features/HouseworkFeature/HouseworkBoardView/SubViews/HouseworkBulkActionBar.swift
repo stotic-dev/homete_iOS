@@ -83,27 +83,14 @@ private extension HouseworkBulkActionBar {
     func performBulk(_ action: HouseworkQuickAction) async {
         guard let cohabitantId = loginContext.cohabitantId else { return }
 
-        let items = targets(for: action)
-
         do {
-            for item in items {
-                try await houseworkListStore.perform(
-                    action,
-                    on: item,
-                    now: now,
-                    account: loginContext.account,
-                    cohabitantId: cohabitantId,
-                    notify: false
-                )
-            }
-            // 家事ごとの個別通知の代わりに、対象件数をまとめた1件の通知だけを送る
-            let notification = action.bulkNotification(
-                count: items.count,
-                reviewerName: loginContext.account.userName
+            try await houseworkListStore.performBulk(
+                action,
+                on: targets(for: action),
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId
             )
-            if let notification {
-                houseworkListStore.sendNotification(notification, cohabitantId: cohabitantId)
-            }
             onCompleted()
         } catch {
             onError(error)

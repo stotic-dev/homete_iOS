@@ -23,6 +23,8 @@ enum HouseworkListStoreQuickActionTest {
     struct ReturnToIncompleteCase {}
     @MainActor
     struct NotifyFalseCase {}
+    @MainActor
+    struct PerformBulkCase {}
 
 }
 
@@ -366,6 +368,148 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
                 notify: false
             )
         }
+    }
+
+}
+
+extension HouseworkListStoreQuickActionTest.PerformBulkCase {
+
+    @Test("複数の家事にありがとうを一括適用すると、家事ごとに更新した上でまとめ通知を1件だけ送る")
+    func performBulk_approve_updatesEachItemAndSendsBulkNotification() async {
+        // Arrange
+
+        let inputCohabitantId = "cohabitantId"
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let now = Date()
+        let executedAt = Date.distantPast
+        // DailyHouseworkListは先頭要素のindexedDateをメタデータに使うため、要素ごとに
+        // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: indexedDate,
+                state: .pendingApproval,
+                executorId: "otherUserId",
+                executedAt: executedAt
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: indexedDate,
+                state: .pendingApproval,
+                executorId: "otherUserId",
+                executedAt: executedAt
+            ),
+        ]
+        let expectedItems = inputItems.map {
+            $0.updateProperties(
+                state: .completed,
+                executorId: "otherUserId",
+                executedAt: executedAt,
+                reviewerId: inputAccount.id,
+                approvedAt: now,
+                reviewerComment: "ありがとう！"
+            )
+        }
+        let expectedNotification = PushNotificationContent.approvedBulkMessage(
+            reviwerName: inputAccount.userName,
+            count: inputItems.count
+        )
+
+        await confirmation(expectedCount: 3) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                        // Assert
+
+                        #expect(expectedItems.contains(item))
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedNotification)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    items: [.makeForTest(items: inputItems)]
+                )
+
+                // Act
+
+                Task {
+                    try? await store.performBulk(
+                        .approve,
+                        on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+                        now: now,
+                        account: inputAccount,
+                        cohabitantId: inputCohabitantId
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("相手に通知しないアクションを一括適用しても、まとめ通知は送られない")
+    func performBulk_returnToIncomplete_doesNotSendNotification() async throws {
+        // Arrange
+
+        let inputCohabitantId = "cohabitantId"
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: .completed),
+            HouseworkItem.makeForTest(id: 2, indexedDate: indexedDate, state: .completed),
+        ]
+
+        try await confirmation(expectedCount: 2) { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    Issue.record()
+                },
+                items: [.makeForTest(items: inputItems)]
+            )
+
+            // Act
+
+            try await store.performBulk(
+                .returnToIncomplete,
+                on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+                now: Date(),
+                account: inputAccount,
+                cohabitantId: inputCohabitantId
+            )
+        }
+    }
+
+    @Test("対象が空の場合は、更新もまとめ通知も行わない")
+    func performBulk_emptyItems_doesNothing() async throws {
+        // Arrange
+
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                Issue.record()
+            }),
+            cohabitantPushNotificationClient: .init { _, _ in
+                Issue.record()
+            }
+        )
+
+        // Act
+
+        try await store.performBulk(
+            .approve,
+            on: [],
+            now: Date(),
+            account: inputAccount,
+            cohabitantId: "cohabitantId"
+        )
     }
 
 }

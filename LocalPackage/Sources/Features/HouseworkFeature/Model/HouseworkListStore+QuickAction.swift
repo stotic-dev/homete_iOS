@@ -67,3 +67,41 @@ extension HouseworkListStore {
     }
 
 }
+
+extension HouseworkListStore {
+
+    /// 複数選択で選んだ家事に、クイックアクションを一括で適用する
+    ///
+    /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制した上で、
+    /// 対象件数をまとめた1件の通知だけを送る。相手に通知しないアクション（やらない・差し戻し）では
+    /// まとめ通知も送らない。
+    func performBulk(
+        _ action: HouseworkQuickAction,
+        on items: [HouseworkBoardItem],
+        now: Date,
+        account: Account,
+        cohabitantId: String
+    ) async throws {
+        guard !items.isEmpty else { return }
+
+        for item in items {
+            try await perform(
+                action,
+                on: item,
+                now: now,
+                account: account,
+                cohabitantId: cohabitantId,
+                notify: false
+            )
+        }
+
+        let notification = action.bulkNotification(
+            count: items.count,
+            reviewerName: account.userName
+        )
+        guard let notification else { return }
+
+        sendNotification(notification, cohabitantId: cohabitantId)
+    }
+
+}
