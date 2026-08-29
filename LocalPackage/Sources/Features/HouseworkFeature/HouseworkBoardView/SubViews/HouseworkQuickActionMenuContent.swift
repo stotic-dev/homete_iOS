@@ -57,72 +57,60 @@ private extension HouseworkQuickActionMenuContent {
 
 #if DEBUG
 #Preview("HouseworkQuickActionMenuContent_未完了", traits: .sizeThatFitsLayout) {
-    Text("長押しでメニュー表示")
-        .contextMenu {
-            HouseworkQuickActionMenuContent(
-                item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
-                onError: { _ in }
-            )
-        }
-        .environment(HouseworkListStore())
-        .environment(
-            \.loginContext,
-            .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
-        )
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+    )
 }
 
 #Preview("HouseworkQuickActionMenuContent_承認待ち_確認者", traits: .sizeThatFitsLayout) {
-    Text("長押しでメニュー表示")
-        .contextMenu {
-            HouseworkQuickActionMenuContent(
-                item: .makeForPreview(
-                    title: "洗濯",
-                    point: 10,
-                    state: .pendingApproval,
-                    executorId: "other"
-                ),
-                onError: { _ in }
-            )
-        }
-        .environment(HouseworkListStore())
-        .environment(
-            \.loginContext,
-            .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
-        )
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .pendingApproval,
+            executorId: "other"
+        ),
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+    )
 }
 
 #Preview("HouseworkQuickActionMenuContent_承認待ち_実施者本人", traits: .sizeThatFitsLayout) {
-    Text("長押しでメニュー表示")
-        .contextMenu {
-            HouseworkQuickActionMenuContent(
-                item: .makeForPreview(
-                    title: "洗濯",
-                    point: 10,
-                    state: .pendingApproval,
-                    executorId: "own"
-                ),
-                onError: { _ in }
-            )
-        }
-        .environment(HouseworkListStore())
-        .environment(
-            \.loginContext,
-            .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
-        )
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .pendingApproval,
+            executorId: "own"
+        ),
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+    )
 }
 
 #Preview("HouseworkQuickActionMenuContent_完了", traits: .sizeThatFitsLayout) {
-    Text("長押しでメニュー表示")
-        .contextMenu {
-            HouseworkQuickActionMenuContent(
-                item: .makeForPreview(title: "洗濯", point: 10, state: .completed),
-                onError: { _ in }
-            )
-        }
-        .environment(HouseworkListStore())
-        .environment(
-            \.loginContext,
-            .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
-        )
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(title: "洗濯", point: 10, state: .completed),
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+    )
 }
 #endif
