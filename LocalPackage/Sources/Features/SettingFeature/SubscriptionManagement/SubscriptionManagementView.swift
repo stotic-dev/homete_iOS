@@ -30,6 +30,7 @@ struct SubscriptionManagementView: View {
         }
         .navigationTitle("サブスクリプション管理")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
         .fullScreenLoadingIndicator(loadingState)
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
             router.resolve(.paywall)
