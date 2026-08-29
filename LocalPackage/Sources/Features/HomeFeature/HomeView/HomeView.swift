@@ -52,6 +52,7 @@ public struct HomeView: View {
                 .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
                     router.resolve(.cohabitantRegistration)
                 }
+                .softTopScrollEdgeEffect()
                 .trailingToolbarItem {
                     NavigationBarButton(label: .settings) {
                         isShowSetting = true

@@ -19,6 +19,7 @@ struct LicenseDetailView: View {
         }
         .navigationTitle(license.name)
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
     }
 
 }

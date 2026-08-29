@@ -67,6 +67,7 @@ struct HouseworkBoardView: View {
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
             }
+            .softTopScrollEdgeEffect()
             .trailingToolbarItem {
                 NavigationBarButton(label: .houseworkTemplate) {
                     isShowHouseworkTemplate = true

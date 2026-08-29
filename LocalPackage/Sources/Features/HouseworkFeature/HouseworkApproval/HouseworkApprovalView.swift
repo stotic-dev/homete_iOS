@@ -43,6 +43,7 @@ public struct HouseworkApprovalView: View {
             .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("家事の確認")
             .inlineNavigationBarTitleDisplayMode()
+            .softTopScrollEdgeEffect()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
                     dismiss()

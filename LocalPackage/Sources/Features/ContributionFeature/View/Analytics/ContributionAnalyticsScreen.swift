@@ -38,6 +38,7 @@ public struct ContributionAnalyticsScreen: View {
             onUpgradeTapped: { isShowPaywall = true }
         )
         .navigationTitle("家事分析")
+        .softTopScrollEdgeEffect()
         .bottomAdBanner(.analyticsBottom, isPresented: !subscriptionStore.isPremium) {
             isShowPaywall = true
         }
