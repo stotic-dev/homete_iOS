@@ -78,7 +78,7 @@ struct HouseworkTemplateItemEditModal: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             inputTitleField()
-            inputPointSlider()
+            inputPointPicker()
             inputDaysSelector()
             Spacer()
         }
@@ -121,16 +121,12 @@ private extension HouseworkTemplateItemEditModal {
         }
     }
 
-    func inputPointSlider() -> some View {
+    func inputPointPicker() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("ポイント")
                 .font(with: .headLineS)
-            HStack(spacing: .space16) {
-                Slider(value: $input.point, in: 1 ... 100, step: 1)
-                Text(Int(input.point).formatted())
-                    .font(with: .headLineM)
-                    .frame(minWidth: 40, alignment: .trailing)
-            }
+            PointWheelPickerField(point: $input.point)
+                .font(with: .headLineM)
         }
     }
 
