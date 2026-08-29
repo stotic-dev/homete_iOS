@@ -43,7 +43,7 @@ private extension HouseworkBulkActionBar {
             Label(action.label, systemImage: action.systemImage)
                 .frame(maxWidth: .infinity)
         }
-        .disabled(selectedItems.isEmpty)
+        .disabled(targets(for: action).isEmpty)
 
         if action == bulkActions.first {
             button.subPrimaryButtonStyle()
@@ -62,18 +62,25 @@ private extension HouseworkBulkActionBar {
         HouseworkQuickAction.actions(for: state)
     }
 
-    func performBulk(_ action: HouseworkQuickAction) async {
-        guard let cohabitantId = loginContext.cohabitantId else { return }
-
-        let targets: [HouseworkBoardItem] = switch action {
+    /// 選択項目のうち、そのアクションを実際に適用できる対象
+    ///
+    /// 承認待ちタブは自分が実施した項目（レビュー不可）が混ざりうるため、承認/再確認依頼は絞り込む。
+    func targets(for action: HouseworkQuickAction) -> [HouseworkBoardItem] {
+        switch action {
         case .approve, .reject:
             selectedItems.filter { $0.canReview(ownUserId: loginContext.account.id) }
         case .requestReview, .remove, .returnToIncomplete:
             selectedItems
         }
+    }
+
+    func performBulk(_ action: HouseworkQuickAction) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        let items = targets(for: action)
 
         do {
-            for item in targets {
+            for item in items {
                 try await houseworkListStore.perform(
                     action,
                     on: item,
