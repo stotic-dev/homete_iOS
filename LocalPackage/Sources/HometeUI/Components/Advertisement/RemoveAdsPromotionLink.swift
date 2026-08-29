@@ -5,15 +5,19 @@
 //  Created by 佐藤汰一 on 2026/08/11.
 //
 
-import HometeUI
+import HometeResources
 import SwiftUI
 
 /// 広告バナーの直下に表示する、Paywallへの導線リンク
-struct RemoveAdsPromotionLink: View {
+public struct RemoveAdsPromotionLink: View {
 
     let action: () -> Void
 
-    var body: some View {
+    public init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    public var body: some View {
         Button {
             action()
         } label: {

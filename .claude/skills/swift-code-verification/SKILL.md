@@ -139,7 +139,7 @@ grep はマッチ0件で終了コード1を返すため、コマンド全体が�
 
 **worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
 
-**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準で同じ掃除を先頭で実行するので、make 経由なら手順0は不要。** `swift` を直接叩く場合のみ以下を実行する:
+**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。`swift` を直接叩く場合のみ以下を実行する:
 
 ```bash
 # 現在のworktreeのLocalPackage絶対パスを基準にする

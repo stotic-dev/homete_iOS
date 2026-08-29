@@ -21,7 +21,7 @@ public struct RegisterHouseworkView: View {
     @LoadingState var loadingState
 
     @State var houseworkTitle = ""
-    @State var completePoint = 10.0
+    @State var completePoint = 10
     @State var isPresentingDuplicationAlert = false
 
     @FocusState var isShowingKeyboard: Bool
@@ -43,7 +43,7 @@ public struct RegisterHouseworkView: View {
                 Text("家事を追加")
                     .font(with: .headLineL)
                 inputTextField()
-                inputPointSlider()
+                inputPointPicker()
                 entryHistoryContent()
                     .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
                 Spacer()
@@ -95,14 +95,12 @@ private extension RegisterHouseworkView {
         )
     }
 
-    func inputPointSlider() -> some View {
-        VStack(spacing: .space8) {
+    func inputPointPicker() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
             Text("完了ポイント")
                 .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text(Int(completePoint).formatted())
+            PointWheelPickerField(point: $completePoint)
                 .font(with: .headLineL)
-            Slider(value: $completePoint, in: 1 ... 100, step: Double.Stride(1))
         }
     }
 
@@ -140,7 +138,7 @@ private extension RegisterHouseworkView {
         let newItem = HouseworkItem(
             id: UUID().uuidString,
             title: houseworkTitle,
-            point: Int(completePoint),
+            point: completePoint,
             metaData: dailyHouseworkList.metaData
         )
 

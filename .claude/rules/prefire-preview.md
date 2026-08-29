@@ -69,6 +69,14 @@ VRT（Prefireのスナップショット撮影）は画面を静的にレンダ�
 
 `\.now` の既定値は実行時の現在日時のため、固定日付を前提にしたプレビューは**時間が経つだけで表示が変わり**、意図しないVRT差分になる。保存期間やバッジ表示など日時で分岐するViewのプレビューでは `setupStorageEnvironmentForPreview(now:storagePolicy:)` などで現在日時とプランを固定する。
 
+### 5. UI表示に影響する修飾子はScreen層に逃がさず、`#Preview`を持つView層に書く
+
+`XxxScreen`（`AppDependencies`・Store・Routerなど環境依存の注入や`NavigationStack`の所有が責務のfeature root）と `XxxView`（`#Preview`を持つ純粋なUI層）が分かれている画面では、レイアウトや新規UIコンポーネントの適用（`.safeAreaInset`、バナーの追加など）は必ずView層の`body`に書く。Screen層は環境から取り出した値やアクションのクロージャをパラメータとして渡すだけにする。
+
+「参照スナップショットの差分を避けたい」という理由でUI変更をScreen層側の修飾子として追加するのは禁止。Screen層は`#Preview`から生成されるVRTの対象外なので、そこにUI変更を置くと見た目が変わったこと自体がVRTで検知できなくなる。VRTで差分が出るのは意図した変更を正しく検知できているということなので、差分を避けるのではなく更新される参照スナップショットをレビューする。
+
+実例: `BottomAdBanner`（広告バナー + Paywall導線）の適用を`ContributionAnalyticsScreen`/`HouseworkTemplateScreen`側の修飾子として実装したところ、VRTの対象である`ContributionAnalyticsView`/`HouseworkTemplateView`の`#Preview`に反映されず、広告バナー表示という見た目の変更をVRTで検知できなかった（PR #217）。`isPremium: Bool` と `onTapPromotionLink: () -> Void` をView層のパラメータとして追加し、`.bottomAdBanner(...)` をView層の`body`に移すことで解決した。
+
 ## 検証
 
 上記1〜3は静的に検出できる。Swiftを変更したら実行すること（Stopフックと `local_package_test` ワークフローでも自動実行される）。
@@ -83,4 +91,4 @@ VRT自体はローカルで実行しない（`.claude/rules/swift-code-verificat
 
 - `LocalPackage/Sources/HometeDomain/Utilities/DebugHelper/Preview/PreviewEnvironment.swift`
 - `LocalPackage/Sources/HometeUI/Components/Indicator/LoadingIndicator.swift`
-- `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsView.swift`
+- `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsView.swift`（UI変更をScreen層に逃がさずView層に含めた例）
