@@ -19,6 +19,7 @@ struct LicenseListView: View {
         .listStyle(.plain)
         .navigationTitle("ライセンス")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
     }
 
 }
