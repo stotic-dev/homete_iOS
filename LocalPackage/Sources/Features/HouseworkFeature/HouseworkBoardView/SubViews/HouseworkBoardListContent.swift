@@ -37,8 +37,8 @@ struct HouseworkBoardListContent: View {
             )
         } else {
             List(selection: isSelecting ? $selectedIDs : .constant([])) {
-                ForEach(list.items(matching: state)) { item in
-                    let isSelectionDisabled = isSelecting && !isCoSelectable(item)
+                ForEach(selection.items) { item in
+                    let isSelectionDisabled = isSelecting && !selection.isSelectable(item)
                     houseworkItemRow(item)
                         .padding(.vertical, .space8)
                         .opacity(isSelectionDisabled ? 0.4 : 1)
@@ -63,8 +63,7 @@ struct HouseworkBoardListContent: View {
                 .safeAreaInset(edge: .bottom) {
                     if isSelecting {
                         HouseworkBulkActionBar(
-                            state: state,
-                            selectedItems: selectedItems,
+                            selection: selection,
                             onError: { commonError = .init(error: $0) },
                             onCompleted: { selectedIDs = [] }
                         )
@@ -81,18 +80,11 @@ struct HouseworkBoardListContent: View {
 
 private extension HouseworkBoardListContent {
 
-    var selectedItems: [HouseworkBoardItem] {
-        list.items(matching: state).filter { selectedIDs.contains($0.id) }
-    }
-
-    /// 選択中の家事と一緒に選択できるか
-    ///
-    /// 一括操作は選択した全ての家事に同じアクションを適用するため、対応可能アクションが異なる
-    /// 家事（承認待ちでも自分が承認依頼を出したもの等）は混ぜて選択できないようにする。
-    func isCoSelectable(_ item: HouseworkBoardItem) -> Bool {
-        HouseworkQuickAction.isCoSelectable(
-            item,
-            with: selectedItems,
+    var selection: HouseworkSelection {
+        .init(
+            items: list.items(matching: state),
+            state: state,
+            selectedIDs: selectedIDs,
             ownUserId: loginContext.account.id
         )
     }

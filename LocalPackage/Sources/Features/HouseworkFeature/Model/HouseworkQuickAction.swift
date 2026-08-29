@@ -109,31 +109,6 @@ extension HouseworkQuickAction {
         }
     }
 
-    /// 選択中の家事に対して行えるクイックアクションを、重複なく列挙順で返す
-    ///
-    /// 同じステータスでも実行者によって行えるアクションは変わる（承認待ちでも自分が承認依頼を出した
-    /// 家事は差し戻ししか行えない）。一括操作バーのボタンをタブのステータスから決め打ちすると、
-    /// 選択内容によっては実行できないボタンだけが非活性で並ぶため、選択中の家事から実際に行える
-    /// アクションを集めて表示する。
-    static func availableActions(for items: [HouseworkBoardItem], ownUserId: String) -> [Self] {
-        let available = Set(items.flatMap { actions(for: $0, ownUserId: ownUserId) })
-        return allCases.filter(available.contains)
-    }
-
-    /// すでに選択されている家事と一緒に選択できるかどうか
-    ///
-    /// 対応可能アクションが異なる家事を混ぜて選択できてしまうと、一括操作が選択したうちの一部の
-    /// 家事にしか適用されず、何が実行されたのか分からなくなる。行えるアクションの組み合わせが
-    /// 一致する家事だけを同時に選択できるようにする。
-    static func isCoSelectable(
-        _ item: HouseworkBoardItem,
-        with selectedItems: [HouseworkBoardItem],
-        ownUserId: String
-    ) -> Bool {
-        guard let selected = selectedItems.first else { return true }
-        return actions(for: item, ownUserId: ownUserId) == actions(for: selected, ownUserId: ownUserId)
-    }
-
     /// 状態のみに応じたクイックアクションを返す
     ///
     /// 一括操作バーで、まだ何も選択されていないときに表示する既定のボタンを決めるために使う。

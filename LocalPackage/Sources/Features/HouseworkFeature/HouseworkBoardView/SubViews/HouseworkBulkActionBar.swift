@@ -14,14 +14,13 @@ struct HouseworkBulkActionBar: View {
     @Environment(\.loginContext) var loginContext
     @Environment(\.now) var now
 
-    let state: HouseworkState
-    let selectedItems: [HouseworkBoardItem]
+    let selection: HouseworkSelection
     let onError: (Error) -> Void
     let onCompleted: () -> Void
 
     var body: some View {
         HStack(spacing: .space16) {
-            ForEach(bulkActions) { action in
+            ForEach(selection.availableActions) { action in
                 actionButton(action)
             }
         }
@@ -43,40 +42,12 @@ private extension HouseworkBulkActionBar {
             Label(action.label, systemImage: action.systemImage)
                 .frame(maxWidth: .infinity)
         }
-        .disabled(targets(for: action).isEmpty)
+        .disabled(selection.targets(for: action).isEmpty)
 
-        if action == bulkActions.first {
+        if action == selection.availableActions.first {
             button.subPrimaryButtonStyle()
         } else {
             button.primaryButtonStyle()
-        }
-    }
-
-}
-
-// MARK: プレゼンテーションロジック
-
-private extension HouseworkBulkActionBar {
-
-    /// バーに並べるアクション
-    ///
-    /// 未選択のうちはタブのステータスから決まる既定のボタンを非活性で並べ、選択されたら
-    /// その家事に実際に行えるアクションへ差し替える。
-    var bulkActions: [HouseworkQuickAction] {
-        if selectedItems.isEmpty {
-            HouseworkQuickAction.actions(for: state)
-        } else {
-            HouseworkQuickAction.availableActions(
-                for: selectedItems,
-                ownUserId: loginContext.account.id
-            )
-        }
-    }
-
-    /// 選択項目のうち、そのアクションを実際に適用できる対象
-    func targets(for action: HouseworkQuickAction) -> [HouseworkBoardItem] {
-        selectedItems.filter {
-            HouseworkQuickAction.actions(for: $0, ownUserId: loginContext.account.id).contains(action)
         }
     }
 
@@ -86,7 +57,7 @@ private extension HouseworkBulkActionBar {
         do {
             try await houseworkListStore.performBulk(
                 action,
-                on: targets(for: action),
+                on: selection.targets(for: action),
                 now: now,
                 account: loginContext.account,
                 cohabitantId: cohabitantId
