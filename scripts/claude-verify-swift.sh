@@ -10,9 +10,13 @@
 #   - Swift ファイルに変更が無ければ何もしない（exit 0）
 #   - 前回検証が通った時点から変化が無ければ何もしない（exit 0）
 #   - make check-previews を実行（VRTでしか落ちない #Preview の誤りを先に検出）
-#   - make test-packages を実行（SwiftPMビルド + SwiftLintプラグイン + ユニットテスト）
 #   - 失敗したら要約を stdout に出して exit 2（Claude が起こされる）
 #   - 3回連続で失敗したら諦めて exit 0（無限ループ防止）
+#
+# ビルド・SwiftLint・ユニットテスト（make test-packages）はここでは実行しない。
+# フックと手動実行が重なると SwiftPM の .build ロックで詰まるうえ、ターン終了が
+# 数分単位で伸びるため。これらは .claude/skills/swift-code-verification/SKILL.md
+# の手順に従って Claude 自身が実行する。
 #
 # 手動実行してデバッグする場合:
 #   echo '{}' | scripts/claude-verify-swift.sh; echo "exit=$?"
@@ -92,16 +96,7 @@ fi
 
 # VRT(Prefire)の生成コードはローカルのビルド対象に入らないため、#Preview の
 # アクセス修飾子ミスは Xcode Cloud まで気付けない。先に静的検査で潰す。
-if ! make check-previews > "$LOG_FILE" 2>&1; then
-    attempt=$((fail_count + 1))
-    echo "$attempt" > "$FAIL_COUNT_FILE"
-    echo "make check-previews が失敗しました（${attempt}回目 / 上限${MAX_CONSECUTIVE_FAILURES}回）。以下を修正してから終了してください。"
-    echo
-    cat "$LOG_FILE"
-    exit 2
-fi
-
-if make test-packages > "$LOG_FILE" 2>&1; then
+if make check-previews > "$LOG_FILE" 2>&1; then
     echo "$fingerprint" > "$STAMP_FILE"
     echo 0 > "$FAIL_COUNT_FILE"
     exit 0
@@ -110,14 +105,8 @@ fi
 attempt=$((fail_count + 1))
 echo "$attempt" > "$FAIL_COUNT_FILE"
 
-echo "make test-packages が失敗しました（${attempt}回目 / 上限${MAX_CONSECUTIVE_FAILURES}回）。以下を修正してから終了してください。"
+echo "make check-previews が失敗しました（${attempt}回目 / 上限${MAX_CONSECUTIVE_FAILURES}回）。以下を修正してから終了してください。"
 echo
-echo "--- エラー抜粋 ---"
-grep -E "error:|error :|failed|✘|Fatal error|Test .* failed" "$LOG_FILE" | tail -40
-echo
-echo "--- 末尾 ---"
-tail -25 "$LOG_FILE"
-echo
-echo "全文: ${LOG_FILE#"$REPO_ROOT"/}"
+cat "$LOG_FILE"
 
 exit 2
