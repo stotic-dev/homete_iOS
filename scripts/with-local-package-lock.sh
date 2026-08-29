@@ -100,7 +100,12 @@ while ! acquire_lock; do
     # （待っている間に他プロセスが正常にロックを引き継いでいた場合は何もしない）。
     current_pid="$(cat "$LOCK_PID_FILE" 2>/dev/null || true)"
     if [[ "$current_pid" == "$holder_pid" ]] && ! kill -0 "$holder_pid" 2>/dev/null; then
-        "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
+        # 掃除の失敗を握り潰さない。以前はこのスクリプトが常に exit 0 だったため、
+        # サンドボックス下で ps が使えず何も掃除できなくても成功扱いになり、
+        # 「掃除したはずなのに残骸が残っている」状態のまま先に進んでいた。
+        if ! "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"; then
+            echo "警告: staleなswiftプロセスの掃除を完了できませんでした。残骸が残っている可能性があります。" >&2
+        fi
         if ! echo "$$" >"$LOCK_PID_FILE" 2>/dev/null; then
             echo "ロックのPIDファイル書き込みに失敗しました: ${LOCK_PID_FILE}" >&2
             rm -rf "$cleaning_lock" 2>/dev/null
@@ -117,5 +122,35 @@ cleanup() {
     rm -rf "$LOCK_DIR" 2>/dev/null
 }
 trap cleanup EXIT
+
+# SwiftPMのビルドロック（.build/.lock）を他プロセスが握っていると、swiftコマンドは
+# 何も出力しないまま解放を待ち続ける（"Another instance of SwiftPM ..." すら出ない
+# ことがある）。ログが0バイトのまま進まないためハングと区別がつかず、原因特定に
+# 時間がかかる。実行前に保持者を通知して、待機であることを分かるようにする。
+#
+# ここに来た時点でこのworktreeのmake-lockは自分が持っているので、保持者は
+# 「前セッションの残骸」か「makeを通さず直接叩かれたswift」のどちらか。後者を
+# 巻き添えにしないため、killはせず手掛かりだけ出す。
+warn_if_build_lock_held() {
+    local probe="$SCRIPT_DIR/swiftpm-build-lock.py"
+    command -v python3 >/dev/null 2>&1 || return 0
+    [[ -f "$probe" ]] || return 0
+
+    local state holder
+    state="$(python3 "$probe" "$PACKAGE_PATH/.build" 2>/dev/null)"
+    [[ "$state" == "held "* ]] || return 0
+
+    echo "SwiftPMのビルドロック(${PACKAGE_PATH}/.build/.lock)を別プロセスが保持しています。" >&2
+    echo "解放されるまでswiftコマンドは何も出力せずに待機します（ハングではありません）。" >&2
+
+    holder="${state#held }"
+    if [[ "$holder" =~ ^[0-9]+$ ]] && kill -0 "$holder" 2>/dev/null; then
+        echo "保持者: PID ${holder}。前セッションの残骸であれば kill ${holder} で解消します。" >&2
+    else
+        echo "保持者のPIDは特定できませんでした（.lockの記録が古い可能性があります）。" >&2
+    fi
+}
+
+warn_if_build_lock_held
 
 "$@"
