@@ -68,10 +68,10 @@ private extension CohabitantJoinFailureView {
 
 }
 
-#Preview("有効期限切れ") {
+#Preview("CohabitantJoinFailureView_有効期限切れ") {
     CohabitantJoinFailureView(failure: .expired) {}
 }
 
-#Preview("参加済み") {
+#Preview("CohabitantJoinFailureView_参加済み") {
     CohabitantJoinFailureView(failure: .alreadyJoined) {}
 }

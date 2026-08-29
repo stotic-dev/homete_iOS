@@ -68,6 +68,6 @@ private extension CohabitantRegistrationInitialStateView {
     CohabitantRegistrationInitialStateView()
 }
 
-#Preview("招待リンクあり") {
+#Preview("CohabitantRegistrationInitialStateView_招待リンクあり") {
     CohabitantRegistrationInitialStateView {}
 }

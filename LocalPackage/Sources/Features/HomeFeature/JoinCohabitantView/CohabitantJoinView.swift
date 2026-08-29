@@ -126,7 +126,7 @@ private extension CohabitantJoinView {
 
 }
 
-#Preview("確認") {
+#Preview("CohabitantJoinView_確認") {
     CohabitantJoinView(token: "preview-token")
         .environment(AccountStore())
 }
