@@ -13,6 +13,7 @@ struct HouseworkBoardListContent: View {
 
     @Environment(\.houseworkBoardNavigationPath) var navigationPath
     @Environment(\.loginContext) var loginContext
+    @Environment(\.now) var now
 
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
@@ -63,9 +64,13 @@ struct HouseworkBoardListContent: View {
                 .safeAreaInset(edge: .bottom) {
                     if isSelecting {
                         HouseworkBulkActionBar(
-                            selection: selection,
-                            onError: { commonError = .init(error: $0) },
-                            onCompleted: { selectedIDs = [] }
+                            actions: selection.availableActions,
+                            isEnabled: !selection.isEmpty,
+                            onTap: { action in
+                                Task {
+                                    await performBulk(action)
+                                }
+                            }
                         )
                     }
                 }
@@ -87,6 +92,23 @@ private extension HouseworkBoardListContent {
             selectedIDs: selectedIDs,
             ownUserId: loginContext.account.id
         )
+    }
+
+    func performBulk(_ action: HouseworkQuickAction) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.performBulk(
+                action,
+                on: selection.targets(for: action),
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId
+            )
+            selectedIDs = []
+        } catch {
+            commonError = .init(error: error)
+        }
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
