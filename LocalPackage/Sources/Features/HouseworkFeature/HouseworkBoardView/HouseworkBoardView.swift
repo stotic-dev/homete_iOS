@@ -73,7 +73,9 @@ struct HouseworkBoardView: View {
             .trailingToolbarItem {
                 HStack(spacing: .space16) {
                     Button(isSelecting ? "完了" : "選択") {
-                        isSelecting.toggle()
+                        withAnimation {
+                            isSelecting.toggle()
+                        }
                     }
                     NavigationBarButton(label: .houseworkTemplate) {
                         isShowHouseworkTemplate = true
@@ -109,7 +111,9 @@ struct HouseworkBoardView: View {
             }
         }
         .onChange(of: selectedHouseworkState) {
-            isSelecting = false
+            withAnimation {
+                isSelecting = false
+            }
         }
     }
 
