@@ -157,6 +157,7 @@ private extension TodayHouseworkSummaryComponent {
     .environment(\.now, today)
     .environment(HouseworkListStore())
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_全て完了") {
@@ -193,6 +194,7 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_未完了4件以下") {
@@ -218,7 +220,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 3,
@@ -236,6 +239,7 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 
 #Preview("TodayHouseworkSummaryComponent_未完了5件以上") {
@@ -261,7 +265,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 3,
@@ -282,7 +287,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "買い物",
                         point: 30,
-                        state: .pendingApproval
+                        state: .pendingApproval,
+                        executorId: "otherUserId"
                     ),
                     .makeForTest(
                         id: 6,
@@ -300,5 +306,6 @@ private extension TodayHouseworkSummaryComponent {
         ])
     )
     .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
 }
 #endif

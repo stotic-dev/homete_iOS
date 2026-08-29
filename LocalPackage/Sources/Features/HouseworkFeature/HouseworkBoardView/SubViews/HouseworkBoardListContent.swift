@@ -141,5 +141,6 @@ private extension HouseworkBoardListContent {
         isSelecting: $isSelecting,
         onCreateTapped: {}
     )
+    .setupLoginContextForPreview()
 }
 #endif
