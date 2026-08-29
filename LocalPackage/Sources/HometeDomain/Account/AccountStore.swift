@@ -84,6 +84,22 @@ public final class AccountStore {
         self.account = updatedAccount
     }
 
+    /// 保持しているアカウント情報のグループIDのみを差し替える
+    /// - Note: サーバ側（Cloud Functions）でアカウントを更新済みのケース用。
+    ///         Firestoreへは書き込まず、オンメモリの状態だけを同期する
+    public func applyCohabitantId(_ cohabitantId: String) {
+        guard let account,
+              account.cohabitantId != cohabitantId else { return }
+
+        self.account = Account(
+            id: account.id,
+            userName: account.userName,
+            fcmToken: account.fcmToken,
+            cohabitantId: cohabitantId,
+            isPremium: account.isPremium
+        )
+    }
+
     /// プレミアム加入状態が変わっている場合のみアカウント情報を更新する
     /// - Returns: 更新が発生したかどうか
     @discardableResult

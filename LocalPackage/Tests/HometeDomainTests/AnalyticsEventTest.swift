@@ -51,4 +51,50 @@ struct AnalyticsEventTest {
         #expect(actual == AnalyticsEvent(name: "onboarding", parameters: expectedParameters))
     }
 
+    @Test(
+        "招待リンクに関する行動を、action/resultのパラメータを持つcohabitant_invitationイベントに変換する",
+        arguments: [
+            (
+                CohabitantInvitationAnalyticsAction.issued(isSuccess: true),
+                ["action": "issue", "result": "success"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.issued(isSuccess: false),
+                ["action": "issue", "result": "failure"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.linkOpened,
+                ["action": "open"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.joinSucceeded,
+                ["action": "join", "result": "success"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.joinFailed(.invalidLink),
+                ["action": "join", "result": "invalid_link"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.joinFailed(.expired),
+                ["action": "join", "result": "expired"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.joinFailed(.alreadyJoined),
+                ["action": "join", "result": "already_joined"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.joinFailed(.unknown),
+                ["action": "join", "result": "failure"]
+            ),
+        ]
+    )
+    func cohabitantInvitation(
+        action: CohabitantInvitationAnalyticsAction,
+        expectedParameters: [String: String]
+    ) {
+        let actual = AnalyticsEvent.cohabitantInvitation(action)
+
+        #expect(actual == AnalyticsEvent(name: "cohabitant_invitation", parameters: expectedParameters))
+    }
+
 }

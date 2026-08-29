@@ -16,6 +16,8 @@ struct AppTabView: View {
     @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(\.routeResolver) var router
 
     @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
@@ -39,8 +41,26 @@ struct AppTabView: View {
         )
     }
 
+    /// 招待リンクの参加画面を表示するかどうか
+    /// - Note: 閉じられたら未処理のトークンを破棄して、同じ招待で再表示されないようにする
+    var isPresentingCohabitantJoin: Binding<Bool> {
+        Binding(
+            get: { pendingInvitationStore.pendingToken != nil },
+            set: { isPresenting in
+                if !isPresenting {
+                    pendingInvitationStore.clear()
+                }
+            }
+        )
+    }
+
     var body: some View {
         tabView()
+            .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
+                if let token = pendingInvitationStore.pendingToken {
+                    router.resolve(.cohabitantJoin(token: token))
+                }
+            }
             .task {
                 await onAppear()
             }
@@ -186,6 +206,7 @@ private extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
+        .environment(PendingInvitationStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif
