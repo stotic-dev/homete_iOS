@@ -2,6 +2,8 @@
 paths:
   - "LocalPackage/Sources/Features/**/*.swift"
   - "LocalPackage/Sources/HometeUI/**/*.swift"
+  - "LocalPackage/Sources/HometeInfrastructure/Purchase/**/*.swift"
+  - "LocalPackage/Sources/AppRoot/**/*.swift"
 ---
 
 # UXライティングのルール
