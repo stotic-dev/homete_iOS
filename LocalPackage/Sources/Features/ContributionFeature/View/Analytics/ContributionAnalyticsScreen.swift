@@ -35,13 +35,11 @@ public struct ContributionAnalyticsScreen: View {
             analytics: analytics,
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
+            isPremium: subscriptionStore.isPremium,
             onUpgradeTapped: { isShowPaywall = true }
         )
         .navigationTitle("家事分析")
         .softTopScrollEdgeEffect()
-        .bottomAdBanner(.analyticsBottom, isPresented: !subscriptionStore.isPremium) {
-            isShowPaywall = true
-        }
         .task(id: contributionStore.contiribution) {
             await onChangeContribution()
         }

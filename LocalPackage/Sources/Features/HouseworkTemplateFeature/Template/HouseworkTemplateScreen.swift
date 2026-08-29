@@ -41,13 +41,12 @@ public struct HouseworkTemplateScreen: View {
             HouseworkTemplateView(
                 initialDraft: $initialDraft,
                 draft: $editingDraft,
-                editorContext: $editorContext
+                editorContext: $editorContext,
+                isPremium: subscriptionStore.isPremium,
+                onTapRemoveAdsLink: { isShowPaywall = true }
             )
         }
         .environment(templateEditStore)
-        .bottomAdBanner(.houseworkTemplateBottom, isPresented: !subscriptionStore.isPremium) {
-            isShowPaywall = true
-        }
         .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
             router.resolve(.paywall)
