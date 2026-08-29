@@ -7,7 +7,7 @@ import HometeDomain
 import SwiftUI
 
 /// 家事リストのセルからワンタップで行えるステータス変更アクション
-enum HouseworkQuickAction: Identifiable, Equatable {
+enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
 
     /// 承認依頼（未完了 → 承認待ち）
     case requestReview
@@ -109,10 +109,20 @@ extension HouseworkQuickAction {
         }
     }
 
+    /// 選択中の家事に対して行えるクイックアクションを、重複なく列挙順で返す
+    ///
+    /// 同じステータスでも実行者によって行えるアクションは変わる（承認待ちでも自分が承認依頼を出した
+    /// 家事は差し戻ししか行えない）。一括操作バーのボタンをタブのステータスから決め打ちすると、
+    /// 選択内容によっては実行できないボタンだけが非活性で並ぶため、選択中の家事から実際に行える
+    /// アクションを集めて表示する。
+    static func availableActions(for items: [HouseworkBoardItem], ownUserId: String) -> [Self] {
+        let available = Set(items.flatMap { actions(for: $0, ownUserId: ownUserId) })
+        return allCases.filter(available.contains)
+    }
+
     /// 状態のみに応じたクイックアクションを返す
     ///
-    /// 複数選択での一括操作は、承認待ちの中に自分が実施した項目（レビュー不可）が混ざりうるため、
-    /// ここでは実行者に関わらず状態から決まるボタンを返し、実行対象の絞り込みは呼び出し側で行う。
+    /// 一括操作バーで、まだ何も選択されていないときに表示する既定のボタンを決めるために使う。
     static func actions(for state: HouseworkState) -> [Self] {
         switch state {
         case .incomplete:

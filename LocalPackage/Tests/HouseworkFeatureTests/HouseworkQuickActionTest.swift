@@ -11,6 +11,7 @@ enum HouseworkQuickActionTest {
 
     struct ActionsForItemCase {}
     struct ActionsForStateCase {}
+    struct AvailableActionsCase {}
     struct BulkNotificationCase {}
 
 }
@@ -121,6 +122,75 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
         // Assert
 
         #expect(actual == expected)
+    }
+
+}
+
+extension HouseworkQuickActionTest.AvailableActionsCase {
+
+    @Test("選択が空の場合は行えるアクションがない")
+    func availableActions_emptyItems_returnsEmpty() {
+        // Act
+
+        let actual = HouseworkQuickAction.availableActions(for: [], ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == [])
+    }
+
+    @Test("承認待ちで自分が実施した家事だけを選んだ場合は、差し戻しのみが行える")
+    func availableActions_pendingApprovalByOwnUserOnly_returnsReturnToIncompleteOnly() {
+        // Arrange
+
+        let items = [
+            HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId"),
+            HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "ownUserId"),
+        ]
+
+        // Act
+
+        let actual = HouseworkQuickAction.availableActions(for: items, ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == [.returnToIncomplete])
+    }
+
+    @Test("実行者が異なる承認待ちの家事が混在する場合は、両方のアクションを列挙順で返す")
+    func availableActions_mixedExecutors_returnsUnionInDeclarationOrder() {
+        // Arrange
+
+        let items = [
+            HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId"),
+            HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "otherUserId"),
+        ]
+
+        // Act
+
+        let actual = HouseworkQuickAction.availableActions(for: items, ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == [.approve, .reject, .returnToIncomplete])
+    }
+
+    @Test("同じアクションを持つ家事を複数選んでも、アクションは重複しない")
+    func availableActions_sameActionItems_returnsUniqueActions() {
+        // Arrange
+
+        let items = [
+            HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete),
+            HouseworkBoardItem.makeForPreview(id: "2", state: .incomplete),
+        ]
+
+        // Act
+
+        let actual = HouseworkQuickAction.availableActions(for: items, ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == [.requestReview, .remove])
     }
 
 }

@@ -58,19 +58,25 @@ private extension HouseworkBulkActionBar {
 
 private extension HouseworkBulkActionBar {
 
+    /// バーに並べるアクション
+    ///
+    /// 未選択のうちはタブのステータスから決まる既定のボタンを非活性で並べ、選択されたら
+    /// その家事に実際に行えるアクションへ差し替える。
     var bulkActions: [HouseworkQuickAction] {
-        HouseworkQuickAction.actions(for: state)
+        if selectedItems.isEmpty {
+            HouseworkQuickAction.actions(for: state)
+        } else {
+            HouseworkQuickAction.availableActions(
+                for: selectedItems,
+                ownUserId: loginContext.account.id
+            )
+        }
     }
 
     /// 選択項目のうち、そのアクションを実際に適用できる対象
-    ///
-    /// 承認待ちタブは自分が実施した項目（レビュー不可）が混ざりうるため、承認/再確認依頼は絞り込む。
     func targets(for action: HouseworkQuickAction) -> [HouseworkBoardItem] {
-        switch action {
-        case .approve, .reject:
-            selectedItems.filter { $0.canReview(ownUserId: loginContext.account.id) }
-        case .requestReview, .remove, .returnToIncomplete:
-            selectedItems
+        selectedItems.filter {
+            HouseworkQuickAction.actions(for: $0, ownUserId: loginContext.account.id).contains(action)
         }
     }
 
