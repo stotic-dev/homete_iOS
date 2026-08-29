@@ -33,11 +33,12 @@ Issue #158の当初検討では「広告非表示」「分析期間の無制限�
 
 ### 2.2 課金プラン体系
 
-[ADR-0002](adr/0002-billing-revenuecat.md)で定義された3種類。RevenueCat経由のIn-App Purchaseとして提供する。
+RevenueCat経由のIn-App Purchaseとして、月額/年額の自動更新サブスクリプションを提供する。
 
-- `MonthlyPremium` — 月額サブスクリプション
-- `YearlyPremium` — 年額サブスクリプション
-- `OneTimeYearly` — 1年分の買い切り型課金（非消費型）
+- 月額サブスクリプション
+- 年額サブスクリプション
+
+[ADR-0002](adr/0002-billing-revenuecat.md)では上記に加えて`OneTimeYearly`（1年分の買い切り型課金）も設計されていたが、**2026-08-08のコミット（`2066bd1`）で買い切りプランの提供終了に伴い実装から削除済み**。現行の`SubscriptionPlan`（`LocalPackage/Sources/HometeDomain/Subscription/SubscriptionPlan.swift`）は`.free`と`.subscription`（月額/年額）のみを表現し、買い切り（`lifetime`）の分岐は存在しない。ADR-0002は当時の意思決定記録として残すが、現行プランの根拠としては参照しないこと。
 
 ### 2.3 訴求が露出する導線
 
