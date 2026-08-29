@@ -117,6 +117,7 @@ struct SettingView: View {
         }
         .navigationTitle("設定")
         .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
         .trailingToolbarItem {
             leadingNavigationBarContent()
         }
