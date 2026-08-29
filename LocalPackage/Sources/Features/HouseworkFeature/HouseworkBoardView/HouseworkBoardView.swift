@@ -26,6 +26,7 @@ struct HouseworkBoardView: View {
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
+    @State var isSelecting = false
 
     let onUpdateHouseboardList: () -> Void
 
@@ -45,6 +46,7 @@ struct HouseworkBoardView: View {
                                     state: state,
                                     list: houseworkBoardList,
                                     selectedHouseworkState: $selectedHouseworkState,
+                                    isSelecting: $isSelecting,
                                     onCreateTapped: { isPresentingAddHouseworkView = true }
                                 )
                                 .tag(state)
@@ -68,8 +70,13 @@ struct HouseworkBoardView: View {
                 navigationHandler(route)
             }
             .trailingToolbarItem {
-                NavigationBarButton(label: .houseworkTemplate) {
-                    isShowHouseworkTemplate = true
+                HStack(spacing: .space16) {
+                    Button(isSelecting ? "完了" : "選択") {
+                        isSelecting.toggle()
+                    }
+                    NavigationBarButton(label: .houseworkTemplate) {
+                        isShowHouseworkTemplate = true
+                    }
                 }
             }
             .environment(\.houseworkBoardNavigationPath, navigationPath)
@@ -99,6 +106,9 @@ struct HouseworkBoardView: View {
             withAnimation {
                 onUpdateHouseboardList()
             }
+        }
+        .onChange(of: selectedHouseworkState) {
+            isSelecting = false
         }
     }
 

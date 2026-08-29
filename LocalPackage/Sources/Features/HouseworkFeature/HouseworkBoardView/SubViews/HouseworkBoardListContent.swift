@@ -18,8 +18,10 @@ struct HouseworkBoardListContent: View {
     let state: HouseworkState
     let list: HouseworkBoardList
     @Binding var selectedHouseworkState: HouseworkState
+    @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
 
+    @State var selectedIDs: Set<String> = []
     @CommonError var commonError
 
     var body: some View {
@@ -34,10 +36,16 @@ struct HouseworkBoardListContent: View {
                 onSwitchTab: { selectedHouseworkState = $0 }
             )
         } else {
-            List {
+            List(selection: isSelecting ? $selectedIDs : .constant([])) {
                 ForEach(list.items(matching: state)) { item in
                     houseworkItemRow(item)
                         .padding(.vertical, .space8)
+                        .contextMenu {
+                            HouseworkQuickActionMenuContent(
+                                item: item,
+                                onError: { commonError = .init(error: $0) }
+                            )
+                        }
                 }
                 .listRowBackground(Color.clear)
                 #if os(iOS)
@@ -46,7 +54,23 @@ struct HouseworkBoardListContent: View {
                 #endif
             }
             .listStyle(.plain)
-            .commonError(content: $commonError)
+            #if os(iOS)
+                .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+            #endif
+                .safeAreaInset(edge: .bottom) {
+                    if isSelecting {
+                        HouseworkBulkActionBar(
+                            state: state,
+                            selectedItems: list.items(matching: state).filter { selectedIDs.contains($0.id) },
+                            onError: { commonError = .init(error: $0) },
+                            onCompleted: { selectedIDs = [] }
+                        )
+                    }
+                }
+                .onChange(of: isSelecting) {
+                    selectedIDs = []
+                }
+                .commonError(content: $commonError)
         }
     }
 
@@ -67,6 +91,7 @@ private extension HouseworkBoardListContent {
 #if DEBUG
 #Preview {
     @Previewable @State var selectedState = HouseworkState.incomplete
+    @Previewable @State var isSelecting = false
     HouseworkBoardListContent(
         houseworkListStore: .init(
             houseworkClient: .previewValue,
@@ -94,6 +119,7 @@ private extension HouseworkBoardListContent {
             ),
         ]),
         selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
         onCreateTapped: {}
     )
 }

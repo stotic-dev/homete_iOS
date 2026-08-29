@@ -17,6 +17,8 @@ public struct IncompleteHouseworkListView: View {
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(HouseworkListStore.self) var houseworkListStore
 
+    @CommonError var commonError
+
     public static func make() -> some View {
         IncompleteHouseworkListView()
     }
@@ -32,6 +34,7 @@ public struct IncompleteHouseworkListView: View {
         )
         .navigationTitle("未完了の家事")
         .inlineNavigationBarTitleDisplayMode()
+        .commonError(content: $commonError)
     }
 
 }
@@ -47,8 +50,14 @@ private extension IncompleteHouseworkListView {
         } else {
             List {
                 ForEach(summary.incompleteItems) { item in
-                    HouseBoardListRow(houseworkItem: item)
+                    HouseBoardListRow(houseworkItem: item.originalItem)
                         .padding(.vertical, .space8)
+                        .contextMenu {
+                            HouseworkQuickActionMenuContent(
+                                item: item,
+                                onError: { commonError = .init(error: $0) }
+                            )
+                        }
                         .listRowBackground(Color.clear)
                     #if os(iOS)
                         .listRowSpacing(.zero)

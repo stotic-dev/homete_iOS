@@ -21,6 +21,7 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(\.registeredContentNavigationPath) var navigationPath
 
     @State var isPresentingRegister = false
+    @CommonError var commonError
 
     static func make() -> some View {
         TodayHouseworkSummaryComponent()
@@ -44,6 +45,7 @@ struct TodayHouseworkSummaryComponent: View {
                 )
             )
         }
+        .commonError(content: $commonError)
     }
 
 }
@@ -126,7 +128,13 @@ private extension TodayHouseworkSummaryComponent {
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
             ForEach(summary.displayIncompleteItems) { item in
-                HouseBoardListRow(houseworkItem: item)
+                HouseBoardListRow(houseworkItem: item.originalItem)
+                    .contextMenu {
+                        HouseworkQuickActionMenuContent(
+                            item: item,
+                            onError: { commonError = .init(error: $0) }
+                        )
+                    }
             }
             if summary.hasMoreIncomplete {
                 Button("もっと表示する") {
