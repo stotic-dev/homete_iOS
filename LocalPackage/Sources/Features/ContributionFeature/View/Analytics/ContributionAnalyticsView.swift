@@ -24,6 +24,7 @@ struct ContributionAnalyticsView: View {
     let analytics: ContributionAnalytics?
     let myUserId: String
     let latestAchievedDate: Date?
+    let isPremium: Bool
     let onUpgradeTapped: () -> Void
 
     var body: some View {
@@ -48,6 +49,7 @@ struct ContributionAnalyticsView: View {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space8)
         }
+        .bottomAdBanner(.analyticsBottom, isPresented: !isPremium, onTapPromotionLink: onUpgradeTapped)
     }
 
 }
@@ -133,6 +135,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .week),
         myUserId: "user1",
         latestAchievedDate: nil,
+        isPremium: false,
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
@@ -152,6 +155,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
         latestAchievedDate: nil,
+        isPremium: false,
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
@@ -171,6 +175,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .year),
         myUserId: "user1",
         latestAchievedDate: nil,
+        isPremium: false,
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
@@ -190,6 +195,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForTest(displayPeriod: selectedPeriod),
         myUserId: "user1",
         latestAchievedDate: nil,
+        isPremium: false,
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()
@@ -206,6 +212,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
         latestAchievedDate: nil,
+        isPremium: false,
         onUpgradeTapped: {}
     )
     .setupEnvironmentForPreview()

@@ -33,6 +33,9 @@ struct HouseworkTemplateView: View {
     @Binding var draft: HouseworkTemplateDraft
     @Binding var editorContext: TemplateEditorContext
 
+    let isPremium: Bool
+    let onTapRemoveAdsLink: () -> Void
+
     var body: some View {
         ZStack {
             if let templateId = templateListStore.selectedTemplateId,
@@ -74,6 +77,7 @@ struct HouseworkTemplateView: View {
             )
             .padding(.horizontal, .space16)
         }
+        .bottomAdBanner(.houseworkTemplateBottom, isPresented: !isPremium, onTapPromotionLink: onTapRemoveAdsLink)
         .sheet(isPresented: $presentingAddModal) {
             HouseworkTemplateItemEditModalScreen(mode: .create) { input in
                 tappedCreateItemButton(input: input)
@@ -480,7 +484,9 @@ private extension HouseworkTemplateView {
     HouseworkTemplateView(
         initialDraft: .constant(.init(days: templateData)),
         draft: .constant(.init(days: templateData)),
-        editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero))
+        editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
+        isPremium: false,
+        onTapRemoveAdsLink: {}
     )
     .environment(
         \.houseworkTemplateContext,
@@ -516,7 +522,9 @@ private extension HouseworkTemplateView {
                 .init(id: "2", userName: "Bさん"),
             ],
             currentTemplateVersion: .zero
-        ))
+        )),
+        isPremium: false,
+        onTapRemoveAdsLink: {}
     )
     .environment(
         \.houseworkTemplateContext,
