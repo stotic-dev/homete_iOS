@@ -15,6 +15,8 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 ### サンドボックスの扱い（重要）
 
+> staleプロセスの掃除を `ps` 依存から SwiftPM のビルドロック依存に切り替えた経緯は [ADR-0012](../../../doc/adr/0012-swiftpm-build-lock-based-stale-cleanup.md) を参照。
+
 プロジェクトの `.claude/settings.local.json` では**サンドボックスが有効**（`sandbox.enabled: true`、`autoAllowBashIfSandboxed: true`）。
 
 SwiftPM は Package.swift のマニフェスト評価を自前の `sandbox-exec` で行うため、Claude のサンドボックス内で実行するとネストになり失敗する:
@@ -64,6 +66,25 @@ clangのモジュールキャッシュ（`/var/folders/<user-hash>/C/clang/Modul
 **`sandbox` の設定はセッション開始時にしか読まれない**ので、追加後は再起動が必要。
 
 他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
+
+#### プロセス一覧（`ps` / `pgrep`）は使えない
+
+サンドボックス下ではプロセス一覧の取得手段が**すべて**塞がれている。
+
+| コマンド | 症状 |
+| --- | --- |
+| `ps` | `/bin/ps: Operation not permitted` |
+| `pgrep` / `pkill` | `sysmond service not found` → `Cannot get process list` |
+| `sysctl kern.proc.all` | `Operation not permitted` |
+
+**これを許可する `sandbox.*` 設定は存在しない。** `filesystem.allowWrite` のようにプロセス情報だけを開ける項目は無く、唯一の回避策は `sandbox.excludedCommands` に `make *` を入れて make 実行全体をサンドボックス外に出すことだが、それではファイルシステム・ネットワークの隔離ごと失われるため採用していない。
+
+そのため「残骸プロセスを探して kill する」系の手順は、Claude が実行する限り機能しない。代わりに **SwiftPM のビルドロック `LocalPackage/.build/.lock`** を見る。SwiftPM は自身の PID をこのファイルに書いてから `flock(2)` で排他するので、プロセス一覧なしでも保持者が分かる:
+
+```bash
+python3 scripts/swiftpm-build-lock.py "$(pwd)/LocalPackage/.build"
+# held <pid> = 保持されている / free = 空き / absent = .lock が無い
+```
 
 #### Build Tool Plugin が `.build` に書けない場合（既知の症状）
 
@@ -139,19 +160,25 @@ grep はマッチ0件で終了コード1を返すため、コマンド全体が�
 
 **worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
 
-**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。`swift` を直接叩く場合のみ以下を実行する:
+**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。
 
-```bash
-# 現在のworktreeのLocalPackage絶対パスを基準にする
-LOCAL_PACKAGE_PATH="$(pwd)/LocalPackage"
-# このworktreeに紐づく古いプロセスのみを kill する（絶対パスで一致するため他worktreeは触らない）
-pkill -f "swift-test --package-path ${LOCAL_PACKAGE_PATH}" 2>/dev/null
-pkill -f "${LOCAL_PACKAGE_PATH}/.build" 2>/dev/null
-# 残骸が無くなったか確認
-ps aux | grep -E "swift-test|swiftpm-testing-helper" | grep "${LOCAL_PACKAGE_PATH}" | grep -v grep
+make 経由なら、他プロセスがビルドロックを握っている場合に実行前へ次の警告が出る。**これが出たら待ち時間はハングではなくロック待ちなので、タイムアウトまで放置せず PID を kill する。**
+
+```
+SwiftPMのビルドロック(.../LocalPackage/.build/.lock)を別プロセスが保持しています。
+解放されるまでswiftコマンドは何も出力せずに待機します（ハングではありません）。
+保持者: PID 12345。前セッションの残骸であれば kill 12345 で解消します。
 ```
 
-最後のチェックで何も出力されなければ OK。残っていた場合は PID を確認して `kill <PID>` する。
+`swift` を直接叩く場合のみ、以下で残骸を確認・掃除する。**サンドボックス下では `ps` / `pgrep` が使えない**（[プロセス一覧（`ps` / `pgrep`）は使えない](#プロセス一覧ps--pgrepは使えない)）ため、ロックファイルから保持者を特定する:
+
+```bash
+# 現在のworktreeのLocalPackage絶対パスを基準にする（他worktreeを巻き込まないため）
+LOCAL_PACKAGE_PATH="$(pwd)/LocalPackage"
+python3 scripts/swiftpm-build-lock.py "${LOCAL_PACKAGE_PATH}/.build"
+```
+
+`free` / `absent` なら OK。`held <pid>` が出たら、そのPIDが現在進行中の作業でないことを確認して `kill <pid>` する。
 
 ### 1. ビルド確認
 
