@@ -11,6 +11,8 @@ description: App Store Connect API（scripts/appstoreconnect.sh）とRevenueCat 
 - RevenueCat側でProducts / Entitlements / Offeringsを作成・更新するとき
 - 新しい課金プロダクトを追加し、ASCとRevenueCatの両方に反映する（メタデータ同期する）とき
 
+RevenueCat Paywallの訴求文言（ダッシュボード側のコピー、`offerings update-metadata`や`components_config`/`components_localizations`で編集する箇所）を追加・修正するときは、`.claude/rules/ux-writing.md`のUXライティング基準（敬体・結果ベース、訴求内容と機能の実態一致など）に従うこと。このルールはSwiftファイルの`paths:`スコープでは自動ロードされないため、Paywall文言を触る際は明示的に読み込む。
+
 対象スクリプト:
 - `scripts/appstoreconnect.sh` — App Store Connect API
 - `scripts/revenuecat.sh` — RevenueCat REST API v2
