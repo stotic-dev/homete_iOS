@@ -73,25 +73,44 @@ while ! acquire_lock; do
     fi
 
     # ロック保持者が死んでいる = staleなロック。
-    # mvはatomicなので、複数プロセスが同時にstale判定しても移動を実行できるのは1つだけになる
-    # （rm -rfだと非存在でも成功扱いになり排他できず、後発が先発の再取得済みプロセスを殺しうる）。
     #
-    # ただしmvはパスが一致していれば無条件で成功するため、「自分がholder_pidを読んでから
-    # mvするまでの間に、別プロセスが同じstaleロックをmvで奪取→掃除→再取得し、新しい
-    # 生存ロックを作っていた」ケース（ABA）では、その新しい生存ロックごと奪ってしまう。
-    # 移動後のPIDが自分の観測したholder_pidと一致するかを確認し、一致しない場合は
-    # 別プロセスの生存ロックを奪ってしまったとみなして元の場所に戻す。
-    reclaim_dir="${LOCK_DIR}.reclaim.$$"
-    if mv "$LOCK_DIR" "$reclaim_dir" 2>/dev/null; then
-        reclaimed_pid="$(cat "$reclaim_dir/pid" 2>/dev/null || true)"
-        if [[ "$reclaimed_pid" == "$holder_pid" ]]; then
-            rm -rf "$reclaim_dir" 2>/dev/null
-            "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
-        elif ! mv "$reclaim_dir" "$LOCK_DIR" 2>/dev/null; then
-            # 戻す前に別プロセスが新規にロックを取得していた場合はそちらを優先する。
-            rm -rf "$reclaim_dir" 2>/dev/null
+    # 以前はmvでLOCK_DIRを退避してから後始末していたが、mv実行からPID引き継ぎ完了までの
+    # 間、LOCK_DIRが不在になる瞬間があった。その隙に別の待機者がacquire_lockで新規に
+    # LOCK_DIRを掴んで実行を始めてしまうと、自分が後から呼ぶkill-stale-swift-processes.sh
+    # がその別waiterの新しいプロセスを誤って殺してしまう（退避先ディレクトリのPID一致
+    # 検証だけでは、この「LOCK_DIRという場所そのものが無防備になる時間帯」は防げない）。
+    #
+    # 対策: LOCK_DIR自体は最後まで削除・移動せず存在させ続け、「stale後始末を行う権利」
+    # だけを専用ロック（LOCK_DIR.cleaning）で排他制御する。LOCK_DIRが常に存在するため
+    # 他プロセスのacquire_lockは終始失敗し、掴み直しの隙が生まれない。後始末権を得た
+    # プロセスは、kill完了後にLOCK_PID_FILEを自分のPIDへ書き換えることでロックを引き継ぐ。
+    cleaning_lock="${LOCK_DIR}.cleaning"
+    if ! mkdir "$cleaning_lock" 2>/dev/null; then
+        # 他プロセスが後始末中。完了を待つ。
+        if (( waited >= WAIT_TIMEOUT_SECONDS )); then
+            echo "${WAIT_TIMEOUT_SECONDS}秒待ってもstaleロックの後始末が完了しませんでした。${cleaning_lock} の状況を確認してください。" >&2
+            exit 1
         fi
+        sleep 1
+        waited=$((waited + 1))
+        continue
     fi
+
+    # 後始末権を得た後、状況が変わっていないか再確認する
+    # （待っている間に他プロセスが正常にロックを引き継いでいた場合は何もしない）。
+    current_pid="$(cat "$LOCK_PID_FILE" 2>/dev/null || true)"
+    if [[ "$current_pid" == "$holder_pid" ]] && ! kill -0 "$holder_pid" 2>/dev/null; then
+        "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
+        if ! echo "$$" >"$LOCK_PID_FILE" 2>/dev/null; then
+            echo "ロックのPIDファイル書き込みに失敗しました: ${LOCK_PID_FILE}" >&2
+            rm -rf "$cleaning_lock" 2>/dev/null
+            exit 1
+        fi
+        rm -rf "$cleaning_lock" 2>/dev/null
+        break
+    fi
+
+    rm -rf "$cleaning_lock" 2>/dev/null
 done
 
 cleanup() {
