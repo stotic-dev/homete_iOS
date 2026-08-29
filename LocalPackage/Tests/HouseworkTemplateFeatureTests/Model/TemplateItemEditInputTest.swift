@@ -16,7 +16,7 @@ enum TemplateItemEditInputTest {
 
     static func makeInput(
         title: String = "ゴミ出し",
-        point: Double = 10,
+        point: Int? = 10,
         days: Set<DayOfWeek> = [.monday]
     ) -> TemplateItemEditInput {
         TemplateItemEditInput(
@@ -72,10 +72,10 @@ extension TemplateItemEditInputTest.CanConfirmCreateModeCase {
         #expect(actual == false)
     }
 
-    @Test("新規作成モードでpointが0のときfalseを返す")
-    func returnsFalseWhenPointIsZero() {
+    @Test("新規作成モードでpointが未選択のときfalseを返す")
+    func returnsFalseWhenPointIsNil() {
         // Arrange
-        let input = TestCase.makeInput(point: .zero)
+        let input = TestCase.makeInput(point: nil)
 
         // Act
         let actual = input.canConfirm(.create)
@@ -140,11 +140,11 @@ extension TemplateItemEditInputTest.CanConfirmEditModeCase {
         #expect(actual == false)
     }
 
-    @Test("編集モードでpointが0のときfalseを返す")
-    func returnsFalseWhenPointIsZero() {
+    @Test("編集モードでpointが未選択のときfalseを返す")
+    func returnsFalseWhenPointIsNil() {
         // Arrange
         let before = TestCase.makeInput(point: 10)
-        let edited = TestCase.makeInput(point: .zero)
+        let edited = TestCase.makeInput(point: nil)
 
         // Act
         let actual = edited.canConfirm(.edit(before: before))

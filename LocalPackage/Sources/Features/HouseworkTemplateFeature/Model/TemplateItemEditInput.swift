@@ -13,14 +13,15 @@ struct TemplateItemEditInput: Equatable {
 
     var itemId: HouseworkTemplateItem.ItemId
     var title: String
-    var point: Double
+    /// `nil`はポイント未選択を表す。
+    var point: Int?
     var days: Set<DayOfWeek>
 
     static func initial(_ id: UUID) -> Self {
         TemplateItemEditInput(
             itemId: .init(uuid: id),
             title: "",
-            point: .zero,
+            point: nil,
             days: []
         )
     }
@@ -33,7 +34,7 @@ struct TemplateItemEditInput: Equatable {
         // 全ての項目が入力済みであること
         let isAllInputed = !title.trimmingCharacters(in: .whitespaces).isEmpty
             && !days.isEmpty
-            && point != .zero
+            && point != nil
 
         if case let .edit(before) = mode {
             // 編集モードの場合は、既存の内容から変更が加わっていることも条件に含める
@@ -47,7 +48,7 @@ struct TemplateItemEditInput: Equatable {
         .init(
             id: itemId,
             title: title,
-            point: .init(point),
+            point: point ?? 0,
             updatedAt: now
         )
     }
@@ -60,7 +61,7 @@ extension TemplateItemEditInput {
         self.init(
             itemId: item.id,
             title: item.title,
-            point: Double(item.point),
+            point: item.point,
             days: selectedDays
         )
     }

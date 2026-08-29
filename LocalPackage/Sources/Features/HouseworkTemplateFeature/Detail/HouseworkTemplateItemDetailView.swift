@@ -116,7 +116,7 @@ private extension HouseworkTemplateItemDetailView {
         item = .init(
             id: editedInput.itemId,
             title: editedInput.title,
-            point: Int(editedInput.point),
+            point: editedInput.point ?? 0,
             updatedAt: now
         )
         onEdit(editedInput)
