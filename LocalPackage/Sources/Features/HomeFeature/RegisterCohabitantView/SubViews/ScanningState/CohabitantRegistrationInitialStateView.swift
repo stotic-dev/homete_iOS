@@ -11,6 +11,14 @@ import SwiftUI
 
 struct CohabitantRegistrationInitialStateView: View {
 
+    /// 招待リンクの共有アクション
+    /// - Note: nilの場合は招待リンクの導線を表示しない
+    let onTapInvite: (() -> Void)?
+
+    init(onTapInvite: (() -> Void)? = nil) {
+        self.onTapInvite = onTapInvite
+    }
+
     var body: some View {
         VStack(spacing: .zero) {
             VStack(alignment: .leading, spacing: .space16) {
@@ -28,12 +36,38 @@ struct CohabitantRegistrationInitialStateView: View {
                 .cornerRadius(.radius8)
             Spacer()
                 .frame(height: .space16)
+            if let onTapInvite {
+                inviteSection(onTapInvite: onTapInvite)
+            }
         }
         .padding(.horizontal, .space16)
     }
 
 }
 
+private extension CohabitantRegistrationInitialStateView {
+
+    func inviteSection(onTapInvite: @escaping () -> Void) -> some View {
+        VStack(spacing: .space8) {
+            Text("離れている相手には、招待リンクを送って参加してもらえます。")
+                .font(with: .caption)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                onTapInvite()
+            } label: {
+                Label("リンクで招待", systemImage: "square.and.arrow.up")
+                    .frame(maxWidth: .infinity)
+            }
+            .subPrimaryButtonStyle()
+        }
+    }
+
+}
+
 #Preview {
     CohabitantRegistrationInitialStateView()
+}
+
+#Preview("招待リンクあり") {
+    CohabitantRegistrationInitialStateView {}
 }
