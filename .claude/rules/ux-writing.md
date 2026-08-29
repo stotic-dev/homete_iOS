@@ -1,9 +1,6 @@
 ---
 paths:
-  - "LocalPackage/Sources/Features/**/*.swift"
-  - "LocalPackage/Sources/HometeUI/**/*.swift"
-  - "LocalPackage/Sources/HometeInfrastructure/Purchase/**/*.swift"
-  - "LocalPackage/Sources/AppRoot/**/*.swift"
+  - "**/*.swift"
 ---
 
 # UXライティングのルール
@@ -29,9 +26,9 @@ paths:
 
 | NG | OK |
 |---|---|
-| 全貢献履歴 | すべての貢献履歴を、いつでも振り返れる |
-| 長期的な世帯トレンド | 長期的な傾向から、家事の偏りに気づける |
-| 広告なしの体験 | 広告が表示されない |
+| 全貢献履歴 | すべての貢献履歴を、いつでも振り返れます |
+| 長期的な世帯トレンド | 長期的な傾向から、家事の偏りに気づけます |
+| 広告なしの体験 | 広告が表示されません |
 
 ### 3. 英語の構文をそのまま日本語化しない
 
