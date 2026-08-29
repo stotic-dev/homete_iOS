@@ -35,14 +35,24 @@ mkdir -p "$(dirname "$LOCK_DIR")" 2>/dev/null
 
 acquire_lock() {
     mkdir "$LOCK_DIR" 2>/dev/null || return 1
-    echo "$$" >"$LOCK_PID_FILE"
+    if ! echo "$$" >"$LOCK_PID_FILE" 2>/dev/null; then
+        # PID書き込みに失敗した場合はロックを保持しない（半端な状態を残さない）。
+        rm -rf "$LOCK_DIR" 2>/dev/null
+        return 1
+    fi
     return 0
 }
 
 while ! acquire_lock; do
     holder_pid="$(cat "$LOCK_PID_FILE" 2>/dev/null || true)"
 
-    if [[ -n "$holder_pid" ]] && kill -0 "$holder_pid" 2>/dev/null; then
+    if [[ -z "$holder_pid" ]]; then
+        # mkdir直後・PID書き込み前の初期化中の可能性がある。stale扱いにせず少し待つ。
+        sleep 0.2
+        continue
+    fi
+
+    if kill -0 "$holder_pid" 2>/dev/null; then
         if (( waited == 0 )); then
             echo "別のswiftビルド/テストが実行中です（PID ${holder_pid}）。完了を待ちます..." >&2
         fi
@@ -52,9 +62,15 @@ while ! acquire_lock; do
         fi
         sleep 2
         waited=$((waited + 2))
-    else
-        # ロック保持者が死んでいる = staleなロック。真にstaleなプロセスだけ掃除して奪取する。
-        rm -rf "$LOCK_DIR" 2>/dev/null
+        continue
+    fi
+
+    # ロック保持者が死んでいる = staleなロック。
+    # mvはatomicなので、複数プロセスが同時にstale判定しても掃除を実行できるのは1つだけになる
+    # （rm -rfだと非存在でも成功扱いになり排他できず、後発が先発の再取得済みプロセスを殺しうる）。
+    reclaim_dir="${LOCK_DIR}.reclaim.$$"
+    if mv "$LOCK_DIR" "$reclaim_dir" 2>/dev/null; then
+        rm -rf "$reclaim_dir" 2>/dev/null
         "$SCRIPT_DIR/kill-stale-swift-processes.sh" "$PACKAGE_PATH"
     fi
 done
