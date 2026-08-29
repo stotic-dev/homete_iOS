@@ -21,6 +21,8 @@ enum HouseworkListStoreQuickActionTest {
     struct RejectCase {}
     @MainActor
     struct ReturnToIncompleteCase {}
+    @MainActor
+    struct NotifyFalseCase {}
 
 }
 
@@ -290,6 +292,78 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
                 now: Date(),
                 account: inputAccount,
                 cohabitantId: inputCohabitantId
+            )
+        }
+    }
+
+}
+
+extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
+
+    @Test("notify: falseを指定すると、承認待ちへの更新をしても個別の通知は送られない")
+    func perform_requestReview_notifyFalse_doesNotSendNotification() async throws {
+        // Arrange
+
+        let inputCohabitantId = "cohabitantId"
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    Issue.record()
+                },
+                items: [.makeForTest(items: [inputItem])]
+            )
+
+            // Act
+
+            try await store.perform(
+                .requestReview,
+                on: .init(originalItem: inputItem, isRegistered: true),
+                now: Date(),
+                account: inputAccount,
+                cohabitantId: inputCohabitantId,
+                notify: false
+            )
+        }
+    }
+
+    @Test("notify: falseを指定すると、ありがとうを実行しても個別の通知は送られない")
+    func perform_approve_notifyFalse_doesNotSendNotification() async throws {
+        // Arrange
+
+        let inputCohabitantId = "cohabitantId"
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .pendingApproval,
+            executorId: "otherUserId"
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    Issue.record()
+                },
+                items: [.makeForTest(items: [inputItem])]
+            )
+
+            // Act
+
+            try await store.perform(
+                .approve,
+                on: .init(originalItem: inputItem, isRegistered: true),
+                now: Date(),
+                account: inputAccount,
+                cohabitantId: inputCohabitantId,
+                notify: false
             )
         }
     }

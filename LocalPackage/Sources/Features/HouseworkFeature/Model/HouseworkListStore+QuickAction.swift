@@ -9,12 +9,16 @@ import HometeDomain
 extension HouseworkListStore {
 
     /// 家事リストのセルから行うクイックアクションを実行する
+    ///
+    /// - Parameter notify: 相手への通知を送るかどうか。複数選択の一括操作では、
+    ///   家事ごとの個別通知の代わりに件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
     func perform(
         _ action: HouseworkQuickAction,
         on item: HouseworkBoardItem,
         now: Date,
         account: Account,
-        cohabitantId: String
+        cohabitantId: String,
+        notify: Bool = true
     ) async throws {
         switch action {
         case .requestReview:
@@ -23,7 +27,8 @@ extension HouseworkListStore {
                 now: now,
                 executor: account.id,
                 cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered
+                isRegistered: item.isRegistered,
+                notify: notify
             )
 
         case .remove:
@@ -39,7 +44,8 @@ extension HouseworkListStore {
                 now: now,
                 reviwer: account,
                 comment: action.fixedComment,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                notify: notify
             )
 
         case .reject:
@@ -48,7 +54,8 @@ extension HouseworkListStore {
                 now: now,
                 reviwer: account,
                 comment: action.fixedComment,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                notify: notify
             )
 
         case .returnToIncomplete:

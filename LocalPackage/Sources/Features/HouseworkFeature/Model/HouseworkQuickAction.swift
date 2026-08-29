@@ -79,6 +79,23 @@ extension HouseworkQuickAction {
         }
     }
 
+    /// 一括操作で相手に送る、まとめ通知の内容
+    ///
+    /// 家事ごとに個別通知を送ると件数分の通知が届いてしまうため、一括操作では対象件数をまとめた
+    /// 1件の通知のみを送る。相手に何も通知しないアクション（やらない・差し戻し）は`nil`。
+    func bulkNotification(count: Int, reviewerName: String) -> PushNotificationContent? {
+        switch self {
+        case .requestReview:
+            .requestReviewBulkMessage(count: count)
+        case .approve:
+            .approvedBulkMessage(reviwerName: reviewerName, count: count)
+        case .reject:
+            .rejectedBulkMessage(count: count)
+        case .remove, .returnToIncomplete:
+            nil
+        }
+    }
+
 }
 
 extension HouseworkQuickAction {

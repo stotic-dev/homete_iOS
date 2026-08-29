@@ -11,6 +11,7 @@ enum HouseworkQuickActionTest {
 
     struct ActionsForItemCase {}
     struct ActionsForStateCase {}
+    struct BulkNotificationCase {}
 
 }
 
@@ -120,6 +121,57 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
         // Assert
 
         #expect(actual == expected)
+    }
+
+}
+
+extension HouseworkQuickActionTest.BulkNotificationCase {
+
+    @Test("承認依頼の一括通知は件数をまとめたメッセージになる")
+    func bulkNotification_requestReview_returnsCountMessage() {
+        // Act
+
+        let actual = HouseworkQuickAction.requestReview.bulkNotification(count: 3, reviewerName: "reviewer")
+
+        // Assert
+
+        #expect(actual == .requestReviewBulkMessage(count: 3))
+    }
+
+    @Test("ありがとうの一括通知は承認者名と件数を含むメッセージになる")
+    func bulkNotification_approve_returnsReviewerNameAndCountMessage() {
+        // Act
+
+        let actual = HouseworkQuickAction.approve.bulkNotification(count: 2, reviewerName: "reviewer")
+
+        // Assert
+
+        #expect(actual == .approvedBulkMessage(reviwerName: "reviewer", count: 2))
+    }
+
+    @Test("再確認依頼の一括通知は件数をまとめたメッセージになる")
+    func bulkNotification_reject_returnsCountMessage() {
+        // Act
+
+        let actual = HouseworkQuickAction.reject.bulkNotification(count: 4, reviewerName: "reviewer")
+
+        // Assert
+
+        #expect(actual == .rejectedBulkMessage(count: 4))
+    }
+
+    @Test(
+        "相手に通知しないアクションはnilを返す",
+        arguments: [HouseworkQuickAction.remove, .returnToIncomplete]
+    )
+    func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
+        // Act
+
+        let actual = action.bulkNotification(count: 1, reviewerName: "reviewer")
+
+        // Assert
+
+        #expect(actual == nil)
     }
 
 }

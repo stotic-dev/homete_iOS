@@ -86,8 +86,17 @@ private extension HouseworkBulkActionBar {
                     on: item,
                     now: now,
                     account: loginContext.account,
-                    cohabitantId: cohabitantId
+                    cohabitantId: cohabitantId,
+                    notify: false
                 )
+            }
+            // 家事ごとの個別通知の代わりに、対象件数をまとめた1件の通知だけを送る
+            let notification = action.bulkNotification(
+                count: items.count,
+                reviewerName: loginContext.account.userName
+            )
+            if let notification {
+                houseworkListStore.sendNotification(notification, cohabitantId: cohabitantId)
             }
             onCompleted()
         } catch {
