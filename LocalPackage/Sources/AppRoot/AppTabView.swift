@@ -61,11 +61,10 @@ struct AppTabView: View {
                     router.resolve(.cohabitantJoin(token: token))
                 }
             }
-            .task {
-                await onAppear()
-            }
-            .onChange(of: loginContext.cohabitantId) {
-                onChangeCohabitantId()
+            // 起動時とグループ切り替え時で必要な準備が同じなので、cohabitantIdをidにして同じ処理に寄せる
+            // （onChangeで分けると、参加直後にテンプレートの購読開始が漏れる）
+            .task(id: loginContext.cohabitantId) {
+                await onChangeCohabitant()
             }
             .environment(
                 \.cohabitantMembers,
@@ -151,13 +150,10 @@ private extension AppTabView {
 
 private extension AppTabView {
 
-    func onAppear() async {
+    /// 所属グループが決まった/変わったときに、そのグループ用のストアを組み直す
+    func onChangeCohabitant() async {
         setupStore()
         await startObserveTemplateIfNeeded()
-    }
-
-    func onChangeCohabitantId() {
-        setupStore()
     }
 
 }
