@@ -101,10 +101,10 @@ private extension CohabitantRegistrationScanningStateView {
                 // （揃えないと、再起動するまでグループ未所属として振る舞ってしまう）
                 accountStore.applyCohabitantId(invitation.cohabitantId)
                 sharingInvitation = invitation
-                analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: true)))
+                analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: true)))
             } catch {
                 errorContent = .init(error: error)
-                analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: false)))
+                analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: false)))
             }
         }
     }

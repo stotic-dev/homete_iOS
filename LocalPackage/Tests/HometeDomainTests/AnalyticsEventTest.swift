@@ -52,15 +52,23 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "招待リンクに関する行動を、action/resultのパラメータを持つcohabitant_invitationイベントに変換する",
+        "招待リンクに関する行動を、action/step/resultのパラメータを持つcohabitant_invitationイベントに変換する",
         arguments: [
             (
-                CohabitantInvitationAnalyticsAction.issued(isSuccess: true),
-                ["action": "issue", "result": "success"]
+                CohabitantInvitationAnalyticsAction.issued(screen: .cohabitantRegistration, isSuccess: true),
+                ["action": "issue", "step": "cohabitant_registration", "result": "success"]
             ),
             (
-                CohabitantInvitationAnalyticsAction.issued(isSuccess: false),
-                ["action": "issue", "result": "failure"]
+                CohabitantInvitationAnalyticsAction.issued(screen: .cohabitantRegistration, isSuccess: false),
+                ["action": "issue", "step": "cohabitant_registration", "result": "failure"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.issued(screen: .setting, isSuccess: true),
+                ["action": "issue", "step": "setting", "result": "success"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.issued(screen: .setting, isSuccess: false),
+                ["action": "issue", "step": "setting", "result": "failure"]
             ),
             (
                 CohabitantInvitationAnalyticsAction.linkOpened,

@@ -284,10 +284,10 @@ private extension SettingView {
         do {
             let invitation = try await cohabitantInvitationClient.issue()
             sharingInvitation = invitation
-            analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: true)))
+            analyticsClient.log(.cohabitantInvitation(.issued(screen: .setting, isSuccess: true)))
         } catch {
             errorContent = .init(error: error)
-            analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: false)))
+            analyticsClient.log(.cohabitantInvitation(.issued(screen: .setting, isSuccess: false)))
         }
     }
 
