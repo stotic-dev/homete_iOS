@@ -49,6 +49,10 @@ export interface IssuedInvitation {
  *
  * 呼び出し元がまだグループに所属していない場合は、本人のみが所属する
  * グループを新規作成してから招待を発行する。
+ * グループ作成・アカウントへの紐付け・招待の作成は1つのトランザクションで行う。
+ * 分けて書き込むと、同時に発行された2つのリクエストがどちらも
+ * 未所属と判定して別々のグループを作り、招待だけがどこにも属さない
+ * グループを指してしまうため。
  * @param {string} userId 発行する本人のユーザーID
  * @param {Date} now 実行日時
  * @return {Promise<IssuedInvitation>} 発行した招待
@@ -58,50 +62,53 @@ export async function issueInvitation(
   now: Date
 ): Promise<IssuedInvitation> {
   const db = getFirestore();
-  const accountSnapshot = await db
-    .collection(FirestoreCollections.ACCOUNT)
-    .where(AccountFields.ID, "==", userId)
-    .limit(1)
-    .get();
-
-  if (accountSnapshot.empty) {
-    throw new InvitationError(
-      "account-not-found",
-      `Account for user ${userId} was not found.`
-    );
-  }
-
-  const accountDoc = accountSnapshot.docs[0];
-  const account = AccountConverter.fromFirestoreData(accountDoc.data());
-  let cohabitantId = account.cohabitantId;
-
-  // グループ未所属の場合は、招待者ひとりのグループを先に作る
-  if (!cohabitantId) {
-    cohabitantId = randomUUID();
-    await db
-      .collection(FirestoreCollections.COHABITANT)
-      .doc(cohabitantId)
-      .set({
-        [CohabitantFields.ID]: cohabitantId,
-        [CohabitantFields.MEMBERS]: [userId],
-      });
-    await accountDoc.ref.update({
-      [AccountFields.COHABITANT_ID]: cohabitantId,
-    });
-  }
-
   const token = randomUUID();
   const expiresAt = new Date(now.getTime() + INVITATION_EXPIRATION_MS);
 
-  await db
-    .collection(FirestoreCollections.INVITATION)
-    .doc(token)
-    .set({
+  const cohabitantId = await db.runTransaction(async (transaction) => {
+    const accountQuery = db
+      .collection(FirestoreCollections.ACCOUNT)
+      .where(AccountFields.ID, "==", userId)
+      .limit(1);
+    const accountSnapshot = await transaction.get(accountQuery);
+
+    if (accountSnapshot.empty) {
+      throw new InvitationError(
+        "account-not-found",
+        `Account for user ${userId} was not found.`
+      );
+    }
+
+    const accountDoc = accountSnapshot.docs[0];
+    const account = AccountConverter.fromFirestoreData(accountDoc.data());
+    const cohabitantId = account.cohabitantId ?? randomUUID();
+
+    // グループ未所属の場合は、招待者ひとりのグループを併せて作る
+    if (!account.cohabitantId) {
+      const cohabitantRef = db
+        .collection(FirestoreCollections.COHABITANT)
+        .doc(cohabitantId);
+      transaction.set(cohabitantRef, {
+        [CohabitantFields.ID]: cohabitantId,
+        [CohabitantFields.MEMBERS]: [userId],
+      });
+      transaction.update(accountDoc.ref, {
+        [AccountFields.COHABITANT_ID]: cohabitantId,
+      });
+    }
+
+    const invitationRef = db
+      .collection(FirestoreCollections.INVITATION)
+      .doc(token);
+    transaction.set(invitationRef, {
       [InvitationFields.COHABITANT_ID]: cohabitantId,
       [InvitationFields.CREATED_BY]: userId,
       [InvitationFields.CREATED_AT]: Timestamp.fromDate(now),
       [InvitationFields.EXPIRES_AT]: Timestamp.fromDate(expiresAt),
     });
+
+    return cohabitantId;
+  });
 
   return {token, cohabitantId, expiresAt: expiresAt.getTime()};
 }
