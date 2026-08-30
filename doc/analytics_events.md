@@ -95,18 +95,21 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `issue` / `open` / `join` | 招待リンクの発行 / 起動 / 参加のどれか |
+| `step` | — | `cohabitant_registration` / `setting` | 発行を開始した画面。画面を起点とする`issue`のみ付与 |
 | `result` | — | `success` / `failure` / `invalid_link` / `expired` / `already_joined` | 結果を伴う行動のみ付与 |
 
 送信されるパターンと、その送信タイミング:
 
-| `action` | `result` | 送信タイミング |
-|---|---|---|
-| `issue` | `success` / `failure` | 同居人登録画面の「リンクで招待」、または設定画面の「メンバー招待」をタップし、招待トークンの発行が完了した |
-| `open` | — | 招待リンクからアプリが起動した（ログイン前も含む） |
-| `join` | `success` | 招待リンクからグループへの参加が完了した |
-| `join` | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外） |
+| `action` | `step` | `result` | 送信タイミング |
+|---|---|---|---|
+| `issue` | `cohabitant_registration` | `success` / `failure` | 同居人登録画面の「リンクで招待」をタップし、招待トークンの発行が完了した |
+| `issue` | `setting` | `success` / `failure` | 設定画面の「メンバー招待」をタップし、招待トークンの発行が完了した |
+| `open` | — | — | 招待リンクからアプリが起動した（ログイン前も含む） |
+| `join` | — | `success` | 招待リンクからグループへの参加が完了した |
+| `join` | — | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外） |
 
 **分析での使い方:** `issue(success)` を分母に `open` → `join(success)` を追うと招待リンクの成立率になる。
+`step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
 `join` の失敗内訳を見ると、有効期限（24時間）が短すぎないか、別グループ参加済みのユーザーがどの程度リンクを踏んでいるかが分かる。
 
 ## イベントを追加するときの手順
