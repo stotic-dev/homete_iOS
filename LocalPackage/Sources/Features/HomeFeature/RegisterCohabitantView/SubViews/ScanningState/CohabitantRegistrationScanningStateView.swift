@@ -55,7 +55,7 @@ struct CohabitantRegistrationScanningStateView: View {
         .fullScreenLoadingIndicator(loadingState)
         .sheet(item: $sharingInvitation) { invitation in
             if let url = invitation.url {
-                ShareSheet(text: Self.shareMessage, url: url)
+                ShareSheet(text: CohabitantInvitation.shareMessage, url: url)
             }
         }
         .commonError(content: $errorContent)
@@ -87,9 +87,6 @@ struct CohabitantRegistrationScanningStateView: View {
 }
 
 private extension CohabitantRegistrationScanningStateView {
-
-    /// 招待リンクと一緒に送る文言
-    static let shareMessage = "hometeで一緒に家事を管理しませんか？下のリンクから参加できます。"
 
     // MARK: プレゼンテーション処理
 
