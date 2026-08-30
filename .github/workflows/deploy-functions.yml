@@ -4,21 +4,35 @@ name: Deploy Functions
 # Firebase Functions E2E Test の完了を受けて発火する。
 # 発火元がpathsで firebase/functions/** に絞られているので、
 # このワークフロー側でpathsを指定しなくても対象変更時のみ動く。
+#
+# 自動発火（workflow_run）は必ずSTG。本番は workflow_dispatch で
+# environment=prod を明示的に選んだときだけデプロイする。
 on:
   workflow_run:
     workflows: ["Firebase Functions E2E Test"]
     types:
       - completed
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "デプロイ先のFirebaseプロジェクト（.firebasercのエイリアス）"
+        type: choice
+        options:
+          - stg
+          - prod
+        default: stg
 
-# デプロイ同士が並走すると Cloud Functions 側で競合するため直列化する
+# デプロイ同士が並走すると Cloud Functions 側で競合するため直列化する。
+# STGと本番は別プロジェクトなので互いにブロックしないよう環境ごとに分ける。
 concurrency:
-  group: deploy-functions
+  group: deploy-functions-${{ inputs.environment || 'stg' }}
   cancel-in-progress: false
 
 env:
   NODE_VERSION: "22"
   FUNCTIONS_DIR: firebase/functions
+  # workflow_run から来た場合 inputs は空なのでSTGにフォールバックする
+  DEPLOY_ENV: ${{ inputs.environment || 'stg' }}
 
 jobs:
   deploy:
@@ -55,16 +69,29 @@ jobs:
         working-directory: ${{ env.FUNCTIONS_DIR }}
         run: npm ci
 
+      # 環境ごとに別のサービスアカウントを使う。secrets名は動的に組み立てられないため、
+      # 両方をenvに載せてシェル側で選ぶ（未選択側は使わずに捨てられる）
       - name: Write Service Account JSON
+        env:
+          SERVICE_ACCOUNT_STG: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT_PROD: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
         run: |
-          if [ -z '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            SERVICE_ACCOUNT="$SERVICE_ACCOUNT_PROD"
+            SECRET_NAME="FIREBASE_SERVICE_ACCOUNT_PROD"
+          else
+            SERVICE_ACCOUNT="$SERVICE_ACCOUNT_STG"
+            SECRET_NAME="FIREBASE_SERVICE_ACCOUNT"
+          fi
+          if [ -z "$SERVICE_ACCOUNT" ]; then
+            echo "::error::$SECRET_NAME secret is not set"
             exit 1
           fi
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+          printf '%s' "$SERVICE_ACCOUNT" > /tmp/service-account.json
 
+      # --project を明示し、.firebaserc の default（現在は未定義）に暗黙依存しない
       - name: Deploy Functions
-        run: firebase deploy --only functions --non-interactive
+        run: firebase deploy --only functions --project "$DEPLOY_ENV" --non-interactive
         working-directory: firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
@@ -75,6 +102,7 @@ jobs:
           {
             echo "## Deploy Functions"
             echo ""
+            echo "- **Environment**: \`$DEPLOY_ENV\`"
             echo "- **Result**: ${{ job.status }}"
             echo "- **Commit**: \`${{ github.event.workflow_run.head_sha || github.sha }}\`"
             echo "- **Triggered by**: ${{ github.event_name }}"
