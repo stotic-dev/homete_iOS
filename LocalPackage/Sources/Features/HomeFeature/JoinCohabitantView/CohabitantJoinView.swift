@@ -30,8 +30,6 @@ public struct CohabitantJoinView: View {
         NavigationStack {
             content(state: store?.state ?? .confirming)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, .space16)
-                .padding(.vertical, .space24)
                 .inlineNavigationBarTitleDisplayMode()
                 .leadingToolbarItem {
                     NavigationBarButton(label: .close) {
@@ -55,17 +53,27 @@ private extension CohabitantJoinView {
         switch state {
         case .confirming:
             confirmingContent()
+                .contentPadding()
 
         case .processing:
             processingContent()
+                .contentPadding()
 
         case .completed:
-            CohabitantJoinCompletedView()
+            // 演出を画面いっぱいに広げるため、余白はView側に持たせてナビゲーションバーも隠す
+            CohabitantCompletionView(
+                title: "グループに参加しました！",
+                message: "これからは、グループのメンバーと家事を分担し、協力していくことができます。"
+            ) {
+                dismiss()
+            }
+            .hideNavigationBar()
 
         case let .failed(failure):
             CohabitantJoinFailureView(failure: failure) {
                 dismiss()
             }
+            .contentPadding()
         }
     }
 
@@ -122,6 +130,16 @@ private extension CohabitantJoinView {
         Task {
             await store.join()
         }
+    }
+
+}
+
+private extension View {
+
+    /// 招待リンク参加画面の基本の余白
+    func contentPadding() -> some View {
+        padding(.horizontal, .space16)
+            .padding(.vertical, .space24)
     }
 
 }
