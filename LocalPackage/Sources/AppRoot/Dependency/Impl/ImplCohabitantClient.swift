@@ -14,8 +14,7 @@ extension CohabitantClient {
         }
     } addSnapshotListener: { listenerId, cohabitantId in
         await FirestoreService.shared.addSnapshotListener(id: listenerId) {
-            $0.collection(path: .cohabitant)
-                .whereField(CohabitantData.idField, isEqualTo: cohabitantId)
+            $0.cohabitantRef(id: cohabitantId)
         }
     } removeSnapshotListener: { listenerId in
         await FirestoreService.shared.removeSnapshotListener(id: listenerId)

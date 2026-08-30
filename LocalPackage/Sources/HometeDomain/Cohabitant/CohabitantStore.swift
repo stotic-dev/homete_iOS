@@ -46,8 +46,8 @@ public final class CohabitantStore {
 
         listenerTask = Task {
 
-            for await cohabitantDataList in stream {
-                guard let cohabitantData = cohabitantDataList.first else { continue }
+            for await cohabitantData in stream {
+                guard let cohabitantData else { continue }
 
                 for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
                     do {
