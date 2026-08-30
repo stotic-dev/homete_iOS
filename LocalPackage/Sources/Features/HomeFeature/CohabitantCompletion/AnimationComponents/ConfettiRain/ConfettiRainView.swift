@@ -5,54 +5,51 @@
 //  Created by 佐藤汰一 on 2025/08/23.
 //
 
-import Combine
 import SwiftUI
 
+/// クラッカーが弾けたあと、画面全体に降り続ける花吹雪
 struct ConfettiRainView: View {
 
-    @State private var confettis: [ConfettiRainPiece] = []
-    @State var timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect()
+    @State private var pieces = ConfettiRainPiece.makePieces()
+    @State private var startedAt = Date.now
 
     var body: some View {
-        GeometryReader { proxy in
-            ForEach(confettis) { piece in
-                Rectangle()
-                    .fill(piece.color)
-                    .frame(width: piece.size, height: piece.size * 1.5)
-                    .position(x: piece.x, y: -20)
-                    .rotationEffect(piece.angle)
-                    .rotation3DEffect(
-                        .degrees(piece.isAnimate ? 90 : 0),
-                        axis: (x: piece.spinX, y: piece.spinY, z: 0)
-                    )
-                    .offset(y: piece.isAnimate ? proxy.size.height + 50 : 0)
-                    .offset(x: piece.isAnimate ? piece.drift : 0)
-            }
-            .onReceive(timer) { _ in
-                spawnConfetti(screenWidth: proxy.size.width)
+        TimelineView(.animation) { timeline in
+            Canvas { context, size in
+                let elapsed = timeline.date.timeIntervalSince(startedAt)
+
+                for piece in pieces {
+                    draw(piece, at: elapsed, in: size, context: context)
+                }
             }
         }
-        .drawingGroup()
     }
 
 }
 
 private extension ConfettiRainView {
 
-    func spawnConfetti(screenWidth: CGFloat) {
-        for _ in 0 ..< 10 {
-            let piece = ConfettiRainPiece(screenWidth: screenWidth)
-            confettis.append(piece)
+    func draw(
+        _ piece: ConfettiRainPiece,
+        at elapsed: TimeInterval,
+        in size: CGSize,
+        context: GraphicsContext
+    ) {
+        let appearance = piece.appearance(at: elapsed, in: size)
 
-            // 画面下まで落ちたら削除
-            withAnimation(.linear(duration: piece.speed)) {
-                guard let index = confettis.firstIndex(where: { $0.id == piece.id }) else { return }
-                confettis[index].isAnimate = true
-            } completion: {
-                guard let index = confettis.firstIndex(where: { $0.id == piece.id }) else { return }
-                confettis.remove(at: index)
-            }
-        }
+        var context = context
+        context.translateBy(x: appearance.position.x, y: appearance.position.y)
+        context.rotate(by: appearance.rotation)
+        // 横方向だけ縮めることで、紙が裏返りながら舞う見え方にする
+        context.scaleBy(x: CGFloat(appearance.flip), y: 1)
+
+        let rect = CGRect(
+            x: -piece.size.width / 2,
+            y: -piece.size.height / 2,
+            width: piece.size.width,
+            height: piece.size.height
+        )
+        context.fill(Path(rect), with: .color(piece.color))
     }
 
 }
