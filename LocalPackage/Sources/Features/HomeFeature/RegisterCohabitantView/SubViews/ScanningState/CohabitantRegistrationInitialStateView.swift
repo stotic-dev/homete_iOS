@@ -49,16 +49,26 @@ private extension CohabitantRegistrationInitialStateView {
 
     func inviteSection(onTapInvite: @escaping () -> Void) -> some View {
         VStack(spacing: .space8) {
-            Text("離れている相手には、招待リンクを送って参加してもらえます。")
-                .font(with: .caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Button {
-                onTapInvite()
-            } label: {
-                Label("リンクで招待", systemImage: "square.and.arrow.up")
-                    .frame(maxWidth: .infinity)
+            HStack(spacing: .space8) {
+                Rectangle()
+                    .frame(height: 1)
+                Text("または")
+                    .font(with: .caption)
+                Rectangle()
+                    .frame(height: 1)
             }
-            .subPrimaryButtonStyle()
+            VStack(spacing: .space4) {
+                Button {
+                    onTapInvite()
+                } label: {
+                    Label("リンクで招待", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                }
+                .subPrimaryButtonStyle()
+                Text("離れている相手には、招待リンクを送って参加してもらえます。")
+                    .font(with: .caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
