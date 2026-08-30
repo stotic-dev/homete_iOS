@@ -8,7 +8,7 @@ help: ## ヘルプを表示
 lint: ## ESLintを実行して自動修正
 	cd firebase/functions && npm run lint -- --fix && cd ../..
 
-deploy: ## Functionsをデプロイ
+deploy: ## FunctionsをSTGへデプロイ（本番はGitHub ActionsのDeploy Functionsをenvironment=prodで手動実行）
 	cd firebase/functions && npm run deploy && cd ../..
 
 emulator: ## エミュレーターを起動
