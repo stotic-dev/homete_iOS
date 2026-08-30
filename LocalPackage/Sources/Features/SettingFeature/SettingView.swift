@@ -64,12 +64,15 @@ struct SettingView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
     @Environment(\.settingNavigationPath) var navigationPath
+    @Environment(\.appDependencies.cohabitantInvitationClient) var cohabitantInvitationClient
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @LoadingState var loadingState
+    @CommonError var errorContent
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
     @State var isShowHouseworkTemplate = false
-    @State var isShowMemberRegistration = false
+    @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
 
     init() {}
@@ -85,7 +88,10 @@ struct SettingView: View {
                         .frame(height: .space16)
                     VStack(spacing: .zero) {
                         ForEach(
-                            SettingMenuItem.displayItems(loginContext.hasCohabitant),
+                            SettingMenuItem.displayItems(
+                                isRegisteredGroup: loginContext.hasCohabitant,
+                                isAvailableInvitationLink: CohabitantInvitationLink.isAvailable
+                            ),
                             id: \.self
                         ) { item in
                             SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
@@ -121,9 +127,12 @@ struct SettingView: View {
         .trailingToolbarItem {
             leadingNavigationBarContent()
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowMemberRegistration) {
-            router.resolve(.cohabitantRegistration)
+        .sheet(item: $sharingInvitation) { invitation in
+            if let url = invitation.url {
+                ShareSheet(text: CohabitantInvitation.shareMessage, url: url)
+            }
         }
+        .commonError(content: $errorContent)
         .fullScreenLoadingIndicator(loadingState)
         .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
             Button("ログアウト", role: .destructive) {
@@ -242,8 +251,10 @@ private extension SettingView {
         case .notificationPermission:
             navigationPath.push(.notificationPermission)
 
-        case .memberRegistration:
-            isShowMemberRegistration = true
+        case .memberInvitation:
+            loadingState.task {
+                await tappedMemberInvitationItem()
+            }
 
         case .premiumPlan:
             tappedPremiumPlanItem()
@@ -265,6 +276,18 @@ private extension SettingView {
         case .debugMenu:
             navigationPath.push(.debugMenu)
         #endif
+        }
+    }
+
+    /// 招待リンクを発行して共有シートを開く
+    func tappedMemberInvitationItem() async {
+        do {
+            let invitation = try await cohabitantInvitationClient.issue()
+            sharingInvitation = invitation
+            analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: true)))
+        } catch {
+            errorContent = .init(error: error)
+            analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: false)))
         }
     }
 
@@ -315,7 +338,8 @@ private extension SettingView {
             id: "",
             userName: "Hoge",
             fcmToken: "",
-            cohabitantId: ""
+            // グループ未参加の状態を表すため、空文字ではなくnilにする
+            cohabitantId: nil
         )))
 }
 
