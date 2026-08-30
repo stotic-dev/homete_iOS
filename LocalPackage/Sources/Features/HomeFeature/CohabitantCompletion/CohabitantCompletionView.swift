@@ -33,7 +33,7 @@ struct CohabitantCompletionView: View {
                 Button {
                     onTapClose()
                 } label: {
-                    Text("閉じる")
+                    Text("始める")
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()
