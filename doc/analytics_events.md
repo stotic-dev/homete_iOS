@@ -90,7 +90,7 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `RootView` / `CohabitantJoinStore` |
+| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `SettingView` / `RootView` / `CohabitantJoinStore` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
@@ -101,7 +101,7 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 
 | `action` | `result` | 送信タイミング |
 |---|---|---|
-| `issue` | `success` / `failure` | 同居人登録画面で「リンクで招待」をタップし、招待トークンの発行が完了した |
+| `issue` | `success` / `failure` | 同居人登録画面の「リンクで招待」、または設定画面の「メンバー招待」をタップし、招待トークンの発行が完了した |
 | `open` | — | 招待リンクからアプリが起動した（ログイン前も含む） |
 | `join` | `success` | 招待リンクからグループへの参加が完了した |
 | `join` | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外） |
