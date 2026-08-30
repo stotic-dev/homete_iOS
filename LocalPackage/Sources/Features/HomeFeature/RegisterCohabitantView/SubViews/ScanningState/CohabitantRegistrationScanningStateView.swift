@@ -14,6 +14,7 @@ struct CohabitantRegistrationScanningStateView: View {
 
     @Environment(\.appDependencies.cohabitantInvitationClient) var cohabitantInvitationClient
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(AccountStore.self) var accountStore
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
@@ -97,7 +98,12 @@ private extension CohabitantRegistrationScanningStateView {
         Task {
             defer { loadingState.isLoading = false }
             do {
-                sharingInvitation = try await cohabitantInvitationClient.issue()
+                let invitation = try await cohabitantInvitationClient.issue()
+                // グループ未所属の場合はサーバ側で招待者ひとりのグループが作られるため、
+                // オンメモリのアカウントにも反映してFirestoreの状態と揃える
+                // （揃えないと、再起動するまでグループ未所属として振る舞ってしまう）
+                accountStore.applyCohabitantId(invitation.cohabitantId)
+                sharingInvitation = invitation
                 analyticsClient.log(.cohabitantInvitation(.issued(isSuccess: true)))
             } catch {
                 errorContent = .init(error: error)
