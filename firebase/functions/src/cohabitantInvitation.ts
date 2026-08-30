@@ -13,6 +13,12 @@ interface JoinCohabitantRequest {
 
 /**
  * 招待処理のエラーをHttpsErrorに変換する
+ *
+ * 標準のエラーコードだけでは、招待固有の失敗（期限切れなど）と
+ * 通信起因の失敗（タイムアウト・関数の未デプロイ）を区別できない。
+ * 例えば "deadline-exceeded" は期限切れとリクエストのタイムアウトの
+ * 両方で返り、"not-found" は関数自体が未デプロイのときにも返る。
+ * そのためクライアントが判別できるよう、招待固有のコードを details に載せる。
  * @param {InvitationErrorCode} code 招待処理のエラー種別
  * @param {string} message エラーメッセージ
  * @return {HttpsError} クライアントへ返すエラー
@@ -21,15 +27,16 @@ function toHttpsError(
   code: InvitationErrorCode,
   message: string
 ): HttpsError {
+  const details = {invitationErrorCode: code};
   switch (code) {
   case "account-not-found":
   case "invitation-not-found":
   case "cohabitant-not-found":
-    return new HttpsError("not-found", message);
+    return new HttpsError("not-found", message, details);
   case "invitation-expired":
-    return new HttpsError("deadline-exceeded", message);
+    return new HttpsError("deadline-exceeded", message, details);
   case "already-joined":
-    return new HttpsError("failed-precondition", message);
+    return new HttpsError("failed-precondition", message, details);
   }
 }
 

@@ -54,22 +54,27 @@ private extension CohabitantInvitationClient {
     }
 
     /// FunctionsのHttpsErrorをドメインのエラーに変換する
+    ///
+    /// 招待固有の失敗かどうかはFunctionsが`details`に載せたコードだけで判別する。
+    /// 標準のエラーコードで判別すると、リクエストのタイムアウト（`deadlineExceeded`）を
+    /// 招待の期限切れと誤認したり、関数が未デプロイのときの`notFound`を
+    /// 無効なリンクとして扱ったりしてしまうため。
     static func convert(_ error: any Error) -> any Error {
         let nsError = error as NSError
-        guard nsError.domain == FunctionsErrorDomain,
-              let code = FunctionsErrorCode(rawValue: nsError.code) else {
-            return error
+        guard nsError.domain == FunctionsErrorDomain else { return error }
+
+        if let details = nsError.userInfo[FunctionsErrorDetailsKey] as? [String: Any],
+           let serverCode = details[CohabitantInvitationError.serverCodeKey] as? String,
+           let invitationError = CohabitantInvitationError(serverCode: serverCode) {
+            return invitationError
         }
 
+        guard let code = FunctionsErrorCode(rawValue: nsError.code) else { return error }
+
         switch code {
-        case .notFound:
-            return CohabitantInvitationError.notFound
-
-        case .deadlineExceeded:
-            return CohabitantInvitationError.expired
-
-        case .failedPrecondition:
-            return CohabitantInvitationError.alreadyJoined
+        case .unavailable, .deadlineExceeded:
+            // 招待固有の情報が付かないこれらは、サーバに届いていないか応答が返らなかったケース
+            return DomainError.noNetwork
 
         default:
             return error
