@@ -156,7 +156,15 @@ Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定�
 
 Debug Providerを使うローカルビルドは、初回起動時にコンソールへ出力されるデバッグトークンをFirebaseコンソール（App Check → アプリ → デバッグトークンを管理）に登録する必要がある。シミュレータを作り直すとトークンも変わるため再登録する。
 
-Callable関数側の強制適用は`firebase/functions/src/appCheckOptions.ts`の`enforceAppCheck`で切り替える。**現在はモニタリング期間中のため`false`**。Firebaseコンソールのメトリクスで正規アプリからのリクエストが100%検証済みになったら`true`にする。
+FirestoreとCallable関数で有効化の仕組みが違うので混同しないこと。
+
+| | Firestore | Callable Functions |
+|---|---|---|
+| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | `firebase/functions/src/appCheck.ts`の`enforceAppCheck` + デプロイ |
+| コンソールのメトリクス | あり | なし（メトリクス対象サービスに含まれない） |
+| モニタリング手段 | コンソールのメトリクス | `logAppCheckStatus`が出すログをCloud Loggingで集計 |
+
+Callable関数のトークン検証は`enforceAppCheck`の値に関係なく常に走り、検証を通った場合だけ`request.app`が埋まる。`enforceAppCheck`は拒否するかどうかだけを制御するので、**`false`のままではSDKのデフォルトと同じで何も有効化されない**。**現在はモニタリング期間中のため`false`**。
 
 ### 状態管理
 
