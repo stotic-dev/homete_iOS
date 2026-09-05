@@ -39,8 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     # workflow_dispatch（手動実行）か、mainへのpushで走ったE2Eが成功したときだけデプロイする。
     # PR上のE2E成功で走らないよう event と head_branch も見る。
+    # workflow_dispatchは任意のrefから実行できてしまうため、mainブランチ実行時のみ許可する
+    # （mainはfunctions-e2e-test.ymlでpushの度にE2E検証されている前提）
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_branch == 'main')

@@ -18,6 +18,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 switch route {
                 case .cohabitantRegistration:
                     CohabitantRegistrationView()
+                case let .cohabitantJoin(token):
+                    CohabitantJoinView(token: token)
                 case .setting:
                     SettingViewScreen()
                 case .houseworkTemplate:

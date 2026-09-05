@@ -50,4 +50,14 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 招待リンクに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
+    ///         意図は`CohabitantInvitationAnalyticsAction`を参照
+    static func cohabitantInvitation(_ action: CohabitantInvitationAnalyticsAction) -> Self {
+        .init(
+            name: "cohabitant_invitation",
+            parameters: action.parameters
+        )
+    }
+
 }

@@ -6,6 +6,9 @@ on:
       - "**"
     paths:
       - "firebase/functions/**"
+      # firestore.rules のユニットテスト（test/rules）がこのジョブで走るため、
+      # ルールだけを変更したPRでも検証されるようにする
+      - "firebase/firestore.rules"
       - ".github/workflows/functions-e2e-test.yml"
   push:
     branches:
@@ -13,6 +16,7 @@ on:
       - "release/*"
     paths:
       - "firebase/functions/**"
+      - "firebase/firestore.rules"
   workflow_dispatch:
 
 env:

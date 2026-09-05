@@ -12,11 +12,16 @@ import SwiftUI
 
 struct CohabitantRegistrationScanningStateView: View {
 
+    @Environment(\.appDependencies.cohabitantInvitationClient) var cohabitantInvitationClient
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(AccountStore.self) var accountStore
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
     @LoadingState var loadingState
 
+    @CommonError var errorContent
+    @State var sharingInvitation: CohabitantInvitation?
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
     @State var confirmedReadyRegistrationPeers = ConfirmedRegistrationPeers(peers: [])
@@ -24,10 +29,17 @@ struct CohabitantRegistrationScanningStateView: View {
 
     let scannerController: any P2PScannerClient
 
+    /// 招待リンクの共有アクション
+    /// - Note: 招待リンクを利用できない環境では導線ごと出さないためnilにする
+    var inviteAction: (() -> Void)? {
+        guard CohabitantInvitationLink.isAvailable else { return nil }
+        return { onTapInvite() }
+    }
+
     var body: some View {
         ZStack {
             if connectedPeers.isEmpty {
-                CohabitantRegistrationInitialStateView()
+                CohabitantRegistrationInitialStateView(onTapInvite: inviteAction)
                     .transition(.opacity)
                     .onAppear {
                         isConfirmedReadyRegistration = false
@@ -41,6 +53,12 @@ struct CohabitantRegistrationScanningStateView: View {
         }
         .animation(.spring, value: connectedPeers.isEmpty)
         .fullScreenLoadingIndicator(loadingState)
+        .sheet(item: $sharingInvitation) { invitation in
+            if let url = invitation.url {
+                ShareSheet(text: CohabitantInvitation.shareMessage, url: url)
+            }
+        }
+        .commonError(content: $errorContent)
         .alert(
             "通信中のメンバーがキャンセルしました",
             isPresented: $isPresentingRejectRegistrationAlert
@@ -71,6 +89,25 @@ struct CohabitantRegistrationScanningStateView: View {
 private extension CohabitantRegistrationScanningStateView {
 
     // MARK: プレゼンテーション処理
+
+    func onTapInvite() {
+        loadingState.isLoading = true
+        Task {
+            defer { loadingState.isLoading = false }
+            do {
+                let invitation = try await cohabitantInvitationClient.issue()
+                // グループ未所属の場合はサーバ側で招待者ひとりのグループが作られるため、
+                // オンメモリのアカウントにも反映してFirestoreの状態と揃える
+                // （揃えないと、再起動するまでグループ未所属として振る舞ってしまう）
+                accountStore.applyCohabitantId(invitation.cohabitantId)
+                sharingInvitation = invitation
+                analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: true)))
+            } catch {
+                errorContent = .init(error: error)
+                analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: false)))
+            }
+        }
+    }
 
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
         if let isFixedMember = data.isFixedMember {
