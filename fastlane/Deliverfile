@@ -2,7 +2,10 @@
 # For more information, check out the docs
 # https://docs.fastlane.tools/actions/deliver/
 
-submit_for_review(true)
+# Issue #238: リリースパイプラインがCIから無人実行されるようになったため、
+# 内容を確認してから手動でApp Store Connect上から提出する運用にする。
+# 自動提出が必要になった場合はレビューの上でtrueに戻すこと。
+submit_for_review(false)
 skip_screenshots(true)
 run_precheck_before_submit(false)
 force(true)
