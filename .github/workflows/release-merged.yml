@@ -41,8 +41,8 @@ jobs:
 
       - name: Create and push tag
         run: |
-          git tag "$VERSION"
-          git push origin "$VERSION"
+          git tag -f "$VERSION"
+          git push origin -f "$VERSION"
 
       - name: Publish GitHub Release
         run: |
