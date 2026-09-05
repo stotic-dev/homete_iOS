@@ -8,10 +8,14 @@
 public struct CohabitantClient: Sendable {
 
     public let register: @Sendable (CohabitantData) async throws -> Void
+    /// 単一の同居人グループを購読する
+    /// - Note: コレクションクエリではなくドキュメント購読にしているのは、Firestoreのセキュリティルールが
+    ///         `list` をクエリ内容だけで判定し、ドキュメントの`members`を参照できないため。
+    ///         クエリのままだと「メンバーだけが読める」ルールを書けない。
     public let addSnapshotListener: @Sendable (
         _ listenerId: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<[CohabitantData]>
+    ) async -> AsyncStream<CohabitantData?>
     public let removeSnapshotListener: @Sendable (_ listenerId: String) async -> Void
 
     public init(
@@ -19,7 +23,7 @@ public struct CohabitantClient: Sendable {
         addSnapshotListener: @Sendable @escaping (
             _: String,
             _: String
-        ) async -> AsyncStream<[CohabitantData]> = { _, _ in .init { nil } },
+        ) async -> AsyncStream<CohabitantData?> = { _, _ in .init { nil } },
         removeSnapshotListener: @Sendable @escaping (_ listenerId: String) async -> Void = { _ in }
     ) {
         self.register = register

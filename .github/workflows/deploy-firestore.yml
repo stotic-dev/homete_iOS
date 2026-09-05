@@ -61,8 +61,9 @@ jobs:
           fi
           printf '%s' "$SERVICE_ACCOUNT" > /tmp/service-account.json
 
-      # インデックスとセキュリティルールは同じ firestore.json 由来の設定なのでまとめて反映する。
-      # --project を明示し、.firebaserc の default（現在は未定義）に暗黙依存しない
+      # ルールを配らないとInvitationの読み書き制限がプロジェクトに反映されないため、
+      # インデックスと同じタイミングでrulesも配る。--project を明示し、
+      # .firebaserc の default（現在は未定義）に暗黙依存しない
       - name: Deploy Firestore rules and indexes
         run: |
           firebase deploy \

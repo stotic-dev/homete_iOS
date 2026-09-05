@@ -33,7 +33,7 @@ struct CohabitantStoreTest {
             members: [selfId, newMemberId]
         )
 
-        let (stream, continuation) = AsyncStream<[CohabitantData]>.makeStream()
+        let (stream, continuation) = AsyncStream<CohabitantData?>.makeStream()
 
         let store = CohabitantStore(
             members: [.init(id: selfId, userName: "自分")],
@@ -69,7 +69,7 @@ struct CohabitantStoreTest {
             }
         }
 
-        continuation.yield([inputCohabitantData])
+        continuation.yield(inputCohabitantData)
         await waiterForUpdateMembers.value
         continuation.finish()
         await store.removeSnapshotListener()

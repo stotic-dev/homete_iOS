@@ -189,8 +189,8 @@ launching → notLoggedIn → Sign In with Apple
    - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
 
 3. **`functions-e2e-test.yml`** - Firebase Functionsテスト
-   - `firebase/functions/**`への変更でトリガー（PR / mainまたはrelease/*へのpush）
-   - ESLintとE2Eテストを実行
+   - `firebase/functions/**` / `firebase/firestore.rules`への変更でトリガー（PR / mainまたはrelease/*へのpush）
+   - ESLintとE2Eテスト、Firestoreセキュリティルールのユニットテスト（`test/rules`）を実行
    - Node.js 21とJava 21を使用
 
 4. **`deploy-functions.yml`** - Firebase Functionsのデプロイ
@@ -204,7 +204,7 @@ launching → notLoggedIn → Sign In with Apple
 
 6. **`create-release-note.yaml`** - リリースノート生成
 
-**Firebaseプロジェクトの対応関係**（詳細は [ADR-0013](doc/adr/0013-firebase-multi-project-deploy.md)）:
+**Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 
 | エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
 |---|---|---|---|

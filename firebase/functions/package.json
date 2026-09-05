@@ -22,12 +22,14 @@
     "firebase-functions": "^6.0.1"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.25.4",
+    "firebase": "^12.18.0",
     "firebase-functions-test": "^3.4.1",
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
@@ -37,9 +39,15 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/test/**/*.test.ts"],
-    "collectCoverageFrom": ["src/**/*.ts"],
-    "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],
+    "testMatch": [
+      "**/test/**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/setup.ts"
+    ],
     "testTimeout": 30000
   }
 }

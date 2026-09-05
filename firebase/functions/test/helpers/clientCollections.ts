@@ -10,6 +10,7 @@
  * そのため意図的に独立した定義として持つ。
  */
 export const ClientCollections = {
+  ACCOUNT: "Account",
   COHABITANT: "Cohabitant",
   HOUSEWORKS: "Houseworks",
   HOUSEWORK_TEMPLATES: "HouseworkTemplates",
@@ -63,4 +64,22 @@ export function houseworkTemplateEditorsPath(
 ): string {
   return `${houseworkTemplatesPath(cohabitantId)}/${templateId}/` +
     `${ClientCollections.HOUSEWORK_TEMPLATE_EDITORS}`;
+}
+
+/**
+ * Accountドキュメントのパスを取得
+ * @param {string} userId - Firebase AuthのユーザーID
+ * @return {string} Accountドキュメントへのパス
+ */
+export function accountPath(userId: string): string {
+  return `${ClientCollections.ACCOUNT}/${userId}`;
+}
+
+/**
+ * Cohabitantドキュメントのパスを取得
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @return {string} Cohabitantドキュメントへのパス
+ */
+export function cohabitantPath(cohabitantId: string): string {
+  return `${ClientCollections.COHABITANT}/${cohabitantId}`;
 }

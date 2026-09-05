@@ -16,6 +16,8 @@ struct AppTabView: View {
     @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(\.routeResolver) var router
 
     @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
@@ -39,13 +41,30 @@ struct AppTabView: View {
         )
     }
 
+    /// 招待リンクの参加画面を表示するかどうか
+    /// - Note: 閉じられたら未処理のトークンを破棄して、同じ招待で再表示されないようにする
+    var isPresentingCohabitantJoin: Binding<Bool> {
+        Binding(
+            get: { pendingInvitationStore.pendingToken != nil },
+            set: { isPresenting in
+                if !isPresenting {
+                    pendingInvitationStore.clear()
+                }
+            }
+        )
+    }
+
     var body: some View {
         tabView()
-            .task {
-                await onAppear()
+            .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
+                if let token = pendingInvitationStore.pendingToken {
+                    router.resolve(.cohabitantJoin(token: token))
+                }
             }
-            .onChange(of: loginContext.cohabitantId) {
-                onChangeCohabitantId()
+            // 起動時とグループ切り替え時で必要な準備が同じなので、cohabitantIdをidにして同じ処理に寄せる
+            // （onChangeで分けると、参加直後にテンプレートの購読開始が漏れる）
+            .task(id: loginContext.cohabitantId) {
+                await onChangeCohabitant()
             }
             .environment(
                 \.cohabitantMembers,
@@ -131,13 +150,10 @@ private extension AppTabView {
 
 private extension AppTabView {
 
-    func onAppear() async {
+    /// 所属グループが決まった/変わったときに、そのグループ用のストアを組み直す
+    func onChangeCohabitant() async {
         setupStore()
         await startObserveTemplateIfNeeded()
-    }
-
-    func onChangeCohabitantId() {
-        setupStore()
     }
 
 }
@@ -186,6 +202,7 @@ private extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
+        .environment(PendingInvitationStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif

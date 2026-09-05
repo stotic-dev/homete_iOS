@@ -39,6 +39,28 @@ struct AccountStoreTest {
         }
     }
 
+    @Test("グループIDのみを差し替える場合、Firestoreへは書き込まずオンメモリの状態だけ更新する")
+    func applyCohabitantId() {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: "token", cohabitantId: nil)
+        let expectedAccount = Account(
+            id: "testId",
+            userName: "testUser",
+            fcmToken: "token",
+            cohabitantId: "joinedCohabitantId"
+        )
+        let accountInfoClient = AccountInfoClient(insertOrUpdate: { _ in
+            Issue.record()
+        })
+        let store = AccountStore(accountInfoClient: accountInfoClient, account: initialAccount)
+
+        // Act
+        store.applyCohabitantId("joinedCohabitantId")
+
+        // Assert
+        #expect(store.account == expectedAccount)
+    }
+
     @Test("サーバーにログイン情報がありFCMトークンが更新されている場合アカウントに紐づくFCMトークンを更新")
     func updateFcmTokenIfNeeded() async {
         await confirmation(expectedCount: 1) { confirmation in
