@@ -16,8 +16,8 @@ public final class ContributionStore {
     // MARK: state
 
     private(set) var contiribution: HouseworkContribution = .init()
-    /// 初回ロード済みかどうか
-    public private(set) var isInitialLoaded = false
+    /// スナップショットリスナーの購読状態
+    public private(set) var loadState: ListenerLoadState = .loading
 
     // MARK: Dependencies
 
@@ -57,10 +57,15 @@ private extension ContributionStore {
 
     func startObserving() async {
         let stream = await houseworkManager.createObserver(observeKey)
-        for await items in stream {
-            await updatePoints(from: items)
-            // ポイントを更新したら初回ロード完了フラグを立てる
-            isInitialLoaded = true
+        for await result in stream {
+            switch result {
+            case let .success(items):
+                await updatePoints(from: items)
+                loadState = .loaded
+
+            case let .failure(error):
+                loadState = .failed(error)
+            }
         }
     }
 

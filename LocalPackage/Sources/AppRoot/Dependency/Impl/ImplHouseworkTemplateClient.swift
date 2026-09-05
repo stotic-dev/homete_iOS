@@ -65,26 +65,32 @@ extension HouseworkTemplateClient {
             }
         },
         addDaysSnapshotListener: { id, templateId, cohabitantId in
-            await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
-                firestore.houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
-            }
+            await bridgingToNonThrowing(
+                FirestoreService.shared.addSnapshotListener(id: id) { firestore in
+                    firestore.houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
+                }
+            )
         },
         addTemplatesSnapshotListener: { id, cohabitantId in
-            await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
-                firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
-            }
+            await bridgingToNonThrowing(
+                FirestoreService.shared.addSnapshotListener(id: id) { firestore in
+                    firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
+                }
+            )
         },
         addEditorsSnapshotListener: { id, templateId, cohabitantId in
-            await FirestoreService.shared.addSnapshotListener(id: id) { firestore in
-                firestore.houseworkTemplateEditorsRef(cohabitantId: cohabitantId, templateId: templateId)
-            }
+            await bridgingToNonThrowing(
+                FirestoreService.shared.addSnapshotListener(id: id) { firestore in
+                    firestore.houseworkTemplateEditorsRef(cohabitantId: cohabitantId, templateId: templateId)
+                }
+            )
         },
         addMetaVersionSnapshotListener: { id, templateId, cohabitantId in
-            let documentStream: AsyncStream<HouseworkTemplateMetaDocument?> = await FirestoreService
-                .shared
-                .addSnapshotListener(id: id) { firestore in
+            let documentStream: AsyncStream<HouseworkTemplateMetaDocument?> = await bridgingToNonThrowing(
+                FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                     firestore.houseworkTemplatesRef(cohabitantId: cohabitantId).document(templateId)
                 }
+            )
             let (versionStream, continuation) = AsyncStream<Int>.makeStream()
             Task {
                 for await document in documentStream {
@@ -100,4 +106,24 @@ extension HouseworkTemplateClient {
         }
     )
 
+}
+
+/// テンプレート編集中の各種リスナーはエラー発生時のUI表現をまだ持たないため、
+/// `FirestoreService`が返す`AsyncThrowingStream`をログ出力のうえ通常終了する`AsyncStream`へ変換する。
+private func bridgingToNonThrowing<Output: Sendable>(
+    _ throwingStream: AsyncThrowingStream<Output, Error>
+) -> AsyncStream<Output> {
+    AsyncStream { continuation in
+        let task = Task {
+            do {
+                for try await value in throwingStream {
+                    continuation.yield(value)
+                }
+            } catch {
+                print("occurred error at addSnapshotListener(type: \(Output.self), error: \(error))")
+            }
+            continuation.finish()
+        }
+        continuation.onTermination = { _ in task.cancel() }
+    }
 }
