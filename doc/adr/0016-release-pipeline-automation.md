@@ -18,7 +18,8 @@ Issue #238で、`fastlane release`レーンの`Deliverfile`が`submit_for_review
 * **リリースの公開はrelease-drafterに依存せず独立して行う**: 既存の`create-release-note.yaml`（release-drafter）はmainへのpush毎に「次バージョン」のドラフトを更新し続けるプレビュー用途として維持する。手動指定したバージョン番号とrelease-drafterの自動解決バージョンがズレるリスクがあるため、実際のタグ作成・publishは`release-merged.yml`側で`gh release create`により独立して行う
 * **Xcode Cloud起動はApp Store Connect APIを直接叩く**: 新規`scripts/trigger-xcode-cloud-build.sh`を追加し、`scripts/appstoreconnect.sh`と同じES256 JWT生成・API呼び出しパターンを踏襲する。`ciWorkflows` → `scmRepositories` → `gitReferences` → `ciBuildRuns`の順でIDを解決してビルドを開始する
 * **リリース候補の外部TestFlight配信は新規Xcode Cloudワークフローを追加する前提とする**: `ci_scripts/ci_post_clone.sh`に`"Upload Release Candidate TestFlight"`分岐を追加した。ただしXcode Cloudワークフロー自体の定義（トリガー条件・ビルド構成・配信先グループ）はApp Store Connect/Xcode側のUI設定であり、リポジトリのコードとしては管理できないため、実際のワークフロー作成は手動で行う
-* **メタデータ同期はテキストのみ**: `fastlane sync_metadata`レーン（`deliver(skip_binary_upload: true, skip_app_version_update: true)`）で`fastlane/metadata`配下のテキストメタデータを同期する。スクリーンショットは`fastlane/screenshots/`の実体が無く、このセッションでは実機/シミュレータのキャプチャを生成できないため、`skip_screenshots(true)`を維持し対象外とした。アセット追加後に`skip_screenshots`を外せばそのままフル同期に切り替わる
+* **メタデータ同期はテキスト+スクリーンショット**: `fastlane sync_metadata`レーン（`deliver(skip_binary_upload: true, skip_app_version_update: true)`）で`fastlane/metadata`配下のテキストメタデータと`fastlane/screenshots/ja/`配下のスクリーンショットを同期する。スクリーンショットはシミュレータでの実機キャプチャをもとに、App Store Connect提出用の4サイズ（1320x2868 / 1284x2778 / 1206x2622 / 1125x2436）×3画面（ホーム・家事一覧・家事テンプレート）を用意し、`Deliverfile`の`skip_screenshots(true)`を外して有効化した
+* **`fastlane/screenshots`はgitに含める**: fastlane initが生成する`.gitignore`のデフォルトは「`fastlane snapshot`（UIテスト）で再生成する前提でコミットしない」だが、本プロジェクトはUIテストによる自動生成の仕組みを持たない。CI（`sync-metadata.yml`）がリポジトリ上のファイルをそのまま`deliver`に渡すため、コミットを省略すると生成元が無くなる。`.gitignore`の該当行を削除し、コメントで経緯を明記した
 * **初回審査提出は手動確認に変更**: `Deliverfile`の`submit_for_review`を`true`から`false`に変更した。CIから無人実行されるようになった以上、確認無しの自動提出はリスクが大きい
 * **メタデータの実態不一致を修正**: `release_notes.txt`（1.0.0初回リリース向け）と`review_information/notes.txt`（Sign in with Apple必須・同居人グループ作成・招待リンクの試し方、[ADR-0013](0013-cohabitant-invitation-universal-link.md)の内容に基づく）を記入した
 
@@ -40,7 +41,6 @@ Issue #238で、`fastlane release`レーンの`Deliverfile`が`submit_for_review
 
 * `scripts/trigger-xcode-cloud-build.sh`の`ciBuildRuns`作成部分はApple公式ドキュメントの仕様に基づく実装だが、実機（実際のApp Store Connect環境）での動作確認はできていない。GitHub Secrets登録・Xcode Cloud新規ワークフロー作成後、初回実行時に動作確認が必要
 * リリース候補の外部TestFlight配信ワークフロー自体（トリガー条件・配信先グループ）はコードで管理できず、App Store Connect/Xcode側の設定変更がドキュメント外で行われるとリポジトリの記述と食い違うリスクがある
-* スクリーンショットはこのタイミングでは同期対象外のまま。App Store提出前に別途素材を用意し`skip_screenshots`を外す作業が残る
 * 年齢制限（広告あり）の設定はApp Store Connect側の手動対応が必要で、このリポジトリの変更だけでは完結しない
 
 ## 参考
