@@ -45,9 +45,6 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: true
 
-      - name: Fix Ruby OpenSSL EC key parsing (see fastlane/fastlane#20553)
-        run: gem pristine openssl
-
       - name: Write App Store Connect API key
         env:
           ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
