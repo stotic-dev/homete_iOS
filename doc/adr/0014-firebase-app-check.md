@@ -39,7 +39,7 @@ Firestoreセキュリティルールの厳格化（#233）は「他人のデー�
 
 ### 決定にあたり考慮したデメリット
 
-* ローカル開発ではFirebaseコンソールへのデバッグトークン登録が必要になり、開発機やシミュレータを作り直すたびに手間が発生する（手順はCLAUDE.md参照）
+* ローカル開発ではFirebaseコンソールへのデバッグトークン登録が必要になる（手順はCLAUDE.md参照）
 * entitlementが増えるため、Xcode Cloudの自動署名でプロビジョニングプロファイルが再発行される
 * リリース後にApp Attestの検証が想定外に失敗した場合、ユーザーはバックエンドに一切アクセスできなくなる。TestFlight配信の段階で実機での動作を必ず確認すること
 
@@ -57,6 +57,16 @@ Firestoreセキュリティルールの厳格化（#233）は「他人のデー�
 Callable関数では、firebase-functions SDKの `checkAppCheckToken` が `enforceAppCheck` の値に関係なく常に実行され、検証を通った場合だけ `request.app` が埋まる。`enforceAppCheck` が制御するのは拒否するかどうかだけ。
 
 つまり `enforceAppCheck: false` はSDKのデフォルトと同一で、それ自体では何も有効化しない。**Callable関数の強制適用はコンソールでは切り替えられず、デプロイを伴う**点に注意する。
+
+## 補足: デバッグトークンは環境変数で共有する
+
+Debug Providerの素の挙動は、インストールごとにUUIDを生成して `UserDefaults` に保存するというもの。App Attestのようにハードウェアと結びついた証明ではなく単なる事前共有シークレットなので、端末との対応関係は無い。
+
+このままだとシミュレータを消去するたびにトークンが変わり、そのつどFirebaseコンソールに登録し直すことになる。開発機とシミュレータの数だけ登録が増えるため運用が回らない。
+
+`GACAppCheckDebugProvider` は環境変数 `AppCheckDebugToken`（旧名 `FIRAAppCheckDebugToken`）をローカル生成トークンより優先して読むので、これで固定値を渡して全環境で1つのトークンを共有する。値は共有スキームに直接書かず、`$(APP_CHECK_DEBUG_TOKEN)` の展開を経由してgitignore済みの `Secret_dev.xcconfig` に置く。デバッグトークンはApp Attestの検証を迂回する合鍵であり、リポジトリに載せるとstg環境が誰でも叩ける状態になるため。
+
+環境変数が空文字ならSDKはローカル生成トークンにフォールバックするので、`APP_CHECK_DEBUG_TOKEN` を設定していない環境でも壊れない。
 
 ## 補足: エミュレータ・E2Eテストへの影響
 
