@@ -6,7 +6,6 @@
 # 内容を確認してから手動でApp Store Connect上から提出する運用にする。
 # 自動提出が必要になった場合はレビューの上でtrueに戻すこと。
 submit_for_review(false)
-skip_screenshots(true)
 run_precheck_before_submit(false)
 force(true)
 submission_information(
