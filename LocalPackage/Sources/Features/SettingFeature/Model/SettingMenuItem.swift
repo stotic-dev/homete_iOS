@@ -10,7 +10,7 @@ import SwiftUI
 
 enum SettingMenuItem: Equatable, CaseIterable {
 
-    case memberRegistration
+    case memberInvitation
     case taskTemplate
     case notificationPermission
     case premiumPlan
@@ -21,12 +21,27 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case debugMenu
     #endif
 
-    static func displayItems(_ isRegisteredGroup: Bool) -> [Self] {
+    /// 表示する項目を状態に応じて絞り込む
+    /// - Parameters:
+    ///   - isRegisteredGroup: グループに参加済みかどうか
+    ///   - isAvailableInvitationLink: 招待リンクを利用できるビルドかどうか
+    /// - Returns: 表示する項目
+    static func displayItems(
+        isRegisteredGroup: Bool,
+        isAvailableInvitationLink: Bool
+    ) -> [Self] {
         allCases.filter {
-            if $0 == .taskTemplate {
+            switch $0 {
+            case .taskTemplate:
                 // テンプレート設定項目はグループ参加状態の時のみ表示する
                 isRegisteredGroup
-            } else {
+
+            case .memberInvitation:
+                // 招待するグループが無い状態では意味を成さないため、参加済みの場合のみ表示する。
+                // リンクを生成できないビルドでも導線ごと出さない
+                isRegisteredGroup && isAvailableInvitationLink
+
+            default:
                 true
             }
         }
@@ -34,8 +49,8 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     func title(plan: SubscriptionPlan) -> LocalizedStringKey {
         switch self {
-        case .memberRegistration:
-            "メンバー追加"
+        case .memberInvitation:
+            "メンバー招待"
 
         case .taskTemplate:
             "家事テンプレート"
@@ -68,7 +83,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     var iconName: String {
         switch self {
-        case .memberRegistration:
+        case .memberInvitation:
             "person.badge.plus"
 
         case .taskTemplate:

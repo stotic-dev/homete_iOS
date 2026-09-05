@@ -13,7 +13,7 @@ rules_version = '2';
 //    （グループIDを推測できても、membersに入っていなければ何も読めない）
 //
 // 3. 明示的に許可したパス以外はすべて拒否する。
-//    未使用の`DailyHouseworks`など、将来使い始めるまでは閉じたままにする。
+//    未使用の`DailyHouseworks`や、クライアントに開かない`Invitation`は閉じたままにする。
 //
 // Cloud Functions は Admin SDK 経由のためこのルールを迂回する。
 // クライアントに導線が無い操作（Account/Cohabitantの削除など）は、Functions側に任せて
@@ -128,6 +128,15 @@ service cloud.firestore {
           allow write: if isCohabitantMember(cohabitantId) && isSelf(editorId);
         }
       }
+    }
+
+    // Invitationは招待トークンそのものがドキュメントIDになっているため、
+    // クライアントから読めると有効なトークンを列挙できてしまう。書き込みを許すと
+    // cohabitantId / expiresAt を差し替えてcallableの検証を迂回できるため、
+    // クライアントには読み書きとも一切開かない。
+    // 招待の発行・参加は issuecohabitantinvitation / joincohabitant (Admin SDK) が行う。
+    match /Invitation/{token} {
+      allow read, write: if false;
     }
   }
 }

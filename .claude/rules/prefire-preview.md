@@ -106,6 +106,26 @@ Previewで状態を作り分けられずこの方針が成立しない。表示�
 次第でそもそも描画されず、**VRTで1枚も撮れていない状態になりやすい**。Previewを追加したら、
 その条件が満たされた状態のPreviewが存在するかを確認すること。
 
+### 8. `#Preview` の表示名は `View名_バリエーション` にする
+
+Prefire は `#Preview` の表示名を**そのまま参照スナップショットのファイル名**に使う（`<表示名>-<デバイス名>.1.png`）。View名を含めずに `#Preview("確認")` と書くと `確認-iPhone-16.1.png` というファイルが生成され、`hometeSnapshotTests/__Snapshots__/PreviewTests.generated/` のフラットな一覧やDangerのPRコメントから**どのViewの参照画像か判別できなくなる**。
+
+```swift
+// ✅ View名 + バリエーション
+#Preview("CohabitantJoinFailureView_有効期限切れ") {
+    CohabitantJoinFailureView(failure: .expired) {}
+}
+
+// ❌ バリエーション名だけ（確認-iPhone-16.1.png になる）
+#Preview("有効期限切れ") {
+    CohabitantJoinFailureView(failure: .expired) {}
+}
+```
+
+表示名を省略した `#Preview { }` は Prefire が `<View名>_0` を採番するため問題ない。バリエーションが1つだけなら表示名なしでよく、**表示名を付けるときだけView名の接頭辞が要る**。
+
+表示名を変更すると参照スナップショットのファイル名も変わる。既に記録済みのPNGがある場合は `git mv` で追従させ、旧名のファイルを残さないこと。
+
 ## 検証
 
 上記1〜3は静的に検出できる。Swiftを変更したら実行すること（Stopフックと `local_package_test` ワークフローでも自動実行される）。

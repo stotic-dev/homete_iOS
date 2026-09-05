@@ -1,4 +1,4 @@
-name: Deploy Firestore Indexes
+name: Deploy Firestore
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
       - main
     paths:
       - 'firebase/firestore.indexes.json'
+      - 'firebase/firestore.rules'
   workflow_dispatch:
 
 jobs:
-  deploy-indexes:
+  deploy-firestore:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,8 +30,10 @@ jobs:
           fi
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
 
-      - name: Deploy Firestore Indexes
-        run: firebase deploy --only firestore:indexes --non-interactive
+      # ルールを配らないとInvitationの読み書き制限がプロジェクトに反映されないため、
+      # indexesと同じタイミングでrulesも配る
+      - name: Deploy Firestore Rules and Indexes
+        run: firebase deploy --only firestore:rules,firestore:indexes --non-interactive
         working-directory: firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json

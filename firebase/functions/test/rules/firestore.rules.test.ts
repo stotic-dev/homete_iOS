@@ -49,6 +49,13 @@ const OTHER_GROUP_ID = "group-2";
 
 const TEMPLATE_ID = "template-1";
 
+/**
+ * Invitationはクライアントに開かないコレクションなので
+ * `clientCollections.ts` には置かず、ここで直接名前を指定する
+ */
+const INVITATION_COLLECTION = "Invitation";
+const INVITATION_TOKEN = "invitation-token-1";
+
 /** rules-unit-testing用のプロジェクト。E2Eテストとデータを混ぜないため別IDにする */
 const RULES_TEST_PROJECT_ID = "homete-rules-test";
 
@@ -131,6 +138,11 @@ beforeEach(async () => {
       doc(db, `${houseworkTemplateEditorsPath(GROUP_ID, TEMPLATE_ID)}/${BOB}`),
       {userId: BOB, updatedAt: new Date(), expiredAt: new Date()}
     );
+
+    await setDoc(doc(db, `${INVITATION_COLLECTION}/${INVITATION_TOKEN}`), {
+      cohabitantId: GROUP_ID,
+      expiresAt: new Date("2027-08-30"),
+    });
   });
 });
 
@@ -380,6 +392,35 @@ describe("HouseworkTemplates", () => {
       })
     );
     await assertFails(deleteDoc(doc(aliceDb(), editorDoc(BOB))));
+  });
+});
+
+describe("Invitation", () => {
+  const invitationDoc = `${INVITATION_COLLECTION}/${INVITATION_TOKEN}`;
+
+  it("メンバーでも招待トークンは取得できない", async () => {
+    await assertFails(getDoc(doc(aliceDb(), invitationDoc)));
+  });
+
+  it("招待トークンの一覧は取得できない", async () => {
+    // ドキュメントIDがトークンそのものなので、列挙できると招待を悪用できる
+    await assertFails(
+      getDocs(collection(aliceDb(), INVITATION_COLLECTION))
+    );
+  });
+
+  it("招待は作成・更新できない", async () => {
+    // cohabitantId / expiresAt を差し替えてcallableの検証を迂回されないようにする
+    await assertFails(
+      setDoc(doc(aliceDb(), invitationDoc), {
+        cohabitantId: OTHER_GROUP_ID,
+        expiresAt: new Date("2027-08-30"),
+      })
+    );
+  });
+
+  it("招待は削除できない", async () => {
+    await assertFails(deleteDoc(doc(aliceDb(), invitationDoc)));
   });
 });
 

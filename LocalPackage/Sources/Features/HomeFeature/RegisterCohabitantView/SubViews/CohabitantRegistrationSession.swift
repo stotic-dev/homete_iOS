@@ -6,11 +6,13 @@
 //
 
 import HometeDomain
+import HometeUI
 import MultipeerConnectivity
 import SwiftUI
 
 struct CohabitantRegistrationSession: View {
 
+    @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
 
     @State var registrationState = CohabitantRegistrationState.scanning
@@ -42,8 +44,14 @@ struct CohabitantRegistrationSession: View {
                 }
                 .transition(.push(from: .trailing))
             case .completed:
-                CohabitantRegistrationCompleteView()
-                    .transition(.push(from: .trailing))
+                CohabitantCompletionView(
+                    title: "登録が完了しました！",
+                    message: "これからは、あなたとパートナーの家事を分担し、協力していくことができます。"
+                ) {
+                    dismiss()
+                }
+                .hideNavigationBar()
+                .transition(.push(from: .trailing))
             }
         }
         .animation(.spring, value: registrationState)

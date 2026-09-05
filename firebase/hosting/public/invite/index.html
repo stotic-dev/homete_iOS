@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hometeのグループに招待されています</title>
+  <meta name="description" content="hometeは同居人と家事を分担・管理するアプリです。招待リンクからグループに参加できます。">
+  <style>
+    :root {
+      --bg: #fdf9f3;
+      --surface: #ffffff;
+      --text: #33302c;
+      --text-sub: #6d675f;
+      --accent: #f2994a;
+      --border: #e8e0d5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #201d1a;
+        --surface: #2b2724;
+        --text: #f4efe8;
+        --text-sub: #b3aca2;
+        --accent: #f2994a;
+        --border: #3b3631;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 32px 20px 48px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      text-align: center;
+      color: var(--text-sub);
+      margin: 0 0 32px;
+      font-size: 15px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 24px;
+      text-align: center;
+    }
+
+    ol {
+      list-style: none;
+      counter-reset: step;
+      margin: 0 0 32px;
+      padding: 0;
+    }
+
+    li {
+      counter-increment: step;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 16px 16px 56px;
+      margin-bottom: 12px;
+    }
+
+    li::before {
+      content: counter(step);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-title {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .step-detail {
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    .button {
+      display: block;
+      text-align: center;
+      background: var(--accent);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 14px 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .button[aria-disabled="true"] {
+      background: var(--border);
+      color: var(--text-sub);
+      pointer-events: none;
+    }
+
+    .note {
+      color: var(--text-sub);
+      font-size: 13px;
+      text-align: center;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="logo">homete</p>
+    <p class="lead">同居人と家事を分け合うアプリ</p>
+
+    <h1>グループに招待されています</h1>
+
+    <ol>
+      <li>
+        <span class="step-title">hometeをインストールする</span>
+        <span class="step-detail">下のボタンからApp Storeを開いてインストールしてください。</span>
+      </li>
+      <li>
+        <span class="step-title">この招待リンクをもう一度タップする</span>
+        <span class="step-detail">LINEなど、リンクが届いた画面に戻ってもう一度タップすると、アプリが開いてグループに参加できます。</span>
+      </li>
+    </ol>
+
+    <!-- TODO: App Store公開後、APP_STORE_URL に実際のURLを設定する（Issue #182） -->
+    <a class="button" id="appStoreLink" href="#" aria-disabled="true">App Storeで開く</a>
+
+    <p class="note">招待リンクの有効期限は発行から24時間です。<br>期限が切れた場合は、招待した方にリンクを再送してもらってください。</p>
+  </main>
+
+  <script>
+    // App Store公開後にURLを設定する。空のままの間はボタンを無効表示にする。
+    var APP_STORE_URL = "";
+
+    (function () {
+      var link = document.getElementById("appStoreLink");
+      if (!APP_STORE_URL) {
+        link.textContent = "App Storeで公開準備中です";
+        return;
+      }
+      link.href = APP_STORE_URL;
+      link.removeAttribute("aria-disabled");
+    })();
+  </script>
+</body>
+</html>
