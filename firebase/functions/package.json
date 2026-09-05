@@ -11,7 +11,8 @@
     "logs": "firebase functions:log --project stg",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",
-    "test:e2e": "npm run build && firebase emulators:exec --only auth,firestore,functions --project stg 'npm test'"
+    "test:e2e": "npm run build && firebase emulators:exec --only auth,firestore,functions --project stg 'npm test'",
+    "test:rules": "firebase emulators:exec --only firestore --project stg 'jest test/rules --runInBand'"
   },
   "engines": {
     "node": "22"
