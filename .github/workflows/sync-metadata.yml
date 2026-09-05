@@ -56,6 +56,9 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          # ランナーのopenssl.cnf由来のprovider設定がEC curve名の解決を壊すケースがあるため、
+          # OpenSSLの標準設定ファイル読み込みを無効化する（fastlane/fastlane#20553）
+          OPENSSL_CONF: ""
         run: bundle exec fastlane sync_metadata app_version:"$NORMALIZED_VERSION"
 
       - name: Create summary
