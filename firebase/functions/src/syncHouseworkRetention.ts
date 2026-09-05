@@ -2,7 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {FirestoreHelper} from "./models/FirestoreHelper";
 import {updateHouseworkExpiredAt} from "./models/HouseworkRetentionUpdater";
-import {appCheckOptions, logAppCheckStatus} from "./appCheck";
+import {appCheckOptions} from "./appCheckOptions";
 
 interface SyncHouseworkRetentionRequest {
   cohabitantId: string;
@@ -23,10 +23,7 @@ export const synchouseworkretention = onCall(
   async (request: {
     data: SyncHouseworkRetentionRequest;
     auth?: { uid: string };
-    app?: { appId: string };
   }) => {
-    logAppCheckStatus("synchouseworkretention", request.app);
-
     if (!request.auth) {
       logger.error("Authentication error: User is not authenticated.");
       throw new HttpsError(
