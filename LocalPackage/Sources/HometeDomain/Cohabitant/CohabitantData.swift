@@ -7,9 +7,9 @@
 
 public struct CohabitantData: Codable, Sendable {
 
-    public static let idField = "id"
-
     /// 家族グループのID
+    /// - Note: ドキュメントIDと同じ値を持つ。Cloud Functions が `where("id", "==", ...)` で引くため、
+    ///         FirestoreのセキュリティルールでもドキュメントIDとの一致を必須にしている。
     public let id: String
     /// 参加しているメンバーのユーザーID
     public let members: [String]
