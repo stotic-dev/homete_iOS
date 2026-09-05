@@ -16,7 +16,7 @@ Firestoreセキュリティルールの厳格化（#233）は「他人のデー�
 * iOSアプリにFirebase App Checkを導入し、配布ビルドでは **App Attest** を使う
 * ローカル開発ビルドでは **Debug Provider** を使う。App Attestはシミュレータで動かず、Xcodeの開発用署名でも証明書検証に通らないため
 * プロバイダの切り替えはコンパイル時に決める。Stg構成は「TestFlight配布だが開発用Firebaseプロジェクトを参照する」ためDEBUGを定義しており、DEBUGだけではローカルビルドと区別できない。Stg構成にだけ `STG` フラグを追加し、`#if DEBUG && !STG` でDebug Providerを選ぶ
-* App Attestのentitlement（`com.apple.developer.devicecheck.appattest-environment`）はDebug構成で `development`、Stg/Release構成で `production`
+* App Attestのentitlement（`com.apple.developer.devicecheck.appattest-environment`）は**全構成で `production`**。Stg構成はUniversal Linkのassociated-domainsを揃えるためにDebug構成とentitlementsファイルを共有しており、Stgは配布ビルドとしてApp Attestを使うため `development` にはできない。Debug構成はDebug Providerを使いApp Attestを呼ばないので、`production` でも支障がない
 * Firestore・Callable関数とも**導入と同時に強制適用する**。Callable関数は `enforceAppCheck: true`、Firestoreはコンソールでstg/prod両プロジェクトを適用済みにする
 * `enforceAppCheck` は `src/appCheckOptions.ts` の1箇所に集約し、両関数で同じ設定を共有する
 
