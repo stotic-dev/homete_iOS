@@ -4,14 +4,14 @@
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --only functions",
-    "shell": "npm run build && firebase functions:shell",
+    "serve": "npm run build && firebase emulators:start --only functions --project stg",
+    "shell": "npm run build && firebase functions:shell --project stg",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
+    "deploy": "firebase deploy --only functions --project stg",
+    "logs": "firebase functions:log --project stg",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",
-    "test:e2e": "npm run build && firebase emulators:exec --only auth,firestore,functions 'npm test'"
+    "test:e2e": "npm run build && firebase emulators:exec --only auth,firestore,functions --project stg 'npm test'"
   },
   "engines": {
     "node": "22"

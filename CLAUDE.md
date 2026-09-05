@@ -193,18 +193,25 @@ launching → notLoggedIn → Sign In with Apple
    - ESLintとE2Eテスト、Firestoreセキュリティルールのユニットテスト（`test/rules`）を実行
    - Node.js 21とJava 21を使用
 
-4. **`deploy-functions.yml`** - Firebase FunctionsをSTGへデプロイ
-   - `functions-e2e-test.yml`の完了を`workflow_run`で受けて発火し、mainへのpushかつ成功時のみデプロイ
-   - `firebase deploy --only functions`（`firebase.json`のpredeployでlint+buildが走る）
-   - `workflow_dispatch`で手動デプロイも可能
+4. **`deploy-functions.yml`** - Firebase Functionsのデプロイ
+   - `functions-e2e-test.yml`の完了を`workflow_run`で受けて発火し、mainへのpushかつ成功時のみSTGへデプロイ
+   - `firebase deploy --only functions --project <エイリアス>`（`firebase.json`のpredeployでlint+buildが走る）
+   - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
 
-5. **`deploy-firestore.yml`** - Firestoreのルール・インデックスのデプロイ
-   - `firebase/firestore.rules` / `firebase/firestore.indexes.json`のmainへのpushでトリガー
-   - `firebase deploy --only firestore:rules,firestore:indexes`
+5. **`deploy-firestore.yml`** - Firestoreインデックス・セキュリティルールのデプロイ
+   - `firebase/firestore.indexes.json` / `firebase/firestore.rules`のmainへのpushでSTGへデプロイ
+   - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
 
 6. **`create-release-note.yaml`** - リリースノート生成
 
-デプロイ先は`firebase/.firebaserc`のdefaultプロジェクト（`homete-ios-dev-e3ef7`）。認証は`FIREBASE_SERVICE_ACCOUNT` secretのサービスアカウントJSONを使う。
+**Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
+
+| エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
+|---|---|---|---|
+| `stg` | `homete-ios-dev-e3ef7` | 開発・TestFlight（`taichi.satou.hometekure.dev`） | `FIREBASE_SERVICE_ACCOUNT` |
+| `prod` | `homete-ios-dev` | App Store配信（`taichi.satou.hometekure`） | `FIREBASE_SERVICE_ACCOUNT_PROD` |
+
+`.firebaserc`に`default`エイリアスは置かない。デプロイ・エミュレーター起動を含む全てのfirebaseコマンドで`--project`を明示すること（プロジェクトIDの`homete-ios-dev`が本番、`-e3ef7`付きがSTGという紛らわしい命名のため）。
 
 **Xcode Cloudワークフロー:**
 

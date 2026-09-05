@@ -1,5 +1,7 @@
 name: Deploy Firestore
 
+# mainへのpushで反映されるのはSTGのみ。本番は workflow_dispatch で
+# environment=prod を明示的に選んだときだけデプロイする。
 on:
   push:
     branches:
@@ -7,7 +9,24 @@ on:
     paths:
       - 'firebase/firestore.indexes.json'
       - 'firebase/firestore.rules'
+      - '.github/workflows/deploy-firestore.yml'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "デプロイ先のFirebaseプロジェクト（.firebasercのエイリアス）"
+        type: choice
+        options:
+          - stg
+          - prod
+        default: stg
+
+concurrency:
+  group: deploy-firestore-${{ inputs.environment || 'stg' }}
+  cancel-in-progress: false
+
+env:
+  # push から来た場合 inputs は空なのでSTGにフォールバックする
+  DEPLOY_ENV: ${{ inputs.environment || 'stg' }}
 
 jobs:
   deploy-firestore:
@@ -22,18 +41,47 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      # 環境ごとに別のサービスアカウントを使う。secrets名は動的に組み立てられないため、
+      # 両方をenvに載せてシェル側で選ぶ（未選択側は使わずに捨てられる）
       - name: Write Service Account JSON
+        env:
+          SERVICE_ACCOUNT_STG: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SERVICE_ACCOUNT_PROD: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}
         run: |
-          if [ -z '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"
+          if [ "$DEPLOY_ENV" = "prod" ]; then
+            SERVICE_ACCOUNT="$SERVICE_ACCOUNT_PROD"
+            SECRET_NAME="FIREBASE_SERVICE_ACCOUNT_PROD"
+          else
+            SERVICE_ACCOUNT="$SERVICE_ACCOUNT_STG"
+            SECRET_NAME="FIREBASE_SERVICE_ACCOUNT"
+          fi
+          if [ -z "$SERVICE_ACCOUNT" ]; then
+            echo "::error::$SECRET_NAME secret is not set"
             exit 1
           fi
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+          printf '%s' "$SERVICE_ACCOUNT" > /tmp/service-account.json
 
       # ルールを配らないとInvitationの読み書き制限がプロジェクトに反映されないため、
-      # indexesと同じタイミングでrulesも配る
-      - name: Deploy Firestore Rules and Indexes
-        run: firebase deploy --only firestore:rules,firestore:indexes --non-interactive
+      # インデックスと同じタイミングでrulesも配る。--project を明示し、
+      # .firebaserc の default（現在は未定義）に暗黙依存しない
+      - name: Deploy Firestore rules and indexes
+        run: |
+          firebase deploy \
+            --only firestore:indexes,firestore:rules \
+            --project "$DEPLOY_ENV" \
+            --non-interactive
         working-directory: firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+
+      - name: Create deploy summary
+        if: always()
+        run: |
+          {
+            echo "## Deploy Firestore"
+            echo ""
+            echo "- **Environment**: \`$DEPLOY_ENV\`"
+            echo "- **Result**: ${{ job.status }}"
+            echo "- **Commit**: \`${{ github.sha }}\`"
+            echo "- **Triggered by**: ${{ github.event_name }}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "homete-ios-dev-e3ef7"
+    "stg": "homete-ios-dev-e3ef7",
+    "prod": "homete-ios-dev"
   }
 }
