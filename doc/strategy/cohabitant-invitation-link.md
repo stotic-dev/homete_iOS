@@ -145,7 +145,7 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 | `expiresAt` | Timestamp | `createdAt` + 24時間 |
 
 - 使用回数は制限しない（期限内なら何人でも参加可）
-- 期限切れドキュメントは Firestore の TTLポリシー（`expiresAt`）で自動削除する（コンソール設定・残課題）
+- 期限切れドキュメントは Firestore の TTLポリシーで自動削除する。コレクショングループ `Invitation` の `expiresAt` フィールドに対し、2026-09-05に `gcloud firestore fields ttls update expiresAt --collection-group=Invitation --enable-ttl --project=<プロジェクトID>` でstg（`homete-ios-dev-e3ef7`）・prod（`homete-ios-dev`）両方に設定し、`ttlConfig.state: ACTIVE` を確認済み（[#231](https://github.com/stotic-dev/homete_iOS/issues/231)）。削除猶予日数などの追加パラメータはなく、期限切れ後24時間以内に非同期削除される仕様
 - **iOSからは直接読み書きしない**（Functions のみが触る）ため、iOS側の `CollectionPath` には追加しない
 
 ### 5. Cloud Functions
@@ -378,7 +378,6 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 - [#229 本番環境で招待リンク(Universal Link)を有効化する](https://github.com/stotic-dev/homete_iOS/issues/229)
   - 本番Hosting・AASA・`hometeRelease.entitlements`・`productionHost`・App IDのAssociated Domains capability・実機確認
 - [#230 招待リンクのフォールバックページにApp Storeへの導線を設定する](https://github.com/stotic-dev/homete_iOS/issues/230)
-- [#231 招待トークン(Invitationコレクション)のTTLポリシーを設定する](https://github.com/stotic-dev/homete_iOS/issues/231)
 
 その他:
 
