@@ -74,6 +74,28 @@ case "$CI_WORKFLOW" in
         echo "==========================="
         ;;
 
+    "Upload Release Candidate TestFlight")
+        echo "=== Upload Release Candidate TestFlight workflow ==="
+
+        # doc/adr/0016: リリースPR（release/*ブランチ）への変更の度に、Release Configuration
+        # でビルドして外部TestFlightに配信するワークフロー。本番Firebase設定を使う点は
+        # Upload For AppStoreと同じ（Release ConfigurationはDEBUGを定義しないため）。
+        if [ -z "$GOOGLESERVICE_INFO" ]; then
+            echo "ERROR: GOOGLESERVICE_INFO environment variable is not set"
+            exit 1
+        fi
+        echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info.plist"
+        echo "✓ GoogleService-Info.plist decoded and placed"
+
+        if [ -z "$SECRET_XCCONFIG" ]; then
+            echo "ERROR: SECRET_XCCONFIG environment variable is not set"
+            exit 1
+        fi
+        echo "$SECRET_XCCONFIG" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/Resouces/Secret.xcconfig"
+        echo "✓ Secret.xcconfig decoded and placed"
+        echo "==========================="
+        ;;
+
     "Upload Stg TestFlight")
         echo "=== Upload Stg TestFlight workflow ==="
 
@@ -84,6 +106,11 @@ case "$CI_WORKFLOW" in
         fi
         echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info-dev.plist"
         echo "✓ GoogleService-Info-dev.plist decoded and placed"
+
+        # CrashlyticsのdSYMアップロードRun Scriptは固定名GoogleService-Info.plistからGOOGLE_APP_IDを
+        # 自動検出するため（homete/Views/HometeApp.swiftが実行時に読む -dev.plist とは別に）同名でも配置する
+        cp "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info-dev.plist" "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info.plist"
+        echo "✓ GoogleService-Info.plist (for Crashlytics dSYM upload) placed"
 
         # 開発用xcconfig（AdMob/RevenueCat設定）をsecretからデコードして配置
         if [ -z "$SECRET_XCCONFIG_DEV" ]; then

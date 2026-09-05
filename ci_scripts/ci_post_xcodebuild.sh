@@ -62,34 +62,10 @@ case "$CI_WORKFLOW" in
     "Upload For AppStore")
         echo "=== Upload For AppStore workflow ==="
 
-        # archive成功時のみ実行
-        if [ "$CI_XCODEBUILD_ACTION" != "archive" ]; then
-            echo "Skipping git tag creation (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
-            exit 0
-        fi
-
-        cd "$CI_PRIMARY_REPOSITORY_PATH"
-
-        # Marketing version（CFBundleShortVersionString）からタグ名を生成
-        APP_VERSION=$(xcrun agvtool what-marketing-version -terse1)
-        TAG_NAME="v${APP_VERSION}"
-        echo "Creating git tag: $TAG_NAME"
-
-        # Xcode CloudではGit設定がされていないため最低限の設定を行う
-        git config user.email "taichis844@gmail.com"
-        git config user.name "stotic-dev"
-
-        # 既存タグがあれば上書き
-        git tag -f "$TAG_NAME"
-
-        # push用の認証情報（GITHUB_TOKEN）が設定されている場合のみpushを試みる
-        if [ -n "$GITHUB_TOKEN" ] && [ -n "$GITHUB_REPOSITORY" ]; then
-            REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-            git push "$REMOTE_URL" "$TAG_NAME" --force
-            echo "✓ Pushed tag $TAG_NAME"
-        else
-            echo "WARNING: GITHUB_TOKEN or GITHUB_REPOSITORY is not set. Tag created locally but not pushed."
-        fi
+        # doc/adr/0016: バージョンタグの作成はGitHub Actions側（release-merged.yml、
+        # リリースPRのmainマージ時）に一本化した。このworkflowはGitHub Actions側から
+        # APIでキックされる時点で既にタグが打たれている前提のため、ここでは何もしない。
+        echo "Tag creation is handled by GitHub Actions (release-merged.yml). Nothing to do here."
         echo "==========================="
         ;;
 

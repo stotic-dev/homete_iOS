@@ -55,14 +55,13 @@ Carthage/Build/
 
 # fastlane
 #
-# It is recommended to not store the screenshots in the git repo.
-# Instead, use fastlane to re-generate the screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/#source-control
+# fastlane/screenshots はコミットする方針とする（doc/adr/0016参照）。
+# `fastlane snapshot` によるUIテスト自動生成の仕組みが無く、CI（sync-metadata.yml）が
+# fastlane deliver 実行時にリポジトリ上のファイルをそのまま読むため、リポジトリへの
+# コミットを省略すると生成元が無くなってしまう。
 
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots/**/*.png
 fastlane/test_output
 
 # Bundler

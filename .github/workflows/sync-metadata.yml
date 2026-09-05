@@ -1,0 +1,69 @@
+name: Sync Metadata
+
+# doc/adr/0016: release-merged.yml からのGitHub Release publish後にキックされる。
+# fastlane/metadata配下のテキストメタデータをApp Store Connectへ同期する
+# （fastlane sync_metadataレーン、Fastfile参照）。ビルドのアップロードは行わない。
+# versionはASC上のバージョン作成にも使うため必須。対象バージョンがASCに無ければ新規作成し、
+# 既にあればメタデータの更新のみ行う（Fastfileのsync_metadataレーン参照）。
+# 単独での再実行やスクリーンショット追加後の確認用に workflow_dispatch でも起動できる。
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "同期・作成対象のバージョン番号（例: 1.1.0。先頭のvは省略可）"
+        required: true
+  workflow_call:
+    inputs:
+      version:
+        description: "同期・作成対象のバージョン番号（例: v1.1.0。先頭のvは省略可）"
+        required: true
+        type: string
+
+jobs:
+  sync-metadata:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
+
+      - name: Normalize version
+        run: |
+          NORMALIZED_VERSION="${VERSION#v}"
+          if ! [[ "$NORMALIZED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version は X.Y.Z（先頭のvは省略可）形式で指定してください（入力: $VERSION）"
+            exit 1
+          fi
+          echo "NORMALIZED_VERSION=$NORMALIZED_VERSION" >> "$GITHUB_ENV"
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Write App Store Connect API key
+        env:
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          echo "$ASC_API_KEY_P8_BASE64" | base64 -d > "$RUNNER_TEMP/asc_api_key.p8"
+          echo "ASC_API_KEY_PATH=$RUNNER_TEMP/asc_api_key.p8" >> "$GITHUB_ENV"
+
+      - name: Sync metadata to App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: bundle exec fastlane sync_metadata app_version:"$NORMALIZED_VERSION"
+
+      - name: Create summary
+        if: always()
+        run: |
+          {
+            echo "## Sync Metadata"
+            echo ""
+            echo "- **Version**: \`$NORMALIZED_VERSION\`"
+            echo "- **Result**: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
