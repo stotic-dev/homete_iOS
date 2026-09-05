@@ -17,16 +17,16 @@ Firestoreセキュリティルールの厳格化（#233）は「他人のデー�
 * ローカル開発ビルドでは **Debug Provider** を使う。App Attestはシミュレータで動かず、Xcodeの開発用署名でも証明書検証に通らないため
 * プロバイダの切り替えはコンパイル時に決める。Stg構成は「TestFlight配布だが開発用Firebaseプロジェクトを参照する」ためDEBUGを定義しており、DEBUGだけではローカルビルドと区別できない。Stg構成にだけ `STG` フラグを追加し、`#if DEBUG && !STG` でDebug Providerを選ぶ
 * App Attestのentitlement（`com.apple.developer.devicecheck.appattest-environment`）はDebug構成で `development`、Stg/Release構成で `production`
-* Callable関数（`notifyothercohabitants` / `synchouseworkretention`）に `enforceAppCheck` オプションを渡す口を用意する。**導入時点では `false`（強制しない）** とし、正規アプリからのリクエストが100%検証済みになることを確認してから `true` に切り替える
-* `enforceAppCheck` は `src/appCheck.ts` の1箇所に集約し、切り替えが1行の差分で済むようにする
-* Callable関数のモニタリングは**自前のログで行う**。`logAppCheckStatus` で `request.app` の有無を各関数の入口に記録し、Cloud Loggingで検証済み比率を集計する
+* Firestore・Callable関数とも**導入と同時に強制適用する**。Callable関数は `enforceAppCheck: true`、Firestoreはコンソールでstg/prod両プロジェクトを適用済みにする
+* `enforceAppCheck` は `src/appCheckOptions.ts` の1箇所に集約し、両関数で同じ設定を共有する
 
 ## 考慮した選択肢
 
 * **App Attest（採用）**: Secure Enclaveの鍵でアプリの正当性を証明する。iOS 14以降で利用可能で、本プロジェクトのdeployment target 17.0では制約にならない
 * **DeviceCheck**: iOS 11以降で使えるが、検証するのはデバイスであってアプリの正当性ではない。deployment targetの制約が無い以上、App Attestより弱い保証を選ぶ理由がない
 * **Firestoreルールの厳格化のみ（#233）**: 認証済みユーザーによる大量アクセスを防げない。App Checkと排他ではないため、多層防御として併用する
-* **導入と同時に強制適用**: 検証に失敗する経路（古いバージョンのアプリ、デバッグトークン未登録の開発機など）があると既存ユーザーを締め出す。モニタリング期間を挟む方を採る
+* **モニタリング期間を挟んでから強制適用**: 一般には、検証に失敗する経路（App Check非対応の古いバージョンなど）を持つ既存ユーザーを締め出さないために必要な段取り。ただし本アプリは**未リリースで締め出す相手がいない**ため、期間を置く利益がなく、その間バックエンドが無防備なまま残るデメリットだけが残る。導入と同時に強制適用する方を採った
+* **Callable関数の検証結果を自前でログに残す**: Callable関数はApp Checkのメトリクス対象サービスではないため、モニタリングするなら `request.app` の有無を自分で記録するしかない。しかし強制適用では未検証のリクエストがハンドラに到達しないので、ログは常に「検証済み」しか出さない。定数を出力するだけになるため入れない
 
 ## 決定結果
 
@@ -35,27 +35,28 @@ Firestoreセキュリティルールの厳格化（#233）は「他人のデー�
 * 正規アプリ以外からのFirestore・Functionsアクセスを遮断でき、想定外の課金を防げる
 * セキュリティルールでは防げない「認証済みユーザーによる大量アクセス」に対する層が増える
 * 強制適用の切り替えが `appCheckOptions.ts` の1行とFirebaseコンソールの操作で完結する
+* リリース前に有効化するため、ユーザーを締め出すリスクを負わずに最初から防御が効く
 
 ### 決定にあたり考慮したデメリット
 
 * ローカル開発ではFirebaseコンソールへのデバッグトークン登録が必要になり、開発機やシミュレータを作り直すたびに手間が発生する（手順はCLAUDE.md参照）
 * entitlementが増えるため、Xcode Cloudの自動署名でプロビジョニングプロファイルが再発行される
-* モニタリング期間中は防御効果が無い。強制適用への切り替えを別途忘れずに行う必要がある
+* リリース後にApp Attestの検証が想定外に失敗した場合、ユーザーはバックエンドに一切アクセスできなくなる。TestFlight配信の段階で実機での動作を必ず確認すること
 
 ## 補足: FirestoreとCallable関数で有効化の仕組みが違う
 
-同じ「未適用（モニタリングのみ）」でも、2つのサービスで実現方法が全く異なる。混同すると「コンソールで未適用にしたのにFunctionsの検証状況が分からない」ことになるため、区別して扱う。
+有効化の方法が2つのサービスで全く異なる。混同すると「コンソールで適用済みにしたのにFunctionsが素通しのまま」ということが起きるため、区別して扱う。
 
 | | Firestore | Callable Functions |
 |---|---|---|
 | 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | コードの `enforceAppCheck` + デプロイ |
 | 検証を行う場所 | Firestoreバックエンド | デプロイされた関数のランタイム（firebase-functions SDK） |
 | コンソールのメトリクス | あり | **なし**（App Checkのメトリクス対象サービスに含まれない） |
-| モニタリングの手段 | コンソールのメトリクス | 自前のログ（`logAppCheckStatus`） |
+| モニタリング | コンソールのメトリクス | 手段なし（メトリクスもログも取れない） |
 
 Callable関数では、firebase-functions SDKの `checkAppCheckToken` が `enforceAppCheck` の値に関係なく常に実行され、検証を通った場合だけ `request.app` が埋まる。`enforceAppCheck` が制御するのは拒否するかどうかだけ。
 
-つまり `enforceAppCheck: false` はSDKのデフォルトと同一で、それ自体では何も有効化しない。加えてSDKはトークンが不正なときしか警告を出さず、そもそも送られてこなかったケースは無言で通すため、`request.app` の有無を自分でログに出さないとモニタリング期間に観測データが取れない。
+つまり `enforceAppCheck: false` はSDKのデフォルトと同一で、それ自体では何も有効化しない。**Callable関数の強制適用はコンソールでは切り替えられず、デプロイを伴う**点に注意する。
 
 ## 補足: エミュレータ・E2Eテストへの影響
 

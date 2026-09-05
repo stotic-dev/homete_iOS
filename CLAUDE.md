@@ -160,11 +160,12 @@ FirestoreとCallable関数で有効化の仕組みが違うので混同しない
 
 | | Firestore | Callable Functions |
 |---|---|---|
-| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | `firebase/functions/src/appCheck.ts`の`enforceAppCheck` + デプロイ |
+| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | `firebase/functions/src/appCheckOptions.ts`の`enforceAppCheck` + デプロイ |
 | コンソールのメトリクス | あり | なし（メトリクス対象サービスに含まれない） |
-| モニタリング手段 | コンソールのメトリクス | `logAppCheckStatus`が出すログをCloud Loggingで集計 |
 
-Callable関数のトークン検証は`enforceAppCheck`の値に関係なく常に走り、検証を通った場合だけ`request.app`が埋まる。`enforceAppCheck`は拒否するかどうかだけを制御するので、**`false`のままではSDKのデフォルトと同じで何も有効化されない**。**現在はモニタリング期間中のため`false`**。
+Callable関数のトークン検証は`enforceAppCheck`の値に関係なく常に走り、検証を通った場合だけ`request.app`が埋まる。`enforceAppCheck`は拒否するかどうかだけを制御するので、**`false`のままではSDKのデフォルトと同じで何も有効化されない**。コンソールでは切り替えられないため、変更にはデプロイが必要。
+
+stg / prod とも**強制適用済み**（Firestoreはコンソール、Functionsは`enforceAppCheck: true`）。App Check非対応のビルドはバックエンドに一切アクセスできないので、ローカル開発ではデバッグトークンの登録が必須。
 
 ### 状態管理
 
