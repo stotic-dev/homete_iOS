@@ -9,7 +9,7 @@ import HometeInfrastructure
 extension CohabitantPushNotificationClient {
 
     static let liveValue: CohabitantPushNotificationClient = .init { id, content in
-        _ = try await Functions.functions()
+        _ = try await Functions.functions(region: FunctionsRegion.homete)
             .httpsCallable("notifyothercohabitants")
             .call([
                 "cohabitantId": id,

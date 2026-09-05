@@ -5,12 +5,13 @@
 import FirebaseFunctions
 import Foundation
 import HometeDomain
+import HometeInfrastructure
 
 extension CohabitantInvitationClient {
 
     static let liveValue: CohabitantInvitationClient = .init {
         do {
-            let result = try await Functions.functions()
+            let result = try await Functions.functions(region: FunctionsRegion.homete)
                 .httpsCallable("issuecohabitantinvitation")
                 .call()
             return try makeInvitation(from: result.data)
@@ -19,7 +20,7 @@ extension CohabitantInvitationClient {
         }
     } join: { token in
         do {
-            let result = try await Functions.functions()
+            let result = try await Functions.functions(region: FunctionsRegion.homete)
                 .httpsCallable("joincohabitant")
                 .call(["token": token])
             guard let response = result.data as? [String: Any],

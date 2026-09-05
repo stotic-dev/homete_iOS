@@ -41,7 +41,7 @@ extension HouseworkClient {
                 .whereField("indexedDate.value", isLessThanOrEqualTo: to)
         }
     } syncRetentionHandler: { cohabitantId in
-        _ = try await Functions.functions()
+        _ = try await Functions.functions(region: FunctionsRegion.homete)
             .httpsCallable("synchouseworkretention")
             .call(["cohabitantId": cohabitantId])
     }
