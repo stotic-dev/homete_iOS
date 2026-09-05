@@ -1,0 +1,74 @@
+name: Create Release PR
+
+# doc/adr/0016: リリースパイプラインの起点。手動実行でバージョン番号を指定し、
+# MARKETING_VERSIONを更新したブランチとPRを作成する。
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "リリースするバージョン番号（例: 1.1.0）"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
+
+      - name: Validate version format
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version は X.Y.Z 形式で指定してください（入力: $VERSION）"
+            exit 1
+          fi
+
+      - name: Create release branch
+        run: git checkout -b "release/v${VERSION}"
+
+      - name: Bump MARKETING_VERSION
+        run: xcrun agvtool new-marketing-version "$VERSION"
+
+      - name: Configure git
+        run: |
+          git config user.email "taichis844@gmail.com"
+          git config user.name "stotic-dev"
+
+      - name: Commit version bump
+        run: |
+          git add homete.xcodeproj/project.pbxproj
+          git commit -m "chore: リリースバージョンをv${VERSION}に更新"
+
+      - name: Push release branch
+        run: git push origin "release/v${VERSION}"
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "release/v${VERSION}" \
+            --title "Release v${VERSION}" \
+            --body "$(cat <<EOF
+          ## リリースv${VERSION}
+
+          - [ ] \`fastlane/metadata/ja/release_notes.txt\` を今回のリリース内容に更新する
+          - [ ] 変更内容（前回タグからのdiff）を確認する
+
+          このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが
+          外部TestFlightにビルドを配信します。マージすると、タグ作成・GitHub Release publish・
+          メタデータ同期・Xcode CloudのUpload For AppStore起動が自動で走ります（doc/adr/0016）。
+          EOF
+          )"

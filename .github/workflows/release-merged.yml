@@ -1,0 +1,79 @@
+name: Release Merged
+
+# doc/adr/0016: リリースPR（release/*ブランチ）がmainにマージされたことをトリガーに、
+# タグ作成 → GitHub Release publish → メタデータ同期 → Xcode Cloud起動 の順で実行する。
+# 実行順序を保証するため、あえて1ジョブの直列ステップとして書く（並列ジョブにしない）。
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve version from branch name
+        run: |
+          # release/v1.1.0 -> VERSION=v1.1.0
+          VERSION="${HEAD_REF#release/}"
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::head.refからバージョンを解決できませんでした（HEAD_REF=$HEAD_REF）"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Configure git
+        run: |
+          git config user.email "taichis844@gmail.com"
+          git config user.name "stotic-dev"
+
+      - name: Create and push tag
+        run: |
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
+      - name: Publish GitHub Release
+        run: |
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --generate-notes \
+            --latest \
+            --target main
+
+      - name: Trigger metadata sync workflow
+        run: gh workflow run sync-metadata.yml --ref main -f version="$VERSION"
+
+      - name: Trigger Xcode Cloud Upload For AppStore build
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          XCODE_CLOUD_APPSTORE_WORKFLOW_ID: ${{ secrets.XCODE_CLOUD_APPSTORE_WORKFLOW_ID }}
+        run: |
+          KEY_PATH="$(mktemp)"
+          echo "$ASC_API_KEY_P8_BASE64" | base64 -d > "$KEY_PATH"
+          ASC_API_KEY_PATH="$KEY_PATH" ./scripts/trigger-xcode-cloud-build.sh "$XCODE_CLOUD_APPSTORE_WORKFLOW_ID" main
+          rm -f "$KEY_PATH"
+
+      - name: Create summary
+        if: always()
+        run: |
+          {
+            echo "## Release Merged"
+            echo ""
+            echo "- **Version**: \`$VERSION\`"
+            echo "- **Result**: ${{ job.status }}"
+            echo "- **PR**: #${{ github.event.pull_request.number }}"
+          } >> "$GITHUB_STEP_SUMMARY"
