@@ -27,9 +27,43 @@ concurrency:
 env:
   # push から来た場合 inputs は空なのでSTGにフォールバックする
   DEPLOY_ENV: ${{ inputs.environment || 'stg' }}
+  FUNCTIONS_DIR: firebase/functions
 
 jobs:
+  # ルールは誤りをそのまま反映すると全ユーザーがアプリを使えなくなるため、
+  # Emulator上のルールテスト（firebase/functions/test/rules）を通過した場合だけ
+  # デプロイジョブへ進む。手動実行の本番デプロイも同じ関門を通る。
+  test-rules:
+    name: Test Firestore Rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FUNCTIONS_DIR }}/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21' # Firebase Emulator用
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install dependencies
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm ci
+
+      - name: Run rules tests
+        working-directory: ${{ env.FUNCTIONS_DIR }}
+        run: npm run test:rules
+
   deploy-firestore:
+    needs: test-rules
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
