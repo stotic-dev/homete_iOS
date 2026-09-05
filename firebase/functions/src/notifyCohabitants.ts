@@ -2,7 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {getMessaging} from "firebase-admin/messaging";
 import {FirestoreHelper} from "./models/FirestoreHelper";
-import {appCheckOptions} from "./appCheckOptions";
+import {appCheckOptions, logAppCheckStatus} from "./appCheck";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
@@ -15,10 +15,12 @@ export const notifyothercohabitants = onCall(
   async (request: {
     data: NotifyCohabitantsRequest;
     auth?: { uid: string };
+    app?: { appId: string };
   }) => {
     logger.info("Executing notifyothercohabitants function", {
       data: request.data,
     });
+    logAppCheckStatus("notifyothercohabitants", request.app);
 
     if (!request.auth) {
       logger.error("Authentication error: User is not authenticated.");
