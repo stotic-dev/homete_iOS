@@ -76,6 +76,7 @@ export async function createTestCohabitant(
 
   // Cohabitantモデルに準拠したデータを作成
   const cohabitant: Cohabitant = {
+    id: cohabitantId,
     members,
   };
 

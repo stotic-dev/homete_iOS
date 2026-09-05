@@ -32,7 +32,7 @@ beforeEach(async () => {
  */
 async function clearFirestore() {
   const db = getFirestore();
-  const collections = ["Account", "Cohabitant"];
+  const collections = ["Account", "Cohabitant", "Invitation"];
 
   // サブコレクションが残るとテスト間で状態が混ざるため再帰的に削除する
   for (const collectionName of collections) {

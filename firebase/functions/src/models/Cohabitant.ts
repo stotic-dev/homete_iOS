@@ -2,6 +2,7 @@
  * Cohabitantドキュメントの構造（Functionsで使用するプロパティのみ）
  */
 export interface Cohabitant {
+    id: string;
     members: string[];
 }
 
@@ -9,6 +10,7 @@ export interface Cohabitant {
  * Cohabitantドキュメントのフィールド名定数
  */
 export class CohabitantFields {
+  static readonly ID = "id";
   static readonly MEMBERS = "members";
 }
 
@@ -43,6 +45,7 @@ export class CohabitantConverter {
      */
   static fromFirestoreData(data: FirebaseFirestore.DocumentData): Cohabitant {
     return {
+      id: (data[CohabitantFields.ID] as string) || "",
       members: (data[CohabitantFields.MEMBERS] as string[]) || [],
     };
   }

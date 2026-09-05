@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["56LYVN6DMF.taichi.satou.hometekure.dev"],
+        "components": [
+          {
+            "/": "/invite/*",
+            "comment": "同居人グループへの招待リンク"
+          }
+        ]
+      }
+    ]
+  }
+}
