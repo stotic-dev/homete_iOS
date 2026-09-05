@@ -52,6 +52,59 @@ jobs:
           echo "$ASC_API_KEY_P8_BASE64" | base64 -d > "$RUNNER_TEMP/asc_api_key.p8"
           echo "ASC_API_KEY_PATH=$RUNNER_TEMP/asc_api_key.p8" >> "$GITHUB_ENV"
 
+      - name: Diagnose OpenSSL / EC key environment
+        continue-on-error: true
+        run: |
+          echo "--- openssl CLI ---"
+          openssl version -a || true
+          echo "--- Homebrew openssl@3 ---"
+          brew list --versions openssl@3 2>/dev/null || echo "openssl@3 not installed via brew"
+          echo "--- Ruby (system) OpenSSL binding ---"
+          ruby -ropenssl -e 'puts "gem openssl=#{OpenSSL::VERSION} / library=#{OpenSSL::OPENSSL_LIBRARY_VERSION}"' || true
+          echo "--- Ruby (bundle exec, Gemfile-pinned) OpenSSL binding ---"
+          bundle exec ruby -ropenssl -e 'puts "gem openssl=#{OpenSSL::VERSION} / library=#{OpenSSL::OPENSSL_LIBRARY_VERSION}"' || true
+          echo "--- Installed openssl gem(s) ---"
+          gem list -d openssl || true
+          echo "--- Loaded openssl native extension linkage (otool -L) ---"
+          bundle exec ruby -ropenssl -e '
+            ext = $LOADED_FEATURES.find { |f| f =~ /openssl\.(bundle|so)$/ }
+            puts ext || "extension path not found"
+          ' | xargs -I{} sh -c 'test -f "{}" && otool -L "{}" || true'
+          echo "--- Builtin EC curves recognized by Ruby OpenSSL (looking for prime256v1) ---"
+          bundle exec ruby -ropenssl -e '
+            begin
+              names = OpenSSL::PKey::EC.builtin_curves.map { |c| c[0] }
+              puts "prime256v1 present: #{names.include?("prime256v1")}"
+              puts names.grep(/prime256|secp256|nist.*256/).inspect
+            rescue => e
+              puts "ERROR listing curves: #{e.class}: #{e.message}"
+            end
+          '
+          echo "--- ASC API key file format (header/footer only, no key content) ---"
+          if [ -f "$ASC_API_KEY_PATH" ]; then
+            wc -c "$ASC_API_KEY_PATH"
+            head -n1 "$ASC_API_KEY_PATH"
+            tail -n1 "$ASC_API_KEY_PATH"
+          else
+            echo "key file not found at $ASC_API_KEY_PATH"
+          fi
+          echo "--- Direct EC key parse attempt (isolated from fastlane/spaceship) ---"
+          bundle exec ruby -ropenssl -e '
+            raw = File.read(ENV["ASC_API_KEY_PATH"])
+            begin
+              pkey = OpenSSL::PKey.read(raw)
+              puts "OpenSSL::PKey.read succeeded: #{pkey.class}"
+            rescue => e
+              puts "OpenSSL::PKey.read FAILED: #{e.class}: #{e.message}"
+            end
+            begin
+              ec = OpenSSL::PKey::EC.new(raw)
+              puts "OpenSSL::PKey::EC.new succeeded: #{ec.class}"
+            rescue => e
+              puts "OpenSSL::PKey::EC.new FAILED: #{e.class}: #{e.message}"
+            end
+          '
+
       - name: Sync metadata to App Store Connect
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
