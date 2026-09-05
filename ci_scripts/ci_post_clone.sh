@@ -74,6 +74,28 @@ case "$CI_WORKFLOW" in
         echo "==========================="
         ;;
 
+    "Upload Release Candidate TestFlight")
+        echo "=== Upload Release Candidate TestFlight workflow ==="
+
+        # doc/adr/0016: リリースPR（release/*ブランチ）への変更の度に、Release Configuration
+        # でビルドして外部TestFlightに配信するワークフロー。本番Firebase設定を使う点は
+        # Upload For AppStoreと同じ（Release ConfigurationはDEBUGを定義しないため）。
+        if [ -z "$GOOGLESERVICE_INFO" ]; then
+            echo "ERROR: GOOGLESERVICE_INFO environment variable is not set"
+            exit 1
+        fi
+        echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info.plist"
+        echo "✓ GoogleService-Info.plist decoded and placed"
+
+        if [ -z "$SECRET_XCCONFIG" ]; then
+            echo "ERROR: SECRET_XCCONFIG environment variable is not set"
+            exit 1
+        fi
+        echo "$SECRET_XCCONFIG" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/Resouces/Secret.xcconfig"
+        echo "✓ Secret.xcconfig decoded and placed"
+        echo "==========================="
+        ;;
+
     "Upload Stg TestFlight")
         echo "=== Upload Stg TestFlight workflow ==="
 
