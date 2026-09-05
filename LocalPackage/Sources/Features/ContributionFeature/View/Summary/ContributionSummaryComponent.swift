@@ -94,9 +94,16 @@ struct ContributionSummaryContent: View {
                     rankingContent(summaries.makeRanking())
                 }
             } else {
-                // TODO: 今日の家事完了を促すメッセージとアクションの導線を追加する
-                ContentUnavailableView("今月はまだ達成された家事がありません", systemImage: "house.circle")
-                    .frame(height: 240)
+                ContentUnavailableView {
+                    Label("今月はまだ達成された家事がありません", systemImage: "house.circle")
+                } description: {
+                    Text("これまでの貢献履歴なら振り返れます")
+                } actions: {
+                    Button("もっと詳しく見る") {
+                        isShowAnalytics = true
+                    }
+                    .primaryButtonStyle()
+                }
             }
         }
     }
