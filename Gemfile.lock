@@ -182,6 +182,7 @@ GEM
     net-http (0.9.1)
       uri (>= 0.11.1)
     nkf (0.3.0)
+    openssl (4.0.2)
     optparse (0.8.1)
     os (1.1.4)
     ostruct (0.6.3)
@@ -255,6 +256,7 @@ PLATFORMS
 
 DEPENDENCIES
   fastlane (= 2.239.0)
+  openssl (>= 3.2)
 
 BUNDLED WITH
    2.5.21
