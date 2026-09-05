@@ -189,8 +189,8 @@ launching → notLoggedIn → Sign In with Apple
    - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
 
 3. **`functions-e2e-test.yml`** - Firebase Functionsテスト
-   - `firebase/functions/**`への変更でトリガー（PR / mainまたはrelease/*へのpush）
-   - ESLintとE2Eテストを実行
+   - `firebase/functions/**` / `firebase/firestore.rules`への変更でトリガー（PR / mainまたはrelease/*へのpush）
+   - ESLintとE2Eテスト、Firestoreセキュリティルールのユニットテスト（`test/rules`）を実行
    - Node.js 21とJava 21を使用
 
 4. **`deploy-functions.yml`** - Firebase FunctionsをSTGへデプロイ
