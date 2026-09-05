@@ -153,15 +153,14 @@
       </li>
     </ol>
 
-    <!-- TODO: App Store公開後、APP_STORE_URL に実際のURLを設定する（Issue #182） -->
     <a class="button" id="appStoreLink" href="#" aria-disabled="true">App Storeで開く</a>
 
     <p class="note">招待リンクの有効期限は発行から24時間です。<br>期限が切れた場合は、招待した方にリンクを再送してもらってください。</p>
   </main>
 
   <script>
-    // App Store公開後にURLを設定する。空のままの間はボタンを無効表示にする。
-    var APP_STORE_URL = "";
+    // 空のままの間はボタンを無効表示にする。
+    var APP_STORE_URL = "https://apps.apple.com/app/id6744935314";
 
     (function () {
       var link = document.getElementById("appStoreLink");
