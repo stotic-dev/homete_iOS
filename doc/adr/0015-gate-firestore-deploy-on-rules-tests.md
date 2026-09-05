@@ -3,11 +3,11 @@
 * **ステータス: 承認済**
 * 意思決定者: @stotic-dev
 * 日付: 2026-09-05
-* 技術的背景やその他関連チケット No: [#236](https://github.com/stotic-dev/homete_iOS/issues/236) / 前提: [#233](https://github.com/stotic-dev/homete_iOS/issues/233)（ルールのユニットテスト） / [#235](https://github.com/stotic-dev/homete_iOS/issues/235)（[ADR-0013](0013-firebase-multi-project-deploy.md) / デプロイ経路）
+* 技術的背景やその他関連チケット No: [#236](https://github.com/stotic-dev/homete_iOS/issues/236) / 前提: [#233](https://github.com/stotic-dev/homete_iOS/issues/233)（ルールのユニットテスト） / [#235](https://github.com/stotic-dev/homete_iOS/issues/235)（[ADR-0014](0014-firebase-multi-project-deploy.md) / デプロイ経路）
 
 ## 文脈、背景や問題点の説明
 
-[ADR-0013](0013-firebase-multi-project-deploy.md) で `deploy-firestore.yml` を追加し、`firestore.rules` はmainへのpushでSTGへ、`workflow_dispatch` で本番へデプロイできるようになった。また #233 で `@firebase/rules-unit-testing` によるルールのユニットテスト（`firebase/functions/test/rules`）が入り、`functions-e2e-test.yml` で実行されるようになった。
+[ADR-0014](0014-firebase-multi-project-deploy.md) で `deploy-firestore.yml` を追加し、`firestore.rules` はmainへのpushでSTGへ、`workflow_dispatch` で本番へデプロイできるようになった。また #233 で `@firebase/rules-unit-testing` によるルールのユニットテスト（`firebase/functions/test/rules`）が入り、`functions-e2e-test.yml` で実行されるようになった。
 
 しかしこの2つは繋がっていない。デプロイはテストの成否と無関係に走るため、ルールのテストが落ちていてもmainにマージされれば実環境へ反映される。Functionsは [ADR-0008](0008-deploy-functions-workflow.md) でE2E成功を前提にしたが、ルールは同じ保証がないまま残っていた。
 
@@ -50,4 +50,4 @@
 
 * `.github/workflows/deploy-firestore.yml`
 * `firebase/functions/test/rules/firestore.rules.test.ts`
-* [ADR-0008](0008-deploy-functions-workflow.md) / [ADR-0013](0013-firebase-multi-project-deploy.md)
+* [ADR-0008](0008-deploy-functions-workflow.md) / [ADR-0014](0014-firebase-multi-project-deploy.md)

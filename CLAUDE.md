@@ -204,7 +204,7 @@ launching → notLoggedIn → Sign In with Apple
 5. **`deploy-firestore.yml`** - Firestoreインデックス・セキュリティルールのデプロイ
    - `firebase/firestore.indexes.json` / `firebase/firestore.rules`のmainへのpushでSTGへデプロイ
    - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
-   - デプロイ前に`test-rules`ジョブでEmulator上のルールテスト（`firebase/functions/test/rules`）を実行し、通過時のみデプロイする（手動実行の本番デプロイも同じ関門を通る）。経緯は[ADR-0014](doc/adr/0014-gate-firestore-deploy-on-rules-tests.md)
+   - デプロイ前に`test-rules`ジョブでEmulator上のルールテスト（`firebase/functions/test/rules`）を実行し、通過時のみデプロイする（手動実行の本番デプロイも同じ関門を通る）。経緯は[ADR-0015](doc/adr/0015-gate-firestore-deploy-on-rules-tests.md)
 
 6. **`create-release-note.yaml`** - リリースノート生成
 
