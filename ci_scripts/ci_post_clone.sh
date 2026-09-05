@@ -85,6 +85,11 @@ case "$CI_WORKFLOW" in
         echo "$GOOGLESERVICE_INFO" | base64 --decode > "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info-dev.plist"
         echo "✓ GoogleService-Info-dev.plist decoded and placed"
 
+        # CrashlyticsのdSYMアップロードRun Scriptは固定名GoogleService-Info.plistからGOOGLE_APP_IDを
+        # 自動検出するため（homete/Views/HometeApp.swiftが実行時に読む -dev.plist とは別に）同名でも配置する
+        cp "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info-dev.plist" "$CI_PRIMARY_REPOSITORY_PATH/homete/GoogleService-Info.plist"
+        echo "✓ GoogleService-Info.plist (for Crashlytics dSYM upload) placed"
+
         # 開発用xcconfig（AdMob/RevenueCat設定）をsecretからデコードして配置
         if [ -z "$SECRET_XCCONFIG_DEV" ]; then
             echo "ERROR: SECRET_XCCONFIG_DEV environment variable is not set"
