@@ -198,8 +198,9 @@ launching → notLoggedIn → Sign In with Apple
    - `firebase deploy --only functions`（`firebase.json`のpredeployでlint+buildが走る）
    - `workflow_dispatch`で手動デプロイも可能
 
-5. **`deploy-firestore-indexes.yml`** - Firestoreインデックスのデプロイ
-   - `firebase/firestore.indexes.json`のmainへのpushでトリガー
+5. **`deploy-firestore.yml`** - Firestoreのルール・インデックスのデプロイ
+   - `firebase/firestore.rules` / `firebase/firestore.indexes.json`のmainへのpushでトリガー
+   - `firebase deploy --only firestore:rules,firestore:indexes`
 
 6. **`create-release-note.yaml`** - リリースノート生成
 

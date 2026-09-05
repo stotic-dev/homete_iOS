@@ -1,0 +1,59 @@
+name: Deploy Hosting
+
+# Hostingは静的ファイル（AASA・招待リンクのフォールバックページ）のみのため、
+# ビルドやテストを挟まずmainへのpushで直接デプロイする。
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "firebase/hosting/**"
+      - "firebase/firebase.json"
+      - ".github/workflows/deploy-hosting.yml"
+  workflow_dispatch:
+
+# デプロイ同士が並走しないよう直列化する
+concurrency:
+  group: deploy-hosting
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Write Service Account JSON
+        run: |
+          if [ -z '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' ]; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT secret is not set"
+            exit 1
+          fi
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+
+      - name: Deploy Hosting
+        run: firebase deploy --only hosting --non-interactive
+        working-directory: firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+
+      - name: Create deploy summary
+        if: always()
+        run: |
+          {
+            echo "## Deploy Hosting"
+            echo ""
+            echo "- **Result**: ${{ job.status }}"
+            echo "- **Commit**: \`${{ github.sha }}\`"
+            echo "- **Triggered by**: ${{ github.event_name }}"
+          } >> "$GITHUB_STEP_SUMMARY"

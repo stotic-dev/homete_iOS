@@ -3,8 +3,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Invitationは招待トークンそのものがドキュメントIDになっているため、
+    // クライアントから読めると有効なトークンを列挙できてしまう。書き込みを許すと
+    // cohabitantId / expiresAt を差し替えてcallableの検証を迂回できるため、
+    // クライアントには読み書きとも一切開かない。
+    // Cloud Functions（Admin SDK）はセキュリティルールを経由しないので、
+    // 招待の発行・参加はこの制限を受けない。
+    match /{collection}/{document=**} {
+      allow read, write: if request.auth != null
+        && collection != 'Invitation';
     }
   }
 }

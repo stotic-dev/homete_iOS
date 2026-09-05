@@ -15,9 +15,11 @@ public struct RootView: View {
     @State var fcmToken: String?
     @State var launchState = LaunchState.launching
 
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(PendingInvitationStore.self) var pendingInvitationStore
 
     public var body: some View {
         ZStack {
@@ -57,6 +59,9 @@ public struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
             onReceiveFcmToken(notification)
         }
+        .onOpenURL { url in
+            onOpenURL(url)
+        }
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init(launchState: $launchState))
     }
@@ -68,6 +73,7 @@ public extension RootView {
     static func make(dependencies: AppDependencies) -> some View {
         DependenciesInjectLayer {
             let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
+            let pendingInvitationStore = PendingInvitationStore()
             let subscriptionStore = SubscriptionStore(purchaseClient: $0.purchaseClient)
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
@@ -88,6 +94,7 @@ public extension RootView {
                     accountInfoClient: $0.accountInfoClient
                 ))
                 .environment(subscriptionStore)
+                .environment(pendingInvitationStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
                 }
@@ -102,6 +109,16 @@ public extension RootView {
 // MARK: - プレゼンテーションロジック
 
 private extension RootView {
+
+    /// Universal Linkを受け取る
+    /// - Note: ログイン前にも開かれるため、ここではトークンを退避するだけにして、
+    ///         ログイン後に`AppTabView`が参加画面を表示する
+    func onOpenURL(_ url: URL) {
+        guard let token = CohabitantInvitationLink.token(from: url) else { return }
+
+        pendingInvitationStore.store(token)
+        analyticsClient.log(.cohabitantInvitation(.linkOpened))
+    }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
         guard let fcmToken = notification.object as? String else { return }
