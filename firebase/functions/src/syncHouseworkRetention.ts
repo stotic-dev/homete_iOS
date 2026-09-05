@@ -2,6 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {FirestoreHelper} from "./models/FirestoreHelper";
 import {updateHouseworkExpiredAt} from "./models/HouseworkRetentionUpdater";
+import {appCheckOptions} from "./appCheckOptions";
 
 interface SyncHouseworkRetentionRequest {
   cohabitantId: string;
@@ -18,6 +19,7 @@ interface SyncHouseworkRetentionRequest {
  * 同じ日の家事の一部だけが消えて貢献度の集計が壊れるため。
  */
 export const synchouseworkretention = onCall(
+  appCheckOptions,
   async (request: {
     data: SyncHouseworkRetentionRequest;
     auth?: { uid: string };

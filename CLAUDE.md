@@ -145,6 +145,39 @@ View → Store（AppDependenciesを受け取る）
 - `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
 - `AccountAuthClient`がFirebase Auth操作をラップ
 
+**App Check** （詳細は [ADR-0014](doc/adr/0014-firebase-app-check.md)）:
+
+`AppCheckConfigurator.configure(usesDebugProvider:)`（`HometeInfrastructure/AppCheck/`）を`FirebaseApp.configure()`の**前**に呼ぶ。後から呼んでもトークンは付与されない。
+
+| ビルド | プロバイダ | 判定 |
+|---|---|---|
+| Debug構成（Xcodeから実行） | Debug Provider | `#if DEBUG && !STG` |
+| Stg構成（TestFlight） | App Attest | Stg構成にだけ`STG`フラグを定義している |
+| Release構成（App Store） | App Attest | DEBUG未定義 |
+
+Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定義している。`#if DEBUG`だけではローカルビルドと区別できないので、App Checkのプロバイダ選択では必ず`STG`も見ること。
+
+**デバッグトークンのセットアップ**（Debug構成でFirestore・Functionsを叩くのに必須）:
+
+1. Debug構成でアプリを起動し、コンソールに出る `App Check debug token: 'XXXX-...'` を控える
+2. Firebaseコンソールの**stgプロジェクト（`homete-ios-dev-e3ef7`）** → App Check → アプリ タブ → `taichi.satou.hometekure.dev` の ⋮ → デバッグトークンを管理 → 登録する
+3. 控えたトークンを `homete/Resouces/Secret_dev.xcconfig` の `APP_CHECK_DEBUG_TOKEN` に設定する
+
+3をやると、`homete.xcscheme` の環境変数 `AppCheckDebugToken`（値は `$(APP_CHECK_DEBUG_TOKEN)`）経由で全端末・全シミュレータが同じトークンを使うようになり、**コンソールへの登録は最初の1回だけで済む**。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
+
+デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み。共有スキームには変数名だけが載る）。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
+
+FirestoreとCallable関数で有効化の仕組みが違うので混同しないこと。
+
+| | Firestore | Callable Functions |
+|---|---|---|
+| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | `firebase/functions/src/appCheckOptions.ts`の`enforceAppCheck` + デプロイ |
+| コンソールのメトリクス | あり | なし（メトリクス対象サービスに含まれない） |
+
+Callable関数のトークン検証は`enforceAppCheck`の値に関係なく常に走り、検証を通った場合だけ`request.app`が埋まる。`enforceAppCheck`は拒否するかどうかだけを制御するので、**`false`のままではSDKのデフォルトと同じで何も有効化されない**。コンソールでは切り替えられないため、変更にはデプロイが必要。
+
+stg / prod とも**強制適用済み**（Firestoreはコンソール、Functionsは`enforceAppCheck: true`）。App Check非対応のビルドはバックエンドに一切アクセスできないので、ローカル開発では上記のデバッグトークン設定が必須。
+
 ### 状態管理
 
 **モダンなSwift Concurrency:**

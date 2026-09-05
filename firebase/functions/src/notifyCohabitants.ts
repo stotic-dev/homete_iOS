@@ -2,6 +2,7 @@ import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {getMessaging} from "firebase-admin/messaging";
 import {FirestoreHelper} from "./models/FirestoreHelper";
+import {appCheckOptions} from "./appCheckOptions";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
@@ -10,6 +11,7 @@ interface NotifyCohabitantsRequest {
 }
 
 export const notifyothercohabitants = onCall(
+  appCheckOptions,
   async (request: {
     data: NotifyCohabitantsRequest;
     auth?: { uid: string };
