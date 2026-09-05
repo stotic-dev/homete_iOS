@@ -39,7 +39,9 @@
 - `firebase/functions/src/` に削除バッチ・スケジュール関数は存在しない（`notifyCohabitants` / `deleteUserData` のみ）
 - 一方 `doc/strategy/housework-points.md:191` には「`expiredAt` は Firestore TTL（自動削除）に使用されている」と記述あり
 
-**TTLポリシーは Firebase コンソール側の手動設定に依存している**と判断される。着手前にユーザーへ確認し、**TTLは設定済み**であることを確認済み（2026-08-11）。したがって `expiredAt` の変更はそのまま実データの削除タイミングに反映される。
+**TTLポリシーは Firebase コンソール側の手動設定に依存している**と判断される。着手前にユーザーへ確認し、**TTLは設定済み**であることを確認済み（2026-08-11、stg）。したがって `expiredAt` の変更はそのまま実データの削除タイミングに反映される。
+
+prod（`homete-ios-dev`）は本番リリースに合わせて別途設定が必要で、2026-09-05に `gcloud firestore fields ttls update expiredAt --collection-group=Houseworks --enable-ttl --project=homete-ios-dev` で有効化し、stg・prodともに `ttlConfig.state: ACTIVE` を確認済み。設定はコレクショングループ `Houseworks` の `expiredAt` フィールドに対する単純なTTL有効化のみで、削除猶予日数などの追加パラメータはない（期限切れ後24時間以内に非同期削除される仕様）。TTLはプロジェクト単位の設定のためstg/prodそれぞれで個別に有効化する必要がある。
 
 ### 4. Firestore のデータ構造
 
@@ -424,7 +426,7 @@ public extension EnvironmentValues {
 - [x] **T-14** `syncHouseworkRetention.ts` / `HouseworkRetentionUpdater.ts` を実装（冪等な一括再計算）
 - [x] **T-15** `index.ts` へのexport追加
 - [x] **T-16** `firestore.rules` の扱いを決定 → **変更なし**（下記「見送った項目」参照）
-- [ ] **T-17** TTLポリシーの設定内容（削除猶予・対象フィールド）をドキュメント化
+- [x] **T-17** TTLポリシーの設定内容（削除猶予・対象フィールド）をドキュメント化（2026-09-05、stg/prodともに設定確認済み）
 
 ### Phase 5: 検証
 
