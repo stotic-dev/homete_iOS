@@ -15,7 +15,7 @@ public final actor HouseworkManager {
     public private(set) var listenerAnchorDate: Date = .now
     /// ワンショットフェッチ済みの期間。この範囲より過去は未取得のため、必要になった時点で追加取得する
     public private(set) var fetchedRange: ClosedRange<Date>?
-    private var streamContinuationDic: [String: AsyncStream<[HouseworkItem]>.Continuation] = [:]
+    private var streamContinuationDic: [String: AsyncStream<Result<[HouseworkItem], DomainError>>.Continuation] = [:]
     private var observeTask: Task<Void, Never>?
     /// 進行中の追加フェッチ。同じ期間を重複して取得しないための待ち合わせに使う
     private var pendingFetchTask: Task<Void, Never>?
@@ -44,8 +44,11 @@ public final actor HouseworkManager {
     // MARK: public method
 
     /// allItems 変化を通知する AsyncStream を生成して返す
-    public func createObserver(_ key: String) -> AsyncStream<[HouseworkItem]> {
-        let (stream, continuation) = AsyncStream<[HouseworkItem]>.makeStream()
+    ///
+    /// - Note: Firestoreリスナーのエラーで購読が止まっても再購読（`setupObserver`の再呼び出し）で
+    ///         復帰できるよう、失敗時もストリームは`finish`せず`Result.failure`を流すだけに留める。
+    public func createObserver(_ key: String) -> AsyncStream<Result<[HouseworkItem], DomainError>> {
+        let (stream, continuation) = AsyncStream<Result<[HouseworkItem], DomainError>>.makeStream()
         streamContinuationDic.updateValue(continuation, forKey: key)
         return stream
     }
@@ -64,10 +67,13 @@ public final actor HouseworkManager {
 
         // 1. プランに応じた期間をワンショットフェッチして allItems を初期化
         let lowerBound = storagePolicy.initialFetchLowerBound(currentDate: currentTime, calendar: calendar)
-        if let fetchedItems = try? await houseworkClient.fetchItems(cohabitantId, lowerBound, currentTime) {
+        do {
+            let fetchedItems = try await houseworkClient.fetchItems(cohabitantId, lowerBound, currentTime)
             allItems = fetchedItems
             fetchedRange = lowerBound ... currentTime
             notifyObservers()
+        } catch {
+            notifyFailure(error)
         }
 
         // 2. ±N日のリアルタイムリスナー起動
@@ -79,10 +85,14 @@ public final actor HouseworkManager {
         )
 
         observeTask = Task {
-            for await currentItems in houseworkListStream {
-                // 3. allItems に upsert マージして通知
-                upsert(currentItems)
-                notifyObservers()
+            do {
+                for try await currentItems in houseworkListStream {
+                    // 3. allItems に upsert マージして通知
+                    upsert(currentItems)
+                    notifyObservers()
+                }
+            } catch {
+                notifyFailure(error)
             }
         }
     }
@@ -137,7 +147,17 @@ private extension HouseworkManager {
 
     func notifyObservers() {
         for (_, continuation) in streamContinuationDic {
-            continuation.yield(allItems)
+            continuation.yield(.success(allItems))
+        }
+    }
+
+    /// フェッチ・リスナーの失敗をオブザーバーに通知する
+    ///
+    /// - Note: ストリームを`finish`すると再購読後の成功通知が届かなくなるため、`yield`のみで伝える。
+    func notifyFailure(_ error: Error) {
+        let domainError = DomainError.make(error) ?? .other
+        for (_, continuation) in streamContinuationDic {
+            continuation.yield(.failure(domainError))
         }
     }
 

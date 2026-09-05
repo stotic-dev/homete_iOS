@@ -22,7 +22,7 @@ struct HouseworkManagerTest {
         let calendar = Calendar.japanese
         let expectedFrom = Date.previewDate(year: 2025, month: 8, day: 11)
         let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
-        let (stream, _) = AsyncStream<[HouseworkItem]>.makeStream()
+        let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
             houseworkClient: .init(
@@ -56,8 +56,10 @@ struct HouseworkManagerTest {
         // Assert
 
         var receivedItems: [HouseworkItem] = []
-        for await items in observerStream {
-            receivedItems = items
+        for await result in observerStream {
+            if case let .success(items) = result {
+                receivedItems = items
+            }
             break
         }
 
@@ -74,7 +76,7 @@ struct HouseworkManagerTest {
         let now = Date()
         let calendar = Calendar.autoupdatingCurrent
         let existingItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
-        let (stream, streamContinuation) = AsyncStream<[HouseworkItem]>.makeStream()
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
             houseworkClient: .init(
@@ -104,8 +106,10 @@ struct HouseworkManagerTest {
         streamContinuation.yield([updatedItem, newItem])
 
         var receivedItems: [HouseworkItem] = []
-        for await items in observerStream {
-            receivedItems = items
+        for await result in observerStream {
+            if case let .success(items) = result {
+                receivedItems = items
+            }
             break
         }
         streamContinuation.finish()
@@ -200,6 +204,135 @@ struct HouseworkManagerTest {
         #expect(allItems.count == 2)
         #expect(allItems.contains(where: { $0.id == additionalItem.id }))
         #expect(fetchedRange == targetDate ... now)
+    }
+
+    @Test("リアルタイムリスナーがエラーで終了すると、オブザーバーに失敗が通知される")
+    func snapshotListenerFailureNotifiesObservers() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+
+        let observerStream = await manager.createObserver("testKey")
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // フェッチ結果の通知を消費
+        for await _ in observerStream {
+            break
+        }
+
+        // Act
+
+        streamContinuation.finish(throwing: DomainError.noNetwork)
+
+        // Assert
+
+        var receivedResult: Result<[HouseworkItem], DomainError>?
+        for await result in observerStream {
+            receivedResult = result
+            break
+        }
+        #expect(receivedResult == .failure(.noNetwork))
+    }
+
+    @Test("初回フェッチに失敗すると、オブザーバーに失敗が通知される")
+    func initialFetchFailureNotifiesObservers() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                fetchItemsHandler: { _, _, _ in throw DomainError.noNetwork }
+            )
+        )
+
+        let observerStream = await manager.createObserver("testKey")
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // Assert
+
+        var receivedResult: Result<[HouseworkItem], DomainError>?
+        for await result in observerStream {
+            receivedResult = result
+            break
+        }
+        #expect(receivedResult == .failure(.noNetwork))
+    }
+
+    @Test("失敗を通知したあとにsetupObserverをやり直すと、同じオブザーバーに成功が通知される")
+    func setupObserverAfterFailureNotifiesSuccess() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let calendar = Calendar.japanese
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        streamContinuation.finish(throwing: DomainError.noNetwork)
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [fetchedItem] }
+            )
+        )
+
+        let observerStream = await manager.createObserver("testKey")
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+        // 初回フェッチの成功通知とリスナーの失敗通知を消費
+        var consumedCount = 0
+        for await _ in observerStream {
+            consumedCount += 1
+            if consumedCount == 2 { break }
+        }
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // Assert
+
+        var receivedResult: Result<[HouseworkItem], DomainError>?
+        for await result in observerStream {
+            receivedResult = result
+            break
+        }
+        #expect(receivedResult == .success([fetchedItem]))
     }
 
     @Test("fetchIfNeededは取得済み範囲内の日付を要求されても再フェッチしない")

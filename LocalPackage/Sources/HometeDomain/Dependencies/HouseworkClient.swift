@@ -16,7 +16,7 @@ public struct HouseworkClient: Sendable {
         _ cohabitantId: String,
         _ anchorDate: Date,
         _ offset: Int
-    ) async -> AsyncStream<[HouseworkItem]>
+    ) async -> AsyncThrowingStream<[HouseworkItem], Error>
     public let removeListener: @Sendable (_ id: String) async -> Void
     public let fetchItems: @Sendable (
         _ cohabitantId: String,
@@ -44,7 +44,7 @@ public extension HouseworkClient {
             _ cohabitantId: String,
             _ anchorDate: Date,
             _ offset: Int
-        ) async -> AsyncStream<[HouseworkItem]> = { _, _, _, _ in .makeStream().stream },
+        ) async -> AsyncThrowingStream<[HouseworkItem], Error> = { _, _, _, _ in .makeStream().stream },
         removeListenerHandler: @escaping @Sendable (_ id: String) async -> Void = { _ in },
         fetchItemsHandler: @escaping @Sendable (
             _ cohabitantId: String,
