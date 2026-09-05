@@ -46,6 +46,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 private extension AppDelegate {
 
     func setupFirebase() {
+        // App Checkのプロバイダ登録はFirebaseApp.configure()より前に行う必要がある。
+        AppCheckConfigurator.configure(usesDebugProvider: usesAppCheckDebugProvider)
+
         #if DEBUG
         if !isXcodePreview, !isUnitTestMode {
             guard let devPlistFilePath = (
@@ -60,6 +63,19 @@ private extension AppDelegate {
         }
         #else
         FirebaseApp.configure()
+        #endif
+    }
+
+    /// Xcodeから実行するローカルビルドかどうか。
+    ///
+    /// Stg構成はTestFlight配布でありながらDEBUGを定義している（開発用のFirebaseプロジェクトを
+    /// 参照するため）ので、DEBUGだけではローカルビルドと区別できない。Stg構成にだけ定義した
+    /// STGフラグで除外する。
+    var usesAppCheckDebugProvider: Bool {
+        #if DEBUG && !STG
+        true
+        #else
+        false
         #endif
     }
 
