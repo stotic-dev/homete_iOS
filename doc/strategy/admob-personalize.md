@@ -215,6 +215,26 @@ func setupGoogleMobileAds() {
 - [ ] レビュー対応（未アサイン。レビュワー依頼が必要）
 - [ ] マージ
 
+## 補足: PrivacyInfo.xcprivacyとの関係（Issue #234）
+
+[Issue #234](https://github.com/stotic-dev/homete_iOS/issues/234) の対応時に、アプリ本体の `PrivacyInfo.xcprivacy` に
+`NSPrivacyTracking = true` / `NSPrivacyTrackingDomains` へのAdMob配信ドメイン列挙が必要かを調査した。
+
+**結論: アプリ本体側の対応は不要。** 理由は以下の2点。
+
+1. Apple公式ガイダンス（[Adding a privacy manifest to your app or third-party SDK](https://developer.apple.com/documentation/bundleresources/adding-a-privacy-manifest-to-your-app-or-third-party-sdk)、
+   および[Apple Developer Forumsでの説明](https://developer.apple.com/forums/thread/749205)）に基づくと、
+   サードパーティSDKが自身のバイナリで行うトラッキングは、そのSDK自身が同梱する `PrivacyInfo.xcprivacy` で申告する責務であり、
+   アプリ側で重複して宣言する必要はない
+2. 本アプリのコードは `ATTrackingManager.requestTrackingAuthorization` やIDFA取得APIを一切直接呼び出しておらず、
+   ATTダイアログの提示・IDFAの取得・パーソナライズ広告配信は全てAdMobコンソール設定と `GoogleMobileAds` / `UserMessagingPlatform` SDK内部（`ConsentClient.loadAndPresentConsentFormIfRequired`）に委譲している（前述「起動シーケンス」参照）。
+   そのためトラッキング行為自体がアプリ自身のバイナリではなくSDKのバイナリ内で完結しており、
+   `GoogleMobileAds`（v13.3.0〜、2024年5月のApple要件対応以降のバージョン）が同梱する `PrivacyInfo.xcprivacy` 側で
+   `NSPrivacyTracking = true` とAdMobの配信ドメインが申告済みである
+
+`Info.plist` の `NSUserTrackingUsageDescription` は、ATTダイアログを提示するために必須のiOSシステム要件（アプリ・SDKのどちらが提示するかによらず必要）であり、
+これ単体はプライバシーマニフェストの申告要否とは別の話。
+
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/175
