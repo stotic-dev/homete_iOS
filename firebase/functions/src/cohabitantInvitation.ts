@@ -6,6 +6,7 @@ import {
   issueInvitation,
   joinCohabitantByInvitation,
 } from "./models/InvitationManager";
+import {appCheckOptions} from "./appCheckOptions";
 
 interface JoinCohabitantRequest {
   token: string;
@@ -47,6 +48,7 @@ function toHttpsError(
  * 招待を発行する（招待リンク経由でのグループ作成に対応するため）。
  */
 export const issuecohabitantinvitation = onCall(
+  appCheckOptions,
   async (request: { auth?: { uid: string } }) => {
     if (!request.auth) {
       logger.error("Authentication error: User is not authenticated.");
@@ -87,6 +89,7 @@ export const issuecohabitantinvitation = onCall(
  * （既存グループの家事データを失わせないため）。
  */
 export const joincohabitant = onCall(
+  appCheckOptions,
   async (request: {
     data: JoinCohabitantRequest;
     auth?: { uid: string };
