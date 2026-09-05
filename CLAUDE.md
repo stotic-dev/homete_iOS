@@ -142,6 +142,22 @@ View → Store（AppDependenciesを受け取る）
 - `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
 - `AccountAuthClient`がFirebase Auth操作をラップ
 
+**App Check** （詳細は [ADR-0014](doc/adr/0014-firebase-app-check.md)）:
+
+`AppCheckConfigurator.configure(usesDebugProvider:)`（`HometeInfrastructure/AppCheck/`）を`FirebaseApp.configure()`の**前**に呼ぶ。後から呼んでもトークンは付与されない。
+
+| ビルド | プロバイダ | 判定 |
+|---|---|---|
+| Debug構成（Xcodeから実行） | Debug Provider | `#if DEBUG && !STG` |
+| Stg構成（TestFlight） | App Attest | Stg構成にだけ`STG`フラグを定義している |
+| Release構成（App Store） | App Attest | DEBUG未定義 |
+
+Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定義している。`#if DEBUG`だけではローカルビルドと区別できないので、App Checkのプロバイダ選択では必ず`STG`も見ること。
+
+Debug Providerを使うローカルビルドは、初回起動時にコンソールへ出力されるデバッグトークンをFirebaseコンソール（App Check → アプリ → デバッグトークンを管理）に登録する必要がある。シミュレータを作り直すとトークンも変わるため再登録する。
+
+Callable関数側の強制適用は`firebase/functions/src/appCheckOptions.ts`の`enforceAppCheck`で切り替える。**現在はモニタリング期間中のため`false`**。Firebaseコンソールのメトリクスで正規アプリからのリクエストが100%検証済みになったら`true`にする。
+
 ### 状態管理
 
 **モダンなSwift Concurrency:**
