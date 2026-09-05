@@ -56,7 +56,11 @@ platform :ios do
     )
   end
 
-  desc "指定されたipaでApp Storeリリースを行う"
+  # 通常のリリースはGitHub Actions（release-merged.yml）がXcode Cloudの
+  # 「Upload For AppStore」workflowをキックする形に移行した（doc/adr/0016）。
+  # このレーンはローカルから手動でビルド・アップロードする場合の代替手段として残す。
+  # タグ作成もGitHub Actions側（PRマージ時）で行うようになったため、ここでは打たない。
+  desc "指定されたipaでApp Storeリリースを行う（ローカル手動実行用のフォールバック）"
   lane :release do |options|
     # ipa生成
     make_ipa(options)
@@ -67,17 +71,20 @@ platform :ios do
       ipa: "Build/app/homete.ipa",
       api_key: api_key
     )
+  end
 
-    app_version = options[:app_version]
-
-    add_git_tag(
-      tag: "v#{app_version}",
-      force: true
-    )
-
-    push_git_tags(
-      force: true,
-      tag: "v#{app_version}"
+  # app_versionにASC未作成のバージョンを渡すとensure_version!が新規作成し、
+  # 既に同じバージョンが存在する場合は何もしない（差分が無ければ変更扱いにならない）。
+  # skip_app_version_update: trueのままだとこの自動作成が働かず、編集可能なバージョンが
+  # 無い場合に "Cannot find edit app store version" で失敗するため、常にapp_versionを渡す。
+  desc "App Store Connectへメタデータを同期（ビルドはアップロードしない、対象バージョンが無ければ新規作成する）"
+  lane :sync_metadata do |options|
+    api_key = generate_api_key
+    deliver(
+      api_key: api_key,
+      app_version: options[:app_version],
+      skip_binary_upload: true,
+      skip_app_version_update: false
     )
   end
 

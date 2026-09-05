@@ -1,0 +1,111 @@
+name: Create Release PR
+
+# doc/adr/0016: リリースパイプラインの起点。手動実行でバージョン番号を指定し、
+# MARKETING_VERSIONを更新したブランチとPRを作成する。
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "リリースするバージョン番号（例: 1.1.0）"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
+
+      - name: Validate version format
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version は X.Y.Z 形式で指定してください（入力: $VERSION）"
+            exit 1
+          fi
+
+      - name: Create release branch
+        run: git checkout -b "release/v${VERSION}"
+
+      - name: Bump MARKETING_VERSION
+        run: xcrun agvtool new-marketing-version "$VERSION"
+
+      - name: Configure git
+        run: |
+          git config user.email "taichis844@gmail.com"
+          git config user.name "stotic-dev"
+
+      - name: Commit version bump
+        run: |
+          git add homete.xcodeproj/project.pbxproj
+          git commit -m "chore: リリースバージョンをv${VERSION}に更新"
+
+      - name: Push release branch
+        run: git push origin "release/v${VERSION}"
+
+      # 前回リリースタグ以降にmainへマージされたPRを一覧化する。
+      # PRタイトルにバッククォートや$等が含まれても安全なよう、ここではファイルへの
+      # 書き出しのみ行い、シェルの再展開が起きるコマンド置換には使わない。
+      - name: Collect merged PRs since last release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
+          if [ -n "$LAST_TAG" ]; then
+            SINCE_EPOCH=$(date -u -d "$(git log -1 --format=%cI "$LAST_TAG")" +%s)
+          else
+            SINCE_EPOCH=0
+          fi
+
+          gh pr list --base main --state merged --json number,title,url,mergedAt --limit 200 \
+            | jq -r --argjson since "$SINCE_EPOCH" '
+                [.[] | select((.mergedAt | fromdateiso8601) > $since)]
+                | sort_by(.mergedAt)
+                | if length == 0 then ["（前回リリースからの変更なし）"] else map("- #\(.number) \(.title) (\(.url))") end
+                | .[]
+              ' > pr_list.txt
+
+      - name: Build PR body
+        run: |
+          {
+            echo "## リリースv${VERSION}"
+            echo ""
+            echo "### 前回リリースとの差分PR一覧"
+            echo ""
+            cat pr_list.txt
+            echo ""
+            echo "### リリース前チェックリスト"
+            echo ""
+            echo "- [ ] 動作確認が済んでいること"
+            echo "- [ ] スクリーンショットの更新が必要な場合は更新していること"
+            echo "- [ ] リリースノートの更新が済んでいること（\`fastlane/metadata/ja/release_notes.txt\`）"
+            echo "- [ ] 前バージョンとのスナップショットの比較で意図しない差分がないこと"
+            echo ""
+            echo "---"
+            echo ""
+            echo "このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが"
+            echo "外部TestFlightにビルドを配信します。マージすると、タグ作成・GitHub Release publish・"
+            echo "メタデータ同期・Xcode CloudのUpload For AppStore起動が自動で走ります（doc/adr/0016）。"
+          } > pr_body.md
+
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "release/v${VERSION}" \
+            --title "Release v${VERSION}" \
+            --body-file pr_body.md
