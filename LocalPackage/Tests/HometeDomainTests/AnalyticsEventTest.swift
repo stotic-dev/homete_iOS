@@ -23,23 +23,11 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "オンボーディング中の行動を、step/action/resultのパラメータを持つonboardingイベントに変換する",
+        "オンボーディング中の行動を、step/actionのパラメータを持つonboardingイベントに変換する",
         arguments: [
             (
                 OnboardingAnalyticsAction.premiumIntroductionShown,
                 ["step": "premium_introduction", "action": "shown"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallShown,
-                ["step": "premium_introduction", "action": "paywall_shown"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallClosed(isPremium: true),
-                ["step": "premium_introduction", "action": "paywall_closed", "result": "purchased"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallClosed(isPremium: false),
-                ["step": "premium_introduction", "action": "paywall_closed", "result": "not_purchased"]
             ),
             (
                 OnboardingAnalyticsAction.premiumIntroductionSkipped,
@@ -351,6 +339,57 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.subscription(action)
 
         #expect(actual == AnalyticsEvent(name: "subscription", parameters: expectedParameters))
+    }
+
+    @Test(
+        "Paywallの表示・クローズを、step/action/resultのパラメータを持つpaywallイベントに変換する",
+        arguments: [
+            (
+                PaywallAnalyticsAction.shown(step: .onboarding),
+                ["step": "onboarding", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .dashboardAd),
+                ["step": "dashboard_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .boardAd),
+                ["step": "board_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .boardStorageLimit),
+                ["step": "board_storage_limit", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .templateAd),
+                ["step": "template_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .contributionStorageLimit),
+                ["step": "contribution_storage_limit", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .setting),
+                ["step": "setting", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .subscriptionManagement),
+                ["step": "subscription_management", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.closed(step: .onboarding, isPremium: true),
+                ["step": "onboarding", "action": "closed", "result": "purchased"]
+            ),
+            (
+                PaywallAnalyticsAction.closed(step: .onboarding, isPremium: false),
+                ["step": "onboarding", "action": "closed", "result": "not_purchased"]
+            ),
+        ]
+    )
+    func paywall(action: PaywallAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.paywall(action)
+
+        #expect(actual == AnalyticsEvent(name: "paywall", parameters: expectedParameters))
     }
 
 }
