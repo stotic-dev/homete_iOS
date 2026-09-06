@@ -27,7 +27,7 @@ struct PremiumIntroductionView: View {
                     .foregroundStyle(.primary3)
                 Text("プレミアムプランのご案内")
                     .font(with: .headLineM)
-                Text("hometeは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。")
+                Text("homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。")
                     .font(with: .body)
                     .foregroundStyle(.primary2)
                     .multilineTextAlignment(.center)

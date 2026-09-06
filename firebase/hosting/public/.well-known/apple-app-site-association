@@ -2,7 +2,10 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["56LYVN6DMF.taichi.satou.hometekure.dev"],
+        "appIDs": [
+          "56LYVN6DMF.taichi.satou.hometekure.dev",
+          "56LYVN6DMF.taichi.satou.hometekure"
+        ],
         "components": [
           {
             "/": "/invite/*",

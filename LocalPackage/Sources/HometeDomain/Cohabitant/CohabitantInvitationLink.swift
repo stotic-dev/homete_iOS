@@ -17,9 +17,8 @@ public enum CohabitantInvitationLink {
     /// 開発環境のホスト（Firebase Hosting）
     static let developmentHost = "homete-ios-dev-e3ef7.web.app"
 
-    /// 本番環境のホスト
-    /// - Note: 本番Firebaseプロジェクトが未確定のため未設定。確定するまでReleaseビルドでは招待リンクを生成できない
-    static let productionHost: String? = nil
+    /// 本番環境のホスト（Firebase Hosting）
+    static let productionHost: String? = "homete-ios-dev.web.app"
 
     /// 現在のビルド構成に対応するホスト
     public static var host: String? {
