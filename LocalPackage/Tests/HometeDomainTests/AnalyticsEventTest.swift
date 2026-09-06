@@ -311,8 +311,8 @@ struct AnalyticsEventTest {
                 ["action": "remove_ads_link_tapped", "step": "dashboard"]
             ),
             (
-                AdvertisementAnalyticsStep.board,
-                ["action": "remove_ads_link_tapped", "step": "board"]
+                AdvertisementAnalyticsStep.contributionAnalytics,
+                ["action": "remove_ads_link_tapped", "step": "contribution_analytics"]
             ),
             (
                 AdvertisementAnalyticsStep.template,

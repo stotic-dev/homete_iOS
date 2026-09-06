@@ -60,7 +60,7 @@ public struct ContributionAnalyticsScreen: View {
 private extension ContributionAnalyticsScreen {
 
     func tappedRemoveAdsLink() {
-        analyticsClient.log(.advertisement(step: .board))
+        analyticsClient.log(.advertisement(step: .contributionAnalytics))
         isShowPaywall = true
     }
 

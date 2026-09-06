@@ -9,7 +9,7 @@ public enum AdvertisementAnalyticsStep: String, Equatable, Sendable {
     /// ダッシュボード上部のバナー
     case dashboard
     /// 家事分析画面下部のバナー
-    case board
+    case contributionAnalytics = "contribution_analytics"
     /// 家事テンプレート画面下部のバナー
     case template
 

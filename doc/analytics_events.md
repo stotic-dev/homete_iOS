@@ -310,14 +310,14 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `remove_ads_link_tapped` | 「広告を非表示にする」リンクのタップ（現状はこの1種類のみ） |
-| `step` | ○ | `dashboard` / `board` / `template` | 広告の掲載面 |
+| `step` | ○ | `dashboard` / `contribution_analytics` / `template` | 広告の掲載面 |
 
 送信されるパターンと、その送信タイミング:
 
 | `step` | 送信タイミング |
 |---|---|
 | `dashboard` | ダッシュボード上部の広告バナー下のリンクをタップした |
-| `board` | 家事分析画面下部の広告バナー下のリンクをタップした |
+| `contribution_analytics` | 家事分析画面下部の広告バナー下のリンクをタップした |
 | `template` | 家事テンプレート画面下部の広告バナー下のリンクをタップした |
 
 いずれもタップ後にPaywallを開く。`ContributionAnalyticsView`には保存期間の上限に達した際の
