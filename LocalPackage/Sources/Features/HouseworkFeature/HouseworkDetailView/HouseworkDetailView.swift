@@ -9,7 +9,7 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HouseworkDetailView: View {
+public struct HouseworkDetailView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
@@ -21,7 +21,11 @@ struct HouseworkDetailView: View {
 
     @CommonError var commonErrorContent
 
-    var body: some View {
+    public static func make(item: HouseworkBoardItem) -> some View {
+        HouseworkDetailView(item: item)
+    }
+
+    public var body: some View {
         mainContent()
             .padding(.horizontal, .space16)
             .padding(.bottom, .space24)
