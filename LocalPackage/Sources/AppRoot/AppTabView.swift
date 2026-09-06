@@ -192,7 +192,8 @@ private extension AppTabView {
         do {
             try await store.configure(cohabitantId: cohabitantId)
         } catch {
-            // TODO: エラーハンドリング
+            // 失敗内容はStoreの`loadState`に記録され、テンプレート画面でリトライ導線として表示される
+            print("failed to configure housework template store: \(error)")
         }
     }
 

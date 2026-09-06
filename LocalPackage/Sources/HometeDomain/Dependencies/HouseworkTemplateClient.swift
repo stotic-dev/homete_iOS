@@ -38,31 +38,35 @@ public struct HouseworkTemplateClient: Sendable {
     ) async throws -> Void
 
     /// Days の SnapshotListener（編集中のみ使用）
+    ///
+    /// - Note: リスナーの失敗は`Result.failure`として流し、ストリーム自体は終了させない。
+    ///         `AsyncThrowingStream`で終了させると再購読するまで値が届かなくなるうえ、
+    ///         `HouseworkManager`のオブザーバーと表現を揃えるため。
     public let addDaysSnapshotListener: @Sendable (
         _ id: String,
         _ templateId: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<[HouseworkTemplateDay]>
+    ) async -> AsyncStream<Result<[HouseworkTemplateDay], DomainError>>
 
     /// Tesmplates の SnapshotListener
     public let addTemplatesSnapshotListener: @Sendable (
         _ id: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<[HouseworkTemplateMeta]>
+    ) async -> AsyncStream<Result<[HouseworkTemplateMeta], DomainError>>
 
     /// Editors の SnapshotListener（編集中のみ使用）
     public let addEditorsSnapshotListener: @Sendable (
         _ id: String,
         _ templateId: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<[HouseworkTemplateEditor]>
+    ) async -> AsyncStream<Result<[HouseworkTemplateEditor], DomainError>>
 
     /// テンプレートメタの version SnapshotListener（編集中のみ使用、楽観的ロックの currentVersion 取得用）
     public let addMetaVersionSnapshotListener: @Sendable (
         _ id: String,
         _ templateId: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<Int>
+    ) async -> AsyncStream<Result<Int, DomainError>>
 
     /// SnapshotListener の解除
     public let removeListener: @Sendable (_ id: String) async -> Void
@@ -99,21 +103,21 @@ public struct HouseworkTemplateClient: Sendable {
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateDay]> = { _, _, _ in .makeStream().stream },
+        ) async -> AsyncStream<Result<[HouseworkTemplateDay], DomainError>> = { _, _, _ in .makeStream().stream },
         addTemplatesSnapshotListener: @Sendable @escaping (
             _ id: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateMeta]> = { _, _ in .makeStream().stream },
+        ) async -> AsyncStream<Result<[HouseworkTemplateMeta], DomainError>> = { _, _ in .makeStream().stream },
         addEditorsSnapshotListener: @Sendable @escaping (
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateEditor]> = { _, _, _ in .makeStream().stream },
+        ) async -> AsyncStream<Result<[HouseworkTemplateEditor], DomainError>> = { _, _, _ in .makeStream().stream },
         addMetaVersionSnapshotListener: @Sendable @escaping (
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<Int> = { _, _, _ in .makeStream().stream },
+        ) async -> AsyncStream<Result<Int, DomainError>> = { _, _, _ in .makeStream().stream },
         removeListener: @Sendable @escaping (_ id: String) async -> Void = { _ in }
     ) {
         self.fetchTemplates = fetchTemplates

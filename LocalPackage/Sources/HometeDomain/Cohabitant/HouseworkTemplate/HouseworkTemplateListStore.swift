@@ -14,6 +14,8 @@ public final class HouseworkTemplateListStore {
     public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
     public private(set) var selectedTemplateId: String?
+    /// テンプレートの取得・購読の状態
+    public private(set) var loadState: ListenerLoadState = .loading
 
     private var daysObserveTask: Task<Void, Never>?
     private var templatesObserveTask: Task<Void, Never>?
@@ -39,15 +41,24 @@ public final class HouseworkTemplateListStore {
     }
 
     /// Storeの初回設定を行う
+    /// - Note: 失敗した場合は呼び出し元でハンドリングできるようrethrowしつつ、
+    ///         画面側がリトライ導線を出せるように`loadState`にも記録する。
     public func configure(cohabitantId: String) async throws {
-        try await loadTemplates(cohabitantId: cohabitantId)
+        loadState = .loading
+        do {
+            try await loadTemplates(cohabitantId: cohabitantId)
 
-        if let selectedTemplateId = templates.first?.templateId {
-            self.selectedTemplateId = selectedTemplateId
-            try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
-            await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
-        } else {
-            await startObservingTemplates(cohabitantId)
+            if let selectedTemplateId = templates.first?.templateId {
+                self.selectedTemplateId = selectedTemplateId
+                try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+                await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+            } else {
+                await startObservingTemplates(cohabitantId)
+            }
+            loadState = .loaded
+        } catch {
+            loadState = .failed(DomainError.make(error) ?? .other)
+            throw error
         }
     }
 
@@ -82,9 +93,15 @@ public final class HouseworkTemplateListStore {
             cohabitantId
         )
         daysObserveTask = Task {
+            for await result in stream {
+                switch result {
+                case let .success(currentDays):
+                    self.selectedDays = currentDays
 
-            for await currentDays in stream {
-                self.selectedDays = currentDays
+                case let .failure(error):
+                    print("error occurred at housework template days listener: \(error)")
+                    self.loadState = .failed(error)
+                }
             }
         }
     }
@@ -133,14 +150,21 @@ private extension HouseworkTemplateListStore {
         )
 
         templatesObserveTask = Task {
-            for await templates in stream {
-                // テンプレートが空の場合は何もしない
-                guard let selectedTemplate = templates.first else { continue }
+            for await result in stream {
+                switch result {
+                case let .success(templates):
+                    // テンプレートが空の場合は何もしない
+                    guard let selectedTemplate = templates.first else { continue }
 
-                // テンプレートが設定されたことを検知したら選択テンプレートを更新して、テンプレートの監視を終了する
-                self.templates = templates
-                self.selectedTemplateId = selectedTemplate.templateId
-                await stopObservingTemplates()
+                    // テンプレートが設定されたことを検知したら選択テンプレートを更新して、テンプレートの監視を終了する
+                    self.templates = templates
+                    self.selectedTemplateId = selectedTemplate.templateId
+                    await stopObservingTemplates()
+
+                case let .failure(error):
+                    print("error occurred at housework templates listener: \(error)")
+                    self.loadState = .failed(error)
+                }
             }
         }
     }

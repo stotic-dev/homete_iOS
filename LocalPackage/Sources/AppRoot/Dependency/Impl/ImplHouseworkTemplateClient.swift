@@ -65,41 +65,35 @@ extension HouseworkTemplateClient {
             }
         },
         addDaysSnapshotListener: { id, templateId, cohabitantId in
-            await bridgingToNonThrowing(
+            await bridgingToResult(
                 FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                     firestore.houseworkTemplateDaysRef(cohabitantId: cohabitantId, templateId: templateId)
                 }
             )
         },
         addTemplatesSnapshotListener: { id, cohabitantId in
-            await bridgingToNonThrowing(
+            await bridgingToResult(
                 FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                     firestore.houseworkTemplatesRef(cohabitantId: cohabitantId)
                 }
             )
         },
         addEditorsSnapshotListener: { id, templateId, cohabitantId in
-            await bridgingToNonThrowing(
+            await bridgingToResult(
                 FirestoreService.shared.addSnapshotListener(id: id) { firestore in
                     firestore.houseworkTemplateEditorsRef(cohabitantId: cohabitantId, templateId: templateId)
                 }
             )
         },
         addMetaVersionSnapshotListener: { id, templateId, cohabitantId in
-            let documentStream: AsyncStream<HouseworkTemplateMetaDocument?> = await bridgingToNonThrowing(
-                FirestoreService.shared.addSnapshotListener(id: id) { firestore in
+            let documentStream: AsyncThrowingStream<HouseworkTemplateMetaDocument?, Error> = await FirestoreService
+                .shared
+                .addSnapshotListener(id: id) { firestore in
                     firestore.houseworkTemplatesRef(cohabitantId: cohabitantId).document(templateId)
                 }
-            )
-            let (versionStream, continuation) = AsyncStream<Int>.makeStream()
-            Task {
-                for await document in documentStream {
-                    guard let document else { continue }
-                    continuation.yield(document.version)
-                }
-                continuation.finish()
+            return bridgingToResult(documentStream) { document in
+                document?.version
             }
-            return versionStream
         },
         removeListener: { id in
             await FirestoreService.shared.removeSnapshotListener(id: id)
@@ -108,22 +102,34 @@ extension HouseworkTemplateClient {
 
 }
 
-/// テンプレート編集中の各種リスナーはエラー発生時のUI表現をまだ持たないため、
-/// `FirestoreService`が返す`AsyncThrowingStream`をログ出力のうえ通常終了する`AsyncStream`へ変換する。
-private func bridgingToNonThrowing<Output: Sendable>(
-    _ throwingStream: AsyncThrowingStream<Output, Error>
-) -> AsyncStream<Output> {
+/// `FirestoreService`が返す`AsyncThrowingStream`を、失敗を値として流す`AsyncStream`へ変換する
+///
+/// - Note: 購読側でエラーを扱えるようにしつつ、ストリーム自体は終了させない。
+///         エラーで終了させてしまうと、再購読するまで以降の値が一切届かなくなるため。
+/// - Parameter transform: 受け取った値を購読側の要素へ変換する。`nil`を返した要素は読み飛ばす。
+private func bridgingToResult<Input: Sendable, Output: Sendable>(
+    _ throwingStream: AsyncThrowingStream<Input, Error>,
+    transform: @escaping @Sendable (Input) -> Output?
+) -> AsyncStream<Result<Output, DomainError>> {
     AsyncStream { continuation in
         let task = Task {
             do {
                 for try await value in throwingStream {
-                    continuation.yield(value)
+                    guard let transformed = transform(value) else { continue }
+                    continuation.yield(.success(transformed))
                 }
+                continuation.finish()
             } catch {
-                print("occurred error at addSnapshotListener(type: \(Output.self), error: \(error))")
+                print("occurred error at addSnapshotListener(type: \(Input.self), error: \(error))")
+                continuation.yield(.failure(DomainError.make(error) ?? .other))
             }
-            continuation.finish()
         }
         continuation.onTermination = { _ in task.cancel() }
     }
+}
+
+private func bridgingToResult<Output: Sendable>(
+    _ throwingStream: AsyncThrowingStream<Output, Error>
+) -> AsyncStream<Result<Output, DomainError>> {
+    bridgingToResult(throwingStream) { $0 }
 }

@@ -27,6 +27,8 @@ struct HouseworkTemplateView: View {
 
     @CommonError var commonErrorContent
 
+    @LoadingState var loadingState
+
     @AppStorage(key: .collapsedHouseworkTemplateDays) var collapsedDays = CollapsedHouseworkTemplateDays()
 
     @Binding var initialDraft: HouseworkTemplateDraft?
@@ -34,12 +36,21 @@ struct HouseworkTemplateView: View {
     @Binding var editorContext: TemplateEditorContext
 
     let isPremium: Bool
+    /// テンプレートの取得・購読に失敗している場合のエラー内容
+    let loadFailure: DomainError?
     let onTapRemoveAdsLink: () -> Void
+    let onRetry: () async -> Void
 
     var body: some View {
         ZStack {
-            if let templateId = templateListStore.selectedTemplateId,
-               let initialDraft {
+            if let loadFailure {
+                LoadErrorView(error: loadFailure) {
+                    loadingState.task {
+                        await onRetry()
+                    }
+                }
+            } else if let templateId = templateListStore.selectedTemplateId,
+                      let initialDraft {
                 ZStack {
                     mainContent()
                     addItemButton()
@@ -132,6 +143,7 @@ struct HouseworkTemplateView: View {
         }
         .animation(.default, value: collapsedDays)
         .commonError(content: $commonErrorContent)
+        .fullScreenLoadingIndicator(loadingState)
     }
 
 }
@@ -486,7 +498,9 @@ private extension HouseworkTemplateView {
         draft: .constant(.init(days: templateData)),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
         isPremium: false,
-        onTapRemoveAdsLink: {}
+        loadFailure: nil,
+        onTapRemoveAdsLink: {},
+        onRetry: {}
     )
     .environment(
         \.houseworkTemplateContext,
@@ -524,7 +538,9 @@ private extension HouseworkTemplateView {
             currentTemplateVersion: .zero
         )),
         isPremium: false,
-        onTapRemoveAdsLink: {}
+        loadFailure: nil,
+        onTapRemoveAdsLink: {},
+        onRetry: {}
     )
     .environment(
         \.houseworkTemplateContext,
@@ -534,6 +550,21 @@ private extension HouseworkTemplateView {
                 .init(dayOfWeek: .monday, items: []),
             ]
         )
+    )
+    .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
+    .environment(HouseworkTemplateEditStore())
+    .apply(theme: .init())
+}
+
+#Preview("HouseworkTemplateView_読み込みエラー") {
+    HouseworkTemplateView(
+        initialDraft: .constant(nil),
+        draft: .constant(.init()),
+        editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
+        isPremium: false,
+        loadFailure: .noNetwork,
+        onTapRemoveAdsLink: {},
+        onRetry: {}
     )
     .environment(HouseworkTemplateListStore(selectedTemplateId: "id"))
     .environment(HouseworkTemplateEditStore())
