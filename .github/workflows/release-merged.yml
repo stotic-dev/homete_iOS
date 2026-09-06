@@ -59,11 +59,15 @@ jobs:
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_SECRET_KEY: ${{ secrets.ASC_SECRET_KEY }}
           XCODE_CLOUD_APPSTORE_WORKFLOW_ID: ${{ secrets.XCODE_CLOUD_APPSTORE_WORKFLOW_ID }}
         run: |
           KEY_PATH="$(mktemp)"
-          echo "$ASC_API_KEY_P8_BASE64" | base64 -d > "$KEY_PATH"
+          echo "$ASC_SECRET_KEY" | base64 -d > "$KEY_PATH"
+          if [ ! -s "$KEY_PATH" ]; then
+            echo "::error::ASC_SECRET_KEY のデコード結果が空でした。シークレットの設定値を確認してください"
+            exit 1
+          fi
           ASC_API_KEY_PATH="$KEY_PATH" ./scripts/trigger-xcode-cloud-build.sh "$XCODE_CLOUD_APPSTORE_WORKFLOW_ID" main
           rm -f "$KEY_PATH"
 
