@@ -26,6 +26,7 @@ struct OnboardingNotificationPermissionGuideView: View {
                 await tappedEnableNotificationButton()
             }
         }
+        .trackScreenView(.onboardingNotificationPermission)
     }
 
 }

@@ -115,6 +115,7 @@ struct HouseworkBoardView: View {
                 isSelecting = false
             }
         }
+        .trackScreenView(.houseworkBoard)
     }
 
 }

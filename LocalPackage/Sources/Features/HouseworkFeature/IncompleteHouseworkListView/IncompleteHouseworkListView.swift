@@ -36,6 +36,7 @@ public struct IncompleteHouseworkListView: View {
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .commonError(content: $commonError)
+        .trackScreenView(.incompleteHouseworkList)
     }
 
 }

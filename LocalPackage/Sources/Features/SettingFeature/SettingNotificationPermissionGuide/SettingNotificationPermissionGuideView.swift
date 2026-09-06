@@ -23,6 +23,7 @@ struct SettingNotificationPermissionGuideView: View {
                 await tappedEnableNotificationButton()
             }
         }
+        .trackScreenView(.settingNotificationPermission)
     }
 
 }

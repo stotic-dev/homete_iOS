@@ -2,6 +2,7 @@
 //  LaunchScreenView.swift
 //
 
+import HometeDomain
 import HometeResources
 import HometeUI
 import SwiftUI
@@ -21,6 +22,7 @@ struct LaunchScreenView: View {
         }
         .padding(.horizontal, .space16)
         .padding(.vertical, .space24)
+        .trackScreenView(.launch)
     }
 
 }

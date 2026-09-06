@@ -132,6 +132,7 @@ struct HouseworkTemplateView: View {
         }
         .animation(.default, value: collapsedDays)
         .commonError(content: $commonErrorContent)
+        .trackScreenView(.houseworkTemplate)
     }
 
 }

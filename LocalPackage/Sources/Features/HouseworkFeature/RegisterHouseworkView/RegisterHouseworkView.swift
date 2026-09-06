@@ -79,6 +79,7 @@ public struct RegisterHouseworkView: View {
         } message: {
             Text("\"\(houseworkTitle)\"は既に登録されています。")
         }
+        .trackScreenView(.houseworkRegister)
     }
 
 }

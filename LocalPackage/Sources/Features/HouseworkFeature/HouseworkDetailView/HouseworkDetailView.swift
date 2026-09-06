@@ -39,6 +39,7 @@ struct HouseworkDetailView: View {
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()
             }
+            .trackScreenView(.houseworkDetail)
     }
 
 }
