@@ -23,16 +23,19 @@ public final class CohabitantStore {
 
     private let cohabitantClient: CohabitantClient
     private let accountInfoClient: AccountInfoClient
+    private let analyticsClient: AnalyticsClient
 
     public init(
         members: Set<CohabitantMember> = [],
         ownId: String = "",
         cohabitantClient: CohabitantClient = .previewValue,
-        accountInfoClient: AccountInfoClient = .previewValue
+        accountInfoClient: AccountInfoClient = .previewValue,
+        analyticsClient: AnalyticsClient = .previewValue
     ) {
         self.members = .init(value: members, ownId: ownId)
         self.cohabitantClient = cohabitantClient
         self.accountInfoClient = accountInfoClient
+        self.analyticsClient = analyticsClient
     }
 
     public func addSnapshotListenerIfNeeded(_ cohabitantId: String) async {
@@ -62,6 +65,7 @@ public final class CohabitantStore {
                     }
                 }
 
+                analyticsClient.setUserProperty(.cohabitantMemberCount(members.value.count))
                 // 初回のデータをロード完了したらその旨のフラグを立てる
                 isInitialLoaded = true
             }
