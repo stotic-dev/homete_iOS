@@ -73,6 +73,9 @@ struct RegisteredContent: View {
         .onChange(of: cohabiantStore.loadState) {
             onChangeStoreLoadState()
         }
+        .onChange(of: houseworkListstore.loadState) {
+            onChangeStoreLoadState()
+        }
         .navigationDestination(for: RegisteredContentRoute.self) { route in
             navigationHandler(route)
                 .environment(houseworkListstore)
@@ -110,22 +113,27 @@ private extension RegisteredContent {
         onChangeStoreLoadState()
     }
 
+    /// ダッシュボードが依存する全Storeの購読状態
+    var loadStates: [ListenerLoadState] {
+        [contributionStore.loadState, cohabiantStore.loadState, houseworkListstore.loadState]
+    }
+
     func onChangeStoreLoadState() {
-        // どちらかが失敗していれば、ローディングは解除してエラー表示に倒す
-        if case let .failed(error) = contributionStore.loadState {
-            loadFailure = error
-            loadingState.isLoading = false
-            return
-        }
-        if case let .failed(error) = cohabiantStore.loadState {
-            loadFailure = error
+        // どれかが失敗していれば、ローディングは解除してエラー表示に倒す
+        let failure = loadStates.compactMap { state -> DomainError? in
+            guard case let .failed(error) = state else { return nil }
+            return error
+        }.first
+
+        if let failure {
+            loadFailure = failure
             loadingState.isLoading = false
             return
         }
 
         loadFailure = nil
         // Storeの初回ロード完了まで、ローディング画面を表示する
-        loadingState.isLoading = contributionStore.loadState != .loaded || cohabiantStore.loadState != .loaded
+        loadingState.isLoading = loadStates.contains { $0 != .loaded }
     }
 
 }
