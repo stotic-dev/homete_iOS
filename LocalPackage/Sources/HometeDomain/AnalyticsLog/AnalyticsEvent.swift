@@ -129,4 +129,14 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// Paywallの表示・クローズに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
+    ///         意図は`PaywallAnalyticsAction`を参照
+    static func paywall(_ action: PaywallAnalyticsAction) -> Self {
+        .init(
+            name: "paywall",
+            parameters: action.parameters
+        )
+    }
+
 }

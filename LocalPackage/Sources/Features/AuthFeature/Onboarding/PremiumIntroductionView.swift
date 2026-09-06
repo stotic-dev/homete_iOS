@@ -112,7 +112,7 @@ private extension PremiumIntroductionView {
     }
 
     func tappedShowPaywallButton() {
-        analyticsClient.log(.onboarding(.paywallShown))
+        analyticsClient.log(.paywall(.shown(step: .onboarding)))
         isShowPaywall = true
     }
 
@@ -123,7 +123,7 @@ private extension PremiumIntroductionView {
 
     /// Paywallを閉じた後は、購入有無に関わらず次のステップへ進む
     func dismissedPaywall() {
-        analyticsClient.log(.onboarding(.paywallClosed(isPremium: subscriptionStore.isPremium)))
+        analyticsClient.log(.paywall(.closed(step: .onboarding, isPremium: subscriptionStore.isPremium)))
         onNext()
     }
 

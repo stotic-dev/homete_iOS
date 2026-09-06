@@ -56,9 +56,11 @@ struct RegisteredContent: View {
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .onChange(of: contributionStore.isInitialLoaded) {
             onChangeStoreInitialLoadedStatus()
         }
@@ -100,7 +102,12 @@ private extension RegisteredContent {
 
     func tappedRemoveAdsPromotionLink() {
         analyticsClient.log(.advertisement(step: .dashboard))
+        analyticsClient.log(.paywall(.shown(step: .dashboardAd)))
         isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .dashboardAd, isPremium: subscriptionStore.isPremium)))
     }
 
 }
