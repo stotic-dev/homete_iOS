@@ -15,6 +15,19 @@ public enum AnalyticsUserProperty: Equatable, Sendable {
     case hasCohabitant(Bool)
     /// 同居人グループのメンバー数（自分を含む）
     case cohabitantMemberCount(Int)
+    /// 指定したプロパティを未設定に戻す
+    /// - Note: ユーザープロパティはSDK側にアプリ再インストールまで残るため、ログアウト・退会時に明示的に
+    ///         消さないと、ログアウト後のイベントや次にログインしたユーザーへ前ユーザーの値が引き継がれる
+    case cleared(AnalyticsUserPropertyName)
+
+}
+
+/// GA4へ送信するユーザープロパティ名
+public enum AnalyticsUserPropertyName: String, Sendable {
+
+    case isPremium = "is_premium"
+    case hasCohabitant = "has_cohabitant"
+    case cohabitantMemberCount = "cohabitant_member_count"
 
 }
 
@@ -23,17 +36,21 @@ public extension AnalyticsUserProperty {
     var name: String {
         switch self {
         case .isPremium:
-            "is_premium"
+            AnalyticsUserPropertyName.isPremium.rawValue
 
         case .hasCohabitant:
-            "has_cohabitant"
+            AnalyticsUserPropertyName.hasCohabitant.rawValue
 
         case .cohabitantMemberCount:
-            "cohabitant_member_count"
+            AnalyticsUserPropertyName.cohabitantMemberCount.rawValue
+
+        case let .cleared(name):
+            name.rawValue
         }
     }
 
-    var value: String {
+    /// - Note: `nil`を送るとGA4側のユーザープロパティが削除される
+    var value: String? {
         switch self {
         case let .isPremium(value):
             "\(value)"
@@ -43,6 +60,9 @@ public extension AnalyticsUserProperty {
 
         case let .cohabitantMemberCount(value):
             "\(value)"
+
+        case .cleared:
+            nil
         }
     }
 

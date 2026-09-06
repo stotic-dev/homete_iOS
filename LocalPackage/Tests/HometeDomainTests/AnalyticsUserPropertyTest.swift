@@ -23,4 +23,19 @@ struct AnalyticsUserPropertyTest {
         #expect(property.value == expectedValue)
     }
 
+    @Test(
+        "未設定に戻すプロパティは、対象のnameとnilのvalueに変換する",
+        arguments: [
+            (AnalyticsUserPropertyName.isPremium, "is_premium"),
+            (AnalyticsUserPropertyName.hasCohabitant, "has_cohabitant"),
+            (AnalyticsUserPropertyName.cohabitantMemberCount, "cohabitant_member_count"),
+        ]
+    )
+    func clearedNameAndValue(name: AnalyticsUserPropertyName, expectedName: String) {
+        let property = AnalyticsUserProperty.cleared(name)
+
+        #expect(property.name == expectedName)
+        #expect(property.value == nil)
+    }
+
 }

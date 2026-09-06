@@ -81,7 +81,8 @@ public extension RootView {
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore,
-                houseworkClient: $0.houseworkClient
+                houseworkClient: $0.houseworkClient,
+                analyticsClient: $0.analyticsClient
             )
 
             RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
