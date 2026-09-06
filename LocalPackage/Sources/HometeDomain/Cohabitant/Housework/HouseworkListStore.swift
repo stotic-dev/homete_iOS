@@ -14,6 +14,8 @@ import SwiftUI
 public final class HouseworkListStore {
 
     public private(set) var items: StoredAllHouseworkList
+    /// 家事のスナップショットリスナーの購読状態
+    public private(set) var loadState: ListenerLoadState = .loading
     private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
@@ -165,9 +167,11 @@ private extension HouseworkListStore {
                     calendar: calendar
                 )
                 print("did receive current items: \(items)")
+                loadState = .loaded
 
             case let .failure(error):
                 print("error occurred at housework snapshot listener: \(error)")
+                loadState = .failed(error)
             }
         }
     }

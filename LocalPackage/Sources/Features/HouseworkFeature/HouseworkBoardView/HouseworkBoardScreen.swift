@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import HometeUI
 import SwiftUI
 
 public struct HouseworkBoardScreen: View {
@@ -14,6 +15,8 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.now) var now
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
+    @Environment(\.appDependencies.houseworkManager) var houseworkManager
+    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -35,10 +38,15 @@ public struct HouseworkBoardScreen: View {
         if let houseworkListStore {
             HouseworkBoardView(
                 houseworkBoardList: $houseworkBoardList,
-                dateList: $dateList
-            ) {
-                updateHouseboardList(with: houseworkListStore)
-            }
+                dateList: $dateList,
+                loadFailure: loadFailure(of: houseworkListStore),
+                onUpdateHouseboardList: {
+                    updateHouseboardList(with: houseworkListStore)
+                },
+                onRetry: {
+                    await retry()
+                }
+            )
             .environment(houseworkListStore)
             .environment(houseworkTemplateListStore)
             .onAppear {
@@ -67,6 +75,25 @@ private extension HouseworkBoardScreen {
 
     func onAppeare(with store: HouseworkListStore) {
         updateHouseboardList(with: store)
+    }
+
+    /// 家事の購読が失敗している場合に、エラー表示に使う内容を返す
+    func loadFailure(of store: HouseworkListStore) -> DomainError? {
+        guard case let .failed(error) = store.loadState else { return nil }
+        return error
+    }
+
+    /// 家事の購読をやり直す
+    /// - Note: `HouseworkManager`のリスナーは失敗時に購読が止まるため、リスナーを張り直す
+    ///         `setupObserver`の再実行で復帰させる。
+    func retry() async {
+        guard let cohabitantId else { return }
+        await houseworkManager.setupObserver(
+            currentTime: now,
+            cohabitantId: cohabitantId,
+            calendar: calendar,
+            storagePolicy: storagePolicy
+        )
     }
 
     func rebuildDateList() {
