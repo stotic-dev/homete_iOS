@@ -50,6 +50,16 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 画面の表示
+    /// - Note: GA4の予約イベント名`screen_view`と予約パラメータ`screen_name`を使う。
+    ///         SwiftUIのみで構成しているため自動収集の`screen_view`は機能せず、全画面から手動で送信する
+    static func screenView(_ screen: AppScreen) -> Self {
+        .init(
+            name: "screen_view",
+            parameters: ["screen_name": screen.screenName]
+        )
+    }
+
     /// 招待リンクに関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
     ///         意図は`CohabitantInvitationAnalyticsAction`を参照
