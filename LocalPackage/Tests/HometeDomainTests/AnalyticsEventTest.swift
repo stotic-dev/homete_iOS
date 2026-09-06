@@ -6,7 +6,21 @@
 @testable import HometeDomain
 import Testing
 
+// swiftlint:disable:next type_body_length
 struct AnalyticsEventTest {
+
+    @Test(
+        "認証結果を、真偽値の文字列ではなくsuccess/failureのresultパラメータを持つloginイベントに変換する",
+        arguments: [
+            (true, ["result": "success"]),
+            (false, ["result": "failure"]),
+        ]
+    )
+    func login(isSuccess: Bool, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.login(isSuccess: isSuccess)
+
+        #expect(actual == AnalyticsEvent(name: "login", parameters: expectedParameters))
+    }
 
     @Test(
         "オンボーディング中の行動を、step/action/resultのパラメータを持つonboardingイベントに変換する",
@@ -287,6 +301,56 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.notificationPermission(action)
 
         #expect(actual == AnalyticsEvent(name: "notification_permission", parameters: expectedParameters))
+    }
+
+    @Test(
+        "広告に関する行動を、action/stepのパラメータを持つadvertisementイベントに変換する",
+        arguments: [
+            (
+                AdvertisementAnalyticsStep.dashboard,
+                ["action": "remove_ads_link_tapped", "step": "dashboard"]
+            ),
+            (
+                AdvertisementAnalyticsStep.board,
+                ["action": "remove_ads_link_tapped", "step": "board"]
+            ),
+            (
+                AdvertisementAnalyticsStep.template,
+                ["action": "remove_ads_link_tapped", "step": "template"]
+            ),
+        ]
+    )
+    func advertisement(step: AdvertisementAnalyticsStep, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.advertisement(step: step)
+
+        #expect(actual == AnalyticsEvent(name: "advertisement", parameters: expectedParameters))
+    }
+
+    @Test(
+        "契約中プランの管理に関する行動を、action/resultのパラメータを持つsubscriptionイベントに変換する",
+        arguments: [
+            (
+                SubscriptionAnalyticsAction.restore(isSuccess: true),
+                ["action": "restore", "result": "success"]
+            ),
+            (
+                SubscriptionAnalyticsAction.restore(isSuccess: false),
+                ["action": "restore", "result": "failure"]
+            ),
+            (
+                SubscriptionAnalyticsAction.manageOpened(isSuccess: true),
+                ["action": "manage_opened", "result": "success"]
+            ),
+            (
+                SubscriptionAnalyticsAction.manageOpened(isSuccess: false),
+                ["action": "manage_opened", "result": "failure"]
+            ),
+        ]
+    )
+    func subscription(action: SubscriptionAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.subscription(action)
+
+        #expect(actual == AnalyticsEvent(name: "subscription", parameters: expectedParameters))
     }
 
 }
