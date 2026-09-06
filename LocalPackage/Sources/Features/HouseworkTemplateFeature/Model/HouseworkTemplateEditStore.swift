@@ -15,7 +15,7 @@ final class HouseworkTemplateEditStore {
 
     private(set) var editors: [HouseworkTemplateEditor]
     private(set) var currentVersion: Int
-    /// 編集者・バージョンの購読状態
+    /// 編集モード開始（Editor登録・リスナー設定）の状態
     private(set) var loadState: ListenerLoadState = .loading
 
     private var editorsObserveTask: Task<Void, Never>?
@@ -73,15 +73,9 @@ final class HouseworkTemplateEditStore {
             cohabitantId
         )
         editorsObserveTask = Task {
-            for await result in editorsStream {
-                switch result {
-                case let .success(currentEditors):
-                    // 自分以外のユーザーを現在の編集者として保存する
-                    self.editors = currentEditors.filter { $0.userId != userId }
-
-                case let .failure(error):
-                    self.handleListenerFailure(error, listenerName: "editors")
-                }
+            for await currentEditors in editorsStream {
+                // 自分以外のユーザーを現在の編集者として保存する
+                self.editors = currentEditors.filter { $0.userId != userId }
             }
         }
 
@@ -91,14 +85,8 @@ final class HouseworkTemplateEditStore {
             cohabitantId
         )
         metaVersionObserveTask = Task {
-            for await result in metaVersionStream {
-                switch result {
-                case let .success(version):
-                    self.currentVersion = version
-
-                case let .failure(error):
-                    self.handleListenerFailure(error, listenerName: "metaVersion")
-                }
+            for await version in metaVersionStream {
+                self.currentVersion = version
             }
         }
 
@@ -135,17 +123,6 @@ final class HouseworkTemplateEditStore {
 }
 
 private extension HouseworkTemplateEditStore {
-
-    /// リスナーが失敗を通知してきた場合に、編集を続けさせずエラー表示に倒す
-    ///
-    /// - Note: 編集者バッジと楽観的ロックのバージョンはどちらも購読が前提のため、片方でも失敗したら
-    ///         keepaliveも止める。リトライ時は`stopEditing`→`startEditing`でリスナーを張り直す。
-    func handleListenerFailure(_ error: DomainError, listenerName: String) {
-        print("error occurred at housework template \(listenerName) listener: \(error)")
-        keepaliveTask?.cancel()
-        keepaliveTask = nil
-        loadState = .failed(error)
-    }
 
     func startKeepalive(
         templateId: String,

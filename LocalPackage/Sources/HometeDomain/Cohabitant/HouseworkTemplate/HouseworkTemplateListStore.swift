@@ -14,7 +14,7 @@ public final class HouseworkTemplateListStore {
     public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
     public private(set) var selectedTemplateId: String?
-    /// テンプレートの取得・購読の状態
+    /// テンプレートの初回ロードの状態
     public private(set) var loadState: ListenerLoadState = .loading
 
     private var daysObserveTask: Task<Void, Never>?
@@ -93,15 +93,8 @@ public final class HouseworkTemplateListStore {
             cohabitantId
         )
         daysObserveTask = Task {
-            for await result in stream {
-                switch result {
-                case let .success(currentDays):
-                    self.selectedDays = currentDays
-
-                case let .failure(error):
-                    print("error occurred at housework template days listener: \(error)")
-                    self.loadState = .failed(error)
-                }
+            for await currentDays in stream {
+                self.selectedDays = currentDays
             }
         }
     }
@@ -150,21 +143,14 @@ private extension HouseworkTemplateListStore {
         )
 
         templatesObserveTask = Task {
-            for await result in stream {
-                switch result {
-                case let .success(templates):
-                    // テンプレートが空の場合は何もしない
-                    guard let selectedTemplate = templates.first else { continue }
+            for await templates in stream {
+                // テンプレートが空の場合は何もしない
+                guard let selectedTemplate = templates.first else { continue }
 
-                    // テンプレートが設定されたことを検知したら選択テンプレートを更新して、テンプレートの監視を終了する
-                    self.templates = templates
-                    self.selectedTemplateId = selectedTemplate.templateId
-                    await stopObservingTemplates()
-
-                case let .failure(error):
-                    print("error occurred at housework templates listener: \(error)")
-                    self.loadState = .failed(error)
-                }
+                // テンプレートが設定されたことを検知したら選択テンプレートを更新して、テンプレートの監視を終了する
+                self.templates = templates
+                self.selectedTemplateId = selectedTemplate.templateId
+                await stopObservingTemplates()
             }
         }
     }

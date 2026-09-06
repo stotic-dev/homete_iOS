@@ -246,7 +246,7 @@ struct HouseworkTemplateListStoreTest {
                 items: [.init(id: .init(id: "id"), title: "火曜", point: 4, updatedAt: .now)]
             ),
         ]
-        let (daysStream, daysContinuation) = AsyncStream<Result<[HouseworkTemplateDay], DomainError>>.makeStream()
+        let (daysStream, daysContinuation) = AsyncStream<[HouseworkTemplateDay]>.makeStream()
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
                 addDaysSnapshotListener: { _, _, _ in daysStream }
@@ -271,7 +271,7 @@ struct HouseworkTemplateListStoreTest {
                 }
             }
         }
-        daysContinuation.yield(.success(expectedDays))
+        daysContinuation.yield(expectedDays)
         await waiter.value
         #expect(store.selectedDays == expectedDays)
 
@@ -323,7 +323,7 @@ extension HouseworkTemplateListStoreTest {
                 items: [.init(id: .init(id: "id"), title: "ゴミ出し", point: 10, updatedAt: .now)]
             ),
         ]
-        let (daysStream, daysContinuation) = AsyncStream<Result<[HouseworkTemplateDay], DomainError>>.makeStream()
+        let (daysStream, daysContinuation) = AsyncStream<[HouseworkTemplateDay]>.makeStream()
         let listenerStartedKeys = TestLockedArray<String>()
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
@@ -396,8 +396,7 @@ extension HouseworkTemplateListStoreTest {
     func configureStartsTemplatesObservingWhenEmpty() async throws {
         // Arrange
 
-        let (templatesStream, templatesContinuation) = AsyncStream<Result<[HouseworkTemplateMeta], DomainError>>
-            .makeStream()
+        let (templatesStream, templatesContinuation) = AsyncStream<[HouseworkTemplateMeta]>.makeStream()
         let listenerStartedKeys = TestLockedArray<String>()
 
         let store = HouseworkTemplateListStore(
@@ -432,8 +431,7 @@ extension HouseworkTemplateListStoreTest {
         let receivedTemplates: [HouseworkTemplateMeta] = [
             .init(templateId: "newTemplate", name: "新規テンプレ"),
         ]
-        let (templatesStream, templatesContinuation) = AsyncStream<Result<[HouseworkTemplateMeta], DomainError>>
-            .makeStream()
+        let (templatesStream, templatesContinuation) = AsyncStream<[HouseworkTemplateMeta]>.makeStream()
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
                 fetchTemplates: { _ in [] },
@@ -453,7 +451,7 @@ extension HouseworkTemplateListStoreTest {
                 }
             }
         }
-        templatesContinuation.yield(.success(receivedTemplates))
+        templatesContinuation.yield(receivedTemplates)
         await waiter.value
 
         // Assert
@@ -481,38 +479,6 @@ extension HouseworkTemplateListStoreTest {
         await #expect(throws: DomainError.noNetwork) {
             try await store.configure(cohabitantId: Self.inputCohabitantId)
         }
-
-        // Assert
-
-        #expect(store.loadState == .failed(.noNetwork))
-    }
-
-    @Test("Daysリスナーがエラーで終了すると、ロード状態が失敗になる")
-    func startObservingDaysUpdatesLoadStateToFailed() async throws {
-        // Arrange
-
-        let (daysStream, daysContinuation) = AsyncStream<Result<[HouseworkTemplateDay], DomainError>>.makeStream()
-        let store = HouseworkTemplateListStore(
-            houseworkTemplateClient: .init(
-                fetchTemplates: { _ in [.init(templateId: Self.inputTemplateId, name: "テンプレ")] },
-                addDaysSnapshotListener: { _, _, _ in daysStream }
-            )
-        )
-        try await store.configure(cohabitantId: Self.inputCohabitantId)
-
-        // Act
-
-        let waiter = Task {
-            await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking {
-                    store.loadState
-                } onChange: {
-                    continuation.resume(returning: ())
-                }
-            }
-        }
-        daysContinuation.yield(.failure(.noNetwork))
-        await waiter.value
 
         // Assert
 

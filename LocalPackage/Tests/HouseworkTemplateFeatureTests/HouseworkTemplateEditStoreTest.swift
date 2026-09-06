@@ -57,38 +57,6 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
         #expect(store.loadState == .failed(.noNetwork))
     }
 
-    @Test("編集モード開始後にEditorsリスナーがエラーで終了すると、ロード状態が失敗になる")
-    func startEditing_updatesLoadStateToFailedWhenListenerFails() async throws {
-        // Arrange
-
-        let (editorsStream, editorsContinuation) = AsyncStream<Result<[HouseworkTemplateEditor], DomainError>>
-            .makeStream()
-        let store = HouseworkTemplateEditStore(
-            houseworkTemplateClient: .init(
-                addEditorsSnapshotListener: { _, _, _ in editorsStream },
-                addMetaVersionSnapshotListener: { _, _, _ in .makeStream().stream }
-            )
-        )
-        try await store.startEditing(
-            templateId: TestCase.inputTemplateId,
-            cohabitantId: TestCase.inputCohabitantId,
-            userId: TestCase.inputUserId,
-            now: Date()
-        )
-
-        // Act
-
-        editorsContinuation.yield(.failure(.noNetwork))
-
-        // Assert
-
-        // リスナーのエラーがStoreに届くまで、各タスクに実行機会を与える
-        for _ in 0 ..< 100 where store.loadState != .failed(.noNetwork) {
-            await Task.yield()
-        }
-        #expect(store.loadState == .failed(.noNetwork))
-    }
-
     @Test("編集モード開始時、Editorをupsertする")
     func startEditing_upsertsEditor() async throws {
         // Arrange
@@ -147,8 +115,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
         let expectedEditors: [HouseworkTemplateEditor] = [
             .init(userId: "otherUser", updatedAt: now, expiredAt: now.addingTimeInterval(300)),
         ]
-        let (editorsStream, editorsContinuation) = AsyncStream<Result<[HouseworkTemplateEditor], DomainError>>
-            .makeStream()
+        let (editorsStream, editorsContinuation) = AsyncStream<[HouseworkTemplateEditor]>.makeStream()
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 addEditorsSnapshotListener: { _, _, _ in editorsStream },
@@ -176,7 +143,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
                 }
             }
         }
-        editorsContinuation.yield(.success(expectedEditors))
+        editorsContinuation.yield(expectedEditors)
         await waiter.value
         #expect(store.editors == expectedEditors)
 
@@ -206,8 +173,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
             expiredAt: now.addingTimeInterval(300)
         )
         let expectedEditors: [HouseworkTemplateEditor] = [otherEditor]
-        let (editorsStream, editorsContinuation) = AsyncStream<Result<[HouseworkTemplateEditor], DomainError>>
-            .makeStream()
+        let (editorsStream, editorsContinuation) = AsyncStream<[HouseworkTemplateEditor]>.makeStream()
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 addEditorsSnapshotListener: { _, _, _ in editorsStream },
@@ -235,7 +201,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
                 }
             }
         }
-        editorsContinuation.yield(.success([otherEditor, ownEditor]))
+        editorsContinuation.yield([otherEditor, ownEditor])
         await waiter.value
         #expect(store.editors == expectedEditors)
 

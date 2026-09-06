@@ -110,7 +110,7 @@ private extension HouseworkTemplateScreen {
         }
     }
 
-    /// テンプレートの取得・購読が失敗している場合に、エラー表示に使う内容を返す
+    /// テンプレートの初回ロードが失敗している場合に、エラー表示に使う内容を返す
     var loadFailure: DomainError? {
         for state in [houseworkTemplateListStore.loadState, templateEditStore.loadState] {
             if case let .failed(error) = state {
@@ -120,8 +120,8 @@ private extension HouseworkTemplateScreen {
         return nil
     }
 
-    /// テンプレートの取得・購読をやり直す
-    /// - Note: リスナーはエラー時に購読が止まるため、失敗した層から順に張り直す。
+    /// テンプレートの初回ロードをやり直す
+    /// - Note: 失敗した層から順にやり直す（一覧の取得から失敗している場合はconfigureから）。
     func retry() async {
         guard let cohabitantId = account.cohabitantId else { return }
 
