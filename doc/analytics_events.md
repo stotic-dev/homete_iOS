@@ -27,6 +27,26 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 5. パラメータのキーは機能をまたいで使い回す。GA4のカスタムディメンションにも登録数の上限があるため、
    `isGranted` / `isPremium` のように行動ごとのキーを増やさない
 
+## ユーザープロパティ
+
+「プレミアム会員かどうか」のようにユーザーに紐づき、かつ複数のイベントを横断して分析したい軸は、
+イベントパラメータではなくユーザープロパティとして送る。各イベントのパラメータに持たせると送信箇所ごとに
+付け忘れが起きる上、GA4のカスタムディメンションの登録数を無駄に消費するため。
+
+| 実装 |
+|---|
+| `AnalyticsUserProperty`（`HometeDomain/AnalyticsLog/`）、`AnalyticsClient.setUserProperty` |
+
+| プロパティ名 | 値 | 説明 | 設定タイミング |
+|---|---|---|---|
+| `is_premium` | `true` / `false` | プレミアム会員かどうか | `SubscriptionStore`のエンタイトルメント状態が変化したとき（ログイン後の取得・購読更新・復元・ログアウト） |
+| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび） |
+| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき |
+
+**分析での使い方:** `is_premium`でセグメントして`housework` / `housework_template`の利用頻度を比較すると、
+プレミアム機能が実際にどれだけ使われているかが分かる。`has_cohabitant`が`false`のユーザーは家事管理自体が
+成立していないため、他の指標から除外して見る必要がある。
+
 ## イベント一覧
 
 ### `screen_view`
@@ -87,7 +107,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 値 | 説明 |
 |---|---|---|
-| `isSuccess` | `true` / `false` | 認証に成功したかどうか |
+| `result` | `success` / `failure` | 認証に成功したかどうか |
 
 ### `logout`
 
@@ -276,6 +296,59 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 **分析での使い方:** `issue(success)` を分母に `open` → `join(success)` を追うと招待リンクの成立率になる。
 `step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
 `join` の失敗内訳を見ると、有効期限（24時間）が短すぎないか、別グループ参加済みのユーザーがどの程度リンクを踏んでいるかが分かる。
+
+### `advertisement`
+
+広告に関する行動。現状は無料プランに表示している「広告を非表示にする」リンクのタップのみを計測する
+（広告そのものの表示・クリックはAdMob側の計測に任せる。アプリ内の課金導線への反応はAdMobでは取得できないため
+この位置で計測する）。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `AdvertisementAnalyticsStep`、`RegisteredContent` / `HouseworkTemplateScreen` / `ContributionAnalyticsScreen` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `remove_ads_link_tapped` | 「広告を非表示にする」リンクのタップ（現状はこの1種類のみ） |
+| `step` | ○ | `dashboard` / `board` / `template` | 広告の掲載面 |
+
+送信されるパターンと、その送信タイミング:
+
+| `step` | 送信タイミング |
+|---|---|
+| `dashboard` | ダッシュボード上部の広告バナー下のリンクをタップした |
+| `board` | 家事分析画面下部の広告バナー下のリンクをタップした |
+| `template` | 家事テンプレート画面下部の広告バナー下のリンクをタップした |
+
+いずれもタップ後にPaywallを開く。`ContributionAnalyticsView`には保存期間の上限に達した際の
+別のアップグレード導線（`StoragePeriodLimitView`）もあるが、そちらは広告面ではないため別のコールバック
+（`onUpgradeTapped`）として扱い、このイベントには含めない。
+
+**分析での使い方:** `step`ごとのタップ数を比較すると、どの掲載面の広告が最もPaywallへの導線として機能しているかが分かる。
+`paywall_shown`（画面表示）や課金完了と合わせて見ると、掲載面ごとの課金転換率が分かる。
+
+### `subscription`
+
+契約中プランの管理（購入の復元・OSのサブスクリプション管理画面の起動）における行動。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `SubscriptionAnalyticsAction`、`SubscriptionStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `restore` / `manage_opened` | 購入の復元 / サブスクリプション管理画面の起動のどちらか |
+| `result` | ○ | `success` / `failure` | 行動の結果 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `result` | 送信タイミング |
+|---|---|---|
+| `restore` | `success` / `failure` | サブスクリプション管理画面の「購入を復元」をタップし、復元処理が完了した／エラーが発生した（有効なエンタイトルメントが見つからなかった場合も、API呼び出し自体は成功のため`success`） |
+| `manage_opened` | `success` / `failure` | サブスクリプション管理画面の「解約する」/「サブスクリプションを管理」をタップし、OSの管理画面を起動できた／起動に失敗した |
+
+**分析での使い方:** `restore`の失敗率が高い場合、購入の復元まわりのサポート問い合わせが増える兆候として検知できる。
+`manage_opened`の起動失敗は、解約したいユーザーがOSの管理画面に辿り着けていないことを示すため、優先度高く見る。
 
 ## イベントを追加するときの手順
 
