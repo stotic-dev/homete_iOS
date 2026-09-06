@@ -26,6 +26,7 @@ struct ContributionAnalyticsView: View {
     let latestAchievedDate: Date?
     let isPremium: Bool
     let onUpgradeTapped: () -> Void
+    let onTapRemoveAdsLink: () -> Void
 
     var body: some View {
         ScrollView {
@@ -49,7 +50,7 @@ struct ContributionAnalyticsView: View {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space8)
         }
-        .bottomAdBanner(.analyticsBottom, isPresented: !isPremium, onTapPromotionLink: onUpgradeTapped)
+        .bottomAdBanner(.analyticsBottom, isPresented: !isPremium, onTapPromotionLink: onTapRemoveAdsLink)
         .trackScreenView(.contributionAnalytics)
     }
 
@@ -137,7 +138,8 @@ private extension ContributionAnalyticsView {
         myUserId: "user1",
         latestAchievedDate: nil,
         isPremium: false,
-        onUpgradeTapped: {}
+        onUpgradeTapped: {},
+        onTapRemoveAdsLink: {}
     )
     .setupEnvironmentForPreview()
     .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 4, day: 30))
@@ -157,7 +159,8 @@ private extension ContributionAnalyticsView {
         myUserId: "user1",
         latestAchievedDate: nil,
         isPremium: false,
-        onUpgradeTapped: {}
+        onUpgradeTapped: {},
+        onTapRemoveAdsLink: {}
     )
     .setupEnvironmentForPreview()
     .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 4, day: 30))
@@ -177,7 +180,8 @@ private extension ContributionAnalyticsView {
         myUserId: "user1",
         latestAchievedDate: nil,
         isPremium: false,
-        onUpgradeTapped: {}
+        onUpgradeTapped: {},
+        onTapRemoveAdsLink: {}
     )
     .setupEnvironmentForPreview()
     .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 4, day: 30))
@@ -197,7 +201,8 @@ private extension ContributionAnalyticsView {
         myUserId: "user1",
         latestAchievedDate: nil,
         isPremium: false,
-        onUpgradeTapped: {}
+        onUpgradeTapped: {},
+        onTapRemoveAdsLink: {}
     )
     .setupEnvironmentForPreview()
     .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 4, day: 30))
@@ -214,7 +219,8 @@ private extension ContributionAnalyticsView {
         myUserId: "user1",
         latestAchievedDate: nil,
         isPremium: false,
-        onUpgradeTapped: {}
+        onUpgradeTapped: {},
+        onTapRemoveAdsLink: {}
     )
     .setupEnvironmentForPreview()
     .setupStorageEnvironmentForPreview(
