@@ -38,14 +38,14 @@ private extension OnboardingNotificationPermissionGuideView {
     /// 権限が許可されたかどうかに関わらず、リクエストを終えたらオンボーディングを完了する
     func tappedEnableNotificationButton() async {
         let isGranted = await notificationPermissionUseCase.requestOnOnboarding()
-        analyticsClient.log(.onboarding(.notificationPermissionRequested(isGranted: isGranted)))
+        analyticsClient.log(.notificationPermission(.permissionRequested(step: .onboarding, isGranted: isGranted)))
         onNext()
     }
 
     /// スキップした直後にホームで再びダイアログが出ないよう、案内済みであることをUseCaseに記録してから次へ進む
     func tappedSkipButton() async {
         await notificationPermissionUseCase.skipOnOnboarding()
-        analyticsClient.log(.onboarding(.notificationPermissionSkipped))
+        analyticsClient.log(.notificationPermission(.skipped(step: .onboarding)))
         onNext()
     }
 

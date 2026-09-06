@@ -57,6 +57,7 @@ private extension IncompleteHouseworkListView {
                         .contextMenu {
                             HouseworkQuickActionMenuContent(
                                 item: item,
+                                step: .dashboard,
                                 onError: { commonError = .init(error: $0) }
                             )
                         }

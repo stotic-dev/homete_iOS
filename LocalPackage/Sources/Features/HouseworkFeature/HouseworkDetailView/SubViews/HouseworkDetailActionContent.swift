@@ -102,7 +102,8 @@ private extension HouseworkDetailActionContent {
                 now: .now,
                 executor: account.id,
                 cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered
+                isRegistered: item.isRegistered,
+                step: .detail
             )
         } catch {
             commonErrorContent = .init(error: error)
@@ -115,7 +116,8 @@ private extension HouseworkDetailActionContent {
         do {
             try await houseworkListStore.returnToIncomplete(
                 target: item.originalItem,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: .detail
             )
         } catch {
             commonErrorContent = .init(error: error)

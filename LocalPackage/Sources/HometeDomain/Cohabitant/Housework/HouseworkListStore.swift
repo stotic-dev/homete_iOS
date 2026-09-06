@@ -19,6 +19,7 @@ public final class HouseworkListStore {
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     private let houseworkManager: HouseworkManager
+    private let analyticsClient: AnalyticsClient
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
@@ -26,12 +27,14 @@ public final class HouseworkListStore {
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
+        analyticsClient: AnalyticsClient = .previewValue,
         items: [DailyHouseworkList] = [],
         idGenerator _: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
+        self.analyticsClient = analyticsClient
         self.items = .init(value: items)
 
         Task {
@@ -42,9 +45,16 @@ public final class HouseworkListStore {
     public func register(
         newItem: HouseworkItem,
         cohabitantId: String,
+        step: HouseworkAnalyticsStep,
         notification: PushNotificationContent? = nil
     ) async throws {
-        try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
+        do {
+            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(.register(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.register(step: step, isSuccess: true)))
 
         Task.detached {
             let notificationContent = notification ?? PushNotificationContent.addNewHouseworkItem(newItem.title)
@@ -52,33 +62,41 @@ public final class HouseworkListStore {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     public func requestReview(
         target: HouseworkItem,
         now: Date,
         executor: String,
         cohabitantId: String,
         isRegistered: Bool,
+        step: HouseworkAnalyticsStep,
         notify: Bool = true
     ) async throws {
-        if isRegistered {
-            // Houseworksコレクションに登録されている家事の場合はステータスを更新する
-            try await updateAndSave(
-                target: target,
-                cohabitantId: cohabitantId,
-                transform: { $0.updatePendingApproval(at: now, changer: executor) },
-                notification: notify ? { .requestReviewMessage(houseworkTitle: target.title) } : nil
-            )
-        } else {
-            // 登録されていない場合はドキュメントを新規作成する
-            let updatedItem = target.updatePendingApproval(at: now, changer: executor)
-            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-            if notify {
-                pushNotificationWithAsync(
-                    notification: .requestReviewMessage(houseworkTitle: target.title),
-                    cohabitantId: cohabitantId
+        do {
+            if isRegistered {
+                // Houseworksコレクションに登録されている家事の場合はステータスを更新する
+                try await updateAndSave(
+                    target: target,
+                    cohabitantId: cohabitantId,
+                    transform: { $0.updatePendingApproval(at: now, changer: executor) },
+                    notification: notify ? { .requestReviewMessage(houseworkTitle: target.title) } : nil
                 )
+            } else {
+                // 登録されていない場合はドキュメントを新規作成する
+                let updatedItem = target.updatePendingApproval(at: now, changer: executor)
+                try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+                if notify {
+                    pushNotificationWithAsync(
+                        notification: .requestReviewMessage(houseworkTitle: target.title),
+                        cohabitantId: cohabitantId
+                    )
+                }
             }
+        } catch {
+            analyticsClient.log(.housework(.requestReview(step: step, isSuccess: false)))
+            throw error
         }
+        analyticsClient.log(.housework(.requestReview(step: step, isSuccess: true)))
     }
 
     public func approved(
@@ -89,14 +107,22 @@ public final class HouseworkListStore {
         cohabitantId: String,
         notify: Bool = true
     ) async throws {
-        try await updateAndSave(
-            target: target,
-            cohabitantId: cohabitantId,
-            transform: { $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment) },
-            notification: notify
-                ? { .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment) }
-                : nil
-        )
+        do {
+            try await updateAndSave(
+                target: target,
+                cohabitantId: cohabitantId,
+                transform: { $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment) },
+                notification: notify
+                    ? {
+                        .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
+                    }
+                    : nil
+            )
+        } catch {
+            analyticsClient.log(.housework(.approve(isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.approve(isSuccess: true)))
     }
 
     public func rejected(
@@ -107,38 +133,60 @@ public final class HouseworkListStore {
         cohabitantId: String,
         notify: Bool = true
     ) async throws {
-        try await updateAndSave(
-            target: target,
-            cohabitantId: cohabitantId,
-            transform: { $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment) },
-            notification: notify
-                ? { .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment) }
-                : nil
-        )
+        do {
+            try await updateAndSave(
+                target: target,
+                cohabitantId: cohabitantId,
+                transform: { $0.updateRejected(at: now, reviewer: reviwer.id, comment: comment) },
+                notification: notify
+                    ? {
+                        .rejectedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
+                    }
+                    : nil
+            )
+        } catch {
+            analyticsClient.log(.housework(.reject(isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.reject(isSuccess: true)))
     }
 
     public func returnToIncomplete(
         target: HouseworkItem,
-        cohabitantId: String
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
     ) async throws {
-        try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-            $0.updateIncomplete()
+        do {
+            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                $0.updateIncomplete()
+            }
+        } catch {
+            analyticsClient.log(.housework(.returnIncomplete(step: step, isSuccess: false)))
+            throw error
         }
+        analyticsClient.log(.housework(.returnIncomplete(step: step, isSuccess: true)))
     }
 
     public func remove(
         target: HouseworkItem,
         cohabitantId: String,
-        isRegistered: Bool
+        isRegistered: Bool,
+        step: HouseworkAnalyticsStep
     ) async throws {
-        if isRegistered {
-            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                $0.updateNotTodo()
+        do {
+            if isRegistered {
+                try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                    $0.updateNotTodo()
+                }
+            } else {
+                let updatedItem = target.updateNotTodo()
+                try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
-        } else {
-            let updatedItem = target.updateNotTodo()
-            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(.delete(step: step, isSuccess: false)))
+            throw error
         }
+        analyticsClient.log(.housework(.delete(step: step, isSuccess: true)))
     }
 
     /// 任意の通知内容を相手へ送信する

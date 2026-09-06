@@ -14,6 +14,7 @@ struct CohabitantRegistrationProcessingLeader: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
@@ -107,6 +108,7 @@ private extension CohabitantRegistrationProcessingLeader {
             } catch {
                 // エラーアラートを表示
                 isPresentingFailedRegistrationIdAlert = true
+                analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: false)))
             }
         }
     }

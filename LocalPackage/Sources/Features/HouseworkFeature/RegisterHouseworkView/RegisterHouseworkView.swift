@@ -30,9 +30,10 @@ public struct RegisterHouseworkView: View {
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
 
     let dailyHouseworkList: DailyHouseworkList
+    let step: HouseworkAnalyticsStep
 
-    public static func make(dailyHouseworkList: DailyHouseworkList) -> some View {
-        RegisterHouseworkView(dailyHouseworkList: dailyHouseworkList)
+    public static func make(dailyHouseworkList: DailyHouseworkList, step: HouseworkAnalyticsStep) -> some View {
+        RegisterHouseworkView(dailyHouseworkList: dailyHouseworkList, step: step)
     }
 
     public var body: some View {
@@ -153,7 +154,8 @@ private extension RegisterHouseworkView {
         do {
             try await houseworkListStore.register(
                 newItem: newItem,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: step
             )
             dismiss()
         } catch {
@@ -173,7 +175,8 @@ private extension RegisterHouseworkView {
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
                 expiredAt: .now
             )
-        )
+        ),
+        step: .board
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
         let historyList = HouseworkHistoryList(items: [
@@ -199,7 +202,8 @@ private extension RegisterHouseworkView {
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
                 expiredAt: .now
             )
-        )
+        ),
+        step: .board
     )
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,

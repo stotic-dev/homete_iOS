@@ -35,6 +35,7 @@ public final class CohabitantJoinStore {
     /// 招待トークンを使ってグループに参加する
     public func join() async {
         state = .processing
+        analyticsClient.log(.cohabitantRegistration(.started(method: .link)))
 
         do {
             let cohabitantId = try await cohabitantInvitationClient.join(token)
@@ -42,10 +43,12 @@ public final class CohabitantJoinStore {
             accountStore.applyCohabitantId(cohabitantId)
             state = .completed
             analyticsClient.log(.cohabitantInvitation(.joinSucceeded))
+            analyticsClient.log(.cohabitantRegistration(.completed(method: .link, isSuccess: true)))
         } catch {
             let failure = CohabitantJoinFailure(error)
             state = .failed(failure)
             analyticsClient.log(.cohabitantInvitation(.joinFailed(failure)))
+            analyticsClient.log(.cohabitantRegistration(.completed(method: .link, isSuccess: false)))
         }
     }
 

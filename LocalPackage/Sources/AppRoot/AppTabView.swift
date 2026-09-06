@@ -178,10 +178,12 @@ private extension AppTabView {
         houseworkListStore = .init(
             houseworkClient: appDependencies.houseworkClient,
             cohabitantPushNotificationClient: appDependencies.cohabitantPushNotificationClient,
-            houseworkManager: appDependencies.houseworkManager
+            houseworkManager: appDependencies.houseworkManager,
+            analyticsClient: appDependencies.analyticsClient
         )
         houseworkTemplateListStore = .init(
-            houseworkTemplateClient: appDependencies.houseworkTemplateClient
+            houseworkTemplateClient: appDependencies.houseworkTemplateClient,
+            analyticsClient: appDependencies.analyticsClient
         )
     }
 

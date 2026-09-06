@@ -107,17 +107,17 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `onboarding`
 
-アカウント登録直後のオンボーディング（特典説明 → 通知権限）における行動。
+アカウント登録直後のオンボーディングの特典説明における行動。
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `OnboardingAnalyticsAction`、`PremiumIntroductionView` / `NotificationPermissionGuideView` |
+| 実装 | `OnboardingAnalyticsAction`、`PremiumIntroductionView` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `premium_introduction` / `notification_permission` | どの画面での行動か |
-| `action` | ○ | `shown` / `paywall_shown` / `paywall_closed` / `skipped` / `permission_requested` | 何が起きたか |
-| `result` | — | `purchased` / `not_purchased` / `granted` / `denied` | 結果を伴う行動のみ付与 |
+| `step` | ○ | `premium_introduction` | どの画面での行動か（現状は特典説明画面のみ） |
+| `action` | ○ | `shown` / `paywall_shown` / `paywall_closed` / `skipped` | 何が起きたか |
+| `result` | — | `purchased` / `not_purchased` | 結果を伴う行動のみ付与 |
 
 送信されるパターンと、その送信タイミング:
 
@@ -127,12 +127,127 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `premium_introduction` | `paywall_shown` | — | 特典説明画面で「プランを見る」をタップしてPaywallを開いた |
 | `premium_introduction` | `paywall_closed` | `purchased` / `not_purchased` | Paywallを閉じた（閉じた時点でプレミアムが有効なら`purchased`） |
 | `premium_introduction` | `skipped` | — | 「あとで決める」でPaywallを開かずに次へ進んだ |
-| `notification_permission` | `permission_requested` | `granted` / `denied` | 「通知を受け取る」をタップして権限をリクエストした |
-| `notification_permission` | `skipped` | — | 「あとで設定する」で権限をリクエストせずに進んだ |
 
 **分析での使い方:** `premium_introduction / shown` を分母に `paywall_shown` → `paywall_closed(purchased)` を追うと、
-オンボーディング経由の課金ファネルになる。`notification_permission` は `permission_requested(granted)` と
-`skipped` / `permission_requested(denied)` の比率が通知のオプトイン率になる。
+オンボーディング経由の課金ファネルになる。
+
+> 通知権限の案内（オンボーディング・設定画面の両方）は`notification_permission`イベントに分離した。
+> 以前はこのイベントの`step: notification_permission`として計測していた。
+
+### `housework`
+
+家事の登録・完了報告・承認・却下・差し戻し・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `HouseworkAnalyticsAction`、`HouseworkListStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `register` / `request_review` / `approve` / `reject` / `return_incomplete` / `delete` | 何が起きたか |
+| `step` | — | `dashboard` / `board` / `detail` / `approval` | 起点画面 |
+| `result` | — | `success` / `failure` | 行動の結果 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる） |
+| `request_review` | `dashboard` / `board` / `detail` | 家事の確認依頼を行った（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「確認してもらう」） |
+| `approve` | `approval`（固定） | 家事の承認画面で「完了にする」をタップした |
+| `reject` | `approval`（固定） | 家事の承認画面で「再確認してもらう」をタップした |
+| `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
+| `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
+
+いずれも`result`に`success` / `failure`が付与される（Firestoreへの書き込み結果）。
+
+**分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
+`request_review` → `approve` / `reject`の比率は、承認フローがスムーズに回っているかの指標になる。
+
+### `housework_template`
+
+家事テンプレート（プレミアム機能）の作成・編集・削除における行動。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `HouseworkTemplateAnalyticsAction`、`HouseworkTemplateListStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `apply` / `create` / `edit` / `delete` | 何が起きたか |
+| `result` | ○ | `success` / `failure` | 行動の結果 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | 送信タイミング |
+|---|---|
+| `apply` | テンプレートを初めて作成した（テンプレート機能自体の利用開始） |
+| `create` | 「保存」時に、編集画面のドラフトと保存前の内容を比較して新規追加されたテンプレート家事があった（家事1件につき1イベント） |
+| `edit` | 「保存」時に、内容（タイトル・ポイント・登録曜日）が変更されたテンプレート家事があった（家事1件につき1イベント） |
+| `delete` | 「保存」時に、削除されたテンプレート家事があった（家事1件につき1イベント） |
+
+`create` / `edit` / `delete`はテンプレート編集画面のローカルなドラフト操作ではなく、「保存」ボタンで実際にFirestoreへ
+書き込むタイミングでまとめて送信する（ドラフト編集自体はネットワーク操作を伴わないため）。
+
+**分析での使い方:** `apply`を分母にテンプレート機能の利用開始率、`create` / `edit` / `delete`の件数比率で
+テンプレートがどの程度使い込まれているか（作りっぱなしか、継続的に編集されているか）が分かる。
+
+### `cohabitant_registration`
+
+同居人グループを新規作成するフローそのものの進捗（近接通信 / 招待リンクの両方法を横断）。
+既存の`cohabitant_invitation`は招待リンクの発行・参加を担当するため、こちらはグループ作成フロー全体の
+進捗（離脱ポイントの特定）を担当する。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `CohabitantRegistrationAnalyticsAction`、`CohabitantRegistrationView` / `CohabitantRegistrationScanningStateView` / `CohabitantRegistrationProcessingLeader` / `CohabitantJoinStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `method` | ○ | `p2p` / `link` | 近接通信 / 招待リンクのどちらの方法か |
+| `action` | ○ | `started` / `peer_found` / `completed` | フローの進捗 |
+| `result` | — | `success` / `failure` | `completed`のみ付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `method` | `action` | `result` | 送信タイミング |
+|---|---|---|---|
+| `p2p` | `started` | — | 同居人登録画面（`CohabitantRegistrationView`）が表示された |
+| `p2p` | `peer_found` | — | 近接通信で相手を発見した |
+| `p2p` | `completed` | `success` / `failure` | グループの作成が完了した／登録処理中にエラーが発生した |
+| `link` | `started` | — | 招待リンクの参加画面で「参加する」をタップした |
+| `link` | `completed` | `success` / `failure` | グループへの参加が完了した／失敗した |
+
+**分析での使い方:** `p2p / started` → `peer_found` → `completed(success)`の各段階の減衰を見ると、
+近接通信によるグループ作成のどこで離脱しているかが分かる。グループが作れないとアプリが使えないため、
+最大の離脱ポイントを特定する目的で追加した。
+
+### `notification_permission`
+
+プッシュ通知の権限リクエストにおける行動。オンボーディング・設定画面の両方の導線を同じイベントで計測する。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `NotificationPermissionAnalyticsAction`、`OnboardingNotificationPermissionGuideView` / `SettingNotificationPermissionGuideView` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `step` | ○ | `onboarding` / `setting` | どの画面からの案内か |
+| `action` | ○ | `permission_requested` / `skipped` | 何が起きたか |
+| `result` | — | `granted` / `denied` | 権限の可否を伴う場合のみ付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `step` | `action` | `result` | 送信タイミング |
+|---|---|---|---|
+| `onboarding` | `permission_requested` | `granted` / `denied` | オンボーディングで「通知を受け取る」をタップして権限をリクエストした |
+| `onboarding` | `skipped` | — | オンボーディングで「あとで設定する」をタップした |
+| `setting` | `permission_requested` | `granted` / `denied` | 設定画面で未決定の状態から「通知を受け取る」をタップして権限をリクエストした |
+| `setting` | `permission_requested` | — | 設定画面で、権限の可否がすでに決まっており設定Appへ遷移した（可否の結果を伴わない） |
+| `setting` | `skipped` | — | 設定画面で「あとで設定する」をタップした |
+
+**分析での使い方:** `step`で分けて`permission_requested(granted)`の比率を比べると、オンボーディングと設定画面の
+どちらの案内がオプトイン率が高いかが分かる。
 
 ### `cohabitant_invitation`
 

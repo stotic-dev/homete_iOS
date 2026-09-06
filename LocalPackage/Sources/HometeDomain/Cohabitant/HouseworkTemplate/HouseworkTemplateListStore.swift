@@ -19,6 +19,7 @@ public final class HouseworkTemplateListStore {
     private var templatesObserveTask: Task<Void, Never>?
 
     private let houseworkTemplateClient: HouseworkTemplateClient
+    private let analyticsClient: AnalyticsClient
     private let daysListenerKey = "houseworkTemplateDaysListener"
     private let templatesListenerKey = "houseworkTemplatesListener"
 
@@ -28,11 +29,13 @@ public final class HouseworkTemplateListStore {
 
     public init(
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
+        analyticsClient: AnalyticsClient = .previewValue,
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = [],
         selectedTemplateId: String? = nil
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
+        self.analyticsClient = analyticsClient
         self.templates = templates
         self.selectedDays = selectedDays
         self.selectedTemplateId = selectedTemplateId
@@ -71,7 +74,13 @@ public final class HouseworkTemplateListStore {
             templateId: templateId,
             name: name
         )
-        try await houseworkTemplateClient.upsertTemplate(newMeta, cohabitantId)
+        do {
+            try await houseworkTemplateClient.upsertTemplate(newMeta, cohabitantId)
+        } catch {
+            analyticsClient.log(.houseworkTemplate(.apply(isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.houseworkTemplate(.apply(isSuccess: true)))
     }
 
     /// 指定テンプレートの Days SnapshotListener を開始する
@@ -106,12 +115,20 @@ public final class HouseworkTemplateListStore {
         currentVersion: Int
     ) async throws {
         guard !days.isEmpty else { return }
-        try await houseworkTemplateClient.updateDays(
-            days,
-            templateId,
-            cohabitantId,
-            currentVersion
-        )
+
+        let changes = Self.itemChanges(from: selectedDays, to: days)
+        do {
+            try await houseworkTemplateClient.updateDays(
+                days,
+                templateId,
+                cohabitantId,
+                currentVersion
+            )
+        } catch {
+            logItemChanges(changes, isSuccess: false)
+            throw error
+        }
+        logItemChanges(changes, isSuccess: true)
 
         for day in days {
             if let index = selectedDays.firstIndex(where: { $0.dayOfWeek == day.dayOfWeek }) {
@@ -120,6 +137,62 @@ public final class HouseworkTemplateListStore {
                 selectedDays.append(day)
             }
         }
+    }
+
+}
+
+private extension HouseworkTemplateListStore {
+
+    /// 保存前後の曜日別アイテムを比較し、追加・編集・削除されたアイテムのIDを洗い出す
+    struct HouseworkTemplateItemChanges {
+
+        let createdIds: [HouseworkTemplateItem.ItemId]
+        let editedIds: [HouseworkTemplateItem.ItemId]
+        let deletedIds: [HouseworkTemplateItem.ItemId]
+
+    }
+
+    /// アイテムIDごとに、内容と登録曜日の集合をまとめる
+    static func itemDaysById(
+        _ days: [HouseworkTemplateDay]
+    ) -> [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, days: Set<DayOfWeek>)] {
+        var result: [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, days: Set<DayOfWeek>)] = [:]
+        for day in days {
+            for item in day.items {
+                result[item.id, default: (item, [])].days.insert(day.dayOfWeek)
+            }
+        }
+        return result
+    }
+
+    /// 保存前後の状態を比較し、何が追加・編集・削除されたかを判定する
+    /// - Note: 内容（タイトル・ポイント等）だけでなく、登録曜日の変更も編集として扱う
+    static func itemChanges(
+        from before: [HouseworkTemplateDay],
+        to after: [HouseworkTemplateDay]
+    ) -> HouseworkTemplateItemChanges {
+        let beforeItems = itemDaysById(before)
+        let afterItems = itemDaysById(after)
+
+        let beforeIds = Set(beforeItems.keys)
+        let afterIds = Set(afterItems.keys)
+
+        let editedIds = beforeIds.intersection(afterIds).filter { id in
+            beforeItems[id]?.item != afterItems[id]?.item || beforeItems[id]?.days != afterItems[id]?.days
+        }
+
+        return .init(
+            createdIds: Array(afterIds.subtracting(beforeIds)),
+            editedIds: Array(editedIds),
+            deletedIds: Array(beforeIds.subtracting(afterIds))
+        )
+    }
+
+    /// 変更されたアイテムの数だけ、それぞれのactionでイベントを送る
+    func logItemChanges(_ changes: HouseworkTemplateItemChanges, isSuccess: Bool) {
+        changes.createdIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.create(isSuccess: isSuccess))) }
+        changes.editedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.edit(isSuccess: isSuccess))) }
+        changes.deletedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.delete(isSuccess: isSuccess))) }
     }
 
 }

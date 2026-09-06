@@ -42,7 +42,8 @@ struct TodayHouseworkSummaryComponent: View {
                     items: [],
                     calendar: calendar,
                     storagePolicy: storagePolicy
-                )
+                ),
+                step: .dashboard
             )
         }
         .commonError(content: $commonError)
@@ -132,6 +133,7 @@ private extension TodayHouseworkSummaryComponent {
                     .contextMenu {
                         HouseworkQuickActionMenuContent(
                             item: item,
+                            step: .dashboard,
                             onError: { commonError = .init(error: $0) }
                         )
                     }

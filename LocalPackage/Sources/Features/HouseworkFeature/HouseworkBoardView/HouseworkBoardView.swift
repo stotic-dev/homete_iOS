@@ -91,7 +91,8 @@ struct HouseworkBoardView: View {
                     items: [],
                     calendar: calendar,
                     storagePolicy: storagePolicy
-                )
+                ),
+                step: .board
             )
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
