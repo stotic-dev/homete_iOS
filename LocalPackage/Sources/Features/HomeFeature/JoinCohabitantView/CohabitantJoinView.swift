@@ -40,6 +40,7 @@ public struct CohabitantJoinView: View {
         .onAppear {
             setupStoreIfNeeded()
         }
+        .trackScreenView(.cohabitantJoin)
     }
 
 }

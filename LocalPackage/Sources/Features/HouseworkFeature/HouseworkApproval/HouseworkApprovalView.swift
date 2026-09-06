@@ -51,6 +51,7 @@ public struct HouseworkApprovalView: View {
             }
             .fullScreenLoadingIndicator(loadingState)
         }
+        .trackScreenView(.houseworkApproval)
     }
 
 }

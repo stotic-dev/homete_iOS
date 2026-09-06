@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -45,6 +46,7 @@ struct CohabitantCompletionView: View {
                 // 紙片のレイヤーが閉じるボタンのタップを奪わないようにする
                 .allowsHitTesting(false)
         }
+        .trackScreenView(.cohabitantCompletion)
     }
 
 }

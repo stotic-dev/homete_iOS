@@ -57,6 +57,7 @@ struct RegistrationAccountView: View {
             .inlineNavigationBarTitleDisplayMode()
         }
         .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.registrationAccount)
     }
 
 }

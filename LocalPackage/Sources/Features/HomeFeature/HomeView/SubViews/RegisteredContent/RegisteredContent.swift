@@ -69,6 +69,7 @@ struct RegisteredContent: View {
                 .environment(houseworkListstore)
         }
         .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.dashboard)
     }
 
 }

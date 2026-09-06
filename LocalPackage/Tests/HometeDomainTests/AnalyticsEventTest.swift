@@ -52,6 +52,16 @@ struct AnalyticsEventTest {
     }
 
     @Test(
+        "画面の表示を、screen_nameパラメータを持つscreen_viewイベントに変換する",
+        arguments: AppScreen.allCases
+    )
+    func screenView(screen: AppScreen) {
+        let actual = AnalyticsEvent.screenView(screen)
+
+        #expect(actual == AnalyticsEvent(name: "screen_view", parameters: ["screen_name": screen.rawValue]))
+    }
+
+    @Test(
         "招待リンクに関する行動を、action/step/resultのパラメータを持つcohabitant_invitationイベントに変換する",
         arguments: [
             (

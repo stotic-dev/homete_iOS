@@ -50,6 +50,7 @@ public struct CohabitantRegistrationView: View {
                 await onCompleteCohabitantRegistration(cohabitantId)
             }
         }
+        .trackScreenView(.cohabitantRegistration)
     }
 
 }

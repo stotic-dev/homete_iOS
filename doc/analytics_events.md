@@ -12,6 +12,7 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | イベントの定義（name / parameters の組み立て） | `LocalPackage/Sources/HometeDomain/AnalyticsLog/AnalyticsEvent.swift` |
 | 機能単位のパラメータ設計 | `LocalPackage/Sources/HometeDomain/AnalyticsLog/<機能名>AnalyticsAction.swift` |
 | 送信インターフェース | `AnalyticsClient`（`liveValue`は`HometeInfrastructure`） |
+| 画面表示の送信 | `AppScreen`、`View.trackScreenView(_:)`（`HometeUI`） |
 
 送信は必ず `AnalyticsEvent` のstaticファクトリ経由で行う。Viewやストアが `AnalyticsEvent(name:parameters:)` を直接呼ぶと、
 このドキュメントとの対応が追えなくなるため禁止。
@@ -27,6 +28,55 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
    `isGranted` / `isPremium` のように行動ごとのキーを増やさない
 
 ## イベント一覧
+
+### `screen_view`
+
+画面の表示。GA4の予約イベント名・予約パラメータのため、イベント名の登録上限を消費せず、標準レポート（「画面とビュー」）にそのまま載る。
+
+| 項目 | 内容 |
+|---|---|
+| 送信タイミング | 対象画面が表示された（`onAppear`）とき。前面に別画面を出して戻ってきた場合も再度送信される |
+| 実装 | `AppScreen`、`HometeUI`の`View.trackScreenView(_:)`を各画面のルートViewに付与 |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `screen_name` | ○ | 下表の`screen_name` | 表示された画面 |
+
+Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動作するため、SwiftUIのみで構成している本アプリでは画面遷移が記録されない。そのため自動収集に頼らず、全画面から手動で送信する。
+
+| `screen_name` | 実装View |
+|---|---|
+| `launch` | `LaunchScreenView` |
+| `login` | `LoginView` |
+| `registration_account` | `RegistrationAccountView` |
+| `onboarding_premium_introduction` | `PremiumIntroductionView` |
+| `onboarding_notification_permission` | `OnboardingNotificationPermissionGuideView` |
+| `paywall` | `PaywallScreen`（`RouteResolverInjection`で付与） |
+| `dashboard` | `RegisteredContent` |
+| `dashboard_not_registered` | `NotRegisteredContent` |
+| `cohabitant_registration` | `CohabitantRegistrationView` |
+| `cohabitant_join` | `CohabitantJoinView` |
+| `cohabitant_completion` | `CohabitantCompletionView` |
+| `incomplete_housework_list` | `IncompleteHouseworkListView` |
+| `contribution_analytics` | `ContributionAnalyticsView` |
+| `housework_board` | `HouseworkBoardView` |
+| `housework_detail` | `HouseworkDetailView` |
+| `housework_register` | `RegisterHouseworkView` |
+| `housework_approval` | `HouseworkApprovalView` |
+| `housework_template` | `HouseworkTemplateView` |
+| `housework_template_detail` | `HouseworkTemplateItemDetailView` |
+| `housework_template_edit` | `HouseworkTemplateItemEditModal` |
+| `setting` | `SettingView` |
+| `subscription_management` | `SubscriptionManagementView` |
+| `setting_notification_permission` | `SettingNotificationPermissionGuideView` |
+| `license_list` | `LicenseListView` |
+| `license_detail` | `LicenseDetailView` |
+
+`#if DEBUG`でのみ存在するデバッグ画面（`DebugMenuView` / `DebugOnboardingScreen`）は対象外。
+`CohabitantRegistrationView`の内部状態（スキャン中 / 端末一覧 / 処理中）は画面として分けず、`cohabitant_invitation`など機能ごとのイベントの`action`で区別する。
+
+**分析での使い方:** 画面ごとの表示回数と、画面間の遷移で離脱率が分かる。とくに`dashboard_not_registered`は
+同居人グループ未登録のまま離脱しているユーザーの規模を示すため、`cohabitant_registration`への到達率と合わせて見る。
 
 ### `login`
 
@@ -119,3 +169,5 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
    `<機能名>AnalyticsAction` enumを作り、パラメータ生成をそちらに寄せる
 3. `LocalPackage/Tests/HometeDomainTests/AnalyticsEventTest.swift` にケースを追加する
 4. **このドキュメントの「イベント一覧」に追記する**
+
+画面を追加した場合は、`AppScreen`にケースを足して対象のViewに`trackScreenView(_:)`を付け、上記`screen_view`の画面一覧にも追記する。

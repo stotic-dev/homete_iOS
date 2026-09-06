@@ -46,6 +46,7 @@ public struct LoginView: View {
         .ignoresSafeArea(edges: [.bottom])
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonErrorContent)
+        .trackScreenView(.login)
     }
 
 }

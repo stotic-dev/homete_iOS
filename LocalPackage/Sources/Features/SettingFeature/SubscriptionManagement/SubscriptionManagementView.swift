@@ -40,6 +40,7 @@ struct SubscriptionManagementView: View {
         } message: {
             Text(restoreResultMessage)
         }
+        .trackScreenView(.subscriptionManagement)
     }
 
 }
