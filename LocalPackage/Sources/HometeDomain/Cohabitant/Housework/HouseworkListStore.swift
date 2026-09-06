@@ -62,6 +62,7 @@ public final class HouseworkListStore {
         }
     }
 
+    // swiftlint:disable:next function_parameter_count
     public func requestReview(
         target: HouseworkItem,
         now: Date,

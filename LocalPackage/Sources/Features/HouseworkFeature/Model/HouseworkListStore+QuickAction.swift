@@ -12,6 +12,7 @@ extension HouseworkListStore {
     ///
     /// - Parameter notify: 相手への通知を送るかどうか。複数選択の一括操作では、
     ///   家事ごとの個別通知の代わりに件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
+    // swiftlint:disable:next function_parameter_count
     func perform(
         _ action: HouseworkQuickAction,
         on item: HouseworkBoardItem,
@@ -79,6 +80,7 @@ extension HouseworkListStore {
     /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制した上で、
     /// 対象件数をまとめた1件の通知だけを送る。相手に通知しないアクション（やらない・差し戻し）では
     /// まとめ通知も送らない。
+    // swiftlint:disable:next function_parameter_count
     func performBulk(
         _ action: HouseworkQuickAction,
         on items: [HouseworkBoardItem],
