@@ -18,6 +18,7 @@ extension HouseworkListStore {
         now: Date,
         account: Account,
         cohabitantId: String,
+        step: HouseworkAnalyticsStep,
         notify: Bool = true
     ) async throws {
         switch action {
@@ -28,6 +29,7 @@ extension HouseworkListStore {
                 executor: account.id,
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
+                step: step,
                 notify: notify
             )
 
@@ -35,7 +37,8 @@ extension HouseworkListStore {
             try await remove(
                 target: item.originalItem,
                 cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered
+                isRegistered: item.isRegistered,
+                step: step
             )
 
         case .approve:
@@ -61,7 +64,8 @@ extension HouseworkListStore {
         case .returnToIncomplete:
             try await returnToIncomplete(
                 target: item.originalItem,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: step
             )
         }
     }
@@ -80,7 +84,8 @@ extension HouseworkListStore {
         on items: [HouseworkBoardItem],
         now: Date,
         account: Account,
-        cohabitantId: String
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
     ) async throws {
         guard !items.isEmpty else { return }
 
@@ -91,6 +96,7 @@ extension HouseworkListStore {
                 now: now,
                 account: account,
                 cohabitantId: cohabitantId,
+                step: step,
                 notify: false
             )
         }

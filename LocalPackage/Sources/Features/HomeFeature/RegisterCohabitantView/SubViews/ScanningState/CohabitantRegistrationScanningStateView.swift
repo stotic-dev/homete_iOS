@@ -82,6 +82,11 @@ struct CohabitantRegistrationScanningStateView: View {
             let data = CohabitantRegistrationMessage(newValue.body)
             dispatchReceivedMessage(data, newValue.sender)
         }
+        .onChange(of: connectedPeers) { oldValue, newValue in
+            if oldValue.isEmpty, !newValue.isEmpty {
+                analyticsClient.log(.cohabitantRegistration(.peerFound))
+            }
+        }
     }
 
 }

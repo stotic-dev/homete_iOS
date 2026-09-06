@@ -15,6 +15,7 @@ public struct CohabitantRegistrationView: View {
     @Environment(\.loginContext.account.userName) var userName
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
 
     public init() {}
 
@@ -50,6 +51,9 @@ public struct CohabitantRegistrationView: View {
                 await onCompleteCohabitantRegistration(cohabitantId)
             }
         }
+        .onAppear {
+            analyticsClient.log(.cohabitantRegistration(.started(method: .p2p)))
+        }
         .trackScreenView(.cohabitantRegistration)
     }
 
@@ -62,8 +66,10 @@ private extension CohabitantRegistrationView {
     func onCompleteCohabitantRegistration(_ cohabitantId: String) async {
         do {
             try await accountStore.registerCohabitantId(cohabitantId)
+            analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: true)))
         } catch {
             print("error occurred: \(error)")
+            analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: false)))
         }
     }
 

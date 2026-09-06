@@ -70,4 +70,44 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 家事に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `step` / `result` パラメータで区別する。
+    ///         意図は`HouseworkAnalyticsAction`を参照
+    static func housework(_ action: HouseworkAnalyticsAction) -> Self {
+        .init(
+            name: "housework",
+            parameters: action.parameters
+        )
+    }
+
+    /// 家事テンプレートに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
+    ///         意図は`HouseworkTemplateAnalyticsAction`を参照
+    static func houseworkTemplate(_ action: HouseworkTemplateAnalyticsAction) -> Self {
+        .init(
+            name: "housework_template",
+            parameters: action.parameters
+        )
+    }
+
+    /// 同居人グループ作成フローの進捗に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`method` / `action` / `result` パラメータで区別する。
+    ///         意図は`CohabitantRegistrationAnalyticsAction`を参照
+    static func cohabitantRegistration(_ action: CohabitantRegistrationAnalyticsAction) -> Self {
+        .init(
+            name: "cohabitant_registration",
+            parameters: action.parameters
+        )
+    }
+
+    /// プッシュ通知の権限リクエストに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
+    ///         意図は`NotificationPermissionAnalyticsAction`を参照
+    static func notificationPermission(_ action: NotificationPermissionAnalyticsAction) -> Self {
+        .init(
+            name: "notification_permission",
+            parameters: action.parameters
+        )
+    }
+
 }
