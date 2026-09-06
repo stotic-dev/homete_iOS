@@ -40,12 +40,25 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | プロパティ名 | 値 | 説明 | 設定タイミング |
 |---|---|---|---|
 | `is_premium` | `true` / `false` | プレミアム会員かどうか | `SubscriptionStore`のエンタイトルメント状態が変化したとき（ログイン後の取得・購読更新・復元・ログアウト） |
-| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび） |
-| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき |
+| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時は削除 |
+| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時は削除 |
 
 **分析での使い方:** `is_premium`でセグメントして`housework` / `housework_template`の利用頻度を比較すると、
 プレミアム機能が実際にどれだけ使われているかが分かる。`has_cohabitant`が`false`のユーザーは家事管理自体が
 成立していないため、他の指標から除外して見る必要がある。
+
+### ログアウト・退会時のリセット
+
+ユーザープロパティとユーザーIDはSDK側にアプリ再インストールまで残るため、明示的に消さないと、
+ログアウト後に送るイベント（ログイン画面の`screen_view`など）や次にログインしたユーザーへ前ユーザーの値が
+引き継がれる。`AuthSubscriptionSyncUseCase.syncOnSignedOut()`でまとめてリセットしており、
+ログアウト・退会のどちらも`RootView`が認証状態の変化を検知してここを通る。
+
+| 対象 | リセット方法 |
+|---|---|
+| `has_cohabitant` / `cohabitant_member_count` | `AnalyticsUserProperty.cleared(_:)`（`nil`を送りGA4側のプロパティを削除する） |
+| ユーザーID（Analytics / Crashlytics） | `AnalyticsClient.clearId` |
+| `is_premium` | 削除せず`false`に更新（`SubscriptionStore.logOut()`）。匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため |
 
 ## イベント一覧
 
