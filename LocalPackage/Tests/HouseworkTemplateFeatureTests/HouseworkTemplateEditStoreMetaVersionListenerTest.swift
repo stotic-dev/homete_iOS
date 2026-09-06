@@ -17,15 +17,11 @@ extension HouseworkTemplateEditStoreTest.MetaVersionListenerCase {
         // Arrange
 
         let expectedVersion = 7
-        let (versionStream, versionContinuation) = AsyncStream<Int>.makeStream()
+        let (versionStream, versionContinuation) = AsyncStream<Result<Int, DomainError>>.makeStream()
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
-                addDaysSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                },
-                addEditorsSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                },
+                addDaysSnapshotListener: { _, _, _ in .makeStream().stream },
+                addEditorsSnapshotListener: { _, _, _ in .makeStream().stream },
                 addMetaVersionSnapshotListener: { _, _, _ in versionStream }
             ),
             currentVersion: 0
@@ -51,7 +47,7 @@ extension HouseworkTemplateEditStoreTest.MetaVersionListenerCase {
                 }
             }
         }
-        versionContinuation.yield(expectedVersion)
+        versionContinuation.yield(.success(expectedVersion))
         await waiter.value
         #expect(store.currentVersion == expectedVersion)
 

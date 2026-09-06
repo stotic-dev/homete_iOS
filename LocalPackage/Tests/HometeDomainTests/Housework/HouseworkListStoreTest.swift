@@ -451,4 +451,36 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")
+    func startObserving_updatesLoadStateToFailed() async {
+        // Arrange
+
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        let store = HouseworkListStore(houseworkManager: manager)
+        await manager.setupObserver(
+            currentTime: Date(),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        streamContinuation.finish(throwing: DomainError.noNetwork)
+
+        // Assert
+
+        // 失敗がManager経由でStoreに届くまで、各タスクに実行機会を与える
+        for _ in 0 ..< 100 where store.loadState != .failed(.noNetwork) {
+            await Task.yield()
+        }
+        #expect(store.loadState == .failed(.noNetwork))
+    }
+
 }

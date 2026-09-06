@@ -13,8 +13,8 @@ import SwiftUI
 public final class CohabitantStore {
 
     public private(set) var members: CohabitantMemberList
-    /// 初回ロード済みかどうか
-    public private(set) var isInitialLoaded = false
+    /// スナップショットリスナーの購読状態
+    public private(set) var loadState: ListenerLoadState = .loading
     private var listenerTask: Task<Void, Never>?
 
     private let cohabitantListenerKey = "cohabitantListenerKey"
@@ -39,34 +39,41 @@ public final class CohabitantStore {
         // すでに監視中の場合は何もしない
         if listenerTask != nil { return }
 
+        loadState = .loading
         let stream = await cohabitantClient.addSnapshotListener(
             cohabitantListenerKey,
             cohabitantId
         )
 
         listenerTask = Task {
+            do {
+                for try await cohabitantData in stream {
+                    guard let cohabitantData else { continue }
 
-            for await cohabitantData in stream {
-                guard let cohabitantData else { continue }
-
-                for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
-                    do {
-                        guard let account = try await accountInfoClient.fetch(member) else {
-                            print("Not found account(cohabitantId: \(cohabitantId), userId: \(member))")
-                            continue
+                    for member in self.members.missingMemberIds(from: .init(cohabitantData.members)) {
+                        do {
+                            guard let account = try await accountInfoClient.fetch(member) else {
+                                print("Not found account(cohabitantId: \(cohabitantId), userId: \(member))")
+                                continue
+                            }
+                            members.insert(.init(id: member, userName: account.userName))
+                            print("loaded cohabitant members: \(members)")
+                        } catch {
+                            print("error occurred: \(error)")
                         }
-                        members.insert(.init(id: member, userName: account.userName))
-                        print("loaded cohabitant members: \(members)")
-                    } catch {
-                        print("error occurred: \(error)")
                     }
+
+                    // 初回のデータをロード完了したらその旨の状態にする
+                    loadState = .loaded
                 }
 
-                // 初回のデータをロード完了したらその旨のフラグを立てる
-                isInitialLoaded = true
+                print("finish listening cohabitant snapshot.")
+            } catch {
+                // リスナーが購読を継続できなくなった場合は失敗状態にし、再購読できるようにタスクを解放する
+                print("error occurred at cohabitant snapshot listener: \(error)")
+                loadState = .failed(DomainError.make(error) ?? .other)
+                listenerTask = nil
             }
-
-            print("finish listening cohabitant snapshot.")
         }
     }
 

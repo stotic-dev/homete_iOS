@@ -15,7 +15,7 @@ public struct CohabitantClient: Sendable {
     public let addSnapshotListener: @Sendable (
         _ listenerId: String,
         _ cohabitantId: String
-    ) async -> AsyncStream<CohabitantData?>
+    ) async -> AsyncThrowingStream<CohabitantData?, Error>
     public let removeSnapshotListener: @Sendable (_ listenerId: String) async -> Void
 
     public init(
@@ -23,7 +23,7 @@ public struct CohabitantClient: Sendable {
         addSnapshotListener: @Sendable @escaping (
             _: String,
             _: String
-        ) async -> AsyncStream<CohabitantData?> = { _, _ in .init { nil } },
+        ) async -> AsyncThrowingStream<CohabitantData?, Error> = { _, _ in .init { $0.finish() } },
         removeSnapshotListener: @Sendable @escaping (_ listenerId: String) async -> Void = { _ in }
     ) {
         self.register = register

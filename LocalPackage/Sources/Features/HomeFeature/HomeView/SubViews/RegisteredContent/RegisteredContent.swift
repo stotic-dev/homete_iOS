@@ -23,33 +23,42 @@ struct RegisteredContent: View {
 
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
+    @State var loadFailure: DomainError?
 
     @LoadingState var loadingState
 
+    let onRetry: () async -> Void
+
     var body: some View {
         ZStack {
-            ScrollView {
-                VStack(spacing: .space24) {
-                    TodayHouseworkSummaryComponent.make()
-                    if !subscriptionStore.isPremium {
-                        VStack(spacing: .space8) {
-                            adComponentResolver.resolve(.banner(.dashboardTop))
-                                .frame(height: 150)
-                            RemoveAdsPromotionLink {
-                                isShowPaywall = true
+            if let loadFailure {
+                LoadErrorView(error: loadFailure) {
+                    Task { await retry() }
+                }
+            } else {
+                ScrollView {
+                    VStack(spacing: .space24) {
+                        TodayHouseworkSummaryComponent.make()
+                        if !subscriptionStore.isPremium {
+                            VStack(spacing: .space8) {
+                                adComponentResolver.resolve(.banner(.dashboardTop))
+                                    .frame(height: 150)
+                                RemoveAdsPromotionLink {
+                                    isShowPaywall = true
+                                }
+                            }
+                        }
+                        ContributionSummaryComponent.make()
+                            .padding(.vertical, .space16)
+                            .redacted(reason: loadingState.isLoading ? .placeholder : [])
+                        if !hasTemplate {
+                            PromoteHouseworkTemplateBanner {
+                                isShowHouseworkTemplate = true
                             }
                         }
                     }
-                    ContributionSummaryComponent.make()
-                        .padding(.vertical, .space16)
-                        .redacted(reason: loadingState.isLoading ? .placeholder : [])
-                    if !hasTemplate {
-                        PromoteHouseworkTemplateBanner {
-                            isShowHouseworkTemplate = true
-                        }
-                    }
+                    .padding(.horizontal, .space16)
                 }
-                .padding(.horizontal, .space16)
             }
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
@@ -58,11 +67,14 @@ struct RegisteredContent: View {
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
             router.resolve(.paywall)
         }
-        .onChange(of: contributionStore.isInitialLoaded) {
-            onChangeStoreInitialLoadedStatus()
+        .onChange(of: contributionStore.loadState) {
+            onChangeStoreLoadState()
         }
-        .onChange(of: cohabiantStore.isInitialLoaded) {
-            onChangeStoreInitialLoadedStatus()
+        .onChange(of: cohabiantStore.loadState) {
+            onChangeStoreLoadState()
+        }
+        .onChange(of: houseworkListstore.loadState) {
+            onChangeStoreLoadState()
         }
         .navigationDestination(for: RegisteredContentRoute.self) { route in
             navigationHandler(route)
@@ -91,16 +103,44 @@ private extension RegisteredContent {
 
 private extension RegisteredContent {
 
-    func onChangeStoreInitialLoadedStatus() {
+    /// 再購読を実行し、完了時点のStoreの状態で表示を組み直す
+    ///
+    /// - Note: 同じエラーが再発した場合は`loadState`が変化せず`onChange`が発火しないため、
+    ///         完了後に明示的に状態を反映する。
+    func retry() async {
+        loadingState.isLoading = true
+        await onRetry()
+        onChangeStoreLoadState()
+    }
+
+    /// ダッシュボードが依存する全Storeの購読状態
+    var loadStates: [ListenerLoadState] {
+        [contributionStore.loadState, cohabiantStore.loadState, houseworkListstore.loadState]
+    }
+
+    func onChangeStoreLoadState() {
+        // どれかが失敗していれば、ローディングは解除してエラー表示に倒す
+        let failure = loadStates.compactMap { state -> DomainError? in
+            guard case let .failed(error) = state else { return nil }
+            return error
+        }.first
+
+        if let failure {
+            loadFailure = failure
+            loadingState.isLoading = false
+            return
+        }
+
+        loadFailure = nil
         // Storeの初回ロード完了まで、ローディング画面を表示する
-        loadingState.isLoading = !contributionStore.isInitialLoaded || !cohabiantStore.isInitialLoaded
+        loadingState.isLoading = loadStates.contains { $0 != .loaded }
     }
 
 }
 
 #if DEBUG
 #Preview {
-    RegisteredContent()
+    RegisteredContent(onRetry: {})
         .environment(ContributionStore())
         .environment(CohabitantStore())
         .environment(HouseworkListStore())
@@ -110,7 +150,7 @@ private extension RegisteredContent {
 }
 
 #Preview("プレミアム登録済み_広告非表示") {
-    RegisteredContent()
+    RegisteredContent(onRetry: {})
         .environment(ContributionStore())
         .environment(CohabitantStore())
         .environment(HouseworkListStore())

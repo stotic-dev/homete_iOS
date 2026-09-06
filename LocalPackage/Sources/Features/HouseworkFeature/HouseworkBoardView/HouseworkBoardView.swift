@@ -28,43 +28,31 @@ struct HouseworkBoardView: View {
     @State var isShowPaywall = false
     @State var isSelecting = false
 
+    @LoadingState var loadingState
+
+    /// 家事の購読に失敗している場合のエラー内容
+    let loadFailure: DomainError?
     let onUpdateHouseboardList: () -> Void
+    let onRetry: () async -> Void
 
     var body: some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
-                VStack(spacing: .space16) {
-                    HouseworkDateHeaderContent(dateList: $dateList) {
-                        isShowPaywall = true
-                    }
-                    VStack(spacing: .space16) {
-                        HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
-                        TabView(selection: $selectedHouseworkState) {
-                            ForEach(HouseworkState.pageableCases) { state in
-                                HouseworkBoardListContent(
-                                    houseworkListStore: houseworkListStore,
-                                    state: state,
-                                    list: houseworkBoardList,
-                                    selectedHouseworkState: $selectedHouseworkState,
-                                    isSelecting: $isSelecting,
-                                    onCreateTapped: { isPresentingAddHouseworkView = true }
-                                )
-                                .tag(state)
-                            }
+                if let loadFailure {
+                    LoadErrorView(error: loadFailure) {
+                        loadingState.task {
+                            await onRetry()
                         }
-                        #if os(iOS)
-                        .tabViewStyle(.page(indexDisplayMode: .never))
-                        #endif
-                        Spacer()
                     }
-                    .padding(.horizontal, .space16)
+                } else {
+                    boardContent()
+                    addHouseworkButton {
+                        isPresentingAddHouseworkView = true
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(.trailing, .space24)
+                    .padding(.bottom, .space24)
                 }
-                addHouseworkButton {
-                    isPresentingAddHouseworkView = true
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .padding(.trailing, .space24)
-                .padding(.bottom, .space24)
             }
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
@@ -115,11 +103,41 @@ struct HouseworkBoardView: View {
                 isSelecting = false
             }
         }
+        .fullScreenLoadingIndicator(loadingState)
     }
 
 }
 
 private extension HouseworkBoardView {
+
+    func boardContent() -> some View {
+        VStack(spacing: .space16) {
+            HouseworkDateHeaderContent(dateList: $dateList) {
+                isShowPaywall = true
+            }
+            VStack(spacing: .space16) {
+                HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
+                TabView(selection: $selectedHouseworkState) {
+                    ForEach(HouseworkState.pageableCases) { state in
+                        HouseworkBoardListContent(
+                            houseworkListStore: houseworkListStore,
+                            state: state,
+                            list: houseworkBoardList,
+                            selectedHouseworkState: $selectedHouseworkState,
+                            isSelecting: $isSelecting,
+                            onCreateTapped: { isPresentingAddHouseworkView = true }
+                        )
+                        .tag(state)
+                    }
+                }
+                #if os(iOS)
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                #endif
+                Spacer()
+            }
+            .padding(.horizontal, .space16)
+        }
+    }
 
     func addHouseworkButton(action: @escaping () -> Void) -> some View {
         Button {
@@ -156,7 +174,27 @@ private extension HouseworkBoardView {
             selectedDate: .distantPast,
             calendar: .japanese
         )),
-        onUpdateHouseboardList: {}
+        loadFailure: nil,
+        onUpdateHouseboardList: {},
+        onRetry: {}
+    )
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkBoardView_読み込みエラー") {
+    HouseworkBoardView(
+        houseworkBoardList: .constant(.init(items: [])),
+        dateList: .constant(.init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )),
+        loadFailure: .noNetwork,
+        onUpdateHouseboardList: {},
+        onRetry: {}
     )
     .apply(theme: .init())
     .setupEnvironmentForPreview()

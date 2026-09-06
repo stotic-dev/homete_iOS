@@ -18,7 +18,7 @@ public struct NotificationPermissionGuideView: View {
     let onTapSkipButton: () -> Void
     /// 通知設定タップ時の処理
     let onTapEnableNotificationButton: () -> Void
-    
+
     public init(
         onTapSkipButton: @escaping () -> Void,
         onTapEnableNotificationButton: @escaping () -> Void

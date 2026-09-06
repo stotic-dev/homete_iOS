@@ -96,17 +96,19 @@ private extension HomeView {
         houseworkTemplateListStore: HouseworkTemplateListStore,
         houseworkListStore: HouseworkListStore
     ) -> some View {
-        RegisteredContent()
-            .task {
-                await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
-            }
-            .sheet(isPresented: $isShowSetting) {
-                router.resolve(.setting)
-            }
-            .environment(contributionStore)
-            .environment(cohabitantStore)
-            .environment(houseworkTemplateListStore)
-            .environment(houseworkListStore)
+        RegisteredContent(onRetry: {
+            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+        })
+        .task {
+            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+        }
+        .sheet(isPresented: $isShowSetting) {
+            router.resolve(.setting)
+        }
+        .environment(contributionStore)
+        .environment(cohabitantStore)
+        .environment(houseworkTemplateListStore)
+        .environment(houseworkListStore)
     }
 
     func notRegisteredContent() -> some View {

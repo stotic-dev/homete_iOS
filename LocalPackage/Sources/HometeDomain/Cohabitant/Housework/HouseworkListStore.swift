@@ -14,6 +14,8 @@ import SwiftUI
 public final class HouseworkListStore {
 
     public private(set) var items: StoredAllHouseworkList
+    /// 家事のスナップショットリスナーの購読状態
+    public private(set) var loadState: ListenerLoadState = .loading
     private var calendar: Calendar = .autoupdatingCurrent
 
     private let houseworkClient: HouseworkClient
@@ -154,15 +156,23 @@ private extension HouseworkListStore {
 
     func startObserving() async {
         let stream = await houseworkManager.createObserver(houseworkListObserveKey)
-        for await newItems in stream {
-            let anchorDate = await houseworkManager.listenerAnchorDate
-            items = StoredAllHouseworkList.makeMultiDateList(
-                items: newItems,
-                anchorDate: anchorDate,
-                offsetDays: HouseworkManager.listenerOffset,
-                calendar: calendar
-            )
-            print("did receive current items: \(items)")
+        for await result in stream {
+            switch result {
+            case let .success(newItems):
+                let anchorDate = await houseworkManager.listenerAnchorDate
+                items = StoredAllHouseworkList.makeMultiDateList(
+                    items: newItems,
+                    anchorDate: anchorDate,
+                    offsetDays: HouseworkManager.listenerOffset,
+                    calendar: calendar
+                )
+                print("did receive current items: \(items)")
+                loadState = .loaded
+
+            case let .failure(error):
+                print("error occurred at housework snapshot listener: \(error)")
+                loadState = .failed(error)
+            }
         }
     }
 
