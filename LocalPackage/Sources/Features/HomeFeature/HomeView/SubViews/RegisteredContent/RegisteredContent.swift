@@ -14,6 +14,7 @@ import SwiftUI
 struct RegisteredContent: View {
 
     @Environment(\.adComponentResolver) var adComponentResolver
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(CohabitantStore.self) var cohabiantStore
     @Environment(ContributionStore.self) var contributionStore
     @Environment(HouseworkListStore.self) var houseworkListstore
@@ -36,7 +37,7 @@ struct RegisteredContent: View {
                             adComponentResolver.resolve(.banner(.dashboardTop))
                                 .frame(height: 150)
                             RemoveAdsPromotionLink {
-                                isShowPaywall = true
+                                tappedRemoveAdsPromotionLink()
                             }
                         }
                     }
@@ -95,6 +96,11 @@ private extension RegisteredContent {
     func onChangeStoreInitialLoadedStatus() {
         // Storeの初回ロード完了まで、ローディング画面を表示する
         loadingState.isLoading = !contributionStore.isInitialLoaded || !cohabiantStore.isInitialLoaded
+    }
+
+    func tappedRemoveAdsPromotionLink() {
+        analyticsClient.log(.advertisement(step: .dashboard))
+        isShowPaywall = true
     }
 
 }

@@ -22,7 +22,7 @@ public extension AnalyticsEvent {
     static func login(isSuccess: Bool) -> Self {
         .init(
             name: "login",
-            parameters: ["isSuccess": "\(isSuccess)"]
+            parameters: ["result": isSuccess ? "success" : "failure"]
         )
     }
 
@@ -106,6 +106,25 @@ public extension AnalyticsEvent {
     static func notificationPermission(_ action: NotificationPermissionAnalyticsAction) -> Self {
         .init(
             name: "notification_permission",
+            parameters: action.parameters
+        )
+    }
+
+    /// 広告に関する行動
+    /// - Note: 現状「広告を非表示にする」リンクのタップのみのため、行動ごとのenumは持たず`step`だけで区別する
+    static func advertisement(step: AdvertisementAnalyticsStep) -> Self {
+        .init(
+            name: "advertisement",
+            parameters: ["action": "remove_ads_link_tapped", "step": step.rawValue]
+        )
+    }
+
+    /// 契約中プランの管理に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
+    ///         意図は`SubscriptionAnalyticsAction`を参照
+    static func subscription(_ action: SubscriptionAnalyticsAction) -> Self {
+        .init(
+            name: "subscription",
             parameters: action.parameters
         )
     }

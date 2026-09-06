@@ -74,7 +74,10 @@ public extension RootView {
         DependenciesInjectLayer {
             let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
             let pendingInvitationStore = PendingInvitationStore()
-            let subscriptionStore = SubscriptionStore(purchaseClient: $0.purchaseClient)
+            let subscriptionStore = SubscriptionStore(
+                purchaseClient: $0.purchaseClient,
+                analyticsClient: $0.analyticsClient
+            )
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore,
@@ -91,7 +94,8 @@ public extension RootView {
                 ))
                 .environment(CohabitantStore(
                     cohabitantClient: $0.cohabitantClient,
-                    accountInfoClient: $0.accountInfoClient
+                    accountInfoClient: $0.accountInfoClient,
+                    analyticsClient: $0.analyticsClient
                 ))
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
@@ -134,7 +138,9 @@ private extension RootView {
 
         if let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) {
             await updateFcmTokenIfNeeded()
-            launchState = .loggedIn(context: .init(account: account))
+            let context = LoginContext(account: account)
+            analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
+            launchState = .loggedIn(context: context)
         } else {
             launchState = .preLoggedIn(auth: authResult)
         }
@@ -145,7 +151,9 @@ private extension RootView {
               let account = accountStore.account else { return }
 
         await updateFcmTokenIfNeeded()
-        launchState = .loggedIn(context: .init(account: account))
+        let context = LoginContext(account: account)
+        analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
+        launchState = .loggedIn(context: context)
         // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
         await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
     }

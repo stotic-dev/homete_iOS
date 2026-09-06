@@ -15,7 +15,8 @@ struct CohabitantStoreTest {
     private let inputCohabitantId = "testCohabitantId"
     private let inputListenerId = "cohabitantListenerKey"
 
-    @Test("パートナーの監視中に、まだキャッシュしていないメンバーの場合はパートナーのリストにキャッシュとして追加する")
+    @Test("パートナーの監視中に、まだキャッシュしていないメンバーの場合はパートナーのリストにキャッシュとして追加し、cohabitant_member_countユーザープロパティを更新する")
+    // swiftlint:disable:next function_body_length
     func addSnapshotListenerIfNeeded_add_member_case() async {
         // Arrange
 
@@ -35,47 +36,53 @@ struct CohabitantStoreTest {
 
         let (stream, continuation) = AsyncStream<CohabitantData?>.makeStream()
 
-        let store = CohabitantStore(
-            members: [.init(id: selfId, userName: "自分")],
-            ownId: selfId,
-            cohabitantClient: .init(
-                addSnapshotListener: { listenerId, cohabitantId in
-                    #expect(listenerId == inputListenerId)
-                    #expect(cohabitantId == inputCohabitantId)
-                    return stream
-                }
-            ),
-            accountInfoClient: .init(fetch: { userId in
-                // Assert
+        await confirmation(expectedCount: 1) { confirmation in
+            let store = CohabitantStore(
+                members: [.init(id: selfId, userName: "自分")],
+                ownId: selfId,
+                cohabitantClient: .init(
+                    addSnapshotListener: { listenerId, cohabitantId in
+                        #expect(listenerId == inputListenerId)
+                        #expect(cohabitantId == inputCohabitantId)
+                        return stream
+                    }
+                ),
+                accountInfoClient: .init(fetch: { userId in
+                    // Assert
 
-                #expect(userId == newMemberId)
-                return expectedAccount
-            })
-        )
+                    #expect(userId == newMemberId)
+                    return expectedAccount
+                }),
+                analyticsClient: .init(setUserProperty: { property in
+                    confirmation()
+                    #expect(property == .cohabitantMemberCount(2))
+                })
+            )
 
-        // Act
+            // Act
 
-        await store.addSnapshotListenerIfNeeded(inputCohabitantId)
+            await store.addSnapshotListenerIfNeeded(inputCohabitantId)
 
-        // Assert
+            // Assert
 
-        let waiterForUpdateMembers = Task {
-            await withCheckedContinuation { continuation in
-                ObservationHelper.continuousObservationTracking {
-                    store.members
-                } onChange: {
-                    continuation.resume(returning: ())
+            let waiterForUpdateMembers = Task {
+                await withCheckedContinuation { continuation in
+                    ObservationHelper.continuousObservationTracking {
+                        store.members
+                    } onChange: {
+                        continuation.resume(returning: ())
+                    }
                 }
             }
+
+            continuation.yield(inputCohabitantData)
+            await waiterForUpdateMembers.value
+            continuation.finish()
+            await store.removeSnapshotListener()
+
+            #expect(store.members.value.count == 2)
+            #expect(store.members.value.contains(.init(id: newMemberId, userName: newMemberUserName)))
         }
-
-        continuation.yield(inputCohabitantData)
-        await waiterForUpdateMembers.value
-        continuation.finish()
-        await store.removeSnapshotListener()
-
-        #expect(store.members.value.count == 2)
-        #expect(store.members.value.contains(.init(id: newMemberId, userName: newMemberUserName)))
     }
 
 }

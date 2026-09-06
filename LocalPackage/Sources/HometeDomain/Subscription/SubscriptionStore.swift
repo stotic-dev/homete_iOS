@@ -12,12 +12,15 @@ public final class SubscriptionStore {
     public private(set) var entitlementInfo: EntitlementInfo?
 
     private let purchaseClient: PurchaseClient
+    private let analyticsClient: AnalyticsClient
 
     public init(
         purchaseClient: PurchaseClient = .previewValue,
+        analyticsClient: AnalyticsClient = .previewValue,
         entitlementInfo: EntitlementInfo? = nil
     ) {
         self.purchaseClient = purchaseClient
+        self.analyticsClient = analyticsClient
         self.entitlementInfo = entitlementInfo
     }
 
@@ -45,11 +48,13 @@ public final class SubscriptionStore {
             print("failed to logOut from purchase client: \(error)")
         }
         entitlementInfo = nil
+        analyticsClient.setUserProperty(.isPremium(isPremium))
     }
 
     public func refresh() async {
         do {
             entitlementInfo = try await purchaseClient.fetchEntitlementInfo()
+            analyticsClient.setUserProperty(.isPremium(isPremium))
         } catch {
             print("failed to fetch entitlement info: \(error)")
         }
@@ -60,6 +65,7 @@ public final class SubscriptionStore {
     public func observeEntitlementUpdates() async {
         for await info in purchaseClient.entitlementInfoUpdates() {
             entitlementInfo = info
+            analyticsClient.setUserProperty(.isPremium(isPremium))
         }
     }
 
@@ -69,7 +75,10 @@ public final class SubscriptionStore {
             try await purchaseClient.showManageSubscriptions()
         } catch {
             print("failed to show manage subscriptions: \(error)")
+            analyticsClient.log(.subscription(.manageOpened(isSuccess: false)))
+            return
         }
+        analyticsClient.log(.subscription(.manageOpened(isSuccess: true)))
     }
 
     /// 過去の購入を復元する
@@ -77,9 +86,16 @@ public final class SubscriptionStore {
     /// - Note: 結果をユーザーに提示する必要があるため、他のメソッドと異なりエラーを握り潰さない
     @discardableResult
     public func restorePurchases() async throws -> Bool {
-        let restoredInfo = try await purchaseClient.restorePurchases()
-        entitlementInfo = restoredInfo
-        return restoredInfo.isActive
+        do {
+            let restoredInfo = try await purchaseClient.restorePurchases()
+            entitlementInfo = restoredInfo
+            analyticsClient.setUserProperty(.isPremium(isPremium))
+            analyticsClient.log(.subscription(.restore(isSuccess: true)))
+            return restoredInfo.isActive
+        } catch {
+            analyticsClient.log(.subscription(.restore(isSuccess: false)))
+            throw error
+        }
     }
 
 }

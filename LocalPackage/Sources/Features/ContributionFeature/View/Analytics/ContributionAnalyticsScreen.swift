@@ -11,6 +11,7 @@ import SwiftUI
 
 public struct ContributionAnalyticsScreen: View {
 
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(ContributionStore.self) var contributionStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.cohabitantMembers) var members
@@ -36,7 +37,8 @@ public struct ContributionAnalyticsScreen: View {
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
             isPremium: subscriptionStore.isPremium,
-            onUpgradeTapped: { isShowPaywall = true }
+            onUpgradeTapped: { isShowPaywall = true },
+            onTapRemoveAdsLink: { tappedRemoveAdsLink() }
         )
         .navigationTitle("家事分析")
         .softTopScrollEdgeEffect()
@@ -56,6 +58,11 @@ public struct ContributionAnalyticsScreen: View {
 }
 
 private extension ContributionAnalyticsScreen {
+
+    func tappedRemoveAdsLink() {
+        analyticsClient.log(.advertisement(step: .contributionAnalytics))
+        isShowPaywall = true
+    }
 
     func onChangeContribution() async {
         let contribution = contributionStore.contiribution

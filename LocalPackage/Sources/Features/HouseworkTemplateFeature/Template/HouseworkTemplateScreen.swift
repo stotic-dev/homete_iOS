@@ -13,6 +13,7 @@ public struct HouseworkTemplateScreen: View {
 
     @Environment(\.now) var now
     @Environment(\.dismiss) var dismiss
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
     @Environment(SubscriptionStore.self) var subscriptionStore
@@ -43,7 +44,7 @@ public struct HouseworkTemplateScreen: View {
                 draft: $editingDraft,
                 editorContext: $editorContext,
                 isPremium: subscriptionStore.isPremium,
-                onTapRemoveAdsLink: { isShowPaywall = true }
+                onTapRemoveAdsLink: { tappedRemoveAdsLink() }
             )
         }
         .environment(templateEditStore)
@@ -82,6 +83,11 @@ public struct HouseworkTemplateScreen: View {
 // MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateScreen {
+
+    func tappedRemoveAdsLink() {
+        analyticsClient.log(.advertisement(step: .template))
+        isShowPaywall = true
+    }
 
     func onAppear() async {
         // currentVersionで変更検知するためテンプレートの変更監視を止める
