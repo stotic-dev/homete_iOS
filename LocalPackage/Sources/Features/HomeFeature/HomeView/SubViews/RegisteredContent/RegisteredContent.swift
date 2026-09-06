@@ -32,7 +32,7 @@ struct RegisteredContent: View {
     var body: some View {
         ZStack {
             if let loadFailure {
-                DashboardLoadErrorView(error: loadFailure) {
+                LoadErrorView(error: loadFailure) {
                     Task { await retry() }
                 }
             } else {

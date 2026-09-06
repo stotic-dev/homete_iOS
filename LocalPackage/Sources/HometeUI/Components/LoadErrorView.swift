@@ -1,19 +1,23 @@
 //
-//  DashboardLoadErrorView.swift
+//  LoadErrorView.swift
 //  LocalPackage
 //
 
 import HometeDomain
-import HometeUI
 import SwiftUI
 
-/// ダッシュボードの初回ロードに失敗した際に表示する、エラー内容とリトライ導線
-struct DashboardLoadErrorView: View {
+/// Firestoreの監視・取得に失敗した画面で表示する、エラー内容とリトライ導線
+public struct LoadErrorView: View {
 
     let error: DomainError
     let onTapRetry: () -> Void
 
-    var body: some View {
+    public init(error: DomainError, onTapRetry: @escaping () -> Void) {
+        self.error = error
+        self.onTapRetry = onTapRetry
+    }
+
+    public var body: some View {
         VStack(spacing: .space24) {
             VStack(spacing: .space16) {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -41,7 +45,7 @@ struct DashboardLoadErrorView: View {
 
 }
 
-private extension DashboardLoadErrorView {
+private extension LoadErrorView {
 
     var message: String {
         switch error {
@@ -58,10 +62,10 @@ private extension DashboardLoadErrorView {
 
 }
 
-#Preview("DashboardLoadErrorView_通信エラー") {
-    DashboardLoadErrorView(error: .noNetwork, onTapRetry: {})
+#Preview("LoadErrorView_通信エラー") {
+    LoadErrorView(error: .noNetwork, onTapRetry: {})
 }
 
-#Preview("DashboardLoadErrorView_不明なエラー") {
-    DashboardLoadErrorView(error: .other, onTapRetry: {})
+#Preview("LoadErrorView_不明なエラー") {
+    LoadErrorView(error: .other, onTapRetry: {})
 }
