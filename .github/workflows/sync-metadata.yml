@@ -47,9 +47,13 @@ jobs:
 
       - name: Write App Store Connect API key
         env:
-          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_SECRET_KEY: ${{ secrets.ASC_SECRET_KEY }}
         run: |
-          echo "$ASC_API_KEY_P8_BASE64" | base64 -d > "$RUNNER_TEMP/asc_api_key.p8"
+          echo "$ASC_SECRET_KEY" | base64 -d > "$RUNNER_TEMP/asc_api_key.p8"
+          if [ ! -s "$RUNNER_TEMP/asc_api_key.p8" ]; then
+            echo "::error::ASC_SECRET_KEY のデコード結果が空でした。シークレットの設定値を確認してください"
+            exit 1
+          fi
           echo "ASC_API_KEY_PATH=$RUNNER_TEMP/asc_api_key.p8" >> "$GITHUB_ENV"
 
       - name: Sync metadata to App Store Connect
