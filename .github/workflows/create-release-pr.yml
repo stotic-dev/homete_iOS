@@ -50,7 +50,7 @@ jobs:
       - name: Commit version bump
         run: |
           git add homete.xcodeproj/project.pbxproj
-          git commit -m "chore: リリースバージョンをv${VERSION}に更新"
+          git commit --allow-empty -m "chore: リリースバージョンをv${VERSION}に更新"
 
       - name: Push release branch
         run: git push origin "release/v${VERSION}"
