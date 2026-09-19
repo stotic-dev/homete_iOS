@@ -173,6 +173,7 @@ case "$CI_WORKFLOW" in
             -testProductsPath "$TEST_PRODUCTS_PATH" \
             -testPlan hometeSnapshotTestsForCI \
             -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult \
+            -collect-test-diagnostics never \
             || echo "xcodebuild test-without-building exited non-zero (isRecordingSnapshotsが真ならXCTFailは抑止されるはずなので要調査)"
 
         git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
