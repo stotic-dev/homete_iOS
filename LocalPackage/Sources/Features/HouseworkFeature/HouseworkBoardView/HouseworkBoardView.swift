@@ -197,6 +197,7 @@ private extension HouseworkBoardView {
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkBoardView_読み込みエラー") {
