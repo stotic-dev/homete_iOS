@@ -147,9 +147,11 @@ struct SettingView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .trackScreenView(.setting)
     }
 
@@ -295,11 +297,16 @@ private extension SettingView {
     func tappedPremiumPlanItem() {
         switch subscriptionStore.plan {
         case .free:
+            analyticsClient.log(.paywall(.shown(step: .setting)))
             isShowPaywall = true
 
         case .subscription:
             navigationPath.push(.subscriptionManagement)
         }
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .setting, isPremium: subscriptionStore.isPremium)))
     }
 
     func tappedLogoutRowButton() {

@@ -25,6 +25,8 @@ public struct ContributionAnalyticsScreen: View {
     @State var selectedPeriod: DisplayPointPeriod = .init(type: .month, anchor: .now)
     @State var analytics: ContributionAnalytics?
     @State var isShowPaywall = false
+    /// 表示中のPaywallがどの導線から開かれたか。閉じたときのpaywallイベント送信で使う
+    @State var paywallStep: PaywallAnalyticsStep = .boardAd
 
     public static func make() -> some View {
         ContributionAnalyticsScreen()
@@ -37,7 +39,7 @@ public struct ContributionAnalyticsScreen: View {
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
             isPremium: subscriptionStore.isPremium,
-            onUpgradeTapped: { isShowPaywall = true },
+            onUpgradeTapped: { tappedUpgradeButton() },
             onTapRemoveAdsLink: { tappedRemoveAdsLink() }
         )
         .navigationTitle("家事分析")
@@ -50,9 +52,11 @@ public struct ContributionAnalyticsScreen: View {
                 await onChangePeriod()
             }
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
     }
 
 }
@@ -61,7 +65,21 @@ private extension ContributionAnalyticsScreen {
 
     func tappedRemoveAdsLink() {
         analyticsClient.log(.advertisement(step: .contributionAnalytics))
+        showPaywall(from: .boardAd)
+    }
+
+    func tappedUpgradeButton() {
+        showPaywall(from: .contributionStorageLimit)
+    }
+
+    func showPaywall(from step: PaywallAnalyticsStep) {
+        paywallStep = step
+        analyticsClient.log(.paywall(.shown(step: step)))
         isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: paywallStep, isPremium: subscriptionStore.isPremium)))
     }
 
     func onChangeContribution() async {

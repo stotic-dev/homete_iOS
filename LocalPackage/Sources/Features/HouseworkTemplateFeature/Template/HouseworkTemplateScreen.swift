@@ -49,9 +49,11 @@ public struct HouseworkTemplateScreen: View {
         }
         .environment(templateEditStore)
         .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .task {
             await onAppear()
         }
@@ -86,7 +88,12 @@ private extension HouseworkTemplateScreen {
 
     func tappedRemoveAdsLink() {
         analyticsClient.log(.advertisement(step: .template))
+        analyticsClient.log(.paywall(.shown(step: .templateAd)))
         isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .templateAd, isPremium: subscriptionStore.isPremium)))
     }
 
     func onAppear() async {
