@@ -62,6 +62,7 @@ public struct HomeView: View {
                     router.resolve(.setting)
                 }
             }
+            .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
         }
         .task {
             await onAppear()

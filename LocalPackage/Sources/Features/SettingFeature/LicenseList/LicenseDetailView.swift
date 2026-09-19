@@ -3,6 +3,7 @@
 //  homete
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -20,6 +21,7 @@ struct LicenseDetailView: View {
         .navigationTitle(license.name)
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
+        .trackScreenView(.licenseDetail)
     }
 
 }

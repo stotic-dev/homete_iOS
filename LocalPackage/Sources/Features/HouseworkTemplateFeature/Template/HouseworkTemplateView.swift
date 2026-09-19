@@ -144,6 +144,7 @@ struct HouseworkTemplateView: View {
         .animation(.default, value: collapsedDays)
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.houseworkTemplate)
     }
 
 }

@@ -79,8 +79,10 @@ struct RegisteredContent: View {
         .navigationDestination(for: RegisteredContentRoute.self) { route in
             navigationHandler(route)
                 .environment(houseworkListstore)
+                .environment(cohabiantStore)
         }
         .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.dashboard)
     }
 
 }
@@ -94,6 +96,9 @@ private extension RegisteredContent {
         switch route {
         case .incompleteHouseworkList:
             IncompleteHouseworkListView.make()
+
+        case let .houseworkDetail(item):
+            HouseworkDetailView.make(item: item)
         }
     }
 

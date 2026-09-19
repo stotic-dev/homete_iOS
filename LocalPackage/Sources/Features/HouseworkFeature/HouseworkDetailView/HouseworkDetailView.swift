@@ -9,7 +9,7 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HouseworkDetailView: View {
+public struct HouseworkDetailView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.loginContext.account) var account
@@ -21,7 +21,11 @@ struct HouseworkDetailView: View {
 
     @CommonError var commonErrorContent
 
-    var body: some View {
+    public static func make(item: HouseworkBoardItem) -> some View {
+        HouseworkDetailView(item: item)
+    }
+
+    public var body: some View {
         mainContent()
             .padding(.horizontal, .space16)
             .padding(.bottom, .space24)
@@ -39,6 +43,7 @@ struct HouseworkDetailView: View {
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()
             }
+            .trackScreenView(.houseworkDetail)
     }
 
 }
@@ -74,7 +79,8 @@ private extension HouseworkDetailView {
             try await houseworkListStore.remove(
                 target: item.originalItem,
                 cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered
+                isRegistered: item.isRegistered,
+                step: .detail
             )
             dismiss()
         } catch {

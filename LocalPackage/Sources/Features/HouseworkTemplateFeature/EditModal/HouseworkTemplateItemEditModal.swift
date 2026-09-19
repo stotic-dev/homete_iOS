@@ -94,6 +94,7 @@ struct HouseworkTemplateItemEditModal: View {
         .trailingToolbarItem {
             trailingNavigationItem()
         }
+        .trackScreenView(.houseworkTemplateEdit)
     }
 
 }

@@ -150,6 +150,7 @@ struct SettingView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
             router.resolve(.paywall)
         }
+        .trackScreenView(.setting)
     }
 
 }

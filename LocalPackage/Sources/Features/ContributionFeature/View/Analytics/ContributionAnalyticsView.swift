@@ -50,6 +50,7 @@ struct ContributionAnalyticsView: View {
                 .padding(.vertical, .space8)
         }
         .bottomAdBanner(.analyticsBottom, isPresented: !isPremium, onTapPromotionLink: onUpgradeTapped)
+        .trackScreenView(.contributionAnalytics)
     }
 
 }

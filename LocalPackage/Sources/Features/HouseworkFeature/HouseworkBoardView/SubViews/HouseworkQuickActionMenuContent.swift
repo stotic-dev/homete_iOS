@@ -16,10 +16,12 @@ public struct HouseworkQuickActionMenuContent: View {
     @Environment(\.now) var now
 
     let item: HouseworkBoardItem
+    let step: HouseworkAnalyticsStep
     let onError: (Error) -> Void
 
-    public init(item: HouseworkBoardItem, onError: @escaping (Error) -> Void) {
+    public init(item: HouseworkBoardItem, step: HouseworkAnalyticsStep, onError: @escaping (Error) -> Void) {
         self.item = item
+        self.step = step
         self.onError = onError
     }
 
@@ -46,7 +48,8 @@ private extension HouseworkQuickActionMenuContent {
                 on: item,
                 now: now,
                 account: loginContext.account,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: step
             )
         } catch {
             onError(error)
@@ -59,6 +62,7 @@ private extension HouseworkQuickActionMenuContent {
 #Preview("HouseworkQuickActionMenuContent_未完了", traits: .sizeThatFitsLayout) {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
+        step: .board,
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -76,6 +80,7 @@ private extension HouseworkQuickActionMenuContent {
             state: .pendingApproval,
             executorId: "other"
         ),
+        step: .board,
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -93,6 +98,7 @@ private extension HouseworkQuickActionMenuContent {
             state: .pendingApproval,
             executorId: "own"
         ),
+        step: .board,
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -105,6 +111,7 @@ private extension HouseworkQuickActionMenuContent {
 #Preview("HouseworkQuickActionMenuContent_完了", traits: .sizeThatFitsLayout) {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(title: "洗濯", point: 10, state: .completed),
+        step: .board,
         onError: { _ in }
     )
     .environment(HouseworkListStore())

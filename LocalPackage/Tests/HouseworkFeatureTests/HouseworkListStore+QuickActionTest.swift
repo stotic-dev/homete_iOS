@@ -64,7 +64,8 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: now,
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -103,7 +104,8 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
                 on: .init(originalItem: inputItem, isRegistered: false),
                 now: now,
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -141,7 +143,8 @@ extension HouseworkListStoreQuickActionTest.RemoveCase {
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: Date(),
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -193,7 +196,8 @@ extension HouseworkListStoreQuickActionTest.ApproveCase {
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: now,
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -245,7 +249,8 @@ extension HouseworkListStoreQuickActionTest.RejectCase {
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: now,
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -293,7 +298,8 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: Date(),
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -329,6 +335,7 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
                 now: Date(),
                 account: inputAccount,
                 cohabitantId: inputCohabitantId,
+                step: .board,
                 notify: false
             )
         }
@@ -365,6 +372,7 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
                 now: Date(),
                 account: inputAccount,
                 cohabitantId: inputCohabitantId,
+                step: .board,
                 notify: false
             )
         }
@@ -445,7 +453,8 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                         on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
                         now: now,
                         account: inputAccount,
-                        cohabitantId: inputCohabitantId
+                        cohabitantId: inputCohabitantId,
+                        step: .board
                     )
                 }
             }
@@ -482,7 +491,8 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                 on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
                 now: Date(),
                 account: inputAccount,
-                cohabitantId: inputCohabitantId
+                cohabitantId: inputCohabitantId,
+                step: .board
             )
         }
     }
@@ -508,7 +518,8 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
             on: [],
             now: Date(),
             account: inputAccount,
-            cohabitantId: "cohabitantId"
+            cohabitantId: "cohabitantId",
+            step: .board
         )
     }
 

@@ -56,7 +56,7 @@ struct HouseworkListStoreTest {
                 // Act
 
                 Task {
-                    try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId)
+                    try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
                 }
             }
         }
@@ -140,7 +140,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         now: requestedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
-                        isRegistered: true
+                        isRegistered: true,
+                        step: .board
                     )
                 }
             }
@@ -195,7 +196,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         now: requestedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
-                        isRegistered: false
+                        isRegistered: false,
+                        step: .board
                     )
                 }
             }
@@ -237,7 +239,11 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
             // Act
 
-            try await store.returnToIncomplete(target: inputHouseworkItem, cohabitantId: inputCohabitantId)
+            try await store.returnToIncomplete(
+                target: inputHouseworkItem,
+                cohabitantId: inputCohabitantId,
+                step: .detail
+            )
         }
     }
 
@@ -273,7 +279,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             try await store.remove(
                 target: inputHouseworkItem,
                 cohabitantId: inputCohabitantId,
-                isRegistered: true
+                isRegistered: true,
+                step: .detail
             )
         }
     }
@@ -310,7 +317,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             try await store.remove(
                 target: inputHouseworkItem,
                 cohabitantId: inputCohabitantId,
-                isRegistered: false
+                isRegistered: false,
+                step: .detail
             )
         }
     }

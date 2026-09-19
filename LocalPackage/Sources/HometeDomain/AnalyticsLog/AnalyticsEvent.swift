@@ -50,12 +50,62 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 画面の表示
+    /// - Note: GA4の予約イベント名`screen_view`と予約パラメータ`screen_name`を使う。
+    ///         SwiftUIのみで構成しているため自動収集の`screen_view`は機能せず、全画面から手動で送信する
+    static func screenView(_ screen: AppScreen) -> Self {
+        .init(
+            name: "screen_view",
+            parameters: ["screen_name": screen.screenName]
+        )
+    }
+
     /// 招待リンクに関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
     ///         意図は`CohabitantInvitationAnalyticsAction`を参照
     static func cohabitantInvitation(_ action: CohabitantInvitationAnalyticsAction) -> Self {
         .init(
             name: "cohabitant_invitation",
+            parameters: action.parameters
+        )
+    }
+
+    /// 家事に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `step` / `result` パラメータで区別する。
+    ///         意図は`HouseworkAnalyticsAction`を参照
+    static func housework(_ action: HouseworkAnalyticsAction) -> Self {
+        .init(
+            name: "housework",
+            parameters: action.parameters
+        )
+    }
+
+    /// 家事テンプレートに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
+    ///         意図は`HouseworkTemplateAnalyticsAction`を参照
+    static func houseworkTemplate(_ action: HouseworkTemplateAnalyticsAction) -> Self {
+        .init(
+            name: "housework_template",
+            parameters: action.parameters
+        )
+    }
+
+    /// 同居人グループ作成フローの進捗に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`method` / `action` / `result` パラメータで区別する。
+    ///         意図は`CohabitantRegistrationAnalyticsAction`を参照
+    static func cohabitantRegistration(_ action: CohabitantRegistrationAnalyticsAction) -> Self {
+        .init(
+            name: "cohabitant_registration",
+            parameters: action.parameters
+        )
+    }
+
+    /// プッシュ通知の権限リクエストに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
+    ///         意図は`NotificationPermissionAnalyticsAction`を参照
+    static func notificationPermission(_ action: NotificationPermissionAnalyticsAction) -> Self {
+        .init(
+            name: "notification_permission",
             parameters: action.parameters
         )
     }

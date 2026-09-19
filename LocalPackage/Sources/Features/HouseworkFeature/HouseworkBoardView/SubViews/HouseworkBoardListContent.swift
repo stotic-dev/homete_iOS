@@ -47,6 +47,7 @@ struct HouseworkBoardListContent: View {
                         .contextMenu {
                             HouseworkQuickActionMenuContent(
                                 item: item,
+                                step: .board,
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -103,7 +104,8 @@ private extension HouseworkBoardListContent {
                 on: selection.targets(for: action),
                 now: now,
                 account: loginContext.account,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: .board
             )
             selectedIDs = []
         } catch {

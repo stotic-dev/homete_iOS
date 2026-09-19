@@ -25,7 +25,10 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
                 case .paywall:
+                    // PaywallScreenはHometeInfrastructureにあり、HometeUIに依存しない。
+                    // 計測のためだけに依存を増やさず、画面を組み立てるここでModifierを付ける
                     PaywallScreen()
+                        .trackScreenView(.paywall)
                 #if DEBUG
                 case .debugOnboarding:
                     DebugOnboardingScreen()

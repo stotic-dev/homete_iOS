@@ -17,11 +17,6 @@ public enum OnboardingAnalyticsAction: Equatable, Sendable {
     case paywallClosed(isPremium: Bool)
     /// 特典説明画面からPaywallを開かずに次へ進んだ
     case premiumIntroductionSkipped
-    /// プッシュ通知の権限をリクエストした
-    /// - Parameter isGranted: 権限が許可されたかどうか
-    case notificationPermissionRequested(isGranted: Bool)
-    /// プッシュ通知の権限をリクエストせずにスキップした
-    case notificationPermissionSkipped
 
 }
 
@@ -42,14 +37,9 @@ extension OnboardingAnalyticsAction {
 private extension OnboardingAnalyticsAction {
 
     /// どの画面での行動かを示す
+    /// - Note: 現状は特典説明画面の行動のみのため固定値。通知権限の案内は`NotificationPermissionAnalyticsAction`が担当する
     var step: String {
-        switch self {
-        case .premiumIntroductionShown, .paywallShown, .paywallClosed, .premiumIntroductionSkipped:
-            "premium_introduction"
-
-        case .notificationPermissionRequested, .notificationPermissionSkipped:
-            "notification_permission"
-        }
+        "premium_introduction"
     }
 
     /// 画面内で何が起きたかを示す
@@ -64,11 +54,8 @@ private extension OnboardingAnalyticsAction {
         case .paywallClosed:
             "paywall_closed"
 
-        case .premiumIntroductionSkipped, .notificationPermissionSkipped:
+        case .premiumIntroductionSkipped:
             "skipped"
-
-        case .notificationPermissionRequested:
-            "permission_requested"
         }
     }
 
@@ -78,10 +65,7 @@ private extension OnboardingAnalyticsAction {
         case let .paywallClosed(isPremium):
             isPremium ? "purchased" : "not_purchased"
 
-        case let .notificationPermissionRequested(isGranted):
-            isGranted ? "granted" : "denied"
-
-        case .premiumIntroductionShown, .paywallShown, .premiumIntroductionSkipped, .notificationPermissionSkipped:
+        case .premiumIntroductionShown, .paywallShown, .premiumIntroductionSkipped:
             nil
         }
     }

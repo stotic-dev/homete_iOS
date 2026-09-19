@@ -74,6 +74,7 @@ struct PremiumIntroductionView: View {
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
+        .trackScreenView(.onboardingPremiumIntroduction)
     }
 
 }

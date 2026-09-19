@@ -36,6 +36,7 @@ public struct IncompleteHouseworkListView: View {
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .commonError(content: $commonError)
+        .trackScreenView(.incompleteHouseworkList)
     }
 
 }
@@ -56,6 +57,7 @@ private extension IncompleteHouseworkListView {
                         .contextMenu {
                             HouseworkQuickActionMenuContent(
                                 item: item,
+                                step: .dashboard,
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
