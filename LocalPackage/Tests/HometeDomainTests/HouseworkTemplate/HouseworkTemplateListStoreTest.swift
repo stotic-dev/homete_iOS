@@ -464,4 +464,25 @@ extension HouseworkTemplateListStoreTest {
         templatesContinuation.finish()
     }
 
+    @Test("configureでテンプレート一覧の取得に失敗すると、ロード状態が失敗になる")
+    func configureUpdatesLoadStateToFailed() async {
+        // Arrange
+
+        let store = HouseworkTemplateListStore(
+            houseworkTemplateClient: .init(
+                fetchTemplates: { _ in throw DomainError.noNetwork }
+            )
+        )
+
+        // Act
+
+        await #expect(throws: DomainError.noNetwork) {
+            try await store.configure(cohabitantId: Self.inputCohabitantId)
+        }
+
+        // Assert
+
+        #expect(store.loadState == .failed(.noNetwork))
+    }
+
 }

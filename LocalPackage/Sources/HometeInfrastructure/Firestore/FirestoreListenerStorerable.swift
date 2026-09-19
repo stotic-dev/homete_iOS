@@ -7,7 +7,7 @@ import FirebaseFirestore
 protocol FirestoreListenerStorerable<Element> {
 
     associatedtype Element
-    var continuation: AsyncStream<Element>.Continuation { get }
+    var continuation: AsyncThrowingStream<Element, Error>.Continuation { get }
     var listener: any ListenerRegistration { get }
     func remove()
 
@@ -15,7 +15,7 @@ protocol FirestoreListenerStorerable<Element> {
 
 struct FirestoreListener<Element>: FirestoreListenerStorerable {
 
-    let continuation: AsyncStream<Element>.Continuation
+    let continuation: AsyncThrowingStream<Element, Error>.Continuation
     let listener: any ListenerRegistration
 
     func remove() {

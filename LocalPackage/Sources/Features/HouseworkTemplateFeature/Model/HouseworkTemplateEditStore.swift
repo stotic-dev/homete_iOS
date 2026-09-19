@@ -15,6 +15,8 @@ final class HouseworkTemplateEditStore {
 
     private(set) var editors: [HouseworkTemplateEditor]
     private(set) var currentVersion: Int
+    /// 編集モード開始（Editor登録・リスナー設定）の状態
+    private(set) var loadState: ListenerLoadState = .loading
 
     private var editorsObserveTask: Task<Void, Never>?
     private var metaVersionObserveTask: Task<Void, Never>?
@@ -52,12 +54,18 @@ final class HouseworkTemplateEditStore {
         now: Date,
         keepaliveInterval: TimeInterval = 60
     ) async throws {
+        loadState = .loading
         let editor = HouseworkTemplateEditor(
             userId: userId,
             updatedAt: now,
             expiredAt: now.addingTimeInterval(Self.editorTTL)
         )
-        try await houseworkTemplateClient.upsertEditor(editor, templateId, cohabitantId)
+        do {
+            try await houseworkTemplateClient.upsertEditor(editor, templateId, cohabitantId)
+        } catch {
+            loadState = .failed(DomainError.make(error) ?? .other)
+            throw error
+        }
 
         let editorsStream = await houseworkTemplateClient.addEditorsSnapshotListener(
             editorsListenerKey,
@@ -65,7 +73,6 @@ final class HouseworkTemplateEditStore {
             cohabitantId
         )
         editorsObserveTask = Task {
-
             for await currentEditors in editorsStream {
                 // 自分以外のユーザーを現在の編集者として保存する
                 self.editors = currentEditors.filter { $0.userId != userId }
@@ -78,12 +85,12 @@ final class HouseworkTemplateEditStore {
             cohabitantId
         )
         metaVersionObserveTask = Task {
-
             for await version in metaVersionStream {
                 self.currentVersion = version
             }
         }
 
+        loadState = .loaded
         startKeepalive(
             templateId: templateId,
             cohabitantId: cohabitantId,
@@ -99,6 +106,7 @@ final class HouseworkTemplateEditStore {
         cohabitantId: String,
         userId: String
     ) async {
+        loadState = .loading
         editorsObserveTask?.cancel()
         metaVersionObserveTask?.cancel()
         keepaliveTask?.cancel()
