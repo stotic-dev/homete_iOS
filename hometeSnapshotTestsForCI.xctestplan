@@ -17,7 +17,6 @@
         "argument" : "isUnitTestMode"
       }
     ],
-    "diagnosticCollectionPolicy" : "never",
     "environmentVariableEntries" : [
       {
         "key" : "CI_XCODE_CLOUD",
