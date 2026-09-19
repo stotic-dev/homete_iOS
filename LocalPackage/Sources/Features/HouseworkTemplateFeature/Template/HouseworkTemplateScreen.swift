@@ -12,7 +12,6 @@ import SwiftUI
 public struct HouseworkTemplateScreen: View {
 
     @Environment(\.now) var now
-    @Environment(\.dismiss) var dismiss
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
@@ -26,7 +25,6 @@ public struct HouseworkTemplateScreen: View {
     @State var initialDraft: HouseworkTemplateDraft?
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
-    @State var shouldDismissOnErrorClose = false
     @State var isShowPaywall = false
 
     public static func make() -> some View {
@@ -44,11 +42,13 @@ public struct HouseworkTemplateScreen: View {
                 draft: $editingDraft,
                 editorContext: $editorContext,
                 isPremium: subscriptionStore.isPremium,
-                onTapRemoveAdsLink: { tappedRemoveAdsLink() }
+                loadFailure: loadFailure,
+                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
+                onRetry: { await retry() }
             )
         }
         .environment(templateEditStore)
-        .commonError(content: $commonErrorContent, onDismiss: onDismissErrorAlert)
+        .commonError(content: $commonErrorContent)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
             onDismiss: { dismissedPaywall() },
@@ -117,16 +117,40 @@ private extension HouseworkTemplateScreen {
             editingDraft = initialDraftOnAppear
             initialDraft = initialDraftOnAppear
         } catch {
-            // 編集状態の監視・登録ができないと編集機能が成立しないため、アラート確認後に画面を閉じる
-            shouldDismissOnErrorClose = true
-            commonErrorContent = .init(error: error)
+            // 編集状態の監視・登録ができないと編集機能が成立しないので、
+            // Storeが持つloadStateを根拠にエラー表示へ倒し、この画面のままリトライできるようにする
+            print("failed to start editing housework template: \(error)")
         }
     }
 
-    func onDismissErrorAlert() {
-        guard shouldDismissOnErrorClose else { return }
-        shouldDismissOnErrorClose = false
-        dismiss()
+    /// テンプレートの初回ロードが失敗している場合に、エラー表示に使う内容を返す
+    var loadFailure: DomainError? {
+        for state in [houseworkTemplateListStore.loadState, templateEditStore.loadState] {
+            if case let .failed(error) = state {
+                return error
+            }
+        }
+        return nil
+    }
+
+    /// テンプレートの初回ロードをやり直す
+    /// - Note: 失敗した層から順にやり直す（一覧の取得から失敗している場合はconfigureから）。
+    func retry() async {
+        guard let cohabitantId = account.cohabitantId else { return }
+
+        // テンプレート一覧のロード自体が失敗していた場合は、そこからやり直す
+        if case .failed = houseworkTemplateListStore.loadState {
+            try? await houseworkTemplateListStore.configure(cohabitantId: cohabitantId)
+        }
+
+        if let templateId = houseworkTemplateListStore.selectedTemplateId {
+            await templateEditStore.stopEditing(
+                templateId: templateId,
+                cohabitantId: cohabitantId,
+                userId: account.id
+            )
+        }
+        await onAppear()
     }
 
     func onDisappear() async {

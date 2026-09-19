@@ -31,6 +31,32 @@ enum HouseworkTemplateEditStoreTest {
 
 extension HouseworkTemplateEditStoreTest.StartEditingCase {
 
+    @Test("編集モード開始時にEditorの登録が失敗すると、ロード状態が失敗になる")
+    func startEditing_updatesLoadStateToFailedWhenUpsertFails() async {
+        // Arrange
+
+        let store = HouseworkTemplateEditStore(
+            houseworkTemplateClient: .init(
+                upsertEditor: { _, _, _ in throw DomainError.noNetwork }
+            )
+        )
+
+        // Act
+
+        await #expect(throws: DomainError.noNetwork) {
+            try await store.startEditing(
+                templateId: TestCase.inputTemplateId,
+                cohabitantId: TestCase.inputCohabitantId,
+                userId: TestCase.inputUserId,
+                now: Date()
+            )
+        }
+
+        // Assert
+
+        #expect(store.loadState == .failed(.noNetwork))
+    }
+
     @Test("編集モード開始時、Editorをupsertする")
     func startEditing_upsertsEditor() async throws {
         // Arrange
@@ -50,12 +76,8 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
                         .init(editor: editor, templateId: templateId, cohabitantId: cohabitantId)
                     )
                 },
-                addEditorsSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                },
-                addMetaVersionSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                }
+                addEditorsSnapshotListener: { _, _, _ in .makeStream().stream },
+                addMetaVersionSnapshotListener: { _, _, _ in .makeStream().stream }
             )
         )
 
@@ -97,9 +119,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 addEditorsSnapshotListener: { _, _, _ in editorsStream },
-                addMetaVersionSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                }
+                addMetaVersionSnapshotListener: { _, _, _ in .makeStream().stream }
             )
         )
 
@@ -157,9 +177,7 @@ extension HouseworkTemplateEditStoreTest.StartEditingCase {
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
                 addEditorsSnapshotListener: { _, _, _ in editorsStream },
-                addMetaVersionSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                }
+                addMetaVersionSnapshotListener: { _, _, _ in .makeStream().stream }
             )
         )
 

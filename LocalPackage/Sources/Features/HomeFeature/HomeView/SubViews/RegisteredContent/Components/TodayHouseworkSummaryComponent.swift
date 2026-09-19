@@ -129,7 +129,7 @@ private extension TodayHouseworkSummaryComponent {
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
             ForEach(summary.displayIncompleteItems) { item in
-                HouseBoardListRow(houseworkItem: item.originalItem)
+                houseworkItemRow(item)
                     .contextMenu {
                         HouseworkQuickActionMenuContent(
                             item: item,
@@ -145,6 +145,16 @@ private extension TodayHouseworkSummaryComponent {
                 .primaryButtonStyle()
             }
         }
+    }
+
+    func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
+        Button {
+            navigationPath.push(.houseworkDetail(item))
+        } label: {
+            HouseBoardListRow(houseworkItem: item.originalItem)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
 }

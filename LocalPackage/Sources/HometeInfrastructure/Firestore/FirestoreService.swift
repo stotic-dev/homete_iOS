@@ -32,15 +32,15 @@ public final actor FirestoreService {
     public func addSnapshotListener<Output: Decodable>(
         id: String,
         predicate: (Firestore) -> Query
-    ) -> AsyncStream<[Output]> {
-        let (stream, continuation) = AsyncStream.makeStream(
+    ) -> AsyncThrowingStream<[Output], Error> {
+        let (stream, continuation) = AsyncThrowingStream.makeStream(
             of: [Output].self,
             bufferingPolicy: .bufferingNewest(10)
         )
         let listener = predicate(firestore)
             .addSnapshotListener { snapshots, error in
                 if let error {
-                    print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
+                    continuation.finish(throwing: error)
                     return
                 }
 
@@ -56,15 +56,15 @@ public final actor FirestoreService {
     public func addSnapshotListener<Output: Decodable & Sendable>(
         id: String,
         predicate: (Firestore) -> DocumentReference
-    ) -> AsyncStream<Output?> {
-        let (stream, continuation) = AsyncStream.makeStream(
+    ) -> AsyncThrowingStream<Output?, Error> {
+        let (stream, continuation) = AsyncThrowingStream.makeStream(
             of: Output?.self,
             bufferingPolicy: .bufferingNewest(10)
         )
         let listener = predicate(firestore)
             .addSnapshotListener { snapshot, error in
                 if let error {
-                    print("occurred error at fetchSnapshotListener(type: \(Output.self), error: \(error))")
+                    continuation.finish(throwing: error)
                     return
                 }
 

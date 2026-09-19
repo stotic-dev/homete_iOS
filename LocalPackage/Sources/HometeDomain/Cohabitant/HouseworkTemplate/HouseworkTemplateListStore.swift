@@ -14,6 +14,8 @@ public final class HouseworkTemplateListStore {
     public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
     public private(set) var selectedTemplateId: String?
+    /// テンプレートの初回ロードの状態
+    public private(set) var loadState: ListenerLoadState = .loading
 
     private var daysObserveTask: Task<Void, Never>?
     private var templatesObserveTask: Task<Void, Never>?
@@ -42,15 +44,24 @@ public final class HouseworkTemplateListStore {
     }
 
     /// Storeの初回設定を行う
+    /// - Note: 失敗した場合は呼び出し元でハンドリングできるようrethrowしつつ、
+    ///         画面側がリトライ導線を出せるように`loadState`にも記録する。
     public func configure(cohabitantId: String) async throws {
-        try await loadTemplates(cohabitantId: cohabitantId)
+        loadState = .loading
+        do {
+            try await loadTemplates(cohabitantId: cohabitantId)
 
-        if let selectedTemplateId = templates.first?.templateId {
-            self.selectedTemplateId = selectedTemplateId
-            try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
-            await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
-        } else {
-            await startObservingTemplates(cohabitantId)
+            if let selectedTemplateId = templates.first?.templateId {
+                self.selectedTemplateId = selectedTemplateId
+                try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+                await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+            } else {
+                await startObservingTemplates(cohabitantId)
+            }
+            loadState = .loaded
+        } catch {
+            loadState = .failed(DomainError.make(error) ?? .other)
+            throw error
         }
     }
 
@@ -91,7 +102,6 @@ public final class HouseworkTemplateListStore {
             cohabitantId
         )
         daysObserveTask = Task {
-
             for await currentDays in stream {
                 self.selectedDays = currentDays
             }

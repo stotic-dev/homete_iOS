@@ -29,7 +29,7 @@ extension ContributionStoreTest {
             .makeForTest(id: 1, indexedDate: jan10, point: 30, state: .completed, executorId: "alice"),
             .makeForTest(id: 2, indexedDate: jan10, point: 20, state: .incomplete, executorId: "alice"),
         ]
-        let (stream, _) = AsyncStream<[HouseworkItem]>.makeStream()
+        let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
             houseworkClient: .init(
@@ -65,6 +65,39 @@ extension ContributionStoreTest {
             calendar: calendar
         )
         #expect(store.contiribution == expectedContribution)
+    }
+
+    @Test("HouseworkManagerが失敗を流すと、ロード状態が失敗になる")
+    func startObserving_updatesLoadStateToFailed() async {
+        // Arrange
+        let now = Date()
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+
+        let store = ContributionStore(houseworkManager: manager, calendar: calendar)
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: calendar,
+            storagePolicy: .premium
+        )
+
+        // Act
+        streamContinuation.finish(throwing: DomainError.noNetwork)
+
+        // Assert
+        // 失敗がManager経由でStoreに届くまで、各タスクに実行機会を与える
+        for _ in 0 ..< 100 where store.loadState != .failed(.noNetwork) {
+            await Task.yield()
+        }
+        #expect(store.loadState == .failed(.noNetwork))
     }
 
 }

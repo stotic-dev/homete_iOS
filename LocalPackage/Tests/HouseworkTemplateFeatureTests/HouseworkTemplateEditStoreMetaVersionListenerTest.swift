@@ -20,12 +20,8 @@ extension HouseworkTemplateEditStoreTest.MetaVersionListenerCase {
         let (versionStream, versionContinuation) = AsyncStream<Int>.makeStream()
         let store = HouseworkTemplateEditStore(
             houseworkTemplateClient: .init(
-                addDaysSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                },
-                addEditorsSnapshotListener: { _, _, _ in
-                    AsyncStream { $0.finish() }
-                },
+                addDaysSnapshotListener: { _, _, _ in .makeStream().stream },
+                addEditorsSnapshotListener: { _, _, _ in .makeStream().stream },
                 addMetaVersionSnapshotListener: { _, _, _ in versionStream }
             ),
             currentVersion: 0
