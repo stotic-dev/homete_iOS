@@ -150,6 +150,40 @@ struct AuthSubscriptionSyncUseCaseTest {
         }
     }
 
+    @Test("サインアウト時に、ユーザーに紐づくユーザープロパティとユーザーIDをリセットする")
+    func syncOnSignedOutClearsAnalyticsUser() async {
+        await confirmation("has_cohabitantをクリアする") { clearedHasCohabitant in
+            await confirmation("cohabitant_member_countをクリアする") { clearedMemberCount in
+                await confirmation("ユーザーIDをクリアする") { clearedId in
+                    let analyticsClient = AnalyticsClient(
+                        clearId: {
+                            clearedId()
+                        },
+                        setUserProperty: { property in
+                            switch property {
+                            case .cleared(.hasCohabitant):
+                                clearedHasCohabitant()
+
+                            case .cleared(.cohabitantMemberCount):
+                                clearedMemberCount()
+
+                            default:
+                                Issue.record("想定外のユーザープロパティが送信された: \(property)")
+                            }
+                        }
+                    )
+                    let useCase = AuthSubscriptionSyncUseCase(
+                        accountStore: AccountStore(),
+                        subscriptionStore: SubscriptionStore(),
+                        analyticsClient: analyticsClient
+                    )
+
+                    await useCase.syncOnSignedOut()
+                }
+            }
+        }
+    }
+
     @Test("プレミアム状態が変化した場合はアカウントを更新し家事データの保持期限を同期する")
     func syncPremiumStateIfNeededWhenChanged() async {
         await confirmation(expectedCount: 1) { confirmation in

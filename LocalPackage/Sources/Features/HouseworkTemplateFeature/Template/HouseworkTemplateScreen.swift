@@ -12,6 +12,7 @@ import SwiftUI
 public struct HouseworkTemplateScreen: View {
 
     @Environment(\.now) var now
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
     @Environment(SubscriptionStore.self) var subscriptionStore
@@ -42,15 +43,17 @@ public struct HouseworkTemplateScreen: View {
                 editorContext: $editorContext,
                 isPremium: subscriptionStore.isPremium,
                 loadFailure: loadFailure,
-                onTapRemoveAdsLink: { isShowPaywall = true },
+                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
                 onRetry: { await retry() }
             )
         }
         .environment(templateEditStore)
         .commonError(content: $commonErrorContent)
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .task {
             await onAppear()
         }
@@ -82,6 +85,16 @@ public struct HouseworkTemplateScreen: View {
 // MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateScreen {
+
+    func tappedRemoveAdsLink() {
+        analyticsClient.log(.advertisement(step: .template))
+        analyticsClient.log(.paywall(.shown(step: .templateAd)))
+        isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .templateAd, isPremium: subscriptionStore.isPremium)))
+    }
 
     func onAppear() async {
         // currentVersionで変更検知するためテンプレートの変更監視を止める

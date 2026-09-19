@@ -16,7 +16,9 @@ struct HouseworkBoardView: View {
     @Environment(\.routeResolver) var router
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @Binding var houseworkBoardList: HouseworkBoardList
     @Binding var dateList: HouseworkDateList
@@ -86,9 +88,11 @@ struct HouseworkBoardView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .onChange(of: houseworkListStore.items) {
             withAnimation {
                 onUpdateHouseboardList()
@@ -115,7 +119,7 @@ private extension HouseworkBoardView {
     func boardContent() -> some View {
         VStack(spacing: .space16) {
             HouseworkDateHeaderContent(dateList: $dateList) {
-                isShowPaywall = true
+                tappedStorageLimitCell()
             }
             VStack(spacing: .space16) {
                 HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
@@ -139,6 +143,15 @@ private extension HouseworkBoardView {
             }
             .padding(.horizontal, .space16)
         }
+    }
+
+    func tappedStorageLimitCell() {
+        analyticsClient.log(.paywall(.shown(step: .boardStorageLimit)))
+        isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
     }
 
     func addHouseworkButton(action: @escaping () -> Void) -> some View {
@@ -184,6 +197,7 @@ private extension HouseworkBoardView {
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkBoardView_読み込みエラー") {
@@ -202,5 +216,6 @@ private extension HouseworkBoardView {
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(SubscriptionStore())
 }
 #endif

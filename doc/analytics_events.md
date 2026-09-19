@@ -27,6 +27,39 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 5. パラメータのキーは機能をまたいで使い回す。GA4のカスタムディメンションにも登録数の上限があるため、
    `isGranted` / `isPremium` のように行動ごとのキーを増やさない
 
+## ユーザープロパティ
+
+「プレミアム会員かどうか」のようにユーザーに紐づき、かつ複数のイベントを横断して分析したい軸は、
+イベントパラメータではなくユーザープロパティとして送る。各イベントのパラメータに持たせると送信箇所ごとに
+付け忘れが起きる上、GA4のカスタムディメンションの登録数を無駄に消費するため。
+
+| 実装 |
+|---|
+| `AnalyticsUserProperty`（`HometeDomain/AnalyticsLog/`）、`AnalyticsClient.setUserProperty` |
+
+| プロパティ名 | 値 | 説明 | 設定タイミング |
+|---|---|---|---|
+| `is_premium` | `true` / `false` | プレミアム会員かどうか | `SubscriptionStore`のエンタイトルメント状態が変化したとき（ログイン後の取得・購読更新・復元・ログアウト） |
+| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時は削除 |
+| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時は削除 |
+
+**分析での使い方:** `is_premium`でセグメントして`housework` / `housework_template`の利用頻度を比較すると、
+プレミアム機能が実際にどれだけ使われているかが分かる。`has_cohabitant`が`false`のユーザーは家事管理自体が
+成立していないため、他の指標から除外して見る必要がある。
+
+### ログアウト・退会時のリセット
+
+ユーザープロパティとユーザーIDはSDK側にアプリ再インストールまで残るため、明示的に消さないと、
+ログアウト後に送るイベント（ログイン画面の`screen_view`など）や次にログインしたユーザーへ前ユーザーの値が
+引き継がれる。`AuthSubscriptionSyncUseCase.syncOnSignedOut()`でまとめてリセットしており、
+ログアウト・退会のどちらも`RootView`が認証状態の変化を検知してここを通る。
+
+| 対象 | リセット方法 |
+|---|---|
+| `has_cohabitant` / `cohabitant_member_count` | `AnalyticsUserProperty.cleared(_:)`（`nil`を送りGA4側のプロパティを削除する） |
+| ユーザーID（Analytics / Crashlytics） | `AnalyticsClient.clearId` |
+| `is_premium` | 削除せず`false`に更新（`SubscriptionStore.logOut()`）。匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため |
+
 ## イベント一覧
 
 ### `screen_view`
@@ -87,7 +120,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 値 | 説明 |
 |---|---|---|
-| `isSuccess` | `true` / `false` | 認証に成功したかどうか |
+| `result` | `success` / `failure` | 認証に成功したかどうか |
 
 ### `logout`
 
@@ -116,23 +149,21 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `step` | ○ | `premium_introduction` | どの画面での行動か（現状は特典説明画面のみ） |
-| `action` | ○ | `shown` / `paywall_shown` / `paywall_closed` / `skipped` | 何が起きたか |
-| `result` | — | `purchased` / `not_purchased` | 結果を伴う行動のみ付与 |
+| `action` | ○ | `shown` / `skipped` | 何が起きたか |
 
 送信されるパターンと、その送信タイミング:
 
-| `step` | `action` | `result` | 送信タイミング |
-|---|---|---|---|
-| `premium_introduction` | `shown` | — | 特典説明画面が表示された |
-| `premium_introduction` | `paywall_shown` | — | 特典説明画面で「プランを見る」をタップしてPaywallを開いた |
-| `premium_introduction` | `paywall_closed` | `purchased` / `not_purchased` | Paywallを閉じた（閉じた時点でプレミアムが有効なら`purchased`） |
-| `premium_introduction` | `skipped` | — | 「あとで決める」でPaywallを開かずに次へ進んだ |
+| `step` | `action` | 送信タイミング |
+|---|---|---|
+| `premium_introduction` | `shown` | 特典説明画面が表示された |
+| `premium_introduction` | `skipped` | 「あとで決める」でPaywallを開かずに次へ進んだ |
 
-**分析での使い方:** `premium_introduction / shown` を分母に `paywall_shown` → `paywall_closed(purchased)` を追うと、
-オンボーディング経由の課金ファネルになる。
+**分析での使い方:** `premium_introduction / shown` を分母に `skipped` の比率を見ると、特典説明自体で
+離脱しているユーザーの規模が分かる。Paywallの表示・クローズ（オンボーディング経由も含む）は`paywall`イベントを見る。
 
 > 通知権限の案内（オンボーディング・設定画面の両方）は`notification_permission`イベントに分離した。
 > 以前はこのイベントの`step: notification_permission`として計測していた。
+> Paywallの表示・クローズ（`paywall_shown` / `paywall_closed`）も`paywall`イベントに分離した。
 
 ### `housework`
 
@@ -276,6 +307,96 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 **分析での使い方:** `issue(success)` を分母に `open` → `join(success)` を追うと招待リンクの成立率になる。
 `step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
 `join` の失敗内訳を見ると、有効期限（24時間）が短すぎないか、別グループ参加済みのユーザーがどの程度リンクを踏んでいるかが分かる。
+
+### `advertisement`
+
+広告に関する行動。現状は無料プランに表示している「広告を非表示にする」リンクのタップのみを計測する
+（広告そのものの表示・クリックはAdMob側の計測に任せる。アプリ内の課金導線への反応はAdMobでは取得できないため
+この位置で計測する）。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `AdvertisementAnalyticsStep`、`RegisteredContent` / `HouseworkTemplateScreen` / `ContributionAnalyticsScreen` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `remove_ads_link_tapped` | 「広告を非表示にする」リンクのタップ（現状はこの1種類のみ） |
+| `step` | ○ | `dashboard` / `contribution_analytics` / `template` | 広告の掲載面 |
+
+送信されるパターンと、その送信タイミング:
+
+| `step` | 送信タイミング |
+|---|---|
+| `dashboard` | ダッシュボード上部の広告バナー下のリンクをタップした |
+| `contribution_analytics` | 家事分析画面下部の広告バナー下のリンクをタップした |
+| `template` | 家事テンプレート画面下部の広告バナー下のリンクをタップした |
+
+いずれもタップ後にPaywallを開く。`ContributionAnalyticsView`には保存期間の上限に達した際の
+別のアップグレード導線（`StoragePeriodLimitView`）もあるが、そちらは広告面ではないため別のコールバック
+（`onUpgradeTapped`）として扱い、このイベントには含めない。
+
+**分析での使い方:** `step`ごとのタップ数を比較すると、どの掲載面の広告が最もPaywallへの導線として機能しているかが分かる。
+`paywall`イベントの`shown` / `closed(purchased)`と合わせて見ると、掲載面ごとの課金転換率が分かる。
+
+### `subscription`
+
+契約中プランの管理（購入の復元・OSのサブスクリプション管理画面の起動）における行動。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `SubscriptionAnalyticsAction`、`SubscriptionStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `restore` / `manage_opened` | 購入の復元 / サブスクリプション管理画面の起動のどちらか |
+| `result` | ○ | `success` / `failure` | 行動の結果 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `result` | 送信タイミング |
+|---|---|---|
+| `restore` | `success` / `failure` | サブスクリプション管理画面の「購入を復元」をタップし、復元処理が完了した／エラーが発生した（有効なエンタイトルメントが見つからなかった場合も、API呼び出し自体は成功のため`success`） |
+| `manage_opened` | `success` / `failure` | サブスクリプション管理画面の「解約する」/「サブスクリプションを管理」をタップし、OSの管理画面を起動できた／起動に失敗した |
+
+**分析での使い方:** `restore`の失敗率が高い場合、購入の復元まわりのサポート問い合わせが増える兆候として検知できる。
+`manage_opened`の起動失敗は、解約したいユーザーがOSの管理画面に辿り着けていないことを示すため、優先度高く見る。
+
+### `paywall`
+
+Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所ある導線を横断して、どの起点が課金につながって
+いるかを1つのファネルで見られるようにする。以前はオンボーディング経由のみ`onboarding`イベントの
+`paywall_shown` / `paywall_closed`として計測していたが、他の7導線も含めてこのイベントに統一した
+（リリース前のため既存データとの継続性は考慮していない）。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `PaywallAnalyticsAction`、`PremiumIntroductionView` / `RegisteredContent` / `HouseworkBoardView` / `HouseworkTemplateScreen` / `ContributionAnalyticsScreen` / `SettingView` / `SubscriptionManagementView` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` | Paywallへの起点 |
+| `action` | ○ | `shown` / `closed` | 表示 / クローズのどちらか |
+| `result` | — | `purchased` / `not_purchased` | `closed`のみ付与。閉じた時点でプレミアムが有効なら`purchased` |
+
+送信されるパターンと、その送信タイミング:
+
+| `step` | 起点 |
+|---|---|
+| `onboarding` | オンボーディング特典説明画面（`PremiumIntroductionView`）の「プランを見る」 |
+| `dashboard_ad` | ダッシュボードの広告バナー下「広告を非表示にする」リンク（`RegisteredContent`） |
+| `board_ad` | 家事分析画面の広告バナー下「広告を非表示にする」リンク（`ContributionAnalyticsScreen`）。`advertisement`イベントの`step: contribution_analytics`と同じ導線だが、`paywall`イベントの`step`名は本Issue設計時点の命名をそのまま踏襲しており「家事ボード」ではない点に注意 |
+| `board_storage_limit` | 家事ボードの保存期間上限セル（`HouseworkStorageLimitCell`） |
+| `template_ad` | 家事テンプレート画面の広告バナー下「広告を非表示にする」リンク（`HouseworkTemplateScreen`） |
+| `contribution_storage_limit` | 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`） |
+| `setting` | 設定画面の「プレミアムプランに登録」項目（`SettingView`） |
+| `subscription_management` | サブスク管理画面の「プランを変更」ボタン（`SubscriptionManagementView`） |
+
+`step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
+閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）
+に2つの起点があるため、開いた時点の起点を保持しておき、閉じたときに同じ`step`で送信する。
+
+**分析での使い方:** `step`ごとに`shown`を分母に`closed(purchased)`を追うと、導線別の課金転換率が分かる。
+現状オンボーディングのみで計測できていたファネルが全8導線に広がるため、どの導線を強化すべきかの判断材料になる。
 
 ## イベントを追加するときの手順
 

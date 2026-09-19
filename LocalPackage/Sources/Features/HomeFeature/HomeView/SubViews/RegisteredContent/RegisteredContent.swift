@@ -14,6 +14,7 @@ import SwiftUI
 struct RegisteredContent: View {
 
     @Environment(\.adComponentResolver) var adComponentResolver
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(CohabitantStore.self) var cohabiantStore
     @Environment(ContributionStore.self) var contributionStore
     @Environment(HouseworkListStore.self) var houseworkListstore
@@ -44,7 +45,7 @@ struct RegisteredContent: View {
                                 adComponentResolver.resolve(.banner(.dashboardTop))
                                     .frame(height: 150)
                                 RemoveAdsPromotionLink {
-                                    isShowPaywall = true
+                                    tappedRemoveAdsPromotionLink()
                                 }
                             }
                         }
@@ -64,9 +65,11 @@ struct RegisteredContent: View {
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
-        .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
-        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
         .onChange(of: contributionStore.loadState) {
             onChangeStoreLoadState()
         }
@@ -139,6 +142,16 @@ private extension RegisteredContent {
         loadFailure = nil
         // Storeの初回ロード完了まで、ローディング画面を表示する
         loadingState.isLoading = loadStates.contains { $0 != .loaded }
+    }
+
+    func tappedRemoveAdsPromotionLink() {
+        analyticsClient.log(.advertisement(step: .dashboard))
+        analyticsClient.log(.paywall(.shown(step: .dashboardAd)))
+        isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .dashboardAd, isPremium: subscriptionStore.isPremium)))
     }
 
 }

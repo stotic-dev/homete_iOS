@@ -6,26 +6,28 @@
 @testable import HometeDomain
 import Testing
 
+// swiftlint:disable:next type_body_length
 struct AnalyticsEventTest {
 
     @Test(
-        "オンボーディング中の行動を、step/action/resultのパラメータを持つonboardingイベントに変換する",
+        "認証結果を、真偽値の文字列ではなくsuccess/failureのresultパラメータを持つloginイベントに変換する",
+        arguments: [
+            (true, ["result": "success"]),
+            (false, ["result": "failure"]),
+        ]
+    )
+    func login(isSuccess: Bool, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.login(isSuccess: isSuccess)
+
+        #expect(actual == AnalyticsEvent(name: "login", parameters: expectedParameters))
+    }
+
+    @Test(
+        "オンボーディング中の行動を、step/actionのパラメータを持つonboardingイベントに変換する",
         arguments: [
             (
                 OnboardingAnalyticsAction.premiumIntroductionShown,
                 ["step": "premium_introduction", "action": "shown"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallShown,
-                ["step": "premium_introduction", "action": "paywall_shown"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallClosed(isPremium: true),
-                ["step": "premium_introduction", "action": "paywall_closed", "result": "purchased"]
-            ),
-            (
-                OnboardingAnalyticsAction.paywallClosed(isPremium: false),
-                ["step": "premium_introduction", "action": "paywall_closed", "result": "not_purchased"]
             ),
             (
                 OnboardingAnalyticsAction.premiumIntroductionSkipped,
@@ -287,6 +289,107 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.notificationPermission(action)
 
         #expect(actual == AnalyticsEvent(name: "notification_permission", parameters: expectedParameters))
+    }
+
+    @Test(
+        "広告に関する行動を、action/stepのパラメータを持つadvertisementイベントに変換する",
+        arguments: [
+            (
+                AdvertisementAnalyticsStep.dashboard,
+                ["action": "remove_ads_link_tapped", "step": "dashboard"]
+            ),
+            (
+                AdvertisementAnalyticsStep.contributionAnalytics,
+                ["action": "remove_ads_link_tapped", "step": "contribution_analytics"]
+            ),
+            (
+                AdvertisementAnalyticsStep.template,
+                ["action": "remove_ads_link_tapped", "step": "template"]
+            ),
+        ]
+    )
+    func advertisement(step: AdvertisementAnalyticsStep, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.advertisement(step: step)
+
+        #expect(actual == AnalyticsEvent(name: "advertisement", parameters: expectedParameters))
+    }
+
+    @Test(
+        "契約中プランの管理に関する行動を、action/resultのパラメータを持つsubscriptionイベントに変換する",
+        arguments: [
+            (
+                SubscriptionAnalyticsAction.restore(isSuccess: true),
+                ["action": "restore", "result": "success"]
+            ),
+            (
+                SubscriptionAnalyticsAction.restore(isSuccess: false),
+                ["action": "restore", "result": "failure"]
+            ),
+            (
+                SubscriptionAnalyticsAction.manageOpened(isSuccess: true),
+                ["action": "manage_opened", "result": "success"]
+            ),
+            (
+                SubscriptionAnalyticsAction.manageOpened(isSuccess: false),
+                ["action": "manage_opened", "result": "failure"]
+            ),
+        ]
+    )
+    func subscription(action: SubscriptionAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.subscription(action)
+
+        #expect(actual == AnalyticsEvent(name: "subscription", parameters: expectedParameters))
+    }
+
+    @Test(
+        "Paywallの表示・クローズを、step/action/resultのパラメータを持つpaywallイベントに変換する",
+        arguments: [
+            (
+                PaywallAnalyticsAction.shown(step: .onboarding),
+                ["step": "onboarding", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .dashboardAd),
+                ["step": "dashboard_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .boardAd),
+                ["step": "board_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .boardStorageLimit),
+                ["step": "board_storage_limit", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .templateAd),
+                ["step": "template_ad", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .contributionStorageLimit),
+                ["step": "contribution_storage_limit", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .setting),
+                ["step": "setting", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .subscriptionManagement),
+                ["step": "subscription_management", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.closed(step: .onboarding, isPremium: true),
+                ["step": "onboarding", "action": "closed", "result": "purchased"]
+            ),
+            (
+                PaywallAnalyticsAction.closed(step: .onboarding, isPremium: false),
+                ["step": "onboarding", "action": "closed", "result": "not_purchased"]
+            ),
+        ]
+    )
+    func paywall(action: PaywallAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.paywall(action)
+
+        #expect(actual == AnalyticsEvent(name: "paywall", parameters: expectedParameters))
     }
 
 }
