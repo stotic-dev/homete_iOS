@@ -68,7 +68,7 @@ private extension PasteboardInvitationBanner {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.onSubSurface)
-            Text("コピーした内容に招待リンクが見つかりませんでした。招待した方にリンクを送ってもらい、もう一度タップしてください。")
+            Text("コピーした内容に招待リンクが見つかりませんでした。招待した方からリンクを送ってもらい、もう一度コピーすると確認できます。")
                 .font(with: .caption)
                 .foregroundStyle(.onSubSurface)
                 .frame(maxWidth: .infinity, alignment: .leading)
