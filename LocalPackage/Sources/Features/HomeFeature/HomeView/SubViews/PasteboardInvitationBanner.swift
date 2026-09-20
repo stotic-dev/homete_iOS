@@ -11,7 +11,8 @@ import SwiftUI
 ///
 /// 着地ページの「初めての方はこちら」で招待URLをコピーしてから App Store へ遷移したユーザーが、
 /// インストール後にそのリンクから参加できるようにする（ディファードディープリンク）。
-/// 内容の読み取りはシステムのペースト通知が出るため、ユーザーのタップ起点でのみ行う。
+/// コピーは着地ページが自動で行うためユーザーはコピーした自覚がない。文言は「招待リンクから来たか」で問いかけ、
+/// 「コピー」には触れない。内容の読み取りはシステムのペースト許可ダイアログが出るため、ユーザーのタップ起点でのみ行う。
 struct PasteboardInvitationBanner: View {
 
     let state: PasteboardInvitationStore.State
@@ -40,10 +41,10 @@ private extension PasteboardInvitationBanner {
                 Image(systemName: "link")
                     .foregroundStyle(.primary3)
                 VStack(alignment: .leading, spacing: .space4) {
-                    Text("招待リンクをコピーしましたか？")
+                    Text("招待リンクからアプリを開きましたか？")
                         .font(with: .headLineS)
                         .foregroundStyle(.onSurface)
-                    Text("コピーした招待リンクから、そのままグループに参加できます。")
+                    Text("招待の内容を確認して、そのままグループに参加できます。")
                         .font(with: .caption)
                         .foregroundStyle(.onSubSurface)
                 }
@@ -68,7 +69,7 @@ private extension PasteboardInvitationBanner {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.onSubSurface)
-            Text("コピーした内容に招待リンクが見つかりませんでした。招待した方からリンクを送ってもらい、もう一度コピーすると確認できます。")
+            Text("招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。")
                 .font(with: .caption)
                 .foregroundStyle(.onSubSurface)
                 .frame(maxWidth: .infinity, alignment: .leading)

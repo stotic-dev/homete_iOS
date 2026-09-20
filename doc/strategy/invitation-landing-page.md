@@ -49,7 +49,7 @@
 #### ディファードディープリンク（クリップボード補助、iOS 側）
 
 - ログイン済みかつグループ未所属（ダッシュボードが `NotRegisteredContent` を表示している）状態で、アプリがフォアグラウンドになるたびに `UIPasteboard.general.detectPatterns(for: [.probableWebURL])` で **URL らしきものがクリップボードにあるかだけ**確認する（内容は読まない。iOS 16 以降、内容を読むとシステムのペースト通知が出るため）
-- URL らしきものがある場合のみ、`NotRegisteredContent` に「招待リンクをコピーしましたか？」の案内と **「招待リンクを確認する」ボタン**を表示する
+- URL らしきものがある場合のみ、`NotRegisteredContent` に「招待リンクからアプリを開きましたか？」の案内と **「招待リンクを確認する」ボタン**を表示する（コピーは着地ページが自動で行うためユーザーに自覚がない。文言では「コピー」に触れず、招待リンク経由で来たかを問いかける）
 - ボタンをタップしたときだけクリップボードを読み取り、招待リンクなら `PendingInvitationStore` にトークンを渡して参加確認画面（`CohabitantJoinView`）を表示する。招待リンクでなければ「招待リンクが見つかりませんでした」と表示し、同じクリップボード内容（`changeCount` が同じ）では再度案内しない
 - ボタンを押さずに放置した場合は、フォアグラウンド復帰のたびに再確認する（クリップボードが変わっていれば案内を出し直す）
 
@@ -272,8 +272,8 @@ public final class PasteboardInvitationStore {
 `Features/HomeFeature/HomeView/SubViews/NotRegisteredContent.swift` に案内を追加する:
 
 - `@Environment(\.scenePhase)` を監視し、`.active` になったとき・`onAppear` 時に `store.checkIfNeeded()` を呼ぶ
-- `state == .suggesting` のとき、「パートナーを登録する」ボタンの下に案内カード（「招待リンクをコピーしましたか？」＋「招待リンクを確認する」ボタン）を表示する
-- `state == .notFound` のとき「招待リンクが見つかりませんでした」を表示する
+- `state == .suggesting` のとき、「パートナーを登録する」ボタンの下に案内カード（「招待リンクからアプリを開きましたか？」＋「招待リンクを確認する」ボタン）を表示する
+- `state == .notFound` のとき「招待リンクが見つかりませんでした」と、復帰導線として「招待リンクをもう一度開く」案内を表示する（インストール済みなら Universal Link / 「アプリで開く」で直接起動できるため）
 - 案内は `HomeView/SubViews/PasteboardInvitationBanner.swift`（`state` と `onTapCheck` を引数で受ける）として切り出し、状態のバリエーションはこのコンポーネント自身の Preview で網羅する。`NotRegisteredContent` は `pasteboardInvitationState` / `onTapCheckPasteboard` を引数で受け取り、Environment から Store を引かない（Preview で状態を作り分けるため）
 - Store は `HomeView` で生成し、`PendingInvitationStore`（Environment）と `pasteboardClient` / `analyticsClient` を渡す。`checkIfNeeded()` は `NotRegisteredContent` の `.task` と `scenePhase == .active` への変化で呼ぶ
 
