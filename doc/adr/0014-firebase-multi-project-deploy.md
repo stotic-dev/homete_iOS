@@ -74,6 +74,7 @@
 * `FIREBASE_SERVICE_ACCOUNT_PROD` をGitHub Secretsに登録する
 * そのサービスアカウントに **サービス アカウント ユーザー**（`roles/iam.serviceAccountUser`）を付与する。Functionsのデプロイは実行SA `homete-ios-dev@appspot.gserviceaccount.com` として `actAs` する操作を含むため必須（「サービス アカウント トークン作成者」では代替できない）
 * Cloud Functions管理者・ストレージ管理者を付与する
+* **Firebase Rules 管理者**（`roles/firebaserules.admin`）と **Cloud Datastore インデックス管理者**（`roles/datastore.indexAdmin`）を付与する。`Deploy Firestore` は `firebaserules.googleapis.com` の `:test`（ルールのコンパイル検証）から始まるため、無いと `HTTP Error: 403, The caller does not have permission` で落ちる（2026-09-20 の本番初回デプロイで実際に不足していた）
 * **Cloud Billing API** を有効化する（無効だとfirebase-toolsが有効化を試みて `Permissions denied enabling cloudbilling.googleapis.com` で落ちる）
 * Firestoreのロケーションが `asia-northeast1`（`firebase.json` の指定）であることを確認する。ロケーションは作成後に変更できない
 * `Houseworks.expiredAt` にTTLポリシーを設定する（STG側は [premium-housework-storage-period.md](../strategy/premium-housework-storage-period.md) で設定済み）
