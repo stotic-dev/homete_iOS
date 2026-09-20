@@ -16,11 +16,12 @@ public struct CohabitantInvitation: Equatable, Identifiable, Sendable {
     }
 
     /// 招待先のグループID
-    public let cohabitantId: String
+    /// - Note: 発行者がグループ未所属の場合はnil。参加者が現れた時点でサーバー側がグループを作る
+    public let cohabitantId: String?
     /// 招待の有効期限
     public let expiresAt: Date
 
-    public init(token: String, cohabitantId: String, expiresAt: Date) {
+    public init(token: String, cohabitantId: String?, expiresAt: Date) {
         self.token = token
         self.cohabitantId = cohabitantId
         self.expiresAt = expiresAt

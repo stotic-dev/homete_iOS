@@ -12,7 +12,9 @@ import Observation
 public final class AccountStore {
 
     public private(set) var account: Account?
+    private var listenerTask: Task<Void, Never>?
 
+    private let accountListenerKey = "accountListenerKey"
     private let accountInfoClient: AccountInfoClient
 
     public init(
@@ -61,6 +63,38 @@ public final class AccountStore {
         } catch {
             print("failed to update fcmToken: \(error)")
         }
+    }
+
+    /// 自分のアカウントの購読を開始し、サーバー側で更新された内容をオンメモリに反映する
+    /// - Note: 招待リンク経由で相手が参加すると、Cloud Functionsが発行者の`cohabitantId`を更新する。
+    ///         クライアントからの書き込みではないため、購読していないと再起動するまでグループ未所属のままになる
+    public func startObservingIfNeeded(_ accountId: String) async {
+        // すでに購読中の場合は何もしない
+        if listenerTask != nil { return }
+
+        let stream = await accountInfoClient.addSnapshotListener(accountListenerKey, accountId)
+
+        listenerTask = Task {
+            do {
+                for try await account in stream {
+                    // 削除（退会）の通知はサインアウト側の処理に任せ、ここではnilで上書きしない
+                    guard let account else { continue }
+                    self.account = account
+                }
+            } catch {
+                // 購読を継続できなくなった場合は、再度購読できるようにタスクを解放する
+                print("error occurred at account snapshot listener: \(error)")
+                listenerTask = nil
+            }
+        }
+    }
+
+    /// 自分のアカウントの購読を停止する
+    public func stopObserving() async {
+        listenerTask?.cancel()
+        await listenerTask?.value
+        listenerTask = nil
+        await accountInfoClient.removeSnapshotListener(accountListenerKey)
     }
 
     /// 保持しているアカウント情報をクリアする

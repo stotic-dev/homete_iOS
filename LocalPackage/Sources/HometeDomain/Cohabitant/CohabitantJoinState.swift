@@ -12,6 +12,8 @@ public enum CohabitantJoinState: Equatable, Sendable {
     case processing
     /// 参加完了
     case completed
+    /// すでに招待先のグループに参加済み（自分のグループのリンクを開いた）
+    case alreadyMember
     /// 参加できなかった
     case failed(CohabitantJoinFailure)
 

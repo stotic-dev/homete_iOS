@@ -3,8 +3,10 @@ import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {
   InvitationError,
   InvitationErrorCode,
+  JoinResult,
   issueInvitation,
   joinCohabitantByInvitation,
+  notifyCohabitantJoined,
 } from "./models/InvitationManager";
 import {appCheckOptions} from "./appCheckOptions";
 
@@ -42,10 +44,39 @@ function toHttpsError(
 }
 
 /**
+ * 参加を他のメンバーへ通知する
+ *
+ * 参加自体はトランザクションで完了しているため、通知の失敗で参加を
+ * 失敗扱いにしない（クライアントが再試行すると already-joined になるだけで
+ * 通知は届かないまま終わる）。失敗はログに残すに留める。
+ * @param {JoinResult} result 参加結果
+ * @param {string} joinerId 参加者のユーザーID
+ * @return {Promise<void>}
+ */
+async function notifyJoinedWithoutFailing(
+  result: JoinResult,
+  joinerId: string
+): Promise<void> {
+  try {
+    await notifyCohabitantJoined(
+      result.cohabitantId,
+      joinerId,
+      result.userName
+    );
+  } catch (error) {
+    logger.error("Failed to notify cohabitants of the join.", {
+      joinerId,
+      cohabitantId: result.cohabitantId,
+      error,
+    });
+  }
+}
+
+/**
  * 同居人グループへの招待トークンを発行する
  *
- * 発行者がグループ未所属の場合は、発行者ひとりのグループを新規作成してから
- * 招待を発行する（招待リンク経由でのグループ作成に対応するため）。
+ * 発行時にはグループを作らない。発行者が未所属なら、参加者が現れた時点で
+ * joincohabitantが2人のグループを作る（ADR-0017）。
  */
 export const issuecohabitantinvitation = onCall(
   appCheckOptions,
@@ -87,6 +118,8 @@ export const issuecohabitantinvitation = onCall(
  *
  * すでに別のグループへ参加しているユーザーは参加できない
  * （既存グループの家事データを失わせないため）。
+ * 同じグループへ参加済みの場合は成功として扱い、`joined: false` を返す。
+ * クライアントはこれを見て「すでに参加しています」と案内する。
  */
 export const joincohabitant = onCall(
   appCheckOptions,
@@ -114,7 +147,7 @@ export const joincohabitant = onCall(
     }
 
     try {
-      const cohabitantId = await joinCohabitantByInvitation(
+      const result = await joinCohabitantByInvitation(
         userId,
         token,
         new Date()
@@ -122,10 +155,15 @@ export const joincohabitant = onCall(
 
       logger.info("Joined cohabitant group by invitation.", {
         userId,
-        cohabitantId,
+        cohabitantId: result.cohabitantId,
+        joined: result.joined,
       });
 
-      return {cohabitantId};
+      if (result.joined) {
+        await notifyJoinedWithoutFailing(result, userId);
+      }
+
+      return {cohabitantId: result.cohabitantId, joined: result.joined};
     } catch (error) {
       if (error instanceof InvitationError) {
         logger.error("Failed to join cohabitant group.", {

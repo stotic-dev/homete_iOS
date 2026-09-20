@@ -45,6 +45,7 @@ public struct AuthSubscriptionSyncUseCase {
     /// - Returns: ロードに成功したアカウント（アカウント未登録の場合はnil）
     public func syncOnSignedIn(_ authResult: AccountAuthResult) async -> Account? {
         guard let account = await accountStore.load(authResult) else { return nil }
+        await accountStore.startObservingIfNeeded(account.id)
         await subscriptionStore.logIn(account.id)
         // アプリ未起動の間に失効しているケースは状態変化として検知できないため、サインイン時にも突き合わせる
         await syncPremiumStateIfNeeded()
@@ -55,6 +56,7 @@ public struct AuthSubscriptionSyncUseCase {
     /// - Note: `is_premium`は`SubscriptionStore.logOut()`が`false`を送る。
     ///         匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため、削除ではなく値の更新にしている
     public func syncOnSignedOut() async {
+        await accountStore.stopObserving()
         accountStore.clear()
         await subscriptionStore.logOut()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
@@ -65,6 +67,7 @@ public struct AuthSubscriptionSyncUseCase {
     /// アカウント新規登録時にアカウントを登録し、サブスクリプション状態を同期する
     public func syncOnRegistered(auth: AccountAuthResult, userName: UserName) async throws -> Account {
         let account = try await accountStore.registerAccount(auth: auth, userName: userName)
+        await accountStore.startObservingIfNeeded(account.id)
         await subscriptionStore.logIn(account.id)
         await syncPremiumStateIfNeeded()
         return accountStore.account ?? account

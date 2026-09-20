@@ -6,7 +6,13 @@ import {Timestamp} from "firebase-admin/firestore";
  * ドキュメントIDが招待トークンそのものになる。
  */
 export interface Invitation {
-    cohabitantId: string;
+    /**
+     * 招待先のグループID
+     *
+     * 発行者がグループ未所属の場合はnull。参加時に発行者と参加者のグループを新規作成する
+     * （発行時に作ると、誰も参加しない1人だけのグループが残るため）。
+     */
+    cohabitantId: string | null;
     createdBy: string;
     createdAt: Date;
     expiresAt: Date;
@@ -44,7 +50,9 @@ export class InvitationConverter {
     }
 
     return {
-      cohabitantId: data[InvitationFields.COHABITANT_ID] as string,
+      cohabitantId:
+        (data[InvitationFields.COHABITANT_ID] as string | null | undefined) ??
+        null,
       createdBy: data[InvitationFields.CREATED_BY] as string,
       createdAt: (data[InvitationFields.CREATED_AT] as Timestamp).toDate(),
       expiresAt: (data[InvitationFields.EXPIRES_AT] as Timestamp).toDate(),

@@ -28,7 +28,7 @@
 - `CohabitantRegistrationView` のスキャン画面（`CohabitantRegistrationInitialStateView`）に「リンクで招待」導線を追加する
   - 既存のP2P（近くのデバイスを自動検出）は**そのまま残し**、並列の選択肢として提示する
 - タップすると招待トークンを発行し、共有シート（`UIActivityViewController`）でURLを共有できる
-- 招待者がまだグループに所属していない場合は、**トークン発行時にグループを新規作成**して自分をメンバーに加える
+- 招待者がまだグループに所属していない場合でも、**発行時にはグループを作らない**。相手が参加した時点でサーバー側が招待者と参加者の2人のグループを作る（[ADR-0017](../adr/0017-create-cohabitant-on-invitation-join.md)）
 - 発行に失敗した場合はアラートを表示する
 
 #### 招待される側（アプリインストール済み）
@@ -156,28 +156,33 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 
 ```
 入力: なし
-出力: { token: string, cohabitantId: string, expiresAt: number }
+出力: { token: string, cohabitantId: string | null, expiresAt: number }
 ```
 
 1. 未認証なら `unauthenticated`
 2. 呼び出し元の `Account` を取得（無ければ `not-found`）
-3. `cohabitantId` が未設定なら `Cohabitant` を新規作成（`members: [uid]`）し、`Account.cohabitantId` を更新
-4. `Invitation/{token}` を作成して返す
+3. `Invitation/{token}` を作成して返す。`cohabitantId` は呼び出し元の所属グループ（未所属なら `null`）。グループはここでは作らない
 
 #### `joincohabitant`（v2 callable）
 
 ```
 入力: { token: string }
-出力: { cohabitantId: string }
+出力: { cohabitantId: string, joined: boolean }
 ```
 
 1. 未認証なら `unauthenticated`
 2. `Invitation/{token}` を取得。無ければ `not-found`
 3. `expiresAt < now` なら `deadline-exceeded`
-4. 呼び出し元の `Account.cohabitantId` が設定済みの場合
-   - 招待先と同一なら**冪等に成功**として返す（リンク再タップ対策）
+4. 参加先を決める。`Invitation.cohabitantId` があればそれ、無ければ発行者の `Account.cohabitantId`（発行後にP2P登録などで所属した場合）
+5. 呼び出し元の `Account.cohabitantId` が設定済みの場合
+   - 参加先と同一なら**冪等に成功**として返す（リンク再タップ対策）。このとき `joined: false` を返し、クライアントは「すでにこのグループに参加しています」と案内する（参加の完了としては扱わない）
    - 異なるなら `failed-precondition`（すでに別グループに参加済み）
-5. トランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
+6. 参加先が決まっていればトランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
+7. 参加先が無ければ、発行者と参加者の2人で `Cohabitant` を新規作成し、双方の `Account.cohabitantId` と `Invitation.cohabitantId` を更新（同じリンクからの2人目以降も同じグループへ入るため）
+8. メンバーが増えた場合（5の冪等成功を除く）、トランザクション完了後に**参加者以外のメンバー全員**（発行者と、同じリンクから先に参加したメンバー）へ「〇〇がグループに参加しました」のPush通知を送る
+   - 発行者は共有した時点では何も起きないため、通知が無いとアプリを開くまで参加に気づけない
+   - 通知の送信失敗で参加を失敗扱いにしない（参加はトランザクションで完了済み。失敗はログに残すだけ）
+   - 配信は `notifyothercohabitants` と共通の `notifyOtherCohabitants`（`src/models/CohabitantNotifier.ts`）で行う。Emulator上ではFCMへ送れないため、送信処理を差し替えられるようにしてE2Eでは配信対象のトークンだけを検証する
 
 `FirestoreHelper`（`src/models/FirestoreHelper.ts`）に招待ドキュメント操作のメソッドを追加する。
 
@@ -188,14 +193,16 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 ```swift
 public struct CohabitantInvitationClient: Sendable {
 
-    /// 招待トークンを発行する（グループ未所属の場合はグループも作成される）
+    /// 招待トークンを発行する（発行時にはグループを作らない）
     public let issue: @Sendable () async throws -> CohabitantInvitation
     /// 招待トークンでグループに参加する
-    public let join: @Sendable (_ token: String) async throws -> String
+    public let join: @Sendable (_ token: String) async throws -> CohabitantJoinResult
 
     public init(
         issue: @Sendable @escaping () async throws -> CohabitantInvitation = { .preview },
-        join: @Sendable @escaping (_ token: String) async throws -> String = { _ in "" }
+        join: @Sendable @escaping (_ token: String) async throws -> CohabitantJoinResult = { _ in
+            .init(cohabitantId: "", isNewMember: true)
+        }
     ) { ... }
 
 }
@@ -254,10 +261,16 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | `confirming` | 「グループに参加しますか？」＋参加／キャンセル |
 | `processing` | ローディング |
 | `completed` | 参加完了（既存 `CohabitantRegistrationCompleteView` を流用） |
+| `alreadyMember` | 自分が参加済みのグループのリンクを開いた（サーバーが `joined: false` を返した）。参加は発生していないので完了の演出は出さず、案内だけ表示する |
 | `failed(reason)` | 無効なリンク／有効期限切れ／すでに参加済み／通信エラー |
 
 参加成功後は Functions 側で `Account` が更新済みのため、クライアントは**オンメモリのみ**同期する。
 `AccountStore` に `applyCohabitantId(_:)`（Firestoreへ書き込まず `account` を差し替える）を追加し、二重書き込みを避ける。
+
+招待した側は、相手の参加時に Functions が自分の `Account.cohabitantId` を書き換える。クライアント起点の書き込みではないため、
+`AccountStore.startObservingIfNeeded(_:)` でサインイン中は自分の `Account` ドキュメントを購読し、更新をオンメモリへ反映する
+（購読していないと、再起動するまでグループ未所属のまま振る舞ってしまう）。
+アプリを開いていない間の参加は、Functions が送る参加通知（上記 5-8）で知ることができる。
 
 ### 9. iOS: 共有UI
 
@@ -266,6 +279,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
   - タップ → `issue()` 実行（ローディング）→ URL生成 → `.sheet` で共有シート表示
   - 共有テキスト例: `hometeで一緒に家事を管理しませんか？下のリンクから参加できます\n<URL>`
   - 発行失敗時はアラート
+  - 共有先のアプリで共有まで完了したら（`completionWithItemsHandler` の `completed` が `true`）、同居人登録画面を閉じる。相手の参加はホーム画面側が `AccountStore` の購読で受け取る。共有をキャンセルした場合は、P2P登録や再共有に進めるよう画面に留まる
 
 ### 10. Analytics
 
@@ -311,6 +325,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift` | 参加確認画面 |
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinCompletedView.swift` | 参加完了表示 |
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinFailureView.swift` | 参加失敗表示 |
+| 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinAlreadyMemberView.swift` | 参加済みのグループのリンクを開いたときの案内 |
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationInitialStateView.swift` | 「リンクで招待」導線 |
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationScanningStateView.swift` | 招待トークンの発行と共有シート表示 |
 | 修正（Doc） | `doc/analytics_events.md` | イベント追加 |

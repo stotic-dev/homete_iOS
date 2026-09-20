@@ -21,8 +21,15 @@ public final actor FirestoreService {
         try await predicate(firestore).getDocument(as: T.self)
     }
 
-    public func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) throws {
-        try predicate(firestore).setData(from: data, merge: false)
+    /// ドキュメントを作成または上書きする
+    /// - Note: サーバーへの書き込み完了まで待つ。待たない`setData`はローカルキューに積んだ時点で成功扱いになり、
+    ///         セキュリティルールで拒否されても呼び出し元に伝わらない
+    ///         （アカウント登録が完了したように見えてFirestoreには何も無い、という状態を作る）
+    public func insertOrUpdate(data: some Encodable, predicate: (Firestore) -> DocumentReference) async throws {
+        // `setData(from:)`にはasync版が無く、completion付きの同期版に解決されてしまうため、
+        // エンコードしてから辞書版のasync `setData`を呼ぶ
+        let encoded = try Firestore.Encoder().encode(data)
+        try await predicate(firestore).setData(encoded, merge: false)
     }
 
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {

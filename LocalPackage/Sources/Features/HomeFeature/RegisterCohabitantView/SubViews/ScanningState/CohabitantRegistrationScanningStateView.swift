@@ -14,7 +14,7 @@ struct CohabitantRegistrationScanningStateView: View {
 
     @Environment(\.appDependencies.cohabitantInvitationClient) var cohabitantInvitationClient
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
-    @Environment(AccountStore.self) var accountStore
+    @Environment(\.dismiss) var dismiss
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
@@ -55,7 +55,9 @@ struct CohabitantRegistrationScanningStateView: View {
         .fullScreenLoadingIndicator(loadingState)
         .sheet(item: $sharingInvitation) { invitation in
             if let url = invitation.url {
-                ShareSheet(text: CohabitantInvitation.shareMessage, url: url)
+                ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { completed in
+                    onCompleteShareInvitation(completed)
+                }
             }
         }
         .commonError(content: $errorContent)
@@ -100,18 +102,25 @@ private extension CohabitantRegistrationScanningStateView {
         Task {
             defer { loadingState.isLoading = false }
             do {
-                let invitation = try await cohabitantInvitationClient.issue()
-                // グループ未所属の場合はサーバ側で招待者ひとりのグループが作られるため、
-                // オンメモリのアカウントにも反映してFirestoreの状態と揃える
-                // （揃えないと、再起動するまでグループ未所属として振る舞ってしまう）
-                accountStore.applyCohabitantId(invitation.cohabitantId)
-                sharingInvitation = invitation
+                // 発行時点ではグループは作られない。相手が参加した時点でサーバー側がグループを作り、
+                // 自分のAccountが更新されるのを`AccountStore`の購読で受け取る
+                sharingInvitation = try await cohabitantInvitationClient.issue()
                 analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: true)))
             } catch {
                 errorContent = .init(error: error)
                 analyticsClient.log(.cohabitantInvitation(.issued(screen: .cohabitantRegistration, isSuccess: false)))
             }
         }
+    }
+
+    /// 招待リンクの共有シートが閉じたときの処理
+    ///
+    /// 相手に共有できたら、この画面ですることは無くなるので登録画面ごと閉じる。
+    /// 相手の参加は`AccountStore`の購読で受け取り、ホーム画面側が参加済みの表示に切り替わる。
+    /// キャンセルした場合はP2P登録や再共有に進めるよう画面に留まる。
+    func onCompleteShareInvitation(_ completed: Bool) {
+        guard completed else { return }
+        dismiss()
     }
 
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
