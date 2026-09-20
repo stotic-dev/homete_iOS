@@ -20,6 +20,11 @@ public extension CohabitantInvitationError {
     /// Functionsが`details`に載せる招待固有のエラーコードのキー
     static let serverCodeKey = "invitationErrorCode"
 
+    /// 発行者のAccountドキュメントが存在しないときにFunctionsが返すコード
+    /// - Note: 招待そのものの失敗ではないため`CohabitantInvitationError`のケースにはせず、
+    ///         Client側で認証エラーへ読み替える
+    static let accountNotFoundServerCode = "account-not-found"
+
     /// Functionsの`details`に載ったコードから招待固有のエラーを組み立てる
     ///
     /// 標準のエラーコードでは招待固有の失敗と通信起因の失敗を区別できないため、
@@ -38,7 +43,7 @@ public extension CohabitantInvitationError {
             self = .alreadyJoined
 
         default:
-            // account-not-found は招待の発行時にしか起きず、参加時の分岐に対応するものがない
+            // account-not-found は招待固有の失敗ではないため、ここでは扱わない（`accountNotFoundServerCode`参照）
             return nil
         }
     }
