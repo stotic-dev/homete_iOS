@@ -16,23 +16,36 @@ public struct CohabitantRegistrationView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @LoadingState var loadingState
+    @CommonError var errorContent
 
     public init() {}
 
     /// 登録処理を中断するかどうかを確認するアラート
     @State var isPresentingConfirmCancelAlert = false
+    /// Firestore上にアカウントがあることを確認できたかどうか
+    /// - Note: 確認できるまでP2Pセッションを張らない
+    @State var isVerifiedAccount = false
 
     public var body: some View {
         NavigationStack {
-            P2PSession(displayName: userName) {
-                CohabitantRegistrationSession(session: $0)
+            ZStack {
+                if isVerifiedAccount {
+                    P2PSession(displayName: userName) {
+                        CohabitantRegistrationSession(session: $0)
+                    }
+                }
             }
+            .fullScreenLoadingIndicator(loadingState)
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
                     isPresentingConfirmCancelAlert = true
                 }
             }
+        }
+        .commonError(content: $errorContent) {
+            dismiss()
         }
         .alert(
             "登録処理を終了しますか？",
@@ -54,6 +67,9 @@ public struct CohabitantRegistrationView: View {
         .onAppear {
             analyticsClient.log(.cohabitantRegistration(.started(method: .p2p)))
         }
+        .task {
+            await verifyAccount()
+        }
         .trackScreenView(.cohabitantRegistration)
     }
 
@@ -62,6 +78,21 @@ public struct CohabitantRegistrationView: View {
 // MARK: プレゼンテーションロジック
 
 private extension CohabitantRegistrationView {
+
+    /// Firestore上にアカウントがあることを確認してからP2Pセッションを開始する
+    /// - Note: アカウントが無いままP2P登録を進めると、同居人IDの保存（`registerCohabitantId`）で
+    ///         落ちるまで気づけないため、セッションを張る前にエラーとして閉じる
+    func verifyAccount() async {
+        loadingState.isLoading = true
+        defer { loadingState.isLoading = false }
+
+        do {
+            try await accountStore.reload()
+            isVerifiedAccount = true
+        } catch {
+            errorContent = .init(error: error)
+        }
+    }
 
     func onCompleteCohabitantRegistration(_ cohabitantId: String) async {
         do {

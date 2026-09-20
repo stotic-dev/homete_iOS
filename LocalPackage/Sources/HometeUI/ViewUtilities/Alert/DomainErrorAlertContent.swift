@@ -30,6 +30,9 @@ public struct DomainErrorAlertContent: Sendable {
         case .noNetwork:
             "通信に失敗しました"
 
+        case .accountNotFound:
+            "アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。"
+
         case .other:
             "不明のエラーが発生しました"
 

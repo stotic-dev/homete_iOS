@@ -38,6 +38,18 @@ public final class AccountStore {
         return account
     }
 
+    /// Firestore上のアカウント情報を取り直し、オンメモリのキャッシュを更新する
+    /// - Note: ログイン後にサーバ側でアカウントが消えているケースを、
+    ///         後続の処理が`preconditionFailure`で落ちる前に検知するために使う
+    /// - Throws: アカウントを保持していない、またはFirestoreにアカウントが無い場合は`DomainError.accountNotFound`
+    public func reload() async throws {
+        guard let account else { throw DomainError.accountNotFound }
+        guard let fetchedAccount = try await accountInfoClient.fetch(account.id) else {
+            throw DomainError.accountNotFound
+        }
+        self.account = fetchedAccount
+    }
+
     public func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
         let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil, cohabitantId: nil)
         try await accountInfoClient.insertOrUpdate(newAccount)
