@@ -28,7 +28,7 @@
 - `CohabitantRegistrationView` のスキャン画面（`CohabitantRegistrationInitialStateView`）に「リンクで招待」導線を追加する
   - 既存のP2P（近くのデバイスを自動検出）は**そのまま残し**、並列の選択肢として提示する
 - タップすると招待トークンを発行し、共有シート（`UIActivityViewController`）でURLを共有できる
-- 招待者がまだグループに所属していない場合は、**トークン発行時にグループを新規作成**して自分をメンバーに加える
+- 招待者がまだグループに所属していない場合でも、**発行時にはグループを作らない**。相手が参加した時点でサーバー側が招待者と参加者の2人のグループを作る（[ADR-0017](../adr/0017-create-cohabitant-on-invitation-join.md)）
 - 発行に失敗した場合はアラートを表示する
 
 #### 招待される側（アプリインストール済み）
@@ -156,13 +156,12 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 
 ```
 入力: なし
-出力: { token: string, cohabitantId: string, expiresAt: number }
+出力: { token: string, cohabitantId: string | null, expiresAt: number }
 ```
 
 1. 未認証なら `unauthenticated`
 2. 呼び出し元の `Account` を取得（無ければ `not-found`）
-3. `cohabitantId` が未設定なら `Cohabitant` を新規作成（`members: [uid]`）し、`Account.cohabitantId` を更新
-4. `Invitation/{token}` を作成して返す
+3. `Invitation/{token}` を作成して返す。`cohabitantId` は呼び出し元の所属グループ（未所属なら `null`）。グループはここでは作らない
 
 #### `joincohabitant`（v2 callable）
 
@@ -174,10 +173,12 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 1. 未認証なら `unauthenticated`
 2. `Invitation/{token}` を取得。無ければ `not-found`
 3. `expiresAt < now` なら `deadline-exceeded`
-4. 呼び出し元の `Account.cohabitantId` が設定済みの場合
-   - 招待先と同一なら**冪等に成功**として返す（リンク再タップ対策）
+4. 参加先を決める。`Invitation.cohabitantId` があればそれ、無ければ発行者の `Account.cohabitantId`（発行後にP2P登録などで所属した場合）
+5. 呼び出し元の `Account.cohabitantId` が設定済みの場合
+   - 参加先と同一なら**冪等に成功**として返す（リンク再タップ対策）
    - 異なるなら `failed-precondition`（すでに別グループに参加済み）
-5. トランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
+6. 参加先が決まっていればトランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
+7. 参加先が無ければ、発行者と参加者の2人で `Cohabitant` を新規作成し、双方の `Account.cohabitantId` と `Invitation.cohabitantId` を更新（同じリンクからの2人目以降も同じグループへ入るため）
 
 `FirestoreHelper`（`src/models/FirestoreHelper.ts`）に招待ドキュメント操作のメソッドを追加する。
 
@@ -188,7 +189,7 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 ```swift
 public struct CohabitantInvitationClient: Sendable {
 
-    /// 招待トークンを発行する（グループ未所属の場合はグループも作成される）
+    /// 招待トークンを発行する（発行時にはグループを作らない）
     public let issue: @Sendable () async throws -> CohabitantInvitation
     /// 招待トークンでグループに参加する
     public let join: @Sendable (_ token: String) async throws -> String
@@ -258,6 +259,10 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 参加成功後は Functions 側で `Account` が更新済みのため、クライアントは**オンメモリのみ**同期する。
 `AccountStore` に `applyCohabitantId(_:)`（Firestoreへ書き込まず `account` を差し替える）を追加し、二重書き込みを避ける。
+
+招待した側は、相手の参加時に Functions が自分の `Account.cohabitantId` を書き換える。クライアント起点の書き込みではないため、
+`AccountStore.startObservingIfNeeded(_:)` でサインイン中は自分の `Account` ドキュメントを購読し、更新をオンメモリへ反映する
+（購読していないと、再起動するまでグループ未所属のまま振る舞ってしまう）。
 
 ### 9. iOS: 共有UI
 
