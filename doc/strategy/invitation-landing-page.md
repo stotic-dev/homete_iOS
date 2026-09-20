@@ -9,8 +9,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -68,7 +68,7 @@
 - Firebase Dynamic Links は終了済みのため選択肢に含めない
 - クリップボードの読み取りはユーザー操作起点に限定する（`detectPatterns` 以外で勝手に読まない）
 - 既存の Universal Links の経路・AASA・entitlements は変更しない
-- iOS 側の Client は既存の DI パターン（`DependencyClient` + `liveValue` / `previewValue`）に従う。`UIPasteboard` は `HometeInfrastructure` に閉じ込め、Domain / Feature から直接触らない
+- iOS 側の Client は既存の DI パターン（`DependencyClient` + `liveValue` / `previewValue`）に従う。`UIPasteboard` は `liveValue` の実装（`AppRoot/Dependency/Impl/`）に閉じ込め、Domain / Feature から直接触らない
 - Functions は既存の `cohabitantInvitation.ts` / `InvitationManager.ts` のパターンに揃え、E2E テストを追加する
 - 着地ページは dev / prod で同じ HTML を配信する（Hosting の `public` は共通）。環境差はホスト名からの判定で吸収する
 
@@ -84,10 +84,10 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="homeauのグループに招待されています">
   <meta property="og:description" content="同居人と家事を分け合うアプリ homeau。リンクからグループに参加できます。">
-  <meta property="og:image" content="https://<host>/invite/ogp.png">   <!-- JSで location.origin から補完 -->
+  <meta property="og:image" content="https://homete-ios-dev.web.app/invite/ogp.png">   <!-- 静的な絶対URL（本番ホスト） -->
   <meta name="twitter:card" content="summary">
-  <!-- Smart App Banner（app-argument は JS で現在のURLを載せる） -->
-  <meta name="apple-itunes-app" content="app-id=6744935314">
+  <!-- Smart App Banner: Safari はページ解析時に meta を読むため、head 内で document.write して app-argument を載せる -->
+  <script>document.write('<meta name="apple-itunes-app" content="app-id=6744935314, app-argument=' + canonicalURL + '">');</script>
 </head>
 <body>
   <a class="button primary" id="openAppLink">アプリで開く</a>
@@ -104,8 +104,8 @@ JS 側の責務:
 | スキーム判定 | `location.hostname === "homete-ios-dev-e3ef7.web.app"` なら `homeau-dev`、それ以外は `homeau` |
 | アプリで開く | `href = "<scheme>://invite/<token>"`。クリックハンドラでの自動遷移・成否判定はしない |
 | 初めての方はこちら | クリックで `navigator.clipboard.writeText(canonicalURL)`（失敗時は `execCommand("copy")` にフォールバック、それも失敗しても遷移は続行）→ `location.href = APP_STORE_URL` |
-| Smart App Banner | `apple-itunes-app` の `content` に `app-argument=<canonicalURL>` を追記 |
-| OGP 画像 URL | `og:image` を `location.origin + "/invite/ogp.png"` に更新（クローラーは JS を実行しないため、静的値として dev/prod どちらでも到達できる prod ホストの絶対 URL を初期値にしておく） |
+| Smart App Banner | `head` 内のインラインスクリプトで `document.write` し、`app-argument=<canonicalURL>` 付きの `apple-itunes-app` meta を出力する（後から属性を書き換えても Safari は拾わないため） |
+| OGP 画像 URL | クローラーは JS を実行しないため静的値のみ。dev/prod で同じファイルを配信するので、どちらのリンクでも到達できる prod ホストの絶対 URL を指定する |
 
 `canonicalURL` は `https://<host>/invite/<token>`（`openExternalBrowser` は付けない）。クリップボードから拾ったときにアプリが解析できればよいので余計なクエリは載せない。
 
@@ -234,7 +234,7 @@ public struct PasteboardDetection: Equatable, Sendable {
 ```
 
 - `previewValue` は「URL なし」を返す
-- `liveValue` は `HometeInfrastructure/Pasteboard/ImplPasteboardClient.swift` に `#if canImport(UIKit)` で実装する。`detectPatterns(for: [.probableWebURL])` と `UIPasteboard.general.changeCount`、`readURL` は `UIPasteboard.general.url ?? URL(string: string)` を返す
+- `liveValue` は既存の Client と同じく `AppRoot/Dependency/Impl/ImplPasteboardClient.swift` に `#if os(iOS)` で実装する。`detectPatterns(for: [\.probableWebURL])`（async 版が無いため `withCheckedContinuation` で包む）と `UIPasteboard.general.changeCount`、`readURL` は `UIPasteboard.general.url ?? URL(string: string)` を返す
 - `AppDependencies` に `pasteboardClient` を追加する
 
 #### Store（Domain）
@@ -270,9 +270,8 @@ public final class PasteboardInvitationStore {
 - `@Environment(\.scenePhase)` を監視し、`.active` になったとき・`onAppear` 時に `store.checkIfNeeded()` を呼ぶ
 - `state == .suggesting` のとき、「パートナーを登録する」ボタンの下に案内カード（「招待リンクをコピーしましたか？」＋「招待リンクを確認する」ボタン）を表示する
 - `state == .notFound` のとき「招待リンクが見つかりませんでした」を表示する
-- 案内カードは `HometeUI` に汎用の `InfoCard` があればそれを使い、無ければ `NotRegisteredContent` 内のサブビューとして作る（新規コンポーネントは増やさない）
-- Store は `HomeView` で生成し、`PendingInvitationStore`（Environment）と `pasteboardClient` / `analyticsClient` を渡す
-- Preview に `suggesting` / `notFound` の状態を追加する
+- 案内は `HomeView/SubViews/PasteboardInvitationBanner.swift`（`state` と `onTapCheck` を引数で受ける）として切り出し、状態のバリエーションはこのコンポーネント自身の Preview で網羅する。`NotRegisteredContent` は `pasteboardInvitationState` / `onTapCheckPasteboard` を引数で受け取り、Environment から Store を引かない（Preview で状態を作り分けるため）
+- Store は `HomeView` で生成し、`PendingInvitationStore`（Environment）と `pasteboardClient` / `analyticsClient` を渡す。`checkIfNeeded()` は `NotRegisteredContent` の `.task` と `scenePhase == .active` への変化で呼ぶ
 
 #### 起動経路
 
@@ -331,16 +330,17 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | 修正（Domain） | `HometeDomain/Dependencies/CohabitantInvitationClient.swift` | `fetch` の追加 |
 | 修正（Domain） | `HometeDomain/Dependencies/AppDependencies.swift` | `pasteboardClient` の追加 |
 | 修正（Domain） | `HometeDomain/AnalyticsLog/CohabitantInvitationAnalyticsAction.swift` | `linkOpened(source:)` / `pasteboardChecked` |
-| 新規（Infra） | `HometeInfrastructure/Pasteboard/ImplPasteboardClient.swift` | `UIPasteboard` を使った `liveValue` |
+| 新規（Impl） | `AppRoot/Dependency/Impl/ImplPasteboardClient.swift` | `UIPasteboard` を使った `liveValue` |
 | 修正（Impl） | `AppRoot/Dependency/Impl/ImplCohabitantInvitationClient.swift` | `fetchcohabitantinvitation` の呼び出し |
 | 修正（AppRoot） | `AppRoot/RootView.swift` | `linkOpened(source:)` の送信 |
 | 修正（View） | `Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift` | ローディング表示・招待者名の表示・Preview |
 | 修正（View） | `Features/HomeFeature/HomeView/HomeView.swift` | `PasteboardInvitationStore` の生成 |
-| 修正（View） | `Features/HomeFeature/HomeView/SubViews/NotRegisteredContent.swift` | クリップボード補助の案内・Preview |
+| 新規（View） | `Features/HomeFeature/HomeView/SubViews/PasteboardInvitationBanner.swift` | クリップボード補助の案内バナー・Preview |
+| 修正（View） | `Features/HomeFeature/HomeView/SubViews/NotRegisteredContent.swift` | バナーの配置（状態は引数で受ける）・Preview |
 | 修正（テスト） | `Tests/HometeDomainTests/Cohabitant/CohabitantInvitationLinkTest.swift` | クエリ付き URL・カスタムスキームの解析 |
 | 修正（テスト） | `Tests/HometeDomainTests/Cohabitant/CohabitantJoinStoreTest.swift` | `load()` の状態遷移 |
 | 新規（テスト） | `Tests/HometeDomainTests/Cohabitant/PasteboardInvitationStoreTest.swift` | 案内の出し分け・世代管理 |
-| 修正（テスト） | `Tests/HometeDomainTests/AnalyticsLog/…` | 追加パラメータ |
+| 修正（テスト） | `Tests/HometeDomainTests/AnalyticsEventTest.swift` | 追加パラメータ |
 | 修正（Doc） | `doc/analytics_events.md` | `open` の `step` と `pasteboard_check` |
 | 新規（Doc） | `doc/adr/0018-deferred-deep-link-with-clipboard.md` | 方式選定の ADR |
 | 修正（Doc） | `doc/strategy/cohabitant-invitation-link.md` | 「deferred deep link は行わない」の記述に本ドキュメントへの参照を追記 |
@@ -358,28 +358,28 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 ### Phase 2: 実装
 
-- [ ] ADR-0018 の作成
-- [ ] Hosting: 着地ページの作り替え（アプリで開く / 初めての方はこちら / Smart App Banner / OGP）
-- [ ] Hosting: `ogp.png` の生成と `firebase.json` のヘッダ追加
-- [ ] Functions: `fetchInvitation` / `fetchcohabitantinvitation` の追加 + E2E テスト
-- [ ] メインターゲット: `INVITE_URL_SCHEME` の Build Setting と `Info.plist` の `CFBundleURLSchemes`
-- [ ] Domain: `CohabitantInvitationLink` の `openExternalBrowser=1` 付与・カスタムスキーム解析・`source(of:)` + テスト更新
-- [ ] Domain: `CohabitantInvitationSummary` / `CohabitantInvitationClient.fetch` / `ImplCohabitantInvitationClient`
-- [ ] Domain: `CohabitantJoinState.loading` / `CohabitantJoinStore.load()` + テスト更新
-- [ ] View: `CohabitantJoinView` のローディング・招待者名表示 + Preview
-- [ ] Domain: `PasteboardClient` / `PasteboardDetection` / `AppDependencies` 登録
-- [ ] Infra: `ImplPasteboardClient`（`UIPasteboard`）
-- [ ] Domain: `PasteboardInvitationStore` + テスト
-- [ ] View: `NotRegisteredContent` のクリップボード補助 UI + `HomeView` での Store 生成 + Preview
-- [ ] Analytics: `linkOpened(source:)` / `pasteboardChecked` + `doc/analytics_events.md` 更新
-- [ ] `doc/strategy/cohabitant-invitation-link.md` に本ドキュメントへの参照を追記
+- [x] ADR-0018 の作成
+- [x] Hosting: 着地ページの作り替え（アプリで開く / 初めての方はこちら / Smart App Banner / OGP）
+- [x] Hosting: `ogp.png` の生成と `firebase.json` のヘッダ追加
+- [x] Functions: `fetchInvitation` / `fetchcohabitantinvitation` の追加 + E2E テスト
+- [x] メインターゲット: `INVITE_URL_SCHEME` の Build Setting と `Info.plist` の `CFBundleURLSchemes`
+- [x] Domain: `CohabitantInvitationLink` の `openExternalBrowser=1` 付与・カスタムスキーム解析・`source(of:)` + テスト更新
+- [x] Domain: `CohabitantInvitationSummary` / `CohabitantInvitationClient.fetch` / `ImplCohabitantInvitationClient`
+- [x] Domain: `CohabitantJoinState.loading` / `CohabitantJoinStore.load()` + テスト更新
+- [x] View: `CohabitantJoinView` のローディング・招待者名表示 + Preview
+- [x] Domain: `PasteboardClient` / `PasteboardDetection` / `AppDependencies` 登録
+- [x] Impl: `ImplPasteboardClient`（`UIPasteboard`）
+- [x] Domain: `PasteboardInvitationStore` + テスト
+- [x] View: `PasteboardInvitationBanner` / `NotRegisteredContent` のクリップボード補助 UI + `HomeView` での Store 生成 + Preview
+- [x] Analytics: `linkOpened(source:)` / `pasteboardChecked` + `doc/analytics_events.md` 更新
+- [x] `doc/strategy/cohabitant-invitation-link.md` に本ドキュメントへの参照を追記
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過（`make check-previews` も通過）
-- [ ] ユニットテスト実行（追加分含む）通過
-- [ ] Functions の lint / E2E テスト通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過（`make check-previews` も通過）
+- [x] ユニットテスト実行（追加分含む）通過（5ターゲット / 372件）
+- [x] Functions の lint / E2E テスト通過（`cohabitantInvitation` 21件）
 - [ ] スナップショットテスト（Prefire 経由で自動生成）通過 / 必要なら参照画像を更新（Xcode Cloud の `VRT` に委ねる）
 - [ ] 実機で動作確認（Hosting / Functions を stg にデプロイ後）
   - LINE で共有したリンク → LINE 内ブラウザで着地ページが出る → 「アプリで開く」でアプリが起動し参加確認画面に招待者名が出る
