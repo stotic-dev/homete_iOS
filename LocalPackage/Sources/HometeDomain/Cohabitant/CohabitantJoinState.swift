@@ -6,8 +6,11 @@
 /// 招待リンクからのグループ参加処理の状態
 public enum CohabitantJoinState: Equatable, Sendable {
 
+    /// 招待の概要を取得中（画面を開いた直後）
+    case loading
     /// 参加するかどうかの確認待ち
-    case confirming
+    /// - Parameter summary: 表示する招待の概要（招待者名など）
+    case confirming(CohabitantInvitationSummary)
     /// 参加処理中
     case processing
     /// 参加完了

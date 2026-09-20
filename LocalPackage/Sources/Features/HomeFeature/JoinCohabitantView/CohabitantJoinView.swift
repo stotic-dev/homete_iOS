@@ -28,7 +28,7 @@ public struct CohabitantJoinView: View {
 
     public var body: some View {
         NavigationStack {
-            content(state: store?.state ?? .confirming)
+            content(state: store?.state ?? .loading)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .inlineNavigationBarTitleDisplayMode()
                 .leadingToolbarItem {
@@ -37,8 +37,8 @@ public struct CohabitantJoinView: View {
                     }
                 }
         }
-        .onAppear {
-            setupStoreIfNeeded()
+        .task {
+            await setupStoreAndLoad()
         }
         .trackScreenView(.cohabitantJoin)
     }
@@ -52,8 +52,12 @@ private extension CohabitantJoinView {
     @ViewBuilder
     func content(state: CohabitantJoinState) -> some View {
         switch state {
-        case .confirming:
-            confirmingContent()
+        case .loading:
+            loadingContent()
+                .contentPadding()
+
+        case let .confirming(summary):
+            confirmingContent(summary: summary)
                 .contentPadding()
 
         case .processing:
@@ -84,9 +88,17 @@ private extension CohabitantJoinView {
         }
     }
 
-    func confirmingContent() -> some View {
+    func loadingContent() -> some View {
         VStack(spacing: .space16) {
-            Text("グループに招待されています")
+            Indicator()
+            Text("招待を確認しています...")
+                .font(with: .body)
+        }
+    }
+
+    func confirmingContent(summary: CohabitantInvitationSummary) -> some View {
+        VStack(spacing: .space16) {
+            confirmingTitle(inviterName: summary.inviterName)
                 .font(with: .headLineL)
             Text("参加すると、招待してくれた人と家事を分担・共有できるようになります。")
                 .font(with: .body)
@@ -108,6 +120,17 @@ private extension CohabitantJoinView {
         }
     }
 
+    /// 招待者名の有無で見出しを切り替える
+    /// - Note: クリップボード経由など誤ったリンクを拾う可能性がある経路でも、誰のグループかを目視で確認できるようにする
+    @ViewBuilder
+    func confirmingTitle(inviterName: String?) -> some View {
+        if let inviterName, !inviterName.isEmpty {
+            Text("\(inviterName)さんのグループに参加しますか？")
+        } else {
+            Text("グループに参加しますか？")
+        }
+    }
+
     func processingContent() -> some View {
         VStack(spacing: .space16) {
             Indicator()
@@ -122,14 +145,16 @@ private extension CohabitantJoinView {
 
 private extension CohabitantJoinView {
 
-    func setupStoreIfNeeded() {
-        guard store == nil else { return }
-        store = .init(
-            token: token,
-            cohabitantInvitationClient: cohabitantInvitationClient,
-            analyticsClient: analyticsClient,
-            accountStore: accountStore
-        )
+    func setupStoreAndLoad() async {
+        if store == nil {
+            store = .init(
+                token: token,
+                cohabitantInvitationClient: cohabitantInvitationClient,
+                analyticsClient: analyticsClient,
+                accountStore: accountStore
+            )
+        }
+        await store?.load()
     }
 
     func onTapJoin() {
@@ -154,4 +179,32 @@ private extension View {
 #Preview("CohabitantJoinView_確認") {
     CohabitantJoinView(token: "preview-token")
         .environment(AccountStore())
+        .environment(\.appDependencies, .init(cohabitantInvitationClient: .init(fetch: { _ in
+            .preview
+        })))
+}
+
+#Preview("CohabitantJoinView_確認_招待者名なし") {
+    CohabitantJoinView(token: "preview-token")
+        .environment(AccountStore())
+        .environment(\.appDependencies, .init(cohabitantInvitationClient: .init(fetch: { _ in
+            .init(inviterName: nil, expiresAt: .init(timeIntervalSince1970: 0))
+        })))
+}
+
+#Preview("CohabitantJoinView_取得中") {
+    CohabitantJoinView(token: "preview-token")
+        .environment(AccountStore())
+        .environment(\.appDependencies, .init(cohabitantInvitationClient: .init(fetch: { _ in
+            try await Task.sleep(for: .seconds(60))
+            return .preview
+        })))
+}
+
+#Preview("CohabitantJoinView_期限切れ") {
+    CohabitantJoinView(token: "preview-token")
+        .environment(AccountStore())
+        .environment(\.appDependencies, .init(cohabitantInvitationClient: .init(fetch: { _ in
+            throw CohabitantInvitationError.expired
+        })))
 }
