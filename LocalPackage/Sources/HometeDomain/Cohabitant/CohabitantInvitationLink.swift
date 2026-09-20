@@ -72,35 +72,81 @@ public enum CohabitantInvitationLink {
         return components.url
     }
 
+    /// OSから渡されたURLを解析し、招待トークンと起動経路を取り出す
+    /// - Parameter url: OSから渡されたURL
+    /// - Returns: 招待トークンと起動経路（招待リンクでない場合はnil）
+    public static func parse(_ url: URL) -> Parsed? {
+        guard let format = format(of: url) else { return nil }
+
+        let pathComponents = url.pathComponents.filter { $0 != "/" }
+        let token: String
+        switch format {
+        case .universalLink:
+            // https://<host>/invite/<token>[?...]
+            guard pathComponents.count == 2,
+                  pathComponents[0] == invitePathComponent else { return nil }
+            token = pathComponents[1]
+
+        case .customScheme:
+            // <customScheme>://invite/<token> はホストが"invite"、パスがトークンになる
+            guard url.host() == invitePathComponent,
+                  pathComponents.count == 1 else { return nil }
+            token = pathComponents[0]
+        }
+
+        guard !token.isEmpty else { return nil }
+        return Parsed(token: token, source: format.openSource)
+    }
+
     /// OSから渡されたURLから招待トークンを取り出す
     /// - Parameter url: OSから渡されたURL
     /// - Returns: 招待トークン（招待リンクでない場合はnil）
     public static func token(from url: URL) -> String? {
-        switch source(of: url) {
-        case .universalLink:
-            // https://<host>/invite/<token>[?...]
-            let pathComponents = url.pathComponents.filter { $0 != "/" }
-            guard pathComponents.count == 2,
-                  pathComponents[0] == invitePathComponent else { return nil }
-            return nonEmpty(pathComponents[1])
-
-        case .customScheme:
-            // <customScheme>://invite/<token> はホストが"invite"、パスがトークンになる
-            let pathComponents = url.pathComponents.filter { $0 != "/" }
-            guard url.host() == invitePathComponent,
-                  pathComponents.count == 1 else { return nil }
-            return nonEmpty(pathComponents[0])
-
-        // クリップボード経由はURL自体の形式ではないため、source(of:)がこの値を返すことはない
-        case .pasteboard, nil:
-            return nil
-        }
+        parse(url)?.token
     }
 
-    /// URLがどの経路の招待リンクかを判定する
-    /// - Parameter url: OSから渡されたURL
-    /// - Returns: 起動経路（招待リンクのホスト・スキームでなければnil）
-    public static func source(of url: URL) -> CohabitantInvitationOpenSource? {
+}
+
+public extension CohabitantInvitationLink {
+
+    /// 招待リンクの解析結果
+    struct Parsed: Equatable, Sendable {
+
+        /// 招待トークン
+        public let token: String
+        /// 起動経路
+        public let source: CohabitantInvitationOpenSource
+
+        public init(token: String, source: CohabitantInvitationOpenSource) {
+            self.token = token
+            self.source = source
+        }
+
+    }
+
+}
+
+private extension CohabitantInvitationLink {
+
+    /// 招待リンクのURL形式
+    enum Format {
+
+        /// `https://<host>/invite/<token>`
+        case universalLink
+        /// `<customScheme>://invite/<token>`
+        case customScheme
+
+        var openSource: CohabitantInvitationOpenSource {
+            switch self {
+            case .universalLink: .universalLink
+            case .customScheme: .customScheme
+            }
+        }
+
+    }
+
+    /// URLのスキーム・ホストから招待リンクの形式を判定する
+    static func format(of url: URL) -> Format? {
         if let host, url.scheme == "https", url.host() == host {
             return .universalLink
         }
@@ -108,14 +154,6 @@ public enum CohabitantInvitationLink {
             return .customScheme
         }
         return nil
-    }
-
-}
-
-private extension CohabitantInvitationLink {
-
-    static func nonEmpty(_ token: String) -> String? {
-        token.isEmpty ? nil : token
     }
 
 }

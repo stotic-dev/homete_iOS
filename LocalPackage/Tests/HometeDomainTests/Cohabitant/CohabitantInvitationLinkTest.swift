@@ -92,33 +92,27 @@ struct CohabitantInvitationLinkTest {
     }
 
     @Test(
-        "URLから招待リンクの起動経路を判定する",
+        "URLから招待トークンと起動経路を取り出す",
         arguments: [
-            ("https://homete-ios-dev-e3ef7.web.app/invite/test-token", CohabitantInvitationOpenSource.universalLink),
-            ("homeau-dev://invite/test-token", .customScheme),
+            (
+                "https://homete-ios-dev-e3ef7.web.app/invite/test-token?openExternalBrowser=1",
+                CohabitantInvitationLink.Parsed(token: "test-token", source: .universalLink)
+            ),
+            (
+                "homeau-dev://invite/test-token",
+                CohabitantInvitationLink.Parsed(token: "test-token", source: .customScheme)
+            ),
         ]
     )
-    func source(urlString: String, expected: CohabitantInvitationOpenSource) throws {
+    func parse(urlString: String, expected: CohabitantInvitationLink.Parsed) throws {
         // Arrange
         let inputURL = try #require(URL(string: urlString))
 
         // Act
-        let actual = CohabitantInvitationLink.source(of: inputURL)
+        let actual = CohabitantInvitationLink.parse(inputURL)
 
         // Assert
         #expect(actual == expected)
-    }
-
-    @Test("招待リンクのホスト・スキームでないURLは起動経路を判定しない")
-    func source_notInvitationLink() throws {
-        // Arrange
-        let inputURL = try #require(URL(string: "https://example.com/invite/test-token"))
-
-        // Act
-        let actual = CohabitantInvitationLink.source(of: inputURL)
-
-        // Assert
-        #expect(actual == nil)
     }
 
 }

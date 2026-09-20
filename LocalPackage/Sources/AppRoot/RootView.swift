@@ -119,11 +119,10 @@ private extension RootView {
     /// - Note: ログイン前にも開かれるため、ここではトークンを退避するだけにして、
     ///         ログイン後に`AppTabView`が参加画面を表示する
     func onOpenURL(_ url: URL) {
-        guard let source = CohabitantInvitationLink.source(of: url),
-              let token = CohabitantInvitationLink.token(from: url) else { return }
+        guard let link = CohabitantInvitationLink.parse(url) else { return }
 
-        pendingInvitationStore.store(token)
-        analyticsClient.log(.cohabitantInvitation(.linkOpened(source: source)))
+        pendingInvitationStore.store(link.token)
+        analyticsClient.log(.cohabitantInvitation(.linkOpened(source: link.source)))
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {

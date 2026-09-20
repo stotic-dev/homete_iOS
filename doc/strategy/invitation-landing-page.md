@@ -135,10 +135,13 @@ public enum CohabitantInvitationLink {
     /// 共有用URL。`?openExternalBrowser=1` 付き
     public static func url(token: String) -> URL?
 
-    /// Universal Link（クエリ付き含む）またはカスタムスキームURLからトークンを取り出す
-    public static func token(from url: URL) -> String? {
+    /// Universal Link（クエリ付き含む）またはカスタムスキームURLからトークンと起動経路を取り出す
+    public static func parse(_ url: URL) -> Parsed? {
         // https://<host>/invite/<token>[?...]  または  <customScheme>://invite/<token>
     }
+
+    /// トークンだけが必要な呼び出し側向け（`parse(_:)?.token`）
+    public static func token(from url: URL) -> String?
 }
 ```
 
@@ -224,7 +227,8 @@ public struct PasteboardClient: Sendable {
     /// - Returns: 判定結果と、そのときのクリップボードの世代（同じ内容を二度案内しないために使う）
     public let detectProbableWebURL: @Sendable () async -> PasteboardDetection
     /// クリップボードの内容を読み取る（システムのペースト通知が出るため、ユーザー操作起点でのみ呼ぶ）
-    public let readURL: @Sendable () async -> URL?
+    /// - Returns: 読み取ったURLと、その時点の世代（処理済みの内容を正確に控えるため一緒に返す）
+    public let readURL: @Sendable () async -> PasteboardContent
 }
 
 public struct PasteboardDetection: Equatable, Sendable {
@@ -260,7 +264,7 @@ public final class PasteboardInvitationStore {
 ```
 
 - `checkIfNeeded()` は `detectProbableWebURL()` の結果が `hasProbableWebURL == true` かつ `changeCount != lastHandledChangeCount` のときだけ `.suggesting` にする。それ以外は `.idle`
-- `readInvitation()` は `readURL()` → `CohabitantInvitationLink.token(from:)`。トークンが取れたら `pendingInvitationStore.store(token)` して `.idle`、取れなければ `.notFound`。どちらも `lastHandledChangeCount` を更新し、同じ内容では再案内しない
+- `readInvitation()` は `readURL()` → `CohabitantInvitationLink.token(from:)`。トークンが取れたら `pendingInvitationStore.store(token)` して `.idle`、取れなければ `.notFound`。どちらも読み取った内容の `changeCount` を `handledChangeCount` に控え、同じ内容では再案内しない
 - Analytics: 読み取りで招待リンクが見つかった場合に `cohabitant_invitation(action: open, step: pasteboard)` を送る（`RootView` の `linkOpened` と区別するため `step` を付ける。後述）
 
 #### View（Feature）
@@ -299,7 +303,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | `pasteboard_check` | — | `suggested` / `not_found` | クリップボード補助の案内を表示した / 読み取ったが招待リンクでなかった |
 
 - `step` の説明を「発行を開始した画面、または起動の経路」に広げる
-- `CohabitantInvitationAnalyticsAction.linkOpened` に経路（`CohabitantInvitationOpenSource`）を持たせる。`CohabitantInvitationLink` に `source(of url:)`（`https` → `.universalLink`、カスタムスキーム → `.customScheme`）を追加し、`RootView.onOpenURL` から渡す
+- `CohabitantInvitationAnalyticsAction.linkOpened` に経路（`CohabitantInvitationOpenSource`）を持たせる。`CohabitantInvitationLink.parse(_:)` がトークンと経路（`https` → `.universalLink`、カスタムスキーム → `.customScheme`）を一緒に返すので、`RootView.onOpenURL` はその結果をそのまま渡す（URLの形式判定は内部の `Format` enum に閉じ、`.pasteboard` は URL からは導かれない）
 
 ### 8. ADR
 
