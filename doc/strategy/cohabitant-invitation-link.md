@@ -167,7 +167,7 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 
 ```
 入力: { token: string }
-出力: { cohabitantId: string }
+出力: { cohabitantId: string, joined: boolean }
 ```
 
 1. 未認証なら `unauthenticated`
@@ -175,7 +175,7 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 3. `expiresAt < now` なら `deadline-exceeded`
 4. 参加先を決める。`Invitation.cohabitantId` があればそれ、無ければ発行者の `Account.cohabitantId`（発行後にP2P登録などで所属した場合）
 5. 呼び出し元の `Account.cohabitantId` が設定済みの場合
-   - 参加先と同一なら**冪等に成功**として返す（リンク再タップ対策）
+   - 参加先と同一なら**冪等に成功**として返す（リンク再タップ対策）。このとき `joined: false` を返し、クライアントは「すでにこのグループに参加しています」と案内する（参加の完了としては扱わない）
    - 異なるなら `failed-precondition`（すでに別グループに参加済み）
 6. 参加先が決まっていればトランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
 7. 参加先が無ければ、発行者と参加者の2人で `Cohabitant` を新規作成し、双方の `Account.cohabitantId` と `Invitation.cohabitantId` を更新（同じリンクからの2人目以降も同じグループへ入るため）
@@ -196,11 +196,13 @@ public struct CohabitantInvitationClient: Sendable {
     /// 招待トークンを発行する（発行時にはグループを作らない）
     public let issue: @Sendable () async throws -> CohabitantInvitation
     /// 招待トークンでグループに参加する
-    public let join: @Sendable (_ token: String) async throws -> String
+    public let join: @Sendable (_ token: String) async throws -> CohabitantJoinResult
 
     public init(
         issue: @Sendable @escaping () async throws -> CohabitantInvitation = { .preview },
-        join: @Sendable @escaping (_ token: String) async throws -> String = { _ in "" }
+        join: @Sendable @escaping (_ token: String) async throws -> CohabitantJoinResult = { _ in
+            .init(cohabitantId: "", isNewMember: true)
+        }
     ) { ... }
 
 }
@@ -259,6 +261,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | `confirming` | 「グループに参加しますか？」＋参加／キャンセル |
 | `processing` | ローディング |
 | `completed` | 参加完了（既存 `CohabitantRegistrationCompleteView` を流用） |
+| `alreadyMember` | 自分が参加済みのグループのリンクを開いた（サーバーが `joined: false` を返した）。参加は発生していないので完了の演出は出さず、案内だけ表示する |
 | `failed(reason)` | 無効なリンク／有効期限切れ／すでに参加済み／通信エラー |
 
 参加成功後は Functions 側で `Account` が更新済みのため、クライアントは**オンメモリのみ**同期する。
@@ -322,6 +325,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift` | 参加確認画面 |
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinCompletedView.swift` | 参加完了表示 |
 | 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinFailureView.swift` | 参加失敗表示 |
+| 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinAlreadyMemberView.swift` | 参加済みのグループのリンクを開いたときの案内 |
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationInitialStateView.swift` | 「リンクで招待」導線 |
 | 修正（View） | `Features/HomeFeature/RegisterCohabitantView/SubViews/ScanningState/CohabitantRegistrationScanningStateView.swift` | 招待トークンの発行と共有シート表示 |
 | 修正（Doc） | `doc/analytics_events.md` | イベント追加 |
