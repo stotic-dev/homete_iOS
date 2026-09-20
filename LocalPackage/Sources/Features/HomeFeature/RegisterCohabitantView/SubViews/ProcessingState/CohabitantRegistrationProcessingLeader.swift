@@ -118,8 +118,9 @@ private extension CohabitantRegistrationProcessingLeader {
                 )
 
                 // 同居人IDをメンバーに連携する
+                // （送信失敗時は切断され、connectedPeersの変化をProcessingViewが接続エラーとして拾う）
                 let message = CohabitantRegistrationMessage(type: .shareCohabitantId(id: cohabitantId))
-                p2pSessionProxy?.send(
+                try? p2pSessionProxy?.send(
                     message.encodedData(),
                     to: connectedPeers
                 )
@@ -141,7 +142,7 @@ private extension CohabitantRegistrationProcessingLeader {
                 // 自分のアカウントへの保存が済んでから、他デバイスに完了を伝える
                 try await onCompleteCohabitantRegistration(cohabitantId)
                 let message = CohabitantRegistrationMessage(type: .complete)
-                p2pSessionProxy?.send(
+                try? p2pSessionProxy?.send(
                     message.encodedData(),
                     to: connectedPeers
                 )

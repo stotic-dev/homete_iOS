@@ -98,7 +98,8 @@ private extension CohabitantRegistrationProcessingFollower {
         guard let leadPeer else { return }
 
         let message = CohabitantRegistrationMessage(type: .complete)
-        p2pSessionProxy?.send(
+        // 送信失敗時は切断され、connectedPeersの変化をProcessingViewが接続エラーとして拾う
+        try? p2pSessionProxy?.send(
             message.encodedData(),
             to: [leadPeer]
         )

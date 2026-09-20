@@ -18,12 +18,16 @@ struct CohabitantRegistrationScanningStateView: View {
     @Environment(\.myPeerID) var myPeerID
     @Environment(\.connectedPeers) var connectedPeers
     @Environment(\.p2pSessionReceiveData) var receiveData
+    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @LoadingState var loadingState
 
     @CommonError var errorContent
     @State var sharingInvitation: CohabitantInvitation?
     @State var isConfirmedReadyRegistration = false
     @State var isPresentingRejectRegistrationAlert = false
+    /// メンバー確定の通知を送れなかった時のアラート
+    /// - Note: 送信失敗時はセッションが切断されメンバー一覧が消えるため、一覧側ではなくここで出す
+    @State var isPresentingFailedSendAlert = false
     @State var confirmedReadyRegistrationPeers = ConfirmedRegistrationPeers(peers: [])
     @Binding var registrationState: CohabitantRegistrationState
 
@@ -45,9 +49,9 @@ struct CohabitantRegistrationScanningStateView: View {
                         isConfirmedReadyRegistration = false
                     }
             } else {
-                CohabitantRegistrationPeersListView(
-                    isConfirmedReadyRegistration: $isConfirmedReadyRegistration
-                )
+                CohabitantRegistrationPeersListView { isOK in
+                    onConfirmMembers(isOK: isOK)
+                }
                 .transition(.opacity)
             }
         }
@@ -66,6 +70,14 @@ struct CohabitantRegistrationScanningStateView: View {
             isPresented: $isPresentingRejectRegistrationAlert
         ) {
             Button("OK") { tappedRejectAlertButton() }
+        }
+        .alert(
+            "接続エラー",
+            isPresented: $isPresentingFailedSendAlert
+        ) {
+            Button("OK") {}
+        } message: {
+            Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
         }
         .onAppear {
             scannerController.startScan()
@@ -121,6 +133,24 @@ private extension CohabitantRegistrationScanningStateView {
     func onCompleteShareInvitation(_ completed: Bool) {
         guard completed else { return }
         dismiss()
+    }
+
+    func onConfirmMembers(isOK: Bool) {
+        // メンバーが確定したかどうかの通知を送信する
+        let data = CohabitantRegistrationMessage(
+            type: .fixedMember(isOK: isOK)
+        )
+        do {
+            try p2pSessionProxy?.send(
+                data.encodedData(),
+                to: connectedPeers
+            )
+            if isOK {
+                isConfirmedReadyRegistration = true
+            }
+        } catch {
+            isPresentingFailedSendAlert = true
+        }
     }
 
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {

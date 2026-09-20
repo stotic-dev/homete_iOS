@@ -56,7 +56,8 @@ struct CohabitantRegistrationProcessingView: View {
             let message = CohabitantRegistrationMessage(
                 type: .preRegistration(role: role)
             )
-            p2pSessionProxy?.send(
+            // 送信失敗時は切断され、connectedPeersの変化を下の接続エラーアラートで拾う
+            try? p2pSessionProxy?.send(
                 message.encodedData(),
                 to: connectedPeers
             )
