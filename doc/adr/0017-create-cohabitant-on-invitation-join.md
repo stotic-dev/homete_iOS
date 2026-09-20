@@ -21,6 +21,7 @@
 * `joincohabitant` が参加先を決める。`Invitation.cohabitantId` → 発行者の現在の `Account.cohabitantId`（発行後にP2P登録などで所属した場合）→ どちらも無ければ**発行者と参加者の2人でグループを新規作成**する
 * 新規作成したグループIDは `Invitation.cohabitantId` にも書き戻し、同じリンクからの2人目以降が同じグループへ入るようにする
 * 発行者側は、相手の参加でサーバーが自分の `Account.cohabitantId` を書き換えるため、サインイン中は自分の `Account` ドキュメントを購読する（`AccountStore.startObservingIfNeeded`）。購読の開始・停止はサインイン／登録／サインアウトを束ねる `AuthSubscriptionSyncUseCase` に置く
+* 参加でメンバーが増えたら、`joincohabitant` が参加者以外のメンバー全員（発行者と、同じリンクから先に参加したメンバー）へ Push 通知を送る。発行時に何も起きなくなった分、アプリを開いていない発行者が参加を知る手段として必要になる。通知の失敗で参加を失敗扱いにはしない
 
 ## 考慮した選択肢
 

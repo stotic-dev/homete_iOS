@@ -179,6 +179,10 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
    - 異なるなら `failed-precondition`（すでに別グループに参加済み）
 6. 参加先が決まっていればトランザクションで `Cohabitant.members` に `arrayUnion(uid)`、`Account.cohabitantId` を更新
 7. 参加先が無ければ、発行者と参加者の2人で `Cohabitant` を新規作成し、双方の `Account.cohabitantId` と `Invitation.cohabitantId` を更新（同じリンクからの2人目以降も同じグループへ入るため）
+8. メンバーが増えた場合（5の冪等成功を除く）、トランザクション完了後に**参加者以外のメンバー全員**（発行者と、同じリンクから先に参加したメンバー）へ「〇〇がグループに参加しました」のPush通知を送る
+   - 発行者は共有した時点では何も起きないため、通知が無いとアプリを開くまで参加に気づけない
+   - 通知の送信失敗で参加を失敗扱いにしない（参加はトランザクションで完了済み。失敗はログに残すだけ）
+   - 配信は `notifyothercohabitants` と共通の `notifyOtherCohabitants`（`src/models/CohabitantNotifier.ts`）で行う。Emulator上ではFCMへ送れないため、送信処理を差し替えられるようにしてE2Eでは配信対象のトークンだけを検証する
 
 `FirestoreHelper`（`src/models/FirestoreHelper.ts`）に招待ドキュメント操作のメソッドを追加する。
 
@@ -263,6 +267,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 招待した側は、相手の参加時に Functions が自分の `Account.cohabitantId` を書き換える。クライアント起点の書き込みではないため、
 `AccountStore.startObservingIfNeeded(_:)` でサインイン中は自分の `Account` ドキュメントを購読し、更新をオンメモリへ反映する
 （購読していないと、再起動するまでグループ未所属のまま振る舞ってしまう）。
+アプリを開いていない間の参加は、Functions が送る参加通知（上記 5-8）で知ることができる。
 
 ### 9. iOS: 共有UI
 
