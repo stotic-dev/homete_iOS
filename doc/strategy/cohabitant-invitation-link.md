@@ -276,6 +276,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
   - タップ → `issue()` 実行（ローディング）→ URL生成 → `.sheet` で共有シート表示
   - 共有テキスト例: `hometeで一緒に家事を管理しませんか？下のリンクから参加できます\n<URL>`
   - 発行失敗時はアラート
+  - 共有先のアプリで共有まで完了したら（`completionWithItemsHandler` の `completed` が `true`）、同居人登録画面を閉じる。相手の参加はホーム画面側が `AccountStore` の購読で受け取る。共有をキャンセルした場合は、P2P登録や再共有に進めるよう画面に留まる
 
 ### 10. Analytics
 
