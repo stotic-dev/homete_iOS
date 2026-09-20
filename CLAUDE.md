@@ -211,7 +211,7 @@ launching → notLoggedIn → Sign In with Apple
 
 **シミュレータでの簡易E2E確認**（`.claude/skills/simulator-e2e-check/`）:
 - Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
-- ログイン済みのシミュレータが前提（Sign in with Appleは自動化できない）
+- iOS 27ランタイムでログイン済み・同居人グループ所属済みのシミュレータが前提（Sign in with Appleは自動化できない）
 
 **Firebase Functions E2Eテスト** (`firebase/functions/test/`):
 - フレームワーク: Jest + ts-jest
