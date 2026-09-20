@@ -1,7 +1,6 @@
 import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {getMessaging} from "firebase-admin/messaging";
-import {FirestoreHelper} from "./models/FirestoreHelper";
+import {notifyOtherCohabitants} from "./models/CohabitantNotifier";
 import {appCheckOptions} from "./appCheckOptions";
 
 interface NotifyCohabitantsRequest {
@@ -42,15 +41,14 @@ export const notifyothercohabitants = onCall(
       );
     }
 
-    const firestoreHelper = new FirestoreHelper();
-
     try {
-      // 1. Get the cohabitant group document
-      const cohabitantResult = await firestoreHelper.getCohabitant(
-        cohabitantId
+      const result = await notifyOtherCohabitants(
+        cohabitantId,
+        senderId,
+        {title, body}
       );
 
-      if (!cohabitantResult) {
+      if (!result) {
         logger.error(`Cohabitant group with id ${cohabitantId} not found.`);
         throw new HttpsError(
           "not-found",
@@ -58,63 +56,13 @@ export const notifyothercohabitants = onCall(
         );
       }
 
-      const {cohabitant} = cohabitantResult;
-      const members = cohabitant.members;
-
-      if (members.length === 0) {
-        logger.error(`Cohabitant group ${cohabitantId} has no members.`);
-        return {success: true, message: "No members found in the group."};
-      }
-
-      // 2. Filter out the sender to get recipient IDs
-      const recipientIds = members.filter(
-        (memberId: string) => memberId !== senderId
-      );
-
-      if (recipientIds.length === 0) {
-        logger.info("No other members in the group to notify.");
-        return {success: true, message: "No other members to notify."};
-      }
-
-      // 3. Get FCM tokens for the recipients
-      const accounts = await firestoreHelper.getAccountsByUserIds(recipientIds);
-      const tokens: string[] = accounts
-        .map((account) => account.fcmToken)
-        .filter((token): token is string => !!token);
-
-      if (tokens.length === 0) {
-        logger.info("No FCM tokens found for any of the recipients.");
+      if (result.tokens.length === 0) {
         return {success: true, message: "No recipient tokens found."};
-      }
-
-      // 4. Send notifications
-      const message = {
-        notification: {
-          title: title,
-          body: body,
-        },
-        tokens: tokens,
-      };
-
-      const batchResponse = await getMessaging().sendEachForMulticast(message);
-      logger.info("Successfully sent messages.", {
-        successCount: batchResponse.successCount,
-        failureCount: batchResponse.failureCount,
-      });
-
-      if (batchResponse.failureCount > 0) {
-        const failedTokens: string[] = [];
-        batchResponse.responses.forEach((resp, idx) => {
-          if (!resp.success) {
-            failedTokens.push(tokens[idx]);
-          }
-        });
-        logger.warn("List of tokens that caused failures:", {failedTokens});
       }
 
       return {
         success: true,
-        message: `Notifications sent to ${batchResponse.successCount} devices.`,
+        message: `Notifications sent to ${result.successCount} devices.`,
       };
     } catch (error) {
       logger.error("An unexpected error occurred:", {error});

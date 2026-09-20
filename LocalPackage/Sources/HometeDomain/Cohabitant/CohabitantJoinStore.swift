@@ -38,9 +38,17 @@ public final class CohabitantJoinStore {
         analyticsClient.log(.cohabitantRegistration(.started(method: .link)))
 
         do {
-            let cohabitantId = try await cohabitantInvitationClient.join(token)
+            let result = try await cohabitantInvitationClient.join(token)
             // サーバ側でアカウントの更新まで済んでいるため、オンメモリの状態だけ揃える
-            accountStore.applyCohabitantId(cohabitantId)
+            accountStore.applyCohabitantId(result.cohabitantId)
+
+            guard result.isNewMember else {
+                // 自分のグループのリンクを開いただけなので、登録の完了としては数えない
+                state = .alreadyMember
+                analyticsClient.log(.cohabitantInvitation(.joinAlreadyMember))
+                return
+            }
+
             state = .completed
             analyticsClient.log(.cohabitantInvitation(.joinSucceeded))
             analyticsClient.log(.cohabitantRegistration(.completed(method: .link, isSuccess: true)))

@@ -37,19 +37,22 @@ export async function createTestUser(
  * @param {string} cohabitantId - CohabitantドキュメントのID（オプション）
  * @param {string} fcmToken - FCMトークン（オプション）
  * @param {boolean} isPremium - プレミアム加入状態（省略時はfalse）
+ * @param {string} userName - 表示名（オプション）
  * @return {Promise<void>}
  */
 export async function createTestAccount(
   userId: string,
   cohabitantId?: string,
   fcmToken?: string,
-  isPremium = false
+  isPremium = false,
+  userName?: string
 ): Promise<void> {
   const db = getFirestore();
 
   // Accountモデルに準拠したデータを作成
   const account: Account = {
     id: userId,
+    userName,
     cohabitantId,
     fcmToken,
     isPremium,

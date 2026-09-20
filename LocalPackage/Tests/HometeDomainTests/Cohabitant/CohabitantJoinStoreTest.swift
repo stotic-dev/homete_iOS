@@ -24,7 +24,7 @@ struct CohabitantJoinStoreTest {
             token: "test-token",
             cohabitantInvitationClient: .init(join: { token in
                 #expect(token == "test-token")
-                return "joinedCohabitantId"
+                return .init(cohabitantId: "joinedCohabitantId", isNewMember: true)
             }),
             accountStore: accountStore
         )
@@ -34,6 +34,33 @@ struct CohabitantJoinStoreTest {
 
         // Assert
         #expect(sut.state == .completed)
+        #expect(accountStore.account == expectedAccount)
+    }
+
+    @Test("すでに参加済みのグループだった場合、参加済み状態になりアカウントのグループIDが同期される")
+    func join_alreadyMember() async {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let expectedAccount = Account(
+            id: "testId",
+            userName: "testUser",
+            fcmToken: nil,
+            cohabitantId: "joinedCohabitantId"
+        )
+        let accountStore = AccountStore(account: initialAccount)
+        let sut = CohabitantJoinStore(
+            token: "test-token",
+            cohabitantInvitationClient: .init(join: { _ in
+                .init(cohabitantId: "joinedCohabitantId", isNewMember: false)
+            }),
+            accountStore: accountStore
+        )
+
+        // Act
+        await sut.join()
+
+        // Assert
+        #expect(sut.state == .alreadyMember)
         #expect(accountStore.account == expectedAccount)
     }
 

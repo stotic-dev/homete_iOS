@@ -3,6 +3,7 @@
  */
 export interface Account {
     id: string;
+    userName?: string;
     cohabitantId?: string;
     fcmToken?: string;
     isPremium: boolean;
@@ -13,6 +14,7 @@ export interface Account {
  */
 export class AccountFields {
   static readonly ID = "id";
+  static readonly USER_NAME = "userName";
   static readonly COHABITANT_ID = "cohabitantId";
   static readonly FCM_TOKEN = "fcmToken";
   static readonly IS_PREMIUM = "isPremium";
@@ -50,6 +52,7 @@ export class AccountConverter {
   static fromFirestoreData(data: FirebaseFirestore.DocumentData): Account {
     return {
       id: data[AccountFields.ID] as string,
+      userName: data[AccountFields.USER_NAME] as string | undefined,
       cohabitantId: data[AccountFields.COHABITANT_ID] as string | undefined,
       fcmToken: data[AccountFields.FCM_TOKEN] as string | undefined,
       // isPremium 導入前のドキュメントにはフィールドが無いため無料プラン扱いにする

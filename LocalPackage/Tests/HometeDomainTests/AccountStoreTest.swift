@@ -137,4 +137,83 @@ struct AccountStoreTest {
         }
     }
 
+    @Test("アカウントの購読を開始すると、サーバー側で更新された内容がオンメモリに反映される")
+    func startObservingIfNeededAppliesServerUpdate() async {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let expectedAccount = Account(
+            id: "testId",
+            userName: "testUser",
+            fcmToken: nil,
+            cohabitantId: "joinedCohabitantId"
+        )
+        let (stream, continuation) = AsyncThrowingStream<Account?, Error>.makeStream()
+        let accountInfoClient = AccountInfoClient(addSnapshotListener: { _, accountId in
+            #expect(accountId == initialAccount.id)
+            return stream
+        })
+        let store = AccountStore(accountInfoClient: accountInfoClient, account: initialAccount)
+        let waiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.account
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+
+        // Act
+        await store.startObservingIfNeeded(initialAccount.id)
+        continuation.yield(expectedAccount)
+        await waiter.value
+
+        // Assert
+        #expect(store.account == expectedAccount)
+        continuation.finish()
+    }
+
+    @Test("購読中はアカウントの購読を重ねて開始しない")
+    func startObservingIfNeededIsIdempotent() async {
+        // Arrange
+        let (stream, continuation) = AsyncThrowingStream<Account?, Error>.makeStream()
+        let store = await confirmation(expectedCount: 1) { confirmation in
+            let accountInfoClient = AccountInfoClient(addSnapshotListener: { _, _ in
+                confirmation()
+                return stream
+            })
+            let store = AccountStore(accountInfoClient: accountInfoClient)
+            await store.startObservingIfNeeded("testId")
+            return store
+        }
+
+        // Act
+        await store.startObservingIfNeeded("testId")
+
+        // Assert: 2回目の開始でaddSnapshotListenerが呼ばれない（confirmationの回数で検証）
+        continuation.finish()
+    }
+
+    @Test("アカウントの購読を停止するとリスナーが解除される")
+    func stopObserving() async {
+        await confirmation(expectedCount: 1) { confirmation in
+            // Arrange
+            let (stream, continuation) = AsyncThrowingStream<Account?, Error>.makeStream()
+            let accountInfoClient = AccountInfoClient(
+                addSnapshotListener: { _, _ in stream },
+                removeSnapshotListener: { _ in
+                    confirmation()
+                }
+            )
+            let store = AccountStore(accountInfoClient: accountInfoClient)
+            await store.startObservingIfNeeded("testId")
+
+            // Act
+            await store.stopObserving()
+
+            // Assert: removeSnapshotListenerが呼ばれる（confirmationで検証）
+            continuation.finish()
+        }
+    }
+
 }

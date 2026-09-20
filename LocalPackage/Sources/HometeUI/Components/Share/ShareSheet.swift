@@ -16,14 +16,25 @@ public struct ShareSheet: UIViewControllerRepresentable {
 
     let text: String
     let url: URL
+    let onComplete: ((Bool) -> Void)?
 
-    public init(text: String, url: URL) {
+    /// - Parameters:
+    ///   - text: 共有するテキスト
+    ///   - url: 共有するURL
+    ///   - onComplete: 共有シートが閉じたときに呼ばれる。共有先のアプリで共有まで完了した場合は`true`、
+    ///                 キャンセルした場合は`false`
+    public init(text: String, url: URL, onComplete: ((Bool) -> Void)? = nil) {
         self.text = text
         self.url = url
+        self.onComplete = onComplete
     }
 
     public func makeUIViewController(context _: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, completed, _, _ in
+            onComplete?(completed)
+        }
+        return controller
     }
 
     public func updateUIViewController(_: UIActivityViewController, context _: Context) {}
@@ -36,10 +47,12 @@ public struct ShareSheet: View {
 
     let text: String
     let url: URL
+    let onComplete: ((Bool) -> Void)?
 
-    public init(text: String, url: URL) {
+    public init(text: String, url: URL, onComplete: ((Bool) -> Void)? = nil) {
         self.text = text
         self.url = url
+        self.onComplete = onComplete
     }
 
     public var body: some View {

@@ -17,6 +17,8 @@ public enum CohabitantInvitationAnalyticsAction: Equatable, Sendable {
     case linkOpened
     /// 招待リンクからグループに参加した
     case joinSucceeded
+    /// すでに参加済みのグループの招待リンクを開いた（参加は発生しない）
+    case joinAlreadyMember
     /// 招待リンクからのグループ参加に失敗した
     case joinFailed(CohabitantJoinFailure)
 
@@ -48,7 +50,7 @@ private extension CohabitantInvitationAnalyticsAction {
             screen.rawValue
 
         // リンク経由の起動・参加は画面から始まる行動ではないため付けない
-        case .linkOpened, .joinSucceeded, .joinFailed:
+        case .linkOpened, .joinSucceeded, .joinAlreadyMember, .joinFailed:
             nil
         }
     }
@@ -62,7 +64,7 @@ private extension CohabitantInvitationAnalyticsAction {
         case .linkOpened:
             "open"
 
-        case .joinSucceeded, .joinFailed:
+        case .joinSucceeded, .joinAlreadyMember, .joinFailed:
             "join"
         }
     }
@@ -78,6 +80,9 @@ private extension CohabitantInvitationAnalyticsAction {
 
         case .joinSucceeded:
             "success"
+
+        case .joinAlreadyMember:
+            "already_member"
 
         case let .joinFailed(failure):
             switch failure {

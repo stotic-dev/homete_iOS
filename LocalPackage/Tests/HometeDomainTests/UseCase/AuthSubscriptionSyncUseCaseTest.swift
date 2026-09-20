@@ -69,6 +69,35 @@ struct AuthSubscriptionSyncUseCaseTest {
         }
     }
 
+    @Test("サインイン成功時に自分のアカウントの購読を開始する")
+    func syncOnSignedInStartsObservingAccount() async {
+        await confirmation(expectedCount: 1) { confirmation in
+            let inputAuthResult = AccountAuthResult(id: "testAccountId")
+            let inputAccount = Account(
+                id: inputAuthResult.id,
+                userName: "testUserName",
+                fcmToken: nil,
+                cohabitantId: nil
+            )
+            let accountInfoClient = AccountInfoClient(
+                fetch: { _ in inputAccount },
+                addSnapshotListener: { _, accountId in
+                    confirmation()
+                    #expect(accountId == inputAuthResult.id)
+                    return .init { $0.finish() }
+                }
+            )
+            let accountStore = AccountStore(accountInfoClient: accountInfoClient)
+            let subscriptionStore = SubscriptionStore(purchaseClient: .init())
+            let useCase = AuthSubscriptionSyncUseCase(
+                accountStore: accountStore,
+                subscriptionStore: subscriptionStore
+            )
+
+            _ = await useCase.syncOnSignedIn(inputAuthResult)
+        }
+    }
+
     @Test("サインイン成功時にアカウントが取得できない場合はサブスクリプションにログインしない")
     func syncOnSignedInAccountNotFound() async {
         await confirmation(expectedCount: 0) { confirmation in

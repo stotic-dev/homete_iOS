@@ -70,6 +70,12 @@ private extension CohabitantJoinView {
             }
             .hideNavigationBar()
 
+        case .alreadyMember:
+            CohabitantJoinAlreadyMemberView {
+                dismiss()
+            }
+            .contentPadding()
+
         case let .failed(failure):
             CohabitantJoinFailureView(failure: failure) {
                 dismiss()

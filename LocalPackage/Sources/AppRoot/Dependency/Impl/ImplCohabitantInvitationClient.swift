@@ -20,10 +20,11 @@ extension CohabitantInvitationClient {
         do {
             let result = try await FunctionsService.call("joincohabitant", parameters: ["token": token])
             guard let response = result.data as? [String: Any],
-                  let cohabitantId = response["cohabitantId"] as? String else {
+                  let cohabitantId = response["cohabitantId"] as? String,
+                  let joined = response["joined"] as? Bool else {
                 throw DomainError.other
             }
-            return cohabitantId
+            return CohabitantJoinResult(cohabitantId: cohabitantId, isNewMember: joined)
         } catch {
             throw convert(error)
         }
@@ -37,14 +38,14 @@ private extension CohabitantInvitationClient {
     static func makeInvitation(from data: Any) throws -> CohabitantInvitation {
         guard let response = data as? [String: Any],
               let token = response["token"] as? String,
-              let cohabitantId = response["cohabitantId"] as? String,
               let expiresAtMilliseconds = response["expiresAt"] as? Double else {
             throw DomainError.other
         }
 
         return CohabitantInvitation(
             token: token,
-            cohabitantId: cohabitantId,
+            // 発行者がグループ未所属の場合はnull（NSNull）で返るため、Stringにキャストできなければnil
+            cohabitantId: response["cohabitantId"] as? String,
             // Functions側はepochミリ秒で返すため秒に直す
             expiresAt: Date(timeIntervalSince1970: expiresAtMilliseconds / 1000)
         )
@@ -61,9 +62,15 @@ private extension CohabitantInvitationClient {
         guard nsError.domain == FunctionsErrorDomain else { return error }
 
         if let details = nsError.userInfo[FunctionsErrorDetailsKey] as? [String: Any],
-           let serverCode = details[CohabitantInvitationError.serverCodeKey] as? String,
-           let invitationError = CohabitantInvitationError(serverCode: serverCode) {
-            return invitationError
+           let serverCode = details[CohabitantInvitationError.serverCodeKey] as? String {
+            if let invitationError = CohabitantInvitationError(serverCode: serverCode) {
+                return invitationError
+            }
+            // Accountドキュメントがサーバーに無い（ログイン状態とFirestoreが食い違っている）ケース。
+            // 再サインインでアカウント登録からやり直せるため、その案内が出る認証エラーとして扱う
+            if serverCode == CohabitantInvitationError.accountNotFoundServerCode {
+                return DomainError.failAuth
+            }
         }
 
         guard let code = FunctionsErrorCode(rawValue: nsError.code) else { return error }
