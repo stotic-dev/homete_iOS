@@ -20,10 +20,11 @@ extension CohabitantInvitationClient {
         do {
             let result = try await FunctionsService.call("joincohabitant", parameters: ["token": token])
             guard let response = result.data as? [String: Any],
-                  let cohabitantId = response["cohabitantId"] as? String else {
+                  let cohabitantId = response["cohabitantId"] as? String,
+                  let joined = response["joined"] as? Bool else {
                 throw DomainError.other
             }
-            return cohabitantId
+            return CohabitantJoinResult(cohabitantId: cohabitantId, isNewMember: joined)
         } catch {
             throw convert(error)
         }

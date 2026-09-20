@@ -79,6 +79,10 @@ struct AnalyticsEventTest {
                 ["action": "join", "result": "success"]
             ),
             (
+                CohabitantInvitationAnalyticsAction.joinAlreadyMember,
+                ["action": "join", "result": "already_member"]
+            ),
+            (
                 CohabitantInvitationAnalyticsAction.joinFailed(.invalidLink),
                 ["action": "join", "result": "invalid_link"]
             ),
