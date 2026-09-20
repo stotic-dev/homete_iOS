@@ -209,6 +209,10 @@ launching → notLoggedIn → Sign In with Apple
 - 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
 
+**シミュレータでの簡易E2E確認**（`.claude/skills/simulator-e2e-check/`）:
+- Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
+- ログイン済みのシミュレータが前提（Sign in with Appleは自動化できない）
+
 **Firebase Functions E2Eテスト** (`firebase/functions/test/`):
 - フレームワーク: Jest + ts-jest
 - Firebase Emulators（Auth、Firestore、Functions）に対して実行
