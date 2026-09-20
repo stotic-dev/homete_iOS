@@ -75,8 +75,8 @@ async function notifyJoinedWithoutFailing(
 /**
  * 同居人グループへの招待トークンを発行する
  *
- * 発行者がグループ未所属の場合は、発行者ひとりのグループを新規作成してから
- * 招待を発行する（招待リンク経由でのグループ作成に対応するため）。
+ * 発行時にはグループを作らない。発行者が未所属なら、参加者が現れた時点で
+ * joincohabitantが2人のグループを作る（ADR-0017）。
  */
 export const issuecohabitantinvitation = onCall(
   appCheckOptions,
