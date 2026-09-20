@@ -16,6 +16,12 @@ extension AccountInfoClient {
         try await FirestoreService.shared.fetch {
             $0.accountRef(id: id)
         }
+    } addSnapshotListener: { listenerId, accountId in
+        await FirestoreService.shared.addSnapshotListener(id: listenerId) {
+            $0.accountRef(id: accountId)
+        }
+    } removeSnapshotListener: { listenerId in
+        await FirestoreService.shared.removeSnapshotListener(id: listenerId)
     }
 
 }

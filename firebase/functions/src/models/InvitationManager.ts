@@ -39,7 +39,8 @@ export class InvitationError extends Error {
 /** 発行された招待の内容 */
 export interface IssuedInvitation {
     token: string;
-    cohabitantId: string;
+    /** 招待先のグループID（発行者がグループ未所属の場合はnull） */
+    cohabitantId: string | null;
     /** 有効期限（epochミリ秒） */
     expiresAt: number;
 }
@@ -47,12 +48,10 @@ export interface IssuedInvitation {
 /**
  * 招待トークンを発行する
  *
- * 呼び出し元がまだグループに所属していない場合は、本人のみが所属する
- * グループを新規作成してから招待を発行する。
- * グループ作成・アカウントへの紐付け・招待の作成は1つのトランザクションで行う。
- * 分けて書き込むと、同時に発行された2つのリクエストがどちらも
- * 未所属と判定して別々のグループを作り、招待だけがどこにも属さない
- * グループを指してしまうため。
+ * 発行時にはグループを作らない。発行者がグループ未所属の場合はcohabitantIdをnullで
+ * 保存し、参加者が現れた時点（joinCohabitantByInvitation）で発行者と参加者のグループを作る。
+ * 発行時に作ると、リンクを共有しなかった・誰も参加しなかった場合に
+ * 本人だけのグループが残り、グループ未参加なのに参加済みとして振る舞ってしまうため。
  * @param {string} userId 発行する本人のユーザーID
  * @param {Date} now 実行日時
  * @return {Promise<IssuedInvitation>} 発行した招待
@@ -65,50 +64,33 @@ export async function issueInvitation(
   const token = randomUUID();
   const expiresAt = new Date(now.getTime() + INVITATION_EXPIRATION_MS);
 
-  const cohabitantId = await db.runTransaction(async (transaction) => {
-    const accountQuery = db
-      .collection(FirestoreCollections.ACCOUNT)
-      .where(AccountFields.ID, "==", userId)
-      .limit(1);
-    const accountSnapshot = await transaction.get(accountQuery);
+  const accountSnapshot = await db
+    .collection(FirestoreCollections.ACCOUNT)
+    .where(AccountFields.ID, "==", userId)
+    .limit(1)
+    .get();
 
-    if (accountSnapshot.empty) {
-      throw new InvitationError(
-        "account-not-found",
-        `Account for user ${userId} was not found.`
-      );
-    }
+  if (accountSnapshot.empty) {
+    throw new InvitationError(
+      "account-not-found",
+      `Account for user ${userId} was not found.`
+    );
+  }
 
-    const accountDoc = accountSnapshot.docs[0];
-    const account = AccountConverter.fromFirestoreData(accountDoc.data());
-    const cohabitantId = account.cohabitantId ?? randomUUID();
+  const account = AccountConverter.fromFirestoreData(
+    accountSnapshot.docs[0].data()
+  );
+  const cohabitantId = account.cohabitantId ?? null;
 
-    // グループ未所属の場合は、招待者ひとりのグループを併せて作る
-    if (!account.cohabitantId) {
-      const cohabitantRef = db
-        .collection(FirestoreCollections.COHABITANT)
-        .doc(cohabitantId);
-      transaction.set(cohabitantRef, {
-        [CohabitantFields.ID]: cohabitantId,
-        [CohabitantFields.MEMBERS]: [userId],
-      });
-      transaction.update(accountDoc.ref, {
-        [AccountFields.COHABITANT_ID]: cohabitantId,
-      });
-    }
-
-    const invitationRef = db
-      .collection(FirestoreCollections.INVITATION)
-      .doc(token);
-    transaction.set(invitationRef, {
+  await db
+    .collection(FirestoreCollections.INVITATION)
+    .doc(token)
+    .set({
       [InvitationFields.COHABITANT_ID]: cohabitantId,
       [InvitationFields.CREATED_BY]: userId,
       [InvitationFields.CREATED_AT]: Timestamp.fromDate(now),
       [InvitationFields.EXPIRES_AT]: Timestamp.fromDate(expiresAt),
     });
-
-    return cohabitantId;
-  });
 
   return {token, cohabitantId, expiresAt: expiresAt.getTime()};
 }
@@ -117,6 +99,10 @@ export async function issueInvitation(
  * 招待トークンを使ってグループに参加する
  *
  * トークンの検証からメンバー追加・アカウント更新までをトランザクションで行う。
+ * 招待にグループが紐づいていない（発行者が未所属だった）場合は、
+ * ここで発行者と参加者の2人からなるグループを新規作成する。
+ * 同じ招待からの2人目以降も同じグループへ参加できるよう、作成したグループIDは
+ * 招待にも書き戻す。
  * すでに同じグループへ参加済みの場合は、リンクの再タップを想定して
  * 書き込みを行わず成功として扱う。
  * @param {string} userId 参加する本人のユーザーID
@@ -168,10 +154,23 @@ export async function joinCohabitantByInvitation(
     const accountDoc = accountSnapshot.docs[0];
     const account = AccountConverter.fromFirestoreData(accountDoc.data());
 
+    // 発行者が招待の後にグループへ参加している場合は、そのグループへ案内する
+    const inviterQuery = db
+      .collection(FirestoreCollections.ACCOUNT)
+      .where(AccountFields.ID, "==", invitation.createdBy)
+      .limit(1);
+    const inviterSnapshot = await transaction.get(inviterQuery);
+    const inviterDoc = inviterSnapshot.empty ? null : inviterSnapshot.docs[0];
+    const inviter = inviterDoc ?
+      AccountConverter.fromFirestoreData(inviterDoc.data()) :
+      null;
+    const targetCohabitantId =
+      invitation.cohabitantId ?? inviter?.cohabitantId ?? null;
+
     if (account.cohabitantId) {
       // 同じグループへの再参加は、リンクを再度開いただけなので成功扱いにする
-      if (account.cohabitantId === invitation.cohabitantId) {
-        return invitation.cohabitantId;
+      if (account.cohabitantId === targetCohabitantId) {
+        return account.cohabitantId;
       }
 
       throw new InvitationError(
@@ -180,26 +179,56 @@ export async function joinCohabitantByInvitation(
       );
     }
 
-    const cohabitantRef = db
-      .collection(FirestoreCollections.COHABITANT)
-      .doc(invitation.cohabitantId);
-    const cohabitantSnapshot = await transaction.get(cohabitantRef);
-    const cohabitant = CohabitantConverter.fromFirestore(cohabitantSnapshot);
+    if (targetCohabitantId) {
+      const cohabitantRef = db
+        .collection(FirestoreCollections.COHABITANT)
+        .doc(targetCohabitantId);
+      const cohabitantSnapshot = await transaction.get(cohabitantRef);
+      const cohabitant = CohabitantConverter.fromFirestore(cohabitantSnapshot);
 
-    if (!cohabitant) {
+      if (!cohabitant) {
+        throw new InvitationError(
+          "cohabitant-not-found",
+          `Cohabitant ${targetCohabitantId} was not found.`
+        );
+      }
+
+      transaction.update(cohabitantRef, {
+        [CohabitantFields.MEMBERS]: FieldValue.arrayUnion(userId),
+      });
+      transaction.update(accountDoc.ref, {
+        [AccountFields.COHABITANT_ID]: targetCohabitantId,
+      });
+
+      return targetCohabitantId;
+    }
+
+    // 発行者が退会している、または本人が自分の招待を開いた場合は参加先を作れない
+    if (!inviterDoc || invitation.createdBy === userId) {
       throw new InvitationError(
         "cohabitant-not-found",
-        `Cohabitant ${invitation.cohabitantId} was not found.`
+        `Cohabitant for invitation ${token} cannot be created.`
       );
     }
 
-    transaction.update(cohabitantRef, {
-      [CohabitantFields.MEMBERS]: FieldValue.arrayUnion(userId),
+    const cohabitantId = randomUUID();
+    const cohabitantRef = db
+      .collection(FirestoreCollections.COHABITANT)
+      .doc(cohabitantId);
+    transaction.set(cohabitantRef, {
+      [CohabitantFields.ID]: cohabitantId,
+      [CohabitantFields.MEMBERS]: [invitation.createdBy, userId],
+    });
+    transaction.update(inviterDoc.ref, {
+      [AccountFields.COHABITANT_ID]: cohabitantId,
     });
     transaction.update(accountDoc.ref, {
-      [AccountFields.COHABITANT_ID]: invitation.cohabitantId,
+      [AccountFields.COHABITANT_ID]: cohabitantId,
+    });
+    transaction.update(invitationRef, {
+      [InvitationFields.COHABITANT_ID]: cohabitantId,
     });
 
-    return invitation.cohabitantId;
+    return cohabitantId;
   });
 }

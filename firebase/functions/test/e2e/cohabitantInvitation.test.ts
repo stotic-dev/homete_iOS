@@ -38,6 +38,23 @@ describe("cohabitantInvitation E2E Tests", () => {
   }
 
   /**
+   * 指定ユーザーのAccountドキュメント参照を取得する
+   * @param {string} userId ユーザーID
+   * @return {Promise<FirebaseFirestore.DocumentReference | undefined>} 参照
+   */
+  async function fetchAccountRef(
+    userId: string
+  ): Promise<FirebaseFirestore.DocumentReference | undefined> {
+    const db = getFirestore();
+    const snapshot = await db
+      .collection(FirestoreCollections.ACCOUNT)
+      .where("id", "==", userId)
+      .limit(1)
+      .get();
+    return snapshot.docs[0]?.ref;
+  }
+
+  /**
    * 招待ドキュメントの有効期限を書き換える
    * @param {string} token 招待トークン
    * @param {Date} expiresAt 上書きする有効期限
@@ -75,7 +92,7 @@ describe("cohabitantInvitation E2E Tests", () => {
       expect(actual.token).not.toBe("");
     });
 
-    it("グループ未所属なら本人のみのグループを作成して招待を発行する", async () => {
+    it("グループ未所属ならグループを作らずcohabitantIdがnullの招待を発行する", async () => {
       // Arrange
       const userId = `invite-solo-${testCounter}`;
       const now = new Date("2026-09-01T00:00:00.000Z");
@@ -85,27 +102,16 @@ describe("cohabitantInvitation E2E Tests", () => {
       // Act
       const actual = await issueInvitation(userId, now);
 
-      // Assert: グループが作られ、Accountにも紐づく
-      await expectCohabitantMembers(actual.cohabitantId, [userId]);
-      expect(await fetchCohabitantId(userId)).toBe(actual.cohabitantId);
-    });
-
-    it("作成したグループにはクライアントが参照するidフィールドが入る", async () => {
-      // Arrange: iOSはid == cohabitantIdでリッスンするため必須
-      const userId = `invite-solo-id-${testCounter}`;
-      await createTestUser(userId, `${userId}@example.com`);
-      await createTestAccount(userId);
-
-      // Act
-      const actual = await issueInvitation(userId, new Date());
-
-      // Assert
+      // Assert: 発行時点ではグループは作られず、Accountも未所属のまま
+      expect(actual.cohabitantId).toBeNull();
+      expect(await fetchCohabitantId(userId)).toBeUndefined();
       const db = getFirestore();
       const snapshot = await db
-        .collection(FirestoreCollections.COHABITANT)
-        .doc(actual.cohabitantId)
+        .collection(FirestoreCollections.INVITATION)
+        .doc(actual.token)
         .get();
-      expect(snapshot.data()?.["id"]).toBe(actual.cohabitantId);
+      expect(snapshot.data()?.["cohabitantId"]).toBeNull();
+      expect(snapshot.data()?.["createdBy"]).toBe(userId);
     });
 
     it("Accountが存在しない場合はaccount-not-foundになる", async () => {
@@ -143,6 +149,107 @@ describe("cohabitantInvitation E2E Tests", () => {
       expect(actual).toBe(cohabitantId);
       await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
       expect(await fetchCohabitantId(joinerId)).toBe(cohabitantId);
+    });
+
+    it("発行者が未所属なら参加時に発行者と参加者のグループが作られる", async () => {
+      // Arrange
+      const ownerId = `lazy-owner-${testCounter}`;
+      const joinerId = `lazy-joiner-${testCounter}`;
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestUser(joinerId, `${joinerId}@example.com`);
+      await createTestAccount(ownerId);
+      await createTestAccount(joinerId);
+      const invitation = await issueInvitation(ownerId, new Date());
+
+      // Act
+      const actual = await joinCohabitantByInvitation(
+        joinerId,
+        invitation.token,
+        new Date()
+      );
+
+      // Assert: 2人のグループが作られ、双方のAccountと招待に紐づく
+      await expectCohabitantMembers(actual, [ownerId, joinerId]);
+      expect(await fetchCohabitantId(ownerId)).toBe(actual);
+      expect(await fetchCohabitantId(joinerId)).toBe(actual);
+      const db = getFirestore();
+      const cohabitantSnapshot = await db
+        .collection(FirestoreCollections.COHABITANT)
+        .doc(actual)
+        .get();
+      // iOSはid == cohabitantIdでリッスンするため必須
+      expect(cohabitantSnapshot.data()?.["id"]).toBe(actual);
+      const invitationSnapshot = await db
+        .collection(FirestoreCollections.INVITATION)
+        .doc(invitation.token)
+        .get();
+      expect(invitationSnapshot.data()?.["cohabitantId"]).toBe(actual);
+    });
+
+    it("参加時に作られたグループへ同じ招待で2人目も参加できる", async () => {
+      // Arrange
+      const ownerId = `lazy-multi-owner-${testCounter}`;
+      const firstId = `lazy-multi-first-${testCounter}`;
+      const secondId = `lazy-multi-second-${testCounter}`;
+      await createTestAccount(ownerId);
+      await createTestAccount(firstId);
+      await createTestAccount(secondId);
+      const invitation = await issueInvitation(ownerId, new Date());
+
+      // Act
+      const created = await joinCohabitantByInvitation(
+        firstId,
+        invitation.token,
+        new Date()
+      );
+      const joined = await joinCohabitantByInvitation(
+        secondId,
+        invitation.token,
+        new Date()
+      );
+
+      // Assert
+      expect(joined).toBe(created);
+      await expectCohabitantMembers(created, [ownerId, firstId, secondId]);
+    });
+
+    it("発行後に発行者が別経路でグループに参加していれば、そのグループへ参加する", async () => {
+      // Arrange: 招待発行 → 発行者がP2P登録でグループ作成 → 参加者がリンクを開く
+      const ownerId = `late-owner-${testCounter}`;
+      const joinerId = `late-joiner-${testCounter}`;
+      const cohabitantId = `late-cohabitant-${testCounter}`;
+      await createTestAccount(ownerId);
+      await createTestAccount(joinerId);
+      const invitation = await issueInvitation(ownerId, new Date());
+      await createTestCohabitant(cohabitantId, [ownerId]);
+      await (await fetchAccountRef(ownerId))?.update({cohabitantId});
+
+      // Act
+      const actual = await joinCohabitantByInvitation(
+        joinerId,
+        invitation.token,
+        new Date()
+      );
+
+      // Assert
+      expect(actual).toBe(cohabitantId);
+      await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
+    });
+
+    it("発行者が退会済みで参加先を作れない場合はcohabitant-not-foundになる", async () => {
+      // Arrange
+      const ownerId = `gone-owner-${testCounter}`;
+      const joinerId = `gone-joiner-${testCounter}`;
+      await createTestAccount(ownerId);
+      await createTestAccount(joinerId);
+      const invitation = await issueInvitation(ownerId, new Date());
+      await (await fetchAccountRef(ownerId))?.delete();
+
+      // Act & Assert
+      await expect(
+        joinCohabitantByInvitation(joinerId, invitation.token, new Date())
+      ).rejects.toMatchObject({code: "cohabitant-not-found"});
+      expect(await fetchCohabitantId(joinerId)).toBeUndefined();
     });
 
     it("同じ招待で複数人が参加できる", async () => {
