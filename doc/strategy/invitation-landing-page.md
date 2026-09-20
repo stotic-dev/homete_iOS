@@ -394,7 +394,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 ### Phase 4: PR
 
-- [ ] PR作成（`pr-create` スキル使用）
+- [x] PR作成（`pr-create` スキル使用）: [#275](https://github.com/stotic-dev/homete_iOS/pull/275)
 - [ ] Danger / CI通過
 - [ ] レビュー対応
 - [ ] マージ
@@ -408,6 +408,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/274
+- PR: https://github.com/stotic-dev/homete_iOS/pull/275
 - 既存実装（参考）:
   - `firebase/hosting/public/invite/index.html`
   - `firebase/functions/src/cohabitantInvitation.ts` / `firebase/functions/src/models/InvitationManager.ts`
