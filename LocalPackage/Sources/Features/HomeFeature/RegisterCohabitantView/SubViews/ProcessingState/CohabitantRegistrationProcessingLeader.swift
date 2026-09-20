@@ -118,13 +118,20 @@ private extension CohabitantRegistrationProcessingLeader {
             preconditionFailure("Not found required param(cohabitantId)")
         }
 
-        onCompleteCohabitantRegistration(cohabitantId)
-        let message = CohabitantRegistrationMessage(type: .complete)
-        p2pSessionProxy?.send(
-            message.encodedData(),
-            to: connectedPeers
-        )
-        registrationState = .completed
+        Task {
+            do {
+                // 自分のアカウントへの保存が済んでから、他デバイスに完了を伝える
+                try await onCompleteCohabitantRegistration(cohabitantId)
+                let message = CohabitantRegistrationMessage(type: .complete)
+                p2pSessionProxy?.send(
+                    message.encodedData(),
+                    to: connectedPeers
+                )
+                registrationState = .completed
+            } catch {
+                isPresentingFailedRegistrationIdAlert = true
+            }
+        }
     }
 
 }

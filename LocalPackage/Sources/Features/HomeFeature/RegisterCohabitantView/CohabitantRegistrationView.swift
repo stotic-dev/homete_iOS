@@ -60,9 +60,7 @@ public struct CohabitantRegistrationView: View {
             Text("登録を終了すると、また初めから登録し直す必要があります。")
         }
         .onCompleteCohabitantRegistration { cohabitantId in
-            Task {
-                await onCompleteCohabitantRegistration(cohabitantId)
-            }
+            try await onCompleteCohabitantRegistration(cohabitantId)
         }
         .onAppear {
             analyticsClient.log(.cohabitantRegistration(.started(method: .p2p)))
@@ -94,13 +92,14 @@ private extension CohabitantRegistrationView {
         }
     }
 
-    func onCompleteCohabitantRegistration(_ cohabitantId: String) async {
+    func onCompleteCohabitantRegistration(_ cohabitantId: String) async throws {
         do {
             try await accountStore.registerCohabitantId(cohabitantId)
             analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: true)))
         } catch {
             print("error occurred: \(error)")
             analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: false)))
+            throw error
         }
     }
 

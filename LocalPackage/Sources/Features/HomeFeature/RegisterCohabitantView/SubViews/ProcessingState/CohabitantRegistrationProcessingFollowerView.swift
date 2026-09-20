@@ -12,14 +12,18 @@ import SwiftUI
 
 struct CohabitantRegistrationProcessingFollower: View {
 
+    @Environment(\.dismiss) var dismiss
     @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.p2pSessionReceiveData) var receiveData
     @Environment(\.loginContext.account.id) var accountId
     @Environment(\.onCompleteCohabitantRegistration) var onCompleteCohabitantRegistration
 
-    @State var cohabitantId: String?
+    /// 自分のアカウントへの保存まで済んだ同居人ID
+    @State var registeredCohabitantId: String?
     @State var confirmedRolePeers: Set<MCPeerID> = []
     @State var leadPeer: MCPeerID?
+    /// 同居人IDの保存に失敗した時のアラート
+    @State var isPresentingFailedRegistrationAlert = false
 
     @Binding var registrationState: CohabitantRegistrationState
 
@@ -29,6 +33,16 @@ struct CohabitantRegistrationProcessingFollower: View {
             registrationState: $registrationState,
             role: .follower(accountId: accountId)
         )
+        .alert(
+            "登録に失敗しました",
+            isPresented: $isPresentingFailedRegistrationAlert
+        ) {
+            Button("OK") {
+                dismiss()
+            }
+        } message: {
+            Text("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
+        }
         .onChange(of: receiveData) { _, newValue in
             guard let newValue else { return }
             let data = CohabitantRegistrationMessage(newValue.body)
@@ -46,7 +60,7 @@ private extension CohabitantRegistrationProcessingFollower {
             onFindLeader(sender)
         }
         // 同居人IDの共有メッセージ受信時は、
-        // 同居人IDをローカルに保存して登録完了通知をリードデバイスに通知
+        // 同居人IDを自分のアカウントに保存してから登録完了通知をリードデバイスに通知
         else if let cohabitantId = data.cohabitantId {
             onReceiveCohabitantId(cohabitantId)
         }
@@ -60,16 +74,24 @@ private extension CohabitantRegistrationProcessingFollower {
         leadPeer = peerID
         confirmedRolePeers.insert(peerID)
 
-        // すでに同居人IDを受け取っていたら、完了メッセージを送信する
-        if cohabitantId != nil {
+        // すでに同居人IDの保存まで済んでいたら、完了メッセージを送信する
+        if registeredCohabitantId != nil {
             sendCompleteMessageIfNeeded()
         }
     }
 
     func onReceiveCohabitantId(_ cohabitantId: String) {
-        self.cohabitantId = cohabitantId
-        onCompleteCohabitantRegistration(cohabitantId)
-        sendCompleteMessageIfNeeded()
+        Task {
+            do {
+                // 保存が済む前に完了を伝えると、保存に失敗しても全デバイスが完了扱いになるため、
+                // 成功を待ってから完了メッセージを送る
+                try await onCompleteCohabitantRegistration(cohabitantId)
+                registeredCohabitantId = cohabitantId
+                sendCompleteMessageIfNeeded()
+            } catch {
+                isPresentingFailedRegistrationAlert = true
+            }
+        }
     }
 
     func sendCompleteMessageIfNeeded() {
