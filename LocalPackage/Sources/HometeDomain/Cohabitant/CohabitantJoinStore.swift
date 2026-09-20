@@ -42,6 +42,8 @@ public final class CohabitantJoinStore {
             let summary = try await cohabitantInvitationClient.fetch(token)
             state = .confirming(summary)
         } catch {
+            // 取得中に画面を閉じた（.taskがキャンセルされた）場合は失敗として数えない
+            guard !Task.isCancelled else { return }
             let failure = CohabitantJoinFailure(error)
             state = .failed(failure)
             analyticsClient.log(.cohabitantInvitation(.joinFailed(failure)))
