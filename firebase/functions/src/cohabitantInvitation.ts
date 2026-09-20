@@ -118,6 +118,8 @@ export const issuecohabitantinvitation = onCall(
  *
  * すでに別のグループへ参加しているユーザーは参加できない
  * （既存グループの家事データを失わせないため）。
+ * 同じグループへ参加済みの場合は成功として扱い、`joined: false` を返す。
+ * クライアントはこれを見て「すでに参加しています」と案内する。
  */
 export const joincohabitant = onCall(
   appCheckOptions,
@@ -161,7 +163,7 @@ export const joincohabitant = onCall(
         await notifyJoinedWithoutFailing(result, userId);
       }
 
-      return {cohabitantId: result.cohabitantId};
+      return {cohabitantId: result.cohabitantId, joined: result.joined};
     } catch (error) {
       if (error instanceof InvitationError) {
         logger.error("Failed to join cohabitant group.", {
