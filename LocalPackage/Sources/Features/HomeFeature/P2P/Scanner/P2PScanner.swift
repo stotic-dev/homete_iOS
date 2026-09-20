@@ -52,7 +52,23 @@ private extension P2PScanner {
     func setupController() {
         guard let myPeerID,
               let session else { return }
-        controller = .init(session: session, myPeerID: myPeerID, serviceType: serviceType)
+
+        // onAppearと2つのonChangeから呼ばれるため、同じ入力では作り直さない
+        if let controller,
+           controller.session === session,
+           controller.myPeerID == myPeerID {
+            return
+        }
+
+        // startScanは子ViewのonAppearでしか呼ばれず、差し替え後に自動では再開されないため、
+        // 差し替え時は開始済みのスキャンを新しいcontrollerへ引き継ぐ
+        let wasScanning = controller?.isScanning ?? false
+        controller?.finishScan()
+        let newController = P2PScannerController(session: session, myPeerID: myPeerID, serviceType: serviceType)
+        if wasScanning {
+            newController.startScan()
+        }
+        controller = newController
     }
 
 }

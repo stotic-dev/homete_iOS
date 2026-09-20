@@ -13,11 +13,12 @@ import SwiftUI
 
 struct CohabitantRegistrationPeersListView: View {
 
-    @Environment(\.p2pSessionProxy) var p2pSessionProxy
     @Environment(\.connectedPeers) var connectedPeers
 
     @State var isPresentingConfirmReadyRegistrationAlert = false
-    @Binding var isConfirmedReadyRegistration: Bool
+
+    /// 表示中のメンバーで登録を開始するかどうかを確定した
+    let onConfirmMembers: (_ isOK: Bool) -> Void
 
     var body: some View {
         VStack(spacing: .space16) {
@@ -50,12 +51,12 @@ struct CohabitantRegistrationPeersListView: View {
         .padding(.horizontal, .space16)
         .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
-                tappedConfirmAlertCancelButton()
+                onConfirmMembers(false)
             } label: {
                 Text("キャンセル")
             }
             Button {
-                tappedConfirmAlertAcceptButton()
+                onConfirmMembers(true)
             } label: {
                 Text("開始する")
             }
@@ -74,43 +75,17 @@ private extension CohabitantRegistrationPeersListView {
         }
     }
 
-    func tappedConfirmAlertAcceptButton() {
-        isConfirmedReadyRegistration = true
-
-        // メンバーが確定したことの通知を送信する
-        let data = CohabitantRegistrationMessage(
-            type: .fixedMember(isOK: true)
-        )
-        p2pSessionProxy?.send(
-            data.encodedData(),
-            to: connectedPeers
-        )
-    }
-
-    func tappedConfirmAlertCancelButton() {
-        // メンバーが確定していないことの通知を送信する
-        let data = CohabitantRegistrationMessage(
-            type: .fixedMember(isOK: false)
-        )
-        p2pSessionProxy?.send(
-            data.encodedData(),
-            to: connectedPeers
-        )
-    }
-
 }
 
 #Preview("CohabitantRegistrationPeersListView_デバイス検知済みケース") {
-    CohabitantRegistrationPeersListView(
-        isConfirmedReadyRegistration: .constant(false)
-    )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
+    CohabitantRegistrationPeersListView(onConfirmMembers: { _ in })
+        .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_確認アラート表示中のケース") {
     CohabitantRegistrationPeersListView(
         isPresentingConfirmReadyRegistrationAlert: true,
-        isConfirmedReadyRegistration: .constant(false)
+        onConfirmMembers: { _ in }
     )
     .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }

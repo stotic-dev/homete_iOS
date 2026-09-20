@@ -55,6 +55,9 @@ private extension LoadErrorView {
         case .failAuth:
             "認証に失敗しました。再度サインインをお試しください。"
 
+        case .accountNotFound:
+            "アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。"
+
         case .other:
             "時間をおいて、もう一度お試しください。"
         }

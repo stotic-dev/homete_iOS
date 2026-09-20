@@ -15,10 +15,9 @@ public enum CohabitantRegistrationRole: Codable, Equatable, Sendable {
         self == .lead
     }
 
-    public var accountId: String {
-        guard case let .follower(accountId) = self else {
-            preconditionFailure("Please pre checking role is follower.")
-        }
+    /// フォロワーのアカウントID（リーダーはnil）
+    public var accountId: String? {
+        guard case let .follower(accountId) = self else { return nil }
         return accountId
     }
 

@@ -9,7 +9,11 @@ import MultipeerConnectivity
 
 final class P2PScannerController: NSObject {
 
-    private let session: MCSession
+    let session: MCSession
+    let myPeerID: MCPeerID
+    /// スキャン中かどうか
+    private(set) var isScanning = false
+
     private let advertiser: MCNearbyServiceAdvertiser
     private let browser: MCNearbyServiceBrowser
 
@@ -19,6 +23,7 @@ final class P2PScannerController: NSObject {
         serviceType: P2PServiceType
     ) {
         self.session = session
+        self.myPeerID = myPeerID
         advertiser = MCNearbyServiceAdvertiser(
             peer: myPeerID,
             discoveryInfo: nil,
@@ -37,11 +42,13 @@ final class P2PScannerController: NSObject {
 extension P2PScannerController: P2PScannerClient {
 
     func startScan() {
+        isScanning = true
         advertiser.startAdvertisingPeer()
         browser.startBrowsingForPeers()
     }
 
     func finishScan() {
+        isScanning = false
         advertiser.stopAdvertisingPeer()
         browser.stopBrowsingForPeers()
     }

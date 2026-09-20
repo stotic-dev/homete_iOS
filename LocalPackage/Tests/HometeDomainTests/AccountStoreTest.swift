@@ -39,6 +39,67 @@ struct AccountStoreTest {
         }
     }
 
+    @Test("アカウント情報を再取得し、Firestore上のアカウントでオンメモリの状態を更新する")
+    func reload() async throws {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let fetchedAccount = Account(
+            id: "testId",
+            userName: "testUser",
+            fcmToken: "token",
+            cohabitantId: "cohabitantId"
+        )
+
+        try await confirmation(expectedCount: 1) { confirmation in
+            let accountInfoClient = AccountInfoClient(fetch: {
+                confirmation()
+                #expect($0 == initialAccount.id)
+                return fetchedAccount
+            })
+            let store = AccountStore(accountInfoClient: accountInfoClient, account: initialAccount)
+
+            // Act
+            try await store.reload()
+
+            // Assert
+            #expect(store.account == fetchedAccount)
+        }
+    }
+
+    @Test("アカウント情報を再取得し、Firestore上にアカウントが無い場合はaccountNotFoundを投げる")
+    func reload_accountNotFoundInFirestore() async {
+        // Arrange
+        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let accountInfoClient = AccountInfoClient(fetch: { _ in nil })
+        let store = AccountStore(accountInfoClient: accountInfoClient, account: initialAccount)
+
+        // Act
+        let actual = await #expect(throws: DomainError.self) {
+            try await store.reload()
+        }
+
+        // Assert
+        #expect(actual == .accountNotFound)
+    }
+
+    @Test("アカウント情報を保持していない状態で再取得した場合、Firestoreを参照せずaccountNotFoundを投げる")
+    func reload_noAccountOnMemory() async {
+        // Arrange
+        let accountInfoClient = AccountInfoClient(fetch: { _ in
+            Issue.record()
+            return nil
+        })
+        let store = AccountStore(accountInfoClient: accountInfoClient)
+
+        // Act
+        let actual = await #expect(throws: DomainError.self) {
+            try await store.reload()
+        }
+
+        // Assert
+        #expect(actual == .accountNotFound)
+    }
+
     @Test("グループIDのみを差し替える場合、Firestoreへは書き込まずオンメモリの状態だけ更新する")
     func applyCohabitantId() {
         // Arrange

@@ -27,8 +27,10 @@ struct CohabitantRegistrationProcessingLeader: View {
     @State var cohabitantsAccountId: Set<String> = []
     /// 登録完了したデバイスリスト
     @State var completedRegistrationPeers: Set<MCPeerID> = []
-    // 同居人レコードの登録に失敗した時のアラート
+    /// 同居人レコードの登録に失敗した時のアラート
     @State var isPresentingFailedRegistrationIdAlert = false
+    // 他のデバイスもリーダーになっている時のアラート
+    @State var isPresentingConflictedLeaderAlert = false
     @State var cohabitantId: String?
 
     @Binding var registrationState: CohabitantRegistrationState
@@ -49,6 +51,16 @@ struct CohabitantRegistrationProcessingLeader: View {
             }
         } message: {
             Text("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
+        }
+        .alert(
+            "接続エラー",
+            isPresented: $isPresentingConflictedLeaderAlert
+        ) {
+            Button("OK") {
+                registrationState = .scanning
+            }
+        } message: {
+            Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
         }
         .onChange(of: confirmedRolePeers) {
             // 全員の役割が分かった時点で、同居人のレコードを作成する
@@ -72,12 +84,18 @@ struct CohabitantRegistrationProcessingLeader: View {
 private extension CohabitantRegistrationProcessingLeader {
 
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
-        // フォロワーからのメッセージであれば、
-        // 登録時に使用するアカウントIDをオンメモリに保持しておく
-        if let accountId = data.memberRole?.accountId {
-            print("dispatchReceivedMessage share accountId")
-            cohabitantsAccountId.insert(accountId)
-            confirmedRolePeers.insert(sender)
+        if let role = data.memberRole {
+            if let accountId = role.accountId {
+                // フォロワーからのメッセージであれば、
+                // 登録時に使用するアカウントIDをオンメモリに保持しておく
+                print("dispatchReceivedMessage share accountId")
+                cohabitantsAccountId.insert(accountId)
+                confirmedRolePeers.insert(sender)
+            } else {
+                // 相手もリーダーを名乗っている＝各デバイスの接続状況が食い違い、リーダーが2人選ばれた状態。
+                // このまま待っても役割が揃わないため、接続エラーとしてメンバーの選び直しに戻す
+                isPresentingConflictedLeaderAlert = true
+            }
         }
         // フォロワーからの同居人登録完了メッセージ受信時は、保持している完了したメンバーに加える
         else if data.isComplete ?? false {
@@ -100,8 +118,9 @@ private extension CohabitantRegistrationProcessingLeader {
                 )
 
                 // 同居人IDをメンバーに連携する
+                // （送信失敗時は切断され、connectedPeersの変化をProcessingViewが接続エラーとして拾う）
                 let message = CohabitantRegistrationMessage(type: .shareCohabitantId(id: cohabitantId))
-                p2pSessionProxy?.send(
+                try? p2pSessionProxy?.send(
                     message.encodedData(),
                     to: connectedPeers
                 )
@@ -118,13 +137,20 @@ private extension CohabitantRegistrationProcessingLeader {
             preconditionFailure("Not found required param(cohabitantId)")
         }
 
-        onCompleteCohabitantRegistration(cohabitantId)
-        let message = CohabitantRegistrationMessage(type: .complete)
-        p2pSessionProxy?.send(
-            message.encodedData(),
-            to: connectedPeers
-        )
-        registrationState = .completed
+        Task {
+            do {
+                // 自分のアカウントへの保存が済んでから、他デバイスに完了を伝える
+                try await onCompleteCohabitantRegistration(cohabitantId)
+                let message = CohabitantRegistrationMessage(type: .complete)
+                try? p2pSessionProxy?.send(
+                    message.encodedData(),
+                    to: connectedPeers
+                )
+                registrationState = .completed
+            } catch {
+                isPresentingFailedRegistrationIdAlert = true
+            }
+        }
     }
 
 }
