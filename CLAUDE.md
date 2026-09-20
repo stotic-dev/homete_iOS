@@ -352,6 +352,10 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 **注意:** pdmエージェントとは独立して実行します。pdmはビジネス観点、ios-code-reviewerは技術観点のレビューを担当します。
 
+## Xcode同梱スキルの取り込み
+
+`.claude/skills/` のうち `swiftui-specialist` / `swiftui-whats-new-27` / `modernize-tests` / `audit-xcode-security-settings` はXcode 27に同梱されているAppleのスキルを `xcrun agent skills export --output-dir <dir>` でエクスポートしてそのまま置いたもの。**手で編集しない**（Xcodeを更新したら再エクスポートして差し替え、差分をコミットする）。シミュレータ・実機操作の `device-interaction` は同じ出元だが、Xcode MCPサーバ（`xcrun mcpbridge`）への接続が前提なので `~/.claude/skills/` 側に置いている。
+
 ## ルール（.claude/rules/）の運用
 
 `.claude/rules/`配下にルールを追加・編集する際は、Claude Codeのpath-scoped rules機能を使い、対象パターンに一致するファイルを編集・参照するときだけ自動的に読み込まれるようにすること。
