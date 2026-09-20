@@ -71,8 +71,24 @@ struct AnalyticsEventTest {
                 ["action": "issue", "step": "setting", "result": "failure"]
             ),
             (
-                CohabitantInvitationAnalyticsAction.linkOpened,
-                ["action": "open"]
+                CohabitantInvitationAnalyticsAction.linkOpened(source: .universalLink),
+                ["action": "open", "step": "universal_link"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.linkOpened(source: .customScheme),
+                ["action": "open", "step": "custom_scheme"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.linkOpened(source: .pasteboard),
+                ["action": "open", "step": "pasteboard"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.pasteboardChecked(isSuggested: true),
+                ["action": "pasteboard_check", "result": "suggested"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.pasteboardChecked(isSuggested: false),
+                ["action": "pasteboard_check", "result": "not_found"]
             ),
             (
                 CohabitantInvitationAnalyticsAction.joinSucceeded,
