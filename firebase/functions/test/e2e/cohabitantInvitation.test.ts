@@ -11,7 +11,9 @@ import {
   InvitationError,
   issueInvitation,
   joinCohabitantByInvitation,
+  notifyCohabitantJoined,
 } from "../../src/models/InvitationManager";
+import {makeRecordingSender} from "../helpers/notification";
 
 describe("cohabitantInvitation E2E Tests", () => {
   let testCounter = 0;
@@ -146,7 +148,7 @@ describe("cohabitantInvitation E2E Tests", () => {
       );
 
       // Assert
-      expect(actual).toBe(cohabitantId);
+      expect(actual).toEqual({cohabitantId, joined: true});
       await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
       expect(await fetchCohabitantId(joinerId)).toBe(cohabitantId);
     });
@@ -169,21 +171,23 @@ describe("cohabitantInvitation E2E Tests", () => {
       );
 
       // Assert: 2人のグループが作られ、双方のAccountと招待に紐づく
-      await expectCohabitantMembers(actual, [ownerId, joinerId]);
-      expect(await fetchCohabitantId(ownerId)).toBe(actual);
-      expect(await fetchCohabitantId(joinerId)).toBe(actual);
+      const {cohabitantId} = actual;
+      expect(actual.joined).toBe(true);
+      await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
+      expect(await fetchCohabitantId(ownerId)).toBe(cohabitantId);
+      expect(await fetchCohabitantId(joinerId)).toBe(cohabitantId);
       const db = getFirestore();
       const cohabitantSnapshot = await db
         .collection(FirestoreCollections.COHABITANT)
-        .doc(actual)
+        .doc(cohabitantId)
         .get();
       // iOSはid == cohabitantIdでリッスンするため必須
-      expect(cohabitantSnapshot.data()?.["id"]).toBe(actual);
+      expect(cohabitantSnapshot.data()?.["id"]).toBe(cohabitantId);
       const invitationSnapshot = await db
         .collection(FirestoreCollections.INVITATION)
         .doc(invitation.token)
         .get();
-      expect(invitationSnapshot.data()?.["cohabitantId"]).toBe(actual);
+      expect(invitationSnapshot.data()?.["cohabitantId"]).toBe(cohabitantId);
     });
 
     it("参加時に作られたグループへ同じ招待で2人目も参加できる", async () => {
@@ -209,8 +213,11 @@ describe("cohabitantInvitation E2E Tests", () => {
       );
 
       // Assert
-      expect(joined).toBe(created);
-      await expectCohabitantMembers(created, [ownerId, firstId, secondId]);
+      expect(joined.cohabitantId).toBe(created.cohabitantId);
+      await expectCohabitantMembers(
+        created.cohabitantId,
+        [ownerId, firstId, secondId]
+      );
     });
 
     it("発行後に発行者が別経路でグループに参加していれば、そのグループへ参加する", async () => {
@@ -232,7 +239,7 @@ describe("cohabitantInvitation E2E Tests", () => {
       );
 
       // Assert
-      expect(actual).toBe(cohabitantId);
+      expect(actual.cohabitantId).toBe(cohabitantId);
       await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
     });
 
@@ -293,8 +300,8 @@ describe("cohabitantInvitation E2E Tests", () => {
         new Date()
       );
 
-      // Assert
-      expect(actual).toBe(cohabitantId);
+      // Assert: メンバーは増えず、参加通知の対象にもならない
+      expect(actual).toEqual({cohabitantId, joined: false});
       await expectCohabitantMembers(cohabitantId, [ownerId, joinerId]);
     });
 
@@ -341,6 +348,27 @@ describe("cohabitantInvitation E2E Tests", () => {
       await expectCohabitantMembers(cohabitantId, [ownerId]);
     });
 
+    it("参加結果には通知に使う参加者の表示名が含まれる", async () => {
+      // Arrange
+      const ownerId = `named-owner-${testCounter}`;
+      const joinerId = `named-joiner-${testCounter}`;
+      const cohabitantId = `named-cohabitant-${testCounter}`;
+      await createTestAccount(ownerId, cohabitantId);
+      await createTestAccount(joinerId, undefined, undefined, false, "花子");
+      await createTestCohabitant(cohabitantId, [ownerId]);
+      const invitation = await issueInvitation(ownerId, new Date());
+
+      // Act
+      const actual = await joinCohabitantByInvitation(
+        joinerId,
+        invitation.token,
+        new Date()
+      );
+
+      // Assert
+      expect(actual).toEqual({cohabitantId, joined: true, userName: "花子"});
+    });
+
     it("存在しないトークンはinvitation-not-foundになる", async () => {
       // Arrange
       const joinerId = `unknown-token-joiner-${testCounter}`;
@@ -350,6 +378,69 @@ describe("cohabitantInvitation E2E Tests", () => {
       await expect(
         joinCohabitantByInvitation(joinerId, "unknown-token", new Date())
       ).rejects.toBeInstanceOf(InvitationError);
+    });
+  });
+
+  describe("notifyCohabitantJoined", () => {
+    it("発行者と既に参加済みのメンバー全員に参加通知が送られ、参加者本人には送られない", async () => {
+      // Arrange: 発行者 → 1人目が参加済み → 2人目が参加
+      const ownerId = `notify-join-owner-${testCounter}`;
+      const firstId = `notify-join-first-${testCounter}`;
+      const secondId = `notify-join-second-${testCounter}`;
+      await createTestAccount(ownerId, undefined, "token-owner");
+      await createTestAccount(firstId, undefined, "token-first");
+      await createTestAccount(
+        secondId,
+        undefined,
+        "token-second",
+        false,
+        "太郎"
+      );
+      const invitation = await issueInvitation(ownerId, new Date());
+      await joinCohabitantByInvitation(firstId, invitation.token, new Date());
+      const result = await joinCohabitantByInvitation(
+        secondId,
+        invitation.token,
+        new Date()
+      );
+      const {sender, sent} = makeRecordingSender();
+
+      // Act
+      await notifyCohabitantJoined(
+        result.cohabitantId,
+        secondId,
+        result.userName,
+        sender
+      );
+
+      // Assert
+      expect(sent).toHaveLength(1);
+      expect(sent[0].tokens).toHaveLength(2);
+      expect(sent[0].tokens).toEqual(
+        expect.arrayContaining(["token-owner", "token-first"])
+      );
+      expect(sent[0].notification.title).toBe("太郎がグループに参加しました");
+    });
+
+    it("参加者の表示名が無い場合は汎用的な文言で通知する", async () => {
+      // Arrange
+      const ownerId = `notify-noname-owner-${testCounter}`;
+      const joinerId = `notify-noname-joiner-${testCounter}`;
+      const cohabitantId = `notify-noname-cohabitant-${testCounter}`;
+      await createTestAccount(ownerId, cohabitantId, "token-owner");
+      await createTestAccount(joinerId);
+      await createTestCohabitant(cohabitantId, [ownerId, joinerId]);
+      const {sender, sent} = makeRecordingSender();
+
+      // Act
+      await notifyCohabitantJoined(cohabitantId, joinerId, undefined, sender);
+
+      // Assert
+      expect(sent).toHaveLength(1);
+      expect(sent[0].tokens).toEqual(["token-owner"]);
+      expect(sent[0].notification.title).toBe(
+        "新しいメンバーがグループに参加しました"
+      );
     });
   });
 });

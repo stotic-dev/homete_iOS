@@ -8,6 +8,11 @@ import {FirestoreCollections} from "./FirestoreCollections";
 import {AccountConverter, AccountFields} from "./Account";
 import {CohabitantConverter, CohabitantFields} from "./Cohabitant";
 import {InvitationConverter, InvitationFields} from "./Invitation";
+import {
+  NotificationSender,
+  NotifyResult,
+  notifyOtherCohabitants,
+} from "./CohabitantNotifier";
 
 /** 招待リンクの有効期間（24時間） */
 export const INVITATION_EXPIRATION_MS = 24 * 60 * 60 * 1000;
@@ -95,6 +100,21 @@ export async function issueInvitation(
   return {token, cohabitantId, expiresAt: expiresAt.getTime()};
 }
 
+/** 招待による参加の結果 */
+export interface JoinResult {
+    /** 参加したグループのID */
+    cohabitantId: string;
+    /**
+     * この呼び出しでメンバーが増えたか
+     *
+     * 同じグループへの再参加（リンクの再タップ）はfalse。
+     * 参加通知を送るかどうかの判断に使う。
+     */
+    joined: boolean;
+    /** 参加者の表示名（通知本文に使う） */
+    userName?: string;
+}
+
 /**
  * 招待トークンを使ってグループに参加する
  *
@@ -108,13 +128,13 @@ export async function issueInvitation(
  * @param {string} userId 参加する本人のユーザーID
  * @param {string} token 招待トークン
  * @param {Date} now 実行日時
- * @return {Promise<string>} 参加したグループのID
+ * @return {Promise<JoinResult>} 参加結果
  */
 export async function joinCohabitantByInvitation(
   userId: string,
   token: string,
   now: Date
-): Promise<string> {
+): Promise<JoinResult> {
   const db = getFirestore();
 
   return await db.runTransaction(async (transaction) => {
@@ -170,7 +190,11 @@ export async function joinCohabitantByInvitation(
     if (account.cohabitantId) {
       // 同じグループへの再参加は、リンクを再度開いただけなので成功扱いにする
       if (account.cohabitantId === targetCohabitantId) {
-        return account.cohabitantId;
+        return {
+          cohabitantId: account.cohabitantId,
+          joined: false,
+          userName: account.userName,
+        };
       }
 
       throw new InvitationError(
@@ -200,7 +224,11 @@ export async function joinCohabitantByInvitation(
         [AccountFields.COHABITANT_ID]: targetCohabitantId,
       });
 
-      return targetCohabitantId;
+      return {
+        cohabitantId: targetCohabitantId,
+        joined: true,
+        userName: account.userName,
+      };
     }
 
     // 発行者が退会している、または本人が自分の招待を開いた場合は参加先を作れない
@@ -229,6 +257,35 @@ export async function joinCohabitantByInvitation(
       [InvitationFields.COHABITANT_ID]: cohabitantId,
     });
 
-    return cohabitantId;
+    return {cohabitantId, joined: true, userName: account.userName};
   });
+}
+
+/**
+ * 参加者以外のメンバー全員へ、参加を知らせる通知を送る
+ *
+ * 発行者は共有した時点ではグループに何も起きないため、相手が参加したことを
+ * 通知で知らせる。すでに同じ招待から参加しているメンバーにも同様に知らせる。
+ * @param {string} cohabitantId 参加したグループのID
+ * @param {string} joinerId 参加者のユーザーID
+ * @param {string | undefined} joinerName 参加者の表示名
+ * @param {NotificationSender} send 送信処理（テスト用に差し替え可能）
+ * @return {Promise<NotifyResult | null>} 配信結果
+ */
+export async function notifyCohabitantJoined(
+  cohabitantId: string,
+  joinerId: string,
+  joinerName: string | undefined,
+  send?: NotificationSender
+): Promise<NotifyResult | null> {
+  const displayName = joinerName ?? "新しいメンバー";
+  return await notifyOtherCohabitants(
+    cohabitantId,
+    joinerId,
+    {
+      title: `${displayName}がグループに参加しました`,
+      body: "これから一緒に家事を管理できます",
+    },
+    send
+  );
 }
