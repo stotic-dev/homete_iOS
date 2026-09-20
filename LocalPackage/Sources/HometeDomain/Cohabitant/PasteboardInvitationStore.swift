@@ -70,10 +70,11 @@ public final class PasteboardInvitationStore {
     /// クリップボードを読み取り、招待リンクなら参加画面へ渡す
     /// - Note: 「招待リンクを確認する」のタップ時に呼ぶ。ペースト通知が出る
     public func readInvitation() async {
-        // 読み取り時点の世代を控えておき、同じ内容で再度案内しないようにする
-        handledChangeCount = await pasteboardClient.detectProbableWebURL().changeCount
+        let content = await pasteboardClient.readURL()
+        // 読み取った内容の世代を控えておき、同じ内容で再度案内しないようにする
+        handledChangeCount = content.changeCount
 
-        guard let url = await pasteboardClient.readURL(),
+        guard let url = content.url,
               let token = CohabitantInvitationLink.token(from: url) else {
             state = .notFound
             analyticsClient.log(.cohabitantInvitation(.pasteboardChecked(isSuggested: false)))

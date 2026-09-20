@@ -73,7 +73,7 @@ struct CohabitantJoinStoreTest {
     @Test("取得済みの場合は再度取得しない")
     func load_onlyOnce() async {
         // Arrange
-        let fetchCount = FetchCounter()
+        let fetchCount = TestCounter()
         let sut = CohabitantJoinStore(
             token: "test-token",
             cohabitantInvitationClient: .init(fetch: { _ in
@@ -81,9 +81,9 @@ struct CohabitantJoinStoreTest {
                 return .preview
             })
         )
+        await sut.load()
 
         // Act
-        await sut.load()
         await sut.load()
 
         // Assert
@@ -224,16 +224,6 @@ struct CohabitantJoinStoreTest {
 
         // Assert
         #expect(sut.state == .loading)
-    }
-
-}
-
-private actor FetchCounter {
-
-    private(set) var value = 0
-
-    func increment() {
-        value += 1
     }
 
 }

@@ -47,16 +47,16 @@ struct PasteboardInvitationStoreTest {
     @Test("案内を出したときだけAnalyticsイベントを送り、再確認では送らない")
     func checkIfNeeded_logsOnce() async {
         // Arrange
-        let logger = Box<[AnalyticsEvent]>(value: [])
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(detectProbableWebURL: {
                 .init(hasProbableWebURL: true, changeCount: 1)
             }),
             analyticsClient: .init(log: { event in logger.value.append(event) })
         )
+        await sut.checkIfNeeded()
 
         // Act
-        await sut.checkIfNeeded()
         await sut.checkIfNeeded()
 
         // Assert
@@ -71,11 +71,13 @@ struct PasteboardInvitationStoreTest {
     func readInvitation_found() async {
         // Arrange
         let pendingInvitationStore = PendingInvitationStore()
-        let logger = Box<[AnalyticsEvent]>(value: [])
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(
                 detectProbableWebURL: { .init(hasProbableWebURL: true, changeCount: 1) },
-                readURL: { URL(string: "https://homete-ios-dev-e3ef7.web.app/invite/test-token") }
+                readURL: {
+                    .init(url: URL(string: "https://homete-ios-dev-e3ef7.web.app/invite/test-token"), changeCount: 1)
+                }
             ),
             analyticsClient: .init(log: { event in logger.value.append(event) }),
             pendingInvitationStore: pendingInvitationStore
@@ -107,7 +109,7 @@ struct PasteboardInvitationStoreTest {
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(
                 detectProbableWebURL: { .init(hasProbableWebURL: true, changeCount: 1) },
-                readURL: { url }
+                readURL: { .init(url: url, changeCount: 1) }
             ),
             pendingInvitationStore: pendingInvitationStore
         )
@@ -121,13 +123,32 @@ struct PasteboardInvitationStoreTest {
         #expect(pendingInvitationStore.pendingToken == nil)
     }
 
+    @Test("処理済みとして控える世代は、存在確認ではなく読み取った内容のものを使う")
+    func readInvitation_recordsReadChangeCount() async {
+        // Arrange: 存在確認（世代1）の後にクリップボードが変わり、読み取り時には世代2になっている
+        let sut = PasteboardInvitationStore(
+            pasteboardClient: .init(
+                detectProbableWebURL: { .init(hasProbableWebURL: true, changeCount: 1) },
+                readURL: { .init(url: URL(string: "https://example.com/"), changeCount: 2) }
+            )
+        )
+        await sut.checkIfNeeded()
+        await sut.readInvitation()
+
+        // Act: 世代1の内容は未処理なので、再確認すると改めて案内が出る
+        await sut.checkIfNeeded()
+
+        // Assert
+        #expect(sut.state == .suggesting)
+    }
+
     @Test("読み取り済みの内容は、再確認しても案内を出し直さない")
     func checkIfNeeded_afterRead_sameContent() async {
         // Arrange
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(
                 detectProbableWebURL: { .init(hasProbableWebURL: true, changeCount: 1) },
-                readURL: { URL(string: "https://example.com/") }
+                readURL: { .init(url: URL(string: "https://example.com/"), changeCount: 1) }
             )
         )
         await sut.checkIfNeeded()
@@ -143,11 +164,11 @@ struct PasteboardInvitationStoreTest {
     @Test("読み取り後にクリップボードの内容が変わっていれば、改めて案内を出す")
     func checkIfNeeded_afterRead_changedContent() async {
         // Arrange
-        let changeCount = Box(value: 1)
+        let changeCount = TestBox(value: 1)
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(
                 detectProbableWebURL: { .init(hasProbableWebURL: true, changeCount: changeCount.value) },
-                readURL: { URL(string: "https://example.com/") }
+                readURL: { .init(url: URL(string: "https://example.com/"), changeCount: 1) }
             )
         )
         await sut.checkIfNeeded()
@@ -164,11 +185,11 @@ struct PasteboardInvitationStoreTest {
     @Test("読み取り後にクリップボードが空になっていれば、見つからなかった表示を引っ込める")
     func checkIfNeeded_afterRead_cleared() async {
         // Arrange
-        let detection = Box(value: PasteboardDetection(hasProbableWebURL: true, changeCount: 1))
+        let detection = TestBox(value: PasteboardDetection(hasProbableWebURL: true, changeCount: 1))
         let sut = PasteboardInvitationStore(
             pasteboardClient: .init(
                 detectProbableWebURL: { detection.value },
-                readURL: { URL(string: "https://example.com/") }
+                readURL: { .init(url: URL(string: "https://example.com/"), changeCount: 1) }
             )
         )
         await sut.checkIfNeeded()
@@ -180,20 +201,6 @@ struct PasteboardInvitationStoreTest {
 
         // Assert
         #expect(sut.state == .idle)
-    }
-
-}
-
-// MARK: - テスト用のヘルパー
-
-/// `@Sendable`なクロージャから、テスト中に差し替え・記録したい値を出し入れするための箱
-/// - Note: Storeが`@MainActor`で、クロージャもメインアクター上で順に呼ばれるため排他は不要
-private final class Box<Value>: @unchecked Sendable {
-
-    var value: Value
-
-    init(value: Value) {
-        self.value = value
     }
 
 }

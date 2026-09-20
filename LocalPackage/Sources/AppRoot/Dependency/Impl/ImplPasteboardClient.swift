@@ -43,14 +43,15 @@ private extension PasteboardClient {
 
     /// 内容を読み取るためシステムのペースト通知が出る。ユーザー操作起点でのみ呼ばれる前提
     @MainActor
-    static func readURL() -> URL? {
+    static func readURL() -> PasteboardContent {
         let pasteboard = UIPasteboard.general
+        let changeCount = pasteboard.changeCount
         if let url = pasteboard.url {
-            return url
+            return .init(url: url, changeCount: changeCount)
         }
         // 着地ページはテキストとしてコピーするため、文字列からもURLを組み立てる
-        guard let string = pasteboard.string?.trimmingCharacters(in: .whitespacesAndNewlines) else { return nil }
-        return URL(string: string)
+        let string = pasteboard.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return .init(url: string.flatMap { URL(string: $0) }, changeCount: changeCount)
     }
 
 }

@@ -15,14 +15,15 @@ public struct PasteboardClient: Sendable {
     /// クリップボードにURLらしきものがあるかを、内容を読まずに調べる
     public let detectProbableWebURL: @Sendable () async -> PasteboardDetection
     /// クリップボードの内容をURLとして読み取る
-    /// - Note: システムのペースト通知が出るため、ユーザー操作起点でのみ呼ぶ
-    public let readURL: @Sendable () async -> URL?
+    /// - Note: システムのペースト通知が出るため、ユーザー操作起点でのみ呼ぶ。
+    ///         読み取った内容の世代を一緒に返し、呼び出し側が「どの内容を処理したか」を控えられるようにする
+    public let readURL: @Sendable () async -> PasteboardContent
 
     public init(
         detectProbableWebURL: @Sendable @escaping () async -> PasteboardDetection = {
             .init(hasProbableWebURL: false, changeCount: 0)
         },
-        readURL: @Sendable @escaping () async -> URL? = { nil }
+        readURL: @Sendable @escaping () async -> PasteboardContent = { .init(url: nil, changeCount: 0) }
     ) {
         self.detectProbableWebURL = detectProbableWebURL
         self.readURL = readURL
@@ -47,6 +48,21 @@ public struct PasteboardDetection: Equatable, Sendable {
 
     public init(hasProbableWebURL: Bool, changeCount: Int) {
         self.hasProbableWebURL = hasProbableWebURL
+        self.changeCount = changeCount
+    }
+
+}
+
+/// クリップボードの読み取り結果
+public struct PasteboardContent: Equatable, Sendable {
+
+    /// 読み取ったURL（URLとして解釈できる内容が無ければnil）
+    public let url: URL?
+    /// 読み取った時点のクリップボードの世代
+    public let changeCount: Int
+
+    public init(url: URL?, changeCount: Int) {
+        self.url = url
         self.changeCount = changeCount
     }
 
