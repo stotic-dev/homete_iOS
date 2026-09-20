@@ -23,7 +23,8 @@ public extension AppDependencies {
         consentClient: liveConsentClient,
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,
-        notificationGuideStateClient: .liveValue
+        notificationGuideStateClient: .liveValue,
+        pasteboardClient: livePasteboardClient
     )
 
 }
@@ -32,8 +33,10 @@ public extension AppDependencies {
 private let livePurchaseClient: PurchaseClient = .liveValue
 private let liveConsentClient: ConsentClient = .liveValue
 private let liveNotificationPermissionClient: NotificationPermissionClient = .liveValue
+private let livePasteboardClient: PasteboardClient = .liveValue
 #else
 private let livePurchaseClient: PurchaseClient = .previewValue
 private let liveConsentClient: ConsentClient = .previewValue
 private let liveNotificationPermissionClient: NotificationPermissionClient = .previewValue
+private let livePasteboardClient: PasteboardClient = .previewValue
 #endif
