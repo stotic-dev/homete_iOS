@@ -212,7 +212,8 @@ public enum CohabitantJoinState {
 - `.task` で `store.load()` を呼ぶ
 - `.loading` → `Indicator` + 「招待を確認しています...」
 - `.confirming(summary)` → `summary.inviterName` があれば「**〇〇さん**のグループに参加しますか？」、無ければ「グループに参加しますか？」。本文は現状の文言を維持
-- Preview に `loading` / `confirming（名前あり／なし）` を追加する
+- 状態ごとの見た目は `SubViews/CohabitantJoinContent.swift`（`state` / `onTapJoin` / `onTapClose` を引数で受ける）に切り出し、Preview はこのコンポーネントで `confirming（名前あり／なし）` を撮る。`CohabitantJoinView` は表示直後に `.task` で取得を始めるため、画面自体を Preview すると取得完了前のスピナーが撮られてしまい（実際に確認画面の参照スナップショットがスピナーで上書きされた）、VRT の対象にしない
+- スピナーを含む `loading` / `processing` の Preview は `.prefireIgnored()` で VRT から除外する（回転角が撮影ごとに変わりフレーキーになるため。`LoadingIndicator` / `CohabitantRegistrationProcessingView` と同じ扱い）
 
 ### 6. iOS: クリップボード補助
 
@@ -337,7 +338,8 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 | 新規（Impl） | `AppRoot/Dependency/Impl/ImplPasteboardClient.swift` | `UIPasteboard` を使った `liveValue` |
 | 修正（Impl） | `AppRoot/Dependency/Impl/ImplCohabitantInvitationClient.swift` | `fetchcohabitantinvitation` の呼び出し |
 | 修正（AppRoot） | `AppRoot/RootView.swift` | `linkOpened(source:)` の送信 |
-| 修正（View） | `Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift` | ローディング表示・招待者名の表示・Preview |
+| 修正（View） | `Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift` | Store 生成と取得開始（画面層。Preview なし） |
+| 新規（View） | `Features/HomeFeature/JoinCohabitantView/SubViews/CohabitantJoinContent.swift` | 状態ごとの見た目（ローディング・招待者名の表示）・Preview |
 | 修正（View） | `Features/HomeFeature/HomeView/HomeView.swift` | `PasteboardInvitationStore` の生成 |
 | 新規（View） | `Features/HomeFeature/HomeView/SubViews/PasteboardInvitationBanner.swift` | クリップボード補助の案内バナー・Preview |
 | 修正（View） | `Features/HomeFeature/HomeView/SubViews/NotRegisteredContent.swift` | バナーの配置（状態は引数で受ける）・Preview |
@@ -370,7 +372,7 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 - [x] Domain: `CohabitantInvitationLink` の `openExternalBrowser=1` 付与・カスタムスキーム解析・`source(of:)` + テスト更新
 - [x] Domain: `CohabitantInvitationSummary` / `CohabitantInvitationClient.fetch` / `ImplCohabitantInvitationClient`
 - [x] Domain: `CohabitantJoinState.loading` / `CohabitantJoinStore.load()` + テスト更新
-- [x] View: `CohabitantJoinView` のローディング・招待者名表示 + Preview
+- [x] View: `CohabitantJoinView` のローディング・招待者名表示 + `CohabitantJoinContent` の Preview
 - [x] Domain: `PasteboardClient` / `PasteboardDetection` / `AppDependencies` 登録
 - [x] Impl: `ImplPasteboardClient`（`UIPasteboard`）
 - [x] Domain: `PasteboardInvitationStore` + テスト
