@@ -33,6 +33,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 #if DEBUG
                 case .debugOnboarding:
                     DebugOnboardingScreen()
+                case .debugCohabitantRegistration:
+                    DebugCohabitantRegistrationScreen()
                 #endif
                 }
             })

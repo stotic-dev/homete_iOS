@@ -18,6 +18,8 @@ public enum AppRoute: Hashable, Sendable {
     #if DEBUG
     /// オンボーディング（アカウント登録→Paywall）の確認用デバッグ画面
     case debugOnboarding
+    /// P2Pでの同居人登録の確認用デバッグ画面
+    case debugCohabitantRegistration
     #endif
 
 }
