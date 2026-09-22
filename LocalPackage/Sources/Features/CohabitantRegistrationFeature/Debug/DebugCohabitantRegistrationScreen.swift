@@ -24,14 +24,16 @@ public struct DebugCohabitantRegistrationScreen: View {
     public init() {}
 
     public var body: some View {
-        ZStack(alignment: .bottom) {
-            CohabitantRegistrationView()
-                // Firestoreへの書き込み・Analyticsの送信を実環境に飛ばさないため、
-                // 依存をまるごとpreviewValueにした上で、記録用のモックだけ差し込む
-                .environment(\.appDependencies, .init(cohabitantClient: log.mockCohabitantClient))
-                .environment(AccountStore(accountInfoClient: log.mockAccountInfoClient(account), account: account))
-            DebugCohabitantRegistrationLogView(log: log)
-        }
+        CohabitantRegistrationView()
+            // Firestoreへの書き込み・Analyticsの送信を実環境に飛ばさないため、
+            // 依存をまるごとpreviewValueにした上で、記録用のモックだけ差し込む
+            .environment(\.appDependencies, .init(cohabitantClient: log.mockCohabitantClient))
+            .environment(AccountStore(accountInfoClient: log.mockAccountInfoClient(account), account: account))
+            // 重ねて表示すると画面下部の「登録を開始する」ボタンを覆ってタップできなくなるため、
+            // 登録画面の下に領域を確保して並べる
+            .safeAreaInset(edge: .bottom) {
+                DebugCohabitantRegistrationLogView(log: log)
+            }
     }
 
 }
