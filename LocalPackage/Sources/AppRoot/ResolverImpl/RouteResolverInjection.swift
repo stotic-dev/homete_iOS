@@ -2,6 +2,7 @@
 //  RouteResolverInjection.swift
 //
 
+import CohabitantRegistrationFeature
 import HomeFeature
 import HometeDomain
 import HometeInfrastructure

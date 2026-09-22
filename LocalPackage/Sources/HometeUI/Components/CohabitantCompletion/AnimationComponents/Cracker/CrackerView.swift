@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/23.
 //
 
-import HometeUI
 import SwiftUI
 
 /// クラッカーが弾けて紙吹雪と紙テープが飛び散る演出

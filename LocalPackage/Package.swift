@@ -14,6 +14,7 @@ let package = Package(
         lib("AuthFeature"),
         lib("SettingFeature"),
         lib("HomeFeature"),
+        lib("CohabitantRegistrationFeature"),
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
@@ -65,6 +66,7 @@ let package = Package(
         feature(name: "AuthFeature"),
         feature(name: "SettingFeature"),
         feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
+        feature(name: "CohabitantRegistrationFeature"),
         feature(name: "HouseworkFeature"),
         feature(name: "ContributionFeature"),
 
@@ -118,6 +120,7 @@ let package = Package(
                 "AuthFeature",
                 "SettingFeature",
                 "HomeFeature",
+                "CohabitantRegistrationFeature",
                 "HouseworkFeature",
                 "HouseworkTemplateFeature",
                 "ContributionFeature",
