@@ -2,11 +2,8 @@ import MultipeerConnectivity
 
 struct ConfirmedRegistrationPeers: Equatable {
 
-    private var peers: Set<MCPeerID>
-
-    init(peers: Set<MCPeerID>) {
-        self.peers = peers
-    }
+    /// 登録開始を宣言済みのピア
+    private(set) var peers: Set<MCPeerID>
 
     mutating func addPeer(_ peer: MCPeerID) {
         peers.insert(peer)

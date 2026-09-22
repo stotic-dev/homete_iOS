@@ -88,7 +88,7 @@ private extension CohabitantRegistrationProcessingLeader {
             if let accountId = role.accountId {
                 // フォロワーからのメッセージであれば、
                 // 登録時に使用するアカウントIDをオンメモリに保持しておく
-                print("dispatchReceivedMessage share accountId")
+                print("received preRegistration(follower) from: \(sender.displayName)")
                 cohabitantsAccountId.insert(accountId)
                 confirmedRolePeers.insert(sender)
             } else {
@@ -99,6 +99,7 @@ private extension CohabitantRegistrationProcessingLeader {
         }
         // フォロワーからの同居人登録完了メッセージ受信時は、保持している完了したメンバーに加える
         else if data.isComplete ?? false {
+            print("received complete from: \(sender.displayName)")
             completedRegistrationPeers.insert(sender)
         }
     }
@@ -124,6 +125,7 @@ private extension CohabitantRegistrationProcessingLeader {
                     message.encodedData(),
                     to: connectedPeers
                 )
+                print("sent shareCohabitantId to: \(connectedPeers.map(\.displayName))")
             } catch {
                 // エラーアラートを表示
                 isPresentingFailedRegistrationIdAlert = true
@@ -146,6 +148,7 @@ private extension CohabitantRegistrationProcessingLeader {
                     message.encodedData(),
                     to: connectedPeers
                 )
+                print("sent complete to: \(connectedPeers.map(\.displayName))")
                 registrationState = .completed
             } catch {
                 isPresentingFailedRegistrationIdAlert = true

@@ -57,15 +57,18 @@ private extension CohabitantRegistrationProcessingFollower {
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, sender: MCPeerID) {
         // 登録前メッセージ受信時は、役割を確認し自身の役割に応じた処理を行う
         if data.memberRole?.isLeader ?? false {
+            print("received preRegistration(lead) from: \(sender.displayName)")
             onFindLeader(sender)
         }
         // 同居人IDの共有メッセージ受信時は、
         // 同居人IDを自分のアカウントに保存してから登録完了通知をリードデバイスに通知
         else if let cohabitantId = data.cohabitantId {
-            onReceiveCohabitantId(cohabitantId)
+            print("received shareCohabitantId from: \(sender.displayName)")
+            onReceiveCohabitantId(cohabitantId, from: sender)
         }
         // 登録完了通知を受信したら、状態を登録完了にする
         else if data.isComplete ?? false {
+            print("received complete from: \(sender.displayName)")
             registrationState = .completed
         }
     }
@@ -80,7 +83,13 @@ private extension CohabitantRegistrationProcessingFollower {
         }
     }
 
-    func onReceiveCohabitantId(_ cohabitantId: String) {
+    func onReceiveCohabitantId(_ cohabitantId: String, from sender: MCPeerID) {
+        // 同居人IDを共有してくるのはリードデバイスだけなので、送信元をリードデバイスとして扱う。
+        // リードデバイスは全員の役割が揃った時点で役割の通知をやめるため、こちらの役割通知が
+        // 相手の最初の通知より先に届くと、役割の通知だけが一度も来ないまま同居人IDが届くことがある
+        if leadPeer == nil {
+            onFindLeader(sender)
+        }
         Task {
             do {
                 // 保存が済む前に完了を伝えると、保存に失敗しても全デバイスが完了扱いになるため、
@@ -95,7 +104,10 @@ private extension CohabitantRegistrationProcessingFollower {
     }
 
     func sendCompleteMessageIfNeeded() {
-        guard let leadPeer else { return }
+        guard let leadPeer else {
+            print("skip sending complete. lead peer is unknown")
+            return
+        }
 
         let message = CohabitantRegistrationMessage(type: .complete)
         // 送信失敗時は切断され、connectedPeersの変化をProcessingViewが接続エラーとして拾う
@@ -103,6 +115,7 @@ private extension CohabitantRegistrationProcessingFollower {
             message.encodedData(),
             to: [leadPeer]
         )
+        print("sent complete to: \(leadPeer.displayName)")
     }
 
 }

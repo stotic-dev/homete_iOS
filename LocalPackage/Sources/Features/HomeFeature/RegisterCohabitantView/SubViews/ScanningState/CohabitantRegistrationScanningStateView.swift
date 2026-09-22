@@ -46,10 +46,15 @@ struct CohabitantRegistrationScanningStateView: View {
                 CohabitantRegistrationInitialStateView(onTapInvite: inviteAction)
                     .transition(.opacity)
                     .onAppear {
+                        // 接続が全て切れたら宣言は無効になるため、自分・相手とも最初からやり直す
                         isConfirmedReadyRegistration = false
+                        confirmedReadyRegistrationPeers = .init(peers: [])
                     }
             } else {
-                CohabitantRegistrationPeersListView { isOK in
+                CohabitantRegistrationPeersListView(
+                    confirmedPeers: confirmedReadyRegistrationPeers.peers,
+                    isConfirmed: isConfirmedReadyRegistration
+                ) { isOK in
                     onConfirmMembers(isOK: isOK)
                 }
                 .transition(.opacity)
@@ -145,8 +150,12 @@ private extension CohabitantRegistrationScanningStateView {
                 data.encodedData(),
                 to: connectedPeers
             )
+            print("sent fixedMember(isOK: \(isOK)) to: \(connectedPeers.map(\.displayName))")
             if isOK {
                 isConfirmedReadyRegistration = true
+            } else {
+                // 相手側はキャンセルを受け取ると宣言をやり直すため、受け取っていた宣言も忘れる
+                confirmedReadyRegistrationPeers = .init(peers: [])
             }
         } catch {
             isPresentingFailedSendAlert = true
@@ -155,8 +164,10 @@ private extension CohabitantRegistrationScanningStateView {
 
     func dispatchReceivedMessage(_ data: CohabitantRegistrationMessage, _ sender: MCPeerID) {
         if let isFixedMember = data.isFixedMember {
+            print("received fixedMember(isOK: \(isFixedMember)) from: \(sender.displayName)")
             if isFixedMember {
                 // 登録メンバー確定メッセージを受信し、確定であれば確定メンバーに含める
+                // （相手が待っていることはメンバー一覧側の表示で伝える）
                 confirmedReadyRegistrationPeers.addPeer(sender)
             } else {
                 // 登録メンバーが拒否した場合は、再度メンバーを選び直す
@@ -166,18 +177,25 @@ private extension CohabitantRegistrationScanningStateView {
         }
     }
 
+    /// 自分が登録開始を宣言済みで、かつ接続中の全メンバーの宣言が届いている場合だけ登録処理に移行する
+    /// - Note: 待っている間はスピナーを出さない。全画面のスピナーで覆うと、
+    ///         相手の宣言だけが先に届いた側で「登録を開始する」を押せなくなり、お互いに待ち続けてしまう
     func transitionToProcessingStateIfNeeded() {
-        loadingState.isLoading = true
-
-        // 自分が登録ボタンタップ済みで、かつ全てのメンバーが登録ボタンタップ済みの場合に、
-        // 登録処理に移行する
         guard isConfirmedReadyRegistration,
               let myPeerID,
               let isLeadPeer = confirmedReadyRegistrationPeers.isLeadPeer(
                   connectedPeers: connectedPeers,
                   myPeerID: myPeerID
-              ) else { return }
+              ) else {
+            print(
+                "waiting for peers. isConfirmed: \(isConfirmedReadyRegistration), "
+                    + "confirmed: \(confirmedReadyRegistrationPeers.peers.map(\.displayName)), "
+                    + "connected: \(connectedPeers.map(\.displayName))"
+            )
+            return
+        }
 
+        print("all peers confirmed. isLead: \(isLeadPeer)")
         registrationState = .processing(isLead: isLeadPeer)
     }
 

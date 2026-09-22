@@ -25,7 +25,8 @@ final class P2PSessionDelegate: NSObject, MCSessionDelegate {
     }
 
     func session(_: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        print("did change session state: \(state)")
+        // rawValue: 0=notConnected, 1=connecting, 2=connected
+        print("did change session state: \(state.rawValue), peer: \(peerID.displayName)")
         if state == .connected {
             print("connected to: \(peerID.displayName)")
             continuation.yield(.connected(peerID: peerID))
