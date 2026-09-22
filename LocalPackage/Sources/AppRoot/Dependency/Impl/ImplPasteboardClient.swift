@@ -26,8 +26,10 @@ private extension PasteboardClient {
 
         // detectPatternsにはasync版が無いため、completionHandler版を包む
         // 検出結果（KeyPathの集合）はSendableでないため、continuationに渡す前にBoolへ畳む
+        // 完了ハンドラはUIKitがバックグラウンドキューで呼ぶため@Sendableにし、
+        // 外側の@MainActor分離を引き継がせない（引き継ぐと実行時のexecutorチェックでクラッシュする）
         let hasProbableWebURL = await withCheckedContinuation { continuation in
-            pasteboard.detectPatterns(for: [\.probableWebURL]) { result in
+            pasteboard.detectPatterns(for: [\.probableWebURL]) { @Sendable result in
                 switch result {
                 case let .success(patterns):
                     continuation.resume(returning: patterns.contains(\.probableWebURL))
