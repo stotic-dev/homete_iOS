@@ -9,7 +9,7 @@
 /// 各端末の流れは次の通り。
 ///
 /// 1. scanning: 接続中の全メンバーが「登録を開始する」を宣言したら、`displayName`が最小のメンバーをリーダーにして処理へ進む
-/// 2. processing: 全員の役割が揃うまで自分の役割を定期送信する。
+/// 2. processing: 相手からの返答が返ってくるまで自分の役割を定期送信する。
 ///    - リーダー: フォロワーのアカウントIDが揃ったら同居人レコードを作成して同居人IDを配り、
 ///      全フォロワーの保存完了を待ってから自分のアカウントに保存し、完了を通知する
 ///    - フォロワー: 同居人IDを受け取ったら自分のアカウントに保存し、リーダーへ完了を通知する
@@ -61,7 +61,7 @@ public struct CohabitantRegistrationStateMachine: Sendable {
 
         case .tick:
             guard case let .processing(processing) = state.phase,
-                  processing.confirmedRolePeers != state.connectedPeers else { return [] }
+                  needsRoleNotification(processing, connectedPeers: state.connectedPeers) else { return [] }
             return [.send(.init(type: .preRegistration(role: role(of: processing))), to: state.connectedPeers)]
 
         case .cohabitantRegistered, .cohabitantRegistrationFailed, .cohabitantIdSaved, .cohabitantIdSaveFailed:
@@ -298,6 +298,22 @@ private extension CohabitantRegistrationStateMachine {
         let isLead = ([myPeerID] + state.connectedPeers).min() == myPeerID
         let role: State.Role = isLead ? .lead(.init()) : .follower(.init())
         state.phase = .processing(.init(role: role))
+    }
+
+    /// 自分の役割を送り続ける必要があるかどうか
+    ///
+    /// 相手の役割が届いたことは、自分の役割が相手に届いたことを意味しない。
+    /// 相手が登録処理に入る前に送った役割は捨てられるため、停止の条件は「相手からの返答が来たか」で判断する。
+    /// - リーダー: フォロワーの役割（＝アカウントID）が全員分揃えば、あとは同居人IDを配るだけなので止めてよい
+    /// - フォロワー: 同居人IDの共有はリーダーが自分の役割を受け取った証拠なので、それが済むまで送り続ける
+    func needsRoleNotification(_ processing: State.Processing, connectedPeers: Set<PeerID>) -> Bool {
+        switch processing.role {
+        case .lead:
+            processing.confirmedRolePeers != connectedPeers
+
+        case let .follower(follower):
+            follower.registeredCohabitantId == nil
+        }
     }
 
     /// 他デバイスへ通知する役割

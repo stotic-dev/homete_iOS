@@ -97,6 +97,33 @@ struct CohabitantRegistrationSimulationTests {
         #expect(simulation.savedCohabitantIds == expectedSaved)
     }
 
+    @Test("リーダーの役割通知だけが先に届いても、フォロワーは自分の役割を送り直して完了する")
+    func twoDevices_leadRoleArrivesFirst() {
+        // Arrange
+        var simulation = Simulation(peers: [Self.peerA, Self.peerB])
+        let operations: [(PeerID, CohabitantRegistrationEvent)] = [
+            (Self.peerB, .userConfirmedMembers(isOK: true)),
+            (Self.peerA, .userConfirmedMembers(isOK: true)),
+            // 役割の通知が同時ではなくリーダー側だけ先に届くと、フォロワーは相手の役割を知った状態で
+            // 最初の定期送信を迎える。ここで自分の役割を送るのをやめると、両者が待ち合って進まなくなる
+            (Self.peerA, .tick),
+        ]
+        let expectedStates: [PeerID: State] = [
+            Self.peerA: .init(phase: .completed, connectedPeers: [Self.peerB]),
+            Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA]),
+        ]
+        let expectedRegistered = [CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account"])]
+        let expectedSaved = [Self.peerA: Self.cohabitantId, Self.peerB: Self.cohabitantId]
+
+        // Act
+        simulation.run(operations)
+
+        // Assert
+        #expect(simulation.states == expectedStates)
+        #expect(simulation.registeredCohabitants == expectedRegistered)
+        #expect(simulation.savedCohabitantIds == expectedSaved)
+    }
+
     @Test("片方がキャンセルすると相手はアラートを閉じて宣言をやり直し、両者が再度宣言すれば完了する")
     func twoDevices_cancelThenRetry() {
         // Arrange

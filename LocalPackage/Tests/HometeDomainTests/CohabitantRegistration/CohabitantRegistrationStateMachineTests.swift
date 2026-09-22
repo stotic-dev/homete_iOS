@@ -391,11 +391,56 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         )
     }
 
-    @Test("全員の役割が揃っていれば、定期送信のタイミングでも何も送らない")
-    func tick_allConfirmed() {
+    @Test("リーダーは全員の役割が揃っていれば、定期送信のタイミングでも何も送らない")
+    func tick_lead_allConfirmed() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .tick)
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
+    }
+
+    @Test("フォロワーはリーダーの役割を受け取っていても、同居人IDが届くまでは自分の役割を送り続ける")
+    func tick_follower_leadRoleReceivedButNotRegistered() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(
+                .init(role: .follower(.init(leadPeer: Tests.peerB)), confirmedRolePeers: [Tests.peerB])
+            ),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .tick)
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(
+            effects == [
+                .send(.init(type: .preRegistration(role: .follower(accountId: Tests.myAccountId))), to: [Tests.peerB]),
+            ]
+        )
+    }
+
+    @Test("フォロワーは同居人IDの保存まで済んでいれば、定期送信のタイミングでも何も送らない")
+    func tick_follower_registered() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(
+                .init(
+                    role: .follower(.init(leadPeer: Tests.peerB, registeredCohabitantId: Tests.cohabitantId)),
+                    confirmedRolePeers: [Tests.peerB]
+                )
+            ),
             connectedPeers: [Tests.peerB]
         )
         let expectedState = state
