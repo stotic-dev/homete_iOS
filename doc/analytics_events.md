@@ -282,17 +282,17 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `cohabitant_invitation`
 
-招待リンク（Universal Link）による同居人グループの招待・参加における行動。
+招待リンク（Universal Link / カスタムURLスキーム / クリップボード）による同居人グループの招待・参加における行動。
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `SettingView` / `RootView` / `CohabitantJoinStore` |
+| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `SettingView` / `RootView` / `CohabitantJoinStore` / `PasteboardInvitationStore` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `issue` / `open` / `join` | 招待リンクの発行 / 起動 / 参加のどれか |
-| `step` | — | `cohabitant_registration` / `setting` | 発行を開始した画面。画面を起点とする`issue`のみ付与 |
-| `result` | — | `success` / `already_member` / `failure` / `invalid_link` / `expired` / `already_joined` | 結果を伴う行動のみ付与 |
+| `action` | ○ | `issue` / `open` / `pasteboard_check` / `join` | 招待リンクの発行 / 起動 / クリップボードの確認 / 参加のどれか |
+| `step` | — | `cohabitant_registration` / `setting` / `universal_link` / `custom_scheme` / `pasteboard` | 発行を開始した画面（`issue`）、または起動の経路（`open`）。画面・経路を起点とする行動のみ付与 |
+| `result` | — | `success` / `already_member` / `failure` / `invalid_link` / `expired` / `already_joined` / `suggested` / `not_found` | 結果を伴う行動のみ付与 |
 
 送信されるパターンと、その送信タイミング:
 
@@ -300,13 +300,20 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|---|---|
 | `issue` | `cohabitant_registration` | `success` / `failure` | 同居人登録画面の「リンクで招待」をタップし、招待トークンの発行が完了した |
 | `issue` | `setting` | `success` / `failure` | 設定画面の「メンバー招待」をタップし、招待トークンの発行が完了した |
-| `open` | — | — | 招待リンクからアプリが起動した（ログイン前も含む） |
+| `open` | `universal_link` | — | Universal Link（`https`）でアプリが起動した（ログイン前も含む） |
+| `open` | `custom_scheme` | — | 着地ページの「アプリで開く」（カスタムURLスキーム）でアプリが起動した |
+| `open` | `pasteboard` | — | クリップボードから招待リンクを読み取れた（参加待ちのトークンとして渡した） |
+| `pasteboard_check` | — | `suggested` | グループ未所属のダッシュボードで、クリップボードにURLらしきものがあり「招待リンクを確認する」の案内を表示した |
+| `pasteboard_check` | — | `not_found` | 案内をタップして読み取ったが、招待リンクではなかった |
 | `join` | — | `success` | 招待リンクからグループへの参加が完了した |
 | `join` | — | `already_member` | すでに参加済みのグループの招待リンクを開いた（参加は発生せず、`cohabitant_registration` の `completed` は送らない） |
-| `join` | — | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外） |
+| `join` | — | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外）。参加確認画面を開いた直後の招待情報の取得で失敗した場合も含む |
 
 **分析での使い方:** `issue(success)` を分母に `open` → `join(success)` を追うと招待リンクの成立率になる。
-`step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
+`issue` の `step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
+`open` の `step` で分けると、Universal Link が発火しない WebView（LINE 等）からどの程度「アプリで開く」経由で到達しているか、
+未インストールからクリップボード経由で参加まで辿り着いたユーザーがどの程度いるかが分かる。
+`pasteboard_check(suggested)` に対する `open(pasteboard)` の比率が低ければ、無関係な URL で案内が出過ぎている（`detectPatterns` は URL 全般に反応する）ことを示す。
 `join` の失敗内訳を見ると、有効期限（24時間）が短すぎないか、別グループ参加済みのユーザーがどの程度リンクを踏んでいるかが分かる。
 `join(already_member)` は自分のグループのリンクを開き直した回数で、参加の成立率には含めない。
 

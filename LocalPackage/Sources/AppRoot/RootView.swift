@@ -115,14 +115,14 @@ public extension RootView {
 
 private extension RootView {
 
-    /// Universal Linkを受け取る
+    /// 招待リンク（Universal Link / カスタムURLスキーム）を受け取る
     /// - Note: ログイン前にも開かれるため、ここではトークンを退避するだけにして、
     ///         ログイン後に`AppTabView`が参加画面を表示する
     func onOpenURL(_ url: URL) {
-        guard let token = CohabitantInvitationLink.token(from: url) else { return }
+        guard let link = CohabitantInvitationLink.parse(url) else { return }
 
-        pendingInvitationStore.store(token)
-        analyticsClient.log(.cohabitantInvitation(.linkOpened))
+        pendingInvitationStore.store(link.token)
+        analyticsClient.log(.cohabitantInvitation(.linkOpened(source: link.source)))
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {

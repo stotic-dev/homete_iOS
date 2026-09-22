@@ -9,6 +9,7 @@ import {FirestoreCollections} from "../../src/models/FirestoreCollections";
 import {
   INVITATION_EXPIRATION_MS,
   InvitationError,
+  fetchInvitation,
   issueInvitation,
   joinCohabitantByInvitation,
   notifyCohabitantJoined,
@@ -124,6 +125,88 @@ describe("cohabitantInvitation E2E Tests", () => {
       await expect(
         issueInvitation(userId, new Date())
       ).rejects.toMatchObject({code: "account-not-found"});
+    });
+  });
+
+  describe("fetchInvitation", () => {
+    it("招待者名と招待先グループを取得できる", async () => {
+      // Arrange
+      const ownerId = `fetch-owner-${testCounter}`;
+      const cohabitantId = `fetch-cohabitant-${testCounter}`;
+      const now = new Date("2026-09-01T00:00:00.000Z");
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId, cohabitantId, undefined, false, "たろう");
+      await createTestCohabitant(cohabitantId, [ownerId]);
+      const invitation = await issueInvitation(ownerId, now);
+
+      // Act
+      const actual = await fetchInvitation(invitation.token, now);
+
+      // Assert
+      expect(actual).toEqual({
+        inviterName: "たろう",
+        cohabitantId,
+        expiresAt: invitation.expiresAt,
+      });
+    });
+
+    it("招待者が名前未設定・グループ未所属ならどちらもnullになる", async () => {
+      // Arrange
+      const ownerId = `fetch-anonymous-${testCounter}`;
+      const now = new Date("2026-09-01T00:00:00.000Z");
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId);
+      const invitation = await issueInvitation(ownerId, now);
+
+      // Act
+      const actual = await fetchInvitation(invitation.token, now);
+
+      // Assert
+      expect(actual.inviterName).toBeNull();
+      expect(actual.cohabitantId).toBeNull();
+    });
+
+    it("発行後に招待者がグループへ所属した場合はそのグループを返す", async () => {
+      // Arrange
+      const ownerId = `fetch-late-owner-${testCounter}`;
+      const cohabitantId = `fetch-late-cohabitant-${testCounter}`;
+      const now = new Date("2026-09-01T00:00:00.000Z");
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId);
+      const invitation = await issueInvitation(ownerId, now);
+      const ownerRef = await fetchAccountRef(ownerId);
+      await ownerRef?.update({cohabitantId});
+      await createTestCohabitant(cohabitantId, [ownerId]);
+
+      // Act
+      const actual = await fetchInvitation(invitation.token, now);
+
+      // Assert
+      expect(actual.cohabitantId).toBe(cohabitantId);
+    });
+
+    it("存在しないトークンはinvitation-not-foundになる", async () => {
+      // Act & Assert
+      await expect(
+        fetchInvitation(`missing-token-${testCounter}`, new Date())
+      ).rejects.toMatchObject({code: "invitation-not-found"});
+    });
+
+    it("期限切れの招待はinvitation-expiredになる", async () => {
+      // Arrange
+      const ownerId = `fetch-expired-owner-${testCounter}`;
+      const now = new Date("2026-09-01T00:00:00.000Z");
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId);
+      const invitation = await issueInvitation(ownerId, now);
+      await overwriteExpiresAt(invitation.token, now);
+
+      // Act & Assert
+      const error = await fetchInvitation(invitation.token, now).catch(
+        (e) => e
+      );
+      expect(error).toBeInstanceOf(InvitationError);
+      expect(error.code).toBe("invitation-expired");
     });
   });
 

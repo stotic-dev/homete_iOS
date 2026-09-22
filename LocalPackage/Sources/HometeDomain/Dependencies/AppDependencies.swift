@@ -24,6 +24,7 @@ public struct AppDependencies: Sendable {
     public let mobileAdsClient: MobileAdsClient
     public let notificationPermissionClient: NotificationPermissionClient
     public let notificationGuideStateClient: NotificationGuideStateClient
+    public let pasteboardClient: PasteboardClient
     public let houseworkManager: HouseworkManager
     /// 広告の同意取得（ATT含む）とMobileAdsの初期化を行うUseCase
     public let adsSetupUseCase: AdsSetupUseCase
@@ -45,7 +46,8 @@ public struct AppDependencies: Sendable {
         consentClient: ConsentClient = .previewValue,
         mobileAdsClient: MobileAdsClient = .previewValue,
         notificationPermissionClient: NotificationPermissionClient = .previewValue,
-        notificationGuideStateClient: NotificationGuideStateClient = .previewValue
+        notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
+        pasteboardClient: PasteboardClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
@@ -62,6 +64,7 @@ public struct AppDependencies: Sendable {
         self.mobileAdsClient = mobileAdsClient
         self.notificationPermissionClient = notificationPermissionClient
         self.notificationGuideStateClient = notificationGuideStateClient
+        self.pasteboardClient = pasteboardClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
         notificationPermissionUseCase = .init(

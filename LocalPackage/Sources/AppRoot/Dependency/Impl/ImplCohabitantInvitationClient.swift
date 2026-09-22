@@ -16,6 +16,13 @@ extension CohabitantInvitationClient {
         } catch {
             throw convert(error)
         }
+    } fetch: { token in
+        do {
+            let result = try await FunctionsService.call("fetchcohabitantinvitation", parameters: ["token": token])
+            return try makeSummary(from: result.data)
+        } catch {
+            throw convert(error)
+        }
     } join: { token in
         do {
             let result = try await FunctionsService.call("joincohabitant", parameters: ["token": token])
@@ -46,6 +53,21 @@ private extension CohabitantInvitationClient {
             token: token,
             // 発行者がグループ未所属の場合はnull（NSNull）で返るため、Stringにキャストできなければnil
             cohabitantId: response["cohabitantId"] as? String,
+            // Functions側はepochミリ秒で返すため秒に直す
+            expiresAt: Date(timeIntervalSince1970: expiresAtMilliseconds / 1000)
+        )
+    }
+
+    /// callableのレスポンスから招待の概要を組み立てる
+    static func makeSummary(from data: Any) throws -> CohabitantInvitationSummary {
+        guard let response = data as? [String: Any],
+              let expiresAtMilliseconds = response["expiresAt"] as? Double else {
+            throw DomainError.other
+        }
+
+        return CohabitantInvitationSummary(
+            // 招待者の名前が無い場合はnull（NSNull）で返るため、Stringにキャストできなければnil
+            inviterName: response["inviterName"] as? String,
             // Functions側はepochミリ秒で返すため秒に直す
             expiresAt: Date(timeIntervalSince1970: expiresAtMilliseconds / 1000)
         )

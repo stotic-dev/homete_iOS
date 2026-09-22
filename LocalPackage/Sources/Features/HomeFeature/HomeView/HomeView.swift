@@ -18,11 +18,16 @@ public struct HomeView: View {
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
     @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
     @Environment(\.appDependencies.adsSetupUseCase) var adsSetupUseCase
+    @Environment(\.appDependencies.pasteboardClient) var pasteboardClient
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkStoragePolicy) var storagePolicy
+    @Environment(\.scenePhase) var scenePhase
+    @Environment(PendingInvitationStore.self) var pendingInvitationStore
 
     @State var isShowCohabitantRegistrationModal = false
+    @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var isShowSetting = false
     @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
@@ -114,10 +119,23 @@ private extension HomeView {
 
     func notRegisteredContent() -> some View {
         NotRegisteredContent(
-            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal,
+            pasteboardInvitationState: pasteboardInvitationStore?.state ?? .idle,
+            onTapCheckPasteboard: {
+                Task {
+                    await pasteboardInvitationStore?.readInvitation()
+                }
+            }
         )
         .task {
             await didAppearNotRegisteredContent()
+        }
+        // 着地ページでコピーしてからApp Store経由で戻ってくるため、復帰のたびにクリップボードを確認し直す
+        .onChange(of: scenePhase) {
+            guard scenePhase == .active else { return }
+            Task {
+                await pasteboardInvitationStore?.checkIfNeeded()
+            }
         }
     }
 
@@ -154,6 +172,14 @@ private extension HomeView {
 
     func didAppearNotRegisteredContent() async {
         await cohabitantStore?.removeSnapshotListener()
+        if pasteboardInvitationStore == nil {
+            pasteboardInvitationStore = .init(
+                pasteboardClient: pasteboardClient,
+                analyticsClient: analyticsClient,
+                pendingInvitationStore: pendingInvitationStore
+            )
+        }
+        await pasteboardInvitationStore?.checkIfNeeded()
     }
 
 }

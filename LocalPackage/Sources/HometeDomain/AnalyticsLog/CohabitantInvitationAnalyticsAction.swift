@@ -14,7 +14,11 @@ public enum CohabitantInvitationAnalyticsAction: Equatable, Sendable {
     ///   - isSuccess: 発行に成功したかどうか
     case issued(screen: CohabitantInvitationIssueScreen, isSuccess: Bool)
     /// 招待リンクからアプリが起動した
-    case linkOpened
+    /// - Parameter source: 起動の経路（Universal Link / カスタムURLスキーム / クリップボード）
+    case linkOpened(source: CohabitantInvitationOpenSource)
+    /// クリップボード補助の案内を表示した、または読み取ったが招待リンクではなかった
+    /// - Parameter isSuggested: 案内を表示したかどうか（falseは読み取り後に招待リンクが見つからなかった）
+    case pasteboardChecked(isSuggested: Bool)
     /// 招待リンクからグループに参加した
     case joinSucceeded
     /// すでに参加済みのグループの招待リンクを開いた（参加は発生しない）
@@ -27,7 +31,7 @@ public enum CohabitantInvitationAnalyticsAction: Equatable, Sendable {
 extension CohabitantInvitationAnalyticsAction {
 
     /// `cohabitant_invitation`イベントに載せるパラメータ
-    /// - Note: `action`は全ケースで送り、画面を起点とする行動のみ`step`、結果を伴う行動のみ`result`を追加する
+    /// - Note: `action`は全ケースで送り、画面や経路を起点とする行動のみ`step`、結果を伴う行動のみ`result`を追加する
     var parameters: [String: String] {
         var parameters = ["action": action]
         if let step {
@@ -43,14 +47,18 @@ extension CohabitantInvitationAnalyticsAction {
 
 private extension CohabitantInvitationAnalyticsAction {
 
-    /// どの画面での行動かを示す。画面を起点としない行動ではnil
+    /// どの画面・経路での行動かを示す。画面や経路を起点としない行動ではnil
     var step: String? {
         switch self {
         case let .issued(screen, _):
             screen.rawValue
 
-        // リンク経由の起動・参加は画面から始まる行動ではないため付けない
-        case .linkOpened, .joinSucceeded, .joinAlreadyMember, .joinFailed:
+        // 起動はどの経路（Universal Link / カスタムURLスキーム / クリップボード）が機能しているかを見たい
+        case let .linkOpened(source):
+            source.rawValue
+
+        // 参加・クリップボードの確認は画面から始まる行動ではないため付けない
+        case .pasteboardChecked, .joinSucceeded, .joinAlreadyMember, .joinFailed:
             nil
         }
     }
@@ -63,6 +71,9 @@ private extension CohabitantInvitationAnalyticsAction {
 
         case .linkOpened:
             "open"
+
+        case .pasteboardChecked:
+            "pasteboard_check"
 
         case .joinSucceeded, .joinAlreadyMember, .joinFailed:
             "join"
@@ -77,6 +88,9 @@ private extension CohabitantInvitationAnalyticsAction {
 
         case .linkOpened:
             nil
+
+        case let .pasteboardChecked(isSuggested):
+            isSuggested ? "suggested" : "not_found"
 
         case .joinSucceeded:
             "success"

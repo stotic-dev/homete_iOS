@@ -100,6 +100,68 @@ export async function issueInvitation(
   return {token, cohabitantId, expiresAt: expiresAt.getTime()};
 }
 
+/** 参加前に表示する招待の概要 */
+export interface InvitationSummary {
+    /** 招待者の表示名（アカウントが無い・名前未設定なら null） */
+    inviterName: string | null;
+    /** 招待先のグループID（発行者がグループ未所属の場合はnull） */
+    cohabitantId: string | null;
+    /** 有効期限（epochミリ秒） */
+    expiresAt: number;
+}
+
+/**
+ * 参加前に表示するための招待の概要を取得する
+ *
+ * 「〇〇さんのグループに参加しますか？」の確認画面で使う。参加を実行しないため
+ * トランザクションは不要だが、無効・期限切れの判定は joinCohabitantByInvitation と
+ * 同じ基準で行い、参加ボタンを押す前に失敗が分かるようにする。
+ * @param {string} token 招待トークン
+ * @param {Date} now 実行日時
+ * @return {Promise<InvitationSummary>} 招待の概要
+ */
+export async function fetchInvitation(
+  token: string,
+  now: Date
+): Promise<InvitationSummary> {
+  const db = getFirestore();
+
+  const invitationSnapshot = await db
+    .collection(FirestoreCollections.INVITATION)
+    .doc(token)
+    .get();
+  const invitation = InvitationConverter.fromFirestore(invitationSnapshot);
+
+  if (!invitation) {
+    throw new InvitationError(
+      "invitation-not-found",
+      `Invitation ${token} was not found.`
+    );
+  }
+
+  if (invitation.expiresAt.getTime() <= now.getTime()) {
+    throw new InvitationError(
+      "invitation-expired",
+      `Invitation ${token} has already expired.`
+    );
+  }
+
+  const inviterSnapshot = await db
+    .collection(FirestoreCollections.ACCOUNT)
+    .where(AccountFields.ID, "==", invitation.createdBy)
+    .limit(1)
+    .get();
+  const inviter = inviterSnapshot.empty ?
+    null :
+    AccountConverter.fromFirestoreData(inviterSnapshot.docs[0].data());
+
+  return {
+    inviterName: inviter?.userName ?? null,
+    cohabitantId: invitation.cohabitantId ?? inviter?.cohabitantId ?? null,
+    expiresAt: invitation.expiresAt.getTime(),
+  };
+}
+
 /** 招待による参加の結果 */
 export interface JoinResult {
     /** 参加したグループのID */
