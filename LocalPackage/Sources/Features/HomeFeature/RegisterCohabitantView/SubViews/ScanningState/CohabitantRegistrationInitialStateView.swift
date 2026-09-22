@@ -26,6 +26,9 @@ struct CohabitantRegistrationInitialStateView: View {
                     .font(with: .headLineL)
                 Text("同居人同士でこの画面を開いて近づけてください。自動的に登録が始まります。")
                     .font(with: .body)
+                Text("お互いのiPhoneでWi-Fiをオンにしておいてください。同じWi-Fiにつながっていなくても登録できます。")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSubSurface)
             }
             Spacer()
                 .frame(height: .space24)
