@@ -27,7 +27,7 @@ struct P2PSessionMessageProxy {
         do {
             try session.send(message, toPeers: .init(peers), with: .reliable)
         } catch {
-            print("Failed send message.")
+            print("Failed send message to: \(peers.map(\.displayName)), error: \(error)")
             session.disconnect()
             throw error
         }
