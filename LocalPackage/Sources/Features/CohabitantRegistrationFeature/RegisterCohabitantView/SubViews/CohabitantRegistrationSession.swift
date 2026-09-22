@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/27.
 //
 
+import Combine
 import HometeDomain
 import HometeUI
 import MultipeerConnectivity
@@ -23,7 +24,7 @@ struct CohabitantRegistrationSession: View {
     let session: MCSession?
 
     /// 役割の通知を送り直す間隔
-    /// - Note: 相手が登録処理に入る前に送った通知は届かないため、揃うまで送り続ける
+    /// - Note: 相手が登録処理に入る前に送った通知は届かないため、相手からの返答が来るまで送り続ける
     private let roleNotificationTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
