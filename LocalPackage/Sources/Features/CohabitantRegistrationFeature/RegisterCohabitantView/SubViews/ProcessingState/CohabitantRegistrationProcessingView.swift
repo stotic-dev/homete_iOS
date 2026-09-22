@@ -5,28 +5,14 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
-import Combine
-import HometeDomain
 import HometeResources
 import HometeUI
-import MultipeerConnectivity
 import SwiftUI
 
+/// 登録処理の完了を待つ画面
+/// - Note: 役割の通知・同居人IDの共有・完了の待ち合わせは`CohabitantRegistrationStateMachine`が扱うため、
+///         このViewは待っていることを伝えるだけに留める
 struct CohabitantRegistrationProcessingView: View {
-
-    @Environment(\.p2pSessionProxy) var p2pSessionProxy
-    @Environment(\.connectedPeers) var connectedPeers
-
-    @State var isPresentedMemberChangeAlert = false
-
-    // 登録処理の役割の通知が済んでいるデバイスリスト
-    @Binding var confirmedRolePeers: Set<MCPeerID>
-    @Binding var registrationState: CohabitantRegistrationState
-
-    /// 登録処理時の役割
-    let role: CohabitantRegistrationRole
-
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: .zero) {
@@ -50,54 +36,13 @@ struct CohabitantRegistrationProcessingView: View {
             Spacer()
         }
         .padding(.horizontal, .space16)
-        .onReceive(timer) { _ in
-            guard confirmedRolePeers != connectedPeers else { return }
-
-            let message = CohabitantRegistrationMessage(
-                type: .preRegistration(role: role)
-            )
-            // 送信失敗時は切断され、connectedPeersの変化を下の接続エラーアラートで拾う
-            try? p2pSessionProxy?.send(
-                message.encodedData(),
-                to: connectedPeers
-            )
-        }
-        .onChange(of: connectedPeers) {
-            isPresentedMemberChangeAlert = true
-        }
-        .alert(
-            "接続エラー",
-            isPresented: $isPresentedMemberChangeAlert
-        ) {
-            Button("OK") {
-                registrationState = .scanning
-            }
-        } message: {
-            Text("お手数ですが、再度デバイスを近づけて通信を行ってください")
-        }
     }
 
 }
 
 #Preview("CohabitantRegistrationProcessingView_通常ケース") {
-    CohabitantRegistrationProcessingView(
-        confirmedRolePeers: .constant([]),
-        registrationState: .constant(.processing(isLead: false)),
-        role: .lead
-    )
+    CohabitantRegistrationProcessingView()
     #if canImport(Prefire)
-    .prefireIgnored()
-    #endif
-}
-
-#Preview("CohabitantRegistrationProcessingView_切断検知ケース") {
-    CohabitantRegistrationProcessingView(
-        isPresentedMemberChangeAlert: true,
-        confirmedRolePeers: .constant([]),
-        registrationState: .constant(.processing(isLead: false)),
-        role: .lead
-    )
-    #if canImport(Prefire)
-    .prefireIgnored()
+        .prefireIgnored()
     #endif
 }

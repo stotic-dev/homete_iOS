@@ -12,10 +12,11 @@ import SwiftUI
 
 public struct CohabitantRegistrationView: View {
 
-    @Environment(\.loginContext.account.userName) var userName
+    @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
     @LoadingState var loadingState
     @CommonError var errorContent
 
@@ -31,8 +32,8 @@ public struct CohabitantRegistrationView: View {
         NavigationStack {
             ZStack {
                 if isVerifiedAccount {
-                    P2PSession(displayName: userName) {
-                        CohabitantRegistrationSession(session: $0)
+                    P2PSession(displayName: account.userName) { session in
+                        CohabitantRegistrationSessionLoader(session: session)
                     }
                 }
             }
@@ -59,9 +60,16 @@ public struct CohabitantRegistrationView: View {
         } message: {
             Text("登録を終了すると、また初めから登録し直す必要があります。")
         }
-        .onCompleteCohabitantRegistration { cohabitantId in
-            try await onCompleteCohabitantRegistration(cohabitantId)
-        }
+        .environment(\.cohabitantRegistrationStoreFactory, .init { myPeerID, messageSender in
+            CohabitantRegistrationStore(
+                myPeerID: myPeerID,
+                myAccountId: account.id,
+                messageSender: messageSender,
+                cohabitantClient: cohabitantClient,
+                analyticsClient: analyticsClient,
+                accountStore: accountStore
+            )
+        })
         .onAppear {
             analyticsClient.log(.cohabitantRegistration(.started(method: .p2p)))
         }
@@ -89,17 +97,6 @@ private extension CohabitantRegistrationView {
             isVerifiedAccount = true
         } catch {
             errorContent = .init(error: error)
-        }
-    }
-
-    func onCompleteCohabitantRegistration(_ cohabitantId: String) async throws {
-        do {
-            try await accountStore.registerCohabitantId(cohabitantId)
-            analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: true)))
-        } catch {
-            print("error occurred: \(error)")
-            analyticsClient.log(.cohabitantRegistration(.completed(method: .p2p, isSuccess: false)))
-            throw error
         }
     }
 

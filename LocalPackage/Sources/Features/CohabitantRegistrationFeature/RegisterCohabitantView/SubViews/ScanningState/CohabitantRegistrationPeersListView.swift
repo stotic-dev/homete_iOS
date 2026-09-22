@@ -18,7 +18,7 @@ struct CohabitantRegistrationPeersListView: View {
     @State var isPresentingConfirmReadyRegistrationAlert = false
 
     /// 登録開始を宣言済みのメンバー
-    let confirmedPeers: Set<MCPeerID>
+    let confirmedPeers: Set<CohabitantRegistrationPeerID>
     /// 自分が登録開始を宣言済みかどうか
     /// - Note: 宣言済みの間は他のメンバーの宣言を待つ表示にし、ボタンは押せなくする
     let isConfirmed: Bool
@@ -98,12 +98,12 @@ private extension CohabitantRegistrationPeersListView {
     // MARK: プレゼンテーション処理
 
     func convertToPeerRows(_ peers: Set<MCPeerID>) -> [PeerRow] {
-        peers.compactMap { peer in
-            guard let displayName = peer.displayName.components(separatedBy: "_").first else { return nil }
+        peers.map { peer in
+            let peerID = CohabitantRegistrationPeerID(displayName: peer.displayName)
             return PeerRow(
-                id: peer.displayName,
-                displayName: displayName,
-                isConfirmed: confirmedPeers.contains(peer)
+                id: peerID.displayName,
+                displayName: peerID.userName,
+                isConfirmed: confirmedPeers.contains(peerID)
             )
         }
     }
@@ -130,13 +130,12 @@ private extension CohabitantRegistrationPeersListView {
 }
 
 #Preview("CohabitantRegistrationPeersListView_相手が開始済みのケース") {
-    let peer = MCPeerID(displayName: "Test_UUID")
     CohabitantRegistrationPeersListView(
-        confirmedPeers: [peer],
+        confirmedPeers: [.init(displayName: "Test_UUID")],
         isConfirmed: false,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [peer])
+    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_自分が開始済みで相手待ちのケース") {
