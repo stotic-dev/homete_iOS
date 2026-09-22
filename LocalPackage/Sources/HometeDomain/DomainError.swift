@@ -9,6 +9,8 @@ public enum DomainError: Error, Equatable, Sendable {
 
     case failAuth
     case noNetwork
+    /// ログイン中にFirestore上のアカウントが見つからない（サーバ側で消えているなど）
+    case accountNotFound
     case other
 
 }

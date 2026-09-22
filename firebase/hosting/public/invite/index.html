@@ -5,6 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>homeauのグループに招待されています</title>
   <meta name="description" content="homeauは同居人と家事を分担・管理するアプリです。招待リンクからグループに参加できます。">
+
+  <!-- OGP: SNSのクローラーはJSを実行しないため、画像は静的な絶対URL（本番ホスト）で指定する。
+       dev/prodで同じファイルを配信しているので、stgのリンクでも本番ホストの画像に到達できる -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="homeau">
+  <meta property="og:title" content="homeauのグループに招待されています">
+  <meta property="og:description" content="同居人と家事を分け合うアプリ homeau。リンクからグループに参加できます。">
+  <meta property="og:image" content="https://homete-ios-dev.web.app/invite/ogp.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary">
+
+  <!-- Smart App Banner（Safariで開かれたときの補助導線）。
+       Safariはページの解析時にこのmetaを読むため、後からJSで書き換えるのではなく
+       head内で document.write して app-argument（アプリに渡すURL）を載せる -->
+  <script>
+    (function () {
+      var match = /^\/invite\/([^\/]+)\/?$/.exec(location.pathname);
+      var argument = match ? ", app-argument=" + location.origin + "/invite/" + match[1] : "";
+      document.write('<meta name="apple-itunes-app" content="app-id=6744935314' + argument + '">');
+    })();
+  </script>
+
   <style>
     :root {
       --bg: #fdf9f3;
@@ -64,6 +87,50 @@
       text-align: center;
     }
 
+    .button {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 14px 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .button.primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .button.secondary {
+      background: var(--surface);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .button[aria-disabled="true"] {
+      background: var(--border);
+      border-color: var(--border);
+      color: var(--text-sub);
+      pointer-events: none;
+    }
+
+    .actions {
+      margin: 0 0 32px;
+    }
+
+    .hint {
+      color: var(--text-sub);
+      font-size: 13px;
+      text-align: center;
+      margin: 0 0 24px;
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
+
     ol {
       list-style: none;
       counter-reset: step;
@@ -109,22 +176,16 @@
       font-size: 14px;
     }
 
-    .button {
-      display: block;
+    .error {
+      display: none;
+      color: #c0392b;
       text-align: center;
-      background: var(--accent);
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: 700;
-      padding: 14px 20px;
-      border-radius: 12px;
-      margin-bottom: 24px;
+      font-size: 14px;
+      margin: 0 0 24px;
     }
 
-    .button[aria-disabled="true"] {
-      background: var(--border);
-      color: var(--text-sub);
-      pointer-events: none;
+    .error[data-visible="true"] {
+      display: block;
     }
 
     .note {
@@ -142,34 +203,104 @@
 
     <h1>グループに招待されています</h1>
 
+    <p class="error" id="invalidLinkMessage">招待リンクが正しくありません。招待した方にリンクを再送してもらってください。</p>
+
+    <div class="actions">
+      <!-- ユーザーのタップ起点でのみアプリを開く。ページロード時の自動リダイレクトは行わない
+           （未インストール時にSafariがエラーダイアログを出す・成否判定が誤爆するため） -->
+      <a class="button primary" id="openAppLink" href="#" aria-disabled="true">アプリで開く</a>
+      <a class="button secondary" id="appStoreLink" href="#" aria-disabled="true">初めての方はこちら（App Store）</a>
+    </div>
+
+    <p class="hint">homeauをインストール済みの方は「アプリで開く」をタップしてください。</p>
+
+    <h2>初めてhomeauを使う方</h2>
     <ol>
       <li>
-        <span class="step-title">homeauをインストールする</span>
-        <span class="step-detail">下のボタンからApp Storeを開いてインストールしてください。</span>
+        <span class="step-title">App Storeからインストールする</span>
+        <span class="step-detail">「初めての方はこちら」をタップすると、招待リンクをコピーしてApp Storeを開きます。</span>
       </li>
       <li>
-        <span class="step-title">この招待リンクをもう一度タップする</span>
-        <span class="step-detail">LINEなど、リンクが届いた画面に戻ってもう一度タップすると、アプリが開いてグループに参加できます。</span>
+        <span class="step-title">homeauを開いてアカウントを登録する</span>
+        <span class="step-detail">登録が終わると「招待リンクを確認する」と案内が出るので、タップするとグループに参加できます。</span>
+      </li>
+      <li>
+        <span class="step-title">案内が出ない場合は、このリンクをもう一度タップする</span>
+        <span class="step-detail">LINEなど、リンクが届いた画面に戻ってもう一度タップし、「アプリで開く」を選んでください。</span>
       </li>
     </ol>
-
-    <a class="button" id="appStoreLink" href="#" aria-disabled="true">App Storeで開く</a>
 
     <p class="note">招待リンクの有効期限は発行から24時間です。<br>期限が切れた場合は、招待した方にリンクを再送してもらってください。</p>
   </main>
 
   <script>
-    // 空のままの間はボタンを無効表示にする。
-    var APP_STORE_URL = "https://apps.apple.com/app/id6744935314";
-
     (function () {
-      var link = document.getElementById("appStoreLink");
-      if (!APP_STORE_URL) {
-        link.textContent = "App Storeで公開準備中です";
+      var APP_STORE_URL = "https://apps.apple.com/app/id6744935314";
+      var DEVELOPMENT_HOST = "homete-ios-dev-e3ef7.web.app";
+
+      var openAppLink = document.getElementById("openAppLink");
+      var appStoreLink = document.getElementById("appStoreLink");
+      var invalidLinkMessage = document.getElementById("invalidLinkMessage");
+
+      // URLは /invite/<token> の形式。トークンが取れないリンクからは参加できないので導線を出さない
+      var match = /^\/invite\/([^\/]+)\/?$/.exec(location.pathname);
+      if (!match) {
+        invalidLinkMessage.setAttribute("data-visible", "true");
         return;
       }
-      link.href = APP_STORE_URL;
-      link.removeAttribute("aria-disabled");
+      var token = match[1];
+
+      // アプリ側が解析するURL。LINE向けのクエリ（openExternalBrowser）はクリップボード経由では不要なので付けない
+      var canonicalURL = location.origin + "/invite/" + token;
+
+      // カスタムURLスキームはビルド構成ごとに分かれている（Info.plistの INVITE_URL_SCHEME と一致させる）。
+      // dev/prodで同じHTMLを配信するため、ホスト名で判定する
+      var scheme = location.hostname === DEVELOPMENT_HOST ? "homeau-dev" : "homeau";
+      openAppLink.href = scheme + "://invite/" + token;
+      openAppLink.removeAttribute("aria-disabled");
+
+      appStoreLink.href = APP_STORE_URL;
+      appStoreLink.removeAttribute("aria-disabled");
+      appStoreLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        // インストール後にアプリがクリップボードから招待を拾えるよう、遷移前にコピーする。
+        // コピーに失敗してもリンクの再タップで参加できるため、App Storeへの遷移は止めない
+        copyText(canonicalURL).then(
+          function () { location.href = APP_STORE_URL; },
+          function () { location.href = APP_STORE_URL; }
+        );
+      });
+
+      function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text).catch(function () {
+            return copyTextLegacy(text);
+          });
+        }
+        return copyTextLegacy(text);
+      }
+
+      // WebViewなど navigator.clipboard が使えない環境向けのフォールバック
+      function copyTextLegacy(text) {
+        return new Promise(function (resolve, reject) {
+          var textarea = document.createElement("textarea");
+          textarea.value = text;
+          textarea.setAttribute("readonly", "");
+          textarea.style.position = "fixed";
+          textarea.style.opacity = "0";
+          document.body.appendChild(textarea);
+          textarea.select();
+          textarea.setSelectionRange(0, text.length);
+          var succeeded = false;
+          try {
+            succeeded = document.execCommand("copy");
+          } catch (_) {
+            succeeded = false;
+          }
+          document.body.removeChild(textarea);
+          succeeded ? resolve() : reject(new Error("copy failed"));
+        });
+      }
     })();
   </script>
 </body>

@@ -209,6 +209,10 @@ launching → notLoggedIn → Sign In with Apple
 - 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
 
+**シミュレータでの簡易E2E確認**（`.claude/skills/simulator-e2e-check/`）:
+- Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
+- iOS 27ランタイムでログイン済み・同居人グループ所属済みのシミュレータが前提（Sign in with Appleは自動化できない）
+
 **Firebase Functions E2Eテスト** (`firebase/functions/test/`):
 - フレームワーク: Jest + ts-jest
 - Firebase Emulators（Auth、Firestore、Functions）に対して実行
@@ -351,6 +355,10 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 **重要:** Swiftコードのレビューが必要な場合は、このエージェントに任せてください。
 
 **注意:** pdmエージェントとは独立して実行します。pdmはビジネス観点、ios-code-reviewerは技術観点のレビューを担当します。
+
+## Xcode同梱スキルの取り込み
+
+`.claude/skills/` のうち `swiftui-specialist` / `swiftui-whats-new-27` / `modernize-tests` / `audit-xcode-security-settings` はXcode 27に同梱されているAppleのスキルを `xcrun agent skills export --output-dir <dir>` でエクスポートしてそのまま置いたもの。**手で編集しない**（Xcodeを更新したら再エクスポートして差し替え、差分をコミットする）。シミュレータ・実機操作の `device-interaction` は同じ出元だが、Xcode MCPサーバ（`xcrun mcpbridge`）への接続が前提なので `~/.claude/skills/` 側に置いている。
 
 ## ルール（.claude/rules/）の運用
 

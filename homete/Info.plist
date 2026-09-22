@@ -21,6 +21,14 @@
 				<string>$(REVENUECAT_URL_SCHEME)</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER).invite</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(INVITE_URL_SCHEME)</string>
+			</array>
+		</dict>
 	</array>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>

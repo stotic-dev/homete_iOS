@@ -16,7 +16,10 @@ struct P2PSessionMessageProxy {
         self.session = session
     }
 
-    func send(_ message: Data, to peers: Set<MCPeerID>) {
+    /// メッセージを送信する
+    /// - Note: 送信に失敗した接続は続行できないため切断する。
+    ///         呼び出し側で画面に伝えられるよう、エラーはそのまま投げ直す
+    func send(_ message: Data, to peers: Set<MCPeerID>) throws {
         guard let session else {
             preconditionFailure("Not fount session instance.")
         }
@@ -24,8 +27,9 @@ struct P2PSessionMessageProxy {
         do {
             try session.send(message, toPeers: .init(peers), with: .reliable)
         } catch {
-            print("Failed send message.")
+            print("Failed send message to: \(peers.map(\.displayName)), error: \(error)")
             session.disconnect()
+            throw error
         }
     }
 

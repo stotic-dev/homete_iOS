@@ -10,7 +10,7 @@ import Observation
 @Observable
 public final class CohabitantJoinStore {
 
-    public private(set) var state: CohabitantJoinState = .confirming
+    public private(set) var state: CohabitantJoinState = .loading
 
     private let token: String
 
@@ -32,8 +32,28 @@ public final class CohabitantJoinStore {
         self.accountStore = accountStore
     }
 
+    /// 参加前に表示する招待の概要を取得する
+    /// - Note: 無効・期限切れは参加ボタンを押す前に失敗表示へ倒す。クリップボード経由など
+    ///         誤ったリンクを拾う可能性がある経路でも、参加先を目視で確認できるようにする
+    public func load() async {
+        guard state == .loading else { return }
+
+        do {
+            let summary = try await cohabitantInvitationClient.fetch(token)
+            state = .confirming(summary)
+        } catch {
+            // 取得中に画面を閉じた（.taskがキャンセルされた）場合は失敗として数えない
+            guard !Task.isCancelled else { return }
+            let failure = CohabitantJoinFailure(error)
+            state = .failed(failure)
+            analyticsClient.log(.cohabitantInvitation(.joinFailed(failure)))
+        }
+    }
+
     /// 招待トークンを使ってグループに参加する
     public func join() async {
+        guard case .confirming = state else { return }
+
         state = .processing
         analyticsClient.log(.cohabitantRegistration(.started(method: .link)))
 

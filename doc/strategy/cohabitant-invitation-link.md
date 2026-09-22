@@ -49,6 +49,7 @@
   1. App Store から homete をインストール
   2. LINE等に戻って**もう一度このリンクをタップ**する
 - Firebase Dynamic Links は 2025/8 に終了しているため deferred deep link（インストール後の自動遷移）は行わない。「リンク再タップ」の案内で代替する
+  - その後、WebView（LINE 等）で Universal Link が発火しない問題への対応として、着地ページの作り替えとクリップボードによる招待の引き継ぎを追加した（[invitation-landing-page.md](invitation-landing-page.md) / [ADR-0018](../adr/0018-deferred-deep-link-with-clipboard.md)）
 
 ### 非機能要件 / 制約
 

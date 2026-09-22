@@ -13,6 +13,10 @@ import SwiftUI
 struct NotRegisteredContent: View {
 
     @Binding var isShowCohabitantRegistrationModal: Bool
+    /// クリップボードにコピーされた招待リンクの案内状態
+    let pasteboardInvitationState: PasteboardInvitationStore.State
+    /// 「招待リンクを確認する」タップ時の処理
+    let onTapCheckPasteboard: () -> Void
 
     var body: some View {
         VStack(spacing: .zero) {
@@ -34,6 +38,7 @@ struct NotRegisteredContent: View {
                     isShowCohabitantRegistrationModal = true
                 }
                 .primaryButtonStyle()
+                PasteboardInvitationBanner(state: pasteboardInvitationState, onTapCheck: onTapCheckPasteboard)
                 Spacer()
             }
         }
@@ -46,6 +51,17 @@ struct NotRegisteredContent: View {
 #Preview {
     @Previewable @State var isShowCohabitantRegistrationModal = false
     NotRegisteredContent(
-        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal
+        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal,
+        pasteboardInvitationState: .idle,
+        onTapCheckPasteboard: {}
+    )
+}
+
+#Preview("NotRegisteredContent_招待リンクの案内あり") {
+    @Previewable @State var isShowCohabitantRegistrationModal = false
+    NotRegisteredContent(
+        isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal,
+        pasteboardInvitationState: .suggesting,
+        onTapCheckPasteboard: {}
     )
 }

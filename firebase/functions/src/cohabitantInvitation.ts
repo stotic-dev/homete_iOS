@@ -4,13 +4,14 @@ import {
   InvitationError,
   InvitationErrorCode,
   JoinResult,
+  fetchInvitation,
   issueInvitation,
   joinCohabitantByInvitation,
   notifyCohabitantJoined,
 } from "./models/InvitationManager";
 import {appCheckOptions} from "./appCheckOptions";
 
-interface JoinCohabitantRequest {
+interface InvitationTokenRequest {
   token: string;
 }
 
@@ -114,6 +115,60 @@ export const issuecohabitantinvitation = onCall(
 );
 
 /**
+ * 参加前に表示するための招待の概要（招待者名・有効期限）を取得する
+ *
+ * 参加確認画面で「〇〇さんのグループに参加しますか？」と表示するために使う。
+ * 無効・期限切れは joincohabitant と同じエラーで返し、参加ボタンを押す前に
+ * クライアントが失敗表示へ倒せるようにする。
+ */
+export const fetchcohabitantinvitation = onCall(
+  appCheckOptions,
+  async (request: {
+    data: InvitationTokenRequest;
+    auth?: { uid: string };
+  }) => {
+    if (!request.auth) {
+      logger.error("Authentication error: User is not authenticated.");
+      throw new HttpsError(
+        "unauthenticated",
+        "The function must be called while authenticated."
+      );
+    }
+
+    const userId = request.auth.uid;
+    const {token} = request.data;
+
+    if (!token) {
+      logger.error("Invalid argument: Missing 'token'.", {userId});
+      throw new HttpsError(
+        "invalid-argument",
+        "The function must be called with a 'token' argument."
+      );
+    }
+
+    try {
+      const summary = await fetchInvitation(token, new Date());
+
+      logger.info("Fetched cohabitant invitation.", {
+        userId,
+        cohabitantId: summary.cohabitantId,
+      });
+
+      return summary;
+    } catch (error) {
+      if (error instanceof InvitationError) {
+        logger.error("Failed to fetch invitation.", {
+          userId,
+          code: error.code,
+        });
+        throw toHttpsError(error.code, error.message);
+      }
+      throw error;
+    }
+  }
+);
+
+/**
  * 招待トークンを使って同居人グループに参加する
  *
  * すでに別のグループへ参加しているユーザーは参加できない
@@ -124,7 +179,7 @@ export const issuecohabitantinvitation = onCall(
 export const joincohabitant = onCall(
   appCheckOptions,
   async (request: {
-    data: JoinCohabitantRequest;
+    data: InvitationTokenRequest;
     auth?: { uid: string };
   }) => {
     if (!request.auth) {
