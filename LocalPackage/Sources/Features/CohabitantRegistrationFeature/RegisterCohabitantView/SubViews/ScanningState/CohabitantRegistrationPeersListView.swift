@@ -27,30 +27,35 @@ struct CohabitantRegistrationPeersListView: View {
 
     var body: some View {
         VStack(spacing: .space16) {
-            Text("デバイスの名前を確認してください")
-                .font(with: .headLineM)
-            ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
-                HStack(spacing: .space24) {
-                    Image(systemName: "iphone")
-                        .frame(width: 24, height: 24)
-                        .padding(.space8)
-                        .foregroundStyle(.onSurface)
-                        .background(.primary3)
-                        .cornerRadius(.radius8)
-                    VStack(alignment: .leading, spacing: .space4) {
-                        Text(row.displayName)
-                            .font(with: .body)
-                        if row.isConfirmed {
-                            // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
-                            Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
-                                .font(with: .caption)
-                                .foregroundStyle(.primary1)
+            // メンバーが増えても、画面下部の「登録を開始する」を押せる高さを確保できるようスクロールさせる
+            ScrollView {
+                VStack(spacing: .space16) {
+                    Text("デバイスの名前を確認してください")
+                        .font(with: .headLineM)
+                    ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
+                        HStack(spacing: .space24) {
+                            Image(systemName: "iphone")
+                                .frame(width: 24, height: 24)
+                                .padding(.space8)
+                                .foregroundStyle(.onSurface)
+                                .background(.primary3)
+                                .cornerRadius(.radius8)
+                            VStack(alignment: .leading, spacing: .space4) {
+                                Text(row.displayName)
+                                    .font(with: .body)
+                                if row.isConfirmed {
+                                    // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
+                                    Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
+                                        .font(with: .caption)
+                                        .foregroundStyle(.primary1)
+                                }
+                            }
+                            Spacer()
                         }
                     }
-                    Spacer()
                 }
+                .frame(maxWidth: .infinity)
             }
-            Spacer()
             if isConfirmed {
                 Label("他のメンバーが登録を開始するのを待っています", systemImage: "hourglass")
                     .font(with: .caption)
