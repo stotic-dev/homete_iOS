@@ -35,7 +35,7 @@ struct HouseworkTemplateView: View {
     @Binding var draft: HouseworkTemplateDraft
     @Binding var editorContext: TemplateEditorContext
 
-    let isPremium: Bool
+    let isShowAd: Bool
     /// テンプレートの取得・購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
     let onTapRemoveAdsLink: () -> Void
@@ -88,7 +88,7 @@ struct HouseworkTemplateView: View {
             )
             .padding(.horizontal, .space16)
         }
-        .bottomAdBanner(.houseworkTemplateBottom, isPresented: !isPremium, onTapPromotionLink: onTapRemoveAdsLink)
+        .bottomAdBanner(.houseworkTemplateBottom, isPresented: isShowAd, onTapPromotionLink: onTapRemoveAdsLink)
         .sheet(isPresented: $presentingAddModal) {
             HouseworkTemplateItemEditModalScreen(mode: .create) { input in
                 tappedCreateItemButton(input: input)
@@ -498,7 +498,7 @@ private extension HouseworkTemplateView {
         initialDraft: .constant(.init(days: templateData)),
         draft: .constant(.init(days: templateData)),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
-        isPremium: false,
+        isShowAd: true,
         loadFailure: nil,
         onTapRemoveAdsLink: {},
         onRetry: {}
@@ -538,7 +538,7 @@ private extension HouseworkTemplateView {
             ],
             currentTemplateVersion: .zero
         )),
-        isPremium: false,
+        isShowAd: true,
         loadFailure: nil,
         onTapRemoveAdsLink: {},
         onRetry: {}
@@ -562,7 +562,7 @@ private extension HouseworkTemplateView {
         initialDraft: .constant(nil),
         draft: .constant(.init()),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
-        isPremium: false,
+        isShowAd: true,
         loadFailure: .noNetwork,
         onTapRemoveAdsLink: {},
         onRetry: {}
