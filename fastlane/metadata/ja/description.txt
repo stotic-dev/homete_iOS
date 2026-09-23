@@ -20,3 +20,15 @@
 シンプルで使いやすい家事アプリを探している
 
 「homeau」で、あなたの毎日をもっと心地よく。
+
+
+プレミアムプランについて
+
+プレミアムプラン（1ヶ月更新 / 1年更新）は自動更新サブスクリプションです。
+・お支払いは購入確定時にApple Accountに請求されます。
+・現在の期間が終了する24時間以上前に自動更新をオフにしない限り、サブスクリプションは自動的に更新され、期間終了前の24時間以内に次の期間分が請求されます。
+・自動更新の停止や購読の管理は、購入後にApple Accountの設定から行えます。
+
+利用規約（EULA）：https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+サービス利用規約：https://stotic-dev.github.io/homete_iOS/terms.html
+プライバシーポリシー：https://stotic-dev.github.io/homete_iOS/privacy.html

@@ -4,14 +4,13 @@
 //
 
 import HometeDomain
-import HometeUI
 import SwiftUI
 
 /// 同居人グループへの参加が完了したことを祝うView
 ///
-/// P2Pでの登録完了と招待リンクからの参加完了で同じ演出を見せたいため、
-/// 文言だけを差し替えられる共通のViewにしている。
-struct CohabitantCompletionView: View {
+/// P2Pでの登録完了（`CohabitantRegistrationFeature`）と招待リンクからの参加完了（`HomeFeature`）で
+/// 同じ演出を見せたいため、文言だけを差し替えられる共通のViewにしている。
+public struct CohabitantCompletionView: View {
 
     /// 祝いの見出し
     let title: String
@@ -23,7 +22,13 @@ struct CohabitantCompletionView: View {
     /// クラッカーが弾け終わったかどうか
     @State private var isCracked = false
 
-    var body: some View {
+    public init(title: String, message: String, onTapClose: @escaping () -> Void) {
+        self.title = title
+        self.message = message
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         ZStack {
             VStack(spacing: .space16) {
                 Text(title)

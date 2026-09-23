@@ -24,6 +24,7 @@ test_configuration:
     - AuthFeature
     - SettingFeature
     - HomeFeature
+    - CohabitantRegistrationFeature
     - HouseworkFeature
     - HouseworkTemplateFeature
     - ContributionFeature
