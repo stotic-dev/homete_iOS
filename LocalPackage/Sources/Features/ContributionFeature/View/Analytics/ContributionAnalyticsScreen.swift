@@ -38,7 +38,7 @@ public struct ContributionAnalyticsScreen: View {
             analytics: analytics,
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
-            isPremium: subscriptionStore.isPremium,
+            isShowAd: AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium),
             onUpgradeTapped: { tappedUpgradeButton() },
             onTapRemoveAdsLink: { tappedRemoveAdsLink() }
         )
