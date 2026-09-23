@@ -27,7 +27,7 @@ public struct RemoveAdsPromotionLink: View {
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
             }
-            .foregroundStyle(.primary2)
+            .foregroundStyle(.accent)
             // テキストリンク風の見た目のまま、タップ領域だけHIG推奨の44pt四方を確保する
             .frame(maxWidth: .infinity, minHeight: 44)
             .contentShape(Rectangle())

@@ -85,7 +85,7 @@ private extension TodayHouseworkSummaryComponent {
                     .font(with: .headLineS)
             }
             ProgressView(value: progress)
-                .tint(.primary1)
+                .tint(.accent)
         }
     }
 
@@ -110,7 +110,7 @@ private extension TodayHouseworkSummaryComponent {
         .overlay {
             RoundedRectangle(radius: .radius8)
                 .stroke(style: .init(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.primary1)
+                .foregroundStyle(.accent)
         }
     }
 
@@ -118,7 +118,7 @@ private extension TodayHouseworkSummaryComponent {
         VStack(spacing: .space8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary1)
+                .foregroundStyle(.accent)
             Text("今日の家事は全て完了しました")
                 .font(with: .headLineS)
         }

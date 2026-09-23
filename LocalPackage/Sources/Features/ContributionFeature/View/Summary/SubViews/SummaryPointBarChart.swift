@@ -25,7 +25,7 @@ struct SummaryPointBarChart: View {
                     x: .value("ユーザー", item.userName),
                     y: .value("ポイント", item.monthlyPoint.value)
                 )
-                .foregroundStyle(item.isMe ? Color.primary2 : Color.secondary)
+                .foregroundStyle(item.isMe ? Color.accent : Color.secondary)
                 .annotation(position: .top) {
                     Text("\(item.monthlyPoint.value)pt")
                         .font(with: .caption)

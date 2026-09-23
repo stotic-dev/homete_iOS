@@ -37,8 +37,8 @@ public struct LoginView: View {
                 "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。"
             )
             .font(with: .caption)
-            .foregroundStyle(.primary2)
-            .tint(.primary2)
+            .foregroundStyle(.onSurfaceVariant)
+            .tint(.accent)
             Spacer()
                 .frame(height: .space32)
         }

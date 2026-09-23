@@ -32,10 +32,10 @@ public struct ClearableTextField: View {
                 "",
                 text: $text,
                 prompt: Text(placeholder)
-                    .foregroundStyle(.primary2.opacity(0.7))
+                    .foregroundStyle(.onSurfaceVariant)
             )
             .focused(focus)
-            .foregroundStyle(.primary2)
+            .foregroundStyle(.onSurface)
             .padding()
             .font(with: .body)
             .background {
@@ -46,7 +46,7 @@ public struct ClearableTextField: View {
                 text = ""
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.primary2)
+                    .foregroundStyle(.onSurfaceVariant)
                     .padding(.space8)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
