@@ -24,7 +24,7 @@ struct ContributionAnalyticsView: View {
     let analytics: ContributionAnalytics?
     let myUserId: String
     let latestAchievedDate: Date?
-    let isPremium: Bool
+    let isShowAd: Bool
     let onUpgradeTapped: () -> Void
     let onTapRemoveAdsLink: () -> Void
 
@@ -50,7 +50,7 @@ struct ContributionAnalyticsView: View {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space8)
         }
-        .bottomAdBanner(.analyticsBottom, isPresented: !isPremium, onTapPromotionLink: onTapRemoveAdsLink)
+        .bottomAdBanner(.analyticsBottom, isPresented: isShowAd, onTapPromotionLink: onTapRemoveAdsLink)
         .trackScreenView(.contributionAnalytics)
     }
 
@@ -137,7 +137,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .week),
         myUserId: "user1",
         latestAchievedDate: nil,
-        isPremium: false,
+        isShowAd: true,
         onUpgradeTapped: {},
         onTapRemoveAdsLink: {}
     )
@@ -158,7 +158,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
         latestAchievedDate: nil,
-        isPremium: false,
+        isShowAd: true,
         onUpgradeTapped: {},
         onTapRemoveAdsLink: {}
     )
@@ -179,7 +179,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .year),
         myUserId: "user1",
         latestAchievedDate: nil,
-        isPremium: false,
+        isShowAd: true,
         onUpgradeTapped: {},
         onTapRemoveAdsLink: {}
     )
@@ -200,7 +200,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForTest(displayPeriod: selectedPeriod),
         myUserId: "user1",
         latestAchievedDate: nil,
-        isPremium: false,
+        isShowAd: true,
         onUpgradeTapped: {},
         onTapRemoveAdsLink: {}
     )
@@ -218,7 +218,7 @@ private extension ContributionAnalyticsView {
         analytics: .makeForPreview(type: .month),
         myUserId: "user1",
         latestAchievedDate: nil,
-        isPremium: false,
+        isShowAd: true,
         onUpgradeTapped: {},
         onTapRemoveAdsLink: {}
     )

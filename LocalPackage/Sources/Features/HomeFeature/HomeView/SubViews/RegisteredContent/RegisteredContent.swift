@@ -40,7 +40,7 @@ struct RegisteredContent: View {
                 ScrollView {
                     VStack(spacing: .space24) {
                         TodayHouseworkSummaryComponent.make()
-                        if !subscriptionStore.isPremium {
+                        if AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium) {
                             VStack(spacing: .space8) {
                                 adComponentResolver.resolve(.banner(.dashboardTop))
                                     .frame(height: 150)
