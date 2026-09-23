@@ -47,7 +47,7 @@ struct CohabitantRegistrationPeersListView: View {
                                     // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
                                     Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
                                         .font(with: .caption)
-                                        .foregroundStyle(.primary1)
+                                        .foregroundStyle(.accent)
                                 }
                             }
                             Spacer()

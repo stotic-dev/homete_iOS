@@ -44,7 +44,7 @@ private extension HouseworkItemPropertyListContent {
         HStack(spacing: .zero) {
             Text(title)
                 .font(with: .body)
-                .foregroundStyle(.primary2)
+                .foregroundStyle(.onSurfaceVariant)
             Spacer()
             detailContent()
         }
