@@ -14,7 +14,8 @@
 | `AuthFeature` | 認証関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HouseworkFeature` | 家事ボード関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `SettingFeature` | 設定関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
-| `HomeFeature` | ホーム画面・同居人管理関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `HomeFeature` | ホーム画面・招待リンクからのグループ参加 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・Firebase 依存 | `HometeDomain`, Firebase SDK |
 | `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
@@ -41,7 +42,8 @@ Features/
   ├── AuthFeature/
   ├── HouseworkFeature/
   ├── SettingFeature/
-  └── HomeFeature/          ← 同居人管理 View を含む
+  ├── HomeFeature/          ← 招待リンクからの参加 View を含む
+  └── CohabitantRegistrationFeature/  ← P2P 登録（Multipeer Connectivity）を隔離
 
 HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）
@@ -76,6 +78,7 @@ graph TD
         HouseworkFeature
         SettingFeature
         HomeFeature
+        CohabitantRegistrationFeature
     end
 
     HometeUI["HometeUI\n（デザインシステム・共通 UI）"]
@@ -92,6 +95,7 @@ graph TD
     AppRoot -->|DI \n Client liveValue| HouseworkFeature
     AppRoot -->|DI \n Client liveValue| SettingFeature
     AppRoot -->|DI \n Client liveValue| HomeFeature
+    AppRoot -->|DI \n Client liveValue| CohabitantRegistrationFeature
     AppRoot --> HometeUI
     AppRoot --> HometeDomain
 
@@ -99,16 +103,19 @@ graph TD
     HouseworkFeature --> HometeUI
     SettingFeature --> HometeUI
     HomeFeature --> HometeUI
+    CohabitantRegistrationFeature --> HometeUI
 
     AuthFeature --> HometeResources
     HouseworkFeature --> HometeResources
     SettingFeature --> HometeResources
     HomeFeature --> HometeResources
+    CohabitantRegistrationFeature --> HometeResources
 
     AuthFeature --> HometeDomain
     HouseworkFeature --> HometeDomain
     SettingFeature --> HometeDomain
     HomeFeature --> HometeDomain
+    CohabitantRegistrationFeature --> HometeDomain
 
     HometeUI --> HometeDomain
     HometeUI --> HometeResources

@@ -18,7 +18,7 @@ struct CohabitantRegistrationPeersListView: View {
     @State var isPresentingConfirmReadyRegistrationAlert = false
 
     /// 登録開始を宣言済みのメンバー
-    let confirmedPeers: Set<MCPeerID>
+    let confirmedPeers: Set<CohabitantRegistrationPeerID>
     /// 自分が登録開始を宣言済みかどうか
     /// - Note: 宣言済みの間は他のメンバーの宣言を待つ表示にし、ボタンは押せなくする
     let isConfirmed: Bool
@@ -27,30 +27,35 @@ struct CohabitantRegistrationPeersListView: View {
 
     var body: some View {
         VStack(spacing: .space16) {
-            Text("デバイスの名前を確認してください")
-                .font(with: .headLineM)
-            ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
-                HStack(spacing: .space24) {
-                    Image(systemName: "iphone")
-                        .frame(width: 24, height: 24)
-                        .padding(.space8)
-                        .foregroundStyle(.onSurface)
-                        .background(.primary3)
-                        .cornerRadius(.radius8)
-                    VStack(alignment: .leading, spacing: .space4) {
-                        Text(row.displayName)
-                            .font(with: .body)
-                        if row.isConfirmed {
-                            // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
-                            Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
-                                .font(with: .caption)
-                                .foregroundStyle(.primary1)
+            // メンバーが増えても、画面下部の「登録を開始する」を押せる高さを確保できるようスクロールさせる
+            ScrollView {
+                VStack(spacing: .space16) {
+                    Text("デバイスの名前を確認してください")
+                        .font(with: .headLineM)
+                    ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
+                        HStack(spacing: .space24) {
+                            Image(systemName: "iphone")
+                                .frame(width: 24, height: 24)
+                                .padding(.space8)
+                                .foregroundStyle(.onSurface)
+                                .background(.primary3)
+                                .cornerRadius(.radius8)
+                            VStack(alignment: .leading, spacing: .space4) {
+                                Text(row.displayName)
+                                    .font(with: .body)
+                                if row.isConfirmed {
+                                    // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
+                                    Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
+                                        .font(with: .caption)
+                                        .foregroundStyle(.primary1)
+                                }
+                            }
+                            Spacer()
                         }
                     }
-                    Spacer()
                 }
+                .frame(maxWidth: .infinity)
             }
-            Spacer()
             if isConfirmed {
                 Label("他のメンバーが登録を開始するのを待っています", systemImage: "hourglass")
                     .font(with: .caption)
@@ -98,12 +103,12 @@ private extension CohabitantRegistrationPeersListView {
     // MARK: プレゼンテーション処理
 
     func convertToPeerRows(_ peers: Set<MCPeerID>) -> [PeerRow] {
-        peers.compactMap { peer in
-            guard let displayName = peer.displayName.components(separatedBy: "_").first else { return nil }
+        peers.map { peer in
+            let peerID = CohabitantRegistrationPeerID(displayName: peer.displayName)
             return PeerRow(
-                id: peer.displayName,
-                displayName: displayName,
-                isConfirmed: confirmedPeers.contains(peer)
+                id: peerID.displayName,
+                displayName: peerID.userName,
+                isConfirmed: confirmedPeers.contains(peerID)
             )
         }
     }
@@ -130,13 +135,12 @@ private extension CohabitantRegistrationPeersListView {
 }
 
 #Preview("CohabitantRegistrationPeersListView_相手が開始済みのケース") {
-    let peer = MCPeerID(displayName: "Test_UUID")
     CohabitantRegistrationPeersListView(
-        confirmedPeers: [peer],
+        confirmedPeers: [.init(displayName: "Test_UUID")],
         isConfirmed: false,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [peer])
+    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_自分が開始済みで相手待ちのケース") {

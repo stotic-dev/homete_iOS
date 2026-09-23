@@ -2,6 +2,7 @@
 //  RouteResolverInjection.swift
 //
 
+import CohabitantRegistrationFeature
 import HomeFeature
 import HometeDomain
 import HometeInfrastructure
@@ -32,6 +33,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 #if DEBUG
                 case .debugOnboarding:
                     DebugOnboardingScreen()
+                case .debugCohabitantRegistration:
+                    DebugCohabitantRegistrationScreen()
                 #endif
                 }
             })

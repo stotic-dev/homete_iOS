@@ -16,6 +16,7 @@ struct DebugMenuView: View {
 
     @State var isShowOnboarding = false
     @State var isShowPaywall = false
+    @State var isShowCohabitantRegistration = false
 
     var body: some View {
         List {
@@ -24,6 +25,14 @@ struct DebugMenuView: View {
                     isShowOnboarding = true
                 }
                 Text("ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。")
+                    .font(with: .caption)
+                    .foregroundStyle(.primary2)
+            }
+            Section("同居人の登録") {
+                Button("P2P登録を試す") {
+                    isShowCohabitantRegistration = true
+                }
+                Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。")
                     .font(with: .caption)
                     .foregroundStyle(.primary2)
             }
@@ -41,6 +50,9 @@ struct DebugMenuView: View {
         }
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
             router.resolve(.paywall)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistration) {
+            router.resolve(.debugCohabitantRegistration)
         }
     }
 

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/26.
 //
 
+import HometeDomain
 import MultipeerConnectivity
 import SwiftUI
 
@@ -17,6 +18,7 @@ struct P2PSession<Content: View>: View {
     @State var connectedPeers: Set<MCPeerID> = []
     @State var sessionDelegate = P2PSessionDelegate()
     @State var receivedData: P2PSessionReceiveData?
+    @State var messageProxy: P2PSessionMessageProxy?
 
     let content: (MCSession?) -> Content
     let displayName: String
@@ -31,7 +33,7 @@ struct P2PSession<Content: View>: View {
             .environment(\.myPeerID, myPeerID)
             .environment(\.connectedPeers, connectedPeers)
             .environment(\.p2pSessionReceiveData, receivedData)
-            .environment(\.p2pSessionProxy, .init(session: session))
+            .environment(\.p2pSessionProxy, messageProxy)
             .task {
                 await onAppear()
 
@@ -64,7 +66,7 @@ private extension P2PSession {
             archivedData: archivedPeerIDDataKey,
             displayName: displayName
         )
-        session = MCSession(
+        let session = MCSession(
             peer: myPeerData.id,
             securityIdentity: nil,
             encryptionPreference: .required
@@ -72,7 +74,9 @@ private extension P2PSession {
         myPeerID = myPeerData.id
         archivedPeerIDDataKey = myPeerData.archivedData
 
-        session?.delegate = sessionDelegate
+        session.delegate = sessionDelegate
+        messageProxy = P2PSessionMessageProxy(session: session)
+        self.session = session
     }
 
 }
