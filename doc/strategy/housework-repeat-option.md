@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -63,6 +63,8 @@
 - テンプレート機能は無料で提供している機能（[premium_plan.md](../premium_plan.md)）なので、繰り返し設定もプランで制限しない
 - 登録画面から書き込むときも、テンプレートの `version` を上げる。こうしておくと、他のメンバーがテンプレートを編集中でも、そのメンバーの保存は既存の仕組みでコンフリクトとして検知されるので、登録した家事が上書きで消えない
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
+- `MonthlyItems` の取得に失敗しても（セキュリティルールが未デプロイの環境など）、`configure` は失敗扱いにしない。毎週の家事を含むテンプレート全体の表示を巻き込まないため
+- **リリース手順: 本番（`prod`）の Firestore ルールを、アプリの審査提出より先にデプロイする。** 本番へのルールのデプロイは `deploy-firestore.yml` の手動実行だけなので、忘れると新しいアプリで毎月の家事を読み書きできない
 - 日付の判定（毎月◯日の月末への寄せ、第N・最終週の判定）はドメイン層の値型に置き、`Calendar` を引数で受け取ってユニットテストする
 
 ## 設計方針
@@ -150,8 +152,12 @@ match /MonthlyItems/{itemId} {
 - `HouseworkTemplateDraft`（編集中のローカル状態）に毎月の家事を持たせる
 - 「毎月」セクションは曜日リストと同じ見た目の行を使い、繰り返し内容のラベルだけ足す
 - 追加・編集モーダルの曜日選択（`WeekdaySelector`）の上に、繰り返しの種類を切り替えるセグメントを置く。「毎月（日付）」は日付のピッカー、「毎月（曜日）」は第Nのピッカー＋曜日の単一選択に切り替える
-- 繰り返し設定のUIは登録画面でも使うので、`HouseworkTemplateFeature` 内ではなく `HometeUI` に共通コンポーネント（`RecurrenceSelector`（仮））として置く。`HouseworkFeature` から `HouseworkTemplateFeature` への直接依存を作らないため
+- 繰り返し設定のUIは登録画面でも使うので、`HouseworkTemplateFeature` 内ではなく `HometeUI` に共通コンポーネント `RecurrenceSelector` として置く。`HouseworkFeature` から `HouseworkTemplateFeature` への直接依存を作らないため
+  - 曜日選択（`WeekdaySelector` / `WeekdayLabel`）も `HometeUI/Components/Weekday/` へ移す（リファクタとして先にコミット）
+  - 入力状態は `HouseworkRecurrenceInput`（HometeDomain）で持つ。種類を切り替えても他の種類の入力値を失わないよう全種類の値を持ち、`recurrence` で選択中の種類の値だけを取り出す
   - コンポーネントは選択値のBindingを受け取って描画するだけにし、「決定できるか」の判定は呼び出し側に置く（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）
+- 編集モードの「変更があるか」は、選んでいない種類の入力値ではなく、保存される繰り返し方（`recurrence`）で比べる
+- `HouseworkTemplateDraft` の毎月の家事は常に表示順（同じルールならID順）で持つ。Firestoreから読んだ順（ドキュメントID順）と編集で追加した順の違いだけで、未保存の変更やコンフリクトと判定しないため
 
 ### 6. 家事登録画面
 
@@ -159,19 +165,23 @@ match /MonthlyItems/{itemId} {
 - 「登録する」ボタンの処理を分ける
   - `nil`: 今までどおり `HouseworkListStore.register`
   - それ以外: `HouseworkTemplateListStore` にテンプレートの作成（なければ）と `appendItem` を行わせる
-- `HouseworkTemplateListStore` は2つの呼び出し元（`HomeView` / `HouseworkBoardScreen`）でOptionalで持っているので、`RegisterHouseworkView` にも environment 経由で渡す。`nil`（未構成）のときは繰り返しの設定欄を出さない
-- 登録画面の入力項目が増えて縦に長くなるので、入力履歴（`entryHistoryContent`）とのレイアウトを見直す（スクロールできるようにする）
+- `HouseworkTemplateListStore` は2つの呼び出し元（`HomeView` / `HouseworkBoardScreen`）で既に environment に入っているので、`RegisterHouseworkView` は `@Environment(HouseworkTemplateListStore.self) var ...: HouseworkTemplateListStore?` で受け取る。`nil`（未構成）のときは繰り返しの設定欄を出さない
+- 各種類の初期値は、登録しようとしている日の曜日・日付・第N週にする（第5週は「最終」）
+- テンプレートが無いグループでは、`appendItemCreatingTemplateIfNeeded` がテンプレートを作成し、その場で選択して `Days` / `MonthlyItems` の監視を始めてから追加する（既存の「テンプレート作成を検知する監視」は監視の開始までは行わないため、そのままだと登録した家事が表示されない）
+- 繰り返しの設定欄は、テンプレートの読み込みが終わっている（`loadState == .loaded`）ときだけ出す。Storeは `configure` の完了を待たずに作られるので、読み込み中・失敗時は `selectedTemplateId == nil` でもテンプレートが無いとは限らず、重複して作成してしまうため（Store側でも `HouseworkTemplateError.notLoaded` で止める）
+- `startObservingItems` は、呼ばれるたびに既存の監視を解除してから開始し直す（呼び出し箇所が増えたため、二重監視を防ぐ）
+- 入力履歴は `List` のまま、残りの高さの中でスクロールする
 
 ### 7. Analytics
 
-[ADR-0009](../adr/0009-analytics-event-parameter-design.md)に従い、イベントは増やさず `housework_template` にパラメータを足す。
+[ADR-0009](../adr/0009-analytics-event-parameter-design.md)に従い、イベントは増やさず `housework_template` にパラメータを足す（PR #5でまとめて対応）。
 
 | パラメータ | 値 | 説明 |
 |---|---|---|
-| `step`（追加） | `template` / `register` | テンプレート画面で保存したか、登録画面から追加したか |
-| `recurrence`（追加） | `weekly` / `monthly_day` / `monthly_weekday` | どの繰り返しか（`create` / `edit` のとき） |
+| `step`（追加、`create`のみ） | `template` / `register` | テンプレート画面で保存したか、登録画面から追加したか |
+| `recurrence`（追加、`create` / `edit`のみ） | `weekly` / `monthly_day` / `monthly_weekday` | 追加・編集後の繰り返し方 |
 
-登録画面から追加したときは `action: create, step: register` を送る。テンプレートを自動で作成したときは、テンプレート画面と同じく `apply` も送る。`doc/analytics_events.md` も同じPRで更新する。
+登録画面から追加したときは `action: create, step: register` を送る。テンプレートを自動で作成したときは、テンプレート画面と同じく `apply` も送る。繰り返しを設定した登録では `Houseworks` に書き込まないので、`housework` イベントの `register` は送らない。
 
 ### ファイル配置
 
@@ -186,6 +196,8 @@ match /MonthlyItems/{itemId} {
 | 修正Client | `LocalPackage/Sources/HometeDomain/Dependencies/HouseworkTemplateClient.swift` | 毎月の家事の取得・監視、`updateTemplate`、`appendItem` |
 | 修正Impl | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplHouseworkTemplateClient.swift` | 上記のFirestore実装 |
 | 修正Analytics | `LocalPackage/Sources/HometeDomain/AnalyticsLog/HouseworkTemplateAnalyticsAction.swift` | `step` / `recurrence` パラメータ |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrenceInput.swift` | 繰り返しの入力状態 |
+| 移動UI | `LocalPackage/Sources/HometeUI/Components/Weekday/` | `WeekdaySelector` / `WeekdayLabel`（HouseworkTemplateFeatureから移動） |
 | 新規共通UI | `LocalPackage/Sources/HometeUI/Components/Picker/RecurrenceSelector.swift` | 繰り返しの種類と値を選ぶUI |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Template/HouseworkTemplateView.swift` | 「毎月」セクション |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/EditModal/HouseworkTemplateItemEditModal.swift` | 繰り返しの種類の切り替え |
@@ -204,8 +216,8 @@ match /MonthlyItems/{itemId} {
 | 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0020、Firestoreルール（`MonthlyItems`）とルールテスト |
 | 2 | `feat/housework-repeat-option-domain` | #1 | ドメインモデル、日付判定、Client/Impl（取得・監視・`updateTemplate`・`appendItem`）、`HouseworkTemplateListStore`、ユニットテスト |
 | 3 | `feat/housework-repeat-option-display` | #2 | 家事ボード・今日の家事・未完了一覧に毎月の家事を表示する（マージ処理の一般化） |
-| 4 | `feat/housework-repeat-option-template-ui` | #3 | テンプレート画面の「毎月」セクション、編集モーダル・詳細画面、`RecurrenceSelector`、Analytics（`step: template` / `recurrence`） |
-| 5 | `feat/housework-repeat-option-register` | #4 | 登録画面の繰り返し設定、Analytics（`step: register`）、`analytics_events.md` の更新 |
+| 4 | `feat/housework-repeat-option-template-ui` | #3 | テンプレート画面の「毎月」セクション、編集モーダル・詳細画面、`RecurrenceSelector` |
+| 5 | `feat/housework-repeat-option-register` | #4 | Analytics（`step` / `recurrence`）、登録画面の繰り返し設定、`analytics_events.md` の更新 |
 
 - 下のPRがマージされたら、上のPRのベースを `main` に付け替える（`gh pr edit --base main`）
 - 下のPRにレビュー指摘の修正が入ったら、上のブランチを順にrebaseする
@@ -241,30 +253,32 @@ match /MonthlyItems/{itemId} {
 - [x] `HouseworkTemplateContext.templateOfDay(by:calendar:)` で毎月の家事も返すようにし、テストを追加
 
 **PR #4**
-- [ ] `RecurrenceSelector` とPreview（種類ごとのバリエーション）
-- [ ] `HouseworkTemplateDraft` に毎月の家事を追加
-- [ ] テンプレート画面の「毎月」セクションとPreview
-- [ ] 編集モーダル・詳細画面の対応とPreview
-- [ ] Analyticsの `step` / `recurrence` パラメータ
+- [x] `WeekdaySelector` / `WeekdayLabel` を `HometeUI` へ移動（リファクタ）
+- [x] `HouseworkRecurrenceInput` と `RecurrenceSelector`・Preview（種類ごとのバリエーション）
+- [x] `HouseworkTemplateDraft` に毎月の家事を追加
+- [x] テンプレート画面の「毎月」セクションとPreview
+- [x] 編集モーダル・詳細画面の対応とPreview
 
 **PR #5**
-- [ ] `RegisterHouseworkView` に繰り返しの設定欄と登録処理の分岐を追加
-- [ ] 呼び出し元2箇所から `HouseworkTemplateListStore` を渡す
-- [ ] Previewの追加（繰り返しなし / 毎週 / 毎月）
-- [ ] `doc/analytics_events.md` を更新
+- [x] Analyticsの `step` / `recurrence` パラメータ
+- [x] `RegisterHouseworkView` に繰り返しの設定欄と登録処理の分岐を追加（呼び出し元2箇所は既に environment に `HouseworkTemplateListStore` を入れているので変更不要）
+- [x] テンプレートが無い場合の作成と監視開始（`appendItemCreatingTemplateIfNeeded`）とテスト
+- [x] Previewの追加（毎週くり返し。毎月は `RecurrenceSelector` 側のPreviewで網羅）
+- [x] `doc/analytics_events.md` を更新
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
-- [ ] `npm run test:rules` / `npm run test:e2e` 通過（PR #1）
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
+- [ ] `npm run test:rules` / `npm run test:e2e` 通過（PR #1。ローカルは8080番ポートが別プロセスで使用中のため未実行。CIで確認する）
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
 - [ ] 実機/シミュレータで動作確認（登録画面から毎週・毎月を登録 → 家事ボードの該当日に出る、テンプレート画面で編集・削除できる）
 
 ### Phase 4: PR
 
 - [ ] スタックPRを#1から順に作成（`pr-create` スキル使用）
+- [ ] 本番のFirestoreルールをデプロイしてから、アプリを審査に提出する
 - [ ] Danger / CI通過
 - [ ] レビュー対応
 - [ ] マージ
