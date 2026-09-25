@@ -52,15 +52,17 @@ private extension DailyCompletionReminderSettingScreen {
         let current = setting ?? .initial
         let updated = current.updateIsEnabled(isEnabled)
         setting = updated
-
-        if isEnabled {
-            // 権限が決定済みの場合はダイアログを出さずに現在の許可状態が返る
-            let isGranted = await notificationPermissionClient.requestAuthorization()
-            isNotificationDenied = !isGranted
-        } else {
-            isNotificationDenied = false
-        }
+        // 権限ダイアログの応答を待つ間にトグルを戻されても、保存順が画面の操作順とずれないよう先に保存する
         await dailyCompletionReminderUseCase.updateSetting(updated, now: .now, calendar: calendar)
+
+        guard isEnabled else {
+            isNotificationDenied = false
+            return
+        }
+        // 権限が決定済みの場合はダイアログを出さずに現在の許可状態が返る
+        let isGranted = await notificationPermissionClient.requestAuthorization()
+        // 応答を待つ間に無効へ戻された場合は、案内を出さない
+        isNotificationDenied = !isGranted && setting?.isEnabled == true
     }
 
     func changedTime(hour: Int, minute: Int) async {
