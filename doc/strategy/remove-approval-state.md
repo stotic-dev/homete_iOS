@@ -6,9 +6,9 @@
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 設計確定
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] Firestoreデータのマイグレーション実行（stg / prod）
 - [ ] PRレビュー完了
 - [ ] マージ完了
@@ -320,30 +320,29 @@ static var pageableCases: [HouseworkState] {
 - [x] 完了時に同居人へプッシュ通知を送る
 - [x] 家事ボードは「未完了 / 完了」の2タブ
 - [x] 既存データは使い捨てのNodeスクリプトで `completed` に書き換える
-- [ ] `HouseworkState` のデコードにフォールバックを入れるか決める（提案: 入れる）
-- [ ] `reviewerId` / `approvedAt` / `reviewerComment` を削除してよいか確認（提案: 削除する）
-- [ ] 通知・ボタンの文言を確定する
+- [x] `HouseworkState` のデコードにフォールバックを入れる（未知のケースは完了として扱う）
+- [x] `reviewerId` / `approvedAt` / `reviewerComment` を削除する
+- [x] 通知・ボタンの文言を確定する
 
 ### Phase 2: 実装
 
 コミットは対応単位で分ける（[.claude/rules/git-commit.md](../../.claude/rules/git-commit.md)）。
 
-- [ ] ドメイン層: `HouseworkState` / `HouseworkItem` / `HouseworkListStore` の再編（`feat:`）
-- [ ] 通知・Analytics定義の差し替え（`feat:`）
-- [ ] クイックアクションと家事ボード（2タブ化・空表示・メタデータ）の対応（`feat:`）
-- [ ] 家事詳細・感謝メッセージ画面の対応（`feat:`）
-- [ ] 当日サマリー・未完了リストの対応（`feat:`）
-- [ ] ユニットテストの追従・追加（実装コミットに含める）
-- [ ] マイグレーションスクリプトの追加（`chore:`）
-- [ ] ドキュメント更新（`doc/analytics_events.md` ほか）（`docs:`）
-- [ ] 削除した `#Preview` に対応する参照スナップショットの `git rm`（`chore:`）
+- [x] ドメイン層: `HouseworkState` / `HouseworkItem` / `HouseworkListStore` の再編（通知・Analytics定義を含む）
+- [x] クイックアクションと家事ボード（2タブ化・空表示・メタデータ）の対応
+- [x] 家事詳細・感謝メッセージ画面の対応
+- [x] 当日サマリー・未完了リストの対応
+- [x] ユニットテストの追従・追加
+- [x] マイグレーションスクリプトの追加
+- [x] ドキュメント更新（`doc/analytics_events.md` ほか）
+- [x] 削除した `#Preview` に対応する参照スナップショットの `git rm`
 
 ### Phase 3: 検証
 
-- [ ] `make build-local-package` でビルド通過
-- [ ] SwiftLint 通過（`swift-code-verification` スキル）
-- [ ] `make test-packages` 通過
-- [ ] `make check-previews` 通過
+- [x] `make build-local-package` でビルド通過
+- [x] SwiftLint 通過（`swift-code-verification` スキル）
+- [x] `make test-packages` 通過（5ターゲット / 423テスト）
+- [x] `make check-previews` 通過
 - [ ] シミュレータで簡易E2E確認（完了 → ありがとう送信 → 未完了に戻す）
 - [ ] VRTの参照スナップショット更新をXcode Cloudで確認
 
