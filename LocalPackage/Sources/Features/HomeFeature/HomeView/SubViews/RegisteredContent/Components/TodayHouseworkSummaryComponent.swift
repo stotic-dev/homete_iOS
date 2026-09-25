@@ -232,8 +232,7 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 3,
@@ -277,8 +276,7 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 3,
@@ -299,8 +297,7 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "買い物",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 6,

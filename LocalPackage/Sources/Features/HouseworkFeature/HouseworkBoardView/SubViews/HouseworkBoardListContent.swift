@@ -26,11 +26,7 @@ struct HouseworkBoardListContent: View {
     @CommonError var commonError
 
     var body: some View {
-        if let emptyReason = HouseworkBoardEmptyReason(
-            list: list,
-            state: state,
-            ownUserId: loginContext.account.id
-        ) {
+        if let emptyReason = HouseworkBoardEmptyReason(list: list, state: state) {
             HouseworkBoardEmptyView(
                 reason: emptyReason,
                 onCreateTapped: onCreateTapped,
@@ -161,21 +157,21 @@ private extension HouseworkBoardListContent {
 }
 
 #Preview("HouseworkBoardListContent_選択モード") {
-    @Previewable @State var selectedState = HouseworkState.pendingApproval
+    @Previewable @State var selectedState = HouseworkState.completed
     @Previewable @State var isSelecting = true
     HouseworkBoardListContent(
         houseworkListStore: .init(
             houseworkClient: .previewValue,
             cohabitantPushNotificationClient: .previewValue
         ),
-        state: .pendingApproval,
+        state: .completed,
         list: .init(items: [
             .makeForPreview(
                 id: "1",
                 title: "洗濯",
                 point: 20,
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                state: .pendingApproval,
+                state: .completed,
                 executorId: "otherUserId"
             ),
             .makeForPreview(
@@ -183,7 +179,7 @@ private extension HouseworkBoardListContent {
                 title: "掃除",
                 point: 100,
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                state: .pendingApproval,
+                state: .completed,
                 executorId: "otherUserId"
             ),
             .makeForPreview(
@@ -191,7 +187,7 @@ private extension HouseworkBoardListContent {
                 title: "料理",
                 point: 1,
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                state: .pendingApproval,
+                state: .completed,
                 executorId: "ownUserId"
             ),
         ]),

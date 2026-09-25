@@ -1,5 +1,5 @@
 //
-//  HouseworkApprovalView.swift
+//  HouseworkThanksView.swift
 //  homete
 //
 //  Created by 佐藤汰一 on 2025/11/23.
@@ -10,7 +10,7 @@ import HometeResources
 import HometeUI
 import SwiftUI
 
-public struct HouseworkApprovalView: View {
+public struct HouseworkThanksView: View {
 
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -41,7 +41,7 @@ public struct HouseworkApprovalView: View {
                 .padding(.bottom, .space24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle("家事の確認")
+            .navigationTitle("ありがとうを伝える")
             .inlineNavigationBarTitleDisplayMode()
             .softTopScrollEdgeEffect()
             .leadingToolbarItem {
@@ -51,19 +51,19 @@ public struct HouseworkApprovalView: View {
             }
             .fullScreenLoadingIndicator(loadingState)
         }
-        .trackScreenView(.houseworkApproval)
+        .trackScreenView(.houseworkThanks)
     }
 
 }
 
-private extension HouseworkApprovalView {
+private extension HouseworkThanksView {
 
     func notificationSection(_ executorName: String) -> some View {
         section {
             VStack(spacing: .zero) {
-                Text("\(executorName)さんから")
-                Text("「\(item.title)」の")
-                Text("完了報告が届きました")
+                Text("\(executorName)さんが")
+                Text("「\(item.title)」を")
+                Text("終えてくれました")
             }
             .font(with: .body)
             .frame(maxWidth: .infinity)
@@ -102,26 +102,15 @@ private extension HouseworkApprovalView {
     }
 
     func actionButtonContent() -> some View {
-        VStack(spacing: .space16) {
-            Button {
-                loadingState.task {
-                    await tappedApproveButton()
-                }
-            } label: {
-                Text("完了にする")
-                    .frame(maxWidth: .infinity)
+        Button {
+            loadingState.task {
+                await tappedSendThanksButton()
             }
-            .subPrimaryButtonStyle()
-            Button {
-                loadingState.task {
-                    await tappedReconfirmationButton()
-                }
-            } label: {
-                Text("再確認してもらう")
-                    .frame(maxWidth: .infinity)
-            }
-            .primaryButtonStyle()
+        } label: {
+            Text("ありがとうを伝える")
+                .frame(maxWidth: .infinity)
         }
+        .primaryButtonStyle()
         .disabled(inputMessage.isEmpty)
     }
 
@@ -129,35 +118,18 @@ private extension HouseworkApprovalView {
 
 // MARK: プレゼンテーションロジック
 
-private extension HouseworkApprovalView {
+private extension HouseworkThanksView {
 
-    func tappedApproveButton() async {
+    func tappedSendThanksButton() async {
         guard let cohabitantId = account.cohabitantId else { return }
 
         do {
-            try await houseworkListStore.approved(
+            try await houseworkListStore.sendThanks(
                 target: item.originalItem,
-                now: .now,
-                reviwer: account,
+                sender: account,
                 comment: inputMessage,
-                cohabitantId: cohabitantId
-            )
-            dismiss()
-        } catch {
-            commonError = .init(error: error)
-        }
-    }
-
-    func tappedReconfirmationButton() async {
-        guard let cohabitantId = account.cohabitantId else { return }
-
-        do {
-            try await houseworkListStore.rejected(
-                target: item.originalItem,
-                now: .now,
-                reviwer: account,
-                comment: inputMessage,
-                cohabitantId: cohabitantId
+                cohabitantId: cohabitantId,
+                step: .thanks
             )
             dismiss()
         } catch {
@@ -169,10 +141,11 @@ private extension HouseworkApprovalView {
 
 #if DEBUG
 #Preview {
-    HouseworkApprovalView(item: .makeForPreview(
+    HouseworkThanksView(item: .makeForPreview(
         title: "洗濯",
         point: 10,
         indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+        state: .completed,
         executorId: "test",
         executedAt: .distantFuture
     ))
