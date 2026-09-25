@@ -54,6 +54,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case subscriptionManagement = "subscription_management"
     /// 設定画面から開くプッシュ通知権限ガイド
     case settingNotificationPermission = "setting_notification_permission"
+    /// 設定画面から開くふりかえり通知の設定
+    case settingDailyCompletionReminder = "setting_daily_completion_reminder"
     /// ライセンス一覧
     case licenseList = "license_list"
     /// ライセンス詳細

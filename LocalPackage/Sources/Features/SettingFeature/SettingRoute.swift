@@ -16,6 +16,8 @@ enum SettingRoute: Hashable {
     case subscriptionManagement
     /// 通知権限画面
     case notificationPermission
+    /// ふりかえり通知の設定画面
+    case dailyCompletionReminder
     #if DEBUG
     /// デバッグメニュー画面
     case debugMenu

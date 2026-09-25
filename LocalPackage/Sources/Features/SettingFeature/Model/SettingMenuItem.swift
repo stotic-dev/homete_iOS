@@ -13,6 +13,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case memberInvitation
     case taskTemplate
     case notificationPermission
+    case dailyCompletionReminder
     case premiumPlan
     case termsOfService
     case privacyPolicy
@@ -32,8 +33,8 @@ enum SettingMenuItem: Equatable, CaseIterable {
     ) -> [Self] {
         allCases.filter {
             switch $0 {
-            case .taskTemplate:
-                // テンプレート設定項目はグループ参加状態の時のみ表示する
+            case .taskTemplate, .dailyCompletionReminder:
+                // テンプレート・ふりかえり通知は同居人と共有する家事が前提のため、グループ参加状態の時のみ表示する
                 isRegisteredGroup
 
             case .memberInvitation:
@@ -57,6 +58,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .notificationPermission:
             "通知設定"
+
+        case .dailyCompletionReminder:
+            "ふりかえり通知"
 
         case .premiumPlan:
             if case .free = plan {
@@ -91,6 +95,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .notificationPermission:
             "bell.badge.fill"
+
+        case .dailyCompletionReminder:
+            "clock.fill"
 
         case .premiumPlan:
             "crown.fill"
