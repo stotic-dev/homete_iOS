@@ -38,7 +38,8 @@ public final class HouseworkTemplateListStore {
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = [],
         monthlyItems: [HouseworkTemplateMonthlyItem] = [],
-        selectedTemplateId: String? = nil
+        selectedTemplateId: String? = nil,
+        loadState: ListenerLoadState = .loading
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
         self.analyticsClient = analyticsClient
@@ -46,6 +47,7 @@ public final class HouseworkTemplateListStore {
         self.selectedDays = selectedDays
         self.monthlyItems = monthlyItems
         self.selectedTemplateId = selectedTemplateId
+        self.loadState = loadState
     }
 
     /// Storeの初回設定を行う
@@ -195,6 +197,33 @@ public final class HouseworkTemplateListStore {
             }
         }
         self.monthlyItems = monthlyItems
+    }
+
+    /// 選択中のテンプレートに家事を1件追加する。テンプレートがまだなければ作成してから追加する（家事登録画面用）
+    /// - Parameter newTemplateId: テンプレートを新規作成する場合に使うID
+    /// - Note: 新規作成したテンプレートは、追加した家事がすぐ家事一覧に表示されるよう、その場で選択して監視を始める
+    /// - Throws: 読み込みが終わっていない場合は `HouseworkTemplateError.notLoaded`。
+    ///           `selectedTemplateId` が `nil` でも「テンプレートが無い」とは限らず、重複して作成してしまうため
+    public func appendItemCreatingTemplateIfNeeded(
+        _ item: HouseworkTemplateItem,
+        recurrence: HouseworkRecurrence,
+        cohabitantId: String,
+        newTemplateId: @autoclosure () -> String
+    ) async throws {
+        guard loadState == .loaded else {
+            throw HouseworkTemplateError.notLoaded
+        }
+
+        let templateId: String
+        if let selectedTemplateId {
+            templateId = selectedTemplateId
+        } else {
+            templateId = newTemplateId()
+            try await createTemplate(templateId: templateId, name: "default", cohabitantId: cohabitantId)
+            selectedTemplateId = templateId
+            await startObservingItems(templateId: templateId, cohabitantId: cohabitantId)
+        }
+        try await appendItem(item, recurrence: recurrence, templateId: templateId, cohabitantId: cohabitantId)
     }
 
     /// テンプレートに家事を1件追加する（家事登録画面用）
