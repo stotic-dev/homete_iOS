@@ -17,8 +17,8 @@ enum HouseworkQuickActionTest {
 
 extension HouseworkQuickActionTest.ActionsForItemCase {
 
-    @Test("未完了の家事は承認依頼とやらないが行える")
-    func actions_incomplete_returnsRequestReviewAndRemove() {
+    @Test("未完了の家事は完了にするとやらないが行える")
+    func actions_incomplete_returnsCompleteAndRemove() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete)
@@ -29,16 +29,16 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.requestReview, .remove])
+        #expect(actual == [.complete, .remove])
     }
 
-    @Test("承認待ちで自分以外が実施した家事は、承認とやり直し依頼が行える")
-    func actions_pendingApprovalByOtherUser_returnsApproveAndReject() {
+    @Test("完了済みで自分以外が実施した家事は、ありがとうと未完了に戻すが行える")
+    func actions_completedByOtherUser_returnsSendThanksAndReturnToIncomplete() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
             id: "1",
-            state: .pendingApproval,
+            state: .completed,
             executorId: "otherUserId"
         )
 
@@ -48,33 +48,18 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.approve, .reject])
+        #expect(actual == [.sendThanks, .returnToIncomplete])
     }
 
-    @Test("承認待ちで自分が実施した家事は、差し戻ししか行えない")
-    func actions_pendingApprovalByOwnUser_returnsReturnToIncompleteOnly() {
+    @Test("完了済みで自分が実施した家事は、未完了に戻すしか行えない")
+    func actions_completedByOwnUser_returnsReturnToIncompleteOnly() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
             id: "1",
-            state: .pendingApproval,
+            state: .completed,
             executorId: "ownUserId"
         )
-
-        // Act
-
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
-
-        // Assert
-
-        #expect(actual == [.returnToIncomplete])
-    }
-
-    @Test("完了済みの家事は差し戻ししか行えない")
-    func actions_completed_returnsReturnToIncompleteOnly() {
-        // Arrange
-
-        let item = HouseworkBoardItem.makeForPreview(id: "1", state: .completed)
 
         // Act
 
@@ -107,9 +92,8 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
     @Test(
         "状態のみからクイックアクションを判定する（一括操作用）",
         arguments: [
-            (HouseworkState.incomplete, [HouseworkQuickAction.requestReview, .remove]),
-            (.pendingApproval, [.approve, .reject]),
-            (.completed, [.returnToIncomplete]),
+            (HouseworkState.incomplete, [HouseworkQuickAction.complete, .remove]),
+            (.completed, [.sendThanks, .returnToIncomplete]),
             (.notTodo, []),
         ]
     )
@@ -127,37 +111,34 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
 
 extension HouseworkQuickActionTest.BulkNotificationCase {
 
-    @Test("承認依頼の一括通知は件数をまとめたメッセージになる")
-    func bulkNotification_requestReview_returnsCountMessage() {
+    @Test("完了の一括通知は実施者名と件数を含むメッセージになる")
+    func bulkNotification_complete_returnsExecutorNameAndCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.requestReview.bulkNotification(count: 3, reviewerName: "reviewer")
+        let actual = HouseworkQuickAction.complete.bulkNotification(count: 3, senderName: "じっこうしゃ")
 
         // Assert
 
-        #expect(actual == .requestReviewBulkMessage(count: 3))
+        let expected = PushNotificationContent(
+            title: "じっこうしゃさんが家事を終えました",
+            message: "3件の家事が完了しました"
+        )
+        #expect(actual == expected)
     }
 
-    @Test("ありがとうの一括通知は承認者名と件数を含むメッセージになる")
-    func bulkNotification_approve_returnsReviewerNameAndCountMessage() {
+    @Test("ありがとうの一括通知は送信者名と件数を含むメッセージになる")
+    func bulkNotification_sendThanks_returnsSenderNameAndCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.approve.bulkNotification(count: 2, reviewerName: "reviewer")
+        let actual = HouseworkQuickAction.sendThanks.bulkNotification(count: 2, senderName: "おくりぬし")
 
         // Assert
 
-        #expect(actual == .approvedBulkMessage(reviwerName: "reviewer", count: 2))
-    }
-
-    @Test("再確認依頼の一括通知は件数をまとめたメッセージになる")
-    func bulkNotification_reject_returnsCountMessage() {
-        // Act
-
-        let actual = HouseworkQuickAction.reject.bulkNotification(count: 4, reviewerName: "reviewer")
-
-        // Assert
-
-        #expect(actual == .rejectedBulkMessage(count: 4))
+        let expected = PushNotificationContent(
+            title: "おくりぬしさんからありがとうが届きました",
+            message: "2件の家事にありがとうが届きました"
+        )
+        #expect(actual == expected)
     }
 
     @Test(
@@ -167,7 +148,7 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
         // Act
 
-        let actual = action.bulkNotification(count: 1, reviewerName: "reviewer")
+        let actual = action.bulkNotification(count: 1, senderName: "おくりぬし")
 
         // Assert
 
