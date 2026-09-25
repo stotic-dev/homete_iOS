@@ -6,15 +6,20 @@
 //
 
 import HometeDomain
-import HometeUI
 import SwiftUI
 
-struct WeekdayLabel: View {
+/// 曜日を1文字で表示するラベル。選択状態で塗りが変わる
+public struct WeekdayLabel: View {
 
     let weekday: DayOfWeek
     let isSelected: Bool
 
-    var body: some View {
+    public init(weekday: DayOfWeek, isSelected: Bool) {
+        self.weekday = weekday
+        self.isSelected = isSelected
+    }
+
+    public var body: some View {
         Text(weekDayLabel)
             .font(with: .headLineS)
             .frame(maxWidth: .infinity, minHeight: 40)
