@@ -15,6 +15,7 @@
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 		AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 535152FA786C3EF10199AC4D /* HometeLocalNotification */; };
+		B7FEC780BA78A9E533B6AFE4 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A3B833DF798387E007B09FB3 /* HometeDomain */; };
 		6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -136,6 +137,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */,
+				B7FEC780BA78A9E533B6AFE4 /* HometeDomain in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +253,7 @@
 			name = hometeNotificationService;
 			packageProductDependencies = (
 				535152FA786C3EF10199AC4D /* HometeLocalNotification */,
+				A3B833DF798387E007B09FB3 /* HometeDomain */,
 			);
 			productName = hometeNotificationService;
 			productReference = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */;
@@ -1058,6 +1061,10 @@
 		535152FA786C3EF10199AC4D /* HometeLocalNotification */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeLocalNotification;
+		};
+		A3B833DF798387E007B09FB3 /* HometeDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeDomain;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
