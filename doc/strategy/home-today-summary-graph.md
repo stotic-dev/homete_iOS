@@ -101,7 +101,7 @@ public extension TodayHouseworkSummary {
 - ページ型の `TabView` に「家事の数」「ポイント」の `SectorMark` ドーナツを2枚並べる（`innerRadius: .ratio(0.5)`, `angularInset: 2`, `.foregroundStyle(by: .value("名前", userName))`, `.chartLegend(position: .bottom, alignment: .center)`）。構成は `ContributionGraphSection` + `ContributionPieChart` に揃える
 - `ContributionPieChart` は流用しない。`internal` であるうえ、タイトルと説明ポップオーバーの文言（「指定期間中において〜」）が月間用に固定されているため。今日の割合専用の小さなViewとして Home 側に持つ
 - 高さ・ページインジケータの余白は `ContributionGraphSection` の値（`frame(height: 300)` / `padding(.bottom, .space48)`）を基準に、実機で見て調整する
-- 実績0のメンバーは角度0の扇形になるが、データには含まれるので凡例には出る想定。Preview で凡例に表示されることを確認し、出ない場合は `chartForegroundStyleScale(domain:)` でメンバー名を明示する
+- 実績0のメンバーは角度0の扇形になり、Swift Charts の自動判定では凡例から漏れる可能性がある。確実に出すため `chartForegroundStyleScale(domain:)` で全メンバー名を明示する（2枚のドーナツで同じ domain になるので、メンバーの色も揃う）
 
 ### 3. サマリーへの組み込み
 
