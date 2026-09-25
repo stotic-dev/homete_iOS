@@ -1,0 +1,77 @@
+## タイトル: 毎月繰り返す家事をテンプレート配下の家事単位ドキュメント（MonthlyItems）で保持する
+
+* **承認済**
+* stotic-dev
+* 日付: 2026-09-26
+* 関連 Issue: #281（前提: #67、[ADR-0003](0003-housework-template-virtual-view.md)）
+
+## 文脈、背景や問題点の説明
+
+家事テンプレートは「毎週◯曜日」の繰り返しだけを扱っており、家事は `HouseworkTemplates/{templateId}/Days/{dayOfWeek}`（`"0"`〜`"6"` の7ドキュメント）に曜日単位の `items` 配列として保存している。
+
+Issue #281 で「毎月◯日」（例: 25日に家賃の振込）と「毎月第N◯曜日」（例: 第2水曜に資源ゴミ）の繰り返しを追加することになった。曜日を固定キーにした `Days` の構造には、この2つのルールをそのまま載せられない。
+
+**既存の週間テンプレートの仕組み（仮想ビュー方式・楽観的ロック・Presence）を保ったまま、毎月の繰り返しをどう保存するか？**
+
+## 決定事項
+
+* テンプレート配下に新しいサブコレクション `MonthlyItems/{itemId}` を追加し、**1ドキュメント = 1家事**として繰り返しルールを家事自身に持たせる
+
+  ```
+  HouseworkTemplates/{templateId}
+    ├── Days/{dayOfWeek}        ← 既存: 毎週（変更なし）
+    ├── MonthlyItems/{itemId}   ← 新規: 毎月
+    └── Editors/{userId}        ← 既存
+  ```
+
+  ```
+  {
+    "id": String,               // テンプレートアイテムの安定ID（UUID、ドキュメントIDと一致）
+    "title": String,
+    "point": Int,
+    "updatedAt": Timestamp,     // 表示範囲の制御（Days の items と同じ意味）
+    "rule": {
+      "type": "dayOfMonth" | "weekdayOfMonth",
+      "day": Int?,              // dayOfMonth のとき 1〜31
+      "ordinal": Int?,          // weekdayOfMonth のとき 1〜4、最終週は -1
+      "dayOfWeek": Int?         // weekdayOfMonth のとき 0〜6（Days と同じ採番）
+    }
+  }
+  ```
+
+* 既存の `Days` は**変更もデータ移行もしない**。毎週の家事と毎月の家事は別々の場所に保存する
+* 楽観的ロックの `version` はテンプレートのメタドキュメントに1つだけ置き、`Days` と `MonthlyItems` の両方の書き込みで上げる（どちらを変更しても、編集中の他メンバーの保存がコンフリクトとして検知される）
+* 表示するかどうかは日付から判定する
+  * `dayOfMonth`: `min(day, その月の日数)` と日付が一致した日に表示する（29〜31日は、その日がない月は月末に表示する）
+  * `weekdayOfMonth`: その月の第 `ordinal` 週（`-1` は最終週）の `dayOfWeek` に一致した日に表示する
+* 仮想ビュー方式（[ADR-0003](0003-housework-template-virtual-view.md)）の表示ルール（`templateHouseworkItemId` で重複を除く、`updatedAt` より前の日には出さない）は、毎月の家事にもそのまま適用する
+
+## 考慮した選択肢
+
+* **A. `MonthlyItems/{itemId}` に家事単位で保存する（採用）**
+* **B. `Days` と同じくキー単位で保存する**（`MonthDays/{1..31}`、`MonthWeekdays/{ordinal}_{dayOfWeek}`）
+  * 保存の形は `Days` と揃う。一方で、キーの候補が最大67個あり、「月末に寄せる」「最終週」の解釈を読み出し側でキーの組み合わせとして扱う必要がある
+  * テンプレート画面で「毎月の家事」を一覧するとき、キーをまたいで家事を集め直す必要がある
+* **C. 毎週も含めて全家事を `Items/{itemId}` ＋ `rule` に統一する**
+  * データの形は最もきれいになる。一方で、リリース済みユーザーの `Days` を移行する必要がある。移行中に旧バージョンのアプリが `Days` を読み書きすると不整合になるので、強制アップデートか、しばらく両方に書き込む対応が要る
+
+## 決定結果
+
+### 決定にあたり考慮したメリット
+
+* 既存の `Days` とその読み書きに手を入れないため、リリース済みデータの移行が要らず、旧バージョンのアプリとも共存できる
+* 家事単位のドキュメントなので、1件の追加・削除で配列全体を書き直す必要がない
+* 繰り返しルールが家事自身に付いているので、テンプレート画面の「毎月」セクションは `MonthlyItems` を読むだけで一覧できる
+* 将来「隔週」「毎年」などを足すときも `rule.type` を増やせば済む
+
+### 決定にあたり考慮したデメリット
+
+* 毎週（キー単位の配列）と毎月（家事単位のドキュメント）で保存の形が違い、読み書きの実装が2通りになる
+* 1回の保存で `Days` と `MonthlyItems` の両方を書くことがあり、トランザクションで書くドキュメントの数が増える
+* 旧バージョンのアプリは `MonthlyItems` を読まないため、アップデートしていないメンバーの画面には毎月の家事が出ない（`Days` を壊すことはない）
+
+## 参考
+
+* [doc/strategy/housework-repeat-option.md](../strategy/housework-repeat-option.md)
+* [doc/strategy/housework_template.md](../strategy/housework_template.md)
+* [ADR-0003](0003-housework-template-virtual-view.md)
