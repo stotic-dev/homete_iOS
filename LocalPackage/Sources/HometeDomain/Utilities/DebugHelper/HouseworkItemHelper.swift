@@ -19,9 +19,6 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) -> Self {
@@ -33,9 +30,6 @@ public extension HouseworkItem {
             state: state,
             executorId: executorId,
             executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
@@ -49,9 +43,6 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) -> Self {
@@ -63,9 +54,6 @@ public extension HouseworkItem {
             state: state,
             executorId: executorId,
             executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
@@ -78,9 +66,6 @@ public extension HouseworkItem {
         state: HouseworkState? = nil,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
         expiredAt: Date? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) -> HouseworkItem {
@@ -90,9 +75,6 @@ public extension HouseworkItem {
         let inputState = state ?? self.state
         let inputExecutorId = executorId
         let inputExecutedAt = executedAt
-        let inputReviewerId = reviewerId
-        let inputApprovedAt = approvedAt
-        let inputReviewerComment = reviewerComment
         let inputExpiredAt = expiredAt ?? self.expiredAt
         let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
 
@@ -104,9 +86,6 @@ public extension HouseworkItem {
             state: inputState,
             executorId: inputExecutorId,
             executedAt: inputExecutedAt,
-            reviewerId: inputReviewerId,
-            approvedAt: inputApprovedAt,
-            reviewerComment: inputReviewerComment,
             expiredAt: inputExpiredAt,
             templateHouseworkItemId: inputTemplateHouseworkItemId
         )
