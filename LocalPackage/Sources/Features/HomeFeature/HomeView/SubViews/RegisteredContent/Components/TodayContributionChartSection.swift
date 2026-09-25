@@ -73,6 +73,8 @@ private extension TodayContributionChartSection {
                     }
                 }
             }
+            // 実績0のメンバーは扇形が無いため、凡例から漏れないよう全員を明示する
+            .chartForegroundStyleScale(domain: contributions.map(\.userName))
             .chartLegend(position: .bottom, alignment: .center)
         }
     }
