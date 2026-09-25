@@ -13,6 +13,22 @@ public enum MonthlyRecurrenceRule: Sendable, Hashable {
     /// 毎月◯日（1〜31）。その日がない月は月末に表示する
     case dayOfMonth(Int)
 
+    /// 「毎月25日」のような表示用の文言
+    public var label: String {
+        switch self {
+        case let .dayOfMonth(day):
+            "毎月\(day)日"
+        }
+    }
+
+    /// 一覧に並べるときに`lhs`が`rhs`より前に来るか（日付順）
+    public static func isOrderedBefore(_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case let (.dayOfMonth(lhsDay), .dayOfMonth(rhsDay)):
+            lhsDay < rhsDay
+        }
+    }
+
     /// 指定日がこのルールに当てはまるかを返す
     public func matches(_ date: Date, calendar: Calendar) -> Bool {
         guard let daysInMonth = calendar.range(of: .day, in: .month, for: date)?.count else { return false }

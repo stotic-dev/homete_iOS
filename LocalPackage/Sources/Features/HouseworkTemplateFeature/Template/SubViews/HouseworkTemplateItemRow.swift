@@ -12,13 +12,22 @@ import SwiftUI
 struct HouseworkTemplateItemRow: View {
 
     let item: HouseworkTemplateItem
+    /// 「毎月25日」のような繰り返し方の表示。曜日ごとのリストのように、見出しで分かる場合は`nil`
+    var recurrenceLabel: String?
 
     var body: some View {
         HStack(spacing: .space8) {
-            Text(item.title)
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: .space4) {
+                Text(item.title)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                if let recurrenceLabel {
+                    Text(recurrenceLabel)
+                        .font(with: .caption)
+                        .foregroundStyle(.onSubSurface)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             PointLabel(point: item.point)
         }
         .padding(.horizontal, .space16)
@@ -41,6 +50,19 @@ struct HouseworkTemplateItemRow: View {
             point: 10,
             updatedAt: .distantPast
         )
+    )
+    .padding()
+}
+
+#Preview("HouseworkTemplateItemRow_毎月", traits: .sizeThatFitsLayout) {
+    HouseworkTemplateItemRow(
+        item: .init(
+            id: .init(id: "1"),
+            title: "家賃の振込",
+            point: 5,
+            updatedAt: .distantPast
+        ),
+        recurrenceLabel: "毎月25日"
     )
     .padding()
 }

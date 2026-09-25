@@ -96,10 +96,7 @@ struct HouseworkTemplateView: View {
         }
         .sheet(item: $presentingEditModal) { item in
             HouseworkTemplateItemEditModalScreen(
-                mode: .edit(before: .init(
-                    item: item,
-                    selectedDays: Set(draft.registeredDays(for: item.id))
-                ))
+                mode: .edit(before: .init(item: item, recurrence: recurrence(for: item)))
             ) { input in
                 tappedEditItemButton(input: input)
             }
@@ -107,7 +104,7 @@ struct HouseworkTemplateView: View {
         .navigationDestination(item: $presentingDetailItem) { item in
             HouseworkTemplateItemDetailView(
                 item: item,
-                registeredDays: draft.registeredDays(for: item.id),
+                recurrence: recurrence(for: item),
                 onEdit: { input in
                     tappedEditItemButton(input: input)
                 },
@@ -163,6 +160,7 @@ private extension HouseworkTemplateView {
                         items: draft.items(in: day)
                     )
                 }
+                monthlySection(draft.displayedMonthlyItems)
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space32)
@@ -263,6 +261,46 @@ private extension HouseworkTemplateView {
             }
     }
 
+    func monthlySection(_ monthlyItems: [HouseworkTemplateMonthlyItem]) -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("毎月")
+                .font(with: .headLineS)
+                .foregroundStyle(.onSubSurface)
+            VStack(spacing: .space8) {
+                if !monthlyItems.isEmpty {
+                    ForEach(monthlyItems) { monthlyItem in
+                        monthlyItemRow(monthlyItem)
+                    }
+                } else {
+                    emptyDayRow()
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.space8)
+            .background {
+                RoundedRectangle(radius: .radius8)
+                    .fill(.subSurface)
+            }
+        }
+    }
+
+    /// 毎月の家事の行。曜日間のドラッグ&ドロップは毎週の家事だけの機能なので、ドラッグはできない
+    func monthlyItemRow(_ monthlyItem: HouseworkTemplateMonthlyItem) -> some View {
+        HouseworkTemplateItemRow(item: monthlyItem.item, recurrenceLabel: monthlyItem.rule.label)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                presentingDetailItem = monthlyItem.item
+            }
+            .contextMenu {
+                Button("編集") {
+                    presentingEditModal = monthlyItem.item
+                }
+                Button("削除", role: .destructive) {
+                    tappedDeleteItemButton(itemId: monthlyItem.id)
+                }
+            }
+    }
+
     func addItemButton() -> some View {
         Button {
             presentingAddModal = true
@@ -325,14 +363,22 @@ private extension HouseworkTemplateView {
 
 private extension HouseworkTemplateView {
 
+    /// 編集・詳細画面に渡すアイテムの繰り返し方
+    /// - Note: 表示中のアイテムは必ずどこかに登録されているため、見つからないのは表示直後に削除された場合だけ
+    func recurrence(for item: HouseworkTemplateItem) -> HouseworkRecurrence {
+        draft.recurrence(for: item.id) ?? .weekly([])
+    }
+
     func tappedCreateItemButton(input: TemplateItemEditInput) {
+        guard let recurrence = input.recurrence.recurrence else { return }
         let item = input.createTemplate(now: now)
-        draft.addItem(item, to: input.days)
+        draft.addItem(item, recurrence: recurrence)
     }
 
     func tappedEditItemButton(input: TemplateItemEditInput) {
+        guard let recurrence = input.recurrence.recurrence else { return }
         let newItem = input.createTemplate(now: now)
-        draft.replaceItem(newItem, in: input.days)
+        draft.replaceItem(newItem, recurrence: recurrence)
     }
 
     func tappedDeleteItemButton(itemId: HouseworkTemplateItem.ItemId, from day: DayOfWeek? = nil) {
@@ -376,10 +422,9 @@ private extension HouseworkTemplateView {
     func tappedSaveButton(templateId: String) async {
         guard let cohabitantId else { return }
         do {
-            // 毎月の家事の編集はまだ画面にないため、現在の内容をそのまま渡して差分なしにする
             try await templateListStore.saveTemplate(
                 days: draft.saveDays,
-                monthlyItems: templateListStore.monthlyItems,
+                monthlyItems: draft.monthlyItems,
                 templateId: templateId,
                 cohabitantId: cohabitantId,
                 currentVersion: editorContext.currentTemplateVersion
@@ -496,9 +541,19 @@ private extension HouseworkTemplateView {
             ),
         ],
     ]
+    let monthlyItems: [HouseworkTemplateMonthlyItem] = [
+        .init(
+            item: .init(id: .init(id: "4"), title: "家賃の振込", point: 5, updatedAt: .now),
+            rule: .dayOfMonth(25)
+        ),
+        .init(
+            item: .init(id: .init(id: "5"), title: "資源ゴミ", point: 3, updatedAt: .now),
+            rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)
+        ),
+    ]
     HouseworkTemplateView(
-        initialDraft: .constant(.init(days: templateData)),
-        draft: .constant(.init(days: templateData)),
+        initialDraft: .constant(.init(days: templateData, monthlyItems: monthlyItems)),
+        draft: .constant(.init(days: templateData, monthlyItems: monthlyItems)),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
         isShowAd: true,
         loadFailure: nil,
