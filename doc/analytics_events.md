@@ -102,6 +102,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
 | `setting_notification_permission` | `SettingNotificationPermissionGuideView` |
+| `setting_daily_completion_reminder` | `DailyCompletionReminderSettingView` |
 | `license_list` | `LicenseListView` |
 | `license_detail` | `LicenseDetailView` |
 

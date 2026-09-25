@@ -109,6 +109,7 @@ Domain Models（Codable構造体）
 
 **エントリーポイント:**
 - `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
+- `hometeNotificationService/NotificationService.swift` - Notification Service Extension。家事の承認通知を受けて、今日のふりかえり通知を予約する（[ADR-0020](doc/adr/0020-daily-completion-reminder-on-device.md)）
 - `LocalPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
 - `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
 
@@ -138,7 +139,7 @@ View → Store（AppDependenciesを受け取る）
 - コレクションパスは`CollectionPath.swift`で定義
 
 **Cloud Functions** (`firebase/functions/src/`):
-- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）
+- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 
 **認証:**
