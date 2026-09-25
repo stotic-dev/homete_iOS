@@ -493,3 +493,149 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     }
 
 }
+
+// MARK: - ふりかえり通知
+
+extension HouseworkListStoreTest {
+
+    @MainActor
+    struct DailyCompletionReminderCase {
+
+        private let inputCohabitantId = "cohabitantId"
+
+    }
+
+}
+
+extension HouseworkListStoreTest.DailyCompletionReminderCase {
+
+    @Test("今日完了した家事を受け取ると、今日のふりかえり通知を予約する")
+    func startObserving_completedToday_schedulesReminder() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+                state: .completed
+            ),
+        ]
+        let expected = DailyCompletionReminderRequest(
+            identifier: "dailyCompletionReminder-2026-9-25",
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0),
+            title: "今日もおつかれさまでした",
+            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+        )
+        // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in inputItems }
+            )
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkManager: manager,
+                    dailyCompletionReminderUseCase: .init(
+                        client: .init(
+                            loadSetting: { .init(isEnabled: true, hour: 21, minute: 0) },
+                            schedule: { request in
+                                // Assert
+
+                                #expect(request == expected)
+                                confirmation()
+                                continuation.resume()
+                            },
+                            cancel: { _ in Issue.record() }
+                        )
+                    ),
+                    calendar: .japanese,
+                    now: { now }
+                )
+
+                // Act
+
+                Task {
+                    _ = store
+                    await manager.setupObserver(
+                        currentTime: now,
+                        cohabitantId: inputCohabitantId,
+                        calendar: .japanese,
+                        storagePolicy: .premium
+                    )
+                    streamContinuation.yield(inputItems)
+                }
+            }
+        }
+        streamContinuation.finish()
+    }
+
+    @Test("今日完了した家事が無ければ、今日のふりかえり通知を取り消す")
+    func startObserving_noCompletedToday_cancelsReminder() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+                state: .pendingApproval
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 24),
+                state: .completed
+            ),
+        ]
+        // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in inputItems }
+            )
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkManager: manager,
+                    dailyCompletionReminderUseCase: .init(
+                        client: .init(
+                            loadSetting: { .init(isEnabled: true, hour: 21, minute: 0) },
+                            schedule: { _ in Issue.record() },
+                            cancel: { identifier in
+                                // Assert
+
+                                #expect(identifier == "dailyCompletionReminder-2026-9-25")
+                                confirmation()
+                                continuation.resume()
+                            }
+                        )
+                    ),
+                    calendar: .japanese,
+                    now: { now }
+                )
+
+                // Act
+
+                Task {
+                    _ = store
+                    await manager.setupObserver(
+                        currentTime: now,
+                        cohabitantId: inputCohabitantId,
+                        calendar: .japanese,
+                        storagePolicy: .premium
+                    )
+                    streamContinuation.yield(inputItems)
+                }
+            }
+        }
+        streamContinuation.finish()
+    }
+
+}

@@ -16,12 +16,17 @@ public final class HouseworkListStore {
     public private(set) var items: StoredAllHouseworkList
     /// 家事のスナップショットリスナーの購読状態
     public private(set) var loadState: ListenerLoadState = .loading
-    private var calendar: Calendar = .autoupdatingCurrent
+    private let calendar: Calendar
+    private let now: @MainActor @Sendable () -> Date
+    /// 最後にふりかえり通知へ反映した「日付と、その日に完了した家事があるか」
+    /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す
+    private var lastReminderSyncState: DailyCompletionReminderSyncState?
 
     private let houseworkClient: HouseworkClient
     private let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     private let houseworkManager: HouseworkManager
     private let analyticsClient: AnalyticsClient
+    private let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
@@ -30,6 +35,9 @@ public final class HouseworkListStore {
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         analyticsClient: AnalyticsClient = .previewValue,
+        dailyCompletionReminderUseCase: DailyCompletionReminderUseCase = .init(client: .previewValue),
+        calendar: Calendar = .autoupdatingCurrent,
+        now: @escaping @MainActor @Sendable () -> Date = { .now },
         items: [DailyHouseworkList] = [],
         idGenerator _: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
@@ -37,6 +45,9 @@ public final class HouseworkListStore {
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.houseworkManager = houseworkManager
         self.analyticsClient = analyticsClient
+        self.dailyCompletionReminderUseCase = dailyCompletionReminderUseCase
+        self.calendar = calendar
+        self.now = now
         self.items = .init(value: items)
 
         Task {
@@ -221,6 +232,7 @@ private extension HouseworkListStore {
                 )
                 print("did receive current items: \(items)")
                 loadState = .loaded
+                await syncDailyCompletionReminder()
 
             case let .failure(error):
                 print("error occurred at housework snapshot listener: \(error)")
@@ -248,6 +260,27 @@ private extension HouseworkListStore {
         }
     }
 
+    /// 今日完了した家事があるかを、ふりかえり通知の予約に反映する
+    func syncDailyCompletionReminder() async {
+        let currentDate = now()
+        let hasCompletedHousework = items.value.contains { dailyList in
+            calendar.isDate(dailyList.metaData.indexedDate.value, inSameDayAs: currentDate)
+                && dailyList.items.contains { $0.state == .completed }
+        }
+        let syncState = DailyCompletionReminderSyncState(
+            day: calendar.startOfDay(for: currentDate),
+            hasCompletedHousework: hasCompletedHousework
+        )
+        guard syncState != lastReminderSyncState else { return }
+
+        lastReminderSyncState = syncState
+        await dailyCompletionReminderUseCase.syncToday(
+            hasCompletedHousework: hasCompletedHousework,
+            now: currentDate,
+            calendar: calendar
+        )
+    }
+
     func pushNotificationWithAsync(notification: PushNotificationContent, cohabitantId: String) {
         Task.detached {
             try await self.cohabitantPushNotificationClient.send(
@@ -256,5 +289,13 @@ private extension HouseworkListStore {
             )
         }
     }
+
+}
+
+/// ふりかえり通知へ最後に反映した内容
+private struct DailyCompletionReminderSyncState: Equatable {
+
+    let day: Date
+    let hasCompletedHousework: Bool
 
 }
