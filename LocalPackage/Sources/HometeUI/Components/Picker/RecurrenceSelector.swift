@@ -36,6 +36,8 @@ public struct RecurrenceSelector: View {
             .pickerStyle(.segmented)
             kindContent()
         }
+        // 日付・週のメニューを、パッケージ内のPreviewでもアプリと同じアクセントカラーで表示する
+        .tint(.accent)
     }
 
 }
