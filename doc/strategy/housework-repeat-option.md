@@ -99,7 +99,9 @@ Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-002
 
 ### 2. 表示のマージ処理
 
-今は `HouseworkTemplateContext.templateOfDay(by:calendar:)` がその曜日の `HouseworkTemplateDay` を返し、`HouseworkTemplateDay.applyTemplate(...)` が仮想の家事を足している。これを「その日に表示するテンプレートの家事の一覧」を返す形に一般化する。
+家事ボード・今日の家事・未完了一覧は、どれも `HouseworkTemplateContext.templateOfDay(by:calendar:)` でその日のテンプレート（`HouseworkTemplateDay?`）を取り、`HouseworkTemplateDay.applyTemplate(...)` で仮想の家事を足している。
+
+`templateOfDay` が「その曜日の毎週の家事 + その日付に当てはまる毎月の家事」を1つの `HouseworkTemplateDay` にまとめて返すように変える。
 
 ```swift
 public struct HouseworkTemplateContext {
@@ -107,13 +109,13 @@ public struct HouseworkTemplateContext {
     public let houseworkTemplate: [HouseworkTemplateDay]
     public let monthlyItems: [HouseworkTemplateMonthlyItem]   // 追加
 
-    /// 指定日に表示するテンプレートの家事（毎週 + 毎月）
-    public func templateItems(on date: Date, calendar: Calendar) -> [HouseworkTemplateItem]
+    /// 指定日付に表示するテンプレート（毎週 + 当てはまる毎月）。どちらも無ければ nil
+    public func templateOfDay(by date: Date, calendar: Calendar) -> HouseworkTemplateDay?
 }
 ```
 
-- 重複除去・`updatedAt` の判定は `applyTemplate` のロジックをそのまま使い、入力を `[HouseworkTemplateItem]` にする（`HouseworkTemplateDay` のメソッドから、アイテム配列を受け取る関数に切り出す）
-- 呼び出し側（`HouseworkBoardList` / `TodayHouseworkSummary` / `IncompleteHouseworkListView` / `HouseworkBoardScreen` / `TodayHouseworkSummaryComponent`）は `templateOfDay` から `templateItems(on:calendar:)` に置き換える
+- 重複除去・`updatedAt` の判定（`applyTemplate`）と、3つの呼び出し元（`HouseworkBoardScreen` / `TodayHouseworkSummaryComponent` / `IncompleteHouseworkListView`）は変更しない
+- 当初は `templateItems(on:calendar:)` を新設して `applyTemplate` をアイテム配列向けに切り出す予定だったが、既存の戻り値の型のままで毎月の家事を含められるため、差分が小さいこちらを採用した
 
 ### 3. Client / Firestore
 
@@ -179,13 +181,11 @@ match /MonthlyItems/{itemId} {
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateMonthlyItem.swift` | 毎月の家事 |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrence.swift` | 家事の繰り返し方（毎週 / 毎月） |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateUpdate.swift` | 保存で書き込む内容 |
-| 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateContext.swift` | `monthlyItems` と `templateItems(on:calendar:)` |
-| 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateDay.swift` | `applyTemplate` をアイテム配列で使えるように切り出す |
+| 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateContext.swift` | `monthlyItems` を持ち、`templateOfDay` で毎月の家事も返す |
 | 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateListStore.swift` | `MonthlyItems` の監視、`saveTemplate`、`appendItem` |
 | 修正Client | `LocalPackage/Sources/HometeDomain/Dependencies/HouseworkTemplateClient.swift` | 毎月の家事の取得・監視、`updateTemplate`、`appendItem` |
 | 修正Impl | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplHouseworkTemplateClient.swift` | 上記のFirestore実装 |
 | 修正Analytics | `LocalPackage/Sources/HometeDomain/AnalyticsLog/HouseworkTemplateAnalyticsAction.swift` | `step` / `recurrence` パラメータ |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkBoardList.swift` / `TodayHouseworkSummary.swift` ほか | マージ処理の呼び出しを置き換え |
 | 新規共通UI | `LocalPackage/Sources/HometeUI/Components/Picker/RecurrenceSelector.swift` | 繰り返しの種類と値を選ぶUI |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Template/HouseworkTemplateView.swift` | 「毎月」セクション |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/EditModal/HouseworkTemplateItemEditModal.swift` | 繰り返しの種類の切り替え |
@@ -238,9 +238,7 @@ match /MonthlyItems/{itemId} {
 - [x] `HouseworkTemplateListStore` の `MonthlyItems` 監視・`saveTemplate`・`appendItem`・変更検知（`itemChanges`）とテスト
 
 **PR #3**
-- [ ] `HouseworkTemplateContext.templateItems(on:calendar:)` とテスト
-- [ ] `applyTemplate` をアイテム配列で使えるように切り出す
-- [ ] `HouseworkBoardList` / `TodayHouseworkSummary` / `IncompleteHouseworkListView` ほか呼び出し側の置き換えとテスト
+- [x] `HouseworkTemplateContext.templateOfDay(by:calendar:)` で毎月の家事も返すようにし、テストを追加
 
 **PR #4**
 - [ ] `RecurrenceSelector` とPreview（種類ごとのバリエーション）
