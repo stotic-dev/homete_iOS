@@ -391,8 +391,9 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
         let now = Date()
         let executedAt = Date.distantPast
         // DailyHouseworkListは先頭要素のindexedDateをメタデータに使うため、要素ごとに
-        // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる
-        let indexedDate = Date()
+        // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる。
+        // 通知のdataに日付が載るため、実行日時に依らない固定値にする
+        let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
             HouseworkItem.makeForTest(
                 id: 1,
@@ -419,10 +420,10 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                 reviewerComment: "ありがとう！"
             )
         }
-        let expectedNotification = PushNotificationContent.approvedBulkMessage(
-            reviwerName: inputAccount.userName,
-            count: inputItems.count,
-            houseworkDate: indexedDate
+        let expectedNotification = PushNotificationContent(
+            title: "ownが家事を承認しました！",
+            message: "2件の家事が完了として承認されました",
+            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
         )
 
         await confirmation(expectedCount: 3) { confirmation in
