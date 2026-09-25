@@ -330,6 +330,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
             state: .pendingApproval,
             executorId: "executorId",
             executedAt: .distantPast
@@ -347,10 +348,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             reviewer: inputReviewer.id,
             comment: inputComment
         )
-        let expectedNotificationContent = PushNotificationContent.approvedMessage(
-            reviwerName: inputReviewer.userName,
-            houseworkTitle: inputHouseworkItem.title,
-            comment: inputComment
+        let expectedNotificationContent = PushNotificationContent(
+            title: "レビュアーが「title」を承認しました！",
+            message: inputComment,
+            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
         )
 
         await confirmation(expectedCount: 2) { confirmation in

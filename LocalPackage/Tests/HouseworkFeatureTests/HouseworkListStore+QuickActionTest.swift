@@ -421,7 +421,8 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
         }
         let expectedNotification = PushNotificationContent.approvedBulkMessage(
             reviwerName: inputAccount.userName,
-            count: inputItems.count
+            count: inputItems.count,
+            houseworkDate: indexedDate
         )
 
         await confirmation(expectedCount: 3) { confirmation in

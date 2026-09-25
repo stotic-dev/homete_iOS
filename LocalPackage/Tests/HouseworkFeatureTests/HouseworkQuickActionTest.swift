@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import Foundation
 @testable import HometeDomain
 @testable import HouseworkFeature
 import Testing
@@ -131,7 +132,11 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     func bulkNotification_requestReview_returnsCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.requestReview.bulkNotification(count: 3, reviewerName: "reviewer")
+        let actual = HouseworkQuickAction.requestReview.bulkNotification(
+            count: 3,
+            reviewerName: "reviewer",
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
+        )
 
         // Assert
 
@@ -142,18 +147,31 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     func bulkNotification_approve_returnsReviewerNameAndCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.approve.bulkNotification(count: 2, reviewerName: "reviewer")
+        let actual = HouseworkQuickAction.approve.bulkNotification(
+            count: 2,
+            reviewerName: "reviewer",
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
+        )
 
         // Assert
 
-        #expect(actual == .approvedBulkMessage(reviwerName: "reviewer", count: 2))
+        let expected = PushNotificationContent(
+            title: "reviewerが家事を承認しました！",
+            message: "2件の家事が完了として承認されました",
+            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
+        )
+        #expect(actual == expected)
     }
 
     @Test("再確認依頼の一括通知は件数をまとめたメッセージになる")
     func bulkNotification_reject_returnsCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.reject.bulkNotification(count: 4, reviewerName: "reviewer")
+        let actual = HouseworkQuickAction.reject.bulkNotification(
+            count: 4,
+            reviewerName: "reviewer",
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
+        )
 
         // Assert
 
@@ -167,7 +185,11 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
         // Act
 
-        let actual = action.bulkNotification(count: 1, reviewerName: "reviewer")
+        let actual = action.bulkNotification(
+            count: 1,
+            reviewerName: "reviewer",
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
+        )
 
         // Assert
 

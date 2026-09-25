@@ -89,7 +89,7 @@ extension HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
-        guard !items.isEmpty else { return }
+        guard let firstItem = items.first else { return }
 
         for item in items {
             try await perform(
@@ -103,9 +103,11 @@ extension HouseworkListStore {
             )
         }
 
+        // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
         let notification = action.bulkNotification(
             count: items.count,
-            reviewerName: account.userName
+            reviewerName: account.userName,
+            houseworkDate: firstItem.originalItem.indexedDate.value
         )
         guard let notification else { return }
 

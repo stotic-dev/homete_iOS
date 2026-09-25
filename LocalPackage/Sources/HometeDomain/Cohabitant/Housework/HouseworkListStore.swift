@@ -116,7 +116,12 @@ public final class HouseworkListStore {
                 transform: { $0.updateApproved(at: now, reviewer: reviwer.id, comment: comment) },
                 notification: notify
                     ? {
-                        .approvedMessage(reviwerName: reviwer.userName, houseworkTitle: target.title, comment: comment)
+                        .approvedMessage(
+                            reviwerName: reviwer.userName,
+                            houseworkTitle: target.title,
+                            comment: comment,
+                            houseworkDate: target.indexedDate.value
+                        )
                     }
                     : nil
             )

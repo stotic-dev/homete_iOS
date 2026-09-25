@@ -5,14 +5,20 @@
 //  Created by 佐藤汰一 on 2025/11/12.
 //
 
+import Foundation
+
 public struct PushNotificationContent: Equatable, Sendable {
 
     public let title: String
     public let message: String
+    /// 受け取った端末で通知の種類を判定するための付加情報
+    /// - Note: 空でない場合、受け取った端末でNotification Service Extensionが起動する
+    public let data: [String: String]
 
-    public init(title: String, message: String) {
+    public init(title: String, message: String, data: [String: String] = [:]) {
         self.title = title
         self.message = message
+        self.data = data
     }
 
 }
@@ -33,10 +39,16 @@ public extension PushNotificationContent {
         )
     }
 
-    static func approvedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
+    static func approvedMessage(
+        reviwerName: String,
+        houseworkTitle: String,
+        comment: String,
+        houseworkDate: Date
+    ) -> Self {
         .init(
             title: "\(reviwerName)が「\(houseworkTitle)」を承認しました！",
-            message: comment
+            message: comment,
+            data: HouseworkApprovedNotificationData(houseworkDate: houseworkDate).payload
         )
     }
 
@@ -54,10 +66,11 @@ public extension PushNotificationContent {
         )
     }
 
-    static func approvedBulkMessage(reviwerName: String, count: Int) -> Self {
+    static func approvedBulkMessage(reviwerName: String, count: Int, houseworkDate: Date) -> Self {
         .init(
             title: "\(reviwerName)が家事を承認しました！",
-            message: "\(count)件の家事が完了として承認されました"
+            message: "\(count)件の家事が完了として承認されました",
+            data: HouseworkApprovedNotificationData(houseworkDate: houseworkDate).payload
         )
     }
 
