@@ -20,7 +20,9 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "21"
+  # firebase/functions/package.json の engines.node（Cloud Functionsの実行環境）と揃える。
+  # Firebase CLIはESM-onlyの依存をrequire()するため、require(esm)が使えないNode 21では起動時に落ちる。
+  NODE_VERSION: "22"
   JAVA_VERSION: "21" # Firebase Emulator用
   FUNCTIONS_DIR: firebase/functions
 
@@ -30,7 +32,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [21]
+        node-version: [22]
 
     steps:
       # 1. リポジトリのチェックアウト
