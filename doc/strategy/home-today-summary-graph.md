@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -29,7 +29,8 @@
 - 集計対象は当日の `state == .completed` の家事のみ。実行者（`executorId`）ごとに集計する
   - 承認待ち（`pendingApproval`）は含めない（月間の `HouseworkContribution.make` と同じ基準）
   - 未完了（`incomplete`）・未登録のテンプレート家事は完了していないので対象外
-- 同居人グループの全メンバーを凡例に表示する。今日まだ何もしていないメンバーも「0件 / 0pt」として含める
+- 同居人グループの全メンバーを凡例に表示する。今日まだ何もしていないメンバーも0件・0ptのデータとして含める
+- 扇形の中に「3件」「60pt」のように値を表示する。値が0のメンバーは扇形が無いので表示しない
 - 現在のメンバーに含まれない `executorId`（グループを抜けたユーザーなど）の家事は集計しない（月間サマリーと同じ扱い）
 - メンバーの色は月間の「家事達成割合」ドーナツと同じく、Swift Charts がメンバー名ごとに自動で割り当てる
 - 表示の出し分け
@@ -128,7 +129,7 @@ case .hasIncomplete:
 | 修正モデル | `LocalPackage/Sources/Features/HouseworkFeature/Model/TodayHouseworkSummary.swift` | `memberContributions(members:)` を追加 |
 | 新規View | `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/RegisteredContent/Components/TodayContributionChartSection.swift` | 件数・ポイントのドーナツ2枚（ページ型TabView） |
 | 修正View | `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/RegisteredContent/Components/TodayHouseworkSummaryComponent.swift` | 達成率の直下にグラフを差し込み、Previewを追加 |
-| 修正テスト | `LocalPackage/Tests/HouseworkFeatureTests/TodayHouseworkSummaryTest.swift` | `memberContributions` のテストを追加 |
+| 新規テスト | `LocalPackage/Tests/HouseworkFeatureTests/TodayMemberContributionTest.swift` | `memberContributions` のテスト（既存の `TodayHouseworkSummaryTest.swift` が800行超のため別ファイル） |
 
 ## タスク
 
@@ -143,23 +144,23 @@ case .hasIncomplete:
 
 ### Phase 2: 実装
 
-- [ ] `TodayMemberContribution` の追加
-- [ ] `TodayHouseworkSummary.memberContributions(members:)` の追加
-- [ ] ユニットテストの追加
+- [x] `TodayMemberContribution` の追加
+- [x] `TodayHouseworkSummary.memberContributions(members:)` の追加
+- [x] ユニットテストの追加
   - completedのみを実行者ごとに件数・ポイント集計する
   - pendingApproval / incomplete は集計に含めない
   - 実績0のメンバーも0件・0ptで含まれる
   - メンバー外の `executorId` は集計しない
   - 並び順が `members.value`（自分が先頭）と一致する
-- [ ] `TodayContributionChartSection` の実装
-- [ ] `TodayHouseworkSummaryComponent` への組み込み
-- [ ] Previewの追加・修正（複数メンバーで完了あり / 全て完了 / 完了0件でグラフ非表示）
+- [x] `TodayContributionChartSection` の実装
+- [x] `TodayHouseworkSummaryComponent` への組み込み
+- [x] Previewの追加・修正（`TodayContributionChartSection` に2人とも実績あり / 実績0のメンバーあり、親の「未完了4件以下」にメンバーを設定してグラフ表示）
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
 - [ ] 実機/シミュレータで動作確認（凡例に実績0のメンバーが出ること、スワイプ切り替え）
 
