@@ -106,8 +106,8 @@ struct HouseworkTemplateListStoreTest {
         }
     }
 
-    @Test("saveDaysが成功すると、updateDaysが呼ばれselectedDaysの該当dayOfWeekが置き換えられ、未登録は追加される")
-    func saveDaysMergesIntoSelectedDays() async throws {
+    @Test("saveTemplateが成功すると、updateTemplateが呼ばれselectedDaysの該当dayOfWeekが置き換えられ、未登録は追加される")
+    func saveTemplateMergesIntoSelectedDays() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -140,8 +140,8 @@ struct HouseworkTemplateListStoreTest {
         try await confirmation { confirmation in
             let store = HouseworkTemplateListStore(
                 houseworkTemplateClient: .init(
-                    updateDays: { days, templateId, cohabitantId, currentVersion in
-                        #expect(days == inputDays)
+                    updateTemplate: { update, templateId, cohabitantId, currentVersion in
+                        #expect(update == HouseworkTemplateUpdate(days: inputDays))
                         #expect(templateId == Self.inputTemplateId)
                         #expect(cohabitantId == Self.inputCohabitantId)
                         #expect(currentVersion == inputCurrentVersion)
@@ -153,8 +153,9 @@ struct HouseworkTemplateListStoreTest {
 
             // Act
 
-            try await store.saveDays(
-                inputDays,
+            try await store.saveTemplate(
+                days: inputDays,
+                monthlyItems: [],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
                 currentVersion: inputCurrentVersion
@@ -166,8 +167,8 @@ struct HouseworkTemplateListStoreTest {
         }
     }
 
-    @Test("saveDaysに空配列を渡すと、updateDaysは呼ばれずselectedDaysも変わらない")
-    func saveDaysWithEmptyIsNoop() async throws {
+    @Test("saveTemplateで書き込む内容がない場合、updateTemplateは呼ばれずselectedDaysも変わらない")
+    func saveTemplateWithEmptyIsNoop() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -179,15 +180,16 @@ struct HouseworkTemplateListStoreTest {
         let updateCallCount = TestCounter()
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
-                updateDays: { _, _, _, _ in await updateCallCount.increment() }
+                updateTemplate: { _, _, _, _ in await updateCallCount.increment() }
             ),
             selectedDays: initialDays
         )
 
         // Act
 
-        try await store.saveDays(
-            [],
+        try await store.saveTemplate(
+            days: [],
+            monthlyItems: [],
             templateId: Self.inputTemplateId,
             cohabitantId: Self.inputCohabitantId,
             currentVersion: 0
@@ -200,8 +202,8 @@ struct HouseworkTemplateListStoreTest {
         #expect(store.selectedDays == initialDays)
     }
 
-    @Test("saveDaysでversionConflictが発生すると、エラーがthrowされselectedDaysは変わらない")
-    func saveDaysConflictKeepsSelectedDays() async throws {
+    @Test("saveTemplateでversionConflictが発生すると、エラーがthrowされselectedDaysは変わらない")
+    func saveTemplateConflictKeepsSelectedDays() async throws {
         // Arrange
 
         let initialDays: [HouseworkTemplateDay] = [
@@ -218,7 +220,7 @@ struct HouseworkTemplateListStoreTest {
         ]
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
-                updateDays: { _, _, _, _ in throw HouseworkTemplateError.versionConflict }
+                updateTemplate: { _, _, _, _ in throw HouseworkTemplateError.versionConflict }
             ),
             selectedDays: initialDays
         )
@@ -226,8 +228,9 @@ struct HouseworkTemplateListStoreTest {
         // Act + Assert
 
         await #expect(throws: HouseworkTemplateError.self) {
-            try await store.saveDays(
-                inputDays,
+            try await store.saveTemplate(
+                days: inputDays,
+                monthlyItems: [],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
                 currentVersion: 0
@@ -237,7 +240,7 @@ struct HouseworkTemplateListStoreTest {
     }
 
     @Test("Daysリスナーで受け取った値がselectedDaysに反映される")
-    func startObservingDaysReflectsValues() async {
+    func startObservingItemsReflectsDays() async {
         // Arrange
 
         let expectedDays: [HouseworkTemplateDay] = [
@@ -255,7 +258,7 @@ struct HouseworkTemplateListStoreTest {
 
         // Act
 
-        await store.startObservingDays(
+        await store.startObservingItems(
             templateId: Self.inputTemplateId,
             cohabitantId: Self.inputCohabitantId
         )
@@ -278,11 +281,11 @@ struct HouseworkTemplateListStoreTest {
         // Cleanup
 
         daysContinuation.finish()
-        await store.stopObservingDays()
+        await store.stopObservingItems()
     }
 
-    @Test("stopObservingDaysでDaysリスナーが解除される")
-    func stopObservingDaysRemovesListener() async {
+    @Test("stopObservingItemsでDays・MonthlyItemsのリスナーが解除される")
+    func stopObservingItemsRemovesListeners() async {
         // Arrange
 
         let removedListenerKeys = TestLockedArray<String>()
@@ -296,12 +299,12 @@ struct HouseworkTemplateListStoreTest {
 
         // Act
 
-        await store.stopObservingDays()
+        await store.stopObservingItems()
 
         // Assert
 
         let keys = await removedListenerKeys.values
-        #expect(keys == ["houseworkTemplateDaysListener"])
+        #expect(keys == ["houseworkTemplateDaysListener", "houseworkTemplateMonthlyItemsListener"])
     }
 
 }
@@ -324,6 +327,7 @@ extension HouseworkTemplateListStoreTest {
             ),
         ]
         let (daysStream, daysContinuation) = AsyncStream<[HouseworkTemplateDay]>.makeStream()
+        let (monthlyItemsStream, monthlyItemsContinuation) = AsyncStream<[HouseworkTemplateMonthlyItem]>.makeStream()
         let listenerStartedKeys = TestLockedArray<String>()
         let store = HouseworkTemplateListStore(
             houseworkTemplateClient: .init(
@@ -341,6 +345,12 @@ extension HouseworkTemplateListStoreTest {
                     #expect(templateId == inputTemplateId)
                     #expect(cohabitantId == Self.inputCohabitantId)
                     return daysStream
+                },
+                addMonthlyItemsSnapshotListener: { id, templateId, cohabitantId in
+                    await listenerStartedKeys.append(id)
+                    #expect(templateId == inputTemplateId)
+                    #expect(cohabitantId == Self.inputCohabitantId)
+                    return monthlyItemsStream
                 }
             )
         )
@@ -355,12 +365,13 @@ extension HouseworkTemplateListStoreTest {
         #expect(store.selectedTemplateId == inputTemplateId)
         #expect(store.selectedDays == expectedDays)
         let startedKeys = await listenerStartedKeys.values
-        #expect(startedKeys == ["houseworkTemplateDaysListener"])
+        #expect(startedKeys == ["houseworkTemplateDaysListener", "houseworkTemplateMonthlyItemsListener"])
 
         // Cleanup
 
         daysContinuation.finish()
-        await store.stopObservingDays()
+        monthlyItemsContinuation.finish()
+        await store.stopObservingItems()
     }
 
     @Test("configureを呼んでテンプレートが0件の場合は、selectedTemplateIdとselectedDaysは初期状態のまま変化しない")
@@ -371,6 +382,10 @@ extension HouseworkTemplateListStoreTest {
             houseworkTemplateClient: .init(
                 fetchTemplates: { _ in [] },
                 fetchDays: { _, _ in
+                    Issue.record()
+                    return []
+                },
+                fetchMonthlyItems: { _, _ in
                     Issue.record()
                     return []
                 },

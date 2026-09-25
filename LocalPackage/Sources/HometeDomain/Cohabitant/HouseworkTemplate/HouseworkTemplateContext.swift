@@ -11,15 +11,21 @@ public struct HouseworkTemplateContext {
 
     public let metadata: HouseworkTemplateMeta?
     public let houseworkTemplate: [HouseworkTemplateDay]
+    public let monthlyItems: [HouseworkTemplateMonthlyItem]
 
     /// テンプレートが設定されているかどうか
     public var hasTemplate: Bool {
         metadata != nil
     }
 
-    public init(metadata: HouseworkTemplateMeta?, houseworkTemplate: [HouseworkTemplateDay]) {
+    public init(
+        metadata: HouseworkTemplateMeta?,
+        houseworkTemplate: [HouseworkTemplateDay],
+        monthlyItems: [HouseworkTemplateMonthlyItem] = []
+    ) {
         self.metadata = metadata
         self.houseworkTemplate = houseworkTemplate
+        self.monthlyItems = monthlyItems
     }
 
     /// 指定日付のテンプレートを返す

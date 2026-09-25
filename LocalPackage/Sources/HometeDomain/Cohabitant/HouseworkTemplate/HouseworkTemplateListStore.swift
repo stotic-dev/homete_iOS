@@ -13,20 +13,23 @@ public final class HouseworkTemplateListStore {
 
     public private(set) var templates: [HouseworkTemplateMeta]
     public private(set) var selectedDays: [HouseworkTemplateDay]
+    public private(set) var monthlyItems: [HouseworkTemplateMonthlyItem]
     public private(set) var selectedTemplateId: String?
     /// テンプレートの初回ロードの状態
     public private(set) var loadState: ListenerLoadState = .loading
 
     private var daysObserveTask: Task<Void, Never>?
+    private var monthlyItemsObserveTask: Task<Void, Never>?
     private var templatesObserveTask: Task<Void, Never>?
 
     private let houseworkTemplateClient: HouseworkTemplateClient
     private let analyticsClient: AnalyticsClient
     private let daysListenerKey = "houseworkTemplateDaysListener"
+    private let monthlyItemsListenerKey = "houseworkTemplateMonthlyItemsListener"
     private let templatesListenerKey = "houseworkTemplatesListener"
 
     public var context: HouseworkTemplateContext {
-        .init(metadata: templates.first, houseworkTemplate: selectedDays)
+        .init(metadata: templates.first, houseworkTemplate: selectedDays, monthlyItems: monthlyItems)
     }
 
     public init(
@@ -34,12 +37,14 @@ public final class HouseworkTemplateListStore {
         analyticsClient: AnalyticsClient = .previewValue,
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = [],
+        monthlyItems: [HouseworkTemplateMonthlyItem] = [],
         selectedTemplateId: String? = nil
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
         self.analyticsClient = analyticsClient
         self.templates = templates
         self.selectedDays = selectedDays
+        self.monthlyItems = monthlyItems
         self.selectedTemplateId = selectedTemplateId
     }
 
@@ -54,7 +59,8 @@ public final class HouseworkTemplateListStore {
             if let selectedTemplateId = templates.first?.templateId {
                 self.selectedTemplateId = selectedTemplateId
                 try await loadDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
-                await startObservingDays(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+                await loadMonthlyItems(templateId: selectedTemplateId, cohabitantId: cohabitantId)
+                await startObservingItems(templateId: selectedTemplateId, cohabitantId: cohabitantId)
             } else {
                 await startObservingTemplates(cohabitantId)
             }
@@ -73,6 +79,18 @@ public final class HouseworkTemplateListStore {
     /// 指定テンプレートの曜日別定義をワンショット取得する
     public func loadDays(templateId: String, cohabitantId: String) async throws {
         selectedDays = try await houseworkTemplateClient.fetchDays(cohabitantId, templateId)
+    }
+
+    /// 指定テンプレートの毎月の家事をワンショット取得する
+    /// - Note: 失敗しても throw せず、`monthlyItems` を変えずにログだけ残す。毎月の家事は後から足した機能なので、
+    ///         その取得失敗（`MonthlyItems` のセキュリティルールが未デプロイの環境など）で、毎週の家事を含む
+    ///         テンプレート全体の読み込みを失敗扱いにしないため
+    public func loadMonthlyItems(templateId: String, cohabitantId: String) async {
+        do {
+            monthlyItems = try await houseworkTemplateClient.fetchMonthlyItems(cohabitantId, templateId)
+        } catch {
+            print("failed to fetch monthly housework template items: \(error)")
+        }
     }
 
     /// 新規テンプレートを作成する
@@ -94,42 +112,71 @@ public final class HouseworkTemplateListStore {
         analyticsClient.log(.houseworkTemplate(.apply(isSuccess: true)))
     }
 
-    /// 指定テンプレートの Days SnapshotListener を開始する
-    public func startObservingDays(templateId: String, cohabitantId: String) async {
-        let stream = await houseworkTemplateClient.addDaysSnapshotListener(
+    /// 指定テンプレートの Days / MonthlyItems の SnapshotListener を開始する
+    /// - Note: 既に監視中の場合は、監視を二重にしないよう先に解除してから開始し直す
+    public func startObservingItems(templateId: String, cohabitantId: String) async {
+        await stopObservingItems()
+
+        let daysStream = await houseworkTemplateClient.addDaysSnapshotListener(
             daysListenerKey,
             templateId,
             cohabitantId
         )
         daysObserveTask = Task {
-            for await currentDays in stream {
+            for await currentDays in daysStream {
                 self.selectedDays = currentDays
+            }
+        }
+
+        let monthlyItemsStream = await houseworkTemplateClient.addMonthlyItemsSnapshotListener(
+            monthlyItemsListenerKey,
+            templateId,
+            cohabitantId
+        )
+        monthlyItemsObserveTask = Task {
+            for await currentMonthlyItems in monthlyItemsStream {
+                self.monthlyItems = currentMonthlyItems
             }
         }
     }
 
-    /// Days SnapshotListener を解除する
-    public func stopObservingDays() async {
+    /// Days / MonthlyItems の SnapshotListener を解除する
+    public func stopObservingItems() async {
         daysObserveTask?.cancel()
         daysObserveTask = nil
+        monthlyItemsObserveTask?.cancel()
+        monthlyItemsObserveTask = nil
         await houseworkTemplateClient.removeListener(daysListenerKey)
+        await houseworkTemplateClient.removeListener(monthlyItemsListenerKey)
     }
 
-    /// 曜日定義を一括保存する。version の楽観的ロックで競合が発生した場合は `HouseworkTemplateError.versionConflict` を throw する。
-    /// 成功時には `selectedDays` をローカル更新する（既存の dayOfWeek は置換、未登録は追加）。
-    /// 空配列が渡された場合は no-op。
-    public func saveDays(
-        _ days: [HouseworkTemplateDay],
+    /// 曜日定義と毎月の家事を一括保存する。version の楽観的ロックで競合が発生した場合は `HouseworkTemplateError.versionConflict` を throw する。
+    /// - Parameters:
+    ///   - days: 書き込む曜日定義。成功時には `selectedDays` をローカル更新する（既存の dayOfWeek は置換、未登録は追加）
+    ///   - monthlyItems: 保存後の毎月の家事の全件。現在の `monthlyItems` との差分だけを書き込み、成功時には置き換える
+    /// - Note: 書き込む内容がない場合は no-op。
+    public func saveTemplate(
+        days: [HouseworkTemplateDay],
+        monthlyItems: [HouseworkTemplateMonthlyItem],
         templateId: String,
         cohabitantId: String,
         currentVersion: Int
     ) async throws {
-        guard !days.isEmpty else { return }
+        let afterMonthlyIds = Set(monthlyItems.map(\.id))
+        let update = HouseworkTemplateUpdate(
+            days: days,
+            upsertedMonthlyItems: monthlyItems.filter { !self.monthlyItems.contains($0) },
+            deletedMonthlyItemIds: self.monthlyItems.map(\.id).filter { !afterMonthlyIds.contains($0) }
+        )
+        guard !update.isEmpty else { return }
 
-        let changes = Self.itemChanges(from: selectedDays, to: days)
+        let changes = Self.itemChanges(
+            from: .init(days: selectedDays, monthlyItems: self.monthlyItems),
+            to: .init(days: days, monthlyItems: monthlyItems)
+        )
         do {
-            try await houseworkTemplateClient.updateDays(
-                days,
+            try await houseworkTemplateClient.updateTemplate(
+                update,
                 templateId,
                 cohabitantId,
                 currentVersion
@@ -147,6 +194,24 @@ public final class HouseworkTemplateListStore {
                 selectedDays.append(day)
             }
         }
+        self.monthlyItems = monthlyItems
+    }
+
+    /// テンプレートに家事を1件追加する（家事登録画面用）
+    /// - Note: 画面の表示にはSnapshotListener経由で反映される
+    public func appendItem(
+        _ item: HouseworkTemplateItem,
+        recurrence: HouseworkRecurrence,
+        templateId: String,
+        cohabitantId: String
+    ) async throws {
+        do {
+            try await houseworkTemplateClient.appendItem(item, recurrence, templateId, cohabitantId)
+        } catch {
+            analyticsClient.log(.houseworkTemplate(.create(isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.houseworkTemplate(.create(isSuccess: true)))
     }
 
 }
@@ -162,33 +227,46 @@ private extension HouseworkTemplateListStore {
 
     }
 
-    /// アイテムIDごとに、内容と登録曜日の集合をまとめる
-    static func itemDaysById(
-        _ days: [HouseworkTemplateDay]
-    ) -> [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, days: Set<DayOfWeek>)] {
-        var result: [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, days: Set<DayOfWeek>)] = [:]
-        for day in days {
+    /// 比較対象となるテンプレートの内容
+    struct TemplateSnapshot {
+
+        let days: [HouseworkTemplateDay]
+        let monthlyItems: [HouseworkTemplateMonthlyItem]
+
+    }
+
+    /// アイテムIDごとに、内容と繰り返し方をまとめる
+    static func itemRecurrenceById(
+        _ snapshot: TemplateSnapshot
+    ) -> [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, recurrence: HouseworkRecurrence)] {
+        var weeklyItems: [HouseworkTemplateItem.ItemId: (item: HouseworkTemplateItem, days: Set<DayOfWeek>)] = [:]
+        for day in snapshot.days {
             for item in day.items {
-                result[item.id, default: (item, [])].days.insert(day.dayOfWeek)
+                weeklyItems[item.id, default: (item, [])].days.insert(day.dayOfWeek)
             }
+        }
+
+        var result = weeklyItems.mapValues { (item: $0.item, recurrence: HouseworkRecurrence.weekly($0.days)) }
+        for monthlyItem in snapshot.monthlyItems {
+            result[monthlyItem.id] = (monthlyItem.item, .monthly(monthlyItem.rule))
         }
         return result
     }
 
     /// 保存前後の状態を比較し、何が追加・編集・削除されたかを判定する
-    /// - Note: 内容（タイトル・ポイント等）だけでなく、登録曜日の変更も編集として扱う
+    /// - Note: 内容（タイトル・ポイント等）だけでなく、繰り返し方（登録曜日・毎週と毎月の切り替えなど）の変更も編集として扱う
     static func itemChanges(
-        from before: [HouseworkTemplateDay],
-        to after: [HouseworkTemplateDay]
+        from before: TemplateSnapshot,
+        to after: TemplateSnapshot
     ) -> HouseworkTemplateItemChanges {
-        let beforeItems = itemDaysById(before)
-        let afterItems = itemDaysById(after)
+        let beforeItems = itemRecurrenceById(before)
+        let afterItems = itemRecurrenceById(after)
 
         let beforeIds = Set(beforeItems.keys)
         let afterIds = Set(afterItems.keys)
 
         let editedIds = beforeIds.intersection(afterIds).filter { id in
-            beforeItems[id]?.item != afterItems[id]?.item || beforeItems[id]?.days != afterItems[id]?.days
+            beforeItems[id]?.item != afterItems[id]?.item || beforeItems[id]?.recurrence != afterItems[id]?.recurrence
         }
 
         return .init(

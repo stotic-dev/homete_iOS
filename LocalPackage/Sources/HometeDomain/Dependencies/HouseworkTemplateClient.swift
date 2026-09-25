@@ -15,12 +15,29 @@ public struct HouseworkTemplateClient: Sendable {
         _ cohabitantId: String
     ) async throws -> Void
 
-    /// 曜日定義の一括更新（楽観的ロック付きトランザクション）
-    public let updateDays: @Sendable (
-        _ days: [HouseworkTemplateDay],
+    /// 毎月の家事の取得（ワンショット）
+    /// - Note: 解釈できないドキュメント（新しい種類の繰り返しルールなど）は除外して返す
+    public let fetchMonthlyItems: @Sendable (
+        _ cohabitantId: String,
+        _ templateId: String
+    ) async throws -> [HouseworkTemplateMonthlyItem]
+
+    /// 曜日定義と毎月の家事の一括更新（楽観的ロック付きトランザクション）
+    public let updateTemplate: @Sendable (
+        _ update: HouseworkTemplateUpdate,
         _ templateId: String,
         _ cohabitantId: String,
         _ currentVersion: Int
+    ) async throws -> Void
+
+    /// テンプレートへの家事の追加（家事登録画面用）
+    /// - Note: トランザクション内で最新の内容を読んで追記し、versionを上げる。
+    ///         編集中の他メンバーの保存はversionの不一致でコンフリクトとして検知される
+    public let appendItem: @Sendable (
+        _ item: HouseworkTemplateItem,
+        _ recurrence: HouseworkRecurrence,
+        _ templateId: String,
+        _ cohabitantId: String
     ) async throws -> Void
 
     /// Editor presence の upsert（編集開始・keepalive）
@@ -43,6 +60,13 @@ public struct HouseworkTemplateClient: Sendable {
         _ templateId: String,
         _ cohabitantId: String
     ) async -> AsyncStream<[HouseworkTemplateDay]>
+
+    /// MonthlyItems の SnapshotListener
+    public let addMonthlyItemsSnapshotListener: @Sendable (
+        _ id: String,
+        _ templateId: String,
+        _ cohabitantId: String
+    ) async -> AsyncStream<[HouseworkTemplateMonthlyItem]>
 
     /// Tesmplates の SnapshotListener
     public let addTemplatesSnapshotListener: @Sendable (
@@ -79,11 +103,21 @@ public struct HouseworkTemplateClient: Sendable {
             _ meta: HouseworkTemplateMeta,
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
-        updateDays: @Sendable @escaping (
-            _ days: [HouseworkTemplateDay],
+        fetchMonthlyItems: @Sendable @escaping (
+            _ cohabitantId: String,
+            _ templateId: String
+        ) async throws -> [HouseworkTemplateMonthlyItem] = { _, _ in [] },
+        updateTemplate: @Sendable @escaping (
+            _ update: HouseworkTemplateUpdate,
             _ templateId: String,
             _ cohabitantId: String,
             _ currentVersion: Int
+        ) async throws -> Void = { _, _, _, _ in },
+        appendItem: @Sendable @escaping (
+            _ item: HouseworkTemplateItem,
+            _ recurrence: HouseworkRecurrence,
+            _ templateId: String,
+            _ cohabitantId: String
         ) async throws -> Void = { _, _, _, _ in },
         upsertEditor: @Sendable @escaping (
             _ editor: HouseworkTemplateEditor,
@@ -100,6 +134,11 @@ public struct HouseworkTemplateClient: Sendable {
             _ templateId: String,
             _ cohabitantId: String
         ) async -> AsyncStream<[HouseworkTemplateDay]> = { _, _, _ in .makeStream().stream },
+        addMonthlyItemsSnapshotListener: @Sendable @escaping (
+            _ id: String,
+            _ templateId: String,
+            _ cohabitantId: String
+        ) async -> AsyncStream<[HouseworkTemplateMonthlyItem]> = { _, _, _ in .makeStream().stream },
         addTemplatesSnapshotListener: @Sendable @escaping (
             _ id: String,
             _ cohabitantId: String
@@ -119,10 +158,13 @@ public struct HouseworkTemplateClient: Sendable {
         self.fetchTemplates = fetchTemplates
         self.fetchDays = fetchDays
         self.upsertTemplate = upsertTemplate
-        self.updateDays = updateDays
+        self.fetchMonthlyItems = fetchMonthlyItems
+        self.updateTemplate = updateTemplate
+        self.appendItem = appendItem
         self.upsertEditor = upsertEditor
         self.removeEditor = removeEditor
         self.addDaysSnapshotListener = addDaysSnapshotListener
+        self.addMonthlyItemsSnapshotListener = addMonthlyItemsSnapshotListener
         self.addTemplatesSnapshotListener = addTemplatesSnapshotListener
         self.addEditorsSnapshotListener = addEditorsSnapshotListener
         self.addMetaVersionSnapshotListener = addMetaVersionSnapshotListener
