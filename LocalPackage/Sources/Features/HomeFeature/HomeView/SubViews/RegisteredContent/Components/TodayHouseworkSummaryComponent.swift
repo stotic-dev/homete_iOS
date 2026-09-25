@@ -19,6 +19,7 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.registeredContentNavigationPath) var navigationPath
+    @Environment(\.cohabitantMembers) var members
 
     @State var isPresentingRegister = false
     @CommonError var commonError
@@ -66,10 +67,12 @@ private extension TodayHouseworkSummaryComponent {
 
             case .allCompleted:
                 progressContent(progress: summary.progress)
+                contributionChartContent(summary: summary)
                 allCompletedContent()
 
             case .hasIncomplete:
                 progressContent(progress: summary.progress)
+                contributionChartContent(summary: summary)
                 incompleteListContent(summary: summary)
             }
         }
@@ -86,6 +89,15 @@ private extension TodayHouseworkSummaryComponent {
             }
             ProgressView(value: progress)
                 .tint(.accent)
+        }
+    }
+
+    /// 誰も家事を完了していない間は、割合グラフを表示しない
+    @ViewBuilder
+    func contributionChartContent(summary: TodayHouseworkSummary) -> some View {
+        let contributions = summary.memberContributions(members: members)
+        if contributions.contains(where: { $0.completedCount > 0 }) {
+            TodayContributionChartSection(contributions: contributions)
         }
     }
 
@@ -240,7 +252,8 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .completed
+                        state: .completed,
+                        executorId: "ownUserId"
                     ),
                 ],
                 metaData: .init(
@@ -250,6 +263,13 @@ private extension TodayHouseworkSummaryComponent {
             ),
         ])
     )
+    .environment(\.cohabitantMembers, .init(
+        value: [
+            .init(id: "ownUserId", userName: "自分"),
+            .init(id: "otherUserId", userName: "同居人"),
+        ],
+        ownId: "ownUserId"
+    ))
     .setupEnvironmentForPreview()
     .setupLoginContextForPreview()
 }
