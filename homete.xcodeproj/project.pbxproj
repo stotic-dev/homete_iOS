@@ -14,6 +14,8 @@
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
+		AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 535152FA786C3EF10199AC4D /* HometeLocalNotification */; };
+		6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,7 +26,28 @@
 			remoteGlobalIDString = BCC853F42DB74BBC00C9A44B;
 			remoteInfo = homete;
 		};
+		60F89D8D56005D278633B0D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BCC853ED2DB74BBC00C9A44B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B95D5CAD873C0B6430B379E3;
+			remoteInfo = hometeNotificationService;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		559A3AD19B39871E41CB4650 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
@@ -34,6 +57,7 @@
 		BC5204662DB7BEFD0097472D /* homete.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = homete.xctestplan; sourceTree = "<group>"; };
 		BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BCC853F52DB74BBC00C9A44B /* homete.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = homete.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = hometeNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,6 +74,13 @@
 				Info.plist,
 			);
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
+		};
+		BF5423FD2126DAE9BE9AC145 /* Exceptions for "hometeNotificationService" folder in "hometeNotificationService" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B95D5CAD873C0B6430B379E3 /* hometeNotificationService */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -68,6 +99,14 @@
 				BCBBCEB02E4A176100404667 /* Exceptions for "homete" folder in "homete" target */,
 			);
 			path = homete;
+			sourceTree = "<group>";
+		};
+		F8D395659848FE53C42FCA71 /* hometeNotificationService */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BF5423FD2126DAE9BE9AC145 /* Exceptions for "hometeNotificationService" folder in "hometeNotificationService" target */,
+			);
+			path = hometeNotificationService;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -92,6 +131,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		82B9616C86F1F0A719049764 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -112,6 +159,7 @@
 				BC5204662DB7BEFD0097472D /* homete.xctestplan */,
 				BCC853F72DB74BBC00C9A44B /* homete */,
 				BC1BB2692E909B8C001D168F /* hometeSnapshotTests */,
+				F8D395659848FE53C42FCA71 /* hometeNotificationService */,
 				BCB8DB162E37B3F900FFB4E1 /* Frameworks */,
 				BCC853F62DB74BBC00C9A44B /* Products */,
 			);
@@ -122,6 +170,7 @@
 			children = (
 				BCC853F52DB74BBC00C9A44B /* homete.app */,
 				BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */,
+				DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,12 +211,14 @@
 				BCC853F12DB74BBC00C9A44B /* Sources */,
 				BCC853F22DB74BBC00C9A44B /* Frameworks */,
 				BCC853F32DB74BBC00C9A44B /* Resources */,
+				559A3AD19B39871E41CB4650 /* Embed Foundation Extensions */,
 				BCB8DB192E37B43600FFB4E1 /* Run Upload dSYM */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				04FD077B2F77AEAF00BEC61C /* PBXTargetDependency */,
+				54082C694F9749125447C51E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				BCC853F72DB74BBC00C9A44B /* homete */,
@@ -181,6 +232,29 @@
 			productName = homete;
 			productReference = BCC853F52DB74BBC00C9A44B /* homete.app */;
 			productType = "com.apple.product-type.application";
+		};
+		B95D5CAD873C0B6430B379E3 /* hometeNotificationService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE3760CC2E7AA66E0ECA1415 /* Build configuration list for PBXNativeTarget "hometeNotificationService" */;
+			buildPhases = (
+				04A98FB34612E2DC2FDF7D06 /* Sources */,
+				82B9616C86F1F0A719049764 /* Frameworks */,
+				12804B26EC8EB4A8AFC8A8AC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F8D395659848FE53C42FCA71 /* hometeNotificationService */,
+			);
+			name = hometeNotificationService;
+			packageProductDependencies = (
+				535152FA786C3EF10199AC4D /* HometeLocalNotification */,
+			);
+			productName = hometeNotificationService;
+			productReference = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -198,6 +272,9 @@
 					};
 					BCC853F42DB74BBC00C9A44B = {
 						CreatedOnToolsVersion = 16.3;
+					};
+					B95D5CAD873C0B6430B379E3 = {
+						CreatedOnToolsVersion = 26.0;
 					};
 				};
 			};
@@ -225,6 +302,7 @@
 			targets = (
 				BCC853F42DB74BBC00C9A44B /* homete */,
 				BC1BB2672E909B8C001D168F /* hometeSnapshotTests */,
+				B95D5CAD873C0B6430B379E3 /* hometeNotificationService */,
 			);
 		};
 /* End PBXProject section */
@@ -243,6 +321,13 @@
 			files = (
 				BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */,
 				BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12804B26EC8EB4A8AFC8A8AC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +375,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		04A98FB34612E2DC2FDF7D06 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -305,6 +397,11 @@
 			isa = PBXTargetDependency;
 			target = BCC853F42DB74BBC00C9A44B /* homete */;
 			targetProxy = BC1BB26C2E909B8C001D168F /* PBXContainerItemProxy */;
+		};
+		54082C694F9749125447C51E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B95D5CAD873C0B6430B379E3 /* hometeNotificationService */;
+			targetProxy = 60F89D8D56005D278633B0D3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -373,6 +470,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
@@ -632,6 +730,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
@@ -682,6 +781,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret.xcconfig;
 			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
@@ -726,6 +826,118 @@
 			};
 			name = Release;
 		};
+		CF0E9E5140FD941F5DBBB2FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
+				CODE_SIGN_ENTITLEMENTS = hometeNotificationService/hometeNotificationServiceDebug.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeNotificationService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = hometeNotificationService;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1848FA666FA86C9A5AEC422 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure;
+				CODE_SIGN_ENTITLEMENTS = hometeNotificationService/hometeNotificationServiceRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeNotificationService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = hometeNotificationService;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8B1AF83E065A03B84828E3DF /* Stg */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
+				CODE_SIGN_ENTITLEMENTS = hometeNotificationService/hometeNotificationServiceDebug.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeNotificationService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = hometeNotificationService;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG STG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Stg;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -755,6 +967,16 @@
 				BCC854172DB74BBF00C9A44B /* Debug */,
 				BCC854182DB74BBF00C9A44B /* Release */,
 				04B961F12FB8235200ECAB4B /* Stg */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FE3760CC2E7AA66E0ECA1415 /* Build configuration list for PBXNativeTarget "hometeNotificationService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CF0E9E5140FD941F5DBBB2FF /* Debug */,
+				A1848FA666FA86C9A5AEC422 /* Release */,
+				8B1AF83E065A03B84828E3DF /* Stg */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -832,6 +1054,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = Prefire;
+		};
+		535152FA786C3EF10199AC4D /* HometeLocalNotification */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeLocalNotification;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
