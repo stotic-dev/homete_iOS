@@ -5,6 +5,8 @@
 //  Created by 佐藤汰一 on 2025/09/29.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @testable import HometeDomain
 import Testing
@@ -510,6 +512,7 @@ extension HouseworkListStoreTest {
 extension HouseworkListStoreTest.DailyCompletionReminderCase {
 
     @Test("今日完了した家事を受け取ると、今日のふりかえり通知を予約する")
+    // swiftlint:disable:next function_body_length
     func startObserving_completedToday_schedulesReminder() async {
         // Arrange
 
@@ -575,6 +578,7 @@ extension HouseworkListStoreTest.DailyCompletionReminderCase {
     }
 
     @Test("今日完了した家事が無ければ、今日のふりかえり通知を取り消す")
+    // swiftlint:disable:next function_body_length
     func startObserving_noCompletedToday_cancelsReminder() async {
         // Arrange
 
