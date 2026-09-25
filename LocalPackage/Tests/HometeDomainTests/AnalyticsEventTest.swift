@@ -178,7 +178,7 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事テンプレートに関する行動を、action/resultのパラメータを持つhousework_templateイベントに変換する",
+        "家事テンプレートに関する行動を、action/result（追加・編集時はstep/recurrenceも）のパラメータを持つhousework_templateイベントに変換する",
         arguments: [
             (
                 HouseworkTemplateAnalyticsAction.apply(isSuccess: true),
@@ -189,20 +189,31 @@ struct AnalyticsEventTest {
                 ["action": "apply", "result": "failure"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.create(isSuccess: true),
-                ["action": "create", "result": "success"]
+                HouseworkTemplateAnalyticsAction.create(
+                    isSuccess: true,
+                    step: .template,
+                    recurrence: .weekly([.monday])
+                ),
+                ["action": "create", "result": "success", "step": "template", "recurrence": "weekly"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.create(isSuccess: false),
-                ["action": "create", "result": "failure"]
+                HouseworkTemplateAnalyticsAction.create(
+                    isSuccess: false,
+                    step: .register,
+                    recurrence: .monthly(.dayOfMonth(25))
+                ),
+                ["action": "create", "result": "failure", "step": "register", "recurrence": "monthly_day"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.edit(isSuccess: true),
-                ["action": "edit", "result": "success"]
+                HouseworkTemplateAnalyticsAction.edit(
+                    isSuccess: true,
+                    recurrence: .monthly(.weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday))
+                ),
+                ["action": "edit", "result": "success", "recurrence": "monthly_weekday"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.edit(isSuccess: false),
-                ["action": "edit", "result": "failure"]
+                HouseworkTemplateAnalyticsAction.edit(isSuccess: false, recurrence: .weekly([.friday])),
+                ["action": "edit", "result": "failure", "recurrence": "weekly"]
             ),
             (
                 HouseworkTemplateAnalyticsAction.delete(isSuccess: true),

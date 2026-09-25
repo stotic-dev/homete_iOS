@@ -208,10 +208,10 @@ public final class HouseworkTemplateListStore {
         do {
             try await houseworkTemplateClient.appendItem(item, recurrence, templateId, cohabitantId)
         } catch {
-            analyticsClient.log(.houseworkTemplate(.create(isSuccess: false)))
+            analyticsClient.log(.houseworkTemplate(.create(isSuccess: false, step: .register, recurrence: recurrence)))
             throw error
         }
-        analyticsClient.log(.houseworkTemplate(.create(isSuccess: true)))
+        analyticsClient.log(.houseworkTemplate(.create(isSuccess: true, step: .register, recurrence: recurrence)))
     }
 
 }
@@ -221,8 +221,10 @@ private extension HouseworkTemplateListStore {
     /// 保存前後の曜日別アイテムを比較し、追加・編集・削除されたアイテムのIDを洗い出す
     struct HouseworkTemplateItemChanges {
 
-        let createdIds: [HouseworkTemplateItem.ItemId]
-        let editedIds: [HouseworkTemplateItem.ItemId]
+        /// 追加された家事の繰り返し方
+        let created: [HouseworkRecurrence]
+        /// 編集された家事の編集後の繰り返し方
+        let edited: [HouseworkRecurrence]
         let deletedIds: [HouseworkTemplateItem.ItemId]
 
     }
@@ -270,16 +272,24 @@ private extension HouseworkTemplateListStore {
         }
 
         return .init(
-            createdIds: Array(afterIds.subtracting(beforeIds)),
-            editedIds: Array(editedIds),
+            created: afterIds.subtracting(beforeIds).compactMap { afterItems[$0]?.recurrence },
+            edited: editedIds.compactMap { afterItems[$0]?.recurrence },
             deletedIds: Array(beforeIds.subtracting(afterIds))
         )
     }
 
     /// 変更されたアイテムの数だけ、それぞれのactionでイベントを送る
     func logItemChanges(_ changes: HouseworkTemplateItemChanges, isSuccess: Bool) {
-        changes.createdIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.create(isSuccess: isSuccess))) }
-        changes.editedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.edit(isSuccess: isSuccess))) }
+        for recurrence in changes.created {
+            analyticsClient.log(.houseworkTemplate(.create(
+                isSuccess: isSuccess,
+                step: .template,
+                recurrence: recurrence
+            )))
+        }
+        for recurrence in changes.edited {
+            analyticsClient.log(.houseworkTemplate(.edit(isSuccess: isSuccess, recurrence: recurrence)))
+        }
         changes.deletedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.delete(isSuccess: isSuccess))) }
     }
 

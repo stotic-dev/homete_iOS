@@ -162,7 +162,7 @@ struct HouseworkTemplateListStoreMonthlyTest {
         try await confirmation { confirmation in
             let store = HouseworkTemplateListStore(
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.edit(isSuccess: true)))
+                    #expect(event == .houseworkTemplate(.edit(isSuccess: true, recurrence: .monthly(.dayOfMonth(1)))))
                     confirmation()
                 }),
                 selectedDays: [.init(dayOfWeek: .monday, items: [item])]
@@ -203,7 +203,11 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     }
                 ),
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.create(isSuccess: true)))
+                    #expect(event == .houseworkTemplate(.create(
+                        isSuccess: true,
+                        step: .register,
+                        recurrence: inputRecurrence
+                    )))
                     confirmation()
                 })
             )
@@ -231,7 +235,10 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     appendItem: { _, _, _, _ in throw DomainError.noNetwork }
                 ),
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.create(isSuccess: false)))
+                    let expected = AnalyticsEvent.houseworkTemplate(
+                        .create(isSuccess: false, step: .register, recurrence: .monthly(.dayOfMonth(25)))
+                    )
+                    #expect(event == expected)
                     confirmation()
                 })
             )
