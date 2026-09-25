@@ -15,6 +15,7 @@ export const ClientCollections = {
   HOUSEWORKS: "Houseworks",
   HOUSEWORK_TEMPLATES: "HouseworkTemplates",
   HOUSEWORK_TEMPLATE_DAYS: "Days",
+  HOUSEWORK_TEMPLATE_MONTHLY_ITEMS: "MonthlyItems",
   HOUSEWORK_TEMPLATE_EDITORS: "Editors",
 } as const;
 
@@ -50,6 +51,20 @@ export function houseworkTemplateDaysPath(
 ): string {
   return `${houseworkTemplatesPath(cohabitantId)}/${templateId}/` +
     `${ClientCollections.HOUSEWORK_TEMPLATE_DAYS}`;
+}
+
+/**
+ * テンプレート配下のMonthlyItemsコレクションのパスを取得
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @param {string} templateId - テンプレートドキュメントのID
+ * @return {string} MonthlyItemsコレクションへのパス
+ */
+export function houseworkTemplateMonthlyItemsPath(
+  cohabitantId: string,
+  templateId: string
+): string {
+  return `${houseworkTemplatesPath(cohabitantId)}/${templateId}/` +
+    `${ClientCollections.HOUSEWORK_TEMPLATE_MONTHLY_ITEMS}`;
 }
 
 /**
