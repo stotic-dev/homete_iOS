@@ -57,7 +57,7 @@ struct HouseworkDetailItemListContent: View {
     .setupEnvironmentForPreview()
 }
 
-#Preview("HouseworkDetailItemListContent_承認確認時", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDetailItemListContent_完了時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
         cohabitantMemberList: .init(
             value: [.init(id: "test", userName: "hogehoge")],
@@ -66,6 +66,7 @@ struct HouseworkDetailItemListContent: View {
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
+            state: .completed,
             executorId: "test",
             executedAt: .distantPast
         )
