@@ -210,6 +210,116 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test("もう一度やったにすると、同じ日・同じ内容の完了済みの家事を、テンプレートと紐づけずに新しいIDで登録する")
+    func redo_insertsNewCompletedItem() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            title: "洗濯",
+            point: 20,
+            state: .completed,
+            executorId: "otherExecutor",
+            executedAt: .previewDate(year: 2026, month: 9, day: 25, hour: 8),
+            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
+            templateHouseworkItemId: .init(id: "templateItemId")
+        )
+        let inputExecutor = Account(id: "dummyExecutor", userName: "", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let redoneAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let expectedItem = HouseworkItem(
+            id: "newItemId",
+            indexedDate: .init(value: .previewDate(year: 2026, month: 9, day: 25)),
+            title: "洗濯",
+            point: 20,
+            state: .completed,
+            executorId: "dummyExecutor",
+            executedAt: redoneAt,
+            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
+            templateHouseworkItemId: nil
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, cohabitantId in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in },
+                items: [.makeForTest(items: [inputHouseworkItem])],
+                idGenerator: { "newItemId" }
+            )
+
+            // Act
+
+            try await store.redo(
+                target: inputHouseworkItem,
+                now: redoneAt,
+                executor: inputExecutor,
+                cohabitantId: inputCohabitantId,
+                step: .board
+            )
+        }
+    }
+
+    @Test("もう一度やったにすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    func redo_sendsCompletedNotification() async {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            state: .completed,
+            executorId: "otherExecutor"
+        )
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let expectedContent = PushNotificationContent(
+            title: "じっこうしゃさんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    calendar: .japanese,
+                    items: [.makeForTest(items: [inputHouseworkItem])]
+                )
+
+                // Act
+
+                Task {
+                    try await store.redo(
+                        target: inputHouseworkItem,
+                        now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+                        executor: inputExecutor,
+                        cohabitantId: inputCohabitantId,
+                        step: .board
+                    )
+                }
+            }
+        }
+    }
+
     @Test("実施者、実施日をクリアして家事のステータスを未完了に戻す")
     func returnToIncomplete() async throws {
         // Arrange
