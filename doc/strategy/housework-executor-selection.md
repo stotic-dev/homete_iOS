@@ -64,7 +64,7 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
 #### ありがとうの画面
 
 12. 家事詳細の「ありがとうを伝える」は、今のフルスクリーン表示（`HouseworkThanksView`）をやめて、**完了用と同じ見た目のハーフモーダル**に変える
-    - 中身はコメント欄と送信ボタンだけ。家事の内容（`HouseworkItemPropertyListContent`）や「◯◯さんが〜終えてくれました」のセクションは出さない
+    - 中身はコメント欄だけ。送信はナビゲーションバー右側のハートのアイコンボタンで行う。家事の内容（`HouseworkItemPropertyListContent`）や「◯◯さんが〜終えてくれました」のセクションは出さない
     - コメントは今までどおり必須
     - 担当者の設定は出さない
 13. クイックアクションの「ありがとう」（1件・一括）は今までどおり、定型文でワンタップ送信する
@@ -217,14 +217,15 @@ public func complete(
 `LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift`（修正）
 
 ```
-ありがとうを伝える
+        ありがとうを伝える           (♥)
+メッセージ
  [ 感謝を伝えましょう！              ]
-[ ありがとうを伝える ]
 ```
 
 - `HouseworkDetailActionContent` からの表示を `.fullScreenCoverOnIOS` から `.sheet` に変える
-- 中身はコメント欄と送信ボタンだけにする。家事の内容と「◯◯さんが〜終えてくれました」のセクションを削除する。NavigationStack・閉じるボタンも削除する（ドラッグで閉じられるため）
-- コメント欄と送信ボタンの見た目は、完了用ハーフモーダルと部品を共通化する
+- 中身はコメント欄だけにする。家事の内容と「◯◯さんが〜終えてくれました」のセクションを削除する。閉じるボタンは置かない（ドラッグで閉じられるため）
+- 送信ボタンはナビゲーションバーのtrailingにハートのアイコン（`NavigationBarPrimaryActionButton(systemImage: "heart.fill")`）で置く。タイトル「ありがとうを伝える」はナビゲーションバーに出し、コメント欄の見出しは「メッセージ」にする
+- コメント欄の見た目は、完了用ハーフモーダルと部品（`HouseworkCommentInputContent`）を共通化する
 - スクリーン計測（`.trackScreenView(.houseworkThanks)`）はそのまま残す
 
 ### 5. 集計・表示の置き換え
