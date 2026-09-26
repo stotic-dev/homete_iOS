@@ -18,6 +18,8 @@ struct HouseworkBoardListContent: View {
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
+    /// 完了した家事の担当者名を引くための同居人一覧
+    let memberList: CohabitantMemberList
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
@@ -113,8 +115,20 @@ private extension HouseworkBoardListContent {
         Button {
             navigationPath.push(.houseworkDetail(item))
         } label: {
-            HouseBoardListRow(houseworkItem: item.originalItem)
+            HouseBoardListRow(houseworkItem: item.originalItem, completionInfo: completionInfo(of: item))
         }
+    }
+
+    /// 完了リストの家事セルに出す、担当者とありがとうの状況
+    ///
+    /// 未完了リストには担当者もありがとうもないため出さない。
+    func completionInfo(of item: HouseworkBoardItem) -> HouseBoardListRow.CompletionInfo? {
+        guard state == .completed else { return nil }
+
+        return .init(
+            executorName: item.executorId.flatMap { memberList.userName($0) },
+            thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: loginContext.account.id)
+        )
     }
 
 }
@@ -149,6 +163,7 @@ private extension HouseworkBoardListContent {
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
             ),
         ]),
+        memberList: .init(value: [], ownId: ""),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         onCreateTapped: {}
@@ -191,6 +206,13 @@ private extension HouseworkBoardListContent {
                 executorId: "ownUserId"
             ),
         ]),
+        memberList: .init(
+            value: [
+                .init(id: "ownUserId", userName: "たろう"),
+                .init(id: "otherUserId", userName: "はなこ"),
+            ],
+            ownId: "ownUserId"
+        ),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         onCreateTapped: {},
