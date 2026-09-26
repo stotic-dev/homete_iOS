@@ -38,7 +38,8 @@ public final class HouseworkTemplateListStore {
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = [],
         monthlyItems: [HouseworkTemplateMonthlyItem] = [],
-        selectedTemplateId: String? = nil
+        selectedTemplateId: String? = nil,
+        loadState: ListenerLoadState = .loading
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
         self.analyticsClient = analyticsClient
@@ -46,6 +47,7 @@ public final class HouseworkTemplateListStore {
         self.selectedDays = selectedDays
         self.monthlyItems = monthlyItems
         self.selectedTemplateId = selectedTemplateId
+        self.loadState = loadState
     }
 
     /// Storeの初回設定を行う
@@ -197,6 +199,33 @@ public final class HouseworkTemplateListStore {
         self.monthlyItems = monthlyItems
     }
 
+    /// 選択中のテンプレートに家事を1件追加する。テンプレートがまだなければ作成してから追加する（家事登録画面用）
+    /// - Parameter newTemplateId: テンプレートを新規作成する場合に使うID
+    /// - Note: 新規作成したテンプレートは、追加した家事がすぐ家事一覧に表示されるよう、その場で選択して監視を始める
+    /// - Throws: 読み込みが終わっていない場合は `HouseworkTemplateError.notLoaded`。
+    ///           `selectedTemplateId` が `nil` でも「テンプレートが無い」とは限らず、重複して作成してしまうため
+    public func appendItemCreatingTemplateIfNeeded(
+        _ item: HouseworkTemplateItem,
+        recurrence: HouseworkRecurrence,
+        cohabitantId: String,
+        newTemplateId: @autoclosure () -> String
+    ) async throws {
+        guard loadState == .loaded else {
+            throw HouseworkTemplateError.notLoaded
+        }
+
+        let templateId: String
+        if let selectedTemplateId {
+            templateId = selectedTemplateId
+        } else {
+            templateId = newTemplateId()
+            try await createTemplate(templateId: templateId, name: "default", cohabitantId: cohabitantId)
+            selectedTemplateId = templateId
+            await startObservingItems(templateId: templateId, cohabitantId: cohabitantId)
+        }
+        try await appendItem(item, recurrence: recurrence, templateId: templateId, cohabitantId: cohabitantId)
+    }
+
     /// テンプレートに家事を1件追加する（家事登録画面用）
     /// - Note: 画面の表示にはSnapshotListener経由で反映される
     public func appendItem(
@@ -208,10 +237,10 @@ public final class HouseworkTemplateListStore {
         do {
             try await houseworkTemplateClient.appendItem(item, recurrence, templateId, cohabitantId)
         } catch {
-            analyticsClient.log(.houseworkTemplate(.create(isSuccess: false)))
+            analyticsClient.log(.houseworkTemplate(.create(isSuccess: false, step: .register, recurrence: recurrence)))
             throw error
         }
-        analyticsClient.log(.houseworkTemplate(.create(isSuccess: true)))
+        analyticsClient.log(.houseworkTemplate(.create(isSuccess: true, step: .register, recurrence: recurrence)))
     }
 
 }
@@ -221,8 +250,10 @@ private extension HouseworkTemplateListStore {
     /// 保存前後の曜日別アイテムを比較し、追加・編集・削除されたアイテムのIDを洗い出す
     struct HouseworkTemplateItemChanges {
 
-        let createdIds: [HouseworkTemplateItem.ItemId]
-        let editedIds: [HouseworkTemplateItem.ItemId]
+        /// 追加された家事の繰り返し方
+        let created: [HouseworkRecurrence]
+        /// 編集された家事の編集後の繰り返し方
+        let edited: [HouseworkRecurrence]
         let deletedIds: [HouseworkTemplateItem.ItemId]
 
     }
@@ -270,16 +301,24 @@ private extension HouseworkTemplateListStore {
         }
 
         return .init(
-            createdIds: Array(afterIds.subtracting(beforeIds)),
-            editedIds: Array(editedIds),
+            created: afterIds.subtracting(beforeIds).compactMap { afterItems[$0]?.recurrence },
+            edited: editedIds.compactMap { afterItems[$0]?.recurrence },
             deletedIds: Array(beforeIds.subtracting(afterIds))
         )
     }
 
     /// 変更されたアイテムの数だけ、それぞれのactionでイベントを送る
     func logItemChanges(_ changes: HouseworkTemplateItemChanges, isSuccess: Bool) {
-        changes.createdIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.create(isSuccess: isSuccess))) }
-        changes.editedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.edit(isSuccess: isSuccess))) }
+        for recurrence in changes.created {
+            analyticsClient.log(.houseworkTemplate(.create(
+                isSuccess: isSuccess,
+                step: .template,
+                recurrence: recurrence
+            )))
+        }
+        for recurrence in changes.edited {
+            analyticsClient.log(.houseworkTemplate(.edit(isSuccess: isSuccess, recurrence: recurrence)))
+        }
         changes.deletedIds.forEach { _ in analyticsClient.log(.houseworkTemplate(.delete(isSuccess: isSuccess))) }
     }
 
