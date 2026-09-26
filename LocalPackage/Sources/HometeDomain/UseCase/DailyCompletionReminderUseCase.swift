@@ -83,15 +83,37 @@ public final class DailyCompletionReminderUseCase: Sendable {
         calendar: Calendar,
         send: @Sendable (HouseworkCompletedNotificationData) async throws -> Void
     ) async throws {
-        guard calendar.isDate(houseworkDate, inSameDayAs: now) else { return }
-
-        let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
-        let isDailyLimitDisabled = await client.loadIsDailyLimitDisabled()
-        let sentDayIdentifier = await client.loadCompletedSignalSentDayIdentifier()
-        guard isDailyLimitDisabled || sentDayIdentifier != identifier else { return }
+        guard let identifier = await completedSignalIdentifierToSend(
+            houseworkDate: houseworkDate,
+            now: now,
+            calendar: calendar
+        ) else { return }
 
         try await send(.init(houseworkDate: houseworkDate))
         await client.saveCompletedSignalSentDayIdentifier(identifier)
+    }
+
+    /// コメントを添えた家事の完了通知を、1日1回の制限に関係なく送る
+    ///
+    /// コメントはユーザーが明示的に送るメッセージなので、送る回数を絞ると入力したコメントが届かずに消えてしまう。
+    /// ふりかえり通知の予約用データは`notifyCompletedIfNeeded`と同じ条件のときだけ付け、付けたときだけ送信済みにする。
+    /// - Parameter send: 完了通知を送る処理。予約用データを付けないときは`nil`を受け取る
+    public func notifyCompletedWithComment(
+        houseworkDate: Date,
+        now: Date,
+        calendar: Calendar,
+        send: @Sendable (HouseworkCompletedNotificationData?) async throws -> Void
+    ) async throws {
+        let identifier = await completedSignalIdentifierToSend(
+            houseworkDate: houseworkDate,
+            now: now,
+            calendar: calendar
+        )
+
+        try await send(identifier.map { _ in HouseworkCompletedNotificationData(houseworkDate: houseworkDate) })
+        if let identifier {
+            await client.saveCompletedSignalSentDayIdentifier(identifier)
+        }
     }
 
     /// 通知設定を保存し、今日すでに完了した家事があれば新しい設定で予約し直す
@@ -107,6 +129,20 @@ public final class DailyCompletionReminderUseCase: Sendable {
 }
 
 private extension DailyCompletionReminderUseCase {
+
+    /// ふりかえり通知の予約用データを同居人へ送るべきなら、送信済みとして記録する日の識別子を返す
+    ///
+    /// 今日の家事で、この端末からその日まだ送っていないとき（1日1回の制限を外している間は毎回）に送る。
+    func completedSignalIdentifierToSend(houseworkDate: Date, now: Date, calendar: Calendar) async -> String? {
+        guard calendar.isDate(houseworkDate, inSameDayAs: now) else { return nil }
+
+        let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
+        let isDailyLimitDisabled = await client.loadIsDailyLimitDisabled()
+        let sentDayIdentifier = await client.loadCompletedSignalSentDayIdentifier()
+        guard isDailyLimitDisabled || sentDayIdentifier != identifier else { return nil }
+
+        return identifier
+    }
 
     /// 現在の設定で今日の通知を予約する。無効・時刻を過ぎている場合は予約を取り消す
     func scheduleToday(now: Date, calendar: Calendar, trigger: DailyCompletionReminderTrigger) async {
