@@ -73,7 +73,7 @@ private extension HouseworkThanksView {
             try await houseworkListStore.sendThanks(
                 target: item.originalItem,
                 sender: account,
-                comment: inputMessage,
+                comment: inputMessage.trimmingCharacters(in: .whitespacesAndNewlines),
                 cohabitantId: cohabitantId,
                 step: .thanks
             )
