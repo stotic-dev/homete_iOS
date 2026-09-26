@@ -30,6 +30,8 @@ struct HouseworkDetailActionContent: View {
             case .completed:
                 if item.canSendThanks(ownUserId: account.id) {
                     sendThanksButton()
+                } else if item.canEditThanks(ownUserId: account.id) {
+                    editThanksButton()
                 }
                 redoButton()
                 undoChangeStateButton()
@@ -39,7 +41,7 @@ struct HouseworkDetailActionContent: View {
         }
         .disabled(isLoading)
         .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
-            HouseworkThanksView(item: item)
+            HouseworkThanksView(item: item, sentThanks: item.sentThanks(ownUserId: account.id))
         }
     }
 
@@ -94,6 +96,16 @@ private extension HouseworkDetailActionContent {
             isPresentedThanksView = true
         } label: {
             Label("ありがとうを伝える", systemImage: "hands.clap.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .subPrimaryButtonStyle()
+    }
+
+    func editThanksButton() -> some View {
+        Button {
+            isPresentedThanksView = true
+        } label: {
+            Label("送ったメッセージを編集", systemImage: "square.and.pencil")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -196,6 +208,23 @@ private extension HouseworkDetailActionContent {
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .completed,
             executorId: "executorAccount"
+        )
+    )
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkDetailActionContent_完了_ありがとう送信済み", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "executorAccount",
+            thanks: ["ownAccount": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 1, day: 1))]
         )
     )
     .environment(HouseworkListStore())

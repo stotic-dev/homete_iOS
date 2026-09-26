@@ -164,6 +164,14 @@ struct AnalyticsEventTest {
                 ["action": "send_thanks", "step": "board", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: true),
+                ["action": "edit_thanks", "step": "thanks", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: false),
+                ["action": "edit_thanks", "step": "thanks", "result": "failure"]
+            ),
+            (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),
                 ["action": "return_incomplete", "step": "detail", "result": "success"]
             ),

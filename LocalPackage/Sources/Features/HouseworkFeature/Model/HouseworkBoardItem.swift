@@ -42,11 +42,27 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         originalItem.executedAt
     }
 
+    /// 自分が終えた家事かどうか
+    public func isExecutedBy(_ userId: String) -> Bool {
+        originalItem.executorId == userId
+    }
+
+    /// 自分が送ったありがとう。まだ送っていなければ`nil`
+    public func sentThanks(ownUserId: String) -> HouseworkThanks? {
+        originalItem.thanks[ownUserId]
+    }
+
     /// ありがとうを伝えられるかどうか
     ///
     /// 自分が終えた家事に自分でありがとうを送っても意味がないため、実施者本人には送らせない。
+    /// 1人が1つの家事に送れるのは1回までで、送った後はコメントの編集だけできる。
     public func canSendThanks(ownUserId: String) -> Bool {
-        state == .completed && originalItem.executorId != ownUserId
+        state == .completed && !isExecutedBy(ownUserId) && sentThanks(ownUserId: ownUserId) == nil
+    }
+
+    /// 送ったありがとうのコメントを編集できるかどうか
+    public func canEditThanks(ownUserId: String) -> Bool {
+        state == .completed && !isExecutedBy(ownUserId) && sentThanks(ownUserId: ownUserId) != nil
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {

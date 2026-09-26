@@ -26,6 +26,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let expiredAt: Date
     /// 紐づくテンプレートの家事ID
     public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+    /// 届いたありがとう（キーは送った人のユーザID）
+    public let thanks: [String: HouseworkThanks]
 
     public init(
         id: String,
@@ -36,7 +38,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         executorId: String?,
         executedAt: Date?,
         expiredAt: Date,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
+        thanks: [String: HouseworkThanks] = [:]
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -47,6 +50,25 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.executedAt = executedAt
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
+        self.thanks = thanks
+    }
+
+    /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        indexedDate = try container.decode(HouseworkIndexedDate.self, forKey: .indexedDate)
+        title = try container.decode(String.self, forKey: .title)
+        point = try container.decode(Int.self, forKey: .point)
+        state = try container.decode(HouseworkState.self, forKey: .state)
+        executorId = try container.decodeIfPresent(String.self, forKey: .executorId)
+        executedAt = try container.decodeIfPresent(Date.self, forKey: .executedAt)
+        expiredAt = try container.decode(Date.self, forKey: .expiredAt)
+        templateHouseworkItemId = try container.decodeIfPresent(
+            HouseworkTemplateItem.ItemId.self,
+            forKey: .templateHouseworkItemId
+        )
+        thanks = try container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:]
     }
 
     public func updateCompleted(at now: Date, executor: String) -> Self {
@@ -59,7 +81,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 
@@ -81,6 +104,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    /// 未完了に戻す
+    ///
+    /// 完了を取り消すので、その完了に届いたありがとうの記録も消す。
     public func updateIncomplete() -> Self {
         .init(
             id: id,
@@ -105,7 +131,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 
@@ -121,7 +148,8 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:]
     ) {
         self.init(
             id: id,
@@ -132,7 +160,8 @@ public extension HouseworkItem {
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: metaData.expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 

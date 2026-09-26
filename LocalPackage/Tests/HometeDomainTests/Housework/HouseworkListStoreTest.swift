@@ -48,32 +48,6 @@ struct HouseworkListStoreTest {
         }
     }
 
-    @Test("sendNotificationを実行すると、渡した内容がそのまま通知として送信される")
-    func sendNotification() async {
-        // Arrange
-
-        let inputContent = PushNotificationContent(title: "3件の家事が完了しました", message: "確認してください")
-
-        await confirmation { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
-
-                        #expect(id == inputCohabitantId)
-                        #expect(content == inputContent)
-                        confirmation()
-                        continuation.resume()
-                    }
-                )
-
-                // Act
-
-                store.sendNotification(inputContent, cohabitantId: inputCohabitantId)
-            }
-        }
-    }
-
 }
 
 extension HouseworkListStoreTest.UpdateStatusCase {
@@ -439,34 +413,36 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("完了した家事にありがとうを伝えると、パートナーに通知を送信する")
-    func sendThanks() async throws {
+    @Test("コメント付きで初めてありがとうを伝えると、ありがとうを記録してパートナーに通知を送る")
+    func sendThanks_firstWithComment_recordsAndNotifies() async throws {
         // Arrange
 
+        let inputNow = Date(timeIntervalSince1970: 1000)
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
             state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(
-            id: "senderId",
-            userName: "おくりぬし",
-            fcmToken: nil,
-            cohabitantId: inputCohabitantId
-        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
         let inputComment = "お疲れ様でした！"
+        let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputNow)
         let expectedNotificationContent = PushNotificationContent(
             title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
             message: inputComment
         )
 
-        try await confirmation { confirmation in
+        try await confirmation(expectedCount: 2) { confirmation in
             let store = HouseworkListStore(
                 houseworkClient: .init(
-                    insertOrUpdateItemHandler: { _, _ in
-                        // ありがとうは家事のステータスを変えないため、保存は行われない
-                        Issue.record()
+                    upsertThanksHandler: { houseworkId, senderId, thanks, cohabitantId in
+                        // Assert
+
+                        #expect(houseworkId == inputHouseworkItem.id)
+                        #expect(senderId == inputSender.id)
+                        #expect(thanks == expectedThanks)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
                     }
                 ),
                 cohabitantPushNotificationClient: .init { id, content in
@@ -485,52 +461,150 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 target: inputHouseworkItem,
                 sender: inputSender,
                 comment: inputComment,
+                now: inputNow,
                 cohabitantId: inputCohabitantId,
                 step: .thanks
             )
         }
     }
 
-    @Test("一括操作でありがとうを伝えるときは、家事ごとの個別通知を送らない")
-    func sendThanks_withoutNotify() async throws {
+    @Test("コメントなしでありがとうを伝えると、ありがとうを記録し、通知は送らない")
+    func sendThanks_withoutComment_recordsWithoutNotification() async throws {
         // Arrange
 
+        let inputNow = Date(timeIntervalSince1970: 1000)
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
             state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(
-            id: "senderId",
-            userName: "おくりぬし",
-            fcmToken: nil,
-            cohabitantId: inputCohabitantId
-        )
-        let store = HouseworkListStore(
-            houseworkClient: .init(
-                insertOrUpdateItemHandler: { _, _ in
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let expectedThanks = HouseworkThanks(comment: nil, sentAt: inputNow)
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    upsertThanksHandler: { _, _, thanks, _ in
+                        // Assert
+
+                        #expect(thanks == expectedThanks)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in
                     Issue.record()
-                }
-            ),
-            cohabitantPushNotificationClient: .init { _, _ in
-                // Assert
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
 
-                Issue.record()
-            },
-            items: [.makeForTest(items: [inputHouseworkItem])]
+            // Act
+
+            try await store.sendThanks(
+                target: inputHouseworkItem,
+                sender: inputSender,
+                comment: nil,
+                now: inputNow,
+                cohabitantId: inputCohabitantId,
+                step: .board
+            )
+        }
+    }
+
+    @Test("コメントなしで送ったありがとうにコメントを書き足すと、最初に送った日時のまま記録し、通知を送る")
+    func sendThanks_addCommentToThanksWithoutComment_keepsSentAtAndNotifies() async throws {
+        // Arrange
+
+        let inputSentAt = Date(timeIntervalSince1970: 500)
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast,
+            thanks: ["senderId": .init(comment: nil, sentAt: inputSentAt)]
+        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputComment = "お疲れ様でした！"
+        let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputSentAt)
+        let expectedNotificationContent = PushNotificationContent(
+            title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
+            message: inputComment
         )
 
-        // Act
+        try await confirmation(expectedCount: 2) { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    upsertThanksHandler: { _, _, thanks, _ in
+                        // Assert
 
-        try await store.sendThanks(
-            target: inputHouseworkItem,
-            sender: inputSender,
-            comment: "ありがとう！",
-            cohabitantId: inputCohabitantId,
-            step: .board,
-            notify: false
+                        #expect(thanks == expectedThanks)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, content in
+                    // Assert
+
+                    #expect(content == expectedNotificationContent)
+                    confirmation()
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
+
+            // Act
+
+            try await store.sendThanks(
+                target: inputHouseworkItem,
+                sender: inputSender,
+                comment: inputComment,
+                now: Date(timeIntervalSince1970: 1000),
+                cohabitantId: inputCohabitantId,
+                step: .thanks
+            )
+        }
+    }
+
+    @Test("送ったコメントを直すと、最初に送った日時のまま記録し、通知は送らない")
+    func sendThanks_editComment_keepsSentAtWithoutNotification() async throws {
+        // Arrange
+
+        let inputSentAt = Date(timeIntervalSince1970: 500)
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: inputSentAt)]
         )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let expectedThanks = HouseworkThanks(comment: "いつもありがとう", sentAt: inputSentAt)
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    upsertThanksHandler: { _, _, thanks, _ in
+                        // Assert
+
+                        #expect(thanks == expectedThanks)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    Issue.record()
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
+
+            // Act
+
+            try await store.sendThanks(
+                target: inputHouseworkItem,
+                sender: inputSender,
+                comment: "いつもありがとう",
+                now: Date(timeIntervalSince1970: 1000),
+                cohabitantId: inputCohabitantId,
+                step: .thanks
+            )
+        }
     }
 
     @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")

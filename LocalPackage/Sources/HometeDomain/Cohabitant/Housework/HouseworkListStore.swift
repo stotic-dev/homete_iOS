@@ -137,22 +137,30 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 完了した家事に「ありがとう」を伝える
+    /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する
     ///
-    /// 家事のステータスは変えず、相手への通知だけを送る。通知の送信そのものがこの操作の成果なので、
-    /// 他の操作のように送りっぱなしにはせず、完了を待って失敗は呼び出し元に返す。
-    ///
-    /// - Parameter notify: 一括操作では件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
+    /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる
+    /// （最初に送った日時は変えない）。コメントなしのありがとう（家事ボードのクイックアクション・一括操作）
+    /// は通知を送らない。通知は、コメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送り、
+    /// 書いてあるコメントを直しただけでは送らない。記録と通知の完了を待ち、失敗は呼び出し元に返す。
+    /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
+    // swiftlint:disable:next function_parameter_count
     public func sendThanks(
         target: HouseworkItem,
         sender: Account,
-        comment: String,
+        comment: String?,
+        now: Date,
         cohabitantId: String,
-        step: HouseworkAnalyticsStep,
-        notify: Bool = true
+        step: HouseworkAnalyticsStep
     ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て編集かどうかを判断する
+        let currentThanks = (items.item(target) ?? target).thanks[sender.id]
+        let isEditing = currentThanks != nil
+        let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
+
         do {
-            if notify {
+            try await houseworkClient.upsertThanks(target.id, sender.id, thanks, cohabitantId)
+            if let comment, currentThanks?.comment == nil {
                 try await cohabitantPushNotificationClient.send(
                     cohabitantId,
                     .thanksMessage(
@@ -163,10 +171,10 @@ public final class HouseworkListStore {
                 )
             }
         } catch {
-            analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: false)))
+            analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: false)))
             throw error
         }
-        analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: true)))
+        analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
     }
 
     public func returnToIncomplete(
@@ -235,13 +243,6 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 任意の通知内容を相手へ送信する
-    ///
-    /// 一括操作のように、複数件の更新をまとめて1件の通知にしたい場合に使う。
-    public func sendNotification(_ content: PushNotificationContent, cohabitantId: String) {
-        pushNotificationWithAsync(notification: content, cohabitantId: cohabitantId)
-    }
-
 }
 
 private extension HouseworkListStore {
@@ -303,13 +304,14 @@ private extension HouseworkListStore {
         )
     }
 
-    func pushNotificationWithAsync(notification: PushNotificationContent, cohabitantId: String) {
-        Task.detached {
-            try await self.cohabitantPushNotificationClient.send(
-                cohabitantId,
-                notification
-            )
-        }
+    func thanksAnalyticsAction(
+        isEditing: Bool,
+        step: HouseworkAnalyticsStep,
+        isSuccess: Bool
+    ) -> HouseworkAnalyticsAction {
+        isEditing
+            ? .editThanks(step: step, isSuccess: isSuccess)
+            : .sendThanks(step: step, isSuccess: isSuccess)
     }
 
 }
