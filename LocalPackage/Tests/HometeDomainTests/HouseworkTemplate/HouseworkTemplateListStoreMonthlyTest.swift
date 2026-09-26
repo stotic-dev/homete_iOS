@@ -21,7 +21,7 @@ struct HouseworkTemplateListStoreMonthlyTest {
     )
     private static let recycling = HouseworkTemplateMonthlyItem(
         item: .init(id: .init(id: "recycling"), title: "資源ゴミ", point: 3, updatedAt: .distantPast),
-        rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)
+        rule: .dayOfMonth(10)
     )
 
     @Test("saveTemplateで毎月の家事を渡すと、現在の内容との差分だけを書き込み、monthlyItemsを置き換える")

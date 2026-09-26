@@ -12,7 +12,6 @@ import Testing
 enum MonthlyRecurrenceRuleTest {
 
     struct DayOfMonthCase {}
-    struct WeekdayOfMonthCase {}
     struct CodableCase {}
 
 }
@@ -49,40 +48,6 @@ extension MonthlyRecurrenceRuleTest.DayOfMonthCase {
 
 }
 
-extension MonthlyRecurrenceRuleTest.WeekdayOfMonthCase {
-
-    /// 2026年1月は1日が木曜日で、水曜日は7・14・21・28日、木曜日は1・8・15・22・29日
-    @Test(
-        "毎月第N◯曜日は、その月の第N週の指定曜日だけ当てはまり、最終は月の最後の指定曜日に当てはまる",
-        arguments: [
-            (ordinal: WeekOrdinal.first, dayOfWeek: DayOfWeek.thursday, day: 1, expected: true),
-            (ordinal: WeekOrdinal.second, dayOfWeek: DayOfWeek.wednesday, day: 14, expected: true),
-            (ordinal: WeekOrdinal.second, dayOfWeek: DayOfWeek.wednesday, day: 7, expected: false),
-            (ordinal: WeekOrdinal.second, dayOfWeek: DayOfWeek.thursday, day: 14, expected: false),
-            (ordinal: WeekOrdinal.fourth, dayOfWeek: DayOfWeek.thursday, day: 22, expected: true),
-            (ordinal: WeekOrdinal.fourth, dayOfWeek: DayOfWeek.thursday, day: 29, expected: false),
-            (ordinal: WeekOrdinal.last, dayOfWeek: DayOfWeek.thursday, day: 29, expected: true),
-            (ordinal: WeekOrdinal.last, dayOfWeek: DayOfWeek.wednesday, day: 28, expected: true),
-            (ordinal: WeekOrdinal.last, dayOfWeek: DayOfWeek.wednesday, day: 21, expected: false),
-        ]
-    )
-    func matches(ordinal: WeekOrdinal, dayOfWeek: DayOfWeek, day: Int, expected: Bool) {
-        // Arrange
-
-        let rule = MonthlyRecurrenceRule.weekdayOfMonth(ordinal: ordinal, dayOfWeek: dayOfWeek)
-        let date = Date.previewDate(year: 2026, month: 1, day: day)
-
-        // Act
-
-        let actual = rule.matches(date, calendar: .japanese)
-
-        // Assert
-
-        #expect(actual == expected)
-    }
-
-}
-
 extension MonthlyRecurrenceRuleTest.CodableCase {
 
     @Test(
@@ -93,11 +58,8 @@ extension MonthlyRecurrenceRuleTest.CodableCase {
                 expectedRule: MonthlyRecurrenceRule.dayOfMonth(25)
             ),
             (
-                json: #"""
-                {"id":"item","title":"家賃の振込","point":5,"updatedAt":0,
-                "rule":{"type":"weekdayOfMonth","ordinal":-1,"dayOfWeek":3}}
-                """#,
-                expectedRule: MonthlyRecurrenceRule.weekdayOfMonth(ordinal: .last, dayOfWeek: .wednesday)
+                json: #"{"id":"item","title":"家賃の振込","point":5,"updatedAt":0,"rule":{"type":"dayOfMonth","day":31}}"#,
+                expectedRule: MonthlyRecurrenceRule.dayOfMonth(31)
             ),
         ]
     )
@@ -126,7 +88,7 @@ extension MonthlyRecurrenceRuleTest.CodableCase {
 
         let expected = HouseworkTemplateMonthlyItem(
             item: .init(id: .init(id: "item"), title: "資源ゴミ", point: 3, updatedAt: Date(timeIntervalSince1970: 100)),
-            rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)
+            rule: .dayOfMonth(10)
         )
 
         // Act
@@ -145,7 +107,7 @@ extension MonthlyRecurrenceRuleTest.CodableCase {
     func decodeUnknownRuleType() {
         // Arrange
 
-        let json = #"{"type":"everyOtherWeek","dayOfWeek":1}"#
+        let json = #"{"type":"weekdayOfMonth","ordinal":2,"dayOfWeek":3}"#
 
         // Act + Assert
 
