@@ -115,14 +115,14 @@ extension HouseworkTemplateContextTest.TemplateOfDayWithMonthlyItemsCase {
         updatedAt: .distantPast
     )
 
-    /// 2026/1/14は水曜日（第2水曜日）
+    /// 2026/1/14は水曜日
     private static var context: HouseworkTemplateContext {
         .init(
             metadata: nil,
             houseworkTemplate: [.init(dayOfWeek: .wednesday, items: [weeklyItem])],
             monthlyItems: [
                 .init(item: rentItem, rule: .dayOfMonth(14)),
-                .init(item: recyclingItem, rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)),
+                .init(item: recyclingItem, rule: .dayOfMonth(14)),
             ]
         )
     }
