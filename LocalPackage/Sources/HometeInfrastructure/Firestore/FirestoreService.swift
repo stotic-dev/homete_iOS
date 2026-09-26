@@ -32,6 +32,21 @@ public final actor FirestoreService {
         try await predicate(firestore).setData(encoded, merge: false)
     }
 
+    /// 複数のドキュメントをまとめて作成または上書きする（全件成功か全件失敗のどちらかになる）
+    /// - Parameter reference: 書き込む値ごとのドキュメント参照
+    public func batchInsertOrUpdate<T: Encodable & Sendable>(
+        data: [T],
+        reference: (Firestore, T) -> DocumentReference
+    ) async throws {
+        guard !data.isEmpty else { return }
+        let batch = firestore.batch()
+        for element in data {
+            let encoded = try Firestore.Encoder().encode(element)
+            batch.setData(encoded, forDocument: reference(firestore, element), merge: false)
+        }
+        try await batch.commit()
+    }
+
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {
         try await predicate(firestore).delete()
     }

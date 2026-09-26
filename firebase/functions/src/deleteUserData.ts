@@ -55,7 +55,8 @@ export const deleteuserdata = functions
       if (memberList.length <= 2) {
         // グループ全体を削除
         // Firestoreは親ドキュメントを消してもサブコレクションを消さないため、
-        // Cohabitant配下（Houseworks / HouseworkTemplates とそのネスト）を
+        // Cohabitant配下（Houseworks / HouseworkTemplates とそのネスト /
+        // FrequentHouseworks / FrequentHouseworkCategories）を
         // recursiveDeleteでまとめて削除する
         await db.recursiveDelete(cohabitantSnapshot.ref);
         logger.info(

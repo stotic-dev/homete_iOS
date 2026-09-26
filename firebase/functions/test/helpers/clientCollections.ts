@@ -16,6 +16,8 @@ export const ClientCollections = {
   HOUSEWORK_TEMPLATES: "HouseworkTemplates",
   HOUSEWORK_TEMPLATE_DAYS: "Days",
   HOUSEWORK_TEMPLATE_EDITORS: "Editors",
+  FREQUENT_HOUSEWORKS: "FrequentHouseworks",
+  FREQUENT_HOUSEWORK_CATEGORIES: "FrequentHouseworkCategories",
 } as const;
 
 /**
@@ -64,6 +66,26 @@ export function houseworkTemplateEditorsPath(
 ): string {
   return `${houseworkTemplatesPath(cohabitantId)}/${templateId}/` +
     `${ClientCollections.HOUSEWORK_TEMPLATE_EDITORS}`;
+}
+
+/**
+ * FrequentHouseworks（いつもの家事）コレクションのパスを取得
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @return {string} FrequentHouseworksコレクションへのパス
+ */
+export function frequentHouseworksPath(cohabitantId: string): string {
+  return `${ClientCollections.COHABITANT}/${cohabitantId}/` +
+    `${ClientCollections.FREQUENT_HOUSEWORKS}`;
+}
+
+/**
+ * FrequentHouseworkCategories（いつもの家事のカスタムカテゴリ）コレクションのパスを取得
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @return {string} FrequentHouseworkCategoriesコレクションへのパス
+ */
+export function frequentHouseworkCategoriesPath(cohabitantId: string): string {
+  return `${ClientCollections.COHABITANT}/${cohabitantId}/` +
+    `${ClientCollections.FREQUENT_HOUSEWORK_CATEGORIES}`;
 }
 
 /**
