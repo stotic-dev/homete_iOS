@@ -19,7 +19,7 @@
    - 当日（`Date.now`基準の `indexedDate`）の家事の達成率を表示する
    - 達成率 = `完了家事数 / 全家事数`
    - 「完了」とは `HouseworkState.completed`
-   - 「未完了」とは `HouseworkState.incomplete` および `HouseworkState.pendingApproval`
+   - 「未完了」とは `HouseworkState.incomplete`（承認ステータスは[Issue #292](remove-approval-state.md)で廃止）
 2. **未完了家事リスト**
    - 当日の未完了家事を最大4件まで表示する
    - 5件以上ある場合は「もっと表示する」ボタンを表示する
@@ -61,7 +61,7 @@
 ```
 TodayHouseworkSummary
 ├ allItems: [HouseworkItem]       // 当日の全家事
-├ incompleteItems: [HouseworkItem] // incomplete + pendingApproval
+├ incompleteItems: [HouseworkItem] // incomplete
 ├ progress: Double                  // 達成率 (0.0〜1.0)
 ├ displayState: DisplayState        // .empty / .allCompleted / .hasIncomplete
 └ hasMoreIncomplete: Bool           // 未完了 > 4 件か
@@ -116,7 +116,7 @@ TodayHouseworkSummary
 
 - [x] **T-1** `TodayHouseworkSummary` 値オブジェクトの実装
   - 当日の `HouseworkItem` 配列から初期化
-  - `incompleteItems`（incomplete + pendingApproval）の抽出
+  - `incompleteItems`（incomplete）の抽出
   - `progress`（達成率: completed / all）の算出
   - `displayState`（empty / allCompleted / hasIncomplete）の判定
   - `displayIncompleteItems`（最大4件）と `hasMoreIncomplete` フラグ
@@ -125,7 +125,7 @@ TodayHouseworkSummary
   - 全完了 → `.allCompleted`、progress = 1.0
   - 未完了あり → `.hasIncomplete`、progress 計算検証
   - 未完了4件以下 / 5件以上で `hasMoreIncomplete` が正しく切り替わる
-  - `incomplete` と `pendingApproval` の両方を未完了として集計
+  - `incomplete` のみを未完了として集計
 
 ### Phase 2: 未完了家事詳細画面
 

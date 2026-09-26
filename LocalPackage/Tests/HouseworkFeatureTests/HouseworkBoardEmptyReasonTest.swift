@@ -23,7 +23,7 @@ enum HouseworkBoardEmptyReasonTest {
             let list = HouseworkBoardList(items: [])
 
             // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: state, ownUserId: "user1")
+            let actual = HouseworkBoardEmptyReason(list: list, state: state)
 
             // Assert
             #expect(actual == .noHouseworkRegistered)
@@ -41,122 +41,72 @@ enum HouseworkBoardEmptyReasonTest {
             ])
 
             // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .incomplete, ownUserId: "user1")
+            let actual = HouseworkBoardEmptyReason(list: list, state: .incomplete)
 
             // Assert
             #expect(actual == nil)
         }
 
-        @Test("未完了タブが空で家事が登録されている場合はallCompletedOrPendingを返す")
-        func returns_allCompletedOrPending_when_incomplete_is_empty_but_items_exist() {
+        @Test("未完了タブが空で家事が登録されている場合はallCompletedを返す")
+        func returns_allCompleted_when_incomplete_is_empty_but_items_exist() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .pendingApproval),
+                .makeForPreview(id: "1", state: .notTodo),
                 .makeForPreview(id: "2", state: .completed),
             ])
 
             // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .incomplete, ownUserId: "user1")
+            let actual = HouseworkBoardEmptyReason(list: list, state: .incomplete)
 
             // Assert
-            #expect(actual == .allCompletedOrPending)
-        }
-
-    }
-
-    struct InitWithPendingApprovalState {
-
-        @Test("承認待ちタブが空で未完了の家事がある場合はnoPendingApproval(hasIncomplete: true)を返す")
-        func returns_noPendingApproval_hasIncomplete_true_when_incomplete_exists() {
-            // Arrange
-            let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .incomplete),
-                .makeForPreview(id: "2", state: .completed),
-            ])
-
-            // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .pendingApproval, ownUserId: "user1")
-
-            // Assert
-            #expect(actual == .noPendingApproval(hasIncomplete: true))
-        }
-
-        @Test("承認待ちタブが空で未完了の家事もない場合はnoPendingApproval(hasIncomplete: false)を返す")
-        func returns_noPendingApproval_hasIncomplete_false_when_incomplete_not_exists() {
-            // Arrange
-            let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .completed),
-            ])
-
-            // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .pendingApproval, ownUserId: "user1")
-
-            // Assert
-            #expect(actual == .noPendingApproval(hasIncomplete: false))
+            #expect(actual == .allCompleted)
         }
 
     }
 
     struct InitWithCompletedState {
 
-        @Test("完了タブが空で自身が承認できる承認待ち家事がある場合はcanReviewPendingApprovalを返す")
-        func returns_canReviewPendingApproval_when_reviewable_pending_exists() {
-            // Arrange
-            // executorId が ownUserId と異なる → canReview = true
-            let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "other"),
-            ])
-
-            // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .completed, ownUserId: "user1")
-
-            // Assert
-            #expect(actual == .canReviewPendingApproval)
-        }
-
-        @Test("完了タブが空で承認待ち家事が全て自分が実行したものの場合はallPendingApprovalByOthersを返す")
-        func returns_allPendingApprovalByOthers_when_all_pending_are_own() {
-            // Arrange
-            // executorId が ownUserId と同じ → canReview = false
-            let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "user1"),
-                .makeForPreview(id: "2", state: .pendingApproval, executorId: "user1"),
-            ])
-
-            // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .completed, ownUserId: "user1")
-
-            // Assert
-            #expect(actual == .allPendingApprovalByOthers)
-        }
-
-        @Test("完了タブが空で承認待ちがなく未完了家事がある場合はhasIncompleteHouseworkを返す")
-        func returns_hasIncompleteHousework_when_no_pending_but_incomplete_exists() {
+        @Test("完了タブが空で未完了家事がある場合はhasIncompleteHouseworkを返す")
+        func returns_hasIncompleteHousework_when_incomplete_exists() {
             // Arrange
             let list = HouseworkBoardList(items: [
                 .makeForPreview(id: "1", state: .incomplete),
             ])
 
             // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .completed, ownUserId: "user1")
+            let actual = HouseworkBoardEmptyReason(list: list, state: .completed)
 
             // Assert
             #expect(actual == .hasIncompleteHousework)
         }
 
-        @Test("完了タブが空で承認待ちと未完了が混在する場合はcanReviewPendingApprovalが優先される")
-        func returns_canReviewPendingApproval_when_both_pending_and_incomplete_exist() {
+        @Test("完了タブが空でやらない家事しかない場合もhasIncompleteHouseworkを返す")
+        func returns_hasIncompleteHousework_when_only_notTodo_exists() {
             // Arrange
             let list = HouseworkBoardList(items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "other"),
+                .makeForPreview(id: "1", state: .notTodo),
+            ])
+
+            // Act
+            let actual = HouseworkBoardEmptyReason(list: list, state: .completed)
+
+            // Assert
+            #expect(actual == .hasIncompleteHousework)
+        }
+
+        @Test("完了した家事がある場合はnilを返す")
+        func returns_nil_when_completed_exists() {
+            // Arrange
+            let list = HouseworkBoardList(items: [
+                .makeForPreview(id: "1", state: .completed),
                 .makeForPreview(id: "2", state: .incomplete),
             ])
 
             // Act
-            let actual = HouseworkBoardEmptyReason(list: list, state: .completed, ownUserId: "user1")
+            let actual = HouseworkBoardEmptyReason(list: list, state: .completed)
 
             // Assert
-            #expect(actual == .canReviewPendingApproval)
+            #expect(actual == nil)
         }
 
     }

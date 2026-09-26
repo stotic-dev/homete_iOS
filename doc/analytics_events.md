@@ -95,7 +95,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_board` | `HouseworkBoardView` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
-| `housework_approval` | `HouseworkApprovalView` |
+| `housework_thanks` | `HouseworkThanksView` |
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
@@ -168,7 +168,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `housework`
 
-家事の登録・完了報告・承認・却下・差し戻し・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・ありがとう・未完了に戻す・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
 
 | 項目 | 内容 |
 |---|---|
@@ -176,8 +176,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `request_review` / `approve` / `reject` / `return_incomplete` / `delete` | 何が起きたか |
-| `step` | — | `dashboard` / `board` / `detail` / `approval` | 起点画面 |
+| `action` | ○ | `register` / `complete` / `send_thanks` / `return_incomplete` / `delete` | 何が起きたか |
+| `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `result` | — | `success` / `failure` | 行動の結果 |
 
 送信されるパターンと、その送信タイミング:
@@ -185,16 +185,16 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | `step` | 送信タイミング |
 |---|---|---|
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる） |
-| `request_review` | `dashboard` / `board` / `detail` | 家事の確認依頼を行った（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「確認してもらう」） |
-| `approve` | `approval`（固定） | 家事の承認画面で「完了にする」をタップした |
-| `reject` | `approval`（固定） | 家事の承認画面で「再確認してもらう」をタップした |
+| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」） |
+| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクションは定型文、`thanks`はありがとうを伝える画面からメッセージを添えて送信） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
 
-いずれも`result`に`success` / `failure`が付与される（Firestoreへの書き込み結果）。
+いずれも`result`に`success` / `failure`が付与される。`send_thanks`だけはFirestoreを更新しないため、プッシュ通知の送信結果を表す。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
-`request_review` → `approve` / `reject`の比率は、承認フローがスムーズに回っているかの指標になる。
+`complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
+`complete` → `return_incomplete`の比率が高い場合は、完了の取り消しが頻発している（誤タップや認識のずれ）と読める。
 
 ### `housework_template`
 

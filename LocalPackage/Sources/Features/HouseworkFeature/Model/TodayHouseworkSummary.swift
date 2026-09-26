@@ -16,7 +16,7 @@ public struct TodayHouseworkSummary: Equatable, Sendable {
 
     /// 当日の全家事
     public let allItems: [HouseworkItem]
-    /// 未完了家事（`incomplete` + `pendingApproval`）
+    /// 未完了家事（`incomplete`）
     public let incompleteItems: [HouseworkBoardItem]
     /// 達成率（0.0〜1.0）。家事が0件のときは0
     public let progress: Double
@@ -55,7 +55,7 @@ public extension TodayHouseworkSummary {
         ) ?? storedItems
 
         let incomplete = allItems
-            .filter { $0.state == .incomplete || $0.state == .pendingApproval }
+            .filter { $0.state == .incomplete }
             .sorted(by: isIncompleteDisplayOrderedBefore)
 
         let progress: Double
@@ -90,15 +90,11 @@ public extension TodayHouseworkSummary {
 
 private extension TodayHouseworkSummary {
 
-    /// 未完了家事の表示順（ステータス順→ポイント降順）を決める比較関数
+    /// 未完了家事の表示順（ポイント降順）を決める比較関数
     ///
     /// Firestoreの取得順は安定しないため、表示のたびに並び順が変わっていた。
-    /// 未完了（`incomplete`）を承認待ち（`pendingApproval`）より先に表示し、ユーザーが
-    /// 対応すべき家事をファーストビューで見つけやすくする。
+    /// ポイントの高い家事から並べ、取りかかる価値の大きいものをファーストビューに出す。
     static func isIncompleteDisplayOrderedBefore(_ lhs: HouseworkItem, _ rhs: HouseworkItem) -> Bool {
-        if lhs.state != rhs.state {
-            return lhs.state == .incomplete
-        }
         if lhs.point != rhs.point {
             return lhs.point > rhs.point
         }

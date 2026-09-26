@@ -12,8 +12,8 @@ public enum HouseworkAnalyticsStep: String, Equatable, Sendable {
     case board
     /// 家事の詳細
     case detail
-    /// 家事の承認
-    case approval
+    /// ありがとうを伝える画面
+    case thanks
 
 }
 
@@ -24,12 +24,10 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
 
     /// 家事を登録した
     case register(step: HouseworkAnalyticsStep, isSuccess: Bool)
-    /// 家事の確認を依頼した
-    case requestReview(step: HouseworkAnalyticsStep, isSuccess: Bool)
-    /// 家事を承認した
-    case approve(isSuccess: Bool)
-    /// 家事を差し戻した
-    case reject(isSuccess: Bool)
+    /// 家事を完了にした
+    case complete(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 完了した家事にありがとうを伝えた
+    case sendThanks(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を未完了に戻した
     case returnIncomplete(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を削除した
@@ -60,14 +58,11 @@ private extension HouseworkAnalyticsAction {
     var step: String? {
         switch self {
         case let .register(step, _),
-             let .requestReview(step, _),
+             let .complete(step, _),
+             let .sendThanks(step, _),
              let .returnIncomplete(step, _),
              let .delete(step, _):
             step.rawValue
-
-        // 承認・差し戻しは常に承認画面からの行動のため固定値にする
-        case .approve, .reject:
-            HouseworkAnalyticsStep.approval.rawValue
         }
     }
 
@@ -77,14 +72,11 @@ private extension HouseworkAnalyticsAction {
         case .register:
             "register"
 
-        case .requestReview:
-            "request_review"
+        case .complete:
+            "complete"
 
-        case .approve:
-            "approve"
-
-        case .reject:
-            "reject"
+        case .sendThanks:
+            "send_thanks"
 
         case .returnIncomplete:
             "return_incomplete"
@@ -98,11 +90,10 @@ private extension HouseworkAnalyticsAction {
     var result: String? {
         switch self {
         case let .register(_, isSuccess),
-             let .requestReview(_, isSuccess),
+             let .complete(_, isSuccess),
+             let .sendThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
-             let .delete(_, isSuccess),
-             let .approve(isSuccess),
-             let .reject(isSuccess):
+             let .delete(_, isSuccess):
             isSuccess ? "success" : "failure"
         }
     }

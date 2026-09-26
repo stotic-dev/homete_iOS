@@ -9,7 +9,7 @@
 
 毎週繰り返される定型的な家事（例: 月曜日はゴミ出し、水曜日は掃除）をテンプレートとして登録し、`HouseworkBoardView` の incomplete 表示に自動的に組み込めるようにする機能を追加する。
 
-テンプレートに登録された家事は `Houseworks` コレクションには書き込まず、画面表示時にテンプレート定義と既存 `Houseworks` をマージして表示する。ユーザーがその家事を `pendingApproval` 以降の状態に遷移させた時点で初めて `Houseworks` コレクションにドキュメントを作成する。
+テンプレートに登録された家事は `Houseworks` コレクションには書き込まず、画面表示時にテンプレート定義と既存 `Houseworks` をマージして表示する。ユーザーがその家事を `completed` などの状態に遷移させた時点で初めて `Houseworks` コレクションにドキュメントを作成する。
 
 ---
 
@@ -577,7 +577,7 @@ MVP では「テンプレートは1件のみ」とする。テンプレート一
 
 **`templateHouseworkItemId` による重複防止**
 
-ユーザーが仮想 incomplete を `pendingApproval` などに遷移させると、その時点で `templateHouseworkItemId` を埋めた実 Housework が作成される。同じ日付・同じテンプレートアイテムに対する仮想 incomplete を引き続き表示してしまうと家事が二重に表示されてしまうため、ID 一致による除外でこれを防ぐ。
+ユーザーが仮想 incomplete を `completed` などに遷移させると、その時点で `templateHouseworkItemId` を埋めた実 Housework が作成される。同じ日付・同じテンプレートアイテムに対する仮想 incomplete を引き続き表示してしまうと家事が二重に表示されてしまうため、ID 一致による除外でこれを防ぐ。
 
 **`updatedAt` による表示範囲制御**
 
@@ -587,7 +587,7 @@ MVP では「テンプレートは1件のみ」とする。テンプレート一
 
 ### 状態遷移時の Housework 作成（Lazy 作成）
 
-仮想 incomplete に対してユーザーがアクション（`pendingApproval` への遷移など）を行った時点で、初めて実 Housework を作成する。
+仮想 incomplete に対してユーザーがアクション（`completed` への遷移など）を行った時点で、初めて実 Housework を作成する。
 
 作成内容:
 
@@ -598,7 +598,7 @@ MVP では「テンプレートは1件のみ」とする。テンプレート一
 | `date` | 操作が行われた表示対象日 |
 | `title` | テンプレートアイテムの `title` をスナップショット |
 | `point` | テンプレートアイテムの `point` をスナップショット |
-| `state` | `pendingApproval`（または遷移先の状態） |
+| `state` | `completed`（または遷移先の状態） |
 | `executor` | 操作したユーザー |
 
 スナップショットされた `title` / `point` は以降テンプレート側を編集しても更新されない。完了済みの記録は当時の内容を保持する仕様とする。
