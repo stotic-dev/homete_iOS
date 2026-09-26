@@ -202,14 +202,14 @@ struct AnalyticsEventTest {
                     step: .register,
                     recurrence: .monthly(.dayOfMonth(25))
                 ),
-                ["action": "create", "result": "failure", "step": "register", "recurrence": "monthly_day"]
+                ["action": "create", "result": "failure", "step": "register", "recurrence": "monthly"]
             ),
             (
                 HouseworkTemplateAnalyticsAction.edit(
                     isSuccess: true,
-                    recurrence: .monthly(.weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday))
+                    recurrence: .weekly([.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday])
                 ),
-                ["action": "edit", "result": "success", "recurrence": "monthly_weekday"]
+                ["action": "edit", "result": "success", "recurrence": "daily"]
             ),
             (
                 HouseworkTemplateAnalyticsAction.edit(isSuccess: false, recurrence: .weekly([.friday])),

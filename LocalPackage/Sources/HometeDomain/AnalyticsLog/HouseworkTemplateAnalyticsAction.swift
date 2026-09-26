@@ -90,14 +90,14 @@ private extension HouseworkRecurrence {
 
     var analyticsValue: String {
         switch self {
+        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
+            "daily"
+
         case .weekly:
             "weekly"
 
-        case .monthly(.dayOfMonth):
-            "monthly_day"
-
-        case .monthly(.weekdayOfMonth):
-            "monthly_weekday"
+        case .monthly:
+            "monthly"
         }
     }
 
