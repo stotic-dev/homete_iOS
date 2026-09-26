@@ -42,13 +42,13 @@ struct TodayMemberContributionTest {
         #expect(actual == expected)
     }
 
-    @Test("未完了・承認待ちの家事は集計に含めない")
-    func excludesIncompleteAndPendingApprovalItems() {
+    @Test("未完了・やらないの家事は集計に含めない")
+    func excludesIncompleteAndNotTodoItems() {
         // Arrange
 
         let summary = TodayHouseworkSummary.makeForTest(allItems: [
             .makeForTest(id: 1, point: 10, state: .completed, executorId: "ownUserId"),
-            .makeForTest(id: 2, point: 20, state: .pendingApproval, executorId: "ownUserId"),
+            .makeForTest(id: 2, point: 20, state: .notTodo, executorId: "ownUserId"),
             .makeForTest(id: 3, point: 30, state: .incomplete),
         ])
 
