@@ -127,7 +127,7 @@ describe("CohabitantNotifier E2E Tests", () => {
     const notificationWithData: CohabitantNotification = {
       title: "title",
       body: "body",
-      data: {type: "houseworkApproved", houseworkDate: "1767193200"},
+      data: {type: "houseworkCompleted", houseworkDate: "1767193200"},
     };
 
     // Act
@@ -164,14 +164,14 @@ describe("buildMulticastMessage", () => {
     // Act
     const actual = buildMulticastMessage(
       ["token"],
-      {title: "title", body: "body", data: {type: "houseworkApproved"}}
+      {title: "title", body: "body", data: {type: "houseworkCompleted"}}
     );
 
     // Assert
     expect(actual).toEqual({
       notification: {title: "title", body: "body"},
       tokens: ["token"],
-      data: {type: "houseworkApproved"},
+      data: {type: "houseworkCompleted"},
       apns: {payload: {aps: {mutableContent: true}}},
     });
   });

@@ -110,7 +110,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let expectedNotificationContent = PushNotificationContent(
             title: "\(inputExecutor.userName)さんが家事を終えました",
             message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
         )
         let completedAt = Date()
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
@@ -175,7 +175,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let expectedNotificationContent = PushNotificationContent(
             title: "\(inputExecutor.userName)さんが家事を終えました",
             message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
         )
         let completedAt = Date()
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(

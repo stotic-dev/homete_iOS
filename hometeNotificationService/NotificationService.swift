@@ -8,7 +8,7 @@ import HometeDomain
 import HometeLocalNotification
 import UserNotifications
 
-/// 同居人からの家事の承認通知を受け取ったときに、今日のふりかえり通知を予約する
+/// 同居人からの家事の完了通知を受け取ったときに、今日のふりかえり通知を予約する
 ///
 /// アプリが起動していなくても、`mutable-content`付きの通知を受け取るとOSがこの拡張を起動する。
 /// 受け取った通知の内容は書き換えず、そのまま表示する。
@@ -25,7 +25,7 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
         withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
     ) {
         let content = request.content
-        guard let data = HouseworkApprovedNotificationData(userInfo: content.userInfo) else {
+        guard let data = HouseworkCompletedNotificationData(userInfo: content.userInfo) else {
             contentHandler(content)
             return
         }
@@ -38,7 +38,7 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
         Task {
             // 予約の完了を待ってから通知を渡す。先に渡すと拡張のプロセスが終了し、予約が失われうる
             let useCase = DailyCompletionReminderUseCase(client: .liveValue)
-            await useCase.handleApproved(data, now: .now, calendar: .autoupdatingCurrent)
+            await useCase.handleCompleted(data, now: .now, calendar: .autoupdatingCurrent)
             self.deliverOriginalContent()
         }
     }

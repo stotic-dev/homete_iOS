@@ -10,7 +10,7 @@ import Testing
 enum DailyCompletionReminderUseCaseTest {
 
     struct SyncTodayCase {}
-    struct HandleApprovedCase {}
+    struct HandleCompletedCase {}
     struct UpdateSettingCase {}
 
 }
@@ -102,12 +102,12 @@ extension DailyCompletionReminderUseCaseTest.SyncTodayCase {
 
 }
 
-// MARK: - handleApproved
+// MARK: - handleCompleted
 
-extension DailyCompletionReminderUseCaseTest.HandleApprovedCase {
+extension DailyCompletionReminderUseCaseTest.HandleCompletedCase {
 
-    @Test("今日の家事が承認されたら、完了日を記録して今日の通知を予約する")
-    func handleApproved_todayHousework_schedulesTodayReminder() async {
+    @Test("今日の家事が完了したら、完了日を記録して今日の通知を予約する")
+    func handleCompleted_todayHousework_schedulesTodayReminder() async {
         // Arrange
 
         let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
@@ -120,7 +120,7 @@ extension DailyCompletionReminderUseCaseTest.HandleApprovedCase {
 
         // Act
 
-        await sut.handleApproved(
+        await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
@@ -132,8 +132,8 @@ extension DailyCompletionReminderUseCaseTest.HandleApprovedCase {
         #expect(actual == expected)
     }
 
-    @Test("今日以外の家事が承認されても、何もしない")
-    func handleApproved_otherDayHousework_doesNothing() async {
+    @Test("今日以外の家事が完了しても、何もしない")
+    func handleCompleted_otherDayHousework_doesNothing() async {
         // Arrange
 
         let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
@@ -146,7 +146,7 @@ extension DailyCompletionReminderUseCaseTest.HandleApprovedCase {
 
         // Act
 
-        await sut.handleApproved(
+        await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 24)),
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese

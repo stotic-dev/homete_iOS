@@ -345,7 +345,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
         let expectedNotification = PushNotificationContent(
             title: "\(inputAccount.userName)さんが家事を終えました",
             message: "\(inputItems.count)件の家事が完了しました",
-            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
         )
 
         await confirmation(expectedCount: 3) { confirmation in

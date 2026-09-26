@@ -1,17 +1,17 @@
 //
-//  HouseworkApprovedNotificationData.swift
+//  HouseworkCompletedNotificationData.swift
 //  LocalPackage
 //
 
 import Foundation
 
-/// 家事の承認通知に載せる付加情報
+/// 家事の完了通知に載せる付加情報
 ///
-/// 承認された家事が「今日」の家事かどうかを、受け取った端末のNotification Service Extensionで
+/// 完了した家事が「今日」の家事かどうかを、受け取った端末のNotification Service Extensionで
 /// 判定するために使う。FCMのdataは文字列の値しか持てないため、文字列の辞書との相互変換を持つ。
-public struct HouseworkApprovedNotificationData: Equatable, Sendable {
+public struct HouseworkCompletedNotificationData: Equatable, Sendable {
 
-    /// 承認された家事の日付（`HouseworkIndexedDate.value`）
+    /// 完了した家事の日付（`HouseworkIndexedDate.value`）
     public let houseworkDate: Date
 
     public init(houseworkDate: Date) {
@@ -20,7 +20,7 @@ public struct HouseworkApprovedNotificationData: Equatable, Sendable {
 
 }
 
-public extension HouseworkApprovedNotificationData {
+public extension HouseworkCompletedNotificationData {
 
     /// 通知のdataとして送る文字列の辞書
     var payload: [String: String] {
@@ -31,7 +31,7 @@ public extension HouseworkApprovedNotificationData {
     }
 
     /// 受け取った通知の`userInfo`から復元する
-    /// - Returns: 家事の承認通知でない場合、または日付が読み取れない場合は`nil`
+    /// - Returns: 家事の完了通知でない場合、または日付が読み取れない場合は`nil`
     init?(userInfo: [AnyHashable: Any]) {
         guard userInfo[Self.typeKey] as? String == Self.typeValue,
               let rawDate = userInfo[Self.houseworkDateKey] as? String,
@@ -42,10 +42,10 @@ public extension HouseworkApprovedNotificationData {
 
 }
 
-private extension HouseworkApprovedNotificationData {
+private extension HouseworkCompletedNotificationData {
 
     static let typeKey = "type"
-    static let typeValue = "houseworkApproved"
+    static let typeValue = "houseworkCompleted"
     static let houseworkDateKey = "houseworkDate"
 
 }

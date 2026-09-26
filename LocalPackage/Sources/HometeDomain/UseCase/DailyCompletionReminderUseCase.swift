@@ -9,7 +9,7 @@ import Foundation
 ///
 /// 予約のきっかけは2つある。
 /// - アプリで家事の一覧を購読している間に、今日の完了家事が見つかったとき（`syncToday`）
-/// - アプリが起動していない間に、同居人から今日の家事の承認通知が届いたとき（`handleApproved`。
+/// - アプリが起動していない間に、同居人から今日の家事の完了通知が届いたとき（`handleCompleted`。
 ///   Notification Service Extensionから呼ぶ）
 ///
 /// 定期実行のサーバー処理を持たずに済むよう、条件を満たした端末自身がその日の通知を1件だけ予約する。
@@ -40,8 +40,8 @@ public final class DailyCompletionReminderUseCase: Sendable {
         await scheduleToday(now: now, calendar: calendar)
     }
 
-    /// 同居人から家事の承認通知を受け取ったときに、今日の家事なら今日の通知を予約する
-    public func handleApproved(_ data: HouseworkApprovedNotificationData, now: Date, calendar: Calendar) async {
+    /// 同居人から家事の完了通知を受け取ったときに、今日の家事なら今日の通知を予約する
+    public func handleCompleted(_ data: HouseworkCompletedNotificationData, now: Date, calendar: Calendar) async {
         guard calendar.isDate(data.houseworkDate, inSameDayAs: now) else { return }
 
         let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)

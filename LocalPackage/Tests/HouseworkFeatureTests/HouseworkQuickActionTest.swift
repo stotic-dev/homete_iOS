@@ -127,7 +127,7 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
         let expected = PushNotificationContent(
             title: "じっこうしゃさんが家事を終えました",
             message: "3件の家事が完了しました",
-            data: ["type": "houseworkApproved", "houseworkDate": "1790262000"]
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
         )
         #expect(actual == expected)
     }

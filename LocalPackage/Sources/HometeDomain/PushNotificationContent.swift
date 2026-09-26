@@ -36,7 +36,7 @@ public extension PushNotificationContent {
         .init(
             title: "\(executorName)さんが家事を終えました",
             message: "「\(houseworkTitle)」が完了しました",
-            data: HouseworkApprovedNotificationData(houseworkDate: houseworkDate).payload
+            data: HouseworkCompletedNotificationData(houseworkDate: houseworkDate).payload
         )
     }
 
@@ -44,7 +44,7 @@ public extension PushNotificationContent {
         .init(
             title: "\(executorName)さんが家事を終えました",
             message: "\(count)件の家事が完了しました",
-            data: HouseworkApprovedNotificationData(houseworkDate: houseworkDate).payload
+            data: HouseworkCompletedNotificationData(houseworkDate: houseworkDate).payload
         )
     }
 
