@@ -119,6 +119,18 @@ public struct FrequentHouseworkContext: Sendable, Equatable {
         value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// いつもの家事だけを差し替えた値を返す
+    public func replacingItems(_ items: [FrequentHouseworkItem]) -> FrequentHouseworkContext {
+        .init(items: items, customCategories: customCategories)
+    }
+
+    /// カスタムカテゴリだけを差し替えた値を返す
+    public func replacingCustomCategories(
+        _ customCategories: [FrequentHouseworkCustomCategory]
+    ) -> FrequentHouseworkContext {
+        .init(items: items, customCategories: customCategories)
+    }
+
 }
 
 private extension FrequentHouseworkContext {

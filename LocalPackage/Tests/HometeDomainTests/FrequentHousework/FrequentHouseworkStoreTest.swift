@@ -65,8 +65,8 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         categoriesContinuation.yield(expectedCategories)
         itemsContinuation.yield(expectedItems)
         await waiter.value
-        #expect(store.items == expectedItems)
-        #expect(store.customCategories == expectedCategories)
+        #expect(store.context.items == expectedItems)
+        #expect(store.context.customCategories == expectedCategories)
         #expect(store.loadState == .loaded)
 
         // Cleanup
@@ -98,7 +98,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let waiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.items
+                    store.context.items
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -182,7 +182,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let categoriesWaiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.customCategories
+                    store.context.customCategories
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -275,7 +275,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let waiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.customCategories
+                    store.context.customCategories
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -283,7 +283,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         }
         categoriesContinuation.yield(expectedCategories)
         await waiter.value
-        #expect(store.customCategories == expectedCategories)
+        #expect(store.context.customCategories == expectedCategories)
 
         // Cleanup
 
@@ -403,7 +403,7 @@ extension FrequentHouseworkStoreTest.AddCase {
                         confirmation()
                     }
                 ),
-                items: [existing],
+                context: .init(items: [existing]),
                 now: { now },
                 idGenerator: { generatedIds.value.removeFirst() }
             )
@@ -504,7 +504,7 @@ extension FrequentHouseworkStoreTest.AddCase {
 
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: [.makeForTest(id: "1", title: "洗濯")]
+            context: .init(items: [.makeForTest(id: "1", title: "洗濯")])
         )
 
         // Act & Assert
@@ -527,7 +527,7 @@ extension FrequentHouseworkStoreTest.AddCase {
         let existingItems = (0 ..< 9).map { FrequentHouseworkItem.makeForTest(id: "\($0)", sortOrder: $0) }
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: existingItems
+            context: .init(items: existingItems)
         )
 
         // Act & Assert
@@ -571,7 +571,7 @@ extension FrequentHouseworkStoreTest.ImportCase {
                         confirmation()
                     }
                 ),
-                items: [.makeForTest(id: "1", title: "洗濯", sortOrder: 0)],
+                context: .init(items: [.makeForTest(id: "1", title: "洗濯", sortOrder: 0)]),
                 now: { now },
                 idGenerator: { "new" }
             )
@@ -655,7 +655,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
                         confirmation()
                     }
                 ),
-                items: [current],
+                context: .init(items: [current]),
                 now: { now }
             )
 
@@ -702,7 +702,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
                         confirmation()
                     }
                 ),
-                items: [current, laundry],
+                context: .init(items: [current, laundry]),
                 now: { now }
             )
 
@@ -723,10 +723,10 @@ extension FrequentHouseworkStoreTest.UpdateCase {
 
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: [
+            context: .init(items: [
                 .makeForTest(id: "1", title: "風呂"),
                 .makeForTest(id: "2", title: "洗濯"),
-            ]
+            ])
         )
 
         // Act & Assert
@@ -747,7 +747,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
 
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: []
+            context: .init()
         )
 
         // Act & Assert
@@ -811,7 +811,7 @@ extension FrequentHouseworkStoreTest.DeleteAndReorderCase {
                         confirmation()
                     }
                 ),
-                items: [first, second, third]
+                context: .init(items: [first, second, third])
             )
 
             // Act
@@ -837,7 +837,7 @@ extension FrequentHouseworkStoreTest.CategoryCase {
             frequentHouseworkClient: .init(
                 upsertCategories: { categories, _ in upsertedCategories.value = categories }
             ),
-            customCategories: [.makeForTest(id: "pet", name: "ペット", sortOrder: 2)],
+            context: .init(customCategories: [.makeForTest(id: "pet", name: "ペット", sortOrder: 2)]),
             now: { now },
             idGenerator: { "new" }
         )
@@ -871,7 +871,7 @@ extension FrequentHouseworkStoreTest.CategoryCase {
 
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertCategories: { _, _ in Issue.record() }),
-            customCategories: [.makeForTest(id: "pet", name: "ペット")]
+            context: .init(customCategories: [.makeForTest(id: "pet", name: "ペット")])
         )
 
         // Act & Assert
@@ -904,7 +904,7 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                         confirmation()
                     }
                 ),
-                customCategories: [current]
+                context: .init(customCategories: [current])
             )
 
             // Act
@@ -931,8 +931,10 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                 deleteCategory: { id, _ in await deletedIds.append(id) }
             ),
             analyticsClient: .init(log: { event in loggedEvents.value.append(event) }),
-            items: [.makeForTest(id: "1", categoryId: "pet")],
-            customCategories: [.makeForTest(id: "pet")]
+            context: .init(
+                items: [.makeForTest(id: "1", categoryId: "pet")],
+                customCategories: [.makeForTest(id: "pet")]
+            )
         )
 
         // Act
@@ -966,11 +968,11 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                         confirmation()
                     }
                 ),
-                customCategories: [
+                context: .init(customCategories: [
                     .makeForTest(id: "a", sortOrder: 0),
                     .makeForTest(id: "b", sortOrder: 1),
                     .makeForTest(id: "c", sortOrder: 2),
-                ]
+                ])
             )
 
             // Act

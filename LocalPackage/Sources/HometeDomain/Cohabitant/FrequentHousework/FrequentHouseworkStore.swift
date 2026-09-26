@@ -13,8 +13,10 @@ import Observation
 @Observable
 public final class FrequentHouseworkStore {
 
-    public private(set) var items: [FrequentHouseworkItem]
-    public private(set) var customCategories: [FrequentHouseworkCustomCategory]
+    /// 購読しているいつもの家事とカスタムカテゴリ
+    /// - Note: 2つのリスナーの結果を1つの値にまとめて持つ。
+    ///         別々に持つと、件数上限・名前の重複・並び順を片方だけ見て判定する経路ができてしまう
+    public private(set) var context: FrequentHouseworkContext
     /// いつもの家事とカスタムカテゴリの初回受信の状態
     /// - Note: 両方の最初のスナップショットが揃うまでは`loading`のまま。
     ///         揃う前は件数上限・名前の重複・カテゴリの判定が正しくできないため、画面は追加や編集をさせない
@@ -34,23 +36,17 @@ public final class FrequentHouseworkStore {
     private let itemsListenerKey = "frequentHouseworksListener"
     private let categoriesListenerKey = "frequentHouseworkCategoriesListener"
 
-    public var context: FrequentHouseworkContext {
-        .init(items: items, customCategories: customCategories)
-    }
-
     public init(
         frequentHouseworkClient: FrequentHouseworkClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
-        items: [FrequentHouseworkItem] = [],
-        customCategories: [FrequentHouseworkCustomCategory] = [],
+        context: FrequentHouseworkContext = .init(),
         loadState: ListenerLoadState = .loading,
         now: @escaping @Sendable () -> Date = { .now },
         idGenerator: @escaping @Sendable () -> String = { UUID().uuidString }
     ) {
         self.frequentHouseworkClient = frequentHouseworkClient
         self.analyticsClient = analyticsClient
-        self.items = items
-        self.customCategories = customCategories
+        self.context = context
         self.loadState = loadState
         self.now = now
         self.idGenerator = idGenerator
@@ -107,7 +103,7 @@ private extension FrequentHouseworkStore {
         )
         itemsObserveTask = Task {
             for await items in itemsStream {
-                self.items = items
+                self.context = self.context.replacingItems(items)
                 self.hasReceivedItems = true
                 self.markLoadedIfReady()
             }
@@ -115,7 +111,7 @@ private extension FrequentHouseworkStore {
         }
         categoriesObserveTask = Task {
             for await categories in categoriesStream {
-                self.customCategories = categories
+                self.context = self.context.replacingCustomCategories(categories)
                 self.hasReceivedCategories = true
                 self.markLoadedIfReady()
             }
@@ -208,7 +204,7 @@ public extension FrequentHouseworkStore {
         input: FrequentHouseworkInput,
         cohabitantId: String
     ) async throws {
-        guard let current = items.first(where: { $0.id == itemId }) else { return }
+        guard let current = context.items.first(where: { $0.id == itemId }) else { return }
         let validTitle = try validatedTitle(input.title, excludingId: itemId)
 
         let currentContext = context
@@ -249,7 +245,7 @@ public extension FrequentHouseworkStore {
     /// - Note: 並び順が変わった家事だけを書き込む
     func reorderItems(_ orderedIds: [String], cohabitantId: String) async throws {
         let reorderedItems = orderedIds.enumerated().compactMap { index, id -> FrequentHouseworkItem? in
-            guard let item = items.first(where: { $0.id == id }), item.sortOrder != index else { return nil }
+            guard let item = context.items.first(where: { $0.id == id }), item.sortOrder != index else { return nil }
             return .init(
                 id: item.id,
                 title: item.title,
@@ -284,7 +280,7 @@ public extension FrequentHouseworkStore {
         let newCategory = FrequentHouseworkCustomCategory(
             id: idGenerator(),
             name: validName,
-            sortOrder: (customCategories.map(\.sortOrder).max() ?? -1) + 1,
+            sortOrder: (context.customCategories.map(\.sortOrder).max() ?? -1) + 1,
             createdAt: now()
         )
         do {
@@ -300,7 +296,7 @@ public extension FrequentHouseworkStore {
     /// カスタムカテゴリの名前を変更する
     /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
     func renameCategory(id: String, name: String, cohabitantId: String) async throws {
-        guard let current = customCategories.first(where: { $0.id == id }) else { return }
+        guard let current = context.customCategories.first(where: { $0.id == id }) else { return }
         let validName = try validatedCategoryName(name, excludingId: id)
         let renamedCategory = FrequentHouseworkCustomCategory(
             id: current.id,
@@ -334,7 +330,7 @@ public extension FrequentHouseworkStore {
     /// - Note: 並び順が変わったカテゴリだけを書き込む
     func reorderCategories(_ orderedIds: [String], cohabitantId: String) async throws {
         let reorderedCategories = orderedIds.enumerated().compactMap { index, id -> FrequentHouseworkCustomCategory? in
-            guard let category = customCategories.first(where: { $0.id == id }),
+            guard let category = context.customCategories.first(where: { $0.id == id }),
                   category.sortOrder != index else { return nil }
             return .init(id: category.id, name: category.name, sortOrder: index, createdAt: category.createdAt)
         }
@@ -354,13 +350,13 @@ private extension FrequentHouseworkStore {
         _ inputs: [FrequentHouseworkInput],
         limitPolicy: FrequentHouseworkLimitPolicy
     ) throws -> [FrequentHouseworkItem] {
-        guard limitPolicy.canAdd(inputs.count, currentCount: items.count) else {
+        guard limitPolicy.canAdd(inputs.count, currentCount: context.items.count) else {
             throw FrequentHouseworkError.limitExceeded
         }
         let timestamp = now()
         var newItems: [FrequentHouseworkItem] = []
         for input in inputs {
-            let workingContext = FrequentHouseworkContext(items: items + newItems, customCategories: customCategories)
+            let workingContext = context.replacingItems(context.items + newItems)
             let normalizedTitle = FrequentHouseworkContext.normalize(input.title)
             guard !normalizedTitle.isEmpty else { throw FrequentHouseworkError.emptyTitle }
             guard !workingContext.containsTitle(normalizedTitle) else {
