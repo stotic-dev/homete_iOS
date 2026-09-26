@@ -164,7 +164,12 @@ public extension FrequentHouseworkStore {
         step: FrequentHouseworkAnalyticsStep,
         cohabitantId: String
     ) async throws {
-        let newItems = try makeNewItems(inputs, limitPolicy: limitPolicy)
+        let newItems = try context.makeAddedItems(
+            from: inputs,
+            limitPolicy: limitPolicy,
+            timestamp: now(),
+            idGenerator: idGenerator
+        )
         do {
             try await frequentHouseworkClient.upsertItems(newItems, cohabitantId)
         } catch {
@@ -185,7 +190,12 @@ public extension FrequentHouseworkStore {
         let inputs = candidates
             .filter { !$0.isAlreadyRegistered }
             .map { FrequentHouseworkInput(title: $0.title, point: $0.point, categoryId: nil) }
-        let newItems = try makeNewItems(inputs, limitPolicy: limitPolicy)
+        let newItems = try context.makeAddedItems(
+            from: inputs,
+            limitPolicy: limitPolicy,
+            timestamp: now(),
+            idGenerator: idGenerator
+        )
         do {
             try await frequentHouseworkClient.upsertItems(newItems, cohabitantId)
         } catch {
@@ -204,22 +214,11 @@ public extension FrequentHouseworkStore {
         input: FrequentHouseworkInput,
         cohabitantId: String
     ) async throws {
-        guard let current = context.items.first(where: { $0.id == itemId }) else { return }
-        let validTitle = try validatedTitle(input.title, excludingId: itemId)
-
-        let currentContext = context
-        let isSameCategory = currentContext.category(of: current).categoryId == input.categoryId
-        let updatedItem = FrequentHouseworkItem(
-            id: current.id,
-            title: validTitle,
-            point: input.point,
-            categoryId: input.categoryId,
-            sortOrder: isSameCategory
-                ? current.sortOrder
-                : currentContext.nextSortOrder(forCategoryId: input.categoryId),
-            createdAt: current.createdAt,
-            updatedAt: now()
-        )
+        guard let updatedItem = try context.makeUpdatedItem(
+            itemId: itemId,
+            input: input,
+            timestamp: now()
+        ) else { return }
         do {
             try await frequentHouseworkClient.upsertItems([updatedItem], cohabitantId)
         } catch {
@@ -244,18 +243,7 @@ public extension FrequentHouseworkStore {
     /// - Parameter orderedIds: 並べ替え後の順に並べた、1つのカテゴリの家事ID
     /// - Note: 並び順が変わった家事だけを書き込む
     func reorderItems(_ orderedIds: [String], cohabitantId: String) async throws {
-        let reorderedItems = orderedIds.enumerated().compactMap { index, id -> FrequentHouseworkItem? in
-            guard let item = context.items.first(where: { $0.id == id }), item.sortOrder != index else { return nil }
-            return .init(
-                id: item.id,
-                title: item.title,
-                point: item.point,
-                categoryId: item.categoryId,
-                sortOrder: index,
-                createdAt: item.createdAt,
-                updatedAt: item.updatedAt
-            )
-        }
+        let reorderedItems = context.makeReorderedItems(orderedIds: orderedIds)
         guard !reorderedItems.isEmpty else { return }
         try await frequentHouseworkClient.upsertItems(reorderedItems, cohabitantId)
     }
@@ -276,13 +264,7 @@ public extension FrequentHouseworkStore {
     /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
     @discardableResult
     func addCategory(name: String, cohabitantId: String) async throws -> FrequentHouseworkCustomCategory {
-        let validName = try validatedCategoryName(name, excludingId: nil)
-        let newCategory = FrequentHouseworkCustomCategory(
-            id: idGenerator(),
-            name: validName,
-            sortOrder: (context.customCategories.map(\.sortOrder).max() ?? -1) + 1,
-            createdAt: now()
-        )
+        let newCategory = try context.makeAddedCategory(name: name, id: idGenerator(), createdAt: now())
         do {
             try await frequentHouseworkClient.upsertCategories([newCategory], cohabitantId)
         } catch {
@@ -296,14 +278,7 @@ public extension FrequentHouseworkStore {
     /// カスタムカテゴリの名前を変更する
     /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
     func renameCategory(id: String, name: String, cohabitantId: String) async throws {
-        guard let current = context.customCategories.first(where: { $0.id == id }) else { return }
-        let validName = try validatedCategoryName(name, excludingId: id)
-        let renamedCategory = FrequentHouseworkCustomCategory(
-            id: current.id,
-            name: validName,
-            sortOrder: current.sortOrder,
-            createdAt: current.createdAt
-        )
+        guard let renamedCategory = try context.makeRenamedCategory(id: id, name: name) else { return }
         do {
             try await frequentHouseworkClient.upsertCategories([renamedCategory], cohabitantId)
         } catch {
@@ -329,68 +304,9 @@ public extension FrequentHouseworkStore {
     /// - Parameter orderedIds: 並べ替え後の順に並べたカスタムカテゴリのID
     /// - Note: 並び順が変わったカテゴリだけを書き込む
     func reorderCategories(_ orderedIds: [String], cohabitantId: String) async throws {
-        let reorderedCategories = orderedIds.enumerated().compactMap { index, id -> FrequentHouseworkCustomCategory? in
-            guard let category = context.customCategories.first(where: { $0.id == id }),
-                  category.sortOrder != index else { return nil }
-            return .init(id: category.id, name: category.name, sortOrder: index, createdAt: category.createdAt)
-        }
+        let reorderedCategories = context.makeReorderedCategories(orderedIds: orderedIds)
         guard !reorderedCategories.isEmpty else { return }
         try await frequentHouseworkClient.upsertCategories(reorderedCategories, cohabitantId)
-    }
-
-}
-
-// MARK: - 入力の検証
-
-private extension FrequentHouseworkStore {
-
-    /// 入力から追加する家事を組み立てる
-    /// - Note: 名前の重複と並び順は、先に組み立てた家事も含めて判定する
-    func makeNewItems(
-        _ inputs: [FrequentHouseworkInput],
-        limitPolicy: FrequentHouseworkLimitPolicy
-    ) throws -> [FrequentHouseworkItem] {
-        guard limitPolicy.canAdd(inputs.count, currentCount: context.items.count) else {
-            throw FrequentHouseworkError.limitExceeded
-        }
-        let timestamp = now()
-        var newItems: [FrequentHouseworkItem] = []
-        for input in inputs {
-            let workingContext = context.replacingItems(context.items + newItems)
-            let normalizedTitle = FrequentHouseworkContext.normalize(input.title)
-            guard !normalizedTitle.isEmpty else { throw FrequentHouseworkError.emptyTitle }
-            guard !workingContext.containsTitle(normalizedTitle) else {
-                throw FrequentHouseworkError.duplicatedTitle
-            }
-            newItems.append(.init(
-                id: idGenerator(),
-                title: normalizedTitle,
-                point: input.point,
-                categoryId: input.categoryId,
-                sortOrder: workingContext.nextSortOrder(forCategoryId: input.categoryId),
-                createdAt: timestamp,
-                updatedAt: timestamp
-            ))
-        }
-        return newItems
-    }
-
-    func validatedTitle(_ title: String, excludingId: String?) throws -> String {
-        let normalizedTitle = FrequentHouseworkContext.normalize(title)
-        guard !normalizedTitle.isEmpty else { throw FrequentHouseworkError.emptyTitle }
-        guard !context.containsTitle(normalizedTitle, excludingId: excludingId) else {
-            throw FrequentHouseworkError.duplicatedTitle
-        }
-        return normalizedTitle
-    }
-
-    func validatedCategoryName(_ name: String, excludingId: String?) throws -> String {
-        let normalizedName = FrequentHouseworkContext.normalize(name)
-        guard !normalizedName.isEmpty else { throw FrequentHouseworkError.emptyCategoryName }
-        guard !context.containsCategoryName(normalizedName, excludingId: excludingId) else {
-            throw FrequentHouseworkError.duplicatedCategoryName
-        }
-        return normalizedName
     }
 
 }
