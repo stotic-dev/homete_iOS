@@ -18,6 +18,7 @@ struct DebugOnboardingScreen: View {
 
     @Environment(\.dismiss) var dismiss
 
+    @State var accountAuthStore = AccountAuthStore()
     @State var accountStore = AccountStore()
     @State var subscriptionStore = SubscriptionStore()
     /// 本物の起動状態を書き換えないためのダミー。ログイン状態への遷移要求はこのデバッグ画面を閉じる操作として扱う
@@ -28,6 +29,7 @@ struct DebugOnboardingScreen: View {
             OnboardingFlowView(
                 authInfo: AccountAuthResult(id: "debug-onboarding"),
                 authSubscriptionSyncUseCase: .init(
+                    accountAuthStore: accountAuthStore,
                     accountStore: accountStore,
                     subscriptionStore: subscriptionStore
                 )

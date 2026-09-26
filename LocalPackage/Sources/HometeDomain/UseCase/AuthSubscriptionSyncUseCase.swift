@@ -6,6 +6,7 @@
 @MainActor
 public struct AuthSubscriptionSyncUseCase {
 
+    private let accountAuthStore: AccountAuthStore
     private let accountStore: AccountStore
     private let subscriptionStore: SubscriptionStore
     private let houseworkClient: HouseworkClient
@@ -13,12 +14,14 @@ public struct AuthSubscriptionSyncUseCase {
     private let retentionSyncStateStore: HouseworkRetentionSyncStateStore
 
     public init(
+        accountAuthStore: AccountAuthStore,
         accountStore: AccountStore,
         subscriptionStore: SubscriptionStore,
         houseworkClient: HouseworkClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue
     ) {
         self.init(
+            accountAuthStore: accountAuthStore,
             accountStore: accountStore,
             subscriptionStore: subscriptionStore,
             houseworkClient: houseworkClient,
@@ -28,12 +31,14 @@ public struct AuthSubscriptionSyncUseCase {
     }
 
     init(
+        accountAuthStore: AccountAuthStore,
         accountStore: AccountStore,
         subscriptionStore: SubscriptionStore,
         houseworkClient: HouseworkClient,
         analyticsClient: AnalyticsClient = .previewValue,
         retentionSyncStateStore: HouseworkRetentionSyncStateStore
     ) {
+        self.accountAuthStore = accountAuthStore
         self.accountStore = accountStore
         self.subscriptionStore = subscriptionStore
         self.houseworkClient = houseworkClient
@@ -42,9 +47,16 @@ public struct AuthSubscriptionSyncUseCase {
     }
 
     /// サインイン成功時にアカウント情報をロードし、サブスクリプション状態を同期する
-    /// - Returns: ロードに成功したアカウント（アカウント未登録の場合はnil）
+    /// - Returns: ロードに成功したアカウント（アカウント未登録、またはロード中にサインアウトした場合はnil）
     public func syncOnSignedIn(_ authResult: AccountAuthResult) async -> Account? {
         guard let account = await accountStore.load(authResult) else { return nil }
+        // トークン失効による自動サインアウトはFirebase Auth側の判断で非同期に起きるため、
+        // ロードを待っている間にサインアウト済みになっていることがある。
+        // そのまま進めると無効なユーザーIDで購読・書き込みを始めてしまうので、ロードした内容ごと破棄する
+        guard isSignedIn(as: authResult) else {
+            accountStore.clear()
+            return nil
+        }
         await accountStore.startObservingIfNeeded(account.id)
         await subscriptionStore.logIn(account.id)
         // アプリ未起動の間に失効しているケースは状態変化として検知できないため、サインイン時にも突き合わせる
@@ -97,6 +109,16 @@ public struct AuthSubscriptionSyncUseCase {
         } catch {
             print("failed to sync housework retention: \(error)")
         }
+    }
+
+}
+
+private extension AuthSubscriptionSyncUseCase {
+
+    /// 引数の認証情報が、いまもサインイン中のユーザーのものかどうか
+    /// - Note: awaitを挟んだ後にユーザーIDを使ってFirestoreへアクセスする前に確認する
+    func isSignedIn(as authResult: AccountAuthResult) -> Bool {
+        accountAuthStore.currentAuth.result == authResult
     }
 
 }

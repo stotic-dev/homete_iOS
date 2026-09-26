@@ -17,6 +17,11 @@ struct AuthSubscriptionSyncUseCaseTest {
         return HouseworkRetentionSyncStateStore(userDefaults: userDefaults)
     }
 
+    /// サインイン中のユーザーを固定した`AccountAuthStore`を用意する
+    private func makeAuthStore(signedInAs authResult: AccountAuthResult?) -> AccountAuthStore {
+        AccountAuthStore(currentAuth: .init(result: authResult, alreadyLoadedAtInitiate: true))
+    }
+
     @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
     func syncOnSignedInSuccess() async {
         await confirmation(expectedCount: 2) { confirmation in
@@ -57,6 +62,7 @@ struct AuthSubscriptionSyncUseCaseTest {
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
             let subscriptionStore = SubscriptionStore(purchaseClient: purchaseClient)
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore
             )
@@ -90,6 +96,7 @@ struct AuthSubscriptionSyncUseCaseTest {
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
             let subscriptionStore = SubscriptionStore(purchaseClient: .init())
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore
             )
@@ -107,6 +114,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                 confirmation()
             })
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: AccountStore(accountInfoClient: accountInfoClient),
                 subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
             )
@@ -126,19 +134,57 @@ struct AuthSubscriptionSyncUseCaseTest {
                 fcmToken: nil,
                 cohabitantId: nil
             )
+            let newAuthResult = AccountAuthResult(id: "newAccountId")
             let accountInfoClient = AccountInfoClient(fetch: { _ in throw DomainError.other })
             let purchaseClient = PurchaseClient(logIn: { _ in
                 confirmation()
             })
             let accountStore = AccountStore(accountInfoClient: accountInfoClient, account: previousAccount)
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: newAuthResult),
                 accountStore: accountStore,
                 subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
             )
 
             await useCase.syncOnSignedOut()
 
-            let actual = await useCase.syncOnSignedIn(AccountAuthResult(id: "newAccountId"))
+            let actual = await useCase.syncOnSignedIn(newAuthResult)
+
+            #expect(actual == nil)
+            #expect(accountStore.account == nil)
+        }
+    }
+
+    @Test("アカウントのロード中にサインアウトした場合は、購読を開始せずロード結果も破棄する")
+    func syncOnSignedInAbortsWhenSignedOutDuringLoad() async {
+        await confirmation("古いユーザーIDでは購読もサブスクリプションのログインも行わない", expectedCount: 0) { confirmation in
+            let staleAuthResult = AccountAuthResult(id: "staleAccountId")
+            let staleAccount = Account(
+                id: staleAuthResult.id,
+                userName: "staleUserName",
+                fcmToken: nil,
+                cohabitantId: nil
+            )
+            let accountInfoClient = AccountInfoClient(
+                fetch: { _ in staleAccount },
+                addSnapshotListener: { _, _ in
+                    confirmation()
+                    return .init { $0.finish() }
+                }
+            )
+            let purchaseClient = PurchaseClient(logIn: { _ in
+                confirmation()
+            })
+            let accountStore = AccountStore(accountInfoClient: accountInfoClient)
+            // ロードの完了を待っている間にトークン失効で自動サインアウトした状況を、
+            // サインアウト済みの認証状態でロードを始めることで再現する
+            let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: nil),
+                accountStore: accountStore,
+                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
+            )
+
+            let actual = await useCase.syncOnSignedIn(staleAuthResult)
 
             #expect(actual == nil)
             #expect(accountStore.account == nil)
@@ -168,6 +214,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                 )
             )
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: nil),
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore
             )
@@ -202,6 +249,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                         }
                     )
                     let useCase = AuthSubscriptionSyncUseCase(
+                        accountAuthStore: makeAuthStore(signedInAs: nil),
                         accountStore: AccountStore(),
                         subscriptionStore: SubscriptionStore(),
                         analyticsClient: analyticsClient
@@ -241,6 +289,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                 )
             )
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore,
                 houseworkClient: .init(syncRetentionHandler: {
@@ -271,6 +320,7 @@ struct AuthSubscriptionSyncUseCaseTest {
             syncStateStore.save(.init(cohabitantId: inputCohabitantId, isPremium: false))
             let accountStore = AccountStore(account: inputAccount)
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
                 subscriptionStore: SubscriptionStore(),
                 houseworkClient: .init(syncRetentionHandler: { _ in
@@ -297,6 +347,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                 isPremium: true
             ))
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
                 subscriptionStore: SubscriptionStore(),
                 houseworkClient: .init(syncRetentionHandler: {
@@ -324,6 +375,7 @@ struct AuthSubscriptionSyncUseCaseTest {
                 isPremium: true
             ))
             let useCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
                 subscriptionStore: SubscriptionStore(),
                 houseworkClient: .init(syncRetentionHandler: { _ in

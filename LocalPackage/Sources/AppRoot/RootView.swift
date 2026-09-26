@@ -72,6 +72,12 @@ public extension RootView {
 
     static func make(dependencies: AppDependencies) -> some View {
         DependenciesInjectLayer {
+            let accountAuthStore = AccountAuthStore(
+                accountAuthClient: $0.accountAuthClient,
+                analyticsClient: $0.analyticsClient,
+                signInWithAppleClient: $0.signInWithAppleClient,
+                nonceGenerationClient: $0.nonceGeneratorClient
+            )
             let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
             let pendingInvitationStore = PendingInvitationStore()
             let subscriptionStore = SubscriptionStore(
@@ -79,6 +85,7 @@ public extension RootView {
                 analyticsClient: $0.analyticsClient
             )
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
+                accountAuthStore: accountAuthStore,
                 accountStore: accountStore,
                 subscriptionStore: subscriptionStore,
                 houseworkClient: $0.houseworkClient,
@@ -87,12 +94,7 @@ public extension RootView {
 
             RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                 .environment(accountStore)
-                .environment(AccountAuthStore(
-                    accountAuthClient: $0.accountAuthClient,
-                    analyticsClient: $0.analyticsClient,
-                    signInWithAppleClient: $0.signInWithAppleClient,
-                    nonceGenerationClient: $0.nonceGeneratorClient
-                ))
+                .environment(accountAuthStore)
                 .environment(CohabitantStore(
                     cohabitantClient: $0.cohabitantClient,
                     accountInfoClient: $0.accountInfoClient,
@@ -131,32 +133,48 @@ private extension RootView {
     }
 
     func onChangeAuth() async {
-        guard let authResult = accountAuthStore.currentAuth.result else {
+        let handlingAuth = accountAuthStore.currentAuth
+
+        guard let authResult = handlingAuth.result else {
             launchState = .notLoggedIn
             await authSubscriptionSyncUseCase.syncOnSignedOut()
             return
         }
 
-        if let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) {
-            await updateFcmTokenIfNeeded()
-            let context = LoginContext(account: account)
-            analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-            launchState = .loggedIn(context: context)
-        } else {
+        guard let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) else {
+            guard isHandling(handlingAuth) else { return }
             launchState = .preLoggedIn(auth: authResult)
+            return
         }
+
+        await updateFcmTokenIfNeeded()
+        guard isHandling(handlingAuth) else { return }
+        let context = LoginContext(account: account)
+        analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
+        launchState = .loggedIn(context: context)
     }
 
     func onChangeAccount() async {
         guard launchState.isLoggedIn,
               let account = accountStore.account else { return }
+        let handlingAuth = accountAuthStore.currentAuth
 
         await updateFcmTokenIfNeeded()
+        guard isHandling(handlingAuth) else { return }
         let context = LoginContext(account: account)
         analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
         launchState = .loggedIn(context: context)
         // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
         await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
+    }
+
+    /// 処理を始めたときの認証状態が、いまも維持されているかどうか
+    /// - Note: トークン失効による自動サインアウトはFirebase Auth側の判断で非同期に起きるため、
+    ///         `launchState`の更新はawaitを挟んだ時点で古い判断になっている可能性がある。
+    ///         古い認証情報のまま画面を進めると、サインアウト済みのユーザーIDでFirestoreを読み書きしてしまう。
+    ///         新しい認証状態の通知を処理する側が改めて画面を切り替えるため、ここでは何もしないのが正しい
+    func isHandling(_ auth: AccountAuthInfo) -> Bool {
+        accountAuthStore.currentAuth == auth
     }
 
     func updateFcmTokenIfNeeded() async {
