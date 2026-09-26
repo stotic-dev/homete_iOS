@@ -41,7 +41,7 @@ struct HouseworkDetailActionContent: View {
         .sheet(isPresented: $isPresentedCompleteSheet) {
             HouseworkCompleteSheet(item: item, step: .detail)
         }
-        .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
+        .sheet(isPresented: $isPresentedThanksView) {
             HouseworkThanksView(item: item)
         }
     }

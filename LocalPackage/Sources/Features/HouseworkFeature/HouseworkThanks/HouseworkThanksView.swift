@@ -6,13 +6,12 @@
 //
 
 import HometeDomain
-import HometeResources
 import HometeUI
 import SwiftUI
 
+/// 完了した家事にありがとうを伝えるハーフモーダル
 public struct HouseworkThanksView: View {
 
-    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
@@ -24,33 +23,23 @@ public struct HouseworkThanksView: View {
     let item: HouseworkBoardItem
 
     public var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: .space40) {
-                    VStack(spacing: .space24) {
-                        if let executorId = item.executorId,
-                           let executorUserName = cohabitantStore.members.userName(executorId) {
-                            notificationSection(executorUserName)
-                        }
-                        houseworkPropertySection()
-                        inputMessageSection()
-                    }
-                    actionButtonContent()
-                }
-                .padding(.horizontal, .space16)
-                .padding(.bottom, .space24)
+        ScrollView {
+            VStack(alignment: .leading, spacing: .space24) {
+                HouseworkCommentInputContent(
+                    title: "ありがとうを伝える",
+                    placeholder: "感謝を伝えましょう！",
+                    text: $inputMessage
+                )
+                actionButtonContent()
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle("ありがとうを伝える")
-            .inlineNavigationBarTitleDisplayMode()
-            .softTopScrollEdgeEffect()
-            .leadingToolbarItem {
-                NavigationBarButton(label: .close) {
-                    dismiss()
-                }
-            }
-            .fullScreenLoadingIndicator(loadingState)
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space24)
         }
+        .scrollBounceBehavior(.basedOnSize)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .fullScreenLoadingIndicator(loadingState)
+        .commonError(content: $commonError)
         .trackScreenView(.houseworkThanks)
     }
 
@@ -58,60 +47,17 @@ public struct HouseworkThanksView: View {
 
 private extension HouseworkThanksView {
 
-    func notificationSection(_ executorName: String) -> some View {
-        section {
-            VStack(spacing: .zero) {
-                Text("\(executorName)さんが")
-                Text("「\(item.title)」を")
-                Text("終えてくれました")
-            }
-            .font(with: .body)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, .space16)
-        }
-    }
-
-    func houseworkPropertySection() -> some View {
-        section {
-            HouseworkItemPropertyListContent(item: item)
-                .padding(.vertical, .space8)
-        }
-    }
-
-    func inputMessageSection() -> some View {
-        VStack(spacing: .space16) {
-            Text("メッセージ")
-                .font(with: .headLineS)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            section {
-                TextField("感謝を伝えましょう！", text: $inputMessage, axis: .vertical)
-                    .font(with: .body)
-                    .padding(.space16)
-                    .frame(minHeight: 150, alignment: .topLeading)
-            }
-        }
-    }
-
-    func section(@ViewBuilder content: () -> some View) -> some View {
-        content()
-            .frame(maxWidth: .infinity)
-            .background {
-                RoundedRectangle(radius: .radius8)
-                    .fill(.subSurface)
-            }
-    }
-
     func actionButtonContent() -> some View {
         Button {
             loadingState.task {
                 await tappedSendThanksButton()
             }
         } label: {
-            Text("ありがとうを伝える")
+            Label("ありがとうを伝える", systemImage: "hands.clap.fill")
                 .frame(maxWidth: .infinity)
         }
         .primaryButtonStyle()
-        .disabled(inputMessage.isEmpty)
+        .disabled(inputMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
 }
@@ -150,10 +96,6 @@ private extension HouseworkThanksView {
         executedAt: .distantFuture
     ))
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(
-        members: [.init(id: "test", userName: "hogehoge")],
-        ownId: "test"
-    ))
     .environment(HouseworkListStore())
 }
 #endif
