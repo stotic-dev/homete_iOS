@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -252,20 +252,20 @@ struct CompletionInfo: Equatable {
 
 ### Phase 2: 実装
 
-- [ ] `HouseworkThanks`の追加と`HouseworkItem.thanks`（デコード・未完了で消す）
-- [ ] `FirestoreService.update(fields:predicate:)`と`HouseworkClient.upsertThanks`（live / preview）
-- [ ] `HouseworkListStore.sendThanks`の記録・通知条件の変更
-- [ ] クイックアクション・一括操作から固定コメントとまとめ通知を削除し、送信済みを除外
-- [ ] `HouseworkThanksStatus`と`HouseBoardListRow`の表示、完了リストからの受け渡し
-- [ ] 詳細画面の「送ったメッセージを編集」と`HouseworkThanksView`の編集モード・文字数上限
-- [ ] Analytics（`edit_thanks`）と`doc/analytics_events.md`の更新
-- [ ] Previewの追加・修正（行の未送信 / 送信済み / 受け取った、ありがとう画面の編集）
+- [x] `HouseworkThanks`の追加と`HouseworkItem.thanks`（デコード・未完了で消す）
+- [x] `FirestoreService.update(fields:predicate:)`と`HouseworkClient.upsertThanks`（live / preview）
+- [x] `HouseworkListStore.sendThanks`の記録・通知条件の変更
+- [x] クイックアクション・一括操作から固定コメントとまとめ通知を削除し、送信済みを除外
+- [x] `HouseworkThanksStatus`と`HouseBoardListRow`の表示、完了リストからの受け渡し
+- [x] 詳細画面の「送ったメッセージを編集」と`HouseworkThanksView`の編集モード・文字数上限
+- [x] Analytics（`edit_thanks`）と`doc/analytics_events.md`の更新
+- [x] Previewの追加・修正（行の未送信 / 送信済み / 受け取った、ありがとう画面の編集）
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
   - `HouseworkItem`: `thanks`のない既存データを読める / 未完了に戻すと消える / もう一回やったは空
   - `HouseworkBoardItem` / `HouseworkThanksStatus`: 表の4パターン
   - `HouseworkQuickAction.actions`: 送信済みでは`.sendThanks`が出ない
