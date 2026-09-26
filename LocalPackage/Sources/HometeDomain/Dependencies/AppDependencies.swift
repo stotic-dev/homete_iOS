@@ -20,11 +20,13 @@ public struct AppDependencies: Sendable {
     public let signInWithAppleClient: SignInWithAppleClient
     public let purchaseClient: PurchaseClient
     public let houseworkTemplateClient: HouseworkTemplateClient
+    public let frequentHouseworkClient: FrequentHouseworkClient
     public let consentClient: ConsentClient
     public let mobileAdsClient: MobileAdsClient
     public let notificationPermissionClient: NotificationPermissionClient
     public let notificationGuideStateClient: NotificationGuideStateClient
     public let pasteboardClient: PasteboardClient
+    public let dailyCompletionReminderClient: DailyCompletionReminderClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
@@ -32,6 +34,8 @@ public struct AppDependencies: Sendable {
     public let adsSetupUseCase: AdsSetupUseCase
     /// プッシュ通知の権限リクエストを行うUseCase
     public let notificationPermissionUseCase: NotificationPermissionUseCase
+    /// 今日完了した家事がある日に、ふりかえり通知を予約するUseCase
+    public let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
 
     public init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
@@ -45,11 +49,13 @@ public struct AppDependencies: Sendable {
         signInWithAppleClient: SignInWithAppleClient = .previewValue,
         purchaseClient: PurchaseClient = .previewValue,
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
+        frequentHouseworkClient: FrequentHouseworkClient = .previewValue,
         consentClient: ConsentClient = .previewValue,
         mobileAdsClient: MobileAdsClient = .previewValue,
         notificationPermissionClient: NotificationPermissionClient = .previewValue,
         notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
         pasteboardClient: PasteboardClient = .previewValue,
+        dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -63,11 +69,13 @@ public struct AppDependencies: Sendable {
         self.signInWithAppleClient = signInWithAppleClient
         self.purchaseClient = purchaseClient
         self.houseworkTemplateClient = houseworkTemplateClient
+        self.frequentHouseworkClient = frequentHouseworkClient
         self.consentClient = consentClient
         self.mobileAdsClient = mobileAdsClient
         self.notificationPermissionClient = notificationPermissionClient
         self.notificationGuideStateClient = notificationGuideStateClient
         self.pasteboardClient = pasteboardClient
+        self.dailyCompletionReminderClient = dailyCompletionReminderClient
         self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
@@ -75,6 +83,7 @@ public struct AppDependencies: Sendable {
             notificationPermissionClient: notificationPermissionClient,
             notificationGuideStateClient: notificationGuideStateClient
         )
+        dailyCompletionReminderUseCase = .init(client: dailyCompletionReminderClient)
     }
 
 }

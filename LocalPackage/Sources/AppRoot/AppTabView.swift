@@ -23,6 +23,7 @@ struct AppTabView: View {
     @State var contributionStore: ContributionStore?
     @State var houseworkListStore: HouseworkListStore?
     @State var houseworkTemplateListStore: HouseworkTemplateListStore?
+    @State var frequentHouseworkStore: FrequentHouseworkStore?
     @State var type: TabType = .dashboard
 
     var handler: Binding<TabType> {
@@ -78,6 +79,11 @@ struct AppTabView: View {
                 \.houseworkStoragePolicy,
                 HouseworkStoragePolicy(isPremium: subscriptionStore.isPremium)
             )
+            .environment(
+                \.frequentHouseworkContext,
+                frequentHouseworkStore?.context ?? .init()
+            )
+            .environment(frequentHouseworkStore)
     }
 
 }
@@ -152,7 +158,10 @@ private extension AppTabView {
 
     /// 所属グループが決まった/変わったときに、そのグループ用のストアを組み直す
     func onChangeCohabitant() async {
+        // 作り直す前に、前のグループのリスナーを解除しておく
+        await frequentHouseworkStore?.stopObserving()
         setupStore()
+        await startObserveFrequentHouseworkIfNeeded()
         await startObserveTemplateIfNeeded()
     }
 
@@ -164,6 +173,7 @@ private extension AppTabView {
         guard loginContext.hasCohabitant else {
             cohabitantStore = nil
             contributionStore = nil
+            frequentHouseworkStore = nil
             return
         }
         cohabitantStore = .init(
@@ -179,12 +189,25 @@ private extension AppTabView {
             houseworkClient: appDependencies.houseworkClient,
             cohabitantPushNotificationClient: appDependencies.cohabitantPushNotificationClient,
             houseworkManager: appDependencies.houseworkManager,
-            analyticsClient: appDependencies.analyticsClient
+            analyticsClient: appDependencies.analyticsClient,
+            dailyCompletionReminderUseCase: appDependencies.dailyCompletionReminderUseCase,
+            calendar: calendar
         )
         houseworkTemplateListStore = .init(
             houseworkTemplateClient: appDependencies.houseworkTemplateClient,
             analyticsClient: appDependencies.analyticsClient
         )
+        frequentHouseworkStore = .init(
+            frequentHouseworkClient: appDependencies.frequentHouseworkClient,
+            analyticsClient: appDependencies.analyticsClient
+        )
+    }
+
+    func startObserveFrequentHouseworkIfNeeded() async {
+        guard let store = frequentHouseworkStore,
+              let cohabitantId = loginContext.cohabitantId else { return }
+
+        await store.startObserving(cohabitantId: cohabitantId)
     }
 
     func startObserveTemplateIfNeeded() async {

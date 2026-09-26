@@ -14,11 +14,13 @@ import SwiftUI
 struct DebugMenuView: View {
 
     @Environment(\.routeResolver) var router
+    @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
 
     @State var isShowOnboarding = false
     @State var isShowPaywall = false
     @State var isShowCohabitantRegistration = false
+    @State var isDailyCompletionReminderLimitDisabled = false
     @State var isShowRevokeResult = false
     @State var revokeResultMessage = ""
 
@@ -37,6 +39,12 @@ struct DebugMenuView: View {
                     isShowCohabitantRegistration = true
                 }
                 Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurfaceVariant)
+            }
+            Section("ふりかえり通知") {
+                Toggle("1日1回の制限を外す", isOn: dailyCompletionReminderLimitBinding)
+                Text("家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。")
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }
@@ -80,6 +88,24 @@ struct DebugMenuView: View {
         }
         .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistration) {
             router.resolve(.debugCohabitantRegistration)
+        }
+        .task {
+            isDailyCompletionReminderLimitDisabled = await dailyCompletionReminderUseCase.loadIsDailyLimitDisabled()
+        }
+    }
+
+}
+
+private extension DebugMenuView {
+
+    var dailyCompletionReminderLimitBinding: Binding<Bool> {
+        .init {
+            isDailyCompletionReminderLimitDisabled
+        } set: { isDisabled in
+            isDailyCompletionReminderLimitDisabled = isDisabled
+            Task {
+                await dailyCompletionReminderUseCase.updateIsDailyLimitDisabled(isDisabled)
+            }
         }
     }
 

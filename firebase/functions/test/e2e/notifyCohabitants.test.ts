@@ -4,7 +4,9 @@ import {
 } from "../helpers/testData";
 import {makeRecordingSender} from "../helpers/notification";
 import {
+  buildMulticastMessage,
   CohabitantNotification,
+  isValidNotificationData,
   notifyOtherCohabitants,
 } from "../../src/models/CohabitantNotifier";
 
@@ -111,5 +113,90 @@ describe("CohabitantNotifier E2E Tests", () => {
     // Assert
     expect(actual).toBeNull();
     expect(sent).toHaveLength(0);
+  });
+
+  it("dataを指定した通知はdataを保ったまま送信処理へ渡される", async () => {
+    // Arrange
+    const senderId = `notify-data-sender-${testCounter}`;
+    const receiverId = `notify-data-receiver-${testCounter}`;
+    const cohabitantId = `notify-data-cohabitant-${testCounter}`;
+    await createTestAccount(senderId, cohabitantId, "token-sender");
+    await createTestAccount(receiverId, cohabitantId, "token-receiver");
+    await createTestCohabitant(cohabitantId, [senderId, receiverId]);
+    const {sender, sent} = makeRecordingSender();
+    const notificationWithData: CohabitantNotification = {
+      title: "title",
+      body: "body",
+      data: {type: "houseworkCompleted", houseworkDate: "1767193200"},
+    };
+
+    // Act
+    await notifyOtherCohabitants(
+      cohabitantId,
+      senderId,
+      notificationWithData,
+      sender
+    );
+
+    // Assert
+    expect(sent).toEqual([
+      {tokens: ["token-receiver"], notification: notificationWithData},
+    ]);
+  });
+});
+
+describe("buildMulticastMessage", () => {
+  it("dataが無い通知はmutable-contentを付けずに組み立てる", () => {
+    // Act
+    const actual = buildMulticastMessage(
+      ["token"],
+      {title: "title", body: "body"}
+    );
+
+    // Assert
+    expect(actual).toEqual({
+      notification: {title: "title", body: "body"},
+      tokens: ["token"],
+    });
+  });
+
+  it("dataがある通知はdataとmutable-contentを付けて組み立てる", () => {
+    // Act
+    const actual = buildMulticastMessage(
+      ["token"],
+      {title: "title", body: "body", data: {type: "houseworkCompleted"}}
+    );
+
+    // Assert
+    expect(actual).toEqual({
+      notification: {title: "title", body: "body"},
+      tokens: ["token"],
+      data: {type: "houseworkCompleted"},
+      apns: {payload: {aps: {mutableContent: true}}},
+    });
+  });
+});
+
+describe("isValidNotificationData", () => {
+  it.each([
+    ["文字列の値だけを持つオブジェクト", {type: "a", date: "1"}, true],
+    ["空のオブジェクト", {}, true],
+    ["文字列以外の値を含む", {type: "a", count: 1}, false],
+    ["配列", ["a"], false],
+    ["null", null, false],
+    ["文字列", "a", false],
+    [
+      "キーが上限を超える",
+      Object.fromEntries(
+        Array.from({length: 11}, (_, index) => [`key${index}`, "v"])
+      ),
+      false,
+    ],
+  ])("%sの場合は%sを返す", (_, data, expected) => {
+    // Act
+    const actual = isValidNotificationData(data);
+
+    // Assert
+    expect(actual).toBe(expected);
   });
 });

@@ -3,6 +3,7 @@
 //
 
 import HometeDomain
+import HometeLocalNotification
 
 // MARK: Live用の定義
 
@@ -20,11 +21,13 @@ public extension AppDependencies {
         signInWithAppleClient: .liveValue,
         purchaseClient: livePurchaseClient,
         houseworkTemplateClient: .liveValue,
+        frequentHouseworkClient: .liveValue,
         consentClient: liveConsentClient,
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,
         notificationGuideStateClient: .liveValue,
         pasteboardClient: livePasteboardClient,
+        dailyCompletionReminderClient: .liveValue,
         debugAuthClient: liveDebugAuthClient
     )
 

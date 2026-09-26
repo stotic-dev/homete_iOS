@@ -120,6 +120,11 @@ service cloud.firestore {
           allow read, write: if isCohabitantMember(cohabitantId);
         }
 
+        // 毎月繰り返す家事。1ドキュメント = 1家事（ADR-0020）
+        match /MonthlyItems/{itemId} {
+          allow read, write: if isCohabitantMember(cohabitantId);
+        }
+
         // テンプレートの編集ロック。ドキュメントIDが編集者のuidで、
         // クライアントは自分のロックしか作成・削除しない
         // （HouseworkTemplateEditStore.startEditing / stopEditing）。
@@ -127,6 +132,22 @@ service cloud.firestore {
           allow read: if isCohabitantMember(cohabitantId);
           allow write: if isCohabitantMember(cohabitantId) && isSelf(editorId);
         }
+      }
+
+      // いつもの家事とカスタムカテゴリ。グループのメンバーなら誰でも追加・編集・削除できる。
+      // NOTE: 無料プランの件数上限・名前の重複はクライアントでのみ判定している。
+      // 上限の根拠になる`Account.isPremium`がクライアント書き込みのため、
+      // ここでは検証できない（Houseworksの`expiredAt`と同じ残存リスク）。
+      match /FrequentHouseworks/{itemId} {
+        allow read, delete: if isCohabitantMember(cohabitantId);
+        allow create, update: if isCohabitantMember(cohabitantId)
+                              && request.resource.data.id == itemId;
+      }
+
+      match /FrequentHouseworkCategories/{categoryId} {
+        allow read, delete: if isCohabitantMember(cohabitantId);
+        allow create, update: if isCohabitantMember(cohabitantId)
+                              && request.resource.data.id == categoryId;
       }
     }
 
