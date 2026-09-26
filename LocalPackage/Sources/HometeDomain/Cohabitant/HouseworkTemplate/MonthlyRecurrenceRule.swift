@@ -44,7 +44,7 @@ public enum MonthlyRecurrenceRule: Sendable, Hashable {
 
 // MARK: - Codable
 
-/// Firestore上では `{ type, day }` の形で保存する。種類を増やせるように`type`を持たせている（ADR-0020）
+/// Firestore上では `{ type, day }` の形で保存する。種類を増やせるように`type`を持たせている（ADR-0022）
 extension MonthlyRecurrenceRule: Codable {
 
     private enum CodingKeys: String, CodingKey {

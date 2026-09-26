@@ -1,12 +1,17 @@
 import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
-import {notifyOtherCohabitants} from "./models/CohabitantNotifier";
+import {
+  isValidNotificationData,
+  notifyOtherCohabitants,
+} from "./models/CohabitantNotifier";
 import {appCheckOptions} from "./appCheckOptions";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
   title: string;
   body: string;
+  /** 端末側で通知の種類を判定するための付加情報（任意、値は文字列のみ） */
+  data?: unknown;
 }
 
 export const notifyothercohabitants = onCall(
@@ -28,7 +33,7 @@ export const notifyothercohabitants = onCall(
     }
 
     const senderId = request.auth.uid;
-    const {cohabitantId, title, body} = request.data;
+    const {cohabitantId, title, body, data} = request.data;
 
     if (!cohabitantId || !title || !body) {
       logger.error("Invalid argument: Missing required parameters.", {
@@ -41,11 +46,21 @@ export const notifyothercohabitants = onCall(
       );
     }
 
+    if (data !== undefined && !isValidNotificationData(data)) {
+      logger.error("Invalid argument: 'data' must be a string map.", {
+        data: request.data,
+      });
+      throw new HttpsError(
+        "invalid-argument",
+        "'data' must be an object whose values are all strings."
+      );
+    }
+
     try {
       const result = await notifyOtherCohabitants(
         cohabitantId,
         senderId,
-        {title, body}
+        data === undefined ? {title, body} : {title, body, data}
       );
 
       if (!result) {

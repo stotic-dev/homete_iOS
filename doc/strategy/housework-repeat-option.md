@@ -2,7 +2,7 @@
 
 > 関連Issue: [#281 家事登録に繰り返しの項目が欲しい](https://github.com/stotic-dev/homete_iOS/issues/281)
 > ブランチ: `feat/housework-repeat-option`（スタックPRの土台。分割は「PR分割」を参照）
-> 毎月の家事の保存方式は [ADR-0020](../adr/0020-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
+> 毎月の家事の保存方式は [ADR-0022](../adr/0022-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
 
 ## ステータス
 
@@ -41,7 +41,7 @@
 **毎月の繰り返し**
 
 - 「毎月◯日」で29〜31日を指定した家事は、その日がない月は月末に表示する（例: 31日指定 → 2月は28日（うるう年は29日）、4月は30日）
-- 「毎月第N◯曜日」は選択肢を絞るため今回は対応しない（ルールに種類を持たせてあるので後から足せる。[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
+- 「毎月第N◯曜日」は選択肢を絞るため今回は対応しない（ルールに種類を持たせてあるので後から足せる。[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - 表示の仕組みは毎週の家事と同じ（[ADR-0003](../adr/0003-housework-template-virtual-view.md)の仮想ビュー方式）
   - 家事ボード・ホームの今日の家事・未完了の家事一覧に、未完了として表示する
   - 状態を変えた（完了報告した）時点で初めて `Houseworks` に書き込む
@@ -61,7 +61,7 @@
 
 ### 非機能要件 / 制約
 
-- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
+- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - テンプレート機能は無料で提供している機能（[premium_plan.md](../premium_plan.md)）なので、繰り返し設定もプランで制限しない
 - 登録画面から書き込むときも、テンプレートの `version` を上げる。こうしておくと、他のメンバーがテンプレートを編集中でも、そのメンバーの保存は既存の仕組みでコンフリクトとして検知されるので、登録した家事が上書きで消えない
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
@@ -92,7 +92,7 @@ public struct HouseworkTemplateMonthlyItem: Identifiable, Codable, Sendable, Equ
 }
 ```
 
-Firestore上の形（`rule.type` / `day`）は[ADR-0020](../adr/0020-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
+Firestore上の形（`rule.type` / `day`）は[ADR-0022](../adr/0022-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
 
 ### 2. 表示のマージ処理
 
@@ -209,7 +209,7 @@ match /MonthlyItems/{itemId} {
 
 | # | ブランチ（予定） | ベース | 内容 |
 |---|---|---|---|
-| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0020、Firestoreルール（`MonthlyItems`）とルールテスト |
+| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0022、Firestoreルール（`MonthlyItems`）とルールテスト |
 | 2 | `feat/housework-repeat-option-domain` | #1 | ドメインモデル、日付判定、Client/Impl（取得・監視・`updateTemplate`・`appendItem`）、`HouseworkTemplateListStore`、ユニットテスト |
 | 3 | `feat/housework-repeat-option-display` | #2 | 家事ボード・今日の家事・未完了一覧に毎月の家事を表示する（マージ処理の一般化） |
 | 4 | `feat/housework-repeat-option-template-ui` | #3 | テンプレート画面の「毎月」セクション、編集モーダル・詳細画面、`RecurrenceSelector` |
@@ -228,10 +228,10 @@ match /MonthlyItems/{itemId} {
 - [x] 29〜31日の指定は、その日がない月は月末に表示する
 - [x] 繰り返しを設定して登録したときは、登録元の日付に単発では登録しない（繰り返しに任せる）
 - [x] 毎月の家事はテンプレート画面に「毎月」セクションを足して管理する
-- [x] 毎月の家事の保存方式（[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
+- [x] 毎月の家事の保存方式（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - [x] 繰り返しの種類はメニューのピッカーで選ぶ。「毎日」も選べるようにする
 - [x] 登録画面では曜日・日付を選ばせず、登録しようとしている日を起点にする（テンプレート画面では選ばせる）
-- [x] ADR-0020のレビュー（提案済 → 承認済）
+- [x] ADR-0022のレビュー（提案済 → 承認済）
 
 ### Phase 2: 実装
 

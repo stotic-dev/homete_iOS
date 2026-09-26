@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import Foundation
 @testable import HometeDomain
 @testable import HouseworkFeature
 import Testing
@@ -32,8 +33,8 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
         #expect(actual == [.complete, .remove])
     }
 
-    @Test("完了済みで自分以外が実施した家事は、ありがとうと未完了に戻すが行える")
-    func actions_completedByOtherUser_returnsSendThanksAndReturnToIncomplete() {
+    @Test("完了済みで自分以外が実施した家事は、ありがとう・もう一度やった・未完了に戻すが行える")
+    func actions_completedByOtherUser_returnsSendThanksRedoAndReturnToIncomplete() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
@@ -48,11 +49,11 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.sendThanks, .returnToIncomplete])
+        #expect(actual == [.sendThanks, .redo, .returnToIncomplete])
     }
 
-    @Test("完了済みで自分が実施した家事は、未完了に戻すしか行えない")
-    func actions_completedByOwnUser_returnsReturnToIncompleteOnly() {
+    @Test("完了済みで自分が実施した家事は、もう一度やったと未完了に戻すが行える")
+    func actions_completedByOwnUser_returnsRedoAndReturnToIncomplete() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
@@ -67,7 +68,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.returnToIncomplete])
+        #expect(actual == [.redo, .returnToIncomplete])
     }
 
     @Test("やらない扱いの家事はクイックアクションを行えない")
@@ -111,21 +112,6 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
 
 extension HouseworkQuickActionTest.BulkNotificationCase {
 
-    @Test("完了の一括通知は実施者名と件数を含むメッセージになる")
-    func bulkNotification_complete_returnsExecutorNameAndCountMessage() {
-        // Act
-
-        let actual = HouseworkQuickAction.complete.bulkNotification(count: 3, senderName: "じっこうしゃ")
-
-        // Assert
-
-        let expected = PushNotificationContent(
-            title: "じっこうしゃさんが家事を終えました",
-            message: "3件の家事が完了しました"
-        )
-        #expect(actual == expected)
-    }
-
     @Test("ありがとうの一括通知は送信者名と件数を含むメッセージになる")
     func bulkNotification_sendThanks_returnsSenderNameAndCountMessage() {
         // Act
@@ -142,8 +128,8 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     }
 
     @Test(
-        "相手に通知しないアクションはnilを返す",
-        arguments: [HouseworkQuickAction.remove, .returnToIncomplete]
+        "相手に表示する通知を送らないアクションはnilを返す",
+        arguments: [HouseworkQuickAction.complete, .remove, .redo, .returnToIncomplete]
     )
     func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
         // Act

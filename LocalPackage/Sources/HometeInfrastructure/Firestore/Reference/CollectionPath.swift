@@ -14,6 +14,8 @@ public enum CollectionPath: String {
     case days = "Days"
     case monthlyItems = "MonthlyItems"
     case editors = "Editors"
+    case frequentHouseworks = "FrequentHouseworks"
+    case frequentHouseworkCategories = "FrequentHouseworkCategories"
 
 }
 

@@ -16,6 +16,14 @@ struct SettingNotificationPermissionGuideView: View {
     @Environment(\.appDependencies.notificationPermissionClient) var notificationPermissionClient
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
 
+    /// ダイアログで通知が許可されたときの処理
+    /// - Note: 通知設定画面では、前の画面へ戻らずにその場で通知の設定内容へ切り替えるために使う
+    let onAuthorized: () -> Void
+
+    init(onAuthorized: @escaping () -> Void = {}) {
+        self.onAuthorized = onAuthorized
+    }
+
     var body: some View {
         NotificationPermissionGuideView {
             tappedSkipButton()
@@ -45,7 +53,11 @@ private extension SettingNotificationPermissionGuideView {
         } else {
             let isGranted = await notificationPermissionClient.requestAuthorization()
             analyticsClient.log(.notificationPermission(.permissionRequested(step: .setting, isGranted: isGranted)))
-            dismiss()
+            if isGranted {
+                onAuthorized()
+            } else {
+                dismiss()
+            }
         }
     }
 
