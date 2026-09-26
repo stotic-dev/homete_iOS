@@ -46,13 +46,15 @@ public extension DailyCompletionReminderRequest {
     /// 指定した日のふりかえり通知を組み立てる
     /// - Parameter allowsMultiplePerDay: `true`の場合は予約ごとに識別子を変え、同じ日の予約を上書きせずに積む
     ///   （動作確認用。デバッグメニューから切り替える）
+    /// - Parameter debugTrigger: 指定した場合は、予約したきっかけと時刻を本文の末尾に載せる（動作確認用）
     /// - Returns: 通知が無効な場合、または指定時刻をすでに過ぎている場合は`nil`
     static func make(
         day: Date,
         setting: DailyCompletionReminderSetting,
         now: Date,
         calendar: Calendar,
-        allowsMultiplePerDay: Bool = false
+        allowsMultiplePerDay: Bool = false,
+        debugTrigger: DailyCompletionReminderTrigger? = nil
     ) -> Self? {
         guard setting.isEnabled else { return nil }
 
@@ -69,13 +71,14 @@ public extension DailyCompletionReminderRequest {
               fireDate > now else { return nil }
 
         let dayIdentifier = identifier(for: day, calendar: calendar)
+        let body = "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
         return .init(
             identifier: allowsMultiplePerDay
                 ? "\(dayIdentifier)\(multiplePerDaySeparator)\(Int(now.timeIntervalSince1970))"
                 : dayIdentifier,
             fireDateComponents: components,
             title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+            body: debugTrigger.map { body + "\n" + debugNote(trigger: $0, now: now, calendar: calendar) } ?? body
         )
     }
 
@@ -85,5 +88,12 @@ private extension DailyCompletionReminderRequest {
 
     /// 1日1回の制限を外して予約するときに、日の識別子と予約ごとの値を区切る文字
     static let multiplePerDaySeparator = "#"
+
+    /// 予約したきっかけと時刻を表す一文（例: `[DEBUG] サイレント通知 / 14:03予約`）
+    static func debugNote(trigger: DailyCompletionReminderTrigger, now: Date, calendar: Calendar) -> String {
+        let components = calendar.dateComponents([.hour, .minute], from: now)
+        let time = String(format: "%02d:%02d", components.hour ?? .zero, components.minute ?? .zero)
+        return "[DEBUG] \(trigger.debugLabel) / \(time)予約"
+    }
 
 }

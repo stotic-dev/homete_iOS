@@ -112,6 +112,32 @@ struct DailyCompletionReminderRequestTest {
         #expect(actual == expected)
     }
 
+    @Test("きっかけを指定した場合は、きっかけと予約した時刻を本文の末尾に載せる")
+    func make_withDebugTrigger_appendsDebugNoteToBody() {
+        // Arrange
+
+        let expected = DailyCompletionReminderRequest(
+            identifier: "dailyCompletionReminder-2026-9-25",
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
+            title: "今日もおつかれさまでした",
+            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう\n[DEBUG] 家事一覧 / 09:05予約"
+        )
+
+        // Act
+
+        let actual = DailyCompletionReminderRequest.make(
+            day: .previewDate(year: 2026, month: 9, day: 25, hour: 9, minute: 5),
+            setting: .init(isEnabled: true, hour: 21, minute: 30),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 9, minute: 5),
+            calendar: .japanese,
+            debugTrigger: .houseworkList
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
     @Test(
         "その日の識別子、または制限を外して予約したその日の識別子なら、その日の通知と判定する",
         arguments: [

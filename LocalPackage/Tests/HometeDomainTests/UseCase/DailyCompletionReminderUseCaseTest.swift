@@ -124,6 +124,7 @@ extension DailyCompletionReminderUseCaseTest.HandleCompletedCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
+            trigger: .silentNotification,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
@@ -150,6 +151,7 @@ extension DailyCompletionReminderUseCaseTest.HandleCompletedCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 24)),
+            trigger: .silentNotification,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
@@ -265,7 +267,7 @@ extension DailyCompletionReminderUseCaseTest.UpdateSettingCase {
 
 extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
 
-    @Test("1日1回の制限を外している場合は、予約のたびに別の識別子で通知を積む")
+    @Test("1日1回の制限を外している場合は、予約のたびに別の識別子で、きっかけと時刻を本文に載せて通知を積む")
     func handleCompleted_dailyLimitDisabled_schedulesWithPerScheduleIdentifier() async {
         // Arrange
 
@@ -281,12 +283,14 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
                 .schedule(todayRequest(
                     hour: 21,
                     minute: 0,
-                    identifier: "dailyCompletionReminder-2026-9-25#1790298000"
+                    identifier: "dailyCompletionReminder-2026-9-25#1790298000",
+                    debugNote: "[DEBUG] サイレント通知 / 10:00予約"
                 )),
                 .schedule(todayRequest(
                     hour: 21,
                     minute: 0,
-                    identifier: "dailyCompletionReminder-2026-9-25#1790298060"
+                    identifier: "dailyCompletionReminder-2026-9-25#1790298060",
+                    debugNote: "[DEBUG] サイレント通知 / 10:01予約"
                 )),
             ]
         )
@@ -295,11 +299,13 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
+            trigger: .silentNotification,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
+            trigger: .silentNotification,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10, minute: 1),
             calendar: .japanese
         )
@@ -515,13 +521,15 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
 private func todayRequest(
     hour: Int,
     minute: Int,
-    identifier: String = "dailyCompletionReminder-2026-9-25"
+    identifier: String = "dailyCompletionReminder-2026-9-25",
+    debugNote: String? = nil
 ) -> DailyCompletionReminderRequest {
-    .init(
+    let body = "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+    return .init(
         identifier: identifier,
         fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: hour, minute: minute),
         title: "今日もおつかれさまでした",
-        body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+        body: debugNote.map { body + "\n" + $0 } ?? body
     )
 }
 

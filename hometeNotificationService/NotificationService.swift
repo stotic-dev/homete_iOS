@@ -38,7 +38,12 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
         Task {
             // 予約の完了を待ってから通知を渡す。先に渡すと拡張のプロセスが終了し、予約が失われうる
             let useCase = DailyCompletionReminderUseCase(client: .liveValue)
-            await useCase.handleCompleted(data, now: .now, calendar: .autoupdatingCurrent)
+            await useCase.handleCompleted(
+                data,
+                trigger: .notificationServiceExtension,
+                now: .now,
+                calendar: .autoupdatingCurrent
+            )
             self.deliverOriginalContent()
         }
     }

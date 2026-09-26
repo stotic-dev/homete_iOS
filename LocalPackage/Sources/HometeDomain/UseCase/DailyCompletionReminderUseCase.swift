@@ -50,17 +50,23 @@ public final class DailyCompletionReminderUseCase: Sendable {
         }
 
         await client.saveCompletedDayIdentifier(identifier)
-        await scheduleToday(now: now, calendar: calendar)
+        await scheduleToday(now: now, calendar: calendar, trigger: .houseworkList)
     }
 
     /// 同居人から家事の完了を知らせる通知を受け取ったときに、今日の家事なら今日の通知を予約する
     /// - Note: アプリのサイレント通知の受信と、Notification Service Extension（古いアプリからの完了通知）から呼ぶ
-    public func handleCompleted(_ data: HouseworkCompletedNotificationData, now: Date, calendar: Calendar) async {
+    /// - Parameter trigger: 呼び出し元の経路。1日1回の制限を外している間だけ通知の本文に載せる
+    public func handleCompleted(
+        _ data: HouseworkCompletedNotificationData,
+        trigger: DailyCompletionReminderTrigger,
+        now: Date,
+        calendar: Calendar
+    ) async {
         guard calendar.isDate(data.houseworkDate, inSameDayAs: now) else { return }
 
         let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
         await client.saveCompletedDayIdentifier(identifier)
-        await scheduleToday(now: now, calendar: calendar)
+        await scheduleToday(now: now, calendar: calendar, trigger: trigger)
     }
 
     /// 同居人へ家事の完了を知らせるサイレント通知を、必要なときだけ送る
@@ -95,7 +101,7 @@ public final class DailyCompletionReminderUseCase: Sendable {
         let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
         guard await client.loadCompletedDayIdentifier() == identifier else { return }
 
-        await scheduleToday(now: now, calendar: calendar)
+        await scheduleToday(now: now, calendar: calendar, trigger: .settingChanged)
     }
 
 }
@@ -103,7 +109,7 @@ public final class DailyCompletionReminderUseCase: Sendable {
 private extension DailyCompletionReminderUseCase {
 
     /// 現在の設定で今日の通知を予約する。無効・時刻を過ぎている場合は予約を取り消す
-    func scheduleToday(now: Date, calendar: Calendar) async {
+    func scheduleToday(now: Date, calendar: Calendar, trigger: DailyCompletionReminderTrigger) async {
         let setting = await client.loadSetting()
         let isDailyLimitDisabled = await client.loadIsDailyLimitDisabled()
         guard let request = DailyCompletionReminderRequest.make(
@@ -111,7 +117,8 @@ private extension DailyCompletionReminderUseCase {
             setting: setting,
             now: now,
             calendar: calendar,
-            allowsMultiplePerDay: isDailyLimitDisabled
+            allowsMultiplePerDay: isDailyLimitDisabled,
+            debugTrigger: isDailyLimitDisabled ? trigger : nil
         ) else {
             await client.cancel(DailyCompletionReminderRequest.identifier(for: now, calendar: calendar))
             return

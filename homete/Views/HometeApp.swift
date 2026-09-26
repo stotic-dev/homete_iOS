@@ -50,6 +50,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         await AppDependencies.liveValue.dailyCompletionReminderUseCase.handleCompleted(
             data,
+            trigger: .silentNotification,
             now: .now,
             calendar: .autoupdatingCurrent
         )
