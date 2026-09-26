@@ -102,6 +102,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
 | `frequent_housework_management` | `FrequentHouseworkManagementView` |
 | `frequent_housework_edit` | `FrequentHouseworkEditModal` |
+| `frequent_housework_category` | `FrequentHouseworkCategoryView`（いつもの家事のカテゴリ管理） |
+| `frequent_housework_import` | `FrequentHouseworkImportView`（テンプレートからの取り込み） |
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
 | `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
@@ -259,7 +261,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `edit` | — | いつもの家事の名前・ポイント・カテゴリを変更した |
 | `delete` | — | いつもの家事を削除した |
 | `import` | — | テンプレートから取り込んだ。取り込み1回につき1イベント（件数によらない） |
-| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した |
+| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した。取り込みシートで残り件数を超えて選ぼうとした場合も、起点は`management`とする |
 | `create_category` | — | カスタムカテゴリを追加した |
 | `edit_category` | — | カスタムカテゴリの名前を変更した |
 | `delete_category` | — | カスタムカテゴリを削除した |
@@ -446,7 +448,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `contribution_storage_limit` | 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`） |
 | `setting` | 設定画面の「プレミアムプランに登録」項目（`SettingView`） |
 | `subscription_management` | サブスク管理画面の「プランを変更」ボタン（`SubscriptionManagementView`） |
-| `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen`） |
+| `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen` / `FrequentHouseworkImportScreen`） |
 
 `step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
 閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）
