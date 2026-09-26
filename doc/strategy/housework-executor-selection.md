@@ -2,7 +2,7 @@
 
 > 関連Issue: [#291 家事の完了をリクエストする時に担当者を選択できるようにする](https://github.com/stotic-dev/homete_iOS/issues/291)
 > ブランチ: `claude/issue-291-review-tnrw5a`
-> データモデルの選定経緯: [ADR-0022](../adr/0022-housework-multiple-executors-with-allocated-points.md)
+> データモデルの選定経緯: [ADR-0023](../adr/0023-housework-multiple-executors-with-allocated-points.md)
 
 ## ステータス
 
@@ -287,7 +287,7 @@ public func complete(
 - [x] 一括完了は、コメントなし・自分だけに100%で即完了のまま
 - [x] ありがとう（家事詳細）はコメント欄だけのハーフモーダルにする。クイックアクションのありがとうは定型文のまま
 - [x] コメントありの完了は、1日1回の条件に関係なく毎回通知を送る
-- [x] データモデルは割合とポイントの両方を担当者ごとに保存する（ADR-0022）
+- [x] データモデルは割合とポイントの両方を担当者ごとに保存する（ADR-0023）
 
 ### Phase 2: 実装
 
@@ -322,7 +322,7 @@ public func complete(
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/291
-- ADR: [ADR-0022](../adr/0022-housework-multiple-executors-with-allocated-points.md)
+- ADR: [ADR-0023](../adr/0023-housework-multiple-executors-with-allocated-points.md)
 - 既存実装（参考）:
   - `doc/strategy/remove-approval-state.md`
   - `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkState.swift`（未知の値を安全に読むカスタムデコードの前例）

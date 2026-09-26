@@ -5,7 +5,7 @@
 
 /// 家事の担当者と、その人に配分した割合・ポイント
 ///
-/// 割合からポイントへの換算は保存時に一度だけ行う（ADR-0022）。集計は`point`を足すだけにする。
+/// 割合からポイントへの換算は保存時に一度だけ行う（ADR-0023）。集計は`point`を足すだけにする。
 public struct HouseworkExecutor: Codable, Equatable, Hashable, Sendable {
 
     /// 担当者のユーザーID
