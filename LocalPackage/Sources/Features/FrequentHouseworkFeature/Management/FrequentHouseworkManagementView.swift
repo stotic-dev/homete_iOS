@@ -10,6 +10,9 @@ import SwiftUI
 /// いつもの家事の管理画面（カテゴリごとのセクションで一覧表示する）
 struct FrequentHouseworkManagementView: View {
 
+    /// いつもの家事・カテゴリの読み込み状態
+    /// - Note: 読み込み済みになるまでは件数上限・名前の重複・カテゴリを正しく判定できないため、一覧も追加も出さない
+    let loadState: ListenerLoadState
     let sections: [FrequentHouseworkSection]
     /// 上限を超えていて使えない家事のID
     let unusableItemIds: Set<String>
@@ -22,6 +25,7 @@ struct FrequentHouseworkManagementView: View {
     /// カテゴリ内で並べ替えた後の家事IDの順
     let onMove: ([String]) -> Void
     let onTapUpgrade: () -> Void
+    let onRetry: () -> Void
 
     var body: some View {
         content()
@@ -46,6 +50,25 @@ private extension FrequentHouseworkManagementView {
 
     @ViewBuilder
     func content() -> some View {
+        switch loadState {
+        case .loading:
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case let .failed(error):
+            LoadErrorView(error: error) {
+                onRetry()
+            }
+            .padding(.horizontal, .space16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case .loaded:
+            loadedContent()
+        }
+    }
+
+    @ViewBuilder
+    func loadedContent() -> some View {
         if sections.isEmpty {
             FrequentHouseworkEmptyView {
                 onTapAdd()
@@ -107,19 +130,22 @@ private extension FrequentHouseworkManagementView {
         .buttonStyle(.plain)
     }
 
+    @ViewBuilder
     func trailingNavigationItem() -> some View {
-        HStack(spacing: .space8) {
-            #if os(iOS)
-            if !sections.isEmpty {
-                EditButton()
+        if loadState == .loaded {
+            HStack(spacing: .space8) {
+                #if os(iOS)
+                if !sections.isEmpty {
+                    EditButton()
+                }
+                #endif
+                Button {
+                    onTapAdd()
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("いつもの家事を追加")
             }
-            #endif
-            Button {
-                onTapAdd()
-            } label: {
-                Image(systemName: "plus")
-            }
-            .accessibilityLabel("いつもの家事を追加")
         }
     }
 
@@ -135,6 +161,7 @@ private extension FrequentHouseworkManagementView {
     ]
     NavigationStack {
         FrequentHouseworkManagementView(
+            loadState: .loaded,
             sections: FrequentHouseworkContext(items: items).sections,
             unusableItemIds: ["4"],
             limitStatus: .init(count: 11, limit: 10),
@@ -143,7 +170,8 @@ private extension FrequentHouseworkManagementView {
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
-            onTapUpgrade: {}
+            onTapUpgrade: {},
+            onRetry: {}
         )
     }
 }
@@ -151,6 +179,7 @@ private extension FrequentHouseworkManagementView {
 #Preview("FrequentHouseworkManagementView_未登録") {
     NavigationStack {
         FrequentHouseworkManagementView(
+            loadState: .loaded,
             sections: [],
             unusableItemIds: [],
             limitStatus: nil,
@@ -159,7 +188,26 @@ private extension FrequentHouseworkManagementView {
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
-            onTapUpgrade: {}
+            onTapUpgrade: {},
+            onRetry: {}
+        )
+    }
+}
+
+#Preview("FrequentHouseworkManagementView_読み込み失敗") {
+    NavigationStack {
+        FrequentHouseworkManagementView(
+            loadState: .failed(.noNetwork),
+            sections: [],
+            unusableItemIds: [],
+            limitStatus: nil,
+            onTapClose: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onDelete: { _ in },
+            onMove: { _ in },
+            onTapUpgrade: {},
+            onRetry: {}
         )
     }
 }

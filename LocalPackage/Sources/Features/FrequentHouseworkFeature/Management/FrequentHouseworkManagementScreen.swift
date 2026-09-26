@@ -31,6 +31,7 @@ public struct FrequentHouseworkManagementScreen: View {
     public var body: some View {
         NavigationStack {
             FrequentHouseworkManagementView(
+                loadState: store?.loadState ?? .loading,
                 sections: context.sections,
                 unusableItemIds: limitPolicy.unusableItemIds(in: context),
                 limitStatus: limitStatus,
@@ -39,7 +40,8 @@ public struct FrequentHouseworkManagementScreen: View {
                 onTapItem: { item in editTarget = .edit(item) },
                 onDelete: { item in deleteItem(item) },
                 onMove: { orderedIds in reorderItems(orderedIds) },
-                onTapUpgrade: { showPaywall() }
+                onTapUpgrade: { showPaywall() },
+                onRetry: { retry() }
             )
         }
         .sheet(item: $editTarget) { target in
@@ -88,6 +90,8 @@ private extension FrequentHouseworkManagementScreen {
 private extension FrequentHouseworkManagementScreen {
 
     func tappedAddButton() {
+        // 読み込み前の空の一覧で判定すると、件数上限や名前の重複をすり抜けてしまう
+        guard store?.loadState == .loaded else { return }
         guard limitPolicy.canAdd(1, currentCount: context.items.count) else {
             store?.logLimitReached(step: .management)
             isPresentingLimitAlert = true
@@ -141,6 +145,13 @@ private extension FrequentHouseworkManagementScreen {
             } catch {
                 commonErrorContent = .init(error: error)
             }
+        }
+    }
+
+    func retry() {
+        guard let store, let cohabitantId else { return }
+        Task {
+            await store.startObserving(cohabitantId: cohabitantId)
         }
     }
 
