@@ -22,12 +22,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let executorId: String?
     /// 実行日時
     public let executedAt: Date?
-    /// 確認者のユーザID
-    public let reviewerId: String?
-    /// 承認日時
-    public let approvedAt: Date?
-    /// 確認コメント
-    public let reviewerComment: String?
     /// 有効期限
     public let expiredAt: Date
     /// 紐づくテンプレートの家事ID
@@ -41,9 +35,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         state: HouseworkState,
         executorId: String?,
         executedAt: Date?,
-        reviewerId: String?,
-        approvedAt: Date?,
-        reviewerComment: String?,
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?
     ) {
@@ -54,59 +45,19 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.state = state
         self.executorId = executorId
         self.executedAt = executedAt
-        self.reviewerId = reviewerId
-        self.approvedAt = approvedAt
-        self.reviewerComment = reviewerComment
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
     }
 
-    public func updatePendingApproval(at now: Date, changer: String) -> Self {
-        .init(
-            id: id,
-            indexedDate: indexedDate,
-            title: title,
-            point: point,
-            state: .pendingApproval,
-            executorId: changer,
-            executedAt: now,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
-            expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
-        )
-    }
-
-    public func updateApproved(at now: Date, reviewer: String, comment: String) -> Self {
+    public func updateCompleted(at now: Date, executor: String) -> Self {
         .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
             point: point,
             state: .completed,
-            executorId: executorId,
-            executedAt: executedAt,
-            reviewerId: reviewer,
-            approvedAt: now,
-            reviewerComment: comment,
-            expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
-        )
-    }
-
-    public func updateRejected(at now: Date, reviewer: String, comment: String) -> Self {
-        .init(
-            id: id,
-            indexedDate: indexedDate,
-            title: title,
-            point: point,
-            state: .incomplete,
-            executorId: executorId,
-            executedAt: executedAt,
-            reviewerId: reviewer,
-            approvedAt: now,
-            reviewerComment: comment,
+            executorId: executor,
+            executedAt: now,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
@@ -121,9 +72,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             state: .incomplete,
             executorId: nil,
             executedAt: nil,
-            reviewerId: nil,
-            approvedAt: nil,
-            reviewerComment: nil,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
@@ -138,9 +86,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             state: .notTodo,
             executorId: executorId,
             executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
@@ -158,9 +103,6 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
     ) {
         self.init(
@@ -171,9 +113,6 @@ public extension HouseworkItem {
             state: state,
             executorId: executorId,
             executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment,
             expiredAt: metaData.expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )

@@ -27,13 +27,12 @@ extension HouseworkState {
 
     /// セグメント/ページャーの表示対象とする状態一覧（notTodoはボードから除外済みのため対象外）
     static var pageableCases: [HouseworkState] {
-        [.incomplete, .pendingApproval, .completed]
+        [.incomplete, .completed]
     }
 
     var segmentTitle: LocalizedStringKey {
         switch self {
         case .incomplete: "未完了"
-        case .pendingApproval: "承認待ち"
         case .completed: "完了"
         case .notTodo: "やらない"
         }

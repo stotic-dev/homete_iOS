@@ -17,41 +17,11 @@ struct HouseworkItemMetaDataTest {
 
         // Act
 
-        let actual = HouseworkItemMetaData.make(item: item, ownUserId: "ownUserId")
+        let actual = HouseworkItemMetaData.make(item: item)
 
         // Assert
 
         #expect(actual == nil)
-    }
-
-    @Test("承認待ちで相手が実施した家事は、自分の確認が必要なメタデータになる")
-    func make_pendingApprovalByOtherUser_returnsNeedsOwnReview() {
-        // Arrange
-
-        let item = HouseworkItem.makeForTest(id: 1, state: .pendingApproval, executorId: "otherUserId")
-
-        // Act
-
-        let actual = HouseworkItemMetaData.make(item: item, ownUserId: "ownUserId")
-
-        // Assert
-
-        #expect(actual == .needsOwnReview)
-    }
-
-    @Test("承認待ちで自分が実施した家事は、相手の確認待ちのメタデータになる")
-    func make_pendingApprovalByOwnUser_returnsWaitingForOtherReview() {
-        // Arrange
-
-        let item = HouseworkItem.makeForTest(id: 1, state: .pendingApproval, executorId: "ownUserId")
-
-        // Act
-
-        let actual = HouseworkItemMetaData.make(item: item, ownUserId: "ownUserId")
-
-        // Assert
-
-        #expect(actual == .waitingForOtherReview)
     }
 
     @Test(
@@ -68,7 +38,7 @@ struct HouseworkItemMetaDataTest {
 
         // Act
 
-        let actual = HouseworkItemMetaData.make(item: item, ownUserId: "ownUserId")
+        let actual = HouseworkItemMetaData.make(item: item)
 
         // Assert
 

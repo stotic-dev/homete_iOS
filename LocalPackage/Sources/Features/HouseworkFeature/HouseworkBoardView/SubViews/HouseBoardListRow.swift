@@ -11,8 +11,6 @@ import SwiftUI
 
 public struct HouseBoardListRow: View {
 
-    @Environment(\.loginContext) var loginContext
-
     let houseworkItem: HouseworkItem
 
     public init(houseworkItem: HouseworkItem) {
@@ -25,10 +23,7 @@ public struct HouseBoardListRow: View {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(houseworkItem.title)
                     .font(with: .body)
-                if let metaData = HouseworkItemMetaData.make(
-                    item: houseworkItem,
-                    ownUserId: loginContext.account.id
-                ) {
+                if let metaData = HouseworkItemMetaData.make(item: houseworkItem) {
                     metaDataLabel(metaData)
                 }
             }
@@ -58,33 +53,6 @@ private extension HouseBoardListRow {
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
         )
     )
-    .setupLoginContextForPreview()
-}
-
-#Preview("HouseBoardListRow_要確認", traits: .sizeThatFitsLayout) {
-    HouseBoardListRow(
-        houseworkItem: .makeForPreview(
-            title: "洗濯",
-            point: 20,
-            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-            state: .pendingApproval,
-            executorId: "otherUserId"
-        )
-    )
-    .setupLoginContextForPreview()
-}
-
-#Preview("HouseBoardListRow_相手の確認待ち", traits: .sizeThatFitsLayout) {
-    HouseBoardListRow(
-        houseworkItem: .makeForPreview(
-            title: "洗濯",
-            point: 20,
-            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-            state: .pendingApproval,
-            executorId: "ownUserId"
-        )
-    )
-    .setupLoginContextForPreview()
 }
 
 #Preview("HouseBoardListRow_完了", traits: .sizeThatFitsLayout) {
@@ -97,7 +65,6 @@ private extension HouseBoardListRow {
             executorId: "otherUserId"
         )
     )
-    .setupLoginContextForPreview()
 }
 
 #Preview("HouseBoardListRow_やらない", traits: .sizeThatFitsLayout) {
@@ -109,6 +76,5 @@ private extension HouseBoardListRow {
             state: .notTodo
         )
     )
-    .setupLoginContextForPreview()
 }
 #endif

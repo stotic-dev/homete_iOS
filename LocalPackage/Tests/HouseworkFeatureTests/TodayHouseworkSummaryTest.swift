@@ -147,45 +147,15 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
         #expect(actual == expected)
     }
 
-    @Test("pendingApprovalのみの場合でもdisplayStateは.hasIncompleteになり未完了として集計される")
-    func hasIncomplete_whenOnlyPendingApprovalExists() {
-        // Arrange
-
-        let pendingApproval = HouseworkItem.makeForTest(id: 1, state: .pendingApproval)
-        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [pendingApproval])
-
-        // Act
-
-        let actual = TodayHouseworkSummary.make(
-            storedAllItems: input,
-            template: nil,
-            now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
-        )
-
-        // Assert
-
-        let expected = TodayHouseworkSummary.makeForTest(
-            allItems: [pendingApproval],
-            incompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
-            progress: 0,
-            displayState: .hasIncomplete,
-            displayIncompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
-            hasMoreIncomplete: false
-        )
-        #expect(actual == expected)
-    }
-
-    @Test("incompleteとpendingApprovalの両方を未完了として集計する")
-    func incompleteItems_includeIncompleteAndPendingApproval() {
+    @Test("incompleteだけを未完了として集計する")
+    func incompleteItems_includeOnlyIncomplete() {
         // Arrange
 
         let incomplete = HouseworkItem.makeForTest(id: 1, state: .incomplete)
-        let pendingApproval = HouseworkItem.makeForTest(id: 2, state: .pendingApproval)
+        let notTodo = HouseworkItem.makeForTest(id: 2, state: .notTodo)
         let completed = HouseworkItem.makeForTest(id: 3, state: .completed)
         let input = TodayHouseworkSummaryTest.makeStoredForToday(
-            items: [incomplete, pendingApproval, completed]
+            items: [incomplete, notTodo, completed]
         )
 
         // Act
@@ -201,17 +171,11 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
         // Assert
 
         let expected = TodayHouseworkSummary.makeForTest(
-            allItems: [incomplete, pendingApproval, completed],
-            incompleteItems: [
-                .init(originalItem: incomplete, isRegistered: true),
-                .init(originalItem: pendingApproval, isRegistered: true),
-            ],
-            progress: 1.0 / 3.0,
+            allItems: [incomplete, notTodo, completed],
+            incompleteItems: [.init(originalItem: incomplete, isRegistered: true)],
+            progress: 2.0 / 3.0,
             displayState: .hasIncomplete,
-            displayIncompleteItems: [
-                .init(originalItem: incomplete, isRegistered: true),
-                .init(originalItem: pendingApproval, isRegistered: true),
-            ],
+            displayIncompleteItems: [.init(originalItem: incomplete, isRegistered: true)],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -260,13 +224,13 @@ extension TodayHouseworkSummaryTest.ProgressCase {
         #expect(actual == expected)
     }
 
-    @Test("pendingApprovalは未完了として進捗率に含まれない（1/2 = 0.5）")
-    func progress_pendingApprovalIsCountedAsIncomplete() {
+    @Test("やらないにした家事は未完了に数えず、進捗率では完了側として扱う（2/2 = 1.0）")
+    func progress_notTodoIsNotCountedAsIncomplete() {
         // Arrange
 
         let completed = HouseworkItem.makeForTest(id: 1, state: .completed)
-        let pendingApproval = HouseworkItem.makeForTest(id: 2, state: .pendingApproval)
-        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [completed, pendingApproval])
+        let notTodo = HouseworkItem.makeForTest(id: 2, state: .notTodo)
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [completed, notTodo])
 
         // Act
 
@@ -281,11 +245,11 @@ extension TodayHouseworkSummaryTest.ProgressCase {
         // Assert
 
         let expected = TodayHouseworkSummary.makeForTest(
-            allItems: [completed, pendingApproval],
-            incompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
-            progress: 0.5,
-            displayState: .hasIncomplete,
-            displayIncompleteItems: [.init(originalItem: pendingApproval, isRegistered: true)],
+            allItems: [completed, notTodo],
+            incompleteItems: [],
+            progress: 1.0,
+            displayState: .allCompleted,
+            displayIncompleteItems: [],
             hasMoreIncomplete: false
         )
         #expect(actual == expected)
@@ -743,45 +707,8 @@ extension TodayHouseworkSummaryTest.TemplateCase {
 
 extension TodayHouseworkSummaryTest.DisplayOrderCase {
 
-    @Test("未完了家事は取得順によらず、未完了→承認待ちのステータス順で並ぶ")
-    func incompleteItems_orderedByStateBeforePoint() {
-        // Arrange
-
-        let pendingApproval = HouseworkItem.makeForTest(id: 1, point: 100, state: .pendingApproval)
-        let incomplete = HouseworkItem.makeForTest(id: 2, point: 10, state: .incomplete)
-        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [pendingApproval, incomplete])
-
-        // Act
-
-        let actual = TodayHouseworkSummary.make(
-            storedAllItems: input,
-            template: nil,
-            now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
-        )
-
-        // Assert
-
-        let expected = TodayHouseworkSummary.makeForTest(
-            allItems: [pendingApproval, incomplete],
-            incompleteItems: [
-                .init(originalItem: incomplete, isRegistered: true),
-                .init(originalItem: pendingApproval, isRegistered: true),
-            ],
-            progress: 0,
-            displayState: .hasIncomplete,
-            displayIncompleteItems: [
-                .init(originalItem: incomplete, isRegistered: true),
-                .init(originalItem: pendingApproval, isRegistered: true),
-            ],
-            hasMoreIncomplete: false
-        )
-        #expect(actual == expected)
-    }
-
-    @Test("同一ステータス内は取得順によらず、ポイントの降順で並ぶ")
-    func incompleteItems_orderedByPointDescendingWithinSameState() {
+    @Test("未完了家事は取得順によらず、ポイントの降順で並ぶ")
+    func incompleteItems_orderedByPointDescending() {
         // Arrange
 
         let lowPoint = HouseworkItem.makeForTest(id: 1, point: 10, state: .incomplete)

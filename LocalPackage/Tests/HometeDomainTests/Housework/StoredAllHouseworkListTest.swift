@@ -92,7 +92,7 @@ private extension StoredAllHouseworkListTest {
     func makeAllCasesItems(at indexedDate: Date, offset: Int) -> [HouseworkItem] {
         [
             .makeForTest(id: offset + 1, indexedDate: indexedDate),
-            .makeForTest(id: offset + 2, indexedDate: indexedDate, state: .pendingApproval),
+            .makeForTest(id: offset + 2, indexedDate: indexedDate, state: .notTodo),
             .makeForTest(id: offset + 3, indexedDate: indexedDate, state: .completed),
             .makeForTest(id: offset + 4, indexedDate: indexedDate, executorId: "dummy", executedAt: .now),
         ]

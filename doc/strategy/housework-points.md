@@ -6,7 +6,7 @@
 
 ## 要件
 
-- 家事を完了（承認済み）した実行者にポイントを付与する
+- 家事を完了した実行者にポイントを付与する
 - ポイントは週・月・年単位でグラフ表示する
 - グラフでは同じCohabitantグループ内のメンバー全員の貢献度を比較できる
 
@@ -24,8 +24,8 @@
 
 ### グラフの日付軸は indexedDate を使う
 
-ポイントの期間集計には `approvedAt`（承認日時）ではなく `indexedDate`（家事の日付）を使う。
-「いつ承認されたか」ではなく「いつの家事か」でグラフを区切る。
+ポイントの期間集計には `executedAt`（完了日時）ではなく `indexedDate`（家事の日付）を使う。
+「いつ完了したか」ではなく「いつの家事か」でグラフを区切る。
 
 ### クエリ方式
 
@@ -125,7 +125,7 @@ ContributionFeature
 
 **CRUD の責務分離:**
 
-書き込み操作（家事の登録・承認・却下等）は `HouseworkListStore` に留める。
+書き込み操作（家事の登録・完了・未完了に戻す等）は `HouseworkListStore` に留める。
 他の Feature（ContributionFeature、HomeFeature）は書き込みに関与しない。
 HouseworkListStore が書き込んだ変更は HouseworkManager の live listener が拾い、allItems に自動反映される。
 

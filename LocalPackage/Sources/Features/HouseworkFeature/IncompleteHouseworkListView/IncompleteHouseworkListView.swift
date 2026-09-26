@@ -87,12 +87,7 @@ private extension IncompleteHouseworkListView {
                 .init(
                     items: [
                         .makeForPreview(title: "洗濯", point: 20),
-                        .makeForPreview(
-                            title: "掃除",
-                            point: 30,
-                            state: .pendingApproval,
-                            executorId: "otherUserId"
-                        ),
+                        .makeForPreview(title: "掃除", point: 30),
                         .makeForPreview(
                             title: "料理",
                             point: 50,
