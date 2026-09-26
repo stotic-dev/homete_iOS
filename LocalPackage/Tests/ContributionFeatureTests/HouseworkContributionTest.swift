@@ -63,6 +63,42 @@ extension HouseworkContributionTest.MakeCase {
         #expect(result == expected)
     }
 
+    @Test("複数人で担当した家事は、担当者それぞれに配分されたポイントと1件の達成で集計される")
+    func make_sharedItem_splitsPointByExecutor() {
+        // Arrange
+        let inputDate = Date.previewDate(year: 2026, month: 1, day: 1)
+        let items: [HouseworkItem] = [
+            .makeForTest(
+                id: 1,
+                indexedDate: inputDate,
+                point: 10,
+                state: .completed,
+                executors: [
+                    .init(userId: "alice", percentage: 70, point: 7),
+                    .init(userId: "bob", percentage: 30, point: 3),
+                ]
+            ),
+            .makeForTest(id: 2, indexedDate: inputDate, point: 5, state: .completed, executorId: "alice"),
+        ]
+
+        // Act
+        let result = HouseworkContribution.make(by: items, calendar: calendar)
+
+        // Assert
+        let expected = HouseworkContribution.makeForTest(
+            list: [
+                "alice": [
+                    .init(indexedDay: inputDate, point: .init(value: 12), achievedCount: 2),
+                ],
+                "bob": [
+                    .init(indexedDay: inputDate, point: .init(value: 3)),
+                ],
+            ],
+            calendar: calendar
+        )
+        #expect(result == expected)
+    }
+
     @Test("家事が空の場合は空のリストが返る")
     func make_emptyInput_returnsEmptyList() {
         // Arrange
