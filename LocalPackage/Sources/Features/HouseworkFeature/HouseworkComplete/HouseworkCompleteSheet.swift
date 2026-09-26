@@ -41,7 +41,8 @@ struct HouseworkCompleteView: View {
 
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
-    let members: CohabitantMemberList
+    /// 担当者として選べるメンバー（メンバー一覧の並び順。自分が先頭）
+    let selectableMembers: [CohabitantMember]
     let account: Account
 
     @State var allocation: HouseworkExecutorAllocation
@@ -58,11 +59,14 @@ struct HouseworkCompleteView: View {
     ) {
         self.item = item
         self.step = step
-        self.members = members
+        // メンバーの読み込み前に開かれても自分だけは選べるようにする
+        self.selectableMembers = members.value.isEmpty
+            ? [.init(id: account.id, userName: account.userName)]
+            : members.value
         self.account = account
         // @Stateは他のプロパティを初期化してから代入する（iOS 27 SDKで@Stateがマクロになったため）
         self.allocation = allocation ?? .init(
-            memberIds: members.value.map(\.id),
+            memberIds: selectableMembers.map(\.id),
             selectedIds: [account.id],
             totalPoint: item.point
         )
@@ -154,7 +158,7 @@ extension HouseworkCompleteView {
 
     var executorRows: [HouseworkExecutorSelectionContent.Row] {
         let points = allocation.points
-        return members.value.map { member in
+        return selectableMembers.map { member in
             let entryIndex = allocation.entries.firstIndex { $0.userId == member.id }
             let allocationValue = entryIndex.flatMap { index -> HouseworkExecutorSelectionContent.Allocation? in
                 guard points.indices.contains(index) else { return nil }
@@ -174,7 +178,7 @@ extension HouseworkCompleteView {
         allocation.entries.map { entry in
             .init(
                 userId: entry.userId,
-                userName: members.userName(entry.userId) ?? "",
+                userName: userName(entry.userId),
                 percentage: entry.percentage
             )
         }
@@ -183,7 +187,7 @@ extension HouseworkCompleteView {
     /// 家事のポイントより多い人数は選べないことを伝える文言
     var executorLimitMessage: String? {
         let maxCount = HouseworkExecutorAllocation.maxExecutorCount(totalPoint: item.point)
-        guard members.value.count > maxCount else { return nil }
+        guard selectableMembers.count > maxCount else { return nil }
 
         return "この家事は\(item.point)ptなので、担当者は\(maxCount)人まで選べます"
     }
@@ -204,6 +208,10 @@ extension HouseworkCompleteView {
         }
     }
 
+    func userName(_ userId: String) -> String {
+        selectableMembers.first { $0.id == userId }?.userName ?? ""
+    }
+
     func tappedCompleteButton() async {
         guard let cohabitantId = account.cohabitantId else { return }
 
@@ -214,7 +222,7 @@ extension HouseworkCompleteView {
                 now: now,
                 reporter: account,
                 executors: executors,
-                executorNames: executors.map { members.userName($0.userId) ?? "" },
+                executorNames: executors.map { userName($0.userId) },
                 comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
