@@ -10,7 +10,7 @@ import SwiftUI
 
 /// 家事を完了にするハーフモーダル
 ///
-/// 担当者（自分以外や複数人も選べる）とポイントの配分、完了通知に添えるコメントを入力する。
+/// 担当者（自分以外や複数人も選べる）とポイントの配分を入力する。
 public struct HouseworkCompleteSheet: View {
 
     @Environment(\.cohabitantMembers) var members
@@ -47,7 +47,6 @@ struct HouseworkCompleteView: View {
 
     @State var allocation: HouseworkExecutorAllocation
     @State var isExpandedAllocation: Bool
-    @State var comment: String
 
     init(
         item: HouseworkBoardItem,
@@ -60,7 +59,7 @@ struct HouseworkCompleteView: View {
         self.item = item
         self.step = step
         // メンバーの読み込み前に開かれても自分だけは選べるようにする
-        self.selectableMembers = members.value.isEmpty
+        selectableMembers = members.value.isEmpty
             ? [.init(id: account.id, userName: account.userName)]
             : members.value
         self.account = account
@@ -71,24 +70,27 @@ struct HouseworkCompleteView: View {
             totalPoint: item.point
         )
         self.isExpandedAllocation = isExpandedAllocation
-        self.comment = ""
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: .space24) {
+        NavigationStack {
+            ScrollView {
                 executorSection()
-                HouseworkCommentInputContent(
-                    title: "コメント（任意）",
-                    placeholder: "ひとこと添えられます",
-                    text: $comment
-                )
+                    .padding(.horizontal, .space16)
+                    .padding(.vertical, .space24)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .navigationTitle("完了にする")
+            .inlineNavigationBarTitleDisplayMode()
+            .leadingToolbarItem {
+                NavigationBarButton(label: .close) {
+                    dismiss()
+                }
+            }
+            .trailingToolbarItem {
                 completeButton()
             }
-            .padding(.horizontal, .space16)
-            .padding(.vertical, .space24)
         }
-        .scrollBounceBehavior(.basedOnSize)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
@@ -138,15 +140,12 @@ private extension HouseworkCompleteView {
     }
 
     func completeButton() -> some View {
-        Button {
+        NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             loadingState.task {
                 await tappedCompleteButton()
             }
-        } label: {
-            Label("完了にする", systemImage: "checkmark.circle.fill")
-                .frame(maxWidth: .infinity)
         }
-        .primaryButtonStyle()
+        .foregroundStyle(.onPrimary1)
         .disabled(allocation.validationError != nil)
     }
 
@@ -223,7 +222,7 @@ extension HouseworkCompleteView {
                 reporter: account,
                 executors: executors,
                 executorNames: executors.map { userName($0.userId) },
-                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
+                comment: "",
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: step
