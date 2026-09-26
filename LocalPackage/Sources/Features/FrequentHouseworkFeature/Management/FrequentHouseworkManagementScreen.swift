@@ -50,9 +50,12 @@ public struct FrequentHouseworkManagementScreen: View {
             }
         }
         .sheet(item: $editTarget) { target in
-            FrequentHouseworkEditModal(target: target, context: context) { input in
-                confirmedEdit(input, target: target)
-            }
+            FrequentHouseworkEditModal(
+                target: target,
+                context: context,
+                onConfirm: { input in confirmedEdit(input, target: target) },
+                onCreateCategory: { name in try await createCategory(name: name) }
+            )
         }
         .alert(
             "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
@@ -144,6 +147,13 @@ private extension FrequentHouseworkManagementScreen {
                 commonErrorContent = .init(error: error)
             }
         }
+    }
+
+    /// 編集モーダルから開いた「＋ 新しいカテゴリ」でカテゴリを追加する
+    /// - Returns: 追加したカテゴリ。読み込み前・リスナーが止まった後は名前の重複を判定できないため`nil`
+    func createCategory(name: String) async throws -> FrequentHouseworkCustomCategory? {
+        guard let store, store.loadState == .loaded, let cohabitantId else { return nil }
+        return try await store.addCategory(name: name, cohabitantId: cohabitantId)
     }
 
     func deleteItem(_ item: FrequentHouseworkItem) {
