@@ -33,8 +33,8 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
         #expect(actual == [.complete, .remove])
     }
 
-    @Test("完了済みで自分以外が実施した家事は、ありがとうと未完了に戻すが行える")
-    func actions_completedByOtherUser_returnsSendThanksAndReturnToIncomplete() {
+    @Test("完了済みで自分以外が実施した家事は、ありがとう・もう一度やった・未完了に戻すが行える")
+    func actions_completedByOtherUser_returnsSendThanksRedoAndReturnToIncomplete() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
@@ -49,11 +49,11 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.sendThanks, .returnToIncomplete])
+        #expect(actual == [.sendThanks, .redo, .returnToIncomplete])
     }
 
-    @Test("完了済みで自分が実施した家事は、未完了に戻すしか行えない")
-    func actions_completedByOwnUser_returnsReturnToIncompleteOnly() {
+    @Test("完了済みで自分が実施した家事は、もう一度やったと未完了に戻すが行える")
+    func actions_completedByOwnUser_returnsRedoAndReturnToIncomplete() {
         // Arrange
 
         let item = HouseworkBoardItem.makeForPreview(
@@ -68,7 +68,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Assert
 
-        #expect(actual == [.returnToIncomplete])
+        #expect(actual == [.redo, .returnToIncomplete])
     }
 
     @Test("やらない扱いの家事はクイックアクションを行えない")
@@ -129,7 +129,7 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
 
     @Test(
         "相手に表示する通知を送らないアクションはnilを返す",
-        arguments: [HouseworkQuickAction.complete, .remove, .returnToIncomplete]
+        arguments: [HouseworkQuickAction.complete, .remove, .redo, .returnToIncomplete]
     )
     func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
         // Act

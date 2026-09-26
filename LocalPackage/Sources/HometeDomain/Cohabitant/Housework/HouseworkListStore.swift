@@ -18,6 +18,7 @@ public final class HouseworkListStore {
     public private(set) var loadState: ListenerLoadState = .loading
     private let calendar: Calendar
     private let now: @MainActor @Sendable () -> Date
+    private let idGenerator: @MainActor @Sendable () -> String
     /// 最後にふりかえり通知へ反映した「日付と、その日に完了した家事の件数」
     /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す。
     ///         件数で見るのは、1日1回の制限を外している間（デバッグ用）に完了のたびに予約を積むため
@@ -40,7 +41,7 @@ public final class HouseworkListStore {
         calendar: Calendar = .autoupdatingCurrent,
         now: @escaping @MainActor @Sendable () -> Date = { .now },
         items: [DailyHouseworkList] = [],
-        idGenerator _: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
+        idGenerator: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
@@ -49,6 +50,7 @@ public final class HouseworkListStore {
         self.dailyCompletionReminderUseCase = dailyCompletionReminderUseCase
         self.calendar = calendar
         self.now = now
+        self.idGenerator = idGenerator
         self.items = .init(value: items)
 
         Task {
@@ -107,6 +109,31 @@ public final class HouseworkListStore {
             notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
                 .completedMessage(executorName: executor.userName, houseworkTitle: target.title, data: $0)
             }
+        }
+    }
+
+    /// 完了した家事を、もう一度やったものとして記録する
+    ///
+    /// 元の家事は変えずに、同じ日・同じ内容の完了済みの家事を新しく登録する。
+    /// 同居人への通知は家事を完了にしたときと同じく、今日の家事なら1日1回だけ完了通知を送る。
+    public func redo(
+        target: HouseworkItem,
+        now: Date,
+        executor: Account,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        do {
+            let redoneItem = target.makeRedone(id: idGenerator(), at: now, executor: executor.id)
+            try await houseworkClient.insertOrUpdateItem(redoneItem, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(.redo(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.redo(step: step, isSuccess: true)))
+
+        notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
+            .completedMessage(executorName: executor.userName, houseworkTitle: target.title, data: $0)
         }
     }
 
