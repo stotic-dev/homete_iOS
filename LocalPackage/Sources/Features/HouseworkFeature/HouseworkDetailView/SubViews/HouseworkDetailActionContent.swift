@@ -97,7 +97,10 @@ private extension HouseworkDetailActionContent {
             try await houseworkListStore.complete(
                 target: item.originalItem,
                 now: .now,
-                executor: account,
+                reporter: account,
+                executors: [.solo(userId: account.id, point: item.point)],
+                executorNames: [account.userName],
+                comment: "",
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: .detail

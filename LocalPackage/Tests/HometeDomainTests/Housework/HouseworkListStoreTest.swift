@@ -134,7 +134,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     try await store.complete(
                         target: inputHouseworkItem,
                         now: completedAt,
-                        executor: inputExecutor,
+                        reporter: inputExecutor,
+                        executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        executorNames: [inputExecutor.userName],
+                        comment: "",
                         cohabitantId: inputCohabitantId,
                         isRegistered: true,
                         step: .board
@@ -200,10 +203,96 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     try await store.complete(
                         target: inputHouseworkItem,
                         now: completedAt,
-                        executor: inputExecutor,
+                        reporter: inputExecutor,
+                        executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        executorNames: [inputExecutor.userName],
+                        comment: "",
                         cohabitantId: inputCohabitantId,
                         isRegistered: false,
                         step: .board
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("他の人を担当者にして完了にすると、代わりに記録したことが分かる完了通知にコメントを添えて送る")
+    func complete_proxyWithComment() async {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            point: 10
+        )
+        let inputReporter = Account(
+            id: "reporter",
+            userName: "きろくしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let inputExecutors = [
+            HouseworkExecutor(userId: "reporter", percentage: 60, point: 6),
+            HouseworkExecutor(userId: "partner", percentage: 40, point: 4),
+        ]
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let expectedItem = HouseworkItem(
+            id: "id1",
+            indexedDate: .init(value: .previewDate(year: 2026, month: 9, day: 25)),
+            title: "title",
+            point: 10,
+            state: .completed,
+            executors: [
+                HouseworkExecutor(userId: "reporter", percentage: 60, point: 6),
+                HouseworkExecutor(userId: "partner", percentage: 40, point: 4),
+            ],
+            executedAt: completedAt,
+            expiredAt: inputHouseworkItem.expiredAt,
+            templateHouseworkItemId: nil
+        )
+        let expectedContent = PushNotificationContent(
+            title: "きろくしゃさんが家事の完了を記録しました",
+            message: "「title」（担当：きろくしゃさん・パートナーさん）\n一緒に片付けました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(
+                        insertOrUpdateItemHandler: { item, cohabitantId in
+                            // Assert
+
+                            #expect(item == expectedItem)
+                            #expect(cohabitantId == inputCohabitantId)
+                            confirmation()
+                        }
+                    ),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    calendar: .japanese,
+                    items: [.makeForTest(items: [inputHouseworkItem])]
+                )
+
+                // Act
+
+                Task {
+                    try await store.complete(
+                        target: inputHouseworkItem,
+                        now: completedAt,
+                        reporter: inputReporter,
+                        executors: inputExecutors,
+                        executorNames: ["きろくしゃ", "パートナー"],
+                        comment: "一緒に片付けました",
+                        cohabitantId: inputCohabitantId,
+                        isRegistered: true,
+                        step: .detail
                     )
                 }
             }
