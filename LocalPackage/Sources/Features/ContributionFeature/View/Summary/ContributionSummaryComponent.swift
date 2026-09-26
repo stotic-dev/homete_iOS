@@ -82,7 +82,7 @@ struct ContributionSummaryContent: View {
     var body: some View {
         VStack(spacing: .space8) {
             Text(monthTitle)
-                .font(with: .headLineS)
+                .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.onSurface)
             Divider()
