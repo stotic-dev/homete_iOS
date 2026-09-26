@@ -224,6 +224,40 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 **分析での使い方:** `apply`を分母にテンプレート機能の利用開始率、`create` / `edit` / `delete`の件数比率で
 テンプレートがどの程度使い込まれているか（作りっぱなしか、継続的に編集されているか）が分かる。
 
+### `frequent_housework`
+
+いつもの家事（よくやる家事を登録しておき、単発登録・テンプレートから呼び出す機能）の追加・編集・削除・取り込みにおける行動。
+すべて`FrequentHouseworkStore`に送信箇所を集約する。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `FrequentHouseworkAnalyticsAction`、`FrequentHouseworkStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `create` / `edit` / `delete` / `import` / `limit_reached` / `create_category` / `edit_category` / `delete_category` | 何が起きたか |
+| `step` | — | `management` / `register` / `template` | 起点画面。起点が複数ある`create` / `limit_reached`のみ付与 |
+| `result` | — | `success` / `failure` | Firestoreへの書き込み結果。`limit_reached`以外に付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `create` | `management` / `register` / `template` | いつもの家事を追加した（管理画面の追加、登録シート・テンプレートの追加モーダルの「いつもの家事に保存する」）。家事1件につき1イベント |
+| `edit` | — | いつもの家事の名前・ポイント・カテゴリを変更した |
+| `delete` | — | いつもの家事を削除した |
+| `import` | — | テンプレートから取り込んだ。取り込み1回につき1イベント（件数によらない） |
+| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した |
+| `create_category` | — | カスタムカテゴリを追加した |
+| `edit_category` | — | カスタムカテゴリの名前を変更した |
+| `delete_category` | — | カスタムカテゴリを削除した |
+
+並べ替えは内容を変えない操作のため送信しない。
+
+**分析での使い方:** `create`の`step`比率で、いつもの家事がどの導線から増えているか（管理画面で意図的に作るのか、
+登録のついでに保存するのか）が分かる。`limit_reached`を分母に`paywall`の`step: frequent_housework_limit`の
+`closed(purchased)`を追うと、上限がどれだけ課金につながっているかが分かる。
+
 ### `cohabitant_registration`
 
 同居人グループを新規作成するフローそのものの進捗（近接通信 / 招待リンクの両方法を横断）。
