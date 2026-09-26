@@ -105,8 +105,11 @@ public extension FrequentHouseworkStore {
 
 private extension FrequentHouseworkStore {
 
+    /// 両方の最初のスナップショットが揃ったら読み込み済みにする
+    /// - Note: 片方のリスナーが先に終わって失敗になっている場合は、もう片方が届いても失敗のままにする
+    ///         （止まったリスナーの古いデータで件数上限・名前の重複を判定させないため）
     func markLoadedIfReady() {
-        guard hasReceivedItems, hasReceivedCategories else { return }
+        guard loadState == .loading, hasReceivedItems, hasReceivedCategories else { return }
         loadState = .loaded
     }
 

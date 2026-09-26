@@ -149,6 +149,57 @@ extension FrequentHouseworkStoreTest.ObservingCase {
     }
 
     @MainActor
+    @Test("片方のリスナーが先に終わって失敗になった後は、もう片方が届いても失敗のままにする")
+    func startObservingStaysFailedAfterOneListenerEnds() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let (categoriesStream, categoriesContinuation) = AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream },
+                addCategoriesSnapshotListener: { _, _ in categoriesStream }
+            )
+        )
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        let failedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.yield([.makeForTest(id: "1")])
+        itemsContinuation.finish()
+        await failedWaiter.value
+
+        // Act
+
+        let categoriesWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.customCategories
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        categoriesContinuation.yield([.makeForTest(id: "pet")])
+        await categoriesWaiter.value
+
+        // Assert
+
+        #expect(store.loadState == .failed(.other))
+
+        // Cleanup
+
+        await store.stopObserving()
+        categoriesContinuation.finish()
+    }
+
+    @MainActor
     @Test("購読を開始すると、受け取ったカスタムカテゴリを反映する")
     func startObservingReflectsCategories() async {
         // Arrange
