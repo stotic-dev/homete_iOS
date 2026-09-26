@@ -7,6 +7,7 @@
 
 import Foundation
 @testable import HometeDomain
+import Observation
 import Testing
 
 enum FrequentHouseworkStoreTest {
@@ -70,9 +71,10 @@ extension FrequentHouseworkStoreTest.ObservingCase {
 
         // Cleanup
 
+        // 先に購読を解除する（解除せずにストリームを終えると失敗扱いになり、waiterが再度呼ばれるため）
+        await store.stopObserving()
         itemsContinuation.finish()
         categoriesContinuation.finish()
-        await store.stopObserving()
     }
 
     @MainActor
@@ -197,6 +199,58 @@ extension FrequentHouseworkStoreTest.ObservingCase {
 
         await store.stopObserving()
         categoriesContinuation.finish()
+    }
+
+    @MainActor
+    @Test("読み込み済みになった後にリスナーが終わると、以降のデータが更新されないため失敗した状態にする")
+    func startObservingFailsWhenListenerEndsAfterLoaded() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let (categoriesStream, categoriesContinuation) = AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream },
+                addCategoriesSnapshotListener: { _, _ in categoriesStream }
+            )
+        )
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        // 読み込み済みの後にも失敗へ変わるため、1回だけ変化を拾う監視にする
+        let loadedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                withObservationTracking {
+                    _ = store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.yield([.makeForTest(id: "1")])
+        categoriesContinuation.yield([])
+        await loadedWaiter.value
+
+        // Act
+
+        let failedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        categoriesContinuation.finish()
+        await failedWaiter.value
+
+        // Assert
+
+        #expect(store.loadState == .failed(.other))
+
+        // Cleanup
+
+        await store.stopObserving()
+        itemsContinuation.finish()
     }
 
     @MainActor

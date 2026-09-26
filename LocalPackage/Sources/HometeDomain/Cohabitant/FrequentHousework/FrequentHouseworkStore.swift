@@ -79,7 +79,7 @@ public extension FrequentHouseworkStore {
                 self.hasReceivedItems = true
                 self.markLoadedIfReady()
             }
-            self.markFailedIfEndedBeforeLoaded()
+            self.markFailedIfListenerEnded()
         }
         categoriesObserveTask = Task {
             for await categories in categoriesStream {
@@ -87,7 +87,7 @@ public extension FrequentHouseworkStore {
                 self.hasReceivedCategories = true
                 self.markLoadedIfReady()
             }
-            self.markFailedIfEndedBeforeLoaded()
+            self.markFailedIfListenerEnded()
         }
     }
 
@@ -113,11 +113,12 @@ private extension FrequentHouseworkStore {
         loadState = .loaded
     }
 
-    /// 最初のスナップショットが揃う前にリスナーが終わった場合は、読み込みに失敗したとみなす
-    /// - Note: 購読の解除（タスクのキャンセル）で終わった場合は対象外。
+    /// リスナーが終わった場合は、読み込み前・後を問わず失敗とみなす
+    /// - Note: 終わったリスナーのデータは以降更新されないため、読み込み済みのままにすると
+    ///         古いデータで件数上限・名前の重複を判定してしまう。購読の解除（タスクのキャンセル）で終わった場合は対象外。
     ///         リスナーのエラーはClientでログ出力のうえストリームの終了に変換されるため、終了したことで検知する
-    func markFailedIfEndedBeforeLoaded() {
-        guard !Task.isCancelled, loadState == .loading else { return }
+    func markFailedIfListenerEnded() {
+        guard !Task.isCancelled else { return }
         loadState = .failed(.other)
     }
 

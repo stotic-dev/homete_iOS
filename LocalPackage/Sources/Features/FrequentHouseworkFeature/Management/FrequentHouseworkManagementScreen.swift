@@ -101,7 +101,8 @@ private extension FrequentHouseworkManagementScreen {
     }
 
     func confirmedEdit(_ input: FrequentHouseworkEditInput, target: FrequentHouseworkEditTarget) {
-        guard let store, let cohabitantId else { return }
+        // モーダルを開いている間にリスナーが止まった場合は、古いデータで判定した内容を書き込まない
+        guard let store, store.loadState == .loaded, let cohabitantId else { return }
         loadingState.task {
             do {
                 switch target {
