@@ -120,7 +120,7 @@ service cloud.firestore {
           allow read, write: if isCohabitantMember(cohabitantId);
         }
 
-        // 毎月繰り返す家事。1ドキュメント = 1家事（ADR-0020）
+        // 毎月繰り返す家事。1ドキュメント = 1家事（ADR-0022）
         match /MonthlyItems/{itemId} {
           allow read, write: if isCohabitantMember(cohabitantId);
         }

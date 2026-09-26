@@ -46,6 +46,15 @@ extension HouseworkListStore {
                 step: step
             )
 
+        case .redo:
+            try await redo(
+                target: item.originalItem,
+                now: now,
+                executor: account,
+                cohabitantId: cohabitantId,
+                step: step
+            )
+
         case .sendThanks:
             try await sendThanks(
                 target: item.originalItem,

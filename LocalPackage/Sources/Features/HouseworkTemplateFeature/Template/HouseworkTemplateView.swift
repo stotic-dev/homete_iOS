@@ -376,8 +376,10 @@ private extension HouseworkTemplateView {
     func tappedSaveButton(templateId: String) async {
         guard let cohabitantId else { return }
         do {
-            try await templateListStore.saveDays(
-                draft.saveDays,
+            // 毎月の家事の編集はまだ画面にないため、現在の内容をそのまま渡して差分なしにする
+            try await templateListStore.saveTemplate(
+                days: draft.saveDays,
+                monthlyItems: templateListStore.monthlyItems,
                 templateId: templateId,
                 cohabitantId: cohabitantId,
                 currentVersion: editorContext.currentTemplateVersion
