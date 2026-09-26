@@ -443,6 +443,10 @@ struct AnalyticsEventTest {
                 ["step": "subscription_management", "action": "shown"]
             ),
             (
+                PaywallAnalyticsAction.shown(step: .frequentHouseworkLimit),
+                ["step": "frequent_housework_limit", "action": "shown"]
+            ),
+            (
                 PaywallAnalyticsAction.closed(step: .onboarding, isPremium: true),
                 ["step": "onboarding", "action": "closed", "result": "purchased"]
             ),
