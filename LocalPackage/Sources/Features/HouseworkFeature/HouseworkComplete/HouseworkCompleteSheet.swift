@@ -263,9 +263,10 @@ extension HouseworkCompleteView {
             ownId: "own"
         ),
         account: .init(id: "own", userName: "たいち", fcmToken: nil, cohabitantId: "cohabitant"),
+        // CohabitantMemberList.valueと同じ並び順（自分が先頭、他はユーザーID昇順）
         allocation: .init(
-            memberIds: ["own", "partner", "child"],
-            selectedIds: ["own", "partner", "child"],
+            memberIds: ["own", "child", "partner"],
+            selectedIds: ["own", "child", "partner"],
             totalPoint: 10
         ),
         isExpandedAllocation: true
