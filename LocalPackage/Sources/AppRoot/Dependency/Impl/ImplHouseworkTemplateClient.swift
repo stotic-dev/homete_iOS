@@ -173,7 +173,7 @@ private extension HouseworkTemplateMetaDocument {
 /// デコードに失敗したドキュメントを`nil`として扱うラッパー
 ///
 /// `FirestoreService.fetch`は1件でもデコードに失敗すると全体が失敗する。毎月の家事は将来`rule.type`を
-/// 増やす想定なので、旧バージョンのアプリが新しい種類のルールを読んでも他の家事まで読めなくならないようにする（ADR-0021）。
+/// 増やす想定なので、旧バージョンのアプリが新しい種類のルールを読んでも他の家事まで読めなくならないようにする（ADR-0022）。
 /// SnapshotListener側は`FirestoreService.addSnapshotListener`が元から1件ずつ`try?`でデコードしているので、このラッパーは不要。
 /// 一方で`appendItem`の`Days`の読み取りは意図的に厳格にしている（読めなかった既存の家事を空として上書きしないため）。
 private struct LenientDecoded<Value: Decodable & Sendable>: Decodable {

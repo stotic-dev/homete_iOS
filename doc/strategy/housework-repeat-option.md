@@ -2,7 +2,7 @@
 
 > 関連Issue: [#281 家事登録に繰り返しの項目が欲しい](https://github.com/stotic-dev/homete_iOS/issues/281)
 > ブランチ: `feat/housework-repeat-option`（スタックPRの土台。分割は「PR分割」を参照）
-> 毎月の家事の保存方式は [ADR-0021](../adr/0021-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
+> 毎月の家事の保存方式は [ADR-0022](../adr/0022-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
 
 ## ステータス
 
@@ -59,7 +59,7 @@
 
 ### 非機能要件 / 制約
 
-- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0021](../adr/0021-monthly-housework-template-items.md)）
+- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - テンプレート機能は無料で提供している機能（[premium_plan.md](../premium_plan.md)）なので、繰り返し設定もプランで制限しない
 - 登録画面から書き込むときも、テンプレートの `version` を上げる。こうしておくと、他のメンバーがテンプレートを編集中でも、そのメンバーの保存は既存の仕組みでコンフリクトとして検知されるので、登録した家事が上書きで消えない
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
@@ -95,7 +95,7 @@ public struct HouseworkTemplateMonthlyItem: Identifiable, Codable, Sendable, Equ
 }
 ```
 
-Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-0021](../adr/0021-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
+Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-0022](../adr/0022-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
 
 ### 2. 表示のマージ処理
 
@@ -201,7 +201,7 @@ match /MonthlyItems/{itemId} {
 
 | # | ブランチ（予定） | ベース | 内容 |
 |---|---|---|---|
-| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0021、Firestoreルール（`MonthlyItems`）とルールテスト |
+| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0022、Firestoreルール（`MonthlyItems`）とルールテスト |
 | 2 | `feat/housework-repeat-option-domain` | #1 | ドメインモデル、日付判定、Client/Impl（取得・監視・`updateTemplate`・`appendItem`）、`HouseworkTemplateListStore`、ユニットテスト |
 | 3 | `feat/housework-repeat-option-display` | #2 | 家事ボード・今日の家事・未完了一覧に毎月の家事を表示する（マージ処理の一般化） |
 | 4 | `feat/housework-repeat-option-template-ui` | #3 | テンプレート画面の「毎月」セクション、編集モーダル・詳細画面、`RecurrenceSelector`、Analytics（`step: template` / `recurrence`） |
@@ -220,9 +220,9 @@ match /MonthlyItems/{itemId} {
 - [x] 29〜31日の指定は、その日がない月は月末に表示する
 - [x] 繰り返しを設定して登録したときは、登録元の日付に単発では登録しない（繰り返しに任せる）
 - [x] 毎月の家事はテンプレート画面に「毎月」セクションを足して管理する
-- [x] 毎月の家事の保存方式（[ADR-0021](../adr/0021-monthly-housework-template-items.md)）
+- [x] 毎月の家事の保存方式（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - [x] 第N◯曜日のNは第1〜第4と「最終」にする
-- [x] ADR-0021のレビュー（提案済 → 承認済）
+- [x] ADR-0022のレビュー（提案済 → 承認済）
 
 ### Phase 2: 実装
 
