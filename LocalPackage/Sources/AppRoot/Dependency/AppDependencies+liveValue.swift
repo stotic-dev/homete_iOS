@@ -3,6 +3,7 @@
 //
 
 import HometeDomain
+import HometeLocalNotification
 
 // MARK: Live用の定義
 
@@ -25,7 +26,8 @@ public extension AppDependencies {
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,
         notificationGuideStateClient: .liveValue,
-        pasteboardClient: livePasteboardClient
+        pasteboardClient: livePasteboardClient,
+        dailyCompletionReminderClient: .liveValue
     )
 
 }
