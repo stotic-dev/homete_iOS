@@ -23,7 +23,7 @@ enum TemplateItemEditInputTest {
             itemId: itemId,
             title: title,
             point: point,
-            days: days
+            recurrence: .init(kind: .weekly, weekdays: days)
         )
     }
 
@@ -82,6 +82,23 @@ extension TemplateItemEditInputTest.CanConfirmCreateModeCase {
 
         // Assert
         #expect(actual == false)
+    }
+
+    @Test("新規作成モードで毎月の繰り返しを選んでいれば、曜日が空でもtrueを返す")
+    func returnsTrueWhenMonthlyIsSelected() {
+        // Arrange
+        let input = TemplateItemEditInput(
+            itemId: TestCase.itemId,
+            title: "家賃の振込",
+            point: 5,
+            recurrence: .init(kind: .monthly, dayOfMonth: 25)
+        )
+
+        // Act
+        let actual = input.canConfirm(.create)
+
+        // Assert
+        #expect(actual == true)
     }
 
 }
@@ -145,6 +162,34 @@ extension TemplateItemEditInputTest.CanConfirmEditModeCase {
         // Arrange
         let before = TestCase.makeInput(point: 10)
         let edited = TestCase.makeInput(point: nil)
+
+        // Act
+        let actual = edited.canConfirm(.edit(before: before))
+
+        // Assert
+        #expect(actual == false)
+    }
+
+    @Test("編集モードで毎週から毎月に切り替えた場合はtrueを返す")
+    func returnsTrueWhenRecurrenceKindChanged() {
+        // Arrange
+        let before = TestCase.makeInput()
+        var edited = TestCase.makeInput()
+        edited.recurrence.kind = .monthly
+
+        // Act
+        let actual = edited.canConfirm(.edit(before: before))
+
+        // Assert
+        #expect(actual == true)
+    }
+
+    @Test("編集モードで、選んでいない種類の入力値だけが変わっている場合は変更なしとしてfalseを返す")
+    func returnsFalseWhenOnlyHiddenRecurrenceValueChanged() {
+        // Arrange
+        let before = TestCase.makeInput()
+        var edited = TestCase.makeInput()
+        edited.recurrence.dayOfMonth = 25
 
         // Act
         let actual = edited.canConfirm(.edit(before: before))

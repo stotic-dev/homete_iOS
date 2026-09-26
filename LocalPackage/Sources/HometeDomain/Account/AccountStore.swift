@@ -86,6 +86,13 @@ public final class AccountStore {
 
         let stream = await accountInfoClient.addSnapshotListener(accountListenerKey, accountId)
 
+        // 購読の準備中にサインアウトが起きた場合、`stopObserving()`は`listenerTask`が未設定なので
+        // 空振りする。そのまま購読を張ると解除されないまま残るため、ここで畳む
+        guard !Task.isCancelled else {
+            await accountInfoClient.removeSnapshotListener(accountListenerKey)
+            return
+        }
+
         listenerTask = Task {
             do {
                 for try await account in stream {

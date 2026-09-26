@@ -6,15 +6,18 @@
 //
 
 import HometeDomain
-import HometeUI
 import SwiftUI
 
 /// 月〜日を複数選択するセグメント風コンポーネント。
-struct WeekdaySelector: View {
+public struct WeekdaySelector: View {
 
     @Binding var selection: Set<DayOfWeek>
 
-    var body: some View {
+    public init(selection: Binding<Set<DayOfWeek>>) {
+        _selection = selection
+    }
+
+    public var body: some View {
         HStack(spacing: .space8) {
             ForEach(DayOfWeek.displayOrdered) { day in
                 Button {

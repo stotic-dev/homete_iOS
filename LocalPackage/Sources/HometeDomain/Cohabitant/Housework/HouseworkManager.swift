@@ -19,6 +19,8 @@ public final actor HouseworkManager {
     private var observeTask: Task<Void, Never>?
     /// 進行中の追加フェッチ。同じ期間を重複して取得しないための待ち合わせに使う
     private var pendingFetchTask: Task<Void, Never>?
+    /// 監視の世代。actorの再入により、中断中の準備処理が後から状態を書き戻すのを防ぐために使う
+    private var observeGeneration = 0
 
     // MARK: Dependencies
 
@@ -59,20 +61,28 @@ public final actor HouseworkManager {
         calendar: Calendar,
         storagePolicy: HouseworkStoragePolicy
     ) async {
+        // このactorはawaitのたびに再入するため、以降の各ステップでは自分の世代が最新かを確認する。
+        // 確認を省くと、サインアウト（`clearOnSignedOut`）や再セットアップが割り込んだあとに
+        // このメソッドが再開して、権限を失ったグループのデータとリスナーを復活させてしまう
+        observeGeneration += 1
+        let generation = observeGeneration
         listenerAnchorDate = currentTime
         observeTask?.cancel()
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
         await houseworkClient.removeListener(houseworkObserveKey)
+        guard generation == observeGeneration else { return }
 
         // 1. プランに応じた期間をワンショットフェッチして allItems を初期化
         let lowerBound = storagePolicy.initialFetchLowerBound(currentDate: currentTime, calendar: calendar)
         do {
             let fetchedItems = try await houseworkClient.fetchItems(cohabitantId, lowerBound, currentTime)
+            guard generation == observeGeneration else { return }
             allItems = fetchedItems
             fetchedRange = lowerBound ... currentTime
             notifyObservers()
         } catch {
+            guard generation == observeGeneration else { return }
             notifyFailure(error)
         }
 
@@ -83,6 +93,10 @@ public final actor HouseworkManager {
             currentTime,
             Self.listenerOffset
         )
+        guard generation == observeGeneration else {
+            await houseworkClient.removeListener(houseworkObserveKey)
+            return
+        }
 
         observeTask = Task {
             do {
@@ -95,6 +109,22 @@ public final actor HouseworkManager {
                 notifyFailure(error)
             }
         }
+    }
+
+    /// サインアウト時に監視を止め、前のユーザーの家事データを破棄する
+    /// - Note: このManagerは`AppDependencies`が保持していてサインアウトしても解放されないため、
+    ///         明示的に止めないと無効になったグループIDのままFirestoreを購読し続ける
+    public func clearOnSignedOut() async {
+        // 準備中の`setupObserver`が再開しても状態を書き戻さないよう、先に世代を進める
+        observeGeneration += 1
+        observeTask?.cancel()
+        observeTask = nil
+        pendingFetchTask?.cancel()
+        pendingFetchTask = nil
+        await houseworkClient.removeListener(houseworkObserveKey)
+        allItems = []
+        fetchedRange = nil
+        notifyObservers()
     }
 
     /// 指定日まで遡って参照できるように、未取得の期間を追加でフェッチする
@@ -112,9 +142,8 @@ public final actor HouseworkManager {
 
         // 取得済み範囲と重複しないよう、その前日までを取得する
         let to = calendar.date(byAdding: .day, value: -1, to: fetchedRange.lowerBound) ?? fetchedRange.lowerBound
-        let task = Task { [weak self] in
-            guard let self else { return }
-            await appendItems(cohabitantId: cohabitantId, from: targetDay, to: to)
+        let task = Task {
+            await self.appendItems(cohabitantId: cohabitantId, from: targetDay, to: to)
         }
         pendingFetchTask = task
         await task.value
@@ -129,7 +158,10 @@ private extension HouseworkManager {
 
     /// 追加フェッチした期間を allItems と fetchedRange に反映する
     func appendItems(cohabitantId: String, from: Date, to: Date) async {
+        let generation = observeGeneration
         guard let fetchedItems = try? await houseworkClient.fetchItems(cohabitantId, from, to),
+              // 追加フェッチ中にサインアウト・再セットアップが走った場合は反映しない
+              generation == observeGeneration,
               let currentRange = fetchedRange else { return }
 
         upsert(fetchedItems)

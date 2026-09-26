@@ -8,7 +8,7 @@
 public struct CohabitantMemberList: Sendable, Equatable {
 
     private var _value: Set<CohabitantMember>
-    let ownId: String
+    public private(set) var ownId: String
 
     public var value: [CohabitantMember] {
         guard let own = _value.first(where: { $0.id == ownId }) else { return [] }
@@ -29,6 +29,12 @@ public struct CohabitantMemberList: Sendable, Equatable {
 
     public mutating func insert(_ element: CohabitantMember) {
         _value.insert(element)
+    }
+
+    /// 自分のユーザーIDを設定する
+    /// - Note: 生成時点ではログイン中のユーザーが決まっていないため、購読を開始する時点で設定する
+    public mutating func update(ownId: String) {
+        self.ownId = ownId
     }
 
     /// 与えられたユーザーID配列の中から、まだvalueに存在しないユーザーIDのみを返します。
