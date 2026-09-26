@@ -10,6 +10,8 @@ import Foundation
 import HometeDomain
 import Testing
 
+// swiftlint:disable file_length
+
 // swiftlint:disable:next convenience_type
 enum HouseworkContributionTest {
 

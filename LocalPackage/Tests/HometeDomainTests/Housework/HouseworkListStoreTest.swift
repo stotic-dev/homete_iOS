@@ -79,6 +79,7 @@ struct HouseworkListStoreTest {
 extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    // swiftlint:disable:next function_body_length
     func complete() async {
         // Arrange
 
@@ -148,6 +149,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     }
 
     @Test("テンプレートから生成された家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    // swiftlint:disable:next function_body_length
     func complete_with_created_template() async {
         // Arrange
 
@@ -217,6 +219,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     }
 
     @Test("他の人を担当者にして完了にすると、代わりに記録したことが分かる完了通知にコメントを添えて送る")
+    // swiftlint:disable:next function_body_length
     func complete_proxyWithComment() async {
         // Arrange
 
