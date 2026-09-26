@@ -502,7 +502,9 @@ describe("cohabitantInvitation E2E Tests", () => {
       expect(sent[0].tokens).toEqual(
         expect.arrayContaining(["token-owner", "token-first"])
       );
-      expect(sent[0].notification.title).toBe("太郎がグループに参加しました");
+      expect(sent[0].notification).toMatchObject({
+        title: "太郎がグループに参加しました",
+      });
     });
 
     it("参加者の表示名が無い場合は汎用的な文言で通知する", async () => {
@@ -521,9 +523,9 @@ describe("cohabitantInvitation E2E Tests", () => {
       // Assert
       expect(sent).toHaveLength(1);
       expect(sent[0].tokens).toEqual(["token-owner"]);
-      expect(sent[0].notification.title).toBe(
-        "新しいメンバーがグループに参加しました"
-      );
+      expect(sent[0].notification).toMatchObject({
+        title: "新しいメンバーがグループに参加しました",
+      });
     });
   });
 });
