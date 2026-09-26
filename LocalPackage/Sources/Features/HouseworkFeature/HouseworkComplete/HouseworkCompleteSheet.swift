@@ -74,12 +74,11 @@ struct HouseworkCompleteView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            ContentFittingSheetScrollView {
                 executorSection()
                     .padding(.horizontal, .space16)
                     .padding(.vertical, .space24)
             }
-            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("完了にする")
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
@@ -91,7 +90,6 @@ struct HouseworkCompleteView: View {
                 completeButton()
             }
         }
-        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)

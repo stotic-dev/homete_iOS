@@ -24,7 +24,7 @@ public struct HouseworkThanksView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
+            ContentFittingSheetScrollView {
                 HouseworkCommentInputContent(
                     title: "メッセージ",
                     placeholder: "感謝を伝えましょう！",
@@ -33,14 +33,12 @@ public struct HouseworkThanksView: View {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space24)
             }
-            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle("ありがとうを伝える")
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 sendThanksButton()
             }
         }
-        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)
