@@ -124,7 +124,7 @@ extension DailyCompletionReminderUseCaseTest.HandleCompletedCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
-            trigger: .silentNotification,
+            trigger: .notificationServiceExtension,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
@@ -151,7 +151,7 @@ extension DailyCompletionReminderUseCaseTest.HandleCompletedCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 24)),
-            trigger: .silentNotification,
+            trigger: .notificationServiceExtension,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
@@ -284,13 +284,13 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
                     hour: 21,
                     minute: 0,
                     identifier: "dailyCompletionReminder-2026-9-25#1790298000",
-                    debugNote: "[DEBUG] サイレント通知 / 10:00予約"
+                    debugNote: "[DEBUG] 通知拡張 / 10:00予約"
                 )),
                 .schedule(todayRequest(
                     hour: 21,
                     minute: 0,
                     identifier: "dailyCompletionReminder-2026-9-25#1790298060",
-                    debugNote: "[DEBUG] サイレント通知 / 10:01予約"
+                    debugNote: "[DEBUG] 通知拡張 / 10:01予約"
                 )),
             ]
         )
@@ -299,13 +299,13 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
 
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
-            trigger: .silentNotification,
+            trigger: .notificationServiceExtension,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
             calendar: .japanese
         )
         await sut.handleCompleted(
             .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
-            trigger: .silentNotification,
+            trigger: .notificationServiceExtension,
             now: .previewDate(year: 2026, month: 9, day: 25, hour: 10, minute: 1),
             calendar: .japanese
         )
@@ -339,7 +339,7 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
 
 extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
 
-    @Test("今日の家事の完了を今日まだ送っていなければ、サイレント通知を送って送信日を記録する")
+    @Test("今日の家事の完了を今日まだ送っていなければ、完了通知を送って送信日を記録する")
     func notifyCompletedIfNeeded_notSentToday_sendsAndRecords() async throws {
         // Arrange
 
@@ -368,7 +368,7 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
         #expect(actual == expected)
     }
 
-    @Test("今日すでに送っていれば、サイレント通知を送らない")
+    @Test("今日すでに送っていれば、完了通知を送らない")
     func notifyCompletedIfNeeded_alreadySentToday_doesNotSend() async throws {
         // Arrange
 
@@ -400,7 +400,7 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
         #expect(actual == expected)
     }
 
-    @Test("前日に送っていても、今日まだ送っていなければサイレント通知を送る")
+    @Test("前日に送っていても、今日まだ送っていなければ完了通知を送る")
     func notifyCompletedIfNeeded_sentYesterday_sends() async throws {
         // Arrange
 
@@ -432,7 +432,7 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
         #expect(actual == expected)
     }
 
-    @Test("今日以外の家事の完了では、サイレント通知を送らない")
+    @Test("今日以外の家事の完了では、完了通知を送らない")
     func notifyCompletedIfNeeded_notToday_doesNotSend() async throws {
         // Arrange
 
@@ -481,7 +481,7 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
         #expect(actual == nil)
     }
 
-    @Test("1日1回の制限を外している場合は、今日すでに送っていてもサイレント通知を送る")
+    @Test("1日1回の制限を外している場合は、今日すでに送っていても完了通知を送る")
     func notifyCompletedIfNeeded_dailyLimitDisabled_sendsEveryTime() async throws {
         // Arrange
 
@@ -550,7 +550,7 @@ private struct NotifyCompletedResult: Equatable {
 
 private struct SendSignalError: Error {}
 
-/// 送ったサイレント通知の内容を記録するフェイク
+/// 送った完了通知の内容を記録するフェイク
 private actor SentSignalRecorder {
 
     private(set) var sent: [HouseworkCompletedNotificationData] = []

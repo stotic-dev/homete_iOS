@@ -75,7 +75,7 @@ extension HouseworkQuickAction {
     ///
     /// 家事ごとに個別通知を送ると件数分の通知が届いてしまうため、一括操作では対象件数をまとめた
     /// 1件の通知のみを送る。相手に表示する通知を送らないアクション（完了・やらない・未完了に戻す）は`nil`。
-    /// - Note: 完了は表示する通知の代わりに、ふりかえり通知の予約に使うサイレント通知を送る（`performBulk`）
+    /// - Note: 完了はふりかえり通知の予約を兼ねた完了通知を、1日1回だけ送る（`performBulk`）
     func bulkNotification(count: Int, senderName: String) -> PushNotificationContent? {
         switch self {
         case .sendThanks:

@@ -74,8 +74,8 @@ public final class HouseworkListStore {
 
     /// 家事を完了にする
     ///
-    /// 同居人へは表示する通知を送らず、同居人の端末でふりかえり通知を予約するためのサイレント通知だけを送る。
-    /// - Parameter notify: 一括操作では1件分のサイレント通知を呼び出し側で送るため`false`を渡す。
+    /// 同居人の端末でふりかえり通知を予約するため、今日の家事なら1日1回だけ完了通知を送る。
+    /// - Parameter notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す。
     // swiftlint:disable:next function_parameter_count
     public func complete(
         target: HouseworkItem,
@@ -104,7 +104,9 @@ public final class HouseworkListStore {
         analyticsClient.log(.housework(.complete(step: step, isSuccess: true)))
 
         if notify {
-            notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId)
+            notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
+                .completedMessage(executorName: executor.userName, houseworkTitle: target.title, data: $0)
+            }
         }
     }
 
@@ -178,11 +180,18 @@ public final class HouseworkListStore {
         analyticsClient.log(.housework(.delete(step: step, isSuccess: true)))
     }
 
-    /// 同居人の端末でふりかえり通知を予約するため、家事の完了をサイレント通知で知らせる
+    /// 同居人の端末でふりかえり通知を予約するため、家事の完了を通知で知らせる
     ///
+    /// 受け取った端末では、アプリが終了していてもNotification Service Extensionが起動して予約する。
     /// 送るのは今日の家事の完了で、かつこの端末からその日まだ送っていないときだけ（ベストエフォート）。
     /// 送信は待たずに行い、失敗しても家事の操作は失敗扱いにしない。
-    public func notifyCompleted(houseworkDate: Date, now: Date, cohabitantId: String) {
+    /// - Parameter content: 送る通知の内容。予約に使う付加情報を受け取って組み立てる
+    public func notifyCompleted(
+        houseworkDate: Date,
+        now: Date,
+        cohabitantId: String,
+        content: @escaping @Sendable (HouseworkCompletedNotificationData) -> PushNotificationContent
+    ) {
         let calendar = calendar
         Task.detached {
             do {
@@ -191,7 +200,7 @@ public final class HouseworkListStore {
                     now: now,
                     calendar: calendar
                 ) { data in
-                    try await self.cohabitantPushNotificationClient.sendSilent(cohabitantId, data.payload)
+                    try await self.cohabitantPushNotificationClient.send(cohabitantId, content(data))
                 }
             } catch {
                 print("failed to notify cohabitants of completed housework: \(error)")

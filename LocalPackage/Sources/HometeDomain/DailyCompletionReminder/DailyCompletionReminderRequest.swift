@@ -89,7 +89,7 @@ private extension DailyCompletionReminderRequest {
     /// 1日1回の制限を外して予約するときに、日の識別子と予約ごとの値を区切る文字
     static let multiplePerDaySeparator = "#"
 
-    /// 予約したきっかけと時刻を表す一文（例: `[DEBUG] サイレント通知 / 14:03予約`）
+    /// 予約したきっかけと時刻を表す一文（例: `[DEBUG] 通知拡張 / 14:03予約`）
     static func debugNote(trigger: DailyCompletionReminderTrigger, now: Date, calendar: Calendar) -> String {
         let components = calendar.dateComponents([.hour, .minute], from: now)
         let time = String(format: "%02d:%02d", components.hour ?? .zero, components.minute ?? .zero)

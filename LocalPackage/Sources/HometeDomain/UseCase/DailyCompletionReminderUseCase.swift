@@ -9,7 +9,7 @@ import Foundation
 ///
 /// 予約のきっかけは2つある。
 /// - アプリで家事の一覧を購読している間に、今日の完了家事が見つかったとき（`syncToday`）
-/// - アプリが起動していない間に、同居人から今日の家事の完了を知らせるサイレント通知が届いたとき
+/// - 同居人から今日の家事の完了通知が届いたとき（Notification Service Extensionが起動するため、アプリが終了していてもよい）
 ///   （`handleCompleted`）
 ///
 /// 同居人の端末へのきっかけは、家事を完了した端末が`notifyCompletedIfNeeded`で送る。
@@ -54,7 +54,7 @@ public final class DailyCompletionReminderUseCase: Sendable {
     }
 
     /// 同居人から家事の完了を知らせる通知を受け取ったときに、今日の家事なら今日の通知を予約する
-    /// - Note: アプリのサイレント通知の受信と、Notification Service Extension（古いアプリからの完了通知）から呼ぶ
+    /// - Note: Notification Service Extensionから呼ぶ
     /// - Parameter trigger: 呼び出し元の経路。1日1回の制限を外している間だけ通知の本文に載せる
     public func handleCompleted(
         _ data: HouseworkCompletedNotificationData,
@@ -69,14 +69,14 @@ public final class DailyCompletionReminderUseCase: Sendable {
         await scheduleToday(now: now, calendar: calendar, trigger: trigger)
     }
 
-    /// 同居人へ家事の完了を知らせるサイレント通知を、必要なときだけ送る
+    /// 同居人へ家事の完了通知を、必要なときだけ送る
     ///
     /// 受け取った端末は今日の家事の完了でしか予約しないため、今日以外の家事では送らない。
     /// また、受け取った端末の予約は1日1件で足りるため、この端末からは1日1回だけ送る。
     /// 送信に失敗した場合は送信済みにせず、次の完了で送り直す。
     /// - Note: 端末ごとに記録するため、同居人も家事を完了すればその端末からも1回送られる（ベストエフォート）。
     ///         1日1回の制限を外している間（デバッグ用）は、受け取った端末で予約が積まれるよう毎回送る
-    /// - Parameter send: サイレント通知を送る処理
+    /// - Parameter send: 完了通知を送る処理
     public func notifyCompletedIfNeeded(
         houseworkDate: Date,
         now: Date,

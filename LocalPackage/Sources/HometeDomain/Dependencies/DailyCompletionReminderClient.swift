@@ -16,9 +16,9 @@ public struct DailyCompletionReminderClient: Sendable {
     public let loadCompletedDayIdentifier: @Sendable () async -> String?
     /// 完了した家事があると分かった日の通知識別子を保存する（`nil`で消去）
     public let saveCompletedDayIdentifier: @Sendable (String?) async -> Void
-    /// 同居人へ家事の完了を知らせるサイレント通知を最後に送った日の通知識別子を読み出す
+    /// 同居人へ家事の完了通知を最後に送った日の通知識別子を読み出す
     public let loadCompletedSignalSentDayIdentifier: @Sendable () async -> String?
-    /// 同居人へ家事の完了を知らせるサイレント通知を送った日の通知識別子を保存する
+    /// 同居人へ家事の完了通知を送った日の通知識別子を保存する
     public let saveCompletedSignalSentDayIdentifier: @Sendable (String) async -> Void
     /// 1日1回の制限を外しているかを読み出す（デバッグメニュー用）
     public let loadIsDailyLimitDisabled: @Sendable () async -> Bool

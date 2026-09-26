@@ -5,11 +5,10 @@
 
 import Foundation
 
-/// 家事の完了を同居人へ知らせるサイレント通知に載せる付加情報
+/// 家事の完了を同居人へ知らせる通知に載せる付加情報
 ///
 /// 完了した家事が「今日」の家事かどうかを、受け取った端末で判定するために使う。
 /// FCMのdataは文字列の値しか持てないため、文字列の辞書との相互変換を持つ。
-/// - Note: 古いアプリは同じdataを表示する完了通知に載せて送るため、Notification Service Extensionでも読む
 public struct HouseworkCompletedNotificationData: Equatable, Sendable {
 
     /// 完了した家事の日付（`HouseworkIndexedDate.value`）
