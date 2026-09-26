@@ -71,7 +71,6 @@ struct SettingMenuItemTest {
         arguments: [
             (SettingMenuItem.memberInvitation, "メンバー招待"),
             (SettingMenuItem.taskTemplate, "家事テンプレート"),
-            (SettingMenuItem.dailyCompletionReminder, "ふりかえり通知"),
             (SettingMenuItem.termsOfService, "利用規約"),
             (SettingMenuItem.privacyPolicy, "プライバシーポリシー"),
             (SettingMenuItem.license, "ライセンス"),
@@ -98,7 +97,7 @@ struct SettingMenuItemTest {
         #expect(actual == LocalizedStringKey(expectedTitle))
     }
 
-    @Test("グループ参加済みかつ招待リンクを使える場合、メンバー招待・家事テンプレート・ふりかえり通知項目を含む表示項目が返る")
+    @Test("グループ参加済みかつ招待リンクを使える場合、メンバー招待と家事テンプレート項目を含む表示項目が返る")
     func displayItems_registeredGroupAndAvailableLink_includesInvitationAndTaskTemplate() {
         // Arrange
 
@@ -106,7 +105,6 @@ struct SettingMenuItemTest {
             .memberInvitation,
             .taskTemplate,
             .notificationPermission,
-            .dailyCompletionReminder,
             .premiumPlan,
             .termsOfService,
             .privacyPolicy,
@@ -129,7 +127,7 @@ struct SettingMenuItemTest {
         #expect(actual == expected)
     }
 
-    @Test("グループ未参加の場合、メンバー招待・家事テンプレート・ふりかえり通知項目を除いた表示項目が返る")
+    @Test("グループ未参加の場合、メンバー招待と家事テンプレート項目を除いた表示項目が返る")
     func displayItems_notRegisteredGroup_excludesInvitationAndTaskTemplate() {
         // Arrange
 
@@ -164,7 +162,6 @@ struct SettingMenuItemTest {
         var expected: [SettingMenuItem] = [
             .taskTemplate,
             .notificationPermission,
-            .dailyCompletionReminder,
             .premiumPlan,
             .termsOfService,
             .privacyPolicy,

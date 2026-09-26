@@ -7,20 +7,18 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-/// ふりかえり通知の設定画面（依存の取得と状態の保持を担う）
+/// 通知が許可されているときの通知設定画面（依存の取得と状態の保持を担う）
+/// - Note: 通知の権限がある場合にだけ`SettingNotificationScreen`から表示される
 struct DailyCompletionReminderSettingScreen: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
-    @Environment(\.appDependencies.notificationPermissionClient) var notificationPermissionClient
 
     @State var setting: DailyCompletionReminderSetting?
-    @State var isNotificationDenied = false
 
     var body: some View {
         DailyCompletionReminderSettingView(
             setting: setting ?? .initial,
-            isNotificationDenied: isNotificationDenied,
             calendar: calendar,
             onChangeEnabled: { isEnabled in
                 Task {
@@ -52,17 +50,7 @@ private extension DailyCompletionReminderSettingScreen {
         let current = setting ?? .initial
         let updated = current.updateIsEnabled(isEnabled)
         setting = updated
-        // 権限ダイアログの応答を待つ間にトグルを戻されても、保存順が画面の操作順とずれないよう先に保存する
         await dailyCompletionReminderUseCase.updateSetting(updated, now: .now, calendar: calendar)
-
-        guard isEnabled else {
-            isNotificationDenied = false
-            return
-        }
-        // 権限が決定済みの場合はダイアログを出さずに現在の許可状態が返る
-        let isGranted = await notificationPermissionClient.requestAuthorization()
-        // 応答を待つ間に無効へ戻された場合は、案内を出さない
-        isNotificationDenied = !isGranted && setting?.isEnabled == true
     }
 
     func changedTime(hour: Int, minute: Int) async {
@@ -74,39 +62,32 @@ private extension DailyCompletionReminderSettingScreen {
 
 }
 
-/// ふりかえり通知の設定画面の表示
+/// 通知が許可されているときの通知設定画面の表示
 struct DailyCompletionReminderSettingView: View {
 
     let setting: DailyCompletionReminderSetting
-    let isNotificationDenied: Bool
     let calendar: Calendar
     let onChangeEnabled: (Bool) -> Void
     let onChangeTime: (_ hour: Int, _ minute: Int) -> Void
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: .space24) {
+            VStack(alignment: .leading, spacing: .space8) {
+                sectionHeader
+                settingCard
                 Text(
                     "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。"
                 )
-                    .font(with: .body)
-                    .foregroundStyle(.onSurface)
-                settingCard
-                if isNotificationDenied {
-                    Text(
-                        "通知がオフになっているため、お知らせが届きません。設定の「通知設定」から通知を許可してください。"
-                    )
-                        .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
-                }
+                    .font(with: .caption)
+                    .foregroundStyle(.onSubSurface)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space16)
         }
-        .navigationTitle("ふりかえり通知")
+        .navigationTitle("通知設定")
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
-        .trackScreenView(.settingDailyCompletionReminder)
+        .trackScreenView(.settingNotification)
     }
 
 }
@@ -115,17 +96,28 @@ struct DailyCompletionReminderSettingView: View {
 
 private extension DailyCompletionReminderSettingView {
 
+    var sectionHeader: some View {
+        HStack(spacing: .space8) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.onSurface)
+            Text("毎日の家事のふりかえり")
+                .font(with: .headLineS)
+                .foregroundStyle(.onSurface)
+            Spacer()
+        }
+    }
+
     var settingCard: some View {
         VStack(spacing: .space8) {
             Toggle(isOn: enabledBinding) {
-                Text("お知らせを受け取る")
+                Text("ふりかえりの通知を受け取る")
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
             }
             if setting.isEnabled {
                 Divider()
                 DatePicker(selection: timeBinding, displayedComponents: .hourAndMinute) {
-                    Text("お知らせする時刻")
+                    Text("毎日の通知時刻")
                         .font(with: .headLineS)
                         .foregroundStyle(.onSurface)
                 }
@@ -161,7 +153,6 @@ private extension DailyCompletionReminderSettingView {
     NavigationStack {
         DailyCompletionReminderSettingView(
             setting: .init(isEnabled: false, hour: 21, minute: 0),
-            isNotificationDenied: false,
             calendar: .japanese,
             onChangeEnabled: { _ in },
             onChangeTime: { _, _ in }
@@ -173,19 +164,6 @@ private extension DailyCompletionReminderSettingView {
     NavigationStack {
         DailyCompletionReminderSettingView(
             setting: .init(isEnabled: true, hour: 21, minute: 30),
-            isNotificationDenied: false,
-            calendar: .japanese,
-            onChangeEnabled: { _ in },
-            onChangeTime: { _, _ in }
-        )
-    }
-}
-
-#Preview("DailyCompletionReminderSettingView_通知オフ") {
-    NavigationStack {
-        DailyCompletionReminderSettingView(
-            setting: .init(isEnabled: true, hour: 21, minute: 30),
-            isNotificationDenied: true,
             calendar: .japanese,
             onChangeEnabled: { _ in },
             onChangeTime: { _, _ in }

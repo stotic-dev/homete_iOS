@@ -14,10 +14,8 @@ enum SettingRoute: Hashable {
     case licenseDetail(OSSLicense)
     /// サブスクリプション管理画面
     case subscriptionManagement
-    /// 通知権限画面
+    /// 通知設定画面（権限が無い場合は権限の案内、ある場合はふりかえり通知の設定）
     case notificationPermission
-    /// ふりかえり通知の設定画面
-    case dailyCompletionReminder
     #if DEBUG
     /// デバッグメニュー画面
     case debugMenu

@@ -42,10 +42,7 @@ private extension SettingViewScreen {
             SubscriptionManagementView()
 
         case .notificationPermission:
-            SettingNotificationPermissionGuideView()
-
-        case .dailyCompletionReminder:
-            DailyCompletionReminderSettingScreen()
+            SettingNotificationScreen()
 
         #if DEBUG
         case .debugMenu:
@@ -256,9 +253,6 @@ private extension SettingView {
 
         case .notificationPermission:
             navigationPath.push(.notificationPermission)
-
-        case .dailyCompletionReminder:
-            navigationPath.push(.dailyCompletionReminder)
 
         case .memberInvitation:
             loadingState.task {
