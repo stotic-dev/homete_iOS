@@ -20,7 +20,7 @@
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0020](adr/0020-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
-| `hometeNotificationService`（拡張ターゲット） | 家事の承認通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
+| `hometeNotificationService`（拡張ターゲット） | 家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
 
 ### ディレクトリ構成
 
@@ -64,7 +64,7 @@ homete（メインターゲット）/
   └── HometeApp.swift（アプリエントリーポイント）
 
 hometeNotificationService（拡張ターゲット）/
-  └── NotificationService.swift（承認通知の受信時にふりかえり通知を予約）
+  └── NotificationService.swift（完了通知の受信時にふりかえり通知を予約）
 ```
 
 ## モジュール間の依存関係

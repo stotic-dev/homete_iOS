@@ -109,7 +109,7 @@ Domain Models（Codable構造体）
 
 **エントリーポイント:**
 - `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
-- `hometeNotificationService/NotificationService.swift` - Notification Service Extension。家事の承認通知を受けて、今日のふりかえり通知を予約する（[ADR-0020](doc/adr/0020-daily-completion-reminder-on-device.md)）
+- `hometeNotificationService/NotificationService.swift` - Notification Service Extension。家事の完了通知を受けて、今日のふりかえり通知を予約する（[ADR-0020](doc/adr/0020-daily-completion-reminder-on-device.md)）
 - `LocalPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
 - `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
 
