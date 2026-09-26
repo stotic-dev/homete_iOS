@@ -141,4 +141,35 @@ struct CohabitantStoreTest {
         }
     }
 
+    @Test("購読の準備中に解除された場合は、購読を張らずに解除する")
+    func addSnapshotListenerIfNeededAbortsWhenRemovedDuringSetup() async {
+        await confirmation("明示的な解除と、準備した購読の畳み込みで2回解除される", expectedCount: 2) { confirmation in
+            // Arrange
+
+            let gate = TestGate()
+            let store = CohabitantStore(
+                cohabitantClient: .init(
+                    addSnapshotListener: { _, _ in
+                        await gate.wait()
+                        return .init { $0.finish() }
+                    },
+                    removeSnapshotListener: { _ in
+                        confirmation()
+                    }
+                )
+            )
+
+            // Act: 購読の準備中にサインアウト（解除）が割り込んだ状況を再現する
+
+            let task = Task { await store.addSnapshotListenerIfNeeded(inputCohabitantId) }
+            await gate.waitUntilArrived()
+            await store.removeSnapshotListener()
+            gate.open()
+
+            await task.value
+
+            // Assert: removeSnapshotListenerが2回呼ばれる（confirmationで検証）
+        }
+    }
+
 }

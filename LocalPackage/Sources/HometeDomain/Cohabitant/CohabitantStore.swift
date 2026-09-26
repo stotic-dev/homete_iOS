@@ -16,6 +16,8 @@ public final class CohabitantStore {
     /// スナップショットリスナーの購読状態
     public private(set) var loadState: ListenerLoadState = .loading
     private var listenerTask: Task<Void, Never>?
+    /// 購読の世代。準備中に解除・破棄が走ったかどうかの判定に使う
+    private var listenerGeneration = 0
 
     private let cohabitantListenerKey = "cohabitantListenerKey"
 
@@ -42,11 +44,20 @@ public final class CohabitantStore {
         // すでに監視中の場合は何もしない
         if listenerTask != nil { return }
 
+        listenerGeneration += 1
+        let generation = listenerGeneration
         loadState = .loading
         let stream = await cohabitantClient.addSnapshotListener(
             cohabitantListenerKey,
             cohabitantId
         )
+
+        // 購読の準備中に解除・サインアウトが走った場合、`listenerTask`が未設定のため解除は空振りする。
+        // そのまま購読を張ると権限を失ったグループIDのまま残るので、ここで畳む
+        guard generation == listenerGeneration else {
+            await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
+            return
+        }
 
         listenerTask = Task {
             do {
@@ -82,6 +93,8 @@ public final class CohabitantStore {
     }
 
     public func removeSnapshotListener() async {
+        // 準備中の購読があれば、再開しても張られないよう世代を進める
+        listenerGeneration += 1
         listenerTask?.cancel()
         await listenerTask?.value
         listenerTask = nil
