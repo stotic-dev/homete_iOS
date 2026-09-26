@@ -105,7 +105,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         _: UNUserNotificationCenter,
         willPresent _: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.sound]
+        // アプリ起動中でも同居人の家事完了などに気づけるよう、バナーと通知センターにも表示する
+        [.banner, .list, .sound]
     }
 
 }
