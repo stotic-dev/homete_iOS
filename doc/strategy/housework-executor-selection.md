@@ -17,6 +17,8 @@
 
 家事を「完了にする」ときに、担当者（実行者）を選べるようにする。自分以外や複数人も選べる。家事をしてもアプリで完了にしない人の分を、他の人が代わりに記録できるようにするのと、2人以上で手分けした家事のポイントを割合で分けられるようにするのが目的。
 
+あわせて、完了とありがとうの入力画面をハーフモーダルにそろえる。完了時にはコメントも添えられるようにする。
+
 Issue起票時点では承認フローがあったため「承認依頼」と書かれているが、[#292](remove-approval-state.md)で承認は廃止済み。本対応では「完了にする」操作に担当者の選択を追加する。
 
 ## 要件
@@ -25,11 +27,13 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
 
 #### 担当者の選択
 
-1. 家事詳細の「完了にする」をタップすると、担当者を選ぶシートを出す
+1. 「完了にする」をタップすると、**完了用のハーフモーダル**（担当者の設定＋任意のコメント欄）を出す
+   - 表示元は、家事詳細の「完了にする」と、**クイックアクション（長押しメニュー）の「完了にする」（1件）**
    - 同居人グループのメンバーを複数選べる。初期状態では自分だけ選んでおく
    - 自分を外して、他の人だけを担当者にしてもよい
    - 選択が0人のときは「完了にする」を押せない
-2. **クイックアクション（長押しメニュー・一括完了）は今までどおり**、自分だけを担当者にして即完了にする（配分100%）
+   - コメントは任意。空のままでも完了にできる
+2. **複数選択の一括完了は今までどおり**、コメントなし・自分だけを担当者（配分100%）にして即完了にする
 3. 完了済みの家事の担当者を後から変える機能は、今回は入れない（未完了に戻して、完了にし直せば変えられる）
 
 #### ポイントの配分
@@ -56,13 +60,30 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
 10. 貢献度（`ContributionFeature`）と今日のサマリー（`TodayHouseworkSummary`）は、担当者ごとに配分されたポイントで集計する。達成件数は担当者1人につき1件と数える
 11. 「ありがとう」は、担当者に自分以外が1人でも含まれていれば送れる
 
+#### ありがとうの画面
+
+12. 家事詳細の「ありがとうを伝える」は、今のフルスクリーン表示（`HouseworkThanksView`）をやめて、**完了用と同じ見た目のハーフモーダル**に変える
+    - 中身はコメント欄と送信ボタンだけ。家事の内容（`HouseworkItemPropertyListContent`）や「◯◯さんが〜終えてくれました」のセクションは出さない
+    - コメントは今までどおり必須
+    - 担当者の設定は出さない
+13. クイックアクションの「ありがとう」（1件・一括）は今までどおり、定型文でワンタップ送信する
+
+#### ハーフモーダル共通
+
+14. `.presentationDetents([.medium, .large])` にする。配分の調整を開くと中身が増えるので、ドラッグで広げられるようにする
+
 #### 通知
 
-12. 担当者が自分だけのときは、今までどおりの完了通知（「◯◯さんが家事を終えました」）を送る
-13. 担当者に自分以外が含まれるときは、代わりに記録したことが分かる文言にする
+15. 担当者が自分だけのときは、今までどおりの完了通知（「◯◯さんが家事を終えました」）を送る
+16. 担当者に自分以外が含まれるときは、代わりに記録したことが分かる文言にする
     - タイトル：`◯◯さんが家事の完了を記録しました`
     - 本文：`「洗濯」（担当：Bさん・Cさん）`
-    - 通知の送り先（自分以外の同居人全員）と、ふりかえり通知の予約用データ（`HouseworkCompletedNotificationData`）は変えない
+    - 通知の送り先（自分以外の同居人全員）は変えない
+17. 完了時にコメントを入力したときは、本文の末尾に改行してコメントを付ける
+18. **コメントを入力した完了は、毎回通知を送る**（ADR-0021の「1日1回」の対象外にする）
+    - ふりかえり通知の予約用データ（`HouseworkCompletedNotificationData`）は、今までどおり「今日の家事で、その日まだ送っていない」ときだけ付ける
+    - コメントなしの完了は、今までどおり1日1回だけ送る
+    - コメントは「ありがとう」と同じく、ユーザーが明示的に送ったメッセージなので、送る回数を絞る対象から外す
 
 ### 非機能要件 / 制約
 
@@ -137,6 +158,7 @@ public func complete(
     now: Date,
     operator: Account,               // 操作した人（通知の送り主）
     executors: [HouseworkExecutor],  // 担当者
+    comment: String?,                // 完了通知に添えるコメント（任意）
     cohabitantId: String,
     isRegistered: Bool,
     step: HouseworkAnalyticsStep,
@@ -144,12 +166,27 @@ public func complete(
 ) async throws
 ```
 
+- 引数に `comment: String?` を追加する。空文字は `nil` として扱う
 - 通知は `executors` が「自分だけ」かどうかで `completedMessage` と `proxyCompletedMessage`（新規）を使い分ける。担当者名の解決には `CohabitantMemberList` が要るため、担当者名の配列を引数で受け取る
-- クイックアクション（`HouseworkListStore+QuickAction.swift`）は、自分に100%を配分した1件の `executors` を渡すだけにする
+- 一括完了（`performBulk`）は、自分に100%を配分した1件の `executors` を渡し、コメントなしで呼ぶ
 
-### 4. UI：担当者選択シート
+### 3-1. 完了通知の送り方（`DailyCompletionReminderUseCase`）
 
-`LocalPackage/Sources/Features/HouseworkFeature/HouseworkExecutorSelection/HouseworkExecutorSelectionView.swift`（新規）
+`LocalPackage/Sources/HometeDomain/UseCase/DailyCompletionReminderUseCase.swift`
+
+コメントの有無で送る条件を分ける。
+
+| | 今日の家事で、その日まだ送っていない | それ以外 |
+|---|---|---|
+| コメントなし | 予約用データ付きで送る（今までどおり） | 送らない（今までどおり） |
+| コメントあり | 予約用データ付きで送る | **予約用データなしで送る**（新規） |
+
+- `notifyCompletedIfNeeded` に「必ず送るかどうか」の引数を足すか、予約用データを `Optional` にして送る関数を分ける。どちらにするかは実装時に決める
+- 予約用データを付けたときだけ「その日送った」を記録する。コメントのために予約用データなしで送ったときは記録しない
+
+### 4. UI：完了用ハーフモーダル
+
+`LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift`（新規）
 
 ```
 担当者
@@ -163,12 +200,31 @@ public func complete(
      Cさん [ 33% ▾ ]
      合計 100 / 100%
  （エラー表示）
+コメント（任意）
+ [ ひとこと添えましょう              ]
 [ 完了にする ]
 ```
 
-- `HouseworkDetailActionContent` の「完了にする」から `.sheet` で表示する。確定したら `houseworkListStore.complete` を呼んでシートを閉じる
+- 家事詳細の「完了にする」（`HouseworkDetailActionContent`）と、クイックアクションの「完了にする」（`HouseworkQuickActionMenuContent`）から `.sheet` で表示する。確定したら `houseworkListStore.complete` を呼んでシートを閉じる
+- クイックアクションは `.contextMenu` の中身なので、そこから直接シートは出せない。メニューで「完了にする」を選んだら、対象の家事を親View（家事ボード・ダッシュボード）の `@State` に渡して `.sheet(item:)` で表示する。そのため `HouseworkQuickActionMenuContent` に、完了を選んだことを親に伝えるクロージャを追加する
 - %のピッカーは、既存の `PointWheelPickerField` と同じホイール形式で、`1...99` の範囲にする。共通化できそうなら `HometeUI` に `PercentageWheelPickerField` として切り出す
 - 状態は `HouseworkExecutorAllocation` を `@State` で持つ。判定は全部ドメイン側で行い、Viewは結果を表示するだけにする（`presentation-logic-placement` ルール）
+- `.presentationDetents([.medium, .large])`
+
+### 4-1. UI：ありがとう用ハーフモーダル
+
+`LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift`（修正）
+
+```
+ありがとうを伝える
+ [ 感謝を伝えましょう！              ]
+[ ありがとうを伝える ]
+```
+
+- `HouseworkDetailActionContent` からの表示を `.fullScreenCoverOnIOS` から `.sheet` に変える
+- 中身はコメント欄と送信ボタンだけにする。家事の内容と「◯◯さんが〜終えてくれました」のセクションを削除する。NavigationStack・閉じるボタンも削除する（ドラッグで閉じられるため）
+- コメント欄と送信ボタンの見た目は、完了用ハーフモーダルと部品を共通化する
+- スクリーン計測（`.trackScreenView(.houseworkThanks)`）はそのまま残す
 
 ### 5. 集計・表示の置き換え
 
@@ -178,7 +234,6 @@ public func complete(
 | `TodayHouseworkSummary.memberContributions` | 同上 | 同上 |
 | `HouseworkBoardItem.canSendThanks` | `executorId != ownUserId` | `executors` に自分以外が含まれる |
 | `HouseworkDetailItemListContent` | 実施者1人の名前 | 担当者全員。2人以上なら%とポイントも |
-| `HouseworkThanksView` | 実施者1人の名前 | 自分以外の担当者の名前を「・」でつないで表示 |
 
 ### 6. Analytics
 
@@ -206,11 +261,14 @@ public func complete(
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/TodayHouseworkSummary.swift` | 担当者ごとの集計 |
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkListStore+QuickAction.swift` | 自分だけに100%で完了 |
 | 修正Model | `LocalPackage/Sources/Features/ContributionFeature/Model/HouseworkContribution.swift` | 担当者ごとの集計 |
-| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkExecutorSelection/HouseworkExecutorSelectionView.swift` | 担当者選択シート |
+| 修正UseCase | `LocalPackage/Sources/HometeDomain/UseCase/DailyCompletionReminderUseCase.swift` | コメントありの完了は毎回送る |
+| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 完了用ハーフモーダル（担当者の設定＋コメント） |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | 「完了にする」（1件）を親に伝えてハーフモーダルを出す |
+| 修正View | 家事ボード・ダッシュボードのクイックアクション呼び出し元 | 完了用ハーフモーダルを `.sheet(item:)` で表示 |
 | 新規View（任意） | `LocalPackage/Sources/HometeUI/Components/Picker/PercentageWheelPickerField.swift` | %のホイールピッカー |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift` | 「完了にする」でシートを表示 |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift` | 完了用・ありがとう用のハーフモーダルを `.sheet` で表示 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift` | 担当者全員の表示 |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift` | 担当者名の表示 |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift` | コメント欄だけのハーフモーダルにする |
 | ドキュメント | `doc/analytics_events.md` | `executor_type` の追加 |
 
 ## タスク
@@ -224,19 +282,25 @@ public func complete(
 - [x] 0ptの担当者は許さない（確定させない／人数の上限を家事のポイントにする）
 - [x] 3人以上のときは他の人の%を自動で変えず、合計100%になるまで確定させない
 - [x] 担当者を後から変える機能は入れない
-- [x] クイックアクションは自分だけに100%で即完了のまま
+- [x] 「完了にする」（家事詳細・クイックアクション1件）は、担当者の設定と任意コメントのハーフモーダルを出す
+- [x] 一括完了は、コメントなし・自分だけに100%で即完了のまま
+- [x] ありがとう（家事詳細）はコメント欄だけのハーフモーダルにする。クイックアクションのありがとうは定型文のまま
+- [x] コメントありの完了は、1日1回の条件に関係なく毎回通知を送る
 - [x] データモデルは割合とポイントの両方を担当者ごとに保存する（ADR-0022）
 
 ### Phase 2: 実装
 
 - [ ] `HouseworkExecutor` と `HouseworkItem.executors`（旧データとの互換デコード・`executorId` との二重書き込み）＋テスト
 - [ ] `HouseworkExecutorAllocation`（均等割り・%の調整・最大剰余方式・検証）＋テスト
-- [ ] `HouseworkListStore.complete` の引数変更と、代わりに記録したときの通知文言＋テスト
-- [ ] クイックアクションの呼び出しを追従させる
+- [ ] `HouseworkListStore.complete` の引数変更（担当者・コメント）と、代わりに記録したときの通知文言＋テスト
+- [ ] `DailyCompletionReminderUseCase`：コメントありの完了は毎回送る＋テスト
+- [ ] 一括完了の呼び出しを追従させる
 - [ ] 貢献度・今日のサマリーの集計を担当者ごとに変える＋テスト
 - [ ] `canSendThanks` の判定変更＋テスト
-- [ ] 担当者選択シート（`HouseworkExecutorSelectionView`）とPreview
-- [ ] 家事詳細・ありがとう画面の担当者表示とPreview
+- [ ] 完了用ハーフモーダル（`HouseworkCompleteSheet`）とPreview
+- [ ] 家事詳細・クイックアクション（1件）から完了用ハーフモーダルを表示
+- [ ] ありがとう画面をコメント欄だけのハーフモーダルにする＋Preview
+- [ ] 家事詳細の担当者表示とPreview
 - [ ] Analyticsの `executor_type` 追加と `doc/analytics_events.md` の更新
 
 ### Phase 3: 検証
@@ -245,7 +309,7 @@ public func complete(
 - [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
 - [ ] ユニットテスト実行（追加分含む）通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
-- [ ] 実機/シミュレータで動作確認（自分だけ・他人だけ・3人で配分調整の3パターン）
+- [ ] 実機/シミュレータで動作確認（詳細から自分だけ・クイックアクションから他人だけ・3人で配分調整＋コメントの3パターン）
 
 ### Phase 4: PR
 
