@@ -15,6 +15,8 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
     case remove
     /// ありがとう（完了した家事に感謝を伝える。ステータスは変わらない）
     case sendThanks
+    /// もう一度やった（完了した家事と同じ家事を、完了済みとして新しく登録する。元の家事は変わらない）
+    case redo
     /// 未完了に戻す（完了 → 未完了）
     case returnToIncomplete
 
@@ -30,6 +32,8 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
             "やらない"
         case .sendThanks:
             "ありがとう"
+        case .redo:
+            "もう一度やった"
         case .returnToIncomplete:
             "未完了に戻す"
         }
@@ -43,6 +47,8 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
             "trash"
         case .sendThanks:
             "hands.clap.fill"
+        case .redo:
+            "arrow.clockwise"
         case .returnToIncomplete:
             "arrow.uturn.backward"
         }
@@ -52,7 +58,7 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
         switch self {
         case .remove:
             .destructive
-        case .complete, .sendThanks, .returnToIncomplete:
+        case .complete, .sendThanks, .redo, .returnToIncomplete:
             nil
         }
     }
@@ -66,7 +72,7 @@ extension HouseworkQuickAction {
         switch self {
         case .sendThanks:
             "ありがとう！"
-        case .complete, .remove, .returnToIncomplete:
+        case .complete, .remove, .redo, .returnToIncomplete:
             ""
         }
     }
@@ -74,15 +80,30 @@ extension HouseworkQuickAction {
     /// 一括操作で相手に送る、まとめ通知の内容
     ///
     /// 家事ごとに個別通知を送ると件数分の通知が届いてしまうため、一括操作では対象件数をまとめた
-    /// 1件の通知のみを送る。相手に何も通知しないアクション（やらない・未完了に戻す）は`nil`。
+    /// 1件の通知のみを送る。相手に表示する通知を送らないアクション（完了・やらない・未完了に戻す）は`nil`。
+    /// - Note: 完了はふりかえり通知の予約を兼ねた完了通知を、1日1回だけ送る（`performBulk`）
     func bulkNotification(count: Int, senderName: String) -> PushNotificationContent? {
         switch self {
-        case .complete:
-            .completedBulkMessage(executorName: senderName, count: count)
         case .sendThanks:
             .thanksBulkMessage(senderName: senderName, count: count)
-        case .remove, .returnToIncomplete:
+        case .complete, .remove, .redo, .returnToIncomplete:
             nil
+        }
+    }
+
+}
+
+extension HouseworkQuickAction {
+
+    /// 複数選択の一括操作で行えるかどうか
+    ///
+    /// もう一度やったは、選択した件数分の家事がまとめて増えてしまうため一括操作の対象にしない
+    var isAvailableInBulk: Bool {
+        switch self {
+        case .redo:
+            false
+        case .complete, .remove, .sendThanks, .returnToIncomplete:
+            true
         }
     }
 
@@ -98,7 +119,9 @@ extension HouseworkQuickAction {
 
         // 自分が終えた家事に自分でありがとうを送れてしまわないようにする
         case .completed:
-            item.canSendThanks(ownUserId: ownUserId) ? [.sendThanks, .returnToIncomplete] : [.returnToIncomplete]
+            item.canSendThanks(ownUserId: ownUserId)
+                ? [.sendThanks, .redo, .returnToIncomplete]
+                : [.redo, .returnToIncomplete]
 
         case .notTodo:
             []

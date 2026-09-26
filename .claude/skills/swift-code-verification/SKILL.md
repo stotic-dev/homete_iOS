@@ -1,6 +1,6 @@
 ---
 name: swift-code-verification
-description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。ビルド・SwiftLint・ユニットテストを順番に実行する（VRT/スナップショットテストはCIに任せてローカルでは実行しない）。Swiftファイルを編集・作成・削除した直後に必ず使う。
+description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。ビルド・SwiftLint・ユニットテストを順番に実行する（VRT/スナップショットテストはCIに任せてローカルでは実行しない）。Swiftファイルを編集・作成・削除した直後に必ず使う。ビルド・テストを流すか迷ったとき（Package.swiftやツール設定の変更など）も、影響範囲から要否を判断するためにこのスキルを参照する。
 ---
 
 # Swiftコード変更後の検証スキル
@@ -8,7 +8,26 @@ description: homete iOSプロジェクトのSwiftコード変更後の検証フ�
 ## 対象タイミング
 
 Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず以下の検証を順番に実行する。
-**ユニットテスト（手順3）は省略不可。必ず実行すること。**
+**Swiftのコードを変更した場合、ユニットテスト（手順3）は省略不可。必ず実行すること。**
+
+### 影響範囲による要否の判断（実行前に必ず見極める）
+
+検証は1回が高コスト（初回ビルドは10分以上、`make test-packages` は5ターゲット）。変更がSwiftのビルド結果に影響しないのにフル検証を流すと、待ち時間が丸ごと無駄になる。**流す前に「この変更でビルド・テストの結果が変わりうるか」を考え、必要な手順だけを選ぶ。**
+
+| 変更内容 | 必要な検証 |
+|---|---|
+| Swift実装（`LocalPackage/Sources/`、`homete/`） | 手順1〜3すべて（テスト省略不可） |
+| テストコードのみ（`LocalPackage/Tests/`） | 手順3（テスト実行がビルドを兼ねる）＋手順2 |
+| `LocalPackage/Package.swift`・`ProjectTools/`・`.swiftlint.yml`・`.swiftformat`・SwiftGen設定 | 影響するビルド・lint・formatを流す（ビルド設定なので実際に通るかが確認対象） |
+| Swiftに影響しないもの（`.config/wt.toml` などのツール設定、`.claude/`、`doc/`・`CLAUDE.md`、`firebase/functions/`、GitHub Actions、Swiftビルドから呼ばれないスクリプト） | **このスキルの検証は不要** |
+
+Swiftに影響しない変更では、ビルドやテストの代わりに**変更したもの自体が動くか**を最小限で確かめる。例:
+
+- wtのフック設定 → `wt hook show` でパースできるか、`wt hook <type> --dry-run` で展開結果が正しいか。重いフック（LocalPackageの初回ビルドなど）を実際に最後まで流す必要はない
+- シェルスクリプト → `bash -n` での構文チェック、または対象コマンド単体の実行
+- JSON / YAML → `jq` などでのパース確認
+
+迷ったら「このファイルがSwiftのコンパイル・リンク・lintの入力になるか」で判断する。ならないなら流さない。
 
 このスキルは Bash コマンドを以下の許可ルール下で実行する想定（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`

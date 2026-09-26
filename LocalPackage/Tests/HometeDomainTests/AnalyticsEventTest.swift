@@ -4,6 +4,8 @@
 //  hometeTests
 //
 
+// swiftlint:disable file_length
+
 @testable import HometeDomain
 import Testing
 
@@ -146,6 +148,14 @@ struct AnalyticsEventTest {
                 ["action": "complete", "step": "board", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),
+                ["action": "redo", "step": "detail", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.redo(step: .board, isSuccess: false),
+                ["action": "redo", "step": "board", "result": "failure"]
+            ),
+            (
                 HouseworkAnalyticsAction.sendThanks(step: .thanks, isSuccess: true),
                 ["action": "send_thanks", "step": "thanks", "result": "success"]
             ),
@@ -218,6 +228,57 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.houseworkTemplate(action)
 
         #expect(actual == AnalyticsEvent(name: "housework_template", parameters: expectedParameters))
+    }
+
+    @Test(
+        "いつもの家事に関する行動を、action/step/resultのパラメータを持つfrequent_houseworkイベントに変換する",
+        arguments: [
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .management, isSuccess: true),
+                ["action": "create", "step": "management", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .register, isSuccess: false),
+                ["action": "create", "step": "register", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .template, isSuccess: true),
+                ["action": "create", "step": "template", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.edit(isSuccess: true),
+                ["action": "edit", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.delete(isSuccess: false),
+                ["action": "delete", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.importFromTemplate(isSuccess: true),
+                ["action": "import", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.limitReached(step: .register),
+                ["action": "limit_reached", "step": "register"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.createCategory(isSuccess: true),
+                ["action": "create_category", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.editCategory(isSuccess: false),
+                ["action": "edit_category", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.deleteCategory(isSuccess: true),
+                ["action": "delete_category", "result": "success"]
+            ),
+        ]
+    )
+    func frequentHousework(action: FrequentHouseworkAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.frequentHousework(action)
+
+        #expect(actual == AnalyticsEvent(name: "frequent_housework", parameters: expectedParameters))
     }
 
     @Test(

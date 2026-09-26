@@ -173,7 +173,7 @@ private extension HouseworkTemplateMetaDocument {
 /// デコードに失敗したドキュメントを`nil`として扱うラッパー
 ///
 /// `FirestoreService.fetch`は1件でもデコードに失敗すると全体が失敗する。毎月の家事は将来`rule.type`を
-/// 増やす想定なので、旧バージョンのアプリが新しい種類のルールを読んでも他の家事まで読めなくならないようにする（ADR-0020）。
+/// 増やす想定なので、旧バージョンのアプリが新しい種類のルールを読んでも他の家事まで読めなくならないようにする（ADR-0022）。
 /// SnapshotListener側は`FirestoreService.addSnapshotListener`が元から1件ずつ`try?`でデコードしているので、このラッパーは不要。
 /// 一方で`appendItem`の`Days`の読み取りは意図的に厳格にしている（読めなかった既存の家事を空として上書きしないため）。
 private struct LenientDecoded<Value: Decodable & Sendable>: Decodable {
@@ -184,27 +184,4 @@ private struct LenientDecoded<Value: Decodable & Sendable>: Decodable {
         value = try? Value(from: decoder)
     }
 
-}
-
-/// テンプレート編集中の各種リスナーはエラー発生時のUI表現をまだ持たないため、
-/// `FirestoreService`が返す`AsyncThrowingStream`をログ出力のうえ通常終了する`AsyncStream`へ変換する。
-///
-/// - Note: リスナーの戻り値型を`AsyncThrowingStream`や`Result`に変えると、Xcode 26.4.1の
-///         ランタイムでテストプロセスが不定のシグナルで落ちるため、既存の型のまま据え置いている。
-private func bridgingToNonThrowing<Output: Sendable>(
-    _ throwingStream: AsyncThrowingStream<Output, Error>
-) -> AsyncStream<Output> {
-    AsyncStream { continuation in
-        let task = Task {
-            do {
-                for try await value in throwingStream {
-                    continuation.yield(value)
-                }
-            } catch {
-                print("occurred error at addSnapshotListener(type: \(Output.self), error: \(error))")
-            }
-            continuation.finish()
-        }
-        continuation.onTermination = { _ in task.cancel() }
-    }
 }

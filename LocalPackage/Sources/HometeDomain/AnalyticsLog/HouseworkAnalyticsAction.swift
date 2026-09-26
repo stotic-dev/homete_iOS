@@ -26,6 +26,8 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     case register(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を完了にした
     case complete(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 完了した家事をもう一度やった
+    case redo(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 完了した家事にありがとうを伝えた
     case sendThanks(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を未完了に戻した
@@ -59,6 +61,7 @@ private extension HouseworkAnalyticsAction {
         switch self {
         case let .register(step, _),
              let .complete(step, _),
+             let .redo(step, _),
              let .sendThanks(step, _),
              let .returnIncomplete(step, _),
              let .delete(step, _):
@@ -74,6 +77,9 @@ private extension HouseworkAnalyticsAction {
 
         case .complete:
             "complete"
+
+        case .redo:
+            "redo"
 
         case .sendThanks:
             "send_thanks"
@@ -91,6 +97,7 @@ private extension HouseworkAnalyticsAction {
         switch self {
         case let .register(_, isSuccess),
              let .complete(_, isSuccess),
+             let .redo(_, isSuccess),
              let .sendThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
              let .delete(_, isSuccess):

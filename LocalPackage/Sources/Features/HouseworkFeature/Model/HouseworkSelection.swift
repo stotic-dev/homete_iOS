@@ -47,7 +47,7 @@ struct HouseworkSelection: Equatable {
         }
 
         let available = Set(selectedItems.flatMap(actions(for:)))
-        return HouseworkQuickAction.allCases.filter(available.contains)
+        return HouseworkQuickAction.allCases.filter { available.contains($0) && $0.isAvailableInBulk }
     }
 
     /// すでに選択されている家事と一緒に選択できるかどうか
