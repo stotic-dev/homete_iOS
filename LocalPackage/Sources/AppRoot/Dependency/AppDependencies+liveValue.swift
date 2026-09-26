@@ -24,7 +24,8 @@ public extension AppDependencies {
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,
         notificationGuideStateClient: .liveValue,
-        pasteboardClient: livePasteboardClient
+        pasteboardClient: livePasteboardClient,
+        debugAuthClient: liveDebugAuthClient
     )
 
 }
@@ -39,4 +40,11 @@ private let livePurchaseClient: PurchaseClient = .previewValue
 private let liveConsentClient: ConsentClient = .previewValue
 private let liveNotificationPermissionClient: NotificationPermissionClient = .previewValue
 private let livePasteboardClient: PasteboardClient = .previewValue
+#endif
+
+// デバッグメニューからしか使わないため、リリースビルドには実装を持ち込まない
+#if DEBUG
+private let liveDebugAuthClient: DebugAuthClient = .liveValue
+#else
+private let liveDebugAuthClient: DebugAuthClient = .previewValue
 #endif
