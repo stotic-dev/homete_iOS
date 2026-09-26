@@ -121,6 +121,9 @@ private extension DailyCompletionReminderSettingView {
                         .font(with: .headLineS)
                         .foregroundStyle(.onSurface)
                 }
+                // 時・分の変換に使うcalendarと表示のタイムゾーンを揃え、設定した時刻がずれて表示されないようにする
+                .environment(\.calendar, calendar)
+                .environment(\.timeZone, calendar.timeZone)
             }
         }
         .padding(.space16)
