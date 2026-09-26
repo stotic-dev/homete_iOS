@@ -21,6 +21,8 @@ struct FrequentHouseworkManagementView: View {
     let onTapClose: () -> Void
     let onTapAdd: () -> Void
     let onTapManageCategories: () -> Void
+    /// テンプレートから取り込む導線。テンプレートに家事がない場合は`nil`
+    let onTapImport: (() -> Void)?
     let onTapItem: (FrequentHouseworkItem) -> Void
     let onDelete: (FrequentHouseworkItem) -> Void
     /// カテゴリ内で並べ替えた後の家事IDの順
@@ -71,10 +73,8 @@ private extension FrequentHouseworkManagementView {
     @ViewBuilder
     func loadedContent() -> some View {
         if sections.isEmpty {
-            FrequentHouseworkEmptyView {
-                onTapAdd()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            FrequentHouseworkEmptyView(onTapAdd: onTapAdd, onTapImport: onTapImport)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             itemList()
         }
@@ -158,6 +158,13 @@ private extension FrequentHouseworkManagementView {
             } label: {
                 Label("カテゴリを管理", systemImage: "folder")
             }
+            if let onTapImport {
+                Button {
+                    onTapImport()
+                } label: {
+                    Label("テンプレートから取り込む", systemImage: "square.and.arrow.down")
+                }
+            }
         } label: {
             Image(systemName: "ellipsis")
         }
@@ -183,6 +190,7 @@ private extension FrequentHouseworkManagementView {
             onTapClose: {},
             onTapAdd: {},
             onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -202,6 +210,7 @@ private extension FrequentHouseworkManagementView {
             onTapClose: {},
             onTapAdd: {},
             onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -221,6 +230,7 @@ private extension FrequentHouseworkManagementView {
             onTapClose: {},
             onTapAdd: {},
             onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },

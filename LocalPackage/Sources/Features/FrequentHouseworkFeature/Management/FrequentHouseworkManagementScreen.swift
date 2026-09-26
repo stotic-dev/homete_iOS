@@ -13,6 +13,7 @@ public struct FrequentHouseworkManagementScreen: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.frequentHouseworkContext) var context
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.routeResolver) var router
@@ -24,6 +25,7 @@ public struct FrequentHouseworkManagementScreen: View {
 
     @State var navigationPath = AppNavigationPath<FrequentHouseworkManagementRoute>()
     @State var editTarget: FrequentHouseworkEditTarget?
+    @State var isPresentingImport = false
     @State var isPresentingLimitAlert = false
     @State var isShowPaywall = false
 
@@ -39,6 +41,7 @@ public struct FrequentHouseworkManagementScreen: View {
                 onTapClose: { dismiss() },
                 onTapAdd: { tappedAddButton() },
                 onTapManageCategories: { navigationPath.push(.categoryManagement) },
+                onTapImport: canImportFromTemplate ? { isPresentingImport = true } : nil,
                 onTapItem: { item in editTarget = .edit(item) },
                 onDelete: { item in deleteItem(item) },
                 onMove: { orderedIds in reorderItems(orderedIds) },
@@ -56,6 +59,9 @@ public struct FrequentHouseworkManagementScreen: View {
                 onConfirm: { input in confirmedEdit(input, target: target) },
                 onCreateCategory: { name in try await createCategory(name: name) }
             )
+        }
+        .sheet(isPresented: $isPresentingImport) {
+            FrequentHouseworkImportScreen()
         }
         .alert(
             "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
@@ -103,6 +109,11 @@ private extension FrequentHouseworkManagementScreen {
 
     var limitStatus: FrequentHouseworkLimitStatus? {
         .init(policy: limitPolicy, count: context.items.count)
+    }
+
+    /// テンプレートから取り込めるか（取り込む家事がないシートを開かせないため）
+    var canImportFromTemplate: Bool {
+        templateContext.houseworkTemplate.contains { !$0.items.isEmpty }
     }
 
 }
