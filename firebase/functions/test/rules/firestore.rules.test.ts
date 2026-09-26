@@ -25,6 +25,7 @@ import {
   houseworksPath,
   houseworkTemplateDaysPath,
   houseworkTemplateEditorsPath,
+  houseworkTemplateMonthlyItemsPath,
   houseworkTemplatesPath,
 } from "../helpers/clientCollections";
 
@@ -341,6 +342,15 @@ describe("Houseworks", () => {
 describe("HouseworkTemplates", () => {
   const templateDoc = `${houseworkTemplatesPath(GROUP_ID)}/${TEMPLATE_ID}`;
   const dayDoc = `${houseworkTemplateDaysPath(GROUP_ID, TEMPLATE_ID)}/1`;
+  const monthlyItemDoc =
+    `${houseworkTemplateMonthlyItemsPath(GROUP_ID, TEMPLATE_ID)}/item-1`;
+  const monthlyItem = {
+    id: "item-1",
+    title: "家賃の振込",
+    point: 10,
+    updatedAt: new Date(),
+    rule: {type: "dayOfMonth", day: 25},
+  };
   const editorDoc = (userId: string) =>
     `${houseworkTemplateEditorsPath(GROUP_ID, TEMPLATE_ID)}/${userId}`;
 
@@ -368,6 +378,28 @@ describe("HouseworkTemplates", () => {
     await assertFails(
       setDoc(doc(malloryDb(), dayDoc), {dayOfWeek: 1, items: []})
     );
+  });
+
+  it("メンバーは毎月の家事を一覧取得できる", async () => {
+    await assertSucceeds(
+      getDocs(collection(
+        aliceDb(),
+        houseworkTemplateMonthlyItemsPath(GROUP_ID, TEMPLATE_ID)
+      ))
+    );
+  });
+
+  it("メンバーは毎月の家事を作成・削除できる", async () => {
+    await assertSucceeds(setDoc(doc(aliceDb(), monthlyItemDoc), monthlyItem));
+    await assertSucceeds(deleteDoc(doc(aliceDb(), monthlyItemDoc)));
+  });
+
+  it("非メンバーは毎月の家事を取得できない", async () => {
+    await assertFails(getDoc(doc(malloryDb(), monthlyItemDoc)));
+  });
+
+  it("非メンバーは毎月の家事を作成できない", async () => {
+    await assertFails(setDoc(doc(malloryDb(), monthlyItemDoc), monthlyItem));
   });
 
   it("メンバーは他メンバーの編集ロックを取得できる", async () => {

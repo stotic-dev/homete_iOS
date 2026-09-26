@@ -18,6 +18,7 @@ import {
   houseworkTemplatesPath,
   houseworkTemplateDaysPath,
   houseworkTemplateEditorsPath,
+  houseworkTemplateMonthlyItemsPath,
 } from "../helpers/clientCollections";
 
 describe("deleteUserData E2E Tests", () => {
@@ -88,6 +89,9 @@ describe("deleteUserData E2E Tests", () => {
         houseworkTemplateDaysPath(cohabitantId, templateId)
       );
       await expectCollectionEmpty(
+        houseworkTemplateMonthlyItemsPath(cohabitantId, templateId)
+      );
+      await expectCollectionEmpty(
         houseworkTemplateEditorsPath(cohabitantId, templateId)
       );
     });
@@ -133,6 +137,9 @@ describe("deleteUserData E2E Tests", () => {
       await expectCollectionNotEmpty(houseworkTemplatesPath(cohabitantId));
       await expectCollectionNotEmpty(
         houseworkTemplateDaysPath(cohabitantId, templateId)
+      );
+      await expectCollectionNotEmpty(
+        houseworkTemplateMonthlyItemsPath(cohabitantId, templateId)
       );
     });
   });
