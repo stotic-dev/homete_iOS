@@ -142,9 +142,8 @@ public final actor HouseworkManager {
 
         // 取得済み範囲と重複しないよう、その前日までを取得する
         let to = calendar.date(byAdding: .day, value: -1, to: fetchedRange.lowerBound) ?? fetchedRange.lowerBound
-        let task = Task { [weak self] in
-            guard let self else { return }
-            await appendItems(cohabitantId: cohabitantId, from: targetDay, to: to)
+        let task = Task {
+            await self.appendItems(cohabitantId: cohabitantId, from: targetDay, to: to)
         }
         pendingFetchTask = task
         await task.value
