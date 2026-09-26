@@ -8,6 +8,11 @@
 import Observation
 import SwiftUI
 
+/// 所属している同居人グループのメンバーを保持する
+///
+/// このStoreは`RootView`で1つだけ生成して、サインイン・グループ参加をまたいで使い回す。
+/// インスタンスを画面側でも作ると、購読を張っているStoreとサインアウト時に後片付けするStoreが
+/// 食い違い、権限を失ったグループの購読やメンバーが残る。
 @MainActor
 @Observable
 public final class CohabitantStore {
@@ -18,6 +23,8 @@ public final class CohabitantStore {
     private var listenerTask: Task<Void, Never>?
     /// 購読の世代。準備中に解除・破棄が走ったかどうかの判定に使う
     private var listenerGeneration = 0
+    /// 購読しているグループのID。グループが切り替わったかどうかの判定に使う
+    private var observingCohabitantId: String?
 
     private let cohabitantListenerKey = "cohabitantListenerKey"
 
@@ -40,9 +47,24 @@ public final class CohabitantStore {
         self.analyticsClient = analyticsClient
     }
 
-    public func addSnapshotListenerIfNeeded(_ cohabitantId: String) async {
-        // すでに監視中の場合は何もしない
-        if listenerTask != nil { return }
+    /// 指定したグループの購読を開始する
+    /// - Parameters:
+    ///   - cohabitantId: 購読するグループのID
+    ///   - ownId: 自分のユーザーID。メンバー一覧で自分を先頭に並べるために使う
+    /// - Note: Storeを使い回すため、購読済みかどうかとグループの切り替わりはここで判断する。
+    ///         別のグループへ切り替わった場合は、前のグループの購読とメンバーを捨ててから張り直す
+    public func addSnapshotListenerIfNeeded(_ cohabitantId: String, ownId: String) async {
+        // すでに同じグループを監視中の場合は何もしない
+        if listenerTask != nil, observingCohabitantId == cohabitantId { return }
+
+        // 別のグループへ切り替わった場合は、前のグループの購読とメンバーを捨ててから張り直す
+        if let observingCohabitantId, observingCohabitantId != cohabitantId {
+            await removeSnapshotListener()
+            members = .init(value: [], ownId: ownId)
+        } else if members.ownId != ownId {
+            members.update(ownId: ownId)
+        }
+        observingCohabitantId = cohabitantId
 
         listenerGeneration += 1
         let generation = listenerGeneration
@@ -95,16 +117,17 @@ public final class CohabitantStore {
     public func removeSnapshotListener() async {
         // 準備中の購読があれば、再開しても張られないよう世代を進める
         listenerGeneration += 1
+        observingCohabitantId = nil
         listenerTask?.cancel()
         await listenerTask?.value
         listenerTask = nil
         await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
     }
 
-    /// サインアウト時に購読を止め、前のユーザーのグループ情報を破棄する
-    /// - Note: このStoreはrootで生成されてサインアウトしても解放されないため、明示的に止めないと
-    ///         無効になったグループIDのままFirestoreを購読し続ける
-    public func clearOnSignedOut() async {
+    /// 購読を止め、保持しているグループ情報を破棄する
+    /// - Note: このStoreはrootで生成されてサインアウト・グループ脱退でも解放されないため、明示的に
+    ///         捨てないと権限を失ったグループIDのままFirestoreを購読し、前のメンバーを表示し続ける
+    public func clear() async {
         await removeSnapshotListener()
         members = .init(value: [], ownId: "")
         loadState = .loading

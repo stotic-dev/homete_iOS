@@ -25,13 +25,13 @@ public struct HomeView: View {
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.scenePhase) var scenePhase
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(CohabitantStore.self) var cohabitantStore
 
     @State var isShowCohabitantRegistrationModal = false
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var isShowSetting = false
     @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
-    let cohabitantStore: CohabitantStore?
     let houseworkTemplateListStore: HouseworkTemplateListStore?
     let houseworkListStore: HouseworkListStore?
 
@@ -41,12 +41,10 @@ public struct HomeView: View {
                 VStack(spacing: .space16) {
                     if loginContext.hasCohabitant,
                        let contributionStore,
-                       let cohabitantStore,
                        let houseworkListStore,
                        let houseworkTemplateListStore {
                         registeredContent(
                             contributionStore: contributionStore,
-                            cohabitantStore: cohabitantStore,
                             houseworkTemplateListStore: houseworkTemplateListStore,
                             houseworkListStore: houseworkListStore
                         )
@@ -80,13 +78,11 @@ public extension HomeView {
 
     static func make(
         contributionStore: ContributionStore?,
-        cohabitantStore: CohabitantStore?,
         houseworkTemplateListStore: HouseworkTemplateListStore?,
         houseworkListStore: HouseworkListStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
-            cohabitantStore: cohabitantStore,
             houseworkTemplateListStore: houseworkTemplateListStore,
             houseworkListStore: houseworkListStore
         )
@@ -98,21 +94,19 @@ private extension HomeView {
 
     func registeredContent(
         contributionStore: ContributionStore,
-        cohabitantStore: CohabitantStore,
         houseworkTemplateListStore: HouseworkTemplateListStore,
         houseworkListStore: HouseworkListStore
     ) -> some View {
         RegisteredContent(onRetry: {
-            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+            await didAppearRegisteredContent()
         })
         .task {
-            await didAppearRegisteredContent(cohabitantStore: cohabitantStore)
+            await didAppearRegisteredContent()
         }
         .sheet(isPresented: $isShowSetting) {
             router.resolve(.setting)
         }
         .environment(contributionStore)
-        .environment(cohabitantStore)
         .environment(houseworkTemplateListStore)
         .environment(houseworkListStore)
     }
@@ -155,13 +149,13 @@ private extension HomeView {
         await adsSetupUseCase.setup()
     }
 
-    func didAppearRegisteredContent(cohabitantStore: CohabitantStore) async {
+    func didAppearRegisteredContent() async {
         guard let cohabitantId = loginContext.account.cohabitantId else {
             // パートナー登録完了後にcohabitantIdが無いケースは想定外なので表明としてassertionFailureを行う
             assertionFailure("Required param is nil(cohabitantId)")
             return
         }
-        await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId)
+        await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId, ownId: loginContext.account.id)
         await houseworkManager.setupObserver(
             currentTime: now,
             cohabitantId: cohabitantId,
@@ -171,7 +165,8 @@ private extension HomeView {
     }
 
     func didAppearNotRegisteredContent() async {
-        await cohabitantStore?.removeSnapshotListener()
+        // グループに所属していない間は、脱退前のグループの購読とメンバーを残さない
+        await cohabitantStore.clear()
         if pasteboardInvitationStore == nil {
             pasteboardInvitationStore = .init(
                 pasteboardClient: pasteboardClient,

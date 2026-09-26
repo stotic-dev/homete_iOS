@@ -85,7 +85,7 @@ public struct AuthSubscriptionSyncUseCase {
         // 購読を残すと、権限を失ったユーザーID・グループIDのままFirestoreへのアクセスが続く
         await accountStore.stopObserving()
         accountStore.clear()
-        await cohabitantStore.clearOnSignedOut()
+        await cohabitantStore.clear()
         await houseworkManager.clearOnSignedOut()
         await subscriptionStore.logOut()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
