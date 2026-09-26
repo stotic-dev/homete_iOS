@@ -90,6 +90,16 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// いつもの家事に関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `step` / `result` パラメータで区別する。
+    ///         意図は`FrequentHouseworkAnalyticsAction`を参照
+    static func frequentHousework(_ action: FrequentHouseworkAnalyticsAction) -> Self {
+        .init(
+            name: "frequent_housework",
+            parameters: action.parameters
+        )
+    }
+
     /// 同居人グループ作成フローの進捗に関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`method` / `action` / `result` パラメータで区別する。
     ///         意図は`CohabitantRegistrationAnalyticsAction`を参照

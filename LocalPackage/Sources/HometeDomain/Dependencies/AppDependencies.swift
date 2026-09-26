@@ -20,6 +20,7 @@ public struct AppDependencies: Sendable {
     public let signInWithAppleClient: SignInWithAppleClient
     public let purchaseClient: PurchaseClient
     public let houseworkTemplateClient: HouseworkTemplateClient
+    public let frequentHouseworkClient: FrequentHouseworkClient
     public let consentClient: ConsentClient
     public let mobileAdsClient: MobileAdsClient
     public let notificationPermissionClient: NotificationPermissionClient
@@ -46,6 +47,7 @@ public struct AppDependencies: Sendable {
         signInWithAppleClient: SignInWithAppleClient = .previewValue,
         purchaseClient: PurchaseClient = .previewValue,
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
+        frequentHouseworkClient: FrequentHouseworkClient = .previewValue,
         consentClient: ConsentClient = .previewValue,
         mobileAdsClient: MobileAdsClient = .previewValue,
         notificationPermissionClient: NotificationPermissionClient = .previewValue,
@@ -64,6 +66,7 @@ public struct AppDependencies: Sendable {
         self.signInWithAppleClient = signInWithAppleClient
         self.purchaseClient = purchaseClient
         self.houseworkTemplateClient = houseworkTemplateClient
+        self.frequentHouseworkClient = frequentHouseworkClient
         self.consentClient = consentClient
         self.mobileAdsClient = mobileAdsClient
         self.notificationPermissionClient = notificationPermissionClient
