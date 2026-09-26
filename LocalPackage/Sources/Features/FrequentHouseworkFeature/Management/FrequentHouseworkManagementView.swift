@@ -20,6 +20,7 @@ struct FrequentHouseworkManagementView: View {
     let limitStatus: FrequentHouseworkLimitStatus?
     let onTapClose: () -> Void
     let onTapAdd: () -> Void
+    let onTapManageCategories: () -> Void
     let onTapItem: (FrequentHouseworkItem) -> Void
     let onDelete: (FrequentHouseworkItem) -> Void
     /// カテゴリ内で並べ替えた後の家事IDの順
@@ -139,6 +140,7 @@ private extension FrequentHouseworkManagementView {
                     EditButton()
                 }
                 #endif
+                subMenu()
                 Button {
                     onTapAdd()
                 } label: {
@@ -147,6 +149,19 @@ private extension FrequentHouseworkManagementView {
                 .accessibilityLabel("いつもの家事を追加")
             }
         }
+    }
+
+    func subMenu() -> some View {
+        Menu {
+            Button {
+                onTapManageCategories()
+            } label: {
+                Label("カテゴリを管理", systemImage: "folder")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+        }
+        .accessibilityLabel("その他の操作")
     }
 
 }
@@ -167,6 +182,7 @@ private extension FrequentHouseworkManagementView {
             limitStatus: .init(count: 11, limit: 10, isReached: true),
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -185,6 +201,7 @@ private extension FrequentHouseworkManagementView {
             limitStatus: nil,
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -203,6 +220,7 @@ private extension FrequentHouseworkManagementView {
             limitStatus: nil,
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },

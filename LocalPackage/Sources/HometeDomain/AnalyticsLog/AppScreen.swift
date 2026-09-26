@@ -54,6 +54,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case frequentHouseworkManagement = "frequent_housework_management"
     /// いつもの家事の追加・編集
     case frequentHouseworkEdit = "frequent_housework_edit"
+    /// いつもの家事のカテゴリ管理画面
+    case frequentHouseworkCategory = "frequent_housework_category"
     /// 設定画面
     case setting
     /// サブスクリプションの管理画面

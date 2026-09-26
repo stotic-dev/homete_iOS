@@ -22,6 +22,7 @@ public struct FrequentHouseworkManagementScreen: View {
     @LoadingState var loadingState
     @CommonError var commonErrorContent
 
+    @State var navigationPath = AppNavigationPath<FrequentHouseworkManagementRoute>()
     @State var editTarget: FrequentHouseworkEditTarget?
     @State var isPresentingLimitAlert = false
     @State var isShowPaywall = false
@@ -29,7 +30,7 @@ public struct FrequentHouseworkManagementScreen: View {
     public init() {}
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath.path) {
             FrequentHouseworkManagementView(
                 loadState: store?.loadState ?? .loading,
                 sections: context.sections,
@@ -37,12 +38,16 @@ public struct FrequentHouseworkManagementScreen: View {
                 limitStatus: limitStatus,
                 onTapClose: { dismiss() },
                 onTapAdd: { tappedAddButton() },
+                onTapManageCategories: { navigationPath.push(.categoryManagement) },
                 onTapItem: { item in editTarget = .edit(item) },
                 onDelete: { item in deleteItem(item) },
                 onMove: { orderedIds in reorderItems(orderedIds) },
                 onTapUpgrade: { showPaywall() },
                 onRetry: { retry() }
             )
+            .navigationDestination(for: FrequentHouseworkManagementRoute.self) { route in
+                navigationHandler(route)
+            }
         }
         .sheet(item: $editTarget) { target in
             FrequentHouseworkEditModal(target: target, context: context) { input in
@@ -67,6 +72,20 @@ public struct FrequentHouseworkManagementScreen: View {
         )
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
+    }
+
+}
+
+// MARK: - 画面遷移
+
+private extension FrequentHouseworkManagementScreen {
+
+    @ViewBuilder
+    func navigationHandler(_ route: FrequentHouseworkManagementRoute) -> some View {
+        switch route {
+        case .categoryManagement:
+            FrequentHouseworkCategoryScreen()
+        }
     }
 
 }
