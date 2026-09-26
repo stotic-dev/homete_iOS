@@ -24,8 +24,7 @@ extension HouseworkRecurrenceInputTest.RecurrenceCase {
         arguments: [
             (kind: HouseworkRecurrenceInput.Kind.none, expected: HouseworkRecurrence?.none),
             (kind: .weekly, expected: .some(.weekly([.tuesday]))),
-            (kind: .monthlyDay, expected: .some(.monthly(.dayOfMonth(25)))),
-            (kind: .monthlyWeekday, expected: .some(.monthly(.weekdayOfMonth(ordinal: .last, dayOfWeek: .friday)))),
+            (kind: .monthly, expected: .some(.monthly(.dayOfMonth(25)))),
         ]
     )
     func recurrence(kind: HouseworkRecurrenceInput.Kind, expected: HouseworkRecurrence?) {
@@ -33,9 +32,7 @@ extension HouseworkRecurrenceInputTest.RecurrenceCase {
         let input = HouseworkRecurrenceInput(
             kind: kind,
             weekdays: [.tuesday],
-            dayOfMonth: 25,
-            ordinal: .last,
-            monthlyDayOfWeek: .friday
+            dayOfMonth: 25
         )
 
         // Act
@@ -94,11 +91,7 @@ extension HouseworkRecurrenceInputTest.InitCase {
             ),
             (
                 recurrence: .monthly(.dayOfMonth(31)),
-                expected: HouseworkRecurrenceInput(kind: .monthlyDay, dayOfMonth: 31)
-            ),
-            (
-                recurrence: .monthly(.weekdayOfMonth(ordinal: .third, dayOfWeek: .sunday)),
-                expected: HouseworkRecurrenceInput(kind: .monthlyWeekday, ordinal: .third, monthlyDayOfWeek: .sunday)
+                expected: HouseworkRecurrenceInput(kind: .monthly, dayOfMonth: 31)
             ),
         ]
     )
@@ -110,30 +103,12 @@ extension HouseworkRecurrenceInputTest.InitCase {
         #expect(actual == expected)
     }
 
-    /// 2026/1/14は第2水曜日、2026/1/29は第5木曜日
+    /// 2026/1/14は水曜日、2026/1/31は土曜日
     @Test(
-        "基準日から、その日の曜日・日付・第N週を各種類の初期値にする（第5週は最終にする）",
+        "基準日から、その日の曜日・日付を各種類の初期値にする",
         arguments: [
-            (
-                day: 14,
-                expected: HouseworkRecurrenceInput(
-                    kind: .none,
-                    weekdays: [.wednesday],
-                    dayOfMonth: 14,
-                    ordinal: .second,
-                    monthlyDayOfWeek: .wednesday
-                )
-            ),
-            (
-                day: 29,
-                expected: HouseworkRecurrenceInput(
-                    kind: .none,
-                    weekdays: [.thursday],
-                    dayOfMonth: 29,
-                    ordinal: .last,
-                    monthlyDayOfWeek: .thursday
-                )
-            ),
+            (day: 14, expected: HouseworkRecurrenceInput(kind: .none, weekdays: [.wednesday], dayOfMonth: 14)),
+            (day: 31, expected: HouseworkRecurrenceInput(kind: .none, weekdays: [.saturday], dayOfMonth: 31)),
         ]
     )
     func initBasedOnDate(day: Int, expected: HouseworkRecurrenceInput) {
@@ -155,9 +130,8 @@ extension HouseworkRecurrenceInputTest.LabelCase {
     @Test(
         "毎月の繰り返しルールを表示用の文言にする",
         arguments: [
-            (rule: MonthlyRecurrenceRule.dayOfMonth(25), expected: "毎月25日"),
-            (rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday), expected: "毎月第2水曜日"),
-            (rule: .weekdayOfMonth(ordinal: .last, dayOfWeek: .friday), expected: "毎月最終金曜日"),
+            (rule: MonthlyRecurrenceRule.dayOfMonth(1), expected: "毎月1日"),
+            (rule: .dayOfMonth(25), expected: "毎月25日"),
         ]
     )
     func label(rule: MonthlyRecurrenceRule, expected: String) {

@@ -47,11 +47,11 @@ struct HouseworkTemplateDraftMonthlyItemTest {
         let newItem = Self.makeItem(id: "1", title: "new")
         let expected = HouseworkTemplateDraft(
             days: [.monday: [], .friday: []],
-            monthlyItems: [.init(item: newItem, rule: .weekdayOfMonth(ordinal: .last, dayOfWeek: .friday))]
+            monthlyItems: [.init(item: newItem, rule: .dayOfMonth(31))]
         )
 
         // Act
-        draft.replaceItem(newItem, recurrence: .monthly(.weekdayOfMonth(ordinal: .last, dayOfWeek: .friday)))
+        draft.replaceItem(newItem, recurrence: .monthly(.dayOfMonth(31)))
 
         // Assert
         #expect(draft == expected)
@@ -109,25 +109,14 @@ struct HouseworkTemplateDraftMonthlyItemTest {
         #expect(actual == expected)
     }
 
-    @Test("毎月の家事を「◯日」の日付順→「第N◯曜日」の第N・曜日順に並べて返す")
+    @Test("毎月の家事を日付順に並べ、同じ日付の家事はID順に並べて返す")
     func displayedMonthlyItems() {
         // Arrange
-        let lastMonday = HouseworkTemplateMonthlyItem(
-            item: Self.makeItem(id: "1"),
-            rule: .weekdayOfMonth(ordinal: .last, dayOfWeek: .monday)
-        )
-        let secondSunday = HouseworkTemplateMonthlyItem(
-            item: Self.makeItem(id: "2"),
-            rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .sunday)
-        )
-        let secondMonday = HouseworkTemplateMonthlyItem(
-            item: Self.makeItem(id: "3"),
-            rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .monday)
-        )
-        let day25 = HouseworkTemplateMonthlyItem(item: Self.makeItem(id: "4"), rule: .dayOfMonth(25))
-        let day3 = HouseworkTemplateMonthlyItem(item: Self.makeItem(id: "5"), rule: .dayOfMonth(3))
-        let draft = HouseworkTemplateDraft(monthlyItems: [lastMonday, secondSunday, day25, secondMonday, day3])
-        let expected = [day3, day25, secondMonday, secondSunday, lastMonday]
+        let day25B = HouseworkTemplateMonthlyItem(item: Self.makeItem(id: "b"), rule: .dayOfMonth(25))
+        let day3 = HouseworkTemplateMonthlyItem(item: Self.makeItem(id: "c"), rule: .dayOfMonth(3))
+        let day25A = HouseworkTemplateMonthlyItem(item: Self.makeItem(id: "a"), rule: .dayOfMonth(25))
+        let draft = HouseworkTemplateDraft(monthlyItems: [day25B, day3, day25A])
+        let expected = [day3, day25A, day25B]
 
         // Act
         let actual = draft.displayedMonthlyItems

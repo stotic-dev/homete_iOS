@@ -91,7 +91,7 @@ extension TemplateItemEditInputTest.CanConfirmCreateModeCase {
             itemId: TestCase.itemId,
             title: "家賃の振込",
             point: 5,
-            recurrence: .init(kind: .monthlyDay, dayOfMonth: 25)
+            recurrence: .init(kind: .monthly, dayOfMonth: 25)
         )
 
         // Act
@@ -175,7 +175,7 @@ extension TemplateItemEditInputTest.CanConfirmEditModeCase {
         // Arrange
         let before = TestCase.makeInput()
         var edited = TestCase.makeInput()
-        edited.recurrence.kind = .monthlyDay
+        edited.recurrence.kind = .monthly
 
         // Act
         let actual = edited.canConfirm(.edit(before: before))

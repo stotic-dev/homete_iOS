@@ -547,8 +547,8 @@ private extension HouseworkTemplateView {
             rule: .dayOfMonth(25)
         ),
         .init(
-            item: .init(id: .init(id: "5"), title: "資源ゴミ", point: 3, updatedAt: .now),
-            rule: .weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)
+            item: .init(id: .init(id: "5"), title: "月末の水回り掃除", point: 3, updatedAt: .now),
+            rule: .dayOfMonth(31)
         ),
     ]
     HouseworkTemplateView(

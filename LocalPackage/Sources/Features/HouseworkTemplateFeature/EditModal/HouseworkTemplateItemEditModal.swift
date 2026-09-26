@@ -186,7 +186,7 @@ private extension HouseworkTemplateItemEditModal {
         itemId: .init(id: "1"),
         title: "家賃の振込",
         point: 5,
-        recurrence: .init(kind: .monthlyDay, dayOfMonth: 25)
+        recurrence: .init(kind: .monthly, dayOfMonth: 25)
     )
     HouseworkTemplateItemEditModal(
         input: .constant(beforeInput),

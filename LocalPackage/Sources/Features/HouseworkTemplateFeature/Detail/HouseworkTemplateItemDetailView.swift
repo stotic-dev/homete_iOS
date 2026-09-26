@@ -151,11 +151,11 @@ private extension HouseworkTemplateItemDetailView {
         HouseworkTemplateItemDetailView(
             item: .init(
                 id: .init(id: "1"),
-                title: "資源ゴミ",
-                point: 3,
+                title: "家賃の振込",
+                point: 5,
                 updatedAt: .distantPast
             ),
-            recurrence: .monthly(.weekdayOfMonth(ordinal: .second, dayOfWeek: .wednesday)),
+            recurrence: .monthly(.dayOfMonth(25)),
             onEdit: { _ in },
             onDelete: {}
         )
