@@ -24,6 +24,8 @@ public final class FrequentHouseworkStore {
     private var categoriesObserveTask: Task<Void, Never>?
     private var hasReceivedItems = false
     private var hasReceivedCategories = false
+    /// 購読の開始・解除を直列に実行するための、最後に積んだ処理
+    private var listenerLifecycleTask: Task<Void, Never>?
 
     private let frequentHouseworkClient: FrequentHouseworkClient
     private let analyticsClient: AnalyticsClient
@@ -61,9 +63,39 @@ public final class FrequentHouseworkStore {
 public extension FrequentHouseworkStore {
 
     /// いつもの家事とカスタムカテゴリの購読を開始する
-    /// - Note: すでに購読中の場合は解除してから開始する（グループの切り替えに備える）
+    /// - Note: すでに購読中の場合は解除してから開始する（グループの切り替え・再試行に備える）
     func startObserving(cohabitantId: String) async {
-        await stopObserving()
+        await enqueueListenerLifecycle {
+            await self.performStartObserving(cohabitantId: cohabitantId)
+        }
+    }
+
+    /// いつもの家事とカスタムカテゴリの購読を解除する
+    func stopObserving() async {
+        await enqueueListenerLifecycle {
+            await self.performStopObserving()
+        }
+    }
+
+}
+
+private extension FrequentHouseworkStore {
+
+    /// 購読の開始・解除を1本の列に並べ、前の処理が終わってから次を始める
+    /// - Note: 開始・解除は途中で`await`を挟むため、並行して呼ばれると解除と登録が入り組み、
+    ///         同じIDで二重に登録されたリスナーが解除されないまま残る（再試行の連打・グループ切り替えで起こる）
+    func enqueueListenerLifecycle(_ operation: @escaping @MainActor @Sendable () async -> Void) async {
+        let previousTask = listenerLifecycleTask
+        let task = Task { @MainActor in
+            await previousTask?.value
+            await operation()
+        }
+        listenerLifecycleTask = task
+        await task.value
+    }
+
+    func performStartObserving(cohabitantId: String) async {
+        await performStopObserving()
         loadState = .loading
         hasReceivedItems = false
         hasReceivedCategories = false
@@ -91,8 +123,7 @@ public extension FrequentHouseworkStore {
         }
     }
 
-    /// いつもの家事とカスタムカテゴリの購読を解除する
-    func stopObserving() async {
+    func performStopObserving() async {
         itemsObserveTask?.cancel()
         itemsObserveTask = nil
         categoriesObserveTask?.cancel()

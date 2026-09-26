@@ -292,6 +292,49 @@ extension FrequentHouseworkStoreTest.ObservingCase {
     }
 
     @MainActor
+    @Test("購読の開始が重なっても、前の開始が終わってから次を始めるため、解除と登録が1回分ずつ順に並ぶ")
+    func overlappingStartObservingIsSerialized() async {
+        // Arrange
+
+        let events = TestLockedArray<String>()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in
+                    await events.append("addItems")
+                    return AsyncStream<[FrequentHouseworkItem]>.makeStream().stream
+                },
+                addCategoriesSnapshotListener: { _, _ in
+                    await events.append("addCategories")
+                    return AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream().stream
+                },
+                removeListener: { id in await events.append("remove:\(id)") }
+            )
+        )
+        let oneCycle = [
+            "remove:frequentHouseworksListener",
+            "remove:frequentHouseworkCategoriesListener",
+            "addItems",
+            "addCategories",
+        ]
+        let expected = oneCycle + oneCycle
+
+        // Act
+
+        async let first: Void = store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        async let second: Void = store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        _ = await (first, second)
+
+        // Assert
+
+        let actual = await events.values
+        #expect(actual == expected)
+
+        // Cleanup
+
+        await store.stopObserving()
+    }
+
+    @MainActor
     @Test("購読を解除すると、いつもの家事とカスタムカテゴリの両方のリスナーを解除する")
     func stopObservingRemovesBothListeners() async {
         // Arrange
