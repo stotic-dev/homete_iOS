@@ -101,8 +101,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
-| `setting_notification_permission` | `SettingNotificationPermissionGuideView` |
-| `setting_daily_completion_reminder` | `DailyCompletionReminderSettingView` |
+| `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
+| `setting_notification` | `DailyCompletionReminderSettingView`（通知設定。通知が許可されている場合） |
 | `license_list` | `LicenseListView` |
 | `license_detail` | `LicenseDetailView` |
 
