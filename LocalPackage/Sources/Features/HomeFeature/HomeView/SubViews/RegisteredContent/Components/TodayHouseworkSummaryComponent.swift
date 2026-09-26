@@ -140,6 +140,15 @@ private extension TodayHouseworkSummaryComponent {
 
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
+            HStack {
+                Text("未完了の家事")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Text("\(summary.incompleteItems.count)件")
+                    .font(with: .body)
+                    .foregroundStyle(.onSubSurface)
+            }
             ForEach(summary.displayIncompleteItems) { item in
                 houseworkItemRow(item)
                     .contextMenu {
