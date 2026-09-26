@@ -119,11 +119,15 @@ private extension RegisterHouseworkView {
 
     func inputRecurrence() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("くり返し")
-                .font(with: .headLineM)
-            RecurrenceSelector(input: $recurrenceInput, kinds: HouseworkRecurrenceInput.Kind.allCases)
-            if recurrenceInput.kind != .none {
-                Text("家事テンプレートに登録され、今日以降の該当する日に表示されます")
+            // 曜日・日付は登録しようとしている日から決めるので、種類だけを選ばせる
+            RecurrenceSelector(
+                input: $recurrenceInput,
+                kinds: HouseworkRecurrenceInput.Kind.allCases,
+                titleFont: .headLineM,
+                showsDetail: false
+            )
+            if let recurrence = recurrenceInput.recurrence {
+                Text(recurrenceNote(recurrence))
                     .font(with: .caption)
                     .foregroundStyle(.onSubSurface)
             }
@@ -157,6 +161,24 @@ private extension RegisterHouseworkView {
     /// - Note: テンプレートの読み込み中・読み込み失敗時は、既存のテンプレートの有無が分からず重複して作成しかねないので設定させない
     var canSetRecurrence: Bool {
         houseworkTemplateListStore?.loadState == .loaded
+    }
+
+    /// 選んだ繰り返しで、いつ表示されるかの説明
+    func recurrenceNote(_ recurrence: HouseworkRecurrence) -> String {
+        let schedule = switch recurrence {
+        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
+            "毎日"
+
+        case let .weekly(days):
+            "毎週" + DayOfWeek.displayOrdered.filter { days.contains($0) }.map(\.fullLabel).joined(separator: "・")
+
+        case let .monthly(.dayOfMonth(day)) where day >= 29:
+            "毎月\(day)日（\(day)日がない月は月末）"
+
+        case let .monthly(rule):
+            rule.label
+        }
+        return "家事テンプレートに登録され、今日以降の\(schedule)に表示されます"
     }
 
     func tappedEntryHistoryRow(_ item: String) {
@@ -279,6 +301,28 @@ private extension RegisterHouseworkView {
             items: [],
             metaData: .init(
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                expiredAt: .now
+            )
+        ),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_毎月くり返し_月末") {
+    RegisterHouseworkView(
+        recurrenceInput: .init(kind: .monthly, dayOfMonth: 31),
+        dailyHouseworkList: .init(
+            items: [],
+            metaData: .init(
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 31)),
                 expiredAt: .now
             )
         ),
