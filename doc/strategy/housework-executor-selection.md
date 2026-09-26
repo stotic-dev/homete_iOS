@@ -63,15 +63,15 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
 
 #### ありがとうの画面
 
-12. 家事詳細の「ありがとうを伝える」は、今のフルスクリーン表示（`HouseworkThanksView`）をやめて、**完了用と同じ見た目のハーフモーダル**に変える
+12. 家事詳細の「ありがとうを伝える」と、クイックアクションの「ありがとう」（1件）は、今のフルスクリーン表示（`HouseworkThanksView`）をやめて、**完了用と同じ見た目のハーフモーダル**に変える
     - 中身はコメント欄だけ。送信はナビゲーションバー右側のハートのアイコンボタンで行う。家事の内容（`HouseworkItemPropertyListContent`）や「◯◯さんが〜終えてくれました」のセクションは出さない
     - コメントは今までどおり必須
     - 担当者の設定は出さない
-13. クイックアクションの「ありがとう」（1件・一括）は今までどおり、定型文でワンタップ送信する
+13. 複数選択の一括操作の「ありがとう」は今までどおり、定型文でワンタップ送信する（家事ごとにメッセージを書く手間をかけさせないため）
 
 #### ハーフモーダル共通
 
-14. `.presentationDetents([.medium, .large])` にする。配分の調整を開くと中身が増えるので、ドラッグで広げられるようにする
+14. 高さは中身に合わせる（`.medium` だと中身に対して余白が大きすぎたため）。配分の調整を開いたりメッセージが複数行になったりして中身が増えると、シートも伸びる。画面に収まらないときは最大の高さになり、中身をスクロールできる
 
 #### 通知
 
@@ -210,7 +210,7 @@ public func complete(
 - %のピッカーは、既存の `PointWheelPickerField` と同じホイール形式で、`1...99` の範囲にする。共通化できそうなら `HometeUI` に `PercentageWheelPickerField` として切り出す
 - 状態は `HouseworkExecutorAllocation` を `@State` で持つ。判定は全部ドメイン側で行い、Viewは結果を表示するだけにする（`presentation-logic-placement` ルール）
 - `NavigationStack` で包み、タイトル「完了にする」をナビゲーションバーに出す。leadingにキャンセル（`NavigationBarButton(label: .close)`）、trailingに完了のアイコンボタン（`NavigationBarPrimaryActionButton(systemImage: "checkmark")`）を置く。配分にエラーがあるときは完了ボタンを押せない
-- `.presentationDetents([.medium, .large])`
+- 高さは `HometeUI` の `ContentFittingSheetScrollView` で中身に合わせる。`ScrollView` の代わりに使うと、中身の高さにナビゲーションバーと下端のセーフエリアを足した `.height` のデテントを設定する。キーボードの分のセーフエリアは足さない（キーボードを出すたびにシートが伸びてしまうため）
 
 ### 4-1. UI：ありがとう用ハーフモーダル
 
@@ -223,6 +223,8 @@ public func complete(
 ```
 
 - `HouseworkDetailActionContent` からの表示を `.fullScreenCoverOnIOS` から `.sheet` に変える
+- 家事ボードのクイックアクションで「ありがとう」を選んだときも、完了と同じく `HouseworkQuickActionMenuContent` のクロージャ（`onSelectThanks`）で親に伝え、`.sheet(item:)` で表示する。ダッシュボードは未完了の家事だけを並べるので、ありがとうは選ばれない
+- 高さは完了用と同じく `ContentFittingSheetScrollView` で中身に合わせる
 - 中身はコメント欄だけにする。家事の内容と「◯◯さんが〜終えてくれました」のセクションを削除する。閉じるボタンは置かない（ドラッグで閉じられるため）
 - 送信ボタンはナビゲーションバーのtrailingにハートのアイコン（`NavigationBarPrimaryActionButton(systemImage: "heart.fill")`）で置く。タイトル「ありがとうを伝える」はナビゲーションバーに出し、コメント欄の見出しは「メッセージ」にする
 - コメント欄は `HouseworkCommentInputContent` を使う
@@ -265,12 +267,13 @@ public func complete(
 | 修正Model | `LocalPackage/Sources/Features/ContributionFeature/Model/HouseworkContribution.swift` | 担当者ごとの集計 |
 | 修正UseCase | `LocalPackage/Sources/HometeDomain/UseCase/DailyCompletionReminderUseCase.swift` | コメントありの完了は毎回送る |
 | 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 完了用ハーフモーダル（担当者の設定） |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | 「完了にする」（1件）を親に伝えてハーフモーダルを出す |
-| 修正View | 家事ボード・ダッシュボードのクイックアクション呼び出し元 | 完了用ハーフモーダルを `.sheet(item:)` で表示 |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | 「完了にする」「ありがとう」（1件）を親に伝えてハーフモーダルを出す |
+| 修正View | 家事ボード・ダッシュボードのクイックアクション呼び出し元 | 完了用・ありがとう用（家事ボードのみ）のハーフモーダルを `.sheet(item:)` で表示 |
 | 新規View（任意） | `LocalPackage/Sources/HometeUI/Components/Picker/PercentageWheelPickerField.swift` | %のホイールピッカー |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift` | 完了用・ありがとう用のハーフモーダルを `.sheet` で表示 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift` | 担当者全員の表示 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift` | コメント欄だけのハーフモーダルにする |
+| 新規View | `LocalPackage/Sources/HometeUI/Components/Sheet/ContentFittingSheetScrollView.swift` | 中身の高さに合わせてシートの高さを決める |
 | ドキュメント | `doc/analytics_events.md` | `executor_type` の追加 |
 
 ## タスク
@@ -286,7 +289,8 @@ public func complete(
 - [x] 担当者を後から変える機能は入れない
 - [x] 「完了にする」（家事詳細・クイックアクション1件）は、担当者の設定のハーフモーダルを出す
 - [x] 一括完了は、コメントなし・自分だけに100%で即完了のまま
-- [x] ありがとう（家事詳細）はコメント欄だけのハーフモーダルにする。クイックアクションのありがとうは定型文のまま
+- [x] ありがとう（家事詳細・クイックアクション1件）はコメント欄だけのハーフモーダルにする。一括操作のありがとうは定型文のまま
+- [x] 完了・ありがとうのハーフモーダルの高さを中身に合わせる
 - [x] コメントありの完了は、1日1回の条件に関係なく毎回通知を送る
 - [x] データモデルは割合とポイントの両方を担当者ごとに保存する（ADR-0022）
 
