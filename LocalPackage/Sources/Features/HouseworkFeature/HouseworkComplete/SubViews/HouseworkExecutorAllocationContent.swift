@@ -23,7 +23,6 @@ struct HouseworkExecutorAllocationContent: View {
     }
 
     let entries: [Entry]
-    let totalPercentage: Int
     let percentageRange: ClosedRange<Int>
     let onChangePercentage: (_ userId: String, _ percentage: Int) -> Void
 
@@ -43,13 +42,6 @@ struct HouseworkExecutorAllocationContent: View {
                     .font(with: .body)
                 }
             }
-            HStack {
-                Spacer()
-                Text("合計 \(totalPercentage) / 100%")
-                    .font(with: .body)
-                    .foregroundStyle(totalPercentage == 100 ? Color.onSurfaceVariant : Color.alert)
-                    .monospacedDigit()
-            }
         }
     }
 
@@ -67,27 +59,25 @@ private extension HouseworkExecutorAllocationContent {
 }
 
 #if DEBUG
-#Preview("HouseworkExecutorAllocationContent_合計100", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkExecutorAllocationContent_2人", traits: .sizeThatFitsLayout) {
     HouseworkExecutorAllocationContent(
         entries: [
             .init(userId: "own", userName: "たいち", percentage: 60),
             .init(userId: "partner", userName: "はなこ", percentage: 40),
         ],
-        totalPercentage: 100,
         percentageRange: 1 ... 99,
         onChangePercentage: { _, _ in }
     )
     .padding()
 }
 
-#Preview("HouseworkExecutorAllocationContent_合計不足", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkExecutorAllocationContent_3人", traits: .sizeThatFitsLayout) {
     HouseworkExecutorAllocationContent(
         entries: [
             .init(userId: "own", userName: "たいち", percentage: 24),
             .init(userId: "partner", userName: "はなこ", percentage: 33),
             .init(userId: "child", userName: "じろう", percentage: 33),
         ],
-        totalPercentage: 90,
         percentageRange: 1 ... 99,
         onChangePercentage: { _, _ in }
     )

@@ -119,7 +119,6 @@ private extension HouseworkCompleteView {
                 DisclosureGroup("配分を調整する", isExpanded: $isExpandedAllocation) {
                     HouseworkExecutorAllocationContent(
                         entries: allocationEntries,
-                        totalPercentage: allocation.totalPercentage,
                         percentageRange: HouseworkExecutorAllocation.percentageRange
                     ) { userId, percentage in
                         allocation.updatePercentage(percentage, for: userId)
