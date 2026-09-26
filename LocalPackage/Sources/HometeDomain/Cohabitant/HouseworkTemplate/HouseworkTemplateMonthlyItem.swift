@@ -9,7 +9,7 @@ import Foundation
 
 /// 毎月繰り返すテンプレートの家事
 ///
-/// 毎週の家事（`HouseworkTemplateDay.items`）と違い、1家事が1ドキュメントで、繰り返しルールを家事自身が持つ（ADR-0020）。
+/// 毎週の家事（`HouseworkTemplateDay.items`）と違い、1家事が1ドキュメントで、繰り返しルールを家事自身が持つ（ADR-0021）。
 public struct HouseworkTemplateMonthlyItem: Identifiable, Sendable, Equatable, Hashable {
 
     public let item: HouseworkTemplateItem
@@ -28,7 +28,7 @@ public struct HouseworkTemplateMonthlyItem: Identifiable, Sendable, Equatable, H
 
 // MARK: - Codable
 
-/// Firestore上では家事の項目とルールを1階層に並べ、`id`はドキュメントIDと同じ文字列で保存する（ADR-0020）
+/// Firestore上では家事の項目とルールを1階層に並べ、`id`はドキュメントIDと同じ文字列で保存する（ADR-0021）
 extension HouseworkTemplateMonthlyItem: Codable {
 
     private enum CodingKeys: String, CodingKey {
