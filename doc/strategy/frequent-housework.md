@@ -285,51 +285,62 @@ match /FrequentHouseworkCategories/{categoryId} {
 
 | 型 | 役割 |
 |---|---|
-| `FrequentHouseworkItem` | いつもの家事1件（`id`, `title`, `point`, `categoryId?`, `sortOrder`, `createdAt`, `updatedAt`） |
-| `FrequentHouseworkCategory` | カテゴリ。`preset(PresetCategory)` と `custom(id, name, sortOrder)` を表す |
-| `PresetFrequentHouseworkCategory` | プリセット5種の定数（ID・表示名・表示順） |
-| `FrequentHouseworkSection` | 表示用に「カテゴリ＋家事の配列」をまとめたもの。「その他」もここで表す |
-| `FrequentHouseworkContext` | 全件＋カテゴリを持つ値型。セクション化・名前の重複判定・利用可否判定を担う（`HouseworkTemplateContext` と同じ役割） |
-| `FrequentHouseworkLimitPolicy` | 無料の上限（10件）。`canAdd(count:isPremium:)`、`remainingCount`、`usableItemIds(context:isPremium:)` |
-| `FrequentHouseworkStore` | `@Observable`。購読と、追加・編集・削除・並べ替え・取り込み・カテゴリ操作を行う。Analyticsの送信をここに集約する |
-| `FrequentHouseworkError` | 名前の重複、上限超過などのエラー |
+| `FrequentHouseworkItem` | いつもの家事1件（`id`, `title`, `point`, `categoryId?`, `sortOrder`, `createdAt`, `updatedAt`）。Firestoreのドキュメントそのもの |
+| `FrequentHouseworkCustomCategory` | カスタムカテゴリ1件（`id`, `name`, `sortOrder`, `createdAt`）。Firestoreのドキュメントそのもの |
+| `PresetFrequentHouseworkCategory` | プリセット5種の定数（ID・表示名）。`allCases` の順が表示順 |
+| `FrequentHouseworkCategory` | 画面に出すカテゴリ。`preset` / `custom` / `uncategorized`（「その他」）の3種 |
+| `FrequentHouseworkSection` | 表示用に「カテゴリ＋家事の配列」をまとめたもの |
+| `FrequentHouseworkInput` | 追加・編集の入力（名前・ポイント・カテゴリID） |
+| `FrequentHouseworkImportCandidate` | テンプレートから取り込む候補（名前・ポイント・登録済みか） |
+| `FrequentHouseworkContext` | 全件＋カスタムカテゴリを持つ値型。セクション化・名前の重複判定・並び順・取り込み候補の作成を担う（`HouseworkTemplateContext` と同じ役割） |
+| `FrequentHouseworkLimitPolicy` | プランごとの上限（無料は10件）。`canAdd(_:currentCount:)`、`remainingCount(currentCount:)`、`unusableItemIds(in:)` |
+| `FrequentHouseworkStore` | `@Observable`。購読と、追加・編集・削除・並べ替え・取り込み・カテゴリ操作を行う。入力の検証（名前の空・重複、上限）もここで行い、Analyticsの送信もここに集約する |
+| `FrequentHouseworkError` | 名前の空・重複、カテゴリ名の空・重複、上限超過 |
 
 ```swift
-public struct FrequentHouseworkContext: Equatable, Sendable {
+public struct FrequentHouseworkContext: Sendable, Equatable {
     public let items: [FrequentHouseworkItem]
-    public let customCategories: [FrequentHouseworkCategory]
+    public let customCategories: [FrequentHouseworkCustomCategory]
 
-    /// 表示順（プリセット → カスタム → その他）のセクション。家事0件のセクションは含めない
+    /// 表示順（プリセット → カスタム → その他）のカテゴリ。家事0件のカテゴリも含む（絞り込み・選択肢用）
+    public var categories: [FrequentHouseworkCategory] { ... }
+    /// 家事があるカテゴリだけを表示順に並べたセクション
     public var sections: [FrequentHouseworkSection] { ... }
-    /// 絞り込みのチップに出すカテゴリ（家事0件のカテゴリも含む）
-    public var filterCategories: [FrequentHouseworkCategory] { ... }
-    /// 前後の空白を除いて同じ名前のいつもの家事があるか
-    public func containsTitle(_ title: String, excluding id: String? = nil) -> Bool { ... }
+    /// 表示順の全件（上限を超えた分の判定に使う）
+    public var orderedItems: [FrequentHouseworkItem] { ... }
+    /// 家事が属するカテゴリ。未設定・削除済みのカテゴリは「その他」
+    public func category(of item: FrequentHouseworkItem) -> FrequentHouseworkCategory { ... }
+    public func nextSortOrder(forCategoryId categoryId: String?) -> Int { ... }
+    public func containsTitle(_ title: String, excludingId: String? = nil) -> Bool { ... }
+    public func containsCategoryName(_ name: String, excludingId: String? = nil) -> Bool { ... }
+    public func importCandidates(from days: [HouseworkTemplateDay]) -> [FrequentHouseworkImportCandidate] { ... }
 }
 ```
 
-- `FrequentHouseworkStore` は `AppTabView` で他のStoreと同じく `AppDependencies` から生成し、`task(id: loginContext.cohabitantId)` で購読を開始・切り替える
+- `FrequentHouseworkStore` は `AppTabView` で他のStoreと同じく `AppDependencies` から生成し、`task(id: loginContext.cohabitantId)` で購読を開始・切り替える。作り直す前に、前のグループのリスナーを解除する
 - 画面へは `\.frequentHouseworkContext`（読み取り用の値）と `FrequentHouseworkStore`（操作用）をEnvironmentで配る。Environmentキーは `HometeUI/Components/Environment/` に置く（`HouseworkTemplateContext+Environment.swift` と同じ場所）
 
 ### 4. Client / Infrastructure
 
-`HometeDomain/Dependencies/FrequentHouseworkClient.swift`（`.previewValue`）と `HometeInfrastructure` の `.liveValue` を追加する。
+`HometeDomain/Dependencies/FrequentHouseworkClient.swift`（`.previewValue`）と、`AppRoot/Dependency/Impl/ImplFrequentHouseworkClient.swift`（`.liveValue`。既存のClientと同じ場所）を追加する。
 
 ```swift
 public struct FrequentHouseworkClient: Sendable {
     public let addItemsSnapshotListener: @Sendable (_ id: String, _ cohabitantId: String) async -> AsyncStream<[FrequentHouseworkItem]>
-    public let addCategoriesSnapshotListener: @Sendable (_ id: String, _ cohabitantId: String) async -> AsyncStream<[FrequentHouseworkCategory]>
+    public let addCategoriesSnapshotListener: @Sendable (_ id: String, _ cohabitantId: String) async -> AsyncStream<[FrequentHouseworkCustomCategory]>
     /// 追加・編集・並べ替え・取り込み（WriteBatchで一括書き込み）
     public let upsertItems: @Sendable (_ items: [FrequentHouseworkItem], _ cohabitantId: String) async throws -> Void
     public let deleteItem: @Sendable (_ id: String, _ cohabitantId: String) async throws -> Void
     /// カテゴリの追加・名前変更・並べ替え（WriteBatchで一括書き込み）
-    public let upsertCategories: @Sendable (_ categories: [FrequentHouseworkCategory], _ cohabitantId: String) async throws -> Void
+    public let upsertCategories: @Sendable (_ categories: [FrequentHouseworkCustomCategory], _ cohabitantId: String) async throws -> Void
     public let deleteCategory: @Sendable (_ id: String, _ cohabitantId: String) async throws -> Void
     public let removeListener: @Sendable (_ id: String) async -> Void
 }
 ```
 
 - `CollectionPath` に `frequentHouseworks` / `frequentHouseworkCategories` を追加する
+- 一括書き込みのため、`FirestoreService` に `batchInsertOrUpdate(data:reference:)`（`WriteBatch`）を追加する
+- リスナーのエラーは、テンプレートと同じ `bridgingToNonThrowing` でログ出力して終了させる（`AppRoot/Dependency/Impl/SnapshotListenerBridging.swift` に切り出して共用）
 
 ### 5. まとめて登録（`HouseworkListStore` / `HouseworkClient`）
 
@@ -420,7 +431,7 @@ public struct FrequentHouseworkPicker: View {
 
 | パラメータ | 必須 | 値 |
 |---|---|---|
-| `action` | ○ | `create` / `edit` / `delete` / `import` / `limit_reached` / `create_category` / `delete_category` |
+| `action` | ○ | `create` / `edit` / `delete` / `import` / `limit_reached` / `create_category` / `edit_category` / `delete_category` |
 | `step` | — | `management` / `register` / `template` （起点画面。`create` と `limit_reached` に付ける） |
 | `result` | — | `success` / `failure` |
 
@@ -445,7 +456,8 @@ public struct FrequentHouseworkPicker: View {
 | 新規モジュール | `LocalPackage/Sources/Features/FrequentHouseworkFeature/` | 選ぶ部品・2タブの枠・管理画面一式 |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/FrequentHousework/` | モデル・Context・LimitPolicy・Store・Error |
 | 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/FrequentHouseworkClient.swift` | プロトコルと `.previewValue` |
-| 新規Infra | `LocalPackage/Sources/HometeInfrastructure/`（`ImplFrequentHouseworkClient` など） | `.liveValue` |
+| 新規Impl | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplFrequentHouseworkClient.swift` | `.liveValue` |
+| 修正Infra | `LocalPackage/Sources/HometeInfrastructure/Firestore/FirestoreService.swift` | 一括書き込み |
 | 修正Infra | `LocalPackage/Sources/HometeInfrastructure/Firestore/Reference/CollectionPath.swift` | コレクションパス追加 |
 | 修正Client | `LocalPackage/Sources/HometeDomain/Dependencies/HouseworkClient.swift` | `insertItems` 追加 |
 | 修正Store | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkListStore.swift` | まとめて登録 |
@@ -499,19 +511,21 @@ public struct FrequentHouseworkPicker: View {
 
 **PR 1: ドメイン・データ層**
 
-- [ ] `FrequentHouseworkItem` / `FrequentHouseworkCategory` / `PresetFrequentHouseworkCategory` / `FrequentHouseworkSection` / `FrequentHouseworkContext` / `FrequentHouseworkLimitPolicy` / `FrequentHouseworkError`
-- [ ] `FrequentHouseworkClient`（プロトコル・`.previewValue`・`.liveValue`）と `CollectionPath` の追加
-- [ ] `FrequentHouseworkStore`（購読・CRUD・並べ替え・取り込み・カテゴリ操作・Analytics）
-- [ ] `AppDependencies` / `AppTabView` への組み込みとEnvironmentキー
-- [ ] Firestoreルールとルールテスト、`deleteUserData.ts` のコメント
-- [ ] Analytics（`frequent_housework` / `paywall` の `step` / `AppScreen`）と `doc/analytics_events.md`
-- [ ] ユニットテスト: Context（セクション化・「その他」の扱い・名前の重複判定）、LimitPolicy（上限・無料に戻ったときの利用可否）、Store
+- [x] ドメインモデル（Item / CustomCategory / Preset / Category / Section / Input / ImportCandidate / Context / LimitPolicy / Error）
+- [x] `FrequentHouseworkClient`（プロトコル・`.previewValue`・`.liveValue`）と `CollectionPath`・`FirestoreService.batchInsertOrUpdate` の追加
+- [x] `FrequentHouseworkStore`（購読・CRUD・並べ替え・取り込み・カテゴリ操作・Analytics）
+- [x] `AppDependencies` / `AppTabView` への組み込みとEnvironmentキー
+- [x] Firestoreルールとルールテスト、`deleteUserData.ts` のコメント
+- [x] Analytics（`frequent_housework`）と `doc/analytics_events.md`
+  - `paywall` の `step` と `AppScreen` は、それを使う画面と同じPR 2で追加する（`.claude/rules/screen-view-tracking.md`）
+- [x] ユニットテスト: Context（セクション化・「その他」の扱い・名前の重複判定・取り込み候補）、LimitPolicy（上限・無料に戻ったときの利用可否）、Store
 
 **PR 2: FrequentHouseworkFeature（管理画面）**
 
 - [ ] `Package.swift` にモジュール追加、`doc/multimodules_structure.md` / `CLAUDE.md` 更新
 - [ ] 管理画面・追加／編集モーダル・カテゴリ管理画面・テンプレートから取り込むシート
-- [ ] 上限の案内アラートとPaywall誘導
+- [ ] 上限の案内アラートとPaywall誘導（`PaywallAnalyticsStep.frequentHouseworkLimit`）
+- [ ] 追加する画面の `AppScreen` と `.trackScreenView`、`doc/analytics_events.md` の画面一覧
 - [ ] `AppRoute.frequentHouseworkManagement` と `RouteResolver`
 - [ ] 設定画面の「いつもの家事」行
 - [ ] 選ぶ部品 `FrequentHouseworkPicker` と2タブの枠 `RegisterSourceTabs`
@@ -545,7 +559,7 @@ public struct FrequentHouseworkPicker: View {
 - [ ] `swift build` でビルド通過
 - [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
 - [ ] ユニットテスト実行（追加分含む）通過
-- [ ] Firestoreルールテスト（`npm run test:rules`）通過
+- [x] Firestoreルールテスト（`npm run test:rules`）通過（PR 1時点）
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
 - [ ] シミュレータで動作確認（`simulator-e2e-check`）
   - [ ] いつもの家事を2件選び、1件手入力して「3件登録する」→ ボードに3件並び、通知が1通
