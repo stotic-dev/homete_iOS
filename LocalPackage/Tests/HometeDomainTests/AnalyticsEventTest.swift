@@ -129,7 +129,7 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事に関する行動を、action/step/resultのパラメータを持つhouseworkイベントに変換する",
+        "家事に関する行動を、action/step/executor_type/resultのパラメータを持つhouseworkイベントに変換する",
         arguments: [
             (
                 HouseworkAnalyticsAction.register(step: .board, isSuccess: true),
@@ -140,12 +140,16 @@ struct AnalyticsEventTest {
                 ["action": "register", "step": "dashboard", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .detail, isSuccess: true),
-                ["action": "complete", "step": "detail", "result": "success"]
+                HouseworkAnalyticsAction.complete(step: .detail, executorType: .ownOnly, isSuccess: true),
+                ["action": "complete", "step": "detail", "executor_type": "self", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .board, isSuccess: false),
-                ["action": "complete", "step": "board", "result": "failure"]
+                HouseworkAnalyticsAction.complete(step: .board, executorType: .others, isSuccess: false),
+                ["action": "complete", "step": "board", "executor_type": "others", "result": "failure"]
+            ),
+            (
+                HouseworkAnalyticsAction.complete(step: .dashboard, executorType: .shared, isSuccess: true),
+                ["action": "complete", "step": "dashboard", "executor_type": "shared", "result": "success"]
             ),
             (
                 HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),

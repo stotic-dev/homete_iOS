@@ -9,6 +9,8 @@ import SwiftUI
 /// 家事のセルを長押しした際に表示する、ステータスに応じたクイックアクションのメニュー内容
 ///
 /// `.contextMenu { }` の中身として使う。
+/// 「完了にする」「ありがとう」は入力用のハーフモーダルを出すため、その場では実行せず`onSelectComplete`・
+/// `onSelectThanks`で呼び出し元に伝える（`.contextMenu`の中からはシートを出せないため）。
 public struct HouseworkQuickActionMenuContent: View {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -17,11 +19,21 @@ public struct HouseworkQuickActionMenuContent: View {
 
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
+    let onSelectComplete: () -> Void
+    let onSelectThanks: () -> Void
     let onError: (Error) -> Void
 
-    public init(item: HouseworkBoardItem, step: HouseworkAnalyticsStep, onError: @escaping (Error) -> Void) {
+    public init(
+        item: HouseworkBoardItem,
+        step: HouseworkAnalyticsStep,
+        onSelectComplete: @escaping () -> Void,
+        onSelectThanks: @escaping () -> Void,
+        onError: @escaping (Error) -> Void
+    ) {
         self.item = item
         self.step = step
+        self.onSelectComplete = onSelectComplete
+        self.onSelectThanks = onSelectThanks
         self.onError = onError
     }
 
@@ -40,6 +52,18 @@ public struct HouseworkQuickActionMenuContent: View {
 private extension HouseworkQuickActionMenuContent {
 
     func perform(_ action: HouseworkQuickAction) async {
+        switch action {
+        case .complete:
+            onSelectComplete()
+            return
+
+        case .sendThanks:
+            onSelectThanks()
+            return
+
+        case .remove, .redo, .returnToIncomplete:
+            break
+        }
         guard let cohabitantId = loginContext.cohabitantId else { return }
 
         do {
@@ -63,6 +87,8 @@ private extension HouseworkQuickActionMenuContent {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
         step: .board,
+        onSelectComplete: {},
+        onSelectThanks: {},
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -81,6 +107,8 @@ private extension HouseworkQuickActionMenuContent {
             executorId: "other"
         ),
         step: .board,
+        onSelectComplete: {},
+        onSelectThanks: {},
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -99,6 +127,8 @@ private extension HouseworkQuickActionMenuContent {
             executorId: "own"
         ),
         step: .board,
+        onSelectComplete: {},
+        onSelectThanks: {},
         onError: { _ in }
     )
     .environment(HouseworkListStore())
