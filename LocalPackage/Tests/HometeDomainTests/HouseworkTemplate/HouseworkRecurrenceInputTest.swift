@@ -20,9 +20,13 @@ enum HouseworkRecurrenceInputTest {
 extension HouseworkRecurrenceInputTest.RecurrenceCase {
 
     @Test(
-        "選択中の種類の値だけで繰り返し方を返し、くり返さない場合と曜日未選択の場合はnilを返す",
+        "選択中の種類の値だけで繰り返し方を返し、毎日は全曜日の毎週にし、くり返さない場合はnilを返す",
         arguments: [
             (kind: HouseworkRecurrenceInput.Kind.none, expected: HouseworkRecurrence?.none),
+            (
+                kind: .daily,
+                expected: .some(.weekly([.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]))
+            ),
             (kind: .weekly, expected: .some(.weekly([.tuesday]))),
             (kind: .monthly, expected: .some(.monthly(.dayOfMonth(25)))),
         ]
@@ -83,11 +87,18 @@ extension HouseworkRecurrenceInputTest.RecurrenceCase {
 extension HouseworkRecurrenceInputTest.InitCase {
 
     @Test(
-        "既存の繰り返し方から、その種類と値を選んだ入力状態を作る",
+        "既存の繰り返し方から、その種類と値を選んだ入力状態を作る（全曜日の毎週は毎日にする）",
         arguments: [
             (
                 recurrence: HouseworkRecurrence.weekly([.monday, .friday]),
                 expected: HouseworkRecurrenceInput(kind: .weekly, weekdays: [.monday, .friday])
+            ),
+            (
+                recurrence: .weekly([.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]),
+                expected: HouseworkRecurrenceInput(
+                    kind: .daily,
+                    weekdays: [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]
+                )
             ),
             (
                 recurrence: .monthly(.dayOfMonth(31)),

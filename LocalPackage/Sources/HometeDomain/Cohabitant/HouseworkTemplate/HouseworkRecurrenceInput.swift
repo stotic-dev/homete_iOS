@@ -16,6 +16,8 @@ public struct HouseworkRecurrenceInput: Sendable, Equatable {
 
         /// くり返さない
         case none
+        /// 毎日（全曜日の毎週として保存する）
+        case daily
         /// 毎週
         case weekly
         /// 毎月◯日
@@ -32,6 +34,9 @@ public struct HouseworkRecurrenceInput: Sendable, Equatable {
         switch kind {
         case .none:
             nil
+
+        case .daily:
+            .weekly(Set(DayOfWeek.allCases))
 
         case .weekly:
             weekdays.isEmpty ? nil : .weekly(weekdays)
@@ -64,7 +69,7 @@ public extension HouseworkRecurrenceInput {
     init(recurrence: HouseworkRecurrence) {
         switch recurrence {
         case let .weekly(weekdays):
-            self.init(kind: .weekly, weekdays: weekdays)
+            self.init(kind: weekdays.count == DayOfWeek.allCases.count ? .daily : .weekly, weekdays: weekdays)
 
         case let .monthly(.dayOfMonth(day)):
             self.init(kind: .monthly, dayOfMonth: day)

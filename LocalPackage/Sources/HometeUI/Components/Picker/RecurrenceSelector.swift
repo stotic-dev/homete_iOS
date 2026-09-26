@@ -8,7 +8,7 @@
 import HometeDomain
 import SwiftUI
 
-/// 家事の繰り返し方（毎週 / 毎月◯日）を選ぶコンポーネント。
+/// 家事の繰り返し方（毎日 / 毎週 / 毎月◯日）を選ぶコンポーネント。
 ///
 /// 入力値を描画して変更を伝えるだけで、入力が完了しているかの判定は呼び出し側が`HouseworkRecurrenceInput.isValid`などで行う。
 public struct RecurrenceSelector: View {
@@ -19,7 +19,7 @@ public struct RecurrenceSelector: View {
     /// - Parameter kinds: 選べる種類。「くり返さない」を選ばせたい場合は`.none`を含める
     public init(
         input: Binding<HouseworkRecurrenceInput>,
-        kinds: [HouseworkRecurrenceInput.Kind] = [.weekly, .monthly]
+        kinds: [HouseworkRecurrenceInput.Kind] = [.daily, .weekly, .monthly]
     ) {
         _input = input
         self.kinds = kinds
@@ -49,7 +49,7 @@ private extension RecurrenceSelector {
     @ViewBuilder
     func kindContent() -> some View {
         switch input.kind {
-        case .none:
+        case .none, .daily:
             EmptyView()
 
         case .weekly:
@@ -89,6 +89,7 @@ private extension HouseworkRecurrenceInput.Kind {
     var label: String {
         switch self {
         case .none: "しない"
+        case .daily: "毎日"
         case .weekly: "毎週"
         case .monthly: "毎月"
         }
@@ -100,7 +101,7 @@ private extension HouseworkRecurrenceInput.Kind {
 #Preview("RecurrenceSelector_しない", traits: .sizeThatFitsLayout) {
     RecurrenceSelector(
         input: .constant(.init(kind: .none)),
-        kinds: [.none, .weekly, .monthly]
+        kinds: [.none, .daily, .weekly, .monthly]
     )
     .padding()
 }

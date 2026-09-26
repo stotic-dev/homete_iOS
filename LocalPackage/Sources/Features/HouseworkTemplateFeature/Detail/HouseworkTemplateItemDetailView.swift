@@ -66,6 +66,13 @@ private extension HouseworkTemplateItemDetailView {
     @ViewBuilder
     func recurrenceContent() -> some View {
         switch recurrence {
+        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
+            row(label: "くり返し") {
+                Text("毎日")
+                    .font(with: .body)
+                    .foregroundStyle(.onSurface)
+            }
+
         case let .weekly(days):
             row(label: "登録曜日") {
                 HStack(spacing: .space8) {
@@ -156,6 +163,22 @@ private extension HouseworkTemplateItemDetailView {
                 updatedAt: .distantPast
             ),
             recurrence: .monthly(.dayOfMonth(25)),
+            onEdit: { _ in },
+            onDelete: {}
+        )
+    }
+}
+
+#Preview("HouseworkTemplateItemDetailView_毎日") {
+    NavigationStack {
+        HouseworkTemplateItemDetailView(
+            item: .init(
+                id: .init(id: "1"),
+                title: "食器洗い",
+                point: 5,
+                updatedAt: .distantPast
+            ),
+            recurrence: .weekly(Set(DayOfWeek.allCases)),
             onEdit: { _ in },
             onDelete: {}
         )
