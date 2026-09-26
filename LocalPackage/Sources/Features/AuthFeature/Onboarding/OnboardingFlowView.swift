@@ -120,7 +120,6 @@ private extension OnboardingFlowView {
     OnboardingFlowView(
         authInfo: AccountAuthResult(id: "Test"),
         authSubscriptionSyncUseCase: .init(
-            accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
             cohabitantStore: CohabitantStore(),
             subscriptionStore: subscriptionStore,

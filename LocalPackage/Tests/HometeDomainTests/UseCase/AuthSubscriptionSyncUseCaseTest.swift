@@ -29,12 +29,6 @@ private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncSt
     return HouseworkRetentionSyncStateStore(userDefaults: userDefaults)
 }
 
-/// サインイン中のユーザーを固定した`AccountAuthStore`を用意する
-@MainActor
-private func makeAuthStore(signedInAs authResult: AccountAuthResult?) -> AccountAuthStore {
-    AccountAuthStore(currentAuth: .init(result: authResult, alreadyLoadedAtInitiate: true))
-}
-
 extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
     @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
@@ -77,7 +71,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
             let subscriptionStore = SubscriptionStore(purchaseClient: purchaseClient)
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: subscriptionStore,
@@ -113,7 +106,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
             let subscriptionStore = SubscriptionStore(purchaseClient: .init())
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: subscriptionStore,
@@ -133,7 +125,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 confirmation()
             })
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: AccountStore(accountInfoClient: accountInfoClient),
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
@@ -162,7 +153,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             })
             let accountStore = AccountStore(accountInfoClient: accountInfoClient, account: previousAccount)
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: newAuthResult),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
@@ -178,8 +168,8 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
         }
     }
 
-    @Test("アカウントのロード中にサインアウトした場合は、購読を開始せずロード結果も破棄する")
-    func syncOnSignedInAbortsWhenSignedOutDuringLoad() async {
+    @Test("アカウントのロード中に世代が打ち切られた場合は、購読を開始せずロード結果も破棄する")
+    func syncOnSignedInAbortsWhenCancelledDuringLoad() async {
         await confirmation("古いユーザーIDでは購読もサブスクリプションのログインも行わない", expectedCount: 0) { confirmation in
             let staleAuthResult = AccountAuthResult(id: "staleAccountId")
             let staleAccount = Account(
@@ -199,17 +189,19 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 confirmation()
             })
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
-            // ロードの完了を待っている間にトークン失効で自動サインアウトした状況を、
-            // サインアウト済みの認証状態でロードを始めることで再現する
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: nil),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
                 houseworkManager: .init(houseworkClient: .previewValue)
             )
 
-            let actual = await useCase.syncOnSignedIn(staleAuthResult)
+            // ロードを待っている間にトークン失効で自動サインアウトした状況を、
+            // 世代のTaskをキャンセル済みにしてから走らせることで再現する
+            let task = Task { await useCase.syncOnSignedIn(staleAuthResult) }
+            task.cancel()
+
+            let actual = await task.value
 
             #expect(actual == nil)
             #expect(accountStore.account == nil)
@@ -243,7 +235,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
                 )
             )
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: nil),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: subscriptionStore,
@@ -276,7 +267,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
                     allItems: [.makeForTest(id: 1)]
                 )
                 let useCase = AuthSubscriptionSyncUseCase(
-                    accountAuthStore: makeAuthStore(signedInAs: nil),
                     accountStore: AccountStore(),
                     cohabitantStore: cohabitantStore,
                     subscriptionStore: SubscriptionStore(),
@@ -314,7 +304,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
                         }
                     )
                     let useCase = AuthSubscriptionSyncUseCase(
-                        accountAuthStore: makeAuthStore(signedInAs: nil),
                         accountStore: AccountStore(),
                         cohabitantStore: CohabitantStore(),
                         subscriptionStore: SubscriptionStore(),
@@ -360,7 +349,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
                 )
             )
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: subscriptionStore,
@@ -393,7 +381,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             syncStateStore.save(.init(cohabitantId: inputCohabitantId, isPremium: false))
             let accountStore = AccountStore(account: inputAccount)
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),
@@ -422,7 +409,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
                 isPremium: true
             ))
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),
@@ -452,7 +438,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
                 isPremium: true
             ))
             let useCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),

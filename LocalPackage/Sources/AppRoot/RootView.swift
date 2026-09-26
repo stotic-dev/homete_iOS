@@ -12,18 +12,17 @@ public struct RootView: View {
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
 
     @State var theme = Theme()
-    @State var fcmToken: String?
-    @State var launchState = LaunchState.launching
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(LaunchStateStore.self) var launchStateStore
 
     public var body: some View {
         ZStack {
-            switch launchState {
+            switch launchStateStore.launchState {
             case .launching:
                 LaunchScreenView()
             case let .preLoggedIn(auth):
@@ -40,16 +39,12 @@ public struct RootView: View {
                 LoginView()
             }
         }
-        .animation(.spring, value: launchState)
+        .animation(.spring, value: launchStateStore.launchState)
         .onChange(of: accountAuthStore.currentAuth) {
-            Task {
-                await onChangeAuth()
-            }
+            launchStateStore.syncAuthChange(accountAuthStore.currentAuth)
         }
         .onChange(of: accountStore.account) {
-            Task {
-                await onChangeAccount()
-            }
+            launchStateStore.syncAccountChange(accountStore.account)
         }
         .onChange(of: subscriptionStore.isPremium) {
             Task {
@@ -63,7 +58,7 @@ public struct RootView: View {
             onOpenURL(url)
         }
         .apply(theme: theme)
-        .environment(\.launchStateProxy, .init(launchState: $launchState))
+        .environment(\.launchStateProxy, .init { launchStateStore.update($0) })
     }
 
 }
@@ -90,12 +85,16 @@ public extension RootView {
                 analyticsClient: $0.analyticsClient
             )
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
-                accountAuthStore: accountAuthStore,
                 accountStore: accountStore,
                 cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
                 houseworkManager: $0.houseworkManager,
                 houseworkClient: $0.houseworkClient,
+                analyticsClient: $0.analyticsClient
+            )
+            let launchStateStore = LaunchStateStore(
+                accountStore: accountStore,
+                authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
                 analyticsClient: $0.analyticsClient
             )
 
@@ -105,6 +104,7 @@ public extension RootView {
                 .environment(cohabitantStore)
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
+                .environment(launchStateStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
                 }
@@ -132,58 +132,7 @@ private extension RootView {
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
         guard let fcmToken = notification.object as? String else { return }
-        self.fcmToken = fcmToken
-    }
-
-    func onChangeAuth() async {
-        let handlingAuth = accountAuthStore.currentAuth
-
-        guard let authResult = handlingAuth.result else {
-            launchState = .notLoggedIn
-            await authSubscriptionSyncUseCase.syncOnSignedOut()
-            return
-        }
-
-        guard let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) else {
-            guard isHandling(handlingAuth) else { return }
-            launchState = .preLoggedIn(auth: authResult)
-            return
-        }
-
-        await updateFcmTokenIfNeeded()
-        guard isHandling(handlingAuth) else { return }
-        let context = LoginContext(account: account)
-        analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-        launchState = .loggedIn(context: context)
-    }
-
-    func onChangeAccount() async {
-        guard launchState.isLoggedIn,
-              let account = accountStore.account else { return }
-        let handlingAuth = accountAuthStore.currentAuth
-
-        await updateFcmTokenIfNeeded()
-        guard isHandling(handlingAuth) else { return }
-        let context = LoginContext(account: account)
-        analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-        launchState = .loggedIn(context: context)
-        // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
-        await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
-    }
-
-    /// 処理を始めたときの認証状態が、いまも維持されているかどうか
-    /// - Note: トークン失効による自動サインアウトはFirebase Auth側の判断で非同期に起きるため、
-    ///         `launchState`の更新はawaitを挟んだ時点で古い判断になっている可能性がある。
-    ///         古い認証情報のまま画面を進めると、サインアウト済みのユーザーIDでFirestoreを読み書きしてしまう。
-    ///         新しい認証状態の通知を処理する側が改めて画面を切り替えるため、ここでは何もしないのが正しい
-    func isHandling(_ auth: AccountAuthInfo) -> Bool {
-        accountAuthStore.currentAuth == auth
-    }
-
-    func updateFcmTokenIfNeeded() async {
-        guard let fcmToken else { return }
-        await accountStore.updateFcmTokenIfNeeded(fcmToken)
-        self.fcmToken = nil
+        launchStateStore.receive(fcmToken: fcmToken)
     }
 
 }

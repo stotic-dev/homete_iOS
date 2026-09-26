@@ -99,7 +99,6 @@ private extension RegistrationAccountView {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: ""),
         authSubscriptionSyncUseCase: .init(
-            accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
             cohabitantStore: CohabitantStore(),
             subscriptionStore: SubscriptionStore(),
@@ -113,7 +112,6 @@ private extension RegistrationAccountView {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: "Test"),
         authSubscriptionSyncUseCase: .init(
-            accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
             cohabitantStore: CohabitantStore(),
             subscriptionStore: SubscriptionStore(),

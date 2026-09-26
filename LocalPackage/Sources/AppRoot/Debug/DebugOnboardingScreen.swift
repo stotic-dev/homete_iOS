@@ -30,7 +30,6 @@ struct DebugOnboardingScreen: View {
             OnboardingFlowView(
                 authInfo: AccountAuthResult(id: "debug-onboarding"),
                 authSubscriptionSyncUseCase: .init(
-                    accountAuthStore: accountAuthStore,
                     accountStore: accountStore,
                     cohabitantStore: cohabitantStore,
                     subscriptionStore: subscriptionStore,
