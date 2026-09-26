@@ -26,8 +26,8 @@ public struct DailyCompletionReminderSetting: Equatable, Codable, Sendable {
 public extension DailyCompletionReminderSetting {
 
     /// 未設定時の値
-    /// - Note: 家事がひと段落しやすい夜の時間帯を初期値にする。明示的にONにするまでは通知しない
-    static let initial: Self = .init(isEnabled: false, hour: 21, minute: 0)
+    /// - Note: 家事がひと段落しやすい夜の時間帯を初期値にする。設定を開かなくても届くよう、初期状態からONにする
+    static let initial: Self = .init(isEnabled: true, hour: 21, minute: 0)
 
     /// 有効/無効だけを差し替えた設定を返す
     func updateIsEnabled(_ isEnabled: Bool) -> Self {
