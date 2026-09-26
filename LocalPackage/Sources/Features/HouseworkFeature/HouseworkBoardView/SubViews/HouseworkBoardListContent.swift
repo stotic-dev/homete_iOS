@@ -21,12 +21,12 @@ struct HouseworkBoardListContent: View {
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
+    /// クイックアクションで「完了にする」が選ばれた。ハーフモーダルは親が出す
+    let onSelectComplete: (HouseworkBoardItem) -> Void
+    /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
+    let onSelectThanks: (HouseworkBoardItem) -> Void
 
     @State var selectedIDs: Set<String> = []
-    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
-    @State var completingItem: HouseworkBoardItem?
-    /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
-    @State var thankingItem: HouseworkBoardItem?
     @CommonError var commonError
 
     var body: some View {
@@ -48,8 +48,8 @@ struct HouseworkBoardListContent: View {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .board,
-                                onSelectComplete: { completingItem = item },
-                                onSelectThanks: { thankingItem = item },
+                                onSelectComplete: { onSelectComplete(item) },
+                                onSelectThanks: { onSelectThanks(item) },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -79,12 +79,6 @@ struct HouseworkBoardListContent: View {
                 }
                 .onChange(of: isSelecting) {
                     selectedIDs = []
-                }
-                .sheet(item: $completingItem) { item in
-                    HouseworkCompleteSheet(item: item, step: .board)
-                }
-                .sheet(item: $thankingItem) { item in
-                    HouseworkThanksView(item: item)
                 }
                 .commonError(content: $commonError)
         }
@@ -163,7 +157,9 @@ private extension HouseworkBoardListContent {
         ]),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
-        onCreateTapped: {}
+        onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in }
     )
     .setupLoginContextForPreview()
 }
@@ -206,6 +202,8 @@ private extension HouseworkBoardListContent {
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in },
         selectedIDs: ["1"]
     )
     .setupLoginContextForPreview()
