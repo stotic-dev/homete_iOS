@@ -15,11 +15,17 @@ public final class FrequentHouseworkStore {
 
     public private(set) var items: [FrequentHouseworkItem]
     public private(set) var customCategories: [FrequentHouseworkCustomCategory]
-    /// いつもの家事の初回受信の状態
+    /// いつもの家事とカスタムカテゴリの初回受信の状態
+    /// - Note: 両方の最初のスナップショットが揃うまでは`loading`のまま。
+    ///         揃う前は件数上限・名前の重複・カテゴリの判定が正しくできないため、画面は追加や編集をさせない
     public private(set) var loadState: ListenerLoadState
 
     private var itemsObserveTask: Task<Void, Never>?
     private var categoriesObserveTask: Task<Void, Never>?
+    private var hasReceivedItems = false
+    private var hasReceivedCategories = false
+    /// 購読の開始・解除を直列に実行するための、最後に積んだ処理
+    private var listenerLifecycleTask: Task<Void, Never>?
 
     private let frequentHouseworkClient: FrequentHouseworkClient
     private let analyticsClient: AnalyticsClient
@@ -57,10 +63,42 @@ public final class FrequentHouseworkStore {
 public extension FrequentHouseworkStore {
 
     /// いつもの家事とカスタムカテゴリの購読を開始する
-    /// - Note: すでに購読中の場合は解除してから開始する（グループの切り替えに備える）
+    /// - Note: すでに購読中の場合は解除してから開始する（グループの切り替え・再試行に備える）
     func startObserving(cohabitantId: String) async {
-        await stopObserving()
+        await enqueueListenerLifecycle {
+            await self.performStartObserving(cohabitantId: cohabitantId)
+        }
+    }
+
+    /// いつもの家事とカスタムカテゴリの購読を解除する
+    func stopObserving() async {
+        await enqueueListenerLifecycle {
+            await self.performStopObserving()
+        }
+    }
+
+}
+
+private extension FrequentHouseworkStore {
+
+    /// 購読の開始・解除を1本の列に並べ、前の処理が終わってから次を始める
+    /// - Note: 開始・解除は途中で`await`を挟むため、並行して呼ばれると解除と登録が入り組み、
+    ///         同じIDで二重に登録されたリスナーが解除されないまま残る（再試行の連打・グループ切り替えで起こる）
+    func enqueueListenerLifecycle(_ operation: @escaping @MainActor @Sendable () async -> Void) async {
+        let previousTask = listenerLifecycleTask
+        let task = Task { @MainActor in
+            await previousTask?.value
+            await operation()
+        }
+        listenerLifecycleTask = task
+        await task.value
+    }
+
+    func performStartObserving(cohabitantId: String) async {
+        await performStopObserving()
         loadState = .loading
+        hasReceivedItems = false
+        hasReceivedCategories = false
 
         let itemsStream = await frequentHouseworkClient.addItemsSnapshotListener(itemsListenerKey, cohabitantId)
         let categoriesStream = await frequentHouseworkClient.addCategoriesSnapshotListener(
@@ -70,24 +108,49 @@ public extension FrequentHouseworkStore {
         itemsObserveTask = Task {
             for await items in itemsStream {
                 self.items = items
-                self.loadState = .loaded
+                self.hasReceivedItems = true
+                self.markLoadedIfReady()
             }
+            self.markFailedIfListenerEnded()
         }
         categoriesObserveTask = Task {
             for await categories in categoriesStream {
                 self.customCategories = categories
+                self.hasReceivedCategories = true
+                self.markLoadedIfReady()
             }
+            self.markFailedIfListenerEnded()
         }
     }
 
-    /// いつもの家事とカスタムカテゴリの購読を解除する
-    func stopObserving() async {
+    func performStopObserving() async {
         itemsObserveTask?.cancel()
         itemsObserveTask = nil
         categoriesObserveTask?.cancel()
         categoriesObserveTask = nil
         await frequentHouseworkClient.removeListener(itemsListenerKey)
         await frequentHouseworkClient.removeListener(categoriesListenerKey)
+    }
+
+}
+
+private extension FrequentHouseworkStore {
+
+    /// 両方の最初のスナップショットが揃ったら読み込み済みにする
+    /// - Note: 片方のリスナーが先に終わって失敗になっている場合は、もう片方が届いても失敗のままにする
+    ///         （止まったリスナーの古いデータで件数上限・名前の重複を判定させないため）
+    func markLoadedIfReady() {
+        guard loadState == .loading, hasReceivedItems, hasReceivedCategories else { return }
+        loadState = .loaded
+    }
+
+    /// リスナーが終わった場合は、読み込み前・後を問わず失敗とみなす
+    /// - Note: 終わったリスナーのデータは以降更新されないため、読み込み済みのままにすると
+    ///         古いデータで件数上限・名前の重複を判定してしまう。購読の解除（タスクのキャンセル）で終わった場合は対象外。
+    ///         リスナーのエラーはClientでログ出力のうえストリームの終了に変換されるため、終了したことで検知する
+    func markFailedIfListenerEnded() {
+        guard !Task.isCancelled else { return }
+        loadState = .failed(.other)
     }
 
 }

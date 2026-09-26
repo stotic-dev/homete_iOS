@@ -99,6 +99,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
+| `frequent_housework_management` | `FrequentHouseworkManagementView` |
+| `frequent_housework_edit` | `FrequentHouseworkEditModal` |
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
 | `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
@@ -423,7 +425,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` | Paywallへの起点 |
+| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` | Paywallへの起点 |
 | `action` | ○ | `shown` / `closed` | 表示 / クローズのどちらか |
 | `result` | — | `purchased` / `not_purchased` | `closed`のみ付与。閉じた時点でプレミアムが有効なら`purchased` |
 
@@ -439,6 +441,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `contribution_storage_limit` | 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`） |
 | `setting` | 設定画面の「プレミアムプランに登録」項目（`SettingView`） |
 | `subscription_management` | サブスク管理画面の「プランを変更」ボタン（`SubscriptionManagementView`） |
+| `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen`） |
 
 `step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
 閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）

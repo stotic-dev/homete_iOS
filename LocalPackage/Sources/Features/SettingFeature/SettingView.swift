@@ -72,6 +72,7 @@ struct SettingView: View {
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
     @State var isShowHouseworkTemplate = false
+    @State var isShowFrequentHousework = false
     @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
 
@@ -146,6 +147,9 @@ struct SettingView: View {
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowFrequentHousework) {
+            router.resolve(.frequentHouseworkManagement)
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
@@ -250,6 +254,9 @@ private extension SettingView {
         switch item {
         case .taskTemplate:
             isShowHouseworkTemplate = true
+
+        case .frequentHousework:
+            isShowFrequentHousework = true
 
         case .notificationPermission:
             navigationPath.push(.notificationPermission)
