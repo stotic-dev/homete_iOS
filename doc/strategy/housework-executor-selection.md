@@ -45,7 +45,7 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
    - 「配分を調整する」は閉じた状態を初期表示にする。担当者が1人のときは出さない
    - 単位は%。ピッカーで1%刻み（1〜99%）に選ぶ
    - 2人のときは、片方を変えるともう片方が自動で `100 - x` になる
-   - 3人以上のときは他の人の%を自動では変えない。合計が100%になるまで「完了にする」を押せず、「合計 90 / 100%」のように表示する
+   - 3人以上のときは他の人の%を自動では変えない。合計が100%になるまで「完了にする」を押せず、「割合の合計が100%になるように調整してください（いまは90%です）」のようにエラーで伝える
 7. 保存時に%をポイントへ換算する（最大剰余方式）
    - 全員分を切り捨ててから、余ったポイントを小数部分が大きい人から順に1ptずつ配る
    - 小数部分が同じ人がいる場合は、メンバー一覧の並び順が早い人を優先する
@@ -201,12 +201,12 @@ public func complete(
      自分  [ 34% ▾ ]
      Bさん [ 33% ▾ ]
      Cさん [ 33% ▾ ]
-     合計 100 / 100%
  （エラー表示）
 ```
 
 - 家事詳細の「完了にする」（`HouseworkDetailActionContent`）と、クイックアクションの「完了にする」（`HouseworkQuickActionMenuContent`）から `.sheet` で表示する。確定したら `houseworkListStore.complete` を呼んでシートを閉じる
 - クイックアクションは `.contextMenu` の中身なので、そこから直接シートは出せない。メニューで「完了にする」を選んだら、対象の家事を親View（家事ボード・ダッシュボード）の `@State` に渡して `.sheet(item:)` で表示する。そのため `HouseworkQuickActionMenuContent` に、完了を選んだことを親に伝えるクロージャを追加する
+- 家事ボードでは、`.sheet(item:)` を `TabView` のページ（`HouseworkBoardListContent`）ではなく家事ボード全体（`HouseworkBoardView`）に置く。ページの一覧は空表示と切り替わるため、完了にした家事が一覧から消えるとシートを出しているビューごと作り直され、閉じたシートがもう一度出てしまう
 - %のピッカーは、既存の `PointWheelPickerField` と同じホイール形式で、`1...99` の範囲にする。共通化できそうなら `HometeUI` に `PercentageWheelPickerField` として切り出す
 - 状態は `HouseworkExecutorAllocation` を `@State` で持つ。判定は全部ドメイン側で行い、Viewは結果を表示するだけにする（`presentation-logic-placement` ルール）
 - `NavigationStack` で包み、タイトル「完了にする」をナビゲーションバーに出す。leadingにキャンセル（`NavigationBarButton(label: .close)`）、trailingに完了のアイコンボタン（`NavigationBarPrimaryActionButton(systemImage: "checkmark")`）を置く。配分にエラーがあるときは完了ボタンを押せない
