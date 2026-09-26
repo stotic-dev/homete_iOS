@@ -119,7 +119,12 @@ private extension OnboardingFlowView {
     let subscriptionStore = SubscriptionStore()
     OnboardingFlowView(
         authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: subscriptionStore)
+        authSubscriptionSyncUseCase: .init(
+            accountStore: AccountStore(),
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: subscriptionStore,
+            houseworkManager: .init(houseworkClient: .previewValue)
+        )
     )
     .environment(subscriptionStore)
     #if canImport(Prefire)

@@ -63,6 +63,24 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    /// 同じ家事をもう一度やったものとして、完了済みの別の家事を作る
+    ///
+    /// 元の家事の完了記録は残したまま、実施した回数分のポイントを積めるように別IDの家事として作る。
+    /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない。
+    public func makeRedone(id: String, at now: Date, executor: String) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .completed,
+            executorId: executor,
+            executedAt: now,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: nil
+        )
+    }
+
     public func updateIncomplete() -> Self {
         .init(
             id: id,

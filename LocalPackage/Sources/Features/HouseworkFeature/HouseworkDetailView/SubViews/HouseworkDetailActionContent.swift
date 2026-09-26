@@ -32,6 +32,7 @@ struct HouseworkDetailActionContent: View {
                 if item.canSendThanks(ownUserId: account.id) {
                     sendThanksButton()
                 }
+                redoButton()
                 undoChangeStateButton()
             case .notTodo:
                 EmptyView()
@@ -55,6 +56,20 @@ private extension HouseworkDetailActionContent {
             isPresentedCompleteSheet = true
         } label: {
             Label("完了にする", systemImage: "checkmark.circle.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .subPrimaryButtonStyle()
+    }
+
+    func redoButton() -> some View {
+        Button {
+            isLoading = true
+            Task {
+                await tappedRedoButton()
+                isLoading = false
+            }
+        } label: {
+            Label("もう一度やった", systemImage: "arrow.clockwise")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -89,6 +104,22 @@ private extension HouseworkDetailActionContent {
 // プレゼンテーションロジック
 
 private extension HouseworkDetailActionContent {
+
+    func tappedRedoButton() async {
+        guard let cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.redo(
+                target: item.originalItem,
+                now: .now,
+                executor: account,
+                cohabitantId: cohabitantId,
+                step: .detail
+            )
+        } catch {
+            commonErrorContent = .init(error: error)
+        }
+    }
 
     func tappedUndoStateButton() async {
         guard let cohabitantId else { return }

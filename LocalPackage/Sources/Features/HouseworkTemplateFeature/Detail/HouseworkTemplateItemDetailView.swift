@@ -17,7 +17,7 @@ struct HouseworkTemplateItemDetailView: View {
     @State var isPresentingEditModal = false
     @State var item: HouseworkTemplateItem
 
-    let registeredDays: [DayOfWeek]
+    let recurrence: HouseworkRecurrence
     let onEdit: (TemplateItemEditInput) -> Void
     let onDelete: () -> Void
 
@@ -27,7 +27,7 @@ struct HouseworkTemplateItemDetailView: View {
                 PointLabel(point: item.point)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            selectedDayOfWeeks()
+            recurrenceContent()
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -39,10 +39,7 @@ struct HouseworkTemplateItemDetailView: View {
         }
         .sheet(isPresented: $isPresentingEditModal) {
             HouseworkTemplateItemEditModalScreen(
-                mode: .edit(before: .init(
-                    item: item,
-                    selectedDays: .init(registeredDays)
-                )),
+                mode: .edit(before: .init(item: item, recurrence: recurrence)),
                 onConfirm: { input in
                     onEdited(input)
                 }
@@ -66,20 +63,35 @@ private extension HouseworkTemplateItemDetailView {
         }
     }
 
-    func selectedDayOfWeeks() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("登録曜日")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSubSurface)
-            HStack(spacing: .space8) {
-                ForEach(registeredDays) { day in
-                    WeekdayLabel(
-                        weekday: day,
-                        isSelected: true
-                    )
-                    .frame(width: 40)
+    @ViewBuilder
+    func recurrenceContent() -> some View {
+        switch recurrence {
+        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
+            row(label: "くり返し") {
+                Text("毎日")
+                    .font(with: .body)
+                    .foregroundStyle(.onSurface)
+            }
+
+        case let .weekly(days):
+            row(label: "登録曜日") {
+                HStack(spacing: .space8) {
+                    ForEach(DayOfWeek.displayOrdered.filter { days.contains($0) }) { day in
+                        WeekdayLabel(
+                            weekday: day,
+                            isSelected: true
+                        )
+                        .frame(width: 40)
+                    }
+                    Spacer()
                 }
-                Spacer()
+            }
+
+        case let .monthly(rule):
+            row(label: "くり返し") {
+                Text(rule.label)
+                    .font(with: .body)
+                    .foregroundStyle(.onSurface)
             }
         }
     }
@@ -134,7 +146,39 @@ private extension HouseworkTemplateItemDetailView {
                 point: 10,
                 updatedAt: .distantPast
             ),
-            registeredDays: [.monday, .wednesday],
+            recurrence: .weekly([.monday, .wednesday]),
+            onEdit: { _ in },
+            onDelete: {}
+        )
+    }
+}
+
+#Preview("HouseworkTemplateItemDetailView_毎月") {
+    NavigationStack {
+        HouseworkTemplateItemDetailView(
+            item: .init(
+                id: .init(id: "1"),
+                title: "家賃の振込",
+                point: 5,
+                updatedAt: .distantPast
+            ),
+            recurrence: .monthly(.dayOfMonth(25)),
+            onEdit: { _ in },
+            onDelete: {}
+        )
+    }
+}
+
+#Preview("HouseworkTemplateItemDetailView_毎日") {
+    NavigationStack {
+        HouseworkTemplateItemDetailView(
+            item: .init(
+                id: .init(id: "1"),
+                title: "食器洗い",
+                point: 5,
+                updatedAt: .distantPast
+            ),
+            recurrence: .weekly(Set(DayOfWeek.allCases)),
             onEdit: { _ in },
             onDelete: {}
         )

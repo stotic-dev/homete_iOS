@@ -15,11 +15,14 @@ struct DebugMenuView: View {
 
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
+    @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
 
     @State var isShowOnboarding = false
     @State var isShowPaywall = false
     @State var isShowCohabitantRegistration = false
     @State var isDailyCompletionReminderLimitDisabled = false
+    @State var isShowRevokeResult = false
+    @State var revokeResultMessage = ""
 
     var body: some View {
         List {
@@ -50,6 +53,29 @@ struct DebugMenuView: View {
                     isShowPaywall = true
                 }
             }
+            Section("ログイン情報の失効") {
+                Button("失効させる（アプリはこのまま）") {
+                    Task { await revokeRefreshTokens() }
+                }
+                Button("失効させて、すぐにトークンを取り直す") {
+                    Task { await revokeRefreshTokensAndRefresh() }
+                }
+                Text("""
+                サーバー側で自分のログイン情報を失効させます。STG環境限定で、本番では動きません。
+
+                「アプリはこのまま」を選んだ後にアプリを終了して起動し直すと、起動直後に自動サインアウトされる状況を再現できます。\
+                「すぐにトークンを取り直す」を選ぶと、その場でログイン画面に戻ります。
+
+                どちらの場合も、もう一度ログインすればそのまま使えるようになります。
+                """)
+                .font(with: .caption)
+                .foregroundStyle(.onSurfaceVariant)
+            }
+        }
+        .alert("ログイン情報の失効", isPresented: $isShowRevokeResult) {
+            Button("OK") {}
+        } message: {
+            Text(revokeResultMessage)
         }
         .navigationTitle("デバッグメニュー")
         .inlineNavigationBarTitleDisplayMode()
@@ -81,6 +107,47 @@ private extension DebugMenuView {
                 await dailyCompletionReminderUseCase.updateIsDailyLimitDisabled(isDisabled)
             }
         }
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension DebugMenuView {
+
+    /// サーバー側でログイン情報を失効させる
+    /// - Note: 失効させただけではクライアントは気付かない。次にトークンを取り直すタイミング
+    ///         （多くはアプリの起動時）にFirebase Authが自動サインアウトする
+    func revokeRefreshTokens() async {
+        do {
+            try await debugAuthClient.revokeOwnRefreshTokens()
+            showResult("失効させました。アプリを終了して起動し直すと、起動直後の自動サインアウトを再現できます。")
+        } catch {
+            showResult("失効に失敗しました: \(error)")
+        }
+    }
+
+    /// ログイン情報を失効させた直後にトークンを取り直し、その場で自動サインアウトさせる
+    func revokeRefreshTokensAndRefresh() async {
+        do {
+            try await debugAuthClient.revokeOwnRefreshTokens()
+        } catch {
+            showResult("失効に失敗しました: \(error)")
+            return
+        }
+
+        do {
+            try await debugAuthClient.refreshIdToken()
+            // 失効済みなら更新は失敗するはずなので、成功した場合は失効が効いていない
+            showResult("トークンの取り直しが成功してしまいました。失効が反映されていない可能性があります。")
+        } catch {
+            showResult("失効させ、トークンの取り直しに失敗しました。ログイン画面に戻ります。")
+        }
+    }
+
+    func showResult(_ message: String) {
+        revokeResultMessage = message
+        isShowRevokeResult = true
     }
 
 }

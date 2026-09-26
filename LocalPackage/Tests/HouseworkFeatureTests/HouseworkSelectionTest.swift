@@ -98,7 +98,7 @@ extension HouseworkSelectionTest.AvailableActionsCase {
         #expect(actual == expected)
     }
 
-    @Test("完了済みで自分が実施した家事だけを選んだ場合は、未完了に戻すのみが行える")
+    @Test("完了済みで自分が実施した家事だけを選んだ場合は、もう一度やったを除いた未完了に戻すのみが行える")
     func availableActions_completedByOwnUserOnly_returnsReturnToIncompleteOnly() {
         // Arrange
 

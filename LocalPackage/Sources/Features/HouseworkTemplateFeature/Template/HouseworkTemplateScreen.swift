@@ -98,7 +98,7 @@ private extension HouseworkTemplateScreen {
 
     func onAppear() async {
         // currentVersionで変更検知するためテンプレートの変更監視を止める
-        await houseworkTemplateListStore.stopObservingDays()
+        await houseworkTemplateListStore.stopObservingItems()
 
         guard let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
@@ -113,7 +113,10 @@ private extension HouseworkTemplateScreen {
             )
 
             // 画面を開いたタイミングでの最新のテンプレート内容を設定
-            let initialDraftOnAppear = HouseworkTemplateDraft.make(houseworkTemplateListStore.selectedDays)
+            let initialDraftOnAppear = HouseworkTemplateDraft.make(
+                houseworkTemplateListStore.selectedDays,
+                monthlyItems: houseworkTemplateListStore.monthlyItems
+            )
             editingDraft = initialDraftOnAppear
             initialDraft = initialDraftOnAppear
         } catch {
@@ -164,7 +167,7 @@ private extension HouseworkTemplateScreen {
         )
 
         // テンプレートの変更検知で家事の内容をリアルタイムに更新するために監視を再開する
-        await houseworkTemplateListStore.startObservingDays(
+        await houseworkTemplateListStore.startObservingItems(
             templateId: templateId,
             cohabitantId: cohabitantId
         )
@@ -215,10 +218,14 @@ private extension HouseworkTemplateScreen {
         do {
             // バージョンが変わったらテンプレートの内容を再ロードする
             try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
+            await houseworkTemplateListStore.loadMonthlyItems(templateId: templateId, cohabitantId: cohabitantId)
             // 未保存の変更が残っている場合はコンフリクトアラートで解決されるまでバージョンを進めない
             // （先にバージョンを進めてしまうと、アラートを「キャンセル」した後の保存で楽観ロックが素通りしてしまうため）
             let hasUnresolvedConflict = initialDraft?.hasUnsavedChanges(comparedTo: editingDraft) ?? false
-            let latestDraft = HouseworkTemplateDraft.make(houseworkTemplateListStore.selectedDays)
+            let latestDraft = HouseworkTemplateDraft.make(
+                houseworkTemplateListStore.selectedDays,
+                monthlyItems: houseworkTemplateListStore.monthlyItems
+            )
             initialDraft = latestDraft
             if !hasUnresolvedConflict {
                 // 未保存の変更が無い場合は編集中の内容も最新化する

@@ -17,9 +17,9 @@ struct AppTabView: View {
     @Environment(\.calendar) var calendar
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(\.routeResolver) var router
 
-    @State var cohabitantStore: CohabitantStore?
     @State var contributionStore: ContributionStore?
     @State var houseworkListStore: HouseworkListStore?
     @State var houseworkTemplateListStore: HouseworkTemplateListStore?
@@ -67,10 +67,7 @@ struct AppTabView: View {
             .task(id: loginContext.cohabitantId) {
                 await onChangeCohabitant()
             }
-            .environment(
-                \.cohabitantMembers,
-                cohabitantStore?.members ?? .init(value: [], ownId: "")
-            )
+            .environment(\.cohabitantMembers, cohabitantStore.members)
             .environment(
                 \.houseworkTemplateContext,
                 houseworkTemplateListStore?.context ?? .init(metadata: nil, houseworkTemplate: [])
@@ -137,7 +134,6 @@ private extension AppTabView {
     var homeScreen: some View {
         HomeView.make(
             contributionStore: contributionStore,
-            cohabitantStore: cohabitantStore,
             houseworkTemplateListStore: houseworkTemplateListStore,
             houseworkListStore: houseworkListStore
         )
@@ -171,16 +167,10 @@ private extension AppTabView {
 
     func setupStore() {
         guard loginContext.hasCohabitant else {
-            cohabitantStore = nil
             contributionStore = nil
             frequentHouseworkStore = nil
             return
         }
-        cohabitantStore = .init(
-            ownId: loginContext.account.id,
-            cohabitantClient: appDependencies.cohabitantClient,
-            accountInfoClient: appDependencies.accountInfoClient
-        )
         contributionStore = .init(
             houseworkManager: appDependencies.houseworkManager,
             calendar: calendar
@@ -228,6 +218,7 @@ private extension AppTabView {
     AppTabView()
         .environment(AccountStore())
         .environment(AccountAuthStore())
+        .environment(CohabitantStore())
         .environment(PendingInvitationStore())
     #if canImport(Prefire)
         .prefireIgnored()

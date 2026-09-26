@@ -27,6 +27,8 @@ public struct AppDependencies: Sendable {
     public let notificationGuideStateClient: NotificationGuideStateClient
     public let pasteboardClient: PasteboardClient
     public let dailyCompletionReminderClient: DailyCompletionReminderClient
+    /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
+    public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
     /// 広告の同意取得（ATT含む）とMobileAdsの初期化を行うUseCase
     public let adsSetupUseCase: AdsSetupUseCase
@@ -53,7 +55,8 @@ public struct AppDependencies: Sendable {
         notificationPermissionClient: NotificationPermissionClient = .previewValue,
         notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
         pasteboardClient: PasteboardClient = .previewValue,
-        dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue
+        dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
+        debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
@@ -73,6 +76,7 @@ public struct AppDependencies: Sendable {
         self.notificationGuideStateClient = notificationGuideStateClient
         self.pasteboardClient = pasteboardClient
         self.dailyCompletionReminderClient = dailyCompletionReminderClient
+        self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
         notificationPermissionUseCase = .init(
