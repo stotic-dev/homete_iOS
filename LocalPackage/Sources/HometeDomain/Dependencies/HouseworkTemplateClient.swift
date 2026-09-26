@@ -92,83 +92,85 @@ public struct HouseworkTemplateClient: Sendable {
     public let removeListener: @Sendable (_ id: String) async -> Void
 
     public init(
-        fetchTemplates: @Sendable @escaping (
+        fetchTemplates: (@Sendable (
             _ cohabitantId: String
-        ) async throws -> [HouseworkTemplateMeta] = { _ in [] },
-        fetchDays: @Sendable @escaping (
+        ) async throws -> [HouseworkTemplateMeta])? = nil,
+        fetchDays: (@Sendable (
             _ cohabitantId: String,
             _ templateId: String
-        ) async throws -> [HouseworkTemplateDay] = { _, _ in [] },
-        upsertTemplate: @Sendable @escaping (
+        ) async throws -> [HouseworkTemplateDay])? = nil,
+        upsertTemplate: (@Sendable (
             _ meta: HouseworkTemplateMeta,
             _ cohabitantId: String
-        ) async throws -> Void = { _, _ in },
-        fetchMonthlyItems: @Sendable @escaping (
+        ) async throws -> Void)? = nil,
+        fetchMonthlyItems: (@Sendable (
             _ cohabitantId: String,
             _ templateId: String
-        ) async throws -> [HouseworkTemplateMonthlyItem] = { _, _ in [] },
-        updateTemplate: @Sendable @escaping (
+        ) async throws -> [HouseworkTemplateMonthlyItem])? = nil,
+        updateTemplate: (@Sendable (
             _ update: HouseworkTemplateUpdate,
             _ templateId: String,
             _ cohabitantId: String,
             _ currentVersion: Int
-        ) async throws -> Void = { _, _, _, _ in },
-        appendItem: @Sendable @escaping (
+        ) async throws -> Void)? = nil,
+        appendItem: (@Sendable (
             _ item: HouseworkTemplateItem,
             _ recurrence: HouseworkRecurrence,
             _ templateId: String,
             _ cohabitantId: String
-        ) async throws -> Void = { _, _, _, _ in },
-        upsertEditor: @Sendable @escaping (
+        ) async throws -> Void)? = nil,
+        upsertEditor: (@Sendable (
             _ editor: HouseworkTemplateEditor,
             _ templateId: String,
             _ cohabitantId: String
-        ) async throws -> Void = { _, _, _ in },
-        removeEditor: @Sendable @escaping (
+        ) async throws -> Void)? = nil,
+        removeEditor: (@Sendable (
             _ userId: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async throws -> Void = { _, _, _ in },
-        addDaysSnapshotListener: @Sendable @escaping (
+        ) async throws -> Void)? = nil,
+        addDaysSnapshotListener: (@Sendable (
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateDay]> = { _, _, _ in .makeStream().stream },
-        addMonthlyItemsSnapshotListener: @Sendable @escaping (
+        ) async -> AsyncStream<[HouseworkTemplateDay]>)? = nil,
+        addMonthlyItemsSnapshotListener: (@Sendable (
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateMonthlyItem]> = { _, _, _ in .makeStream().stream },
-        addTemplatesSnapshotListener: @Sendable @escaping (
+        ) async -> AsyncStream<[HouseworkTemplateMonthlyItem]>)? = nil,
+        addTemplatesSnapshotListener: (@Sendable (
             _ id: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateMeta]> = { _, _ in .makeStream().stream },
-        addEditorsSnapshotListener: @Sendable @escaping (
-            _ id: String,
-            _ templateId: String,
-            _ cohabitantId: String
-        ) async -> AsyncStream<[HouseworkTemplateEditor]> = { _, _, _ in .makeStream().stream },
-        addMetaVersionSnapshotListener: @Sendable @escaping (
+        ) async -> AsyncStream<[HouseworkTemplateMeta]>)? = nil,
+        addEditorsSnapshotListener: (@Sendable (
             _ id: String,
             _ templateId: String,
             _ cohabitantId: String
-        ) async -> AsyncStream<Int> = { _, _, _ in .makeStream().stream },
-        removeListener: @Sendable @escaping (_ id: String) async -> Void = { _ in }
+        ) async -> AsyncStream<[HouseworkTemplateEditor]>)? = nil,
+        addMetaVersionSnapshotListener: (@Sendable (
+            _ id: String,
+            _ templateId: String,
+            _ cohabitantId: String
+        ) async -> AsyncStream<Int>)? = nil,
+        removeListener: (@Sendable (_ id: String) async -> Void)? = nil
     ) {
-        self.fetchTemplates = fetchTemplates
-        self.fetchDays = fetchDays
-        self.upsertTemplate = upsertTemplate
-        self.fetchMonthlyItems = fetchMonthlyItems
-        self.updateTemplate = updateTemplate
-        self.appendItem = appendItem
-        self.upsertEditor = upsertEditor
-        self.removeEditor = removeEditor
-        self.addDaysSnapshotListener = addDaysSnapshotListener
-        self.addMonthlyItemsSnapshotListener = addMonthlyItemsSnapshotListener
-        self.addTemplatesSnapshotListener = addTemplatesSnapshotListener
-        self.addEditorsSnapshotListener = addEditorsSnapshotListener
-        self.addMetaVersionSnapshotListener = addMetaVersionSnapshotListener
-        self.removeListener = removeListener
+        // デフォルト引数にクロージャを書くと、Xcode 26系（Swift 6.2〜6.3）のビルドで並列に呼ばれたときに
+        // asyncフレームが壊れてクラッシュする。そのためデフォルト値はnilにして、既定の実装は本体で代入する
+        self.fetchTemplates = fetchTemplates ?? { _ in [] }
+        self.fetchDays = fetchDays ?? { _, _ in [] }
+        self.upsertTemplate = upsertTemplate ?? { _, _ in }
+        self.fetchMonthlyItems = fetchMonthlyItems ?? { _, _ in [] }
+        self.updateTemplate = updateTemplate ?? { _, _, _, _ in }
+        self.appendItem = appendItem ?? { _, _, _, _ in }
+        self.upsertEditor = upsertEditor ?? { _, _, _ in }
+        self.removeEditor = removeEditor ?? { _, _, _ in }
+        self.addDaysSnapshotListener = addDaysSnapshotListener ?? { _, _, _ in .makeStream().stream }
+        self.addMonthlyItemsSnapshotListener = addMonthlyItemsSnapshotListener ?? { _, _, _ in .makeStream().stream }
+        self.addTemplatesSnapshotListener = addTemplatesSnapshotListener ?? { _, _ in .makeStream().stream }
+        self.addEditorsSnapshotListener = addEditorsSnapshotListener ?? { _, _, _ in .makeStream().stream }
+        self.addMetaVersionSnapshotListener = addMetaVersionSnapshotListener ?? { _, _, _ in .makeStream().stream }
+        self.removeListener = removeListener ?? { _ in }
     }
 
 }

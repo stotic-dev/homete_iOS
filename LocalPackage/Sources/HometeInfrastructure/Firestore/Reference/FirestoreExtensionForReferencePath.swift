@@ -51,4 +51,16 @@ public extension Firestore {
             .collection(CollectionPath.editors.rawValue)
     }
 
+    /// いつもの家事コレクションの参照を取得する
+    func frequentHouseworksRef(cohabitantId: String) -> CollectionReference {
+        cohabitantRef(id: cohabitantId)
+            .collection(CollectionPath.frequentHouseworks.rawValue)
+    }
+
+    /// いつもの家事のカスタムカテゴリコレクションの参照を取得する
+    func frequentHouseworkCategoriesRef(cohabitantId: String) -> CollectionReference {
+        cohabitantRef(id: cohabitantId)
+            .collection(CollectionPath.frequentHouseworkCategories.rawValue)
+    }
+
 }

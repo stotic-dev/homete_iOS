@@ -20,6 +20,8 @@ import {
   ClientCollections,
   accountPath,
   cohabitantPath,
+  frequentHouseworkCategoriesPath,
+  frequentHouseworksPath,
   houseworksPath,
   houseworkTemplateDaysPath,
   houseworkTemplateEditorsPath,
@@ -424,6 +426,92 @@ describe("HouseworkTemplates", () => {
       })
     );
     await assertFails(deleteDoc(doc(aliceDb(), editorDoc(BOB))));
+  });
+});
+
+describe("FrequentHouseworks", () => {
+  const itemDoc = (id: string) => `${frequentHouseworksPath(GROUP_ID)}/${id}`;
+  const frequentHousework = (id: string) => ({
+    id,
+    title: "布団干し",
+    point: 20,
+    sortOrder: 0,
+    createdAt: new Date("2026-09-26"),
+    updatedAt: new Date("2026-09-26"),
+  });
+
+  it("メンバーはいつもの家事の一覧を取得できる", async () => {
+    await assertSucceeds(
+      getDocs(collection(aliceDb(), frequentHouseworksPath(GROUP_ID)))
+    );
+  });
+
+  it("メンバーはいつもの家事を作成・削除できる", async () => {
+    await assertSucceeds(
+      setDoc(doc(aliceDb(), itemDoc("item-1")), frequentHousework("item-1"))
+    );
+    await assertSucceeds(deleteDoc(doc(aliceDb(), itemDoc("item-1"))));
+  });
+
+  it("ドキュメントIDとidフィールドが一致しないいつもの家事は作成できない",
+    async () => {
+      await assertFails(
+        setDoc(doc(aliceDb(), itemDoc("item-1")), frequentHousework("other"))
+      );
+    });
+
+  it("非メンバーはいつもの家事を取得・作成できない", async () => {
+    await assertFails(
+      getDocs(collection(malloryDb(), frequentHouseworksPath(GROUP_ID)))
+    );
+    await assertFails(
+      setDoc(doc(malloryDb(), itemDoc("item-1")), frequentHousework("item-1"))
+    );
+  });
+});
+
+describe("FrequentHouseworkCategories", () => {
+  const categoryDoc = (id: string) =>
+    `${frequentHouseworkCategoriesPath(GROUP_ID)}/${id}`;
+  const category = (id: string) => ({
+    id,
+    name: "ペット",
+    sortOrder: 0,
+    createdAt: new Date("2026-09-26"),
+  });
+
+  it("メンバーはカスタムカテゴリの一覧を取得できる", async () => {
+    await assertSucceeds(
+      getDocs(collection(aliceDb(), frequentHouseworkCategoriesPath(GROUP_ID)))
+    );
+  });
+
+  it("メンバーはカスタムカテゴリを作成・削除できる", async () => {
+    await assertSucceeds(
+      setDoc(doc(aliceDb(), categoryDoc("category-1")), category("category-1"))
+    );
+    await assertSucceeds(deleteDoc(doc(aliceDb(), categoryDoc("category-1"))));
+  });
+
+  it("ドキュメントIDとidフィールドが一致しないカテゴリは作成できない",
+    async () => {
+      await assertFails(
+        setDoc(doc(aliceDb(), categoryDoc("category-1")), category("other"))
+      );
+    });
+
+  it("非メンバーはカスタムカテゴリを取得・作成できない", async () => {
+    await assertFails(
+      getDocs(
+        collection(malloryDb(), frequentHouseworkCategoriesPath(GROUP_ID))
+      )
+    );
+    await assertFails(
+      setDoc(
+        doc(malloryDb(), categoryDoc("category-1")),
+        category("category-1")
+      )
+    );
   });
 });
 
