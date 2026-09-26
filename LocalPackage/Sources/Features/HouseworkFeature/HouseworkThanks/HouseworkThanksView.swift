@@ -23,19 +23,23 @@ public struct HouseworkThanksView: View {
     let item: HouseworkBoardItem
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: .space24) {
+        NavigationStack {
+            ScrollView {
                 HouseworkCommentInputContent(
-                    title: "ありがとうを伝える",
+                    title: "メッセージ",
                     placeholder: "感謝を伝えましょう！",
                     text: $inputMessage
                 )
-                actionButtonContent()
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space24)
             }
-            .padding(.horizontal, .space16)
-            .padding(.vertical, .space24)
+            .scrollBounceBehavior(.basedOnSize)
+            .navigationTitle("ありがとうを伝える")
+            .inlineNavigationBarTitleDisplayMode()
+            .trailingToolbarItem {
+                sendThanksButton()
+            }
         }
-        .scrollBounceBehavior(.basedOnSize)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
@@ -47,16 +51,13 @@ public struct HouseworkThanksView: View {
 
 private extension HouseworkThanksView {
 
-    func actionButtonContent() -> some View {
-        Button {
+    func sendThanksButton() -> some View {
+        NavigationBarPrimaryActionButton(systemImage: "heart.fill") {
             loadingState.task {
                 await tappedSendThanksButton()
             }
-        } label: {
-            Label("ありがとうを伝える", systemImage: "hands.clap.fill")
-                .frame(maxWidth: .infinity)
         }
-        .primaryButtonStyle()
+        .foregroundStyle(.onPrimary1)
         .disabled(inputMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
