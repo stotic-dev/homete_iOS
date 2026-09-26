@@ -56,11 +56,12 @@ public final class HouseworkListStore {
         }
     }
 
+    /// 家事を登録する
+    /// - Note: 登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている
     public func register(
         newItem: HouseworkItem,
         cohabitantId: String,
-        step: HouseworkAnalyticsStep,
-        notification: PushNotificationContent? = nil
+        step: HouseworkAnalyticsStep
     ) async throws {
         do {
             try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
@@ -69,13 +70,12 @@ public final class HouseworkListStore {
             throw error
         }
         analyticsClient.log(.housework(.register(step: step, isSuccess: true)))
-
-        Task.detached {
-            let notificationContent = notification ?? PushNotificationContent.addNewHouseworkItem(newItem.title)
-            try await self.cohabitantPushNotificationClient.send(cohabitantId, notificationContent)
-        }
     }
 
+    /// 家事を完了にする
+    ///
+    /// 同居人へは表示する通知を送らず、同居人の端末でふりかえり通知を予約するためのサイレント通知だけを送る。
+    /// - Parameter notify: 一括操作では1件分のサイレント通知を呼び出し側で送るため`false`を渡す。
     // swiftlint:disable:next function_parameter_count
     public func complete(
         target: HouseworkItem,
@@ -86,35 +86,26 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep,
         notify: Bool = true
     ) async throws {
-        let notification = {
-            PushNotificationContent.completedMessage(
-                executorName: executor.userName,
-                houseworkTitle: target.title,
-                houseworkDate: target.indexedDate.value
-            )
-        }
         do {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
-                try await updateAndSave(
-                    target: target,
-                    cohabitantId: cohabitantId,
-                    transform: { $0.updateCompleted(at: now, executor: executor.id) },
-                    notification: notify ? notification : nil
-                )
+                try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                    $0.updateCompleted(at: now, executor: executor.id)
+                }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
                 let updatedItem = target.updateCompleted(at: now, executor: executor.id)
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-                if notify {
-                    pushNotificationWithAsync(notification: notification(), cohabitantId: cohabitantId)
-                }
             }
         } catch {
             analyticsClient.log(.housework(.complete(step: step, isSuccess: false)))
             throw error
         }
         analyticsClient.log(.housework(.complete(step: step, isSuccess: true)))
+
+        if notify {
+            notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId)
+        }
     }
 
     /// 完了した家事に「ありがとう」を伝える
@@ -187,6 +178,27 @@ public final class HouseworkListStore {
         analyticsClient.log(.housework(.delete(step: step, isSuccess: true)))
     }
 
+    /// 同居人の端末でふりかえり通知を予約するため、家事の完了をサイレント通知で知らせる
+    ///
+    /// 送るのは今日の家事の完了で、かつこの端末からその日まだ送っていないときだけ（ベストエフォート）。
+    /// 送信は待たずに行い、失敗しても家事の操作は失敗扱いにしない。
+    public func notifyCompleted(houseworkDate: Date, now: Date, cohabitantId: String) {
+        let calendar = calendar
+        Task.detached {
+            do {
+                try await self.dailyCompletionReminderUseCase.notifyCompletedIfNeeded(
+                    houseworkDate: houseworkDate,
+                    now: now,
+                    calendar: calendar
+                ) { data in
+                    try await self.cohabitantPushNotificationClient.sendSilent(cohabitantId, data.payload)
+                }
+            } catch {
+                print("failed to notify cohabitants of completed housework: \(error)")
+            }
+        }
+    }
+
     /// 任意の通知内容を相手へ送信する
     ///
     /// 一括操作のように、複数件の更新をまとめて1件の通知にしたい場合に使う。
@@ -224,8 +236,7 @@ private extension HouseworkListStore {
     func updateAndSave(
         target: HouseworkItem,
         cohabitantId: String,
-        transform: (HouseworkItem) -> HouseworkItem,
-        notification: (() -> PushNotificationContent)? = nil
+        transform: (HouseworkItem) -> HouseworkItem
     ) async throws {
         guard let targetItem = items.item(target) else {
             preconditionFailure("Not found target item(\(target))")
@@ -233,11 +244,6 @@ private extension HouseworkListStore {
 
         let updatedItem = transform(targetItem)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
-
-        if let notification {
-            let content = notification()
-            pushNotificationWithAsync(notification: content, cohabitantId: cohabitantId)
-        }
     }
 
     /// 今日完了した家事があるかを、ふりかえり通知の予約に反映する

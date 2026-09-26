@@ -24,42 +24,30 @@ struct HouseworkListStoreTest {
 
     }
 
-    @Test("新しい家事の登録すると、パートナーに通知を送信する")
-    func register() async {
+    @Test("新しい家事を登録すると保存だけを行い、パートナーには通知を送らない")
+    func register() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "新しい家事が登録されました",
-            message: inputHouseworkItem.title
-        )
 
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-                        // Assert
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                    // Assert
 
-                        #expect(item == inputHouseworkItem)
-                        #expect(cohabitantId == inputCohabitantId)
-                        confirmation()
-                    }),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
-
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    }
+                    #expect(item == inputHouseworkItem)
+                    #expect(cohabitantId == inputCohabitantId)
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init(
+                    send: { _, _ in Issue.record() },
+                    sendSilent: { _, _ in Issue.record() }
                 )
+            )
 
-                // Act
+            // Act
 
-                Task {
-                    try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
-                }
-            }
+            try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
         }
     }
 
@@ -93,7 +81,7 @@ struct HouseworkListStoreTest {
 
 extension HouseworkListStoreTest.UpdateStatusCase {
 
-    @Test("家事を完了にすると、パートナーにその旨Push通知を送信する")
+    @Test("家事を完了にすると、表示する通知の代わりにふりかえり通知の予約に使うサイレント通知を送る")
     func complete() async {
         // Arrange
 
@@ -107,12 +95,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
-        let expectedNotificationContent = PushNotificationContent(
-            title: "\(inputExecutor.userName)さんが家事を終えました",
-            message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
-        )
-        let completedAt = Date()
+        let expectedData = ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
             state: .completed,
             executorId: inputExecutor.id,
@@ -131,14 +115,18 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                             confirmation()
                         }
                     ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    cohabitantPushNotificationClient: .init(
+                        send: { _, _ in Issue.record() },
+                        sendSilent: { id, data in
+                            // Assert
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
+                            #expect(id == inputCohabitantId)
+                            #expect(data == expectedData)
+                            confirmation()
+                            continuation.resume()
+                        }
+                    ),
+                    calendar: .japanese,
                     items: [.makeForTest(items: [inputHouseworkItem])]
                 )
 
@@ -158,7 +146,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("テンプレートから生成された家事を完了にすると、パートナーにその旨Push通知を送信する")
+    @Test("テンプレートから生成された家事を完了にすると、ふりかえり通知の予約に使うサイレント通知を送る")
     func complete_with_created_template() async {
         // Arrange
 
@@ -172,12 +160,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
-        let expectedNotificationContent = PushNotificationContent(
-            title: "\(inputExecutor.userName)さんが家事を終えました",
-            message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
-        )
-        let completedAt = Date()
+        let expectedData = ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
             state: .completed,
             executorId: inputExecutor.id,
@@ -196,14 +180,18 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                             confirmation()
                         }
                     ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    cohabitantPushNotificationClient: .init(
+                        send: { _, _ in Issue.record() },
+                        sendSilent: { id, data in
+                            // Assert
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
+                            #expect(id == inputCohabitantId)
+                            #expect(data == expectedData)
+                            confirmation()
+                            continuation.resume()
+                        }
+                    ),
+                    calendar: .japanese,
                     items: []
                 )
 

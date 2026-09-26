@@ -37,6 +37,12 @@ public extension DailyCompletionReminderClient {
             saveCompletedDayIdentifier: { identifier in
                 Self.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedDayIdentifierKey)
             },
+            loadCompletedSignalSentDayIdentifier: {
+                Self.userDefaults(appGroupIdentifier).string(forKey: Self.completedSignalSentDayIdentifierKey)
+            },
+            saveCompletedSignalSentDayIdentifier: { identifier in
+                Self.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedSignalSentDayIdentifierKey)
+            },
             loadIsDailyLimitDisabled: {
                 Self.userDefaults(appGroupIdentifier).bool(forKey: Self.isDailyLimitDisabledKey)
             },
@@ -70,6 +76,7 @@ private extension DailyCompletionReminderClient {
     static let appGroupIdentifierInfoKey = "AppGroupIdentifier"
     static let settingKey = "dailyCompletionReminderSetting"
     static let completedDayIdentifierKey = "dailyCompletionReminderCompletedDayIdentifier"
+    static let completedSignalSentDayIdentifierKey = "dailyCompletionReminderCompletedSignalSentDayIdentifier"
     static let isDailyLimitDisabledKey = "dailyCompletionReminderIsDailyLimitDisabled"
 
     /// App GroupのUserDefaultsを返す。App Groupが無い・読めない場合は`standard`を使う

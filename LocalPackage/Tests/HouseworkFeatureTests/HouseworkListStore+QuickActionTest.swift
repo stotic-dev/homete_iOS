@@ -247,7 +247,7 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
 
 extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
 
-    @Test("notify: falseを指定すると、完了に更新しても個別の通知は送られない")
+    @Test("notify: falseを指定すると、完了に更新してもサイレント通知は送られない")
     func perform_complete_notifyFalse_doesNotSendNotification() async throws {
         // Arrange
 
@@ -260,9 +260,10 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
                 houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
                     confirmation()
                 }),
-                cohabitantPushNotificationClient: .init { _, _ in
-                    Issue.record()
-                },
+                cohabitantPushNotificationClient: .init(
+                    send: { _, _ in Issue.record() },
+                    sendSilent: { _, _ in Issue.record() }
+                ),
                 items: [.makeForTest(items: [inputItem])]
             )
 
@@ -320,16 +321,17 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
 
 extension HouseworkListStoreQuickActionTest.PerformBulkCase {
 
-    @Test("複数の家事を一括で完了にすると、家事ごとに更新した上でまとめ通知を1件だけ送る")
-    func performBulk_complete_updatesEachItemAndSendsBulkNotification() async {
+    @Test("複数の家事を一括で完了にすると、家事ごとに更新した上でサイレント通知を1件だけ送る")
+    func performBulk_complete_updatesEachItemAndSendsSilentNotification() async {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
         let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
-        let now = Date()
+        // サイレント通知は今日の家事の完了でしか送らないため、家事の日付と同じ日にする
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         // DailyHouseworkListは先頭要素のindexedDateをメタデータに使うため、要素ごとに
         // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる。
-        // 完了通知のdataに日付が載るため、実行日時に依らない固定値にする
+        // サイレント通知のdataに日付が載るため、実行日時に依らない固定値にする
         let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
             HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: .incomplete),
@@ -342,11 +344,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                 executedAt: now
             )
         }
-        let expectedNotification = PushNotificationContent(
-            title: "\(inputAccount.userName)さんが家事を終えました",
-            message: "\(inputItems.count)件の家事が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
-        )
+        let expectedData = ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
 
         await confirmation(expectedCount: 3) { confirmation in
             let _: Void = await withCheckedContinuation { continuation in
@@ -358,14 +356,18 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                         #expect(cohabitantId == inputCohabitantId)
                         confirmation()
                     }),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    cohabitantPushNotificationClient: .init(
+                        send: { _, _ in Issue.record() },
+                        sendSilent: { id, data in
+                            // Assert
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotification)
-                        confirmation()
-                        continuation.resume()
-                    },
+                            #expect(id == inputCohabitantId)
+                            #expect(data == expectedData)
+                            confirmation()
+                            continuation.resume()
+                        }
+                    ),
+                    calendar: .japanese,
                     items: [.makeForTest(items: inputItems)]
                 )
 
@@ -489,9 +491,10 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
             houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
                 Issue.record()
             }),
-            cohabitantPushNotificationClient: .init { _, _ in
-                Issue.record()
-            }
+            cohabitantPushNotificationClient: .init(
+                send: { _, _ in Issue.record() },
+                sendSilent: { _, _ in Issue.record() }
+            )
         )
 
         // Act

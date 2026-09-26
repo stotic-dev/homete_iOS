@@ -68,8 +68,8 @@ extension HouseworkListStore {
     /// 複数選択で選んだ家事に、クイックアクションを一括で適用する
     ///
     /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制した上で、
-    /// 対象件数をまとめた1件の通知だけを送る。相手に通知しないアクション（やらない・未完了に戻す）では
-    /// まとめ通知も送らない。
+    /// 対象件数をまとめた1件の通知だけを送る。完了では表示する通知の代わりに、ふりかえり通知の予約に使う
+    /// サイレント通知を1件だけ送る。相手に通知しないアクション（やらない・未完了に戻す）では何も送らない。
     // swiftlint:disable:next function_parameter_count
     func performBulk(
         _ action: HouseworkQuickAction,
@@ -93,12 +93,16 @@ extension HouseworkListStore {
             )
         }
 
-        // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
-        let notification = action.bulkNotification(
-            count: items.count,
-            senderName: account.userName,
-            houseworkDate: firstItem.originalItem.indexedDate.value
-        )
+        if action == .complete {
+            // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
+            notifyCompleted(
+                houseworkDate: firstItem.originalItem.indexedDate.value,
+                now: now,
+                cohabitantId: cohabitantId
+            )
+        }
+
+        let notification = action.bulkNotification(count: items.count, senderName: account.userName)
         guard let notification else { return }
 
         sendNotification(notification, cohabitantId: cohabitantId)

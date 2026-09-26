@@ -112,35 +112,11 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
 
 extension HouseworkQuickActionTest.BulkNotificationCase {
 
-    @Test("完了の一括通知は実施者名と件数を含むメッセージになる")
-    func bulkNotification_complete_returnsExecutorNameAndCountMessage() {
-        // Act
-
-        let actual = HouseworkQuickAction.complete.bulkNotification(
-            count: 3,
-            senderName: "じっこうしゃ",
-            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
-        )
-
-        // Assert
-
-        let expected = PushNotificationContent(
-            title: "じっこうしゃさんが家事を終えました",
-            message: "3件の家事が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
-        )
-        #expect(actual == expected)
-    }
-
     @Test("ありがとうの一括通知は送信者名と件数を含むメッセージになる")
     func bulkNotification_sendThanks_returnsSenderNameAndCountMessage() {
         // Act
 
-        let actual = HouseworkQuickAction.sendThanks.bulkNotification(
-            count: 2,
-            senderName: "おくりぬし",
-            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
-        )
+        let actual = HouseworkQuickAction.sendThanks.bulkNotification(count: 2, senderName: "おくりぬし")
 
         // Assert
 
@@ -152,17 +128,13 @@ extension HouseworkQuickActionTest.BulkNotificationCase {
     }
 
     @Test(
-        "相手に通知しないアクションはnilを返す",
-        arguments: [HouseworkQuickAction.remove, .returnToIncomplete]
+        "相手に表示する通知を送らないアクションはnilを返す",
+        arguments: [HouseworkQuickAction.complete, .remove, .returnToIncomplete]
     )
     func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
         // Act
 
-        let actual = action.bulkNotification(
-            count: 1,
-            senderName: "おくりぬし",
-            houseworkDate: .previewDate(year: 2026, month: 9, day: 25)
-        )
+        let actual = action.bulkNotification(count: 1, senderName: "おくりぬし")
 
         // Assert
 

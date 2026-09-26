@@ -13,6 +13,7 @@ enum DailyCompletionReminderUseCaseTest {
     struct HandleCompletedCase {}
     struct UpdateSettingCase {}
     struct DailyLimitCase {}
+    struct NotifyCompletedCase {}
 
 }
 
@@ -328,6 +329,187 @@ extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
 
 }
 
+// MARK: - notifyCompletedIfNeeded
+
+extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
+
+    @Test("今日の家事の完了を今日まだ送っていなければ、サイレント通知を送って送信日を記録する")
+    func notifyCompletedIfNeeded_notSentToday_sendsAndRecords() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let recorder = SentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedResult(
+            sent: [.init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25))],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedIfNeeded(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("今日すでに送っていれば、サイレント通知を送らない")
+    func notifyCompletedIfNeeded_alreadySentToday_doesNotSend() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            completedSignalSentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+        let recorder = SentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedResult(
+            sent: [],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedIfNeeded(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("前日に送っていても、今日まだ送っていなければサイレント通知を送る")
+    func notifyCompletedIfNeeded_sentYesterday_sends() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            completedSignalSentDayIdentifier: "dailyCompletionReminder-2026-9-24"
+        )
+        let recorder = SentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedResult(
+            sent: [.init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25))],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedIfNeeded(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("今日以外の家事の完了では、サイレント通知を送らない")
+    func notifyCompletedIfNeeded_notToday_doesNotSend() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let recorder = SentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedResult(sent: [], sentDayIdentifier: nil)
+
+        // Act
+
+        try await sut.notifyCompletedIfNeeded(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 24),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("送信に失敗した場合は送信日を記録せず、エラーを返す")
+    func notifyCompletedIfNeeded_sendFailed_doesNotRecord() async {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+
+        // Act
+
+        await #expect(throws: SendSignalError.self) {
+            try await sut.notifyCompletedIfNeeded(
+                houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+                now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+                calendar: .japanese
+            ) { _ in throw SendSignalError() }
+        }
+
+        // Assert
+
+        let actual = await store.completedSignalSentDayIdentifier
+        #expect(actual == nil)
+    }
+
+    @Test("1日1回の制限を外している場合は、今日すでに送っていてもサイレント通知を送る")
+    func notifyCompletedIfNeeded_dailyLimitDisabled_sendsEveryTime() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            isDailyLimitDisabled: true,
+            completedSignalSentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+        let recorder = SentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedResult(
+            sent: [.init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25))],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedIfNeeded(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+}
+
 // MARK: - Helpers
 
 private func todayRequest(
@@ -351,6 +533,26 @@ private struct ReminderClientSnapshot: Equatable {
 
 }
 
+private struct NotifyCompletedResult: Equatable {
+
+    let sent: [HouseworkCompletedNotificationData]
+    let sentDayIdentifier: String?
+
+}
+
+private struct SendSignalError: Error {}
+
+/// 送ったサイレント通知の内容を記録するフェイク
+private actor SentSignalRecorder {
+
+    private(set) var sent: [HouseworkCompletedNotificationData] = []
+
+    func append(_ data: HouseworkCompletedNotificationData) {
+        sent.append(data)
+    }
+
+}
+
 /// 設定・完了日の保存先と、予約・取消の呼び出し履歴を持つフェイク
 private actor ReminderClientStore {
 
@@ -365,16 +567,19 @@ private actor ReminderClientStore {
     private var setting: DailyCompletionReminderSetting
     private var completedDayIdentifier: String?
     private var isDailyLimitDisabled: Bool
+    private(set) var completedSignalSentDayIdentifier: String?
     private var entries: [Entry] = []
 
     init(
         setting: DailyCompletionReminderSetting,
         completedDayIdentifier: String? = nil,
-        isDailyLimitDisabled: Bool = false
+        isDailyLimitDisabled: Bool = false,
+        completedSignalSentDayIdentifier: String? = nil
     ) {
         self.setting = setting
         self.completedDayIdentifier = completedDayIdentifier
         self.isDailyLimitDisabled = isDailyLimitDisabled
+        self.completedSignalSentDayIdentifier = completedSignalSentDayIdentifier
     }
 
     nonisolated var client: DailyCompletionReminderClient {
@@ -383,6 +588,8 @@ private actor ReminderClientStore {
             saveSetting: { await self.saveSetting($0) },
             loadCompletedDayIdentifier: { await self.completedDayIdentifier },
             saveCompletedDayIdentifier: { await self.saveCompletedDayIdentifier($0) },
+            loadCompletedSignalSentDayIdentifier: { await self.completedSignalSentDayIdentifier },
+            saveCompletedSignalSentDayIdentifier: { await self.saveCompletedSignalSentDayIdentifier($0) },
             loadIsDailyLimitDisabled: { await self.isDailyLimitDisabled },
             saveIsDailyLimitDisabled: { await self.saveIsDailyLimitDisabled($0) },
             schedule: { await self.append(.schedule($0)) },
@@ -401,6 +608,10 @@ private actor ReminderClientStore {
 
     private func saveCompletedDayIdentifier(_ identifier: String?) {
         completedDayIdentifier = identifier
+    }
+
+    private func saveCompletedSignalSentDayIdentifier(_ identifier: String) {
+        completedSignalSentDayIdentifier = identifier
     }
 
     private func saveIsDailyLimitDisabled(_ isDisabled: Bool) {

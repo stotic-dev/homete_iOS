@@ -39,6 +39,23 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
     }
 
+    /// 同居人が今日の家事を完了したことを知らせるサイレント通知を受け取り、ふりかえり通知を予約する
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any]
+    ) async -> UIBackgroundFetchResult {
+        guard let data = HouseworkCompletedNotificationData(userInfo: userInfo) else { return .noData }
+        // 起動中は家事一覧の購読（HouseworkListStore）が同じ完了を見て予約するので、ここでは予約しない
+        guard application.applicationState != .active else { return .noData }
+
+        await AppDependencies.liveValue.dailyCompletionReminderUseCase.handleCompleted(
+            data,
+            now: .now,
+            calendar: .autoupdatingCurrent
+        )
+        return .newData
+    }
+
 }
 
 // MARK: - setup

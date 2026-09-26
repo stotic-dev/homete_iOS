@@ -9,8 +9,10 @@ import Foundation
 ///
 /// 予約のきっかけは2つある。
 /// - アプリで家事の一覧を購読している間に、今日の完了家事が見つかったとき（`syncToday`）
-/// - アプリが起動していない間に、同居人から今日の家事の完了通知が届いたとき（`handleCompleted`。
-///   Notification Service Extensionから呼ぶ）
+/// - アプリが起動していない間に、同居人から今日の家事の完了を知らせるサイレント通知が届いたとき
+///   （`handleCompleted`）
+///
+/// 同居人の端末へのきっかけは、家事を完了した端末が`notifyCompletedIfNeeded`で送る。
 ///
 /// 定期実行のサーバー処理を持たずに済むよう、条件を満たした端末自身がその日の通知を1件だけ予約する。
 public final class DailyCompletionReminderUseCase: Sendable {
@@ -51,13 +53,39 @@ public final class DailyCompletionReminderUseCase: Sendable {
         await scheduleToday(now: now, calendar: calendar)
     }
 
-    /// 同居人から家事の完了通知を受け取ったときに、今日の家事なら今日の通知を予約する
+    /// 同居人から家事の完了を知らせる通知を受け取ったときに、今日の家事なら今日の通知を予約する
+    /// - Note: アプリのサイレント通知の受信と、Notification Service Extension（古いアプリからの完了通知）から呼ぶ
     public func handleCompleted(_ data: HouseworkCompletedNotificationData, now: Date, calendar: Calendar) async {
         guard calendar.isDate(data.houseworkDate, inSameDayAs: now) else { return }
 
         let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
         await client.saveCompletedDayIdentifier(identifier)
         await scheduleToday(now: now, calendar: calendar)
+    }
+
+    /// 同居人へ家事の完了を知らせるサイレント通知を、必要なときだけ送る
+    ///
+    /// 受け取った端末は今日の家事の完了でしか予約しないため、今日以外の家事では送らない。
+    /// また、受け取った端末の予約は1日1件で足りるため、この端末からは1日1回だけ送る。
+    /// 送信に失敗した場合は送信済みにせず、次の完了で送り直す。
+    /// - Note: 端末ごとに記録するため、同居人も家事を完了すればその端末からも1回送られる（ベストエフォート）。
+    ///         1日1回の制限を外している間（デバッグ用）は、受け取った端末で予約が積まれるよう毎回送る
+    /// - Parameter send: サイレント通知を送る処理
+    public func notifyCompletedIfNeeded(
+        houseworkDate: Date,
+        now: Date,
+        calendar: Calendar,
+        send: @Sendable (HouseworkCompletedNotificationData) async throws -> Void
+    ) async throws {
+        guard calendar.isDate(houseworkDate, inSameDayAs: now) else { return }
+
+        let identifier = DailyCompletionReminderRequest.identifier(for: now, calendar: calendar)
+        let isDailyLimitDisabled = await client.loadIsDailyLimitDisabled()
+        let sentDayIdentifier = await client.loadCompletedSignalSentDayIdentifier()
+        guard isDailyLimitDisabled || sentDayIdentifier != identifier else { return }
+
+        try await send(.init(houseworkDate: houseworkDate))
+        await client.saveCompletedSignalSentDayIdentifier(identifier)
     }
 
     /// 通知設定を保存し、今日すでに完了した家事があれば新しい設定で予約し直す
