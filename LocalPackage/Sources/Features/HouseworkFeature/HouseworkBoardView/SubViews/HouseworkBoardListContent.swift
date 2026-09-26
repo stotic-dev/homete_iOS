@@ -25,6 +25,8 @@ struct HouseworkBoardListContent: View {
     @State var selectedIDs: Set<String> = []
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
+    /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
+    @State var thankingItem: HouseworkBoardItem?
     @CommonError var commonError
 
     var body: some View {
@@ -47,6 +49,7 @@ struct HouseworkBoardListContent: View {
                                 item: item,
                                 step: .board,
                                 onSelectComplete: { completingItem = item },
+                                onSelectThanks: { thankingItem = item },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -79,6 +82,9 @@ struct HouseworkBoardListContent: View {
                 }
                 .sheet(item: $completingItem) { item in
                     HouseworkCompleteSheet(item: item, step: .board)
+                }
+                .sheet(item: $thankingItem) { item in
+                    HouseworkThanksView(item: item)
                 }
                 .commonError(content: $commonError)
         }

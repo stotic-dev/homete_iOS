@@ -64,6 +64,8 @@ private extension IncompleteHouseworkListView {
                                 item: item,
                                 step: .dashboard,
                                 onSelectComplete: { completingItem = item },
+                                // 未完了の家事だけを並べるため、ありがとうは選ばれない
+                                onSelectThanks: {},
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
