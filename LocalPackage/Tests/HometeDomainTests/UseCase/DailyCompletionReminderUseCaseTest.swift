@@ -12,6 +12,7 @@ enum DailyCompletionReminderUseCaseTest {
     struct SyncTodayCase {}
     struct HandleCompletedCase {}
     struct UpdateSettingCase {}
+    struct DailyLimitCase {}
 
 }
 
@@ -259,11 +260,83 @@ extension DailyCompletionReminderUseCaseTest.UpdateSettingCase {
 
 }
 
+// MARK: - 1日1回の制限
+
+extension DailyCompletionReminderUseCaseTest.DailyLimitCase {
+
+    @Test("1日1回の制限を外している場合は、予約のたびに別の識別子で通知を積む")
+    func handleCompleted_dailyLimitDisabled_schedulesWithPerScheduleIdentifier() async {
+        // Arrange
+
+        let store = ReminderClientStore(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            isDailyLimitDisabled: true
+        )
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = ReminderClientSnapshot(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            completedDayIdentifier: "dailyCompletionReminder-2026-9-25",
+            entries: [
+                .schedule(todayRequest(
+                    hour: 21,
+                    minute: 0,
+                    identifier: "dailyCompletionReminder-2026-9-25#1790298000"
+                )),
+                .schedule(todayRequest(
+                    hour: 21,
+                    minute: 0,
+                    identifier: "dailyCompletionReminder-2026-9-25#1790298060"
+                )),
+            ]
+        )
+
+        // Act
+
+        await sut.handleCompleted(
+            .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        )
+        await sut.handleCompleted(
+            .init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25)),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10, minute: 1),
+            calendar: .japanese
+        )
+
+        // Assert
+
+        let actual = await store.snapshot()
+        #expect(actual == expected)
+    }
+
+    @Test("1日1回の制限を外すかを保存し、読み出せる")
+    func updateIsDailyLimitDisabled_savesValue() async {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+
+        // Act
+
+        await sut.updateIsDailyLimitDisabled(true)
+
+        // Assert
+
+        let actual = await sut.loadIsDailyLimitDisabled()
+        #expect(actual == true)
+    }
+
+}
+
 // MARK: - Helpers
 
-private func todayRequest(hour: Int, minute: Int) -> DailyCompletionReminderRequest {
+private func todayRequest(
+    hour: Int,
+    minute: Int,
+    identifier: String = "dailyCompletionReminder-2026-9-25"
+) -> DailyCompletionReminderRequest {
     .init(
-        identifier: "dailyCompletionReminder-2026-9-25",
+        identifier: identifier,
         fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: hour, minute: minute),
         title: "今日もおつかれさまでした",
         body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
@@ -291,11 +364,17 @@ private actor ReminderClientStore {
 
     private var setting: DailyCompletionReminderSetting
     private var completedDayIdentifier: String?
+    private var isDailyLimitDisabled: Bool
     private var entries: [Entry] = []
 
-    init(setting: DailyCompletionReminderSetting, completedDayIdentifier: String? = nil) {
+    init(
+        setting: DailyCompletionReminderSetting,
+        completedDayIdentifier: String? = nil,
+        isDailyLimitDisabled: Bool = false
+    ) {
         self.setting = setting
         self.completedDayIdentifier = completedDayIdentifier
+        self.isDailyLimitDisabled = isDailyLimitDisabled
     }
 
     nonisolated var client: DailyCompletionReminderClient {
@@ -304,6 +383,8 @@ private actor ReminderClientStore {
             saveSetting: { await self.saveSetting($0) },
             loadCompletedDayIdentifier: { await self.completedDayIdentifier },
             saveCompletedDayIdentifier: { await self.saveCompletedDayIdentifier($0) },
+            loadIsDailyLimitDisabled: { await self.isDailyLimitDisabled },
+            saveIsDailyLimitDisabled: { await self.saveIsDailyLimitDisabled($0) },
             schedule: { await self.append(.schedule($0)) },
             cancel: { await self.append(.cancel($0)) }
         )
@@ -320,6 +401,10 @@ private actor ReminderClientStore {
 
     private func saveCompletedDayIdentifier(_ identifier: String?) {
         completedDayIdentifier = identifier
+    }
+
+    private func saveIsDailyLimitDisabled(_ isDisabled: Bool) {
+        isDailyLimitDisabled = isDisabled
     }
 
     private func append(_ entry: Entry) {

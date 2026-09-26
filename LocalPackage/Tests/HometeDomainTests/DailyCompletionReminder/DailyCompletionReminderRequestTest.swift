@@ -86,4 +86,52 @@ struct DailyCompletionReminderRequestTest {
         #expect(actual == nil)
     }
 
+    @Test("1日1回の制限を外している場合は、予約ごとに別の識別子にする")
+    func make_allowsMultiplePerDay_returnsRequestWithPerScheduleIdentifier() {
+        // Arrange
+
+        let expected = DailyCompletionReminderRequest(
+            identifier: "dailyCompletionReminder-2026-9-25#1790298000",
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
+            title: "今日もおつかれさまでした",
+            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+        )
+
+        // Act
+
+        let actual = DailyCompletionReminderRequest.make(
+            day: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            setting: .init(isEnabled: true, hour: 21, minute: 30),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese,
+            allowsMultiplePerDay: true
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test(
+        "その日の識別子、または制限を外して予約したその日の識別子なら、その日の通知と判定する",
+        arguments: [
+            ("dailyCompletionReminder-2026-9-2", true),
+            ("dailyCompletionReminder-2026-9-2#1790298000", true),
+            ("dailyCompletionReminder-2026-9-25", false),
+            ("dailyCompletionReminder-2026-9-25#1790298000", false),
+        ]
+    )
+    func isIdentifier_returnsWhetherSameDay(requestIdentifier: String, expected: Bool) {
+        // Act
+
+        let actual = DailyCompletionReminderRequest.isIdentifier(
+            requestIdentifier,
+            ofDay: "dailyCompletionReminder-2026-9-2"
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
 }

@@ -16,9 +16,13 @@ public struct DailyCompletionReminderClient: Sendable {
     public let loadCompletedDayIdentifier: @Sendable () async -> String?
     /// 完了した家事があると分かった日の通知識別子を保存する（`nil`で消去）
     public let saveCompletedDayIdentifier: @Sendable (String?) async -> Void
+    /// 1日1回の制限を外しているかを読み出す（デバッグメニュー用）
+    public let loadIsDailyLimitDisabled: @Sendable () async -> Bool
+    /// 1日1回の制限を外すかを保存する（デバッグメニュー用）
+    public let saveIsDailyLimitDisabled: @Sendable (Bool) async -> Void
     /// ローカル通知を予約する。同じ識別子の予約は上書きされる
     public let schedule: @Sendable (DailyCompletionReminderRequest) async throws -> Void
-    /// 指定した識別子の予約を取り消す
+    /// 指定した日の識別子の予約を取り消す（1日1回の制限を外して積んだ予約も含む）
     public let cancel: @Sendable (_ identifier: String) async -> Void
 
     public init(
@@ -26,6 +30,8 @@ public struct DailyCompletionReminderClient: Sendable {
         saveSetting: @Sendable @escaping (DailyCompletionReminderSetting) async -> Void = { _ in },
         loadCompletedDayIdentifier: @Sendable @escaping () async -> String? = { nil },
         saveCompletedDayIdentifier: @Sendable @escaping (String?) async -> Void = { _ in },
+        loadIsDailyLimitDisabled: @Sendable @escaping () async -> Bool = { false },
+        saveIsDailyLimitDisabled: @Sendable @escaping (Bool) async -> Void = { _ in },
         schedule: @Sendable @escaping (DailyCompletionReminderRequest) async throws -> Void = { _ in },
         cancel: @Sendable @escaping (_ identifier: String) async -> Void = { _ in }
     ) {
@@ -33,6 +39,8 @@ public struct DailyCompletionReminderClient: Sendable {
         self.saveSetting = saveSetting
         self.loadCompletedDayIdentifier = loadCompletedDayIdentifier
         self.saveCompletedDayIdentifier = saveCompletedDayIdentifier
+        self.loadIsDailyLimitDisabled = loadIsDailyLimitDisabled
+        self.saveIsDailyLimitDisabled = saveIsDailyLimitDisabled
         self.schedule = schedule
         self.cancel = cancel
     }

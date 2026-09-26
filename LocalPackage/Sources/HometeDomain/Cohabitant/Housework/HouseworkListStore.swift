@@ -18,8 +18,9 @@ public final class HouseworkListStore {
     public private(set) var loadState: ListenerLoadState = .loading
     private let calendar: Calendar
     private let now: @MainActor @Sendable () -> Date
-    /// 最後にふりかえり通知へ反映した「日付と、その日に完了した家事があるか」
-    /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す
+    /// 最後にふりかえり通知へ反映した「日付と、その日に完了した家事の件数」
+    /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す。
+    ///         件数で見るのは、1日1回の制限を外している間（デバッグ用）に完了のたびに予約を積むため
     private var lastReminderSyncState: DailyCompletionReminderSyncState?
 
     private let houseworkClient: HouseworkClient
@@ -242,19 +243,19 @@ private extension HouseworkListStore {
     /// 今日完了した家事があるかを、ふりかえり通知の予約に反映する
     func syncDailyCompletionReminder() async {
         let currentDate = now()
-        let hasCompletedHousework = items.value.contains { dailyList in
-            calendar.isDate(dailyList.metaData.indexedDate.value, inSameDayAs: currentDate)
-                && dailyList.items.contains { $0.state == .completed }
-        }
+        let completedCount = items.value
+            .filter { calendar.isDate($0.metaData.indexedDate.value, inSameDayAs: currentDate) }
+            .flatMap(\.items)
+            .count { $0.state == .completed }
         let syncState = DailyCompletionReminderSyncState(
             day: calendar.startOfDay(for: currentDate),
-            hasCompletedHousework: hasCompletedHousework
+            completedCount: completedCount
         )
         guard syncState != lastReminderSyncState else { return }
 
         lastReminderSyncState = syncState
         await dailyCompletionReminderUseCase.syncToday(
-            hasCompletedHousework: hasCompletedHousework,
+            hasCompletedHousework: completedCount > .zero,
             now: currentDate,
             calendar: calendar
         )
@@ -275,6 +276,6 @@ private extension HouseworkListStore {
 private struct DailyCompletionReminderSyncState: Equatable {
 
     let day: Date
-    let hasCompletedHousework: Bool
+    let completedCount: Int
 
 }

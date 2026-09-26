@@ -13,7 +13,7 @@ public extension DailyCompletionReminderClient {
     /// - Note: 設定はApp GroupのUserDefaultsに保存する。App Groupの識別子は、アプリ・拡張それぞれの
     ///         Info.plistの`AppGroupIdentifier`から読む（ビルド構成ごとにバンドルIDが違うため）
     static var liveValue: DailyCompletionReminderClient {
-        live(appGroupIdentifier: Bundle.main.object(forInfoDictionaryKey: Self.appGroupIdentifierInfoKey) as? String)
+        live(appGroupIdentifier: Bundle.main.object(forInfoDictionaryKey: appGroupIdentifierInfoKey) as? String)
     }
 
     /// 指定したApp GroupのUserDefaultsを使うlive実装
@@ -37,6 +37,12 @@ public extension DailyCompletionReminderClient {
             saveCompletedDayIdentifier: { identifier in
                 Self.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedDayIdentifierKey)
             },
+            loadIsDailyLimitDisabled: {
+                Self.userDefaults(appGroupIdentifier).bool(forKey: Self.isDailyLimitDisabledKey)
+            },
+            saveIsDailyLimitDisabled: { isDisabled in
+                Self.userDefaults(appGroupIdentifier).set(isDisabled, forKey: Self.isDailyLimitDisabledKey)
+            },
             schedule: { request in
                 let content = UNMutableNotificationContent()
                 content.title = request.title
@@ -48,7 +54,11 @@ public extension DailyCompletionReminderClient {
                 )
             },
             cancel: { identifier in
-                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
+                let center = UNUserNotificationCenter.current()
+                let identifiers = await center.pendingNotificationRequests()
+                    .map(\.identifier)
+                    .filter { DailyCompletionReminderRequest.isIdentifier($0, ofDay: identifier) }
+                center.removePendingNotificationRequests(withIdentifiers: identifiers)
             }
         )
     }
@@ -60,6 +70,7 @@ private extension DailyCompletionReminderClient {
     static let appGroupIdentifierInfoKey = "AppGroupIdentifier"
     static let settingKey = "dailyCompletionReminderSetting"
     static let completedDayIdentifierKey = "dailyCompletionReminderCompletedDayIdentifier"
+    static let isDailyLimitDisabledKey = "dailyCompletionReminderIsDailyLimitDisabled"
 
     /// App GroupのUserDefaultsを返す。App Groupが無い・読めない場合は`standard`を使う
     static func userDefaults(_ appGroupIdentifier: String?) -> UserDefaults {

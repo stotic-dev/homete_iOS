@@ -26,6 +26,17 @@ public final class DailyCompletionReminderUseCase: Sendable {
         await client.loadSetting()
     }
 
+    /// 1日1回の制限を外しているかを返す（デバッグメニュー用）
+    public func loadIsDailyLimitDisabled() async -> Bool {
+        await client.loadIsDailyLimitDisabled()
+    }
+
+    /// 1日1回の制限を外すかを保存する（デバッグメニュー用）
+    /// - Note: 外している間は、きっかけが届くたびに同じ日の予約を上書きせず別の通知として積む
+    public func updateIsDailyLimitDisabled(_ isDisabled: Bool) async {
+        await client.saveIsDailyLimitDisabled(isDisabled)
+    }
+
     /// 家事の一覧から分かった「今日完了した家事があるか」に合わせて、今日の通知を予約・取消する
     /// - Note: 完了を取り消して0件に戻った場合は、予約済みの通知も取り消す
     public func syncToday(hasCompletedHousework: Bool, now: Date, calendar: Calendar) async {
@@ -66,11 +77,13 @@ private extension DailyCompletionReminderUseCase {
     /// 現在の設定で今日の通知を予約する。無効・時刻を過ぎている場合は予約を取り消す
     func scheduleToday(now: Date, calendar: Calendar) async {
         let setting = await client.loadSetting()
+        let isDailyLimitDisabled = await client.loadIsDailyLimitDisabled()
         guard let request = DailyCompletionReminderRequest.make(
             day: now,
             setting: setting,
             now: now,
-            calendar: calendar
+            calendar: calendar,
+            allowsMultiplePerDay: isDailyLimitDisabled
         ) else {
             await client.cancel(DailyCompletionReminderRequest.identifier(for: now, calendar: calendar))
             return
