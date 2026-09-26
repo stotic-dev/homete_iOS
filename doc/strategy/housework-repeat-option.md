@@ -15,7 +15,7 @@
 
 ## 概要
 
-家事を登録するときに「毎週◯曜日」「毎月◯日」「毎月第N◯曜日」の繰り返しを指定できるようにし、指定した家事は該当日に自動で家事一覧に並ぶようにする。
+家事を登録するときに「毎日」「毎週」「毎月」の繰り返しを指定できるようにし、指定した家事は該当日に自動で家事一覧に並ぶようにする。
 「毎週◯曜日」は既存の週間テンプレートで実現できているが、テンプレート画面を開かないと設定できず、毎月の繰り返しには対応していない。登録画面から直接テンプレートに登録できるようにし、テンプレートに毎月の繰り返しを追加する。
 
 ## 要件
@@ -24,16 +24,16 @@
 
 **家事登録画面（`RegisterHouseworkView`）**
 
-- 「くり返し」の設定欄を追加する。選べるのは次の4種類で、初期値は「しない」
-  | 種類 | 追加で選ぶもの |
+- 「くり返し」の行を追加し、メニューのピッカーで種類を選ぶ（iOSのカレンダーの「繰り返し」と同じ形）。選べるのは次の4種類で、初期値は「しない」
+  | 種類 | 繰り返す日 |
   |---|---|
   | しない | なし（今と同じ単発の登録） |
-  | 毎週 | 曜日（複数選択、1つ以上） |
-  | 毎月（日付） | 日（1〜31） |
-  | 毎月（曜日） | 第N（第1〜第4・最終）と曜日（1つ） |
+  | 毎日 | 全曜日 |
+  | 毎週 | 登録しようとしている日の曜日 |
+  | 毎月 | 登録しようとしている日の日付 |
+- 登録画面では曜日・日付を選ばせず、登録しようとしている日を起点にする。いつ表示されるかは設定欄の下に「今日以降の毎週木曜日に表示されます」のように出す
 - 「しない」以外で登録すると、テンプレートに家事を追加するだけで、`Houseworks` には書き込まない
   - 登録元の日付（ボードで選んでいた日）が繰り返しの対象外の日だった場合や、過去の日だった場合は、その日には表示されない（`updatedAt` = 登録時刻のため）
-  - そのことが伝わるように、設定欄の下に「今日以降の該当する日に表示されます」と表示する
 - テンプレートがまだ作られていなければ、登録時に自動で作成する（テンプレート画面の「テンプレートを作成する」と同じ処理）
 - 登録画面はホームの「今日の家事」と家事ボードの2箇所から開かれる。どちらから開いても同じように設定できる
 - 重複チェック（「"◯◯"は既に登録されています」）は、「しない」のときだけ今までどおり行う
@@ -41,7 +41,7 @@
 **毎月の繰り返し**
 
 - 「毎月◯日」で29〜31日を指定した家事は、その日がない月は月末に表示する（例: 31日指定 → 2月は28日（うるう年は29日）、4月は30日）
-- 「毎月第N◯曜日」のNは第1〜第4と「最終」から選ぶ（第5週はある月とない月があるので選べないようにし、その代わりに「最終」を用意する）
+- 「毎月第N◯曜日」は選択肢を絞るため今回は対応しない（ルールに種類を持たせてあるので後から足せる。[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
 - 表示の仕組みは毎週の家事と同じ（[ADR-0003](../adr/0003-housework-template-virtual-view.md)の仮想ビュー方式）
   - 家事ボード・ホームの今日の家事・未完了の家事一覧に、未完了として表示する
   - 状態を変えた（完了報告した）時点で初めて `Houseworks` に書き込む
@@ -50,9 +50,11 @@
 **テンプレート画面（`HouseworkTemplateView`）**
 
 - 曜日ごとのリストの下に「毎月」のセクションを追加し、毎月の家事を一覧表示する
-  - 並び順は「◯日」を日付順で先に、そのあとに「第N◯曜日」を第N→曜日の順で並べる
-  - 各行には家事名・ポイント・繰り返しの内容（「毎月25日」「毎月第2水曜日」）を表示する
-- 家事の追加・編集モーダル（`HouseworkTemplateItemEditModal`）で、「毎週 / 毎月（日付） / 毎月（曜日）」を切り替えられるようにする
+  - 並び順は日付順（同じ日付ならID順）
+  - 各行には家事名・ポイント・繰り返しの内容（「毎月25日」）を表示する
+- 家事の追加・編集モーダル（`HouseworkTemplateItemEditModal`）で、「毎日 / 毎週 / 毎月」をメニューのピッカーで切り替えられるようにする
+  - 登録画面と違い、毎週は曜日（複数選択）、毎月は日付（1〜31）も選ぶ
+  - 毎日は全曜日の毎週として保存する。全曜日に登録されている家事を編集するときは「毎日」を選んだ状態で開く
   - 既存の家事を編集で別の種類に変えた場合は、元の保存先から消して新しい保存先に追加する（家事のIDは変えない）
 - 毎月の家事も、長押しメニューの「編集」「削除」と、タップでの詳細画面への遷移に対応する
 - 曜日間のドラッグ&ドロップは毎週の家事だけの機能とし、毎月の家事は対象にしない
@@ -65,7 +67,7 @@
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
 - `MonthlyItems` の取得に失敗しても（セキュリティルールが未デプロイの環境など）、`configure` は失敗扱いにしない。毎週の家事を含むテンプレート全体の表示を巻き込まないため
 - **リリース手順: 本番（`prod`）の Firestore ルールを、アプリの審査提出より先にデプロイする。** 本番へのルールのデプロイは `deploy-firestore.yml` の手動実行だけなので、忘れると新しいアプリで毎月の家事を読み書きできない
-- 日付の判定（毎月◯日の月末への寄せ、第N・最終週の判定）はドメイン層の値型に置き、`Calendar` を引数で受け取ってユニットテストする
+- 日付の判定（毎月◯日の月末への寄せ）はドメイン層の値型に置き、`Calendar` を引数で受け取ってユニットテストする
 
 ## 設計方針
 
@@ -78,16 +80,9 @@
 public enum MonthlyRecurrenceRule: Codable, Sendable, Equatable, Hashable {
     /// 毎月◯日（1〜31。その日がない月は月末）
     case dayOfMonth(Int)
-    /// 毎月第N◯曜日
-    case weekdayOfMonth(ordinal: WeekOrdinal, dayOfWeek: DayOfWeek)
 
     /// 指定日がこのルールに当てはまるか
     public func matches(_ date: Date, calendar: Calendar) -> Bool
-}
-
-public enum WeekOrdinal: Int, Codable, Sendable, CaseIterable {
-    case first = 1, second, third, fourth
-    case last = -1
 }
 
 /// 毎月繰り返すテンプレートの家事
@@ -97,7 +92,7 @@ public struct HouseworkTemplateMonthlyItem: Identifiable, Codable, Sendable, Equ
 }
 ```
 
-Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-0020](../adr/0020-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
+Firestore上の形（`rule.type` / `day`）は[ADR-0020](../adr/0020-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
 
 ### 2. 表示のマージ処理
 
@@ -151,22 +146,23 @@ match /MonthlyItems/{itemId} {
 
 - `HouseworkTemplateDraft`（編集中のローカル状態）に毎月の家事を持たせる
 - 「毎月」セクションは曜日リストと同じ見た目の行を使い、繰り返し内容のラベルだけ足す
-- 追加・編集モーダルの曜日選択（`WeekdaySelector`）の上に、繰り返しの種類を切り替えるセグメントを置く。「毎月（日付）」は日付のピッカー、「毎月（曜日）」は第Nのピッカー＋曜日の単一選択に切り替える
+- 追加・編集モーダルでは「くり返し」の行のメニューで種類を選び、その下に毎週なら曜日選択（`WeekdaySelector`）、毎月なら日付のピッカーを出す。毎日は追加の選択なし
 - 繰り返し設定のUIは登録画面でも使うので、`HouseworkTemplateFeature` 内ではなく `HometeUI` に共通コンポーネント `RecurrenceSelector` として置く。`HouseworkFeature` から `HouseworkTemplateFeature` への直接依存を作らないため
   - 曜日選択（`WeekdaySelector` / `WeekdayLabel`）も `HometeUI/Components/Weekday/` へ移す（リファクタとして先にコミット）
-  - 入力状態は `HouseworkRecurrenceInput`（HometeDomain）で持つ。種類を切り替えても他の種類の入力値を失わないよう全種類の値を持ち、`recurrence` で選択中の種類の値だけを取り出す
+  - 入力状態は `HouseworkRecurrenceInput`（HometeDomain）で持つ。種類を切り替えても他の種類の入力値を失わないよう全種類の値を持ち、`recurrence` で選択中の種類の値だけを取り出す。毎日は `HouseworkRecurrence.weekly(全曜日)` にし、保存の形を増やさない
+  - 曜日・日付を選ばせるかは `showsDetail` で切り替える（テンプレート画面は選ばせ、登録画面は選ばせない）
   - コンポーネントは選択値のBindingを受け取って描画するだけにし、「決定できるか」の判定は呼び出し側に置く（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）
 - 編集モードの「変更があるか」は、選んでいない種類の入力値ではなく、保存される繰り返し方（`recurrence`）で比べる
 - `HouseworkTemplateDraft` の毎月の家事は常に表示順（同じルールならID順）で持つ。Firestoreから読んだ順（ドキュメントID順）と編集で追加した順の違いだけで、未保存の変更やコンフリクトと判定しないため
 
 ### 6. 家事登録画面
 
-- `RegisterHouseworkView` に `RecurrenceSelector` を追加する。選択値は `HouseworkRecurrence?`（`nil` = くり返さない）で持つ。`HouseworkRecurrence` は `weekly(Set<DayOfWeek>)` / `monthly(MonthlyRecurrenceRule)` の2択で、テンプレートの家事の繰り返し方としても使う
+- `RegisterHouseworkView` に `RecurrenceSelector`（`showsDetail: false`）を追加する。選択値は `HouseworkRecurrenceInput` で持ち、`recurrence` が `nil` ならくり返さない。`HouseworkRecurrence` は `weekly(Set<DayOfWeek>)` / `monthly(MonthlyRecurrenceRule)` の2択で、テンプレートの家事の繰り返し方としても使う
 - 「登録する」ボタンの処理を分ける
   - `nil`: 今までどおり `HouseworkListStore.register`
   - それ以外: `HouseworkTemplateListStore` にテンプレートの作成（なければ）と `appendItem` を行わせる
 - `HouseworkTemplateListStore` は2つの呼び出し元（`HomeView` / `HouseworkBoardScreen`）で既に environment に入っているので、`RegisterHouseworkView` は `@Environment(HouseworkTemplateListStore.self) var ...: HouseworkTemplateListStore?` で受け取る。`nil`（未構成）のときは繰り返しの設定欄を出さない
-- 各種類の初期値は、登録しようとしている日の曜日・日付・第N週にする（第5週は「最終」）
+- 毎週・毎月の曜日・日付は、登録しようとしている日の曜日・日付にする（画面では変えられない）
 - テンプレートが無いグループでは、`appendItemCreatingTemplateIfNeeded` がテンプレートを作成し、その場で選択して `Days` / `MonthlyItems` の監視を始めてから追加する（既存の「テンプレート作成を検知する監視」は監視の開始までは行わないため、そのままだと登録した家事が表示されない）
 - 繰り返しの設定欄は、テンプレートの読み込みが終わっている（`loadState == .loaded`）ときだけ出す。Storeは `configure` の完了を待たずに作られるので、読み込み中・失敗時は `selectedTemplateId == nil` でもテンプレートが無いとは限らず、重複して作成してしまうため（Store側でも `HouseworkTemplateError.notLoaded` で止める）
 - `startObservingItems` は、呼ばれるたびに既存の監視を解除してから開始し直す（呼び出し箇所が増えたため、二重監視を防ぐ）
@@ -179,7 +175,7 @@ match /MonthlyItems/{itemId} {
 | パラメータ | 値 | 説明 |
 |---|---|---|
 | `step`（追加、`create`のみ） | `template` / `register` | テンプレート画面で保存したか、登録画面から追加したか |
-| `recurrence`（追加、`create` / `edit`のみ） | `weekly` / `monthly_day` / `monthly_weekday` | 追加・編集後の繰り返し方 |
+| `recurrence`（追加、`create` / `edit`のみ） | `daily` / `weekly` / `monthly` | 追加・編集後の繰り返し方（全曜日の毎週は `daily`） |
 
 登録画面から追加したときは `action: create, step: register` を送る。テンプレートを自動で作成したときは、テンプレート画面と同じく `apply` も送る。繰り返しを設定した登録では `Houseworks` に書き込まないので、`housework` イベントの `register` は送らない。
 
@@ -189,7 +185,7 @@ match /MonthlyItems/{itemId} {
 |---|---|---|
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/MonthlyRecurrenceRule.swift` | 毎月の繰り返しルールと日付の判定 |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateMonthlyItem.swift` | 毎月の家事 |
-| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrence.swift` | 家事の繰り返し方（毎週 / 毎月） |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrence.swift` | 家事の繰り返し方（毎週 / 毎月。毎日は全曜日の毎週） |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateUpdate.swift` | 保存で書き込む内容 |
 | 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateContext.swift` | `monthlyItems` を持ち、`templateOfDay` で毎月の家事も返す |
 | 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateListStore.swift` | `MonthlyItems` の監視、`saveTemplate`、`appendItem` |
@@ -228,12 +224,13 @@ match /MonthlyItems/{itemId} {
 
 - [x] 登録画面からは曜日などを選んでテンプレートに直接追加する（テンプレート画面への導線だけにはしない）
 - [x] 毎月の繰り返しも今回まとめて対応する
-- [x] 毎月は「◯日」と「第N◯曜日」の両方に対応する
+- [x] 毎月は「◯日」だけに対応する（当初は「第N◯曜日」も対応予定だったが、選択肢を絞るため見送った）
 - [x] 29〜31日の指定は、その日がない月は月末に表示する
 - [x] 繰り返しを設定して登録したときは、登録元の日付に単発では登録しない（繰り返しに任せる）
 - [x] 毎月の家事はテンプレート画面に「毎月」セクションを足して管理する
 - [x] 毎月の家事の保存方式（[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
-- [x] 第N◯曜日のNは第1〜第4と「最終」にする
+- [x] 繰り返しの種類はメニューのピッカーで選ぶ。「毎日」も選べるようにする
+- [x] 登録画面では曜日・日付を選ばせず、登録しようとしている日を起点にする（テンプレート画面では選ばせる）
 - [x] ADR-0020のレビュー（提案済 → 承認済）
 
 ### Phase 2: 実装
@@ -244,8 +241,8 @@ match /MonthlyItems/{itemId} {
 - [x] `deleteUserData` のE2Eテストに `MonthlyItems` の削除確認・残存確認を追加
 
 **PR #2**
-- [x] `MonthlyRecurrenceRule` / `WeekOrdinal` / `HouseworkTemplateMonthlyItem` / `HouseworkRecurrence` / `HouseworkTemplateUpdate` を追加
-- [x] 日付判定のユニットテスト（31日指定の2月・3月・4月、うるう年、第1〜第4週・最終週、曜日違い）とCodableのテスト
+- [x] `MonthlyRecurrenceRule` / `HouseworkTemplateMonthlyItem` / `HouseworkRecurrence` / `HouseworkTemplateUpdate` を追加
+- [x] 日付判定のユニットテスト（31日指定の2月・3月・4月、うるう年）とCodableのテスト
 - [x] `HouseworkTemplateClient` に取得・監視・`updateTemplate`・`appendItem` を追加し、Implを実装
 - [x] `HouseworkTemplateListStore` の `MonthlyItems` 監視・`saveTemplate`・`appendItem`・変更検知（`itemChanges`）とテスト
 
@@ -263,7 +260,7 @@ match /MonthlyItems/{itemId} {
 - [x] Analyticsの `step` / `recurrence` パラメータ
 - [x] `RegisterHouseworkView` に繰り返しの設定欄と登録処理の分岐を追加（呼び出し元2箇所は既に environment に `HouseworkTemplateListStore` を入れているので変更不要）
 - [x] テンプレートが無い場合の作成と監視開始（`appendItemCreatingTemplateIfNeeded`）とテスト
-- [x] Previewの追加（毎週くり返し。毎月は `RecurrenceSelector` 側のPreviewで網羅）
+- [x] Previewの追加（毎週くり返し、毎月くり返しの月末）
 - [x] `doc/analytics_events.md` を更新
 
 ### Phase 3: 検証
