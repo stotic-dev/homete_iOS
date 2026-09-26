@@ -17,7 +17,7 @@
 
 家事を「完了にする」ときに、担当者（実行者）を選べるようにする。自分以外や複数人も選べる。家事をしてもアプリで完了にしない人の分を、他の人が代わりに記録できるようにするのと、2人以上で手分けした家事のポイントを割合で分けられるようにするのが目的。
 
-あわせて、完了とありがとうの入力画面をハーフモーダルにそろえる。完了時にはコメントも添えられるようにする。
+あわせて、完了とありがとうの入力画面をハーフモーダルにそろえる。完了時のコメント入力は、一度入れたが不要と判断して外した。
 
 Issue起票時点では承認フローがあったため「承認依頼」と書かれているが、[#292](remove-approval-state.md)で承認は廃止済み。本対応では「完了にする」操作に担当者の選択を追加する。
 
@@ -27,13 +27,13 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
 
 #### 担当者の選択
 
-1. 「完了にする」をタップすると、**完了用のハーフモーダル**（担当者の設定＋任意のコメント欄）を出す
+1. 「完了にする」をタップすると、**完了用のハーフモーダル**（担当者の設定だけ）を出す
    - 表示元は、家事詳細の「完了にする」と、**クイックアクション（長押しメニュー）の「完了にする」（1件）**
    - 同居人グループのメンバーを複数選べる。初期状態では自分だけ選んでおく
    - 自分を外して、他の人だけを担当者にしてもよい
    - 選択が0人のときは「完了にする」を押せない
-   - コメントは任意。空のままでも完了にできる
-2. **複数選択の一括完了は今までどおり**、コメントなし・自分だけを担当者（配分100%）にして即完了にする
+   - コメント欄は置かない
+2. **複数選択の一括完了は今までどおり**、自分だけを担当者（配分100%）にして即完了にする
 3. 完了済みの家事の担当者を後から変える機能は、今回は入れない（未完了に戻して、完了にし直せば変えられる）
 
 #### ポイントの配分
@@ -85,6 +85,7 @@ Issue起票時点では承認フローがあったため「承認依頼」と書
     - ふりかえり通知の予約用データ（`HouseworkCompletedNotificationData`）は、今までどおり「今日の家事で、その日まだ送っていない」ときだけ付ける
     - コメントなしの完了は、今までどおり1日1回だけ送る
     - コメントは「ありがとう」と同じく、ユーザーが明示的に送ったメッセージなので、送る回数を絞る対象から外す
+    - 注：完了のハーフモーダルからコメント欄を外したため、17・18の処理は今どの画面からも使われていない
 
 ### 非機能要件 / 制約
 
@@ -190,6 +191,7 @@ public func complete(
 `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift`（新規）
 
 ```
+(×)          完了にする            (✓)
 担当者
  ☑ 自分        34%  4pt
  ☑ Bさん       33%  3pt
@@ -201,15 +203,13 @@ public func complete(
      Cさん [ 33% ▾ ]
      合計 100 / 100%
  （エラー表示）
-コメント（任意）
- [ ひとこと添えましょう              ]
-[ 完了にする ]
 ```
 
 - 家事詳細の「完了にする」（`HouseworkDetailActionContent`）と、クイックアクションの「完了にする」（`HouseworkQuickActionMenuContent`）から `.sheet` で表示する。確定したら `houseworkListStore.complete` を呼んでシートを閉じる
 - クイックアクションは `.contextMenu` の中身なので、そこから直接シートは出せない。メニューで「完了にする」を選んだら、対象の家事を親View（家事ボード・ダッシュボード）の `@State` に渡して `.sheet(item:)` で表示する。そのため `HouseworkQuickActionMenuContent` に、完了を選んだことを親に伝えるクロージャを追加する
 - %のピッカーは、既存の `PointWheelPickerField` と同じホイール形式で、`1...99` の範囲にする。共通化できそうなら `HometeUI` に `PercentageWheelPickerField` として切り出す
 - 状態は `HouseworkExecutorAllocation` を `@State` で持つ。判定は全部ドメイン側で行い、Viewは結果を表示するだけにする（`presentation-logic-placement` ルール）
+- `NavigationStack` で包み、タイトル「完了にする」をナビゲーションバーに出す。leadingにキャンセル（`NavigationBarButton(label: .close)`）、trailingに完了のアイコンボタン（`NavigationBarPrimaryActionButton(systemImage: "checkmark")`）を置く。配分にエラーがあるときは完了ボタンを押せない
 - `.presentationDetents([.medium, .large])`
 
 ### 4-1. UI：ありがとう用ハーフモーダル
@@ -225,7 +225,7 @@ public func complete(
 - `HouseworkDetailActionContent` からの表示を `.fullScreenCoverOnIOS` から `.sheet` に変える
 - 中身はコメント欄だけにする。家事の内容と「◯◯さんが〜終えてくれました」のセクションを削除する。閉じるボタンは置かない（ドラッグで閉じられるため）
 - 送信ボタンはナビゲーションバーのtrailingにハートのアイコン（`NavigationBarPrimaryActionButton(systemImage: "heart.fill")`）で置く。タイトル「ありがとうを伝える」はナビゲーションバーに出し、コメント欄の見出しは「メッセージ」にする
-- コメント欄の見た目は、完了用ハーフモーダルと部品（`HouseworkCommentInputContent`）を共通化する
+- コメント欄は `HouseworkCommentInputContent` を使う
 - スクリーン計測（`.trackScreenView(.houseworkThanks)`）はそのまま残す
 
 ### 5. 集計・表示の置き換え
@@ -264,7 +264,7 @@ public func complete(
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkListStore+QuickAction.swift` | 自分だけに100%で完了 |
 | 修正Model | `LocalPackage/Sources/Features/ContributionFeature/Model/HouseworkContribution.swift` | 担当者ごとの集計 |
 | 修正UseCase | `LocalPackage/Sources/HometeDomain/UseCase/DailyCompletionReminderUseCase.swift` | コメントありの完了は毎回送る |
-| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 完了用ハーフモーダル（担当者の設定＋コメント） |
+| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 完了用ハーフモーダル（担当者の設定） |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | 「完了にする」（1件）を親に伝えてハーフモーダルを出す |
 | 修正View | 家事ボード・ダッシュボードのクイックアクション呼び出し元 | 完了用ハーフモーダルを `.sheet(item:)` で表示 |
 | 新規View（任意） | `LocalPackage/Sources/HometeUI/Components/Picker/PercentageWheelPickerField.swift` | %のホイールピッカー |
@@ -284,7 +284,7 @@ public func complete(
 - [x] 0ptの担当者は許さない（確定させない／人数の上限を家事のポイントにする）
 - [x] 3人以上のときは他の人の%を自動で変えず、合計100%になるまで確定させない
 - [x] 担当者を後から変える機能は入れない
-- [x] 「完了にする」（家事詳細・クイックアクション1件）は、担当者の設定と任意コメントのハーフモーダルを出す
+- [x] 「完了にする」（家事詳細・クイックアクション1件）は、担当者の設定のハーフモーダルを出す
 - [x] 一括完了は、コメントなし・自分だけに100%で即完了のまま
 - [x] ありがとう（家事詳細）はコメント欄だけのハーフモーダルにする。クイックアクションのありがとうは定型文のまま
 - [x] コメントありの完了は、1日1回の条件に関係なく毎回通知を送る
@@ -311,7 +311,7 @@ public func complete(
 - [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
 - [ ] ユニットテスト実行（追加分含む）通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
-- [ ] 実機/シミュレータで動作確認（詳細から自分だけ・クイックアクションから他人だけ・3人で配分調整＋コメントの3パターン）
+- [ ] 実機/シミュレータで動作確認（詳細から自分だけ・クイックアクションから他人だけ・3人で配分調整の3パターン）
 
 ### Phase 4: PR
 
