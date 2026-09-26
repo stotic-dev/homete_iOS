@@ -42,9 +42,11 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         originalItem.executedAt
     }
 
-    /// レビュー可能かどうか
-    public func canReview(ownUserId: String) -> Bool {
-        originalItem.executorId != ownUserId && state != .completed
+    /// ありがとうを伝えられるかどうか
+    ///
+    /// 自分が終えた家事に自分でありがとうを送っても意味がないため、実施者本人には送らせない。
+    public func canSendThanks(ownUserId: String) -> Bool {
+        state == .completed && originalItem.executorId != ownUserId
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {

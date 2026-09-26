@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  AnalyticsEventTest.swift
 //  hometeTests
@@ -137,28 +138,20 @@ struct AnalyticsEventTest {
                 ["action": "register", "step": "dashboard", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.requestReview(step: .detail, isSuccess: true),
-                ["action": "request_review", "step": "detail", "result": "success"]
+                HouseworkAnalyticsAction.complete(step: .detail, isSuccess: true),
+                ["action": "complete", "step": "detail", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.requestReview(step: .board, isSuccess: false),
-                ["action": "request_review", "step": "board", "result": "failure"]
+                HouseworkAnalyticsAction.complete(step: .board, isSuccess: false),
+                ["action": "complete", "step": "board", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.approve(isSuccess: true),
-                ["action": "approve", "step": "approval", "result": "success"]
+                HouseworkAnalyticsAction.sendThanks(step: .thanks, isSuccess: true),
+                ["action": "send_thanks", "step": "thanks", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.approve(isSuccess: false),
-                ["action": "approve", "step": "approval", "result": "failure"]
-            ),
-            (
-                HouseworkAnalyticsAction.reject(isSuccess: true),
-                ["action": "reject", "step": "approval", "result": "success"]
-            ),
-            (
-                HouseworkAnalyticsAction.reject(isSuccess: false),
-                ["action": "reject", "step": "approval", "result": "failure"]
+                HouseworkAnalyticsAction.sendThanks(step: .board, isSuccess: false),
+                ["action": "send_thanks", "step": "board", "result": "failure"]
             ),
             (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),

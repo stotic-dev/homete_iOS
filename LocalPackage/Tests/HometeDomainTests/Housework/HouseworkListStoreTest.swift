@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkListStoreTest.swift
 //  hometeTests
@@ -92,21 +93,26 @@ struct HouseworkListStoreTest {
 
 extension HouseworkListStoreTest.UpdateStatusCase {
 
-    @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
-    func requestReview() async {
+    @Test("家事を完了にすると、パートナーにその旨Push通知を送信する")
+    func complete() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
         )
-        let requestedAt = Date()
-        let inputExecutor = "dummyExecutor"
+        let expectedNotificationContent = PushNotificationContent(
+            title: "\(inputExecutor.userName)さんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました"
+        )
+        let completedAt = Date()
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
-            state: .pendingApproval,
-            executorId: inputExecutor,
-            executedAt: requestedAt
+            state: .completed,
+            executorId: inputExecutor.id,
+            executedAt: completedAt
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -135,9 +141,9 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 // Act
 
                 Task {
-                    try await store.requestReview(
+                    try await store.complete(
                         target: inputHouseworkItem,
-                        now: requestedAt,
+                        now: completedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
                         isRegistered: true,
@@ -148,21 +154,26 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("テンプレートから生成された家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
-    func requestReview_with_created_template() async {
+    @Test("テンプレートから生成された家事を完了にすると、パートナーにその旨Push通知を送信する")
+    func complete_with_created_template() async {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
         )
-        let requestedAt = Date()
-        let inputExecutor = "dummyExecutor"
+        let expectedNotificationContent = PushNotificationContent(
+            title: "\(inputExecutor.userName)さんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました"
+        )
+        let completedAt = Date()
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
-            state: .pendingApproval,
-            executorId: inputExecutor,
-            executedAt: requestedAt
+            state: .completed,
+            executorId: inputExecutor.id,
+            executedAt: completedAt
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -191,9 +202,9 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 // Act
 
                 Task {
-                    try await store.requestReview(
+                    try await store.complete(
                         target: inputHouseworkItem,
-                        now: requestedAt,
+                        now: completedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
                         isRegistered: false,
@@ -210,7 +221,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "dummyExecutor",
             executedAt: .distantPast
         )
@@ -323,140 +334,98 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("家事を承認すると、承認情報を更新しパートナーに通知を送信する")
-    // swiftlint:disable:next function_body_length
-    func approved() async {
+    @Test("完了した家事にありがとうを伝えると、パートナーに通知を送信する")
+    func sendThanks() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let approvedAt = Date()
-        let inputReviewer = Account(
-            id: "reviewerId",
-            userName: "レビュアー",
+        let inputSender = Account(
+            id: "senderId",
+            userName: "おくりぬし",
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let inputComment = "お疲れ様でした！"
-        let updatedHouseworkItem = inputHouseworkItem.updateApproved(
-            at: approvedAt,
-            reviewer: inputReviewer.id,
-            comment: inputComment
-        )
-        let expectedNotificationContent = PushNotificationContent.approvedMessage(
-            reviwerName: inputReviewer.userName,
-            houseworkTitle: inputHouseworkItem.title,
-            comment: inputComment
+        let expectedNotificationContent = PushNotificationContent(
+            title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
+            message: inputComment
         )
 
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(
-                        insertOrUpdateItemHandler: { item, cohabitantId in
-                            // Assert
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { _, _ in
+                        // ありがとうは家事のステータスを変えないため、保存は行われない
+                        Issue.record()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { id, content in
+                    // Assert
 
-                            #expect(item == updatedHouseworkItem)
-                            #expect(cohabitantId == inputCohabitantId)
-                            confirmation()
-                        }
-                    ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    #expect(id == inputCohabitantId)
+                    #expect(content == expectedNotificationContent)
+                    confirmation()
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
-                    items: [.makeForTest(items: [inputHouseworkItem])]
-                )
+            // Act
 
-                // Act
-
-                Task {
-                    try await store.approved(
-                        target: inputHouseworkItem,
-                        now: approvedAt,
-                        reviwer: inputReviewer,
-                        comment: inputComment,
-                        cohabitantId: inputCohabitantId
-                    )
-                }
-            }
+            try await store.sendThanks(
+                target: inputHouseworkItem,
+                sender: inputSender,
+                comment: inputComment,
+                cohabitantId: inputCohabitantId,
+                step: .thanks
+            )
         }
     }
 
-    @Test("家事を却下すると、却下情報を更新しパートナーに通知を送信する")
-    // swiftlint:disable:next function_body_length
-    func rejected() async {
+    @Test("一括操作でありがとうを伝えるときは、家事ごとの個別通知を送らない")
+    func sendThanks_withoutNotify() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let rejectedAt = Date()
-        let inputReviewer = Account(
-            id: "reviewerId",
-            userName: "レビュアー",
+        let inputSender = Account(
+            id: "senderId",
+            userName: "おくりぬし",
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
-        let inputComment = "もう一度確認してください"
-        let updatedHouseworkItem = inputHouseworkItem.updateRejected(
-            at: rejectedAt,
-            reviewer: inputReviewer.id,
-            comment: inputComment
-        )
-        let expectedNotificationContent = PushNotificationContent.rejectedMessage(
-            reviwerName: inputReviewer.userName,
-            houseworkTitle: inputHouseworkItem.title,
-            comment: inputComment
-        )
-
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(
-                        insertOrUpdateItemHandler: { item, cohabitantId in
-                            // Assert
-
-                            #expect(item == updatedHouseworkItem)
-                            #expect(cohabitantId == inputCohabitantId)
-                            confirmation()
-                        }
-                    ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
-
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
-                    items: [.makeForTest(items: [inputHouseworkItem])]
-                )
-
-                // Act
-
-                Task {
-                    try await store.rejected(
-                        target: inputHouseworkItem,
-                        now: rejectedAt,
-                        reviwer: inputReviewer,
-                        comment: inputComment,
-                        cohabitantId: inputCohabitantId
-                    )
+        let store = HouseworkListStore(
+            houseworkClient: .init(
+                insertOrUpdateItemHandler: { _, _ in
+                    Issue.record()
                 }
-            }
-        }
+            ),
+            cohabitantPushNotificationClient: .init { _, _ in
+                // Assert
+
+                Issue.record()
+            },
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: "ありがとう！",
+            cohabitantId: inputCohabitantId,
+            step: .board,
+            notify: false
+        )
     }
 
     @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")

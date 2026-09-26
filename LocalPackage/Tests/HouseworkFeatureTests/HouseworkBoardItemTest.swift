@@ -9,39 +9,19 @@
 @testable import HouseworkFeature
 import Testing
 
-// swiftlint:disable:next convenience_type
 enum HouseworkBoardItemTest {
 
-    struct CanReviewCase {}
+    struct CanSendThanksCase {}
 
 }
 
-extension HouseworkBoardItemTest.CanReviewCase {
+extension HouseworkBoardItemTest.CanSendThanksCase {
 
     @Test(
-        "担当者が自分以外かつ未完了の場合、レビュー可能",
-        arguments: [HouseworkState.incomplete, .pendingApproval]
-    )
-    func canReview_notOwnUserAndNotCompleted_returnsTrue(state: HouseworkState) {
-        // Arrange
-        let item = HouseworkBoardItem.makeForPreview(
-            id: "1",
-            state: state,
-            executorId: "otherUserId"
-        )
-
-        // Act
-        let result = item.canReview(ownUserId: "ownUserId")
-
-        // Assert
-        #expect(result == true)
-    }
-
-    @Test(
-        "担当者が自分以外でも完了済みの場合、レビュー不可",
+        "完了済みで実施者が自分以外の場合、ありがとうを伝えられる",
         arguments: ["otherUserId", nil]
     )
-    func canReview_completedState_returnsFalse(executorId: String?) {
+    func canSendThanks_completedByOtherUser_returnsTrue(executorId: String?) {
         // Arrange
         let item = HouseworkBoardItem.makeForPreview(
             id: "1",
@@ -50,17 +30,36 @@ extension HouseworkBoardItemTest.CanReviewCase {
         )
 
         // Act
-        let result = item.canReview(ownUserId: "ownUserId")
+        let result = item.canSendThanks(ownUserId: "ownUserId")
+
+        // Assert
+        #expect(result == true)
+    }
+
+    @Test(
+        "完了していない家事には、ありがとうを伝えられない",
+        arguments: [HouseworkState.incomplete, .notTodo]
+    )
+    func canSendThanks_notCompletedState_returnsFalse(state: HouseworkState) {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            state: state,
+            executorId: "otherUserId"
+        )
+
+        // Act
+        let result = item.canSendThanks(ownUserId: "ownUserId")
 
         // Assert
         #expect(result == false)
     }
 
     @Test(
-        "担当者が自分の場合、未完了でもレビュー不可",
+        "実施者が自分の場合、完了済みでもありがとうを伝えられない",
         arguments: HouseworkState.allCases
     )
-    func canReview_ownUser_returnsFalse(state: HouseworkState) {
+    func canSendThanks_ownUser_returnsFalse(state: HouseworkState) {
         // Arrange
         let ownUserId = "ownUserId"
         let item = HouseworkBoardItem.makeForPreview(
@@ -70,7 +69,7 @@ extension HouseworkBoardItemTest.CanReviewCase {
         )
 
         // Act
-        let result = item.canReview(ownUserId: ownUserId)
+        let result = item.canSendThanks(ownUserId: ownUserId)
 
         // Assert
         #expect(result == false)
