@@ -15,6 +15,7 @@ struct HouseworkDetailActionContent: View {
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @State var isPresentedThanksView = false
+    @State var isPresentedCompleteSheet = false
 
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
@@ -37,6 +38,9 @@ struct HouseworkDetailActionContent: View {
             }
         }
         .disabled(isLoading)
+        .sheet(isPresented: $isPresentedCompleteSheet) {
+            HouseworkCompleteSheet(item: item, step: .detail)
+        }
         .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
             HouseworkThanksView(item: item)
         }
@@ -48,11 +52,7 @@ private extension HouseworkDetailActionContent {
 
     func completeButton() -> some View {
         Button {
-            isLoading = true
-            Task {
-                await tappedCompleteButton()
-                isLoading = false
-            }
+            isPresentedCompleteSheet = true
         } label: {
             Label("完了にする", systemImage: "checkmark.circle.fill")
                 .frame(maxWidth: .infinity)
@@ -89,26 +89,6 @@ private extension HouseworkDetailActionContent {
 // プレゼンテーションロジック
 
 private extension HouseworkDetailActionContent {
-
-    func tappedCompleteButton() async {
-        guard let cohabitantId else { return }
-
-        do {
-            try await houseworkListStore.complete(
-                target: item.originalItem,
-                now: .now,
-                reporter: account,
-                executors: [.solo(userId: account.id, point: item.point)],
-                executorNames: [account.userName],
-                comment: "",
-                cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered,
-                step: .detail
-            )
-        } catch {
-            commonErrorContent = .init(error: error)
-        }
-    }
 
     func tappedUndoStateButton() async {
         guard let cohabitantId else { return }

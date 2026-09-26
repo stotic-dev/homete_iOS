@@ -23,6 +23,8 @@ struct HouseworkBoardListContent: View {
     let onCreateTapped: () -> Void
 
     @State var selectedIDs: Set<String> = []
+    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
+    @State var completingItem: HouseworkBoardItem?
     @CommonError var commonError
 
     var body: some View {
@@ -44,6 +46,7 @@ struct HouseworkBoardListContent: View {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .board,
+                                onSelectComplete: { completingItem = item },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -73,6 +76,9 @@ struct HouseworkBoardListContent: View {
                 }
                 .onChange(of: isSelecting) {
                     selectedIDs = []
+                }
+                .sheet(item: $completingItem) { item in
+                    HouseworkCompleteSheet(item: item, step: .board)
                 }
                 .commonError(content: $commonError)
         }

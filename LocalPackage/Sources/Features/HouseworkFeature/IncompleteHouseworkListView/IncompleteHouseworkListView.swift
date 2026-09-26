@@ -18,6 +18,8 @@ public struct IncompleteHouseworkListView: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @CommonError var commonError
+    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
+    @State var completingItem: HouseworkBoardItem?
 
     public static func make() -> some View {
         IncompleteHouseworkListView()
@@ -35,6 +37,9 @@ public struct IncompleteHouseworkListView: View {
         .navigationTitle("未完了の家事")
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
+        .sheet(item: $completingItem) { item in
+            HouseworkCompleteSheet(item: item, step: .dashboard)
+        }
         .commonError(content: $commonError)
         .trackScreenView(.incompleteHouseworkList)
     }
@@ -58,6 +63,7 @@ private extension IncompleteHouseworkListView {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .dashboard,
+                                onSelectComplete: { completingItem = item },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }

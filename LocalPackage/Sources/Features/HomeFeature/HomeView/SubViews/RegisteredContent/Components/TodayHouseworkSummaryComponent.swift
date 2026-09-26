@@ -22,6 +22,8 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(\.cohabitantMembers) var members
 
     @State var isPresentingRegister = false
+    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
+    @State var completingItem: HouseworkBoardItem?
     @CommonError var commonError
 
     static func make() -> some View {
@@ -46,6 +48,9 @@ struct TodayHouseworkSummaryComponent: View {
                 ),
                 step: .dashboard
             )
+        }
+        .sheet(item: $completingItem) { item in
+            HouseworkCompleteSheet(item: item, step: .dashboard)
         }
         .commonError(content: $commonError)
     }
@@ -155,6 +160,7 @@ private extension TodayHouseworkSummaryComponent {
                         HouseworkQuickActionMenuContent(
                             item: item,
                             step: .dashboard,
+                            onSelectComplete: { completingItem = item },
                             onError: { commonError = .init(error: $0) }
                         )
                     }
