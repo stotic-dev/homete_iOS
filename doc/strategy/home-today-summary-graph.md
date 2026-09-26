@@ -27,7 +27,7 @@
   1. **家事の数**: 今日完了した家事の件数の割合
   2. **ポイント**: 今日完了した家事で獲得したポイントの割合
 - 集計対象は当日の `state == .completed` の家事のみ。実行者（`executorId`）ごとに集計する
-  - 承認待ち（`pendingApproval`）は含めない（月間の `HouseworkContribution.make` と同じ基準）
+  - やらない（`notTodo`）は含めない（月間の `HouseworkContribution.make` と同じ基準）。承認待ち（`pendingApproval`）は #295 で廃止された
   - 未完了（`incomplete`）・未登録のテンプレート家事は完了していないので対象外
 - 同居人グループの全メンバーを凡例に表示する。今日まだ何もしていないメンバーも0件・0ptのデータとして含める
 - 扇形の中に「3件」「60pt」のように値を表示する。値が0のメンバーは扇形が無いので表示しない
@@ -146,7 +146,7 @@ case .hasIncomplete:
 - [x] グラフ形式: 件数・ポイントのドーナツ2つをスワイプで切り替え
 - [x] 表示位置: 「達成率」の直下
 - [x] 完了0件のときはグラフを非表示
-- [x] 承認待ちは集計に含めない（completedのみ）
+- [x] completedのみを集計する（やらない・未完了は含めない）
 - [x] 実績0のメンバーも凡例に表示
 - [x] 色は Swift Charts の自動割り当て（月間ドーナツと同じ）
 
@@ -156,7 +156,7 @@ case .hasIncomplete:
 - [x] `TodayHouseworkSummary.memberContributions(members:)` の追加
 - [x] ユニットテストの追加
   - completedのみを実行者ごとに件数・ポイント集計する
-  - pendingApproval / incomplete は集計に含めない
+  - notTodo / incomplete は集計に含めない
   - 実績0のメンバーも0件・0ptで含まれる
   - メンバー外の `executorId` は集計しない
   - 並び順が `members.value`（自分が先頭）と一致する
