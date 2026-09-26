@@ -140,6 +140,12 @@ View → Store（AppDependenciesを受け取る）
 **Cloud Functions** (`firebase/functions/src/`):
 - `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
+- `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
+- `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）
+- `debugrevokerefreshtokens` - **STG限定**。呼び出し元自身のリフレッシュトークンを失効させ、トークン失効による自動サインアウトを再現する（v2 callable）
+  - コードは両プロジェクトにデプロイされるが、実行時に`GCLOUD_PROJECT`を見てSTG以外では`permission-denied`で拒否する
+  - 失効対象は`request.auth`のユーザー自身のみ。引数でユーザーIDを受け取らないので、他人をサインアウトさせる余地がない
+  - アプリ側の導線はDEBUGビルドのデバッグメニュー（設定 → デバッグメニュー → ログイン情報の失効）
 
 **認証:**
 - `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
