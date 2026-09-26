@@ -54,6 +54,12 @@ public struct HouseworkBoardScreen: View {
                     onAppeare(with: houseworkListStore)
                 }
             }
+            // 繰り返しを設定した登録やテンプレートの編集は家事の購読には現れないため、テンプレートの変化でも組み直す
+            .onChange(of: templateContext) {
+                withAnimation {
+                    updateHouseboardList(with: houseworkListStore)
+                }
+            }
             // プランが確定・変化したタイミングで日付リストの選択可能範囲を組み直す
             .task(id: storagePolicy) {
                 rebuildDateList()
