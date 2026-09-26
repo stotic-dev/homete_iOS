@@ -15,14 +15,14 @@ struct TemplateItemEditInput: Equatable {
     var title: String
     /// `nil`はポイント未選択を表す。
     var point: Int?
-    var days: Set<DayOfWeek>
+    var recurrence: HouseworkRecurrenceInput
 
     static func initial(_ id: UUID) -> Self {
         TemplateItemEditInput(
             itemId: .init(uuid: id),
             title: "",
             point: nil,
-            days: []
+            recurrence: .init(kind: .weekly)
         )
     }
 
@@ -33,12 +33,12 @@ struct TemplateItemEditInput: Equatable {
     func canConfirm(_ mode: EditMode) -> Bool {
         // 全ての項目が入力済みであること
         let isAllInputed = !title.trimmingCharacters(in: .whitespaces).isEmpty
-            && !days.isEmpty
+            && recurrence.recurrence != nil
             && point != nil
 
         if case let .edit(before) = mode {
             // 編集モードの場合は、既存の内容から変更が加わっていることも条件に含める
-            return before != self && isAllInputed
+            return hasChanges(from: before) && isAllInputed
         } else {
             return isAllInputed
         }
@@ -55,14 +55,26 @@ struct TemplateItemEditInput: Equatable {
 
 }
 
+private extension TemplateItemEditInput {
+
+    /// 保存される内容が既存の内容から変わっているか
+    /// - Note: 繰り返し方は選択中の種類の値だけで比べる（種類を切り替えて戻しただけなら変更なしとみなす）
+    func hasChanges(from before: Self) -> Bool {
+        title != before.title
+            || point != before.point
+            || recurrence.recurrence != before.recurrence.recurrence
+    }
+
+}
+
 extension TemplateItemEditInput {
 
-    init(item: HouseworkTemplateItem, selectedDays: Set<DayOfWeek>) {
+    init(item: HouseworkTemplateItem, recurrence: HouseworkRecurrence) {
         self.init(
             itemId: item.id,
             title: item.title,
             point: item.point,
-            days: selectedDays
+            recurrence: .init(recurrence: recurrence)
         )
     }
 

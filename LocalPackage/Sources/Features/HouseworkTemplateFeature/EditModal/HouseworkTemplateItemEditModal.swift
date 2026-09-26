@@ -79,7 +79,7 @@ struct HouseworkTemplateItemEditModal: View {
         VStack(alignment: .leading, spacing: .space16) {
             inputTitleField()
             inputPointPicker()
-            inputDaysSelector()
+            inputRecurrenceSelector()
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -131,12 +131,8 @@ private extension HouseworkTemplateItemEditModal {
         }
     }
 
-    func inputDaysSelector() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("曜日")
-                .font(with: .headLineS)
-            WeekdaySelector(selection: $input.days)
-        }
+    func inputRecurrenceSelector() -> some View {
+        RecurrenceSelector(input: $input.recurrence)
     }
 
     func trailingNavigationItem() -> some View {
@@ -173,7 +169,20 @@ private extension HouseworkTemplateItemEditModal {
         itemId: .init(id: "1"),
         title: "hoge",
         point: 10,
-        days: [.monday, .friday]
+        recurrence: .init(kind: .weekly, weekdays: [.monday, .friday])
+    )
+    HouseworkTemplateItemEditModal(
+        input: .constant(beforeInput),
+        mode: .edit(before: beforeInput)
+    ) { _ in }
+}
+
+#Preview("HouseworkTemplateItemEditModal_毎月") {
+    let beforeInput = TemplateItemEditInput(
+        itemId: .init(id: "1"),
+        title: "家賃の振込",
+        point: 5,
+        recurrence: .init(kind: .monthly, dayOfMonth: 25)
     )
     HouseworkTemplateItemEditModal(
         input: .constant(beforeInput),

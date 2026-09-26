@@ -153,7 +153,7 @@ extension HouseworkTemplateDraftTest.AddItemCase {
         ])
 
         // Act
-        draft.addItem(item, to: [.monday, .wednesday])
+        draft.addItem(item, recurrence: .weekly([.monday, .wednesday]))
 
         // Assert
         #expect(draft == expected)
@@ -168,7 +168,7 @@ extension HouseworkTemplateDraftTest.AddItemCase {
         let expected = HouseworkTemplateDraft(days: [.monday: [existing, new]])
 
         // Act
-        draft.addItem(new, to: [.monday])
+        draft.addItem(new, recurrence: .weekly([.monday]))
 
         // Assert
         #expect(draft == expected)
@@ -196,7 +196,7 @@ extension HouseworkTemplateDraftTest.ReplaceItemCase {
         ])
 
         // Act
-        draft.replaceItem(newItem, in: [.wednesday, .friday])
+        draft.replaceItem(newItem, recurrence: .weekly([.wednesday, .friday]))
 
         // Assert
         #expect(draft == expected)
