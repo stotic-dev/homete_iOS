@@ -168,7 +168,7 @@ public extension HouseworkItem {
     ///
     /// `executors`が無いドキュメント（旧バージョンのアプリが書いたもの）は、`executorId`の人に
     /// ポイントを満額配分したものとして読む。旧アプリは`setData(merge: false)`で全体を上書きするため、
-    /// 新しいアプリが書いた家事でも、旧アプリが更新すると`executors`が消える（ADR-0022）。
+    /// 新しいアプリが書いた家事でも、旧アプリが更新すると`executors`が消える（ADR-0023）。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
