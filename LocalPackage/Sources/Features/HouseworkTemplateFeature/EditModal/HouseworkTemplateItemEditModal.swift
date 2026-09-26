@@ -132,11 +132,7 @@ private extension HouseworkTemplateItemEditModal {
     }
 
     func inputRecurrenceSelector() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("くり返し")
-                .font(with: .headLineS)
-            RecurrenceSelector(input: $input.recurrence)
-        }
+        RecurrenceSelector(input: $input.recurrence)
     }
 
     func trailingNavigationItem() -> some View {

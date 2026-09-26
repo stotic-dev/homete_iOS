@@ -10,33 +10,51 @@ import SwiftUI
 
 /// 家事の繰り返し方（毎日 / 毎週 / 毎月◯日）を選ぶコンポーネント。
 ///
+/// 「くり返し」の行のメニューで種類を選び、`showsDetail`が`true`なら、その下で毎週の曜日・毎月の日付を選ばせる。
 /// 入力値を描画して変更を伝えるだけで、入力が完了しているかの判定は呼び出し側が`HouseworkRecurrenceInput.isValid`などで行う。
 public struct RecurrenceSelector: View {
 
     @Binding var input: HouseworkRecurrenceInput
     let kinds: [HouseworkRecurrenceInput.Kind]
+    let titleFont: DesignSystem.Font
+    let showsDetail: Bool
 
-    /// - Parameter kinds: 選べる種類。「くり返さない」を選ばせたい場合は`.none`を含める
+    /// - Parameters:
+    ///   - kinds: 選べる種類。「くり返さない」を選ばせたい場合は`.none`を含める
+    ///   - titleFont: 「くり返し」の見出しのフォント
+    ///   - showsDetail: 毎週の曜日・毎月の日付を選ばせるか。選ばせない場合は`input`に入っている値をそのまま使う
     public init(
         input: Binding<HouseworkRecurrenceInput>,
-        kinds: [HouseworkRecurrenceInput.Kind] = [.daily, .weekly, .monthly]
+        kinds: [HouseworkRecurrenceInput.Kind] = [.daily, .weekly, .monthly],
+        titleFont: DesignSystem.Font = .headLineS,
+        showsDetail: Bool = true
     ) {
         _input = input
         self.kinds = kinds
+        self.titleFont = titleFont
+        self.showsDetail = showsDetail
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
-            Picker("くり返し", selection: $input.kind) {
-                ForEach(kinds, id: \.self) { kind in
-                    Text(kind.label)
-                        .tag(kind)
+            HStack(spacing: .space8) {
+                Text("くり返し")
+                    .font(with: titleFont)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Picker("くり返し", selection: $input.kind) {
+                    ForEach(kinds, id: \.self) { kind in
+                        Text(kind.label)
+                            .tag(kind)
+                    }
                 }
+                .pickerStyle(.menu)
             }
-            .pickerStyle(.segmented)
-            kindContent()
+            if showsDetail {
+                kindContent()
+            }
         }
-        // 日付・週のメニューを、パッケージ内のPreviewでもアプリと同じアクセントカラーで表示する
+        // メニューを、パッケージ内のPreviewでもアプリと同じアクセントカラーで表示する
         .tint(.accent)
     }
 
@@ -121,4 +139,12 @@ private extension HouseworkRecurrenceInput.Kind {
         .padding()
 }
 
+#Preview("RecurrenceSelector_詳細なし", traits: .sizeThatFitsLayout) {
+    RecurrenceSelector(
+        input: .constant(.init(kind: .weekly, weekdays: [.thursday])),
+        kinds: [.none, .daily, .weekly, .monthly],
+        showsDetail: false
+    )
+    .padding()
+}
 #endif
