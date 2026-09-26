@@ -90,11 +90,14 @@ public final class HouseworkListStore {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
                 try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                    $0.updateCompleted(at: now, executor: executor.id)
+                    $0.updateCompleted(at: now, executors: [.solo(userId: executor.id, point: target.point)])
                 }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
-                let updatedItem = target.updateCompleted(at: now, executor: executor.id)
+                let updatedItem = target.updateCompleted(
+                    at: now,
+                    executors: [.solo(userId: executor.id, point: target.point)]
+                )
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
