@@ -20,6 +20,7 @@ let package = Package(
         lib("HometeInfrastructure"),
         lib("HometeLocalNotification"),
         lib("HouseworkTemplateFeature"),
+        lib("FrequentHouseworkFeature"),
         lib("AppRoot")
     ],
     dependencies: [
@@ -70,6 +71,7 @@ let package = Package(
         feature(name: "CohabitantRegistrationFeature"),
         feature(name: "HouseworkFeature"),
         feature(name: "ContributionFeature"),
+        feature(name: "FrequentHouseworkFeature"),
 
         // MARK: Infrastructure / Root
 
@@ -131,6 +133,7 @@ let package = Package(
                 "HouseworkFeature",
                 "HouseworkTemplateFeature",
                 "ContributionFeature",
+                "FrequentHouseworkFeature",
                 "HometeInfrastructure",
                 "HometeLocalNotification"
             ],
@@ -157,6 +160,11 @@ let package = Package(
         .testTarget(
             name: "SettingFeatureTests",
             dependencies: ["SettingFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "FrequentHouseworkFeatureTests",
+            dependencies: ["FrequentHouseworkFeature"],
             plugins: [swiftLintPlugin()]
         )
     ]

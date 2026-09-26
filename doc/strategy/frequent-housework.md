@@ -520,19 +520,29 @@ public struct FrequentHouseworkPicker: View {
   - `paywall` の `step` と `AppScreen` は、それを使う画面と同じPR 2で追加する（`.claude/rules/screen-view-tracking.md`）
 - [x] ユニットテスト: Context（セクション化・「その他」の扱い・名前の重複判定・取り込み候補）、LimitPolicy（上限・無料に戻ったときの利用可否）、Store
 
-**PR 2: FrequentHouseworkFeature（管理画面）**
+**PR 2a: FrequentHouseworkFeature（管理画面の一覧・追加・編集）**
 
-- [ ] `Package.swift` にモジュール追加、`doc/multimodules_structure.md` / `CLAUDE.md` 更新
-- [ ] 管理画面・追加／編集モーダル・カテゴリ管理画面・テンプレートから取り込むシート
-- [ ] 上限の案内アラートとPaywall誘導（`PaywallAnalyticsStep.frequentHouseworkLimit`）
-- [ ] 追加する画面の `AppScreen` と `.trackScreenView`、`doc/analytics_events.md` の画面一覧
-- [ ] `AppRoute.frequentHouseworkManagement` と `RouteResolver`
-- [ ] 設定画面の「いつもの家事」行
-- [ ] 選ぶ部品 `FrequentHouseworkPicker` と2タブの枠 `RegisterSourceTabs`
-- [ ] Preview（空・通常・上限超過・カテゴリあり）
+- [x] `Package.swift` にモジュールとテストターゲットを追加、`.prefire.yml` に登録、`doc/multimodules_structure.md` 更新
+  - `CLAUDE.md` は「新しいモジュールを足す場合は `Package.swift` と `doc/multimodules_structure.md` を更新する」としているため変更しない
+- [x] 管理画面（カテゴリごとのセクション・スワイプで削除・カテゴリ内の並べ替え・無料プランの件数表示・空状態）
+- [x] 追加／編集モーダル（名前・ポイント・カテゴリ。名前の空・重複で決定不可）
+- [x] 上限の案内アラートとPaywall誘導（`PaywallAnalyticsStep.frequentHouseworkLimit`）
+- [x] 追加した画面の `AppScreen` と `.trackScreenView`、`doc/analytics_events.md` の画面一覧
+- [x] `AppRoute.frequentHouseworkManagement` と `RouteResolver`
+- [x] 設定画面の「いつもの家事」行（グループ参加中のみ）
+- [x] Preview（管理画面: 無料プラン・未登録、モーダル: 新規・名前の重複、件数表示: 上限未満・到達、空状態）
+- [x] ユニットテスト: `FrequentHouseworkEditInput`（編集時の初期値・入力の検証）
+
+**PR 2b: カテゴリ管理とテンプレートからの取り込み**
+
+- [ ] 追加／編集モーダルのカテゴリ選択に「＋ 新しいカテゴリ」
+- [ ] カテゴリ管理画面（名前変更・削除・並べ替え・追加）
+- [ ] テンプレートから取り込むシート（管理画面のメニューと空状態から開く）
+- [ ] 追加する画面の `AppScreen`（`frequent_housework_category` / `frequent_housework_import`）
 
 **PR 3: 登録シートの2タブ化とまとめて登録**
 
+- [ ] 選ぶ部品 `FrequentHouseworkPicker` と2タブの枠 `RegisterSourceTabs`（使う画面と同じPRで入れるためPR 2から移した）
 - [ ] `HouseworkClient.insertItems` / `HouseworkListStore.register(newItems:…)` / `PushNotificationContent.addNewHouseworkItems`
 - [ ] `housework` `register` への `source` 追加
 - [ ] `RegisterHouseworkDraft` とユニットテスト（選択の切り替え・続けて入力・取り消し・登録予定の組み立て・破棄確認の要否）
