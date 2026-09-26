@@ -208,7 +208,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | ○ | `apply` / `create` / `edit` / `delete` | 何が起きたか |
 | `result` | ○ | `success` / `failure` | 行動の結果 |
 | `step` | `create`のみ | `template` / `register` | どの画面から家事を追加したか（テンプレート画面 / 家事登録画面で繰り返しを設定） |
-| `recurrence` | `create` / `edit`のみ | `weekly` / `monthly_day` / `monthly_weekday` | 追加・編集後の繰り返し方（毎週 / 毎月◯日 / 毎月第N◯曜日） |
+| `recurrence` | `create` / `edit`のみ | `daily` / `weekly` / `monthly` | 追加・編集後の繰り返し方（毎日 / 毎週 / 毎月◯日）。全曜日を選んだ毎週は`daily`にする |
 
 送信されるパターンと、その送信タイミング:
 
