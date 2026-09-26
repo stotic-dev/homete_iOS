@@ -40,6 +40,7 @@ struct RegisteredContent: View {
                 ScrollView {
                     VStack(spacing: .space24) {
                         TodayHouseworkSummaryComponent.make()
+                            .sectionCardStyle()
                         if AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium) {
                             VStack(spacing: .space8) {
                                 adComponentResolver.resolve(.banner(.dashboardTop))
@@ -50,15 +51,17 @@ struct RegisteredContent: View {
                             }
                         }
                         ContributionSummaryComponent.make()
-                            .padding(.vertical, .space16)
                             .redacted(reason: loadingState.isLoading ? .placeholder : [])
+                            .sectionCardStyle()
                         if !hasTemplate {
                             PromoteHouseworkTemplateBanner {
                                 isShowHouseworkTemplate = true
                             }
+                            .sectionCardStyle()
                         }
                     }
                     .padding(.horizontal, .space16)
+                    .padding(.vertical, .space16)
                 }
             }
         }
