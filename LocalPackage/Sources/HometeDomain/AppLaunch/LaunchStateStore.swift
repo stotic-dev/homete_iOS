@@ -11,13 +11,16 @@ import Observation
 /// 同時に走ると完了順が入れ替わる。特にトークン失効による自動サインアウトはFirebase Auth側の
 /// 判断で非同期に起きるので、サインイン処理の途中に割り込む。
 ///
-/// そこで反映処理のTaskをこのStoreが1本だけ保持し、新しい変化が来たら
-/// **前の世代をキャンセルしてから完了を待つ**ことで直列化している。これにより
+/// そこで反映処理のTaskをこのStoreが1本だけ保持し、**次の世代が前の世代の完了を待つ**ことで
+/// 直列化している。加えて認証が切り替わったときだけ前の世代を打ち切る。これにより
 ///
 /// - 最後に届いた変化が必ず勝つ
 /// - サインアウトの後片付け（`syncOnSignedOut`）が必ず最後に走る
 ///
 /// という不変条件が成立し、古い認証情報で画面を進めたりFirestoreを読み書きしたりしなくなる。
+///
+/// 打ち切りを認証の変化に限るのは、アカウント情報の変化が反映処理自身の副作用として届くため。
+/// これで打ち切ると自分の世代をキャンセルし、`LaunchState`を誰も更新しないまま起動画面で止まる。
 @MainActor
 @Observable
 public final class LaunchStateStore {
@@ -53,13 +56,17 @@ public final class LaunchStateStore {
         if auth.result == nil {
             launchState = .notLoggedIn
         }
-        enqueue(.auth(auth))
+        // 認証が切り替わると進行中の反映は無効な認証情報を握っているため、打ち切る
+        enqueue(.auth(auth), invalidatesPrevious: true)
     }
 
     /// アカウント情報の変化を反映する
     /// - Parameter account: 変化を検知した時点のアカウント情報
+    /// - Note: 進行中の世代は打ち切らない。アカウントの変化は反映処理自身（アカウントのロード・
+    ///         FCMトークンの更新・プレミアム状態の反映）が起こすため、打ち切ると自分の世代を
+    ///         キャンセルして`LaunchState`を更新できなくなる
     public func syncAccountChange(_ account: Account?) {
-        enqueue(.account(account))
+        enqueue(.account(account), invalidatesPrevious: false)
     }
 
     /// 受け取ったFCMトークンを退避する
@@ -94,13 +101,18 @@ private extension LaunchStateStore {
 
     }
 
-    /// 前の世代をキャンセルし、その完了を待ってから次の世代を走らせる
+    /// 前の世代の完了を待ってから次の世代を走らせる
     ///
     /// キャンセルは協調的なので`cancel()`だけでは前の世代が後から再開して状態を上書きしうる。
     /// 完了を待ち合わせることで、後片付けが必ず最後に走る順序を保証する。
-    func enqueue(_ kind: SyncKind) {
+    /// - Parameter invalidatesPrevious: 前の世代を打ち切るかどうか。
+    ///   打ち切った世代は`LaunchState`を更新せずに終わるため、
+    ///   **代わりに画面を進める世代を必ず積むイベントでのみ`true`にする**
+    func enqueue(_ kind: SyncKind, invalidatesPrevious: Bool) {
         let previous = syncTask
-        previous?.cancel()
+        if invalidatesPrevious {
+            previous?.cancel()
+        }
         syncTask = Task { [weak self] in
             await previous?.value
             guard let self else { return }
@@ -140,7 +152,9 @@ private extension LaunchStateStore {
     }
 
     func applyAccountChange(_ account: Account?) async {
-        guard launchState.isLoggedIn,
+        // 認証が切り替わって打ち切られた世代は、古いアカウントで先に進めない
+        guard !Task.isCancelled,
+              launchState.isLoggedIn,
               let account else { return }
 
         await updateFcmTokenIfNeeded()

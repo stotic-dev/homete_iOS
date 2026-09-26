@@ -127,6 +127,36 @@ struct LaunchStateStoreTest {
         #expect(accountStore.account == nil)
     }
 
+    @Test("サインイン反映中に届いたアカウント変更で、反映が打ち切られてログイン済みに進めなくならない")
+    func syncAccountChangeDuringSignInDoesNotAbortSignIn() async {
+        // Arrange: `accountStore.load`がアカウントを書いた結果として
+        //          `RootView`の`onChange(of: account)`が発火する状況を再現する
+        let expectedAccount = makeAccount()
+        let gate = TestGate()
+        let accountInfoClient = AccountInfoClient(
+            fetch: { _ in expectedAccount },
+            addSnapshotListener: { _, _ in
+                await gate.wait()
+                return .init { $0.finish() }
+            }
+        )
+        let accountStore = AccountStore(accountInfoClient: accountInfoClient)
+        let store = makeStore(accountStore: accountStore)
+
+        // Act
+
+        store.syncAuthChange(signedInAuth)
+        await gate.waitUntilArrived()
+        store.syncAccountChange(expectedAccount)
+        gate.open()
+        await store.waitForSync()
+
+        // Assert
+
+        #expect(store.launchState == .loggedIn(context: LoginContext(account: expectedAccount)))
+        #expect(accountStore.account == expectedAccount)
+    }
+
     @Test("未ログイン中にアカウント情報が変化しても、ログイン済みには遷移しない")
     func syncAccountChangeWhileNotLoggedIn() async {
         // Arrange
