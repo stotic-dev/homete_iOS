@@ -79,6 +79,7 @@ struct HouseworkListStoreTest {
 extension HouseworkListStoreTest.UpdateStatusCase {
 
     @Test("家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    // swiftlint:disable:next function_body_length
     func complete() async {
         // Arrange
 
@@ -134,7 +135,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     try await store.complete(
                         target: inputHouseworkItem,
                         now: completedAt,
-                        executor: inputExecutor,
+                        reporter: inputExecutor,
+                        executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        executorNames: [inputExecutor.userName],
+                        comment: "",
                         cohabitantId: inputCohabitantId,
                         isRegistered: true,
                         step: .board
@@ -145,6 +149,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     }
 
     @Test("テンプレートから生成された家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    // swiftlint:disable:next function_body_length
     func complete_with_created_template() async {
         // Arrange
 
@@ -200,9 +205,206 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     try await store.complete(
                         target: inputHouseworkItem,
                         now: completedAt,
-                        executor: inputExecutor,
+                        reporter: inputExecutor,
+                        executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        executorNames: [inputExecutor.userName],
+                        comment: "",
                         cohabitantId: inputCohabitantId,
                         isRegistered: false,
+                        step: .board
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("他の人を担当者にして完了にすると、代わりに記録したことが分かる完了通知にコメントを添えて送る")
+    // swiftlint:disable:next function_body_length
+    func complete_proxyWithComment() async {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            point: 10
+        )
+        let inputReporter = Account(
+            id: "reporter",
+            userName: "きろくしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let inputExecutors = [
+            HouseworkExecutor(userId: "reporter", percentage: 60, point: 6),
+            HouseworkExecutor(userId: "partner", percentage: 40, point: 4),
+        ]
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let expectedItem = HouseworkItem(
+            id: "id1",
+            indexedDate: .init(value: .previewDate(year: 2026, month: 9, day: 25)),
+            title: "title",
+            point: 10,
+            state: .completed,
+            executors: [
+                HouseworkExecutor(userId: "reporter", percentage: 60, point: 6),
+                HouseworkExecutor(userId: "partner", percentage: 40, point: 4),
+            ],
+            executedAt: completedAt,
+            expiredAt: inputHouseworkItem.expiredAt,
+            templateHouseworkItemId: nil
+        )
+        let expectedContent = PushNotificationContent(
+            title: "きろくしゃさんが家事の完了を記録しました",
+            message: "「title」（担当：きろくしゃさん・パートナーさん）\n一緒に片付けました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(
+                        insertOrUpdateItemHandler: { item, cohabitantId in
+                            // Assert
+
+                            #expect(item == expectedItem)
+                            #expect(cohabitantId == inputCohabitantId)
+                            confirmation()
+                        }
+                    ),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    calendar: .japanese,
+                    items: [.makeForTest(items: [inputHouseworkItem])]
+                )
+
+                // Act
+
+                Task {
+                    try await store.complete(
+                        target: inputHouseworkItem,
+                        now: completedAt,
+                        reporter: inputReporter,
+                        executors: inputExecutors,
+                        executorNames: ["きろくしゃ", "パートナー"],
+                        comment: "一緒に片付けました",
+                        cohabitantId: inputCohabitantId,
+                        isRegistered: true,
+                        step: .detail
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("もう一度やったにすると、同じ日・同じ内容の完了済みの家事を、テンプレートと紐づけずに新しいIDで登録する")
+    func redo_insertsNewCompletedItem() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            title: "洗濯",
+            point: 20,
+            state: .completed,
+            executorId: "otherExecutor",
+            executedAt: .previewDate(year: 2026, month: 9, day: 25, hour: 8),
+            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
+            templateHouseworkItemId: .init(id: "templateItemId")
+        )
+        let inputExecutor = Account(id: "dummyExecutor", userName: "", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let redoneAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let expectedItem = HouseworkItem(
+            id: "newItemId",
+            indexedDate: .init(value: .previewDate(year: 2026, month: 9, day: 25)),
+            title: "洗濯",
+            point: 20,
+            state: .completed,
+            executorId: "dummyExecutor",
+            executedAt: redoneAt,
+            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
+            templateHouseworkItemId: nil
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, cohabitantId in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in },
+                items: [.makeForTest(items: [inputHouseworkItem])],
+                idGenerator: { "newItemId" }
+            )
+
+            // Act
+
+            try await store.redo(
+                target: inputHouseworkItem,
+                now: redoneAt,
+                executor: inputExecutor,
+                cohabitantId: inputCohabitantId,
+                step: .board
+            )
+        }
+    }
+
+    @Test("もう一度やったにすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    func redo_sendsCompletedNotification() async {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+            state: .completed,
+            executorId: "otherExecutor"
+        )
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let expectedContent = PushNotificationContent(
+            title: "じっこうしゃさんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    calendar: .japanese,
+                    items: [.makeForTest(items: [inputHouseworkItem])]
+                )
+
+                // Act
+
+                Task {
+                    try await store.redo(
+                        target: inputHouseworkItem,
+                        now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+                        executor: inputExecutor,
+                        cohabitantId: inputCohabitantId,
                         step: .board
                     )
                 }

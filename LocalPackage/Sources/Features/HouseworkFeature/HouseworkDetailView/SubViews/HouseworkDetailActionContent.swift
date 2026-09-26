@@ -15,6 +15,7 @@ struct HouseworkDetailActionContent: View {
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @State var isPresentedThanksView = false
+    @State var isPresentedCompleteSheet = false
 
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
@@ -31,13 +32,17 @@ struct HouseworkDetailActionContent: View {
                 if item.canSendThanks(ownUserId: account.id) {
                     sendThanksButton()
                 }
+                redoButton()
                 undoChangeStateButton()
             case .notTodo:
                 EmptyView()
             }
         }
         .disabled(isLoading)
-        .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
+        .sheet(isPresented: $isPresentedCompleteSheet) {
+            HouseworkCompleteSheet(item: item, step: .detail)
+        }
+        .sheet(isPresented: $isPresentedThanksView) {
             HouseworkThanksView(item: item)
         }
     }
@@ -48,13 +53,23 @@ private extension HouseworkDetailActionContent {
 
     func completeButton() -> some View {
         Button {
+            isPresentedCompleteSheet = true
+        } label: {
+            Label("完了にする", systemImage: "checkmark.circle.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .subPrimaryButtonStyle()
+    }
+
+    func redoButton() -> some View {
+        Button {
             isLoading = true
             Task {
-                await tappedCompleteButton()
+                await tappedRedoButton()
                 isLoading = false
             }
         } label: {
-            Label("完了にする", systemImage: "checkmark.circle.fill")
+            Label("もう一度やった", systemImage: "arrow.clockwise")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -90,16 +105,15 @@ private extension HouseworkDetailActionContent {
 
 private extension HouseworkDetailActionContent {
 
-    func tappedCompleteButton() async {
+    func tappedRedoButton() async {
         guard let cohabitantId else { return }
 
         do {
-            try await houseworkListStore.complete(
+            try await houseworkListStore.redo(
                 target: item.originalItem,
                 now: .now,
                 executor: account,
                 cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered,
                 step: .detail
             )
         } catch {

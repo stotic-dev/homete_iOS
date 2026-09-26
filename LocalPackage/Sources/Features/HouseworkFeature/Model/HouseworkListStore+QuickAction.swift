@@ -23,11 +23,15 @@ extension HouseworkListStore {
         notify: Bool = true
     ) async throws {
         switch action {
+        // 担当者やコメントを選ばずに完了にする経路（一括完了）では、自分だけを担当者にする
         case .complete:
             try await complete(
                 target: item.originalItem,
                 now: now,
-                executor: account,
+                reporter: account,
+                executors: [.solo(userId: account.id, point: item.point)],
+                executorNames: [account.userName],
+                comment: "",
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: step,
@@ -39,6 +43,15 @@ extension HouseworkListStore {
                 target: item.originalItem,
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
+                step: step
+            )
+
+        case .redo:
+            try await redo(
+                target: item.originalItem,
+                now: now,
+                executor: account,
+                cohabitantId: cohabitantId,
                 step: step
             )
 

@@ -71,6 +71,7 @@ struct SettingMenuItemTest {
         arguments: [
             (SettingMenuItem.memberInvitation, "メンバー招待"),
             (SettingMenuItem.taskTemplate, "家事テンプレート"),
+            (SettingMenuItem.frequentHousework, "いつもの家事"),
             (SettingMenuItem.termsOfService, "利用規約"),
             (SettingMenuItem.privacyPolicy, "プライバシーポリシー"),
             (SettingMenuItem.license, "ライセンス"),
@@ -97,13 +98,14 @@ struct SettingMenuItemTest {
         #expect(actual == LocalizedStringKey(expectedTitle))
     }
 
-    @Test("グループ参加済みかつ招待リンクを使える場合、メンバー招待と家事テンプレート項目を含む表示項目が返る")
+    @Test("グループ参加済みかつ招待リンクを使える場合、メンバー招待・家事テンプレート・いつもの家事の項目を含む表示項目が返る")
     func displayItems_registeredGroupAndAvailableLink_includesInvitationAndTaskTemplate() {
         // Arrange
 
         var expected: [SettingMenuItem] = [
             .memberInvitation,
             .taskTemplate,
+            .frequentHousework,
             .notificationPermission,
             .premiumPlan,
             .termsOfService,
@@ -127,7 +129,7 @@ struct SettingMenuItemTest {
         #expect(actual == expected)
     }
 
-    @Test("グループ未参加の場合、メンバー招待と家事テンプレート項目を除いた表示項目が返る")
+    @Test("グループ未参加の場合、メンバー招待・家事テンプレート・いつもの家事の項目を除いた表示項目が返る")
     func displayItems_notRegisteredGroup_excludesInvitationAndTaskTemplate() {
         // Arrange
 
@@ -161,6 +163,7 @@ struct SettingMenuItemTest {
 
         var expected: [SettingMenuItem] = [
             .taskTemplate,
+            .frequentHousework,
             .notificationPermission,
             .premiumPlan,
             .termsOfService,

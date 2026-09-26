@@ -111,7 +111,7 @@ extension FrequentHouseworkLimitPolicyTest.UnusableItemIdsCase {
         let cleaning = FrequentHouseworkItem.makeForTest(id: "cleaning", categoryId: "preset.cleaning")
         let context = FrequentHouseworkContext(items: uncategorizedItems + [cleaning], customCategories: [])
         let policy = FrequentHouseworkLimitPolicy(isPremium: false)
-        let expected: Set<String> = ["u9", "u10", "u11"]
+        let expected: Set = ["u9", "u10", "u11"]
 
         // Act
 

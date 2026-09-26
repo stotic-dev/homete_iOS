@@ -16,6 +16,7 @@
 | `SettingFeature` | 設定関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HomeFeature` | ホーム画面・招待リンクからのグループ参加 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・Firebase 依存 | `HometeDomain`, Firebase SDK |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
@@ -45,7 +46,8 @@ Features/
   ├── HouseworkFeature/
   ├── SettingFeature/
   ├── HomeFeature/          ← 招待リンクからの参加 View を含む
-  └── CohabitantRegistrationFeature/  ← P2P 登録（Multipeer Connectivity）を隔離
+  ├── CohabitantRegistrationFeature/  ← P2P 登録（Multipeer Connectivity）を隔離
+  └── FrequentHouseworkFeature/       ← いつもの家事（単発登録・テンプレートの両方から使う）
 
 HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）

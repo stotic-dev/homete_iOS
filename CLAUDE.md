@@ -141,6 +141,12 @@ View → Store（AppDependenciesを受け取る）
 **Cloud Functions** (`firebase/functions/src/`):
 - `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
+- `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
+- `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）
+- `debugrevokerefreshtokens` - **STG限定**。呼び出し元自身のリフレッシュトークンを失効させ、トークン失効による自動サインアウトを再現する（v2 callable）
+  - コードは両プロジェクトにデプロイされるが、実行時に`GCLOUD_PROJECT`を見てSTG以外では`permission-denied`で拒否する
+  - 失効対象は`request.auth`のユーザー自身のみ。引数でユーザーIDを受け取らないので、他人をサインアウトさせる余地がない
+  - アプリ側の導線はDEBUGビルドのデバッグメニュー（設定 → デバッグメニュー → ログイン情報の失効）
 
 **認証:**
 - `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
@@ -377,7 +383,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`firebase/functions/**`を含めない）
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
-  - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`
+  - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`、`task-closure-capture.md`
   - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`
   - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`

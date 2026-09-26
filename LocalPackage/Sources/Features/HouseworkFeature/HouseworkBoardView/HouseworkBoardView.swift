@@ -29,6 +29,10 @@ struct HouseworkBoardView: View {
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
     @State var isSelecting = false
+    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
+    @State var completingItem: HouseworkBoardItem?
+    /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
+    @State var thankingItem: HouseworkBoardItem?
 
     @LoadingState var loadingState
 
@@ -85,6 +89,14 @@ struct HouseworkBoardView: View {
                 step: .board
             )
         }
+        // TabViewのページの中や、空表示と切り替わる一覧に置くと、完了にした家事が一覧から消えたときに
+        // シートを出しているビューごと作り直され、閉じたシートがもう一度出てしまうため、ボード全体に置く
+        .sheet(item: $completingItem) { item in
+            HouseworkCompleteSheet(item: item, step: .board)
+        }
+        .sheet(item: $thankingItem) { item in
+            HouseworkThanksView(item: item)
+        }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
@@ -131,7 +143,9 @@ private extension HouseworkBoardView {
                             list: houseworkBoardList,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
-                            onCreateTapped: { isPresentingAddHouseworkView = true }
+                            onCreateTapped: { isPresentingAddHouseworkView = true },
+                            onSelectComplete: { completingItem = $0 },
+                            onSelectThanks: { thankingItem = $0 }
                         )
                         .tag(state)
                     }

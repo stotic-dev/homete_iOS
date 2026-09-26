@@ -18,6 +18,7 @@ public final class HouseworkListStore {
     public private(set) var loadState: ListenerLoadState = .loading
     private let calendar: Calendar
     private let now: @MainActor @Sendable () -> Date
+    private let idGenerator: @MainActor @Sendable () -> String
     /// 最後にふりかえり通知へ反映した「日付と、その日に完了した家事の件数」
     /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す。
     ///         件数で見るのは、1日1回の制限を外している間（デバッグ用）に完了のたびに予約を積むため
@@ -40,7 +41,7 @@ public final class HouseworkListStore {
         calendar: Calendar = .autoupdatingCurrent,
         now: @escaping @MainActor @Sendable () -> Date = { .now },
         items: [DailyHouseworkList] = [],
-        idGenerator _: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
+        idGenerator: @escaping @MainActor @Sendable () -> String = { UUID().uuidString }
     ) {
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
@@ -49,6 +50,7 @@ public final class HouseworkListStore {
         self.dailyCompletionReminderUseCase = dailyCompletionReminderUseCase
         self.calendar = calendar
         self.now = now
+        self.idGenerator = idGenerator
         self.items = .init(value: items)
 
         Task {
@@ -75,38 +77,107 @@ public final class HouseworkListStore {
     /// 家事を完了にする
     ///
     /// 同居人の端末でふりかえり通知を予約するため、今日の家事なら1日1回だけ完了通知を送る。
-    /// - Parameter notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す。
+    /// コメントを添えたときは、入力したコメントが届かずに消えないよう、1日1回の制限に関係なく毎回送る。
+    /// - Parameters:
+    ///   - reporter: 完了にした人。通知の送り主になる
+    ///   - executors: 担当者と、配分した割合・ポイント
+    ///   - executorNames: 担当者の名前（`executors`と同じ順）。代わりに記録したときの通知の文言に使う
+    ///   - comment: 完了通知に添えるコメント。空なら添えない
+    ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す。
     // swiftlint:disable:next function_parameter_count
     public func complete(
         target: HouseworkItem,
         now: Date,
-        executor: Account,
+        reporter: Account,
+        executors: [HouseworkExecutor],
+        executorNames: [String],
+        comment: String,
         cohabitantId: String,
         isRegistered: Bool,
         step: HouseworkAnalyticsStep,
         notify: Bool = true
     ) async throws {
+        let executorType = HouseworkAnalyticsExecutorType(executors: executors, reporterId: reporter.id)
         do {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
                 try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                    $0.updateCompleted(at: now, executor: executor.id)
+                    $0.updateCompleted(at: now, executors: executors)
                 }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
-                let updatedItem = target.updateCompleted(at: now, executor: executor.id)
+                let updatedItem = target.updateCompleted(at: now, executors: executors)
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
-            analyticsClient.log(.housework(.complete(step: step, isSuccess: false)))
+            analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: false)))
             throw error
         }
-        analyticsClient.log(.housework(.complete(step: step, isSuccess: true)))
+        analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: true)))
 
-        if notify {
-            notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
-                .completedMessage(executorName: executor.userName, houseworkTitle: target.title, data: $0)
+        guard notify else { return }
+
+        let reporterName = reporter.userName
+        let houseworkTitle = target.title
+        let content: @Sendable (HouseworkCompletedNotificationData?) -> PushNotificationContent = { data in
+            switch executorType {
+            case .ownOnly:
+                .completedMessage(
+                    executorName: reporterName,
+                    houseworkTitle: houseworkTitle,
+                    comment: comment,
+                    data: data
+                )
+
+            case .others, .shared:
+                .proxyCompletedMessage(
+                    reporterName: reporterName,
+                    executorNames: executorNames,
+                    houseworkTitle: houseworkTitle,
+                    comment: comment,
+                    data: data
+                )
             }
+        }
+        if comment.isEmpty {
+            notifyCompleted(
+                houseworkDate: target.indexedDate.value,
+                now: now,
+                cohabitantId: cohabitantId,
+                content: content
+            )
+        } else {
+            notifyCompletedWithComment(
+                houseworkDate: target.indexedDate.value,
+                now: now,
+                cohabitantId: cohabitantId,
+                content: content
+            )
+        }
+    }
+
+    /// 完了した家事を、もう一度やったものとして記録する
+    ///
+    /// 元の家事は変えずに、同じ日・同じ内容の完了済みの家事を新しく登録する。
+    /// 同居人への通知は家事を完了にしたときと同じく、今日の家事なら1日1回だけ完了通知を送る。
+    public func redo(
+        target: HouseworkItem,
+        now: Date,
+        executor: Account,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        do {
+            let redoneItem = target.makeRedone(id: idGenerator(), at: now, executor: executor.id)
+            try await houseworkClient.insertOrUpdateItem(redoneItem, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(.redo(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.redo(step: step, isSuccess: true)))
+
+        notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
+            .completedMessage(executorName: executor.userName, houseworkTitle: target.title, comment: "", data: $0)
         }
     }
 
@@ -274,6 +345,32 @@ private extension HouseworkListStore {
             now: currentDate,
             calendar: calendar
         )
+    }
+
+    /// コメントを添えた完了通知を、1日1回の制限に関係なく送る
+    ///
+    /// ふりかえり通知の予約用データは、`notifyCompleted`と同じ条件のときだけ付ける。
+    /// 送信は待たずに行い、失敗しても家事の操作は失敗扱いにしない。
+    func notifyCompletedWithComment(
+        houseworkDate: Date,
+        now: Date,
+        cohabitantId: String,
+        content: @escaping @Sendable (HouseworkCompletedNotificationData?) -> PushNotificationContent
+    ) {
+        let calendar = calendar
+        Task.detached {
+            do {
+                try await self.dailyCompletionReminderUseCase.notifyCompletedWithComment(
+                    houseworkDate: houseworkDate,
+                    now: now,
+                    calendar: calendar
+                ) { data in
+                    try await self.cohabitantPushNotificationClient.send(cohabitantId, content(data))
+                }
+            } catch {
+                print("failed to notify cohabitants of completed housework with comment: \(error)")
+            }
+        }
     }
 
     func pushNotificationWithAsync(notification: PushNotificationContent, cohabitantId: String) {

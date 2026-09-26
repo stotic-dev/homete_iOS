@@ -13,6 +13,8 @@ public enum AppRoute: Hashable, Sendable {
     case setting
     /// 家事テンプレート画面
     case houseworkTemplate
+    /// いつもの家事の管理画面
+    case frequentHouseworkManagement
     /// プレミアムプランのPaywall画面
     case paywall
     #if DEBUG

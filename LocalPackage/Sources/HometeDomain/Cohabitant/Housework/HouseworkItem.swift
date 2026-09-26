@@ -18,8 +18,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let point: Int
     /// 家事ステータス
     public let state: HouseworkState
-    /// 実行者のユーザID
-    public let executorId: String?
+    /// 担当者（完了していない家事では空）
+    public let executors: [HouseworkExecutor]
     /// 実行日時
     public let executedAt: Date?
     /// 有効期限
@@ -33,7 +33,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         title: String,
         point: Int,
         state: HouseworkState,
-        executorId: String?,
+        executors: [HouseworkExecutor],
         executedAt: Date?,
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?
@@ -43,13 +43,31 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.title = title
         self.point = point
         self.state = state
-        self.executorId = executorId
+        self.executors = executors
         self.executedAt = executedAt
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
     }
 
-    public func updateCompleted(at now: Date, executor: String) -> Self {
+    public func updateCompleted(at now: Date, executors: [HouseworkExecutor]) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .completed,
+            executors: executors,
+            executedAt: now,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
+        )
+    }
+
+    /// 同じ家事をもう一度やったものとして、完了済みの別の家事を作る
+    ///
+    /// 元の家事の完了記録は残したまま、実施した回数分のポイントを積めるように別IDの家事として作る。
+    /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない。
+    public func makeRedone(id: String, at now: Date, executor: String) -> Self {
         .init(
             id: id,
             indexedDate: indexedDate,
@@ -59,7 +77,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: nil
         )
     }
 
@@ -70,7 +88,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             title: title,
             point: point,
             state: .incomplete,
-            executorId: nil,
+            executors: [],
             executedAt: nil,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
@@ -84,11 +102,108 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             title: title,
             point: point,
             state: .notTodo,
-            executorId: executorId,
+            executors: executors,
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId
         )
+    }
+
+}
+
+public extension HouseworkItem {
+
+    /// 旧バージョンのアプリ向けに保存する実行者のユーザーID（1人目の担当者）
+    var executorId: String? {
+        executors.first?.userId
+    }
+
+    /// 担当者が1人（ポイントを満額配分）の家事を作る
+    init(
+        id: String,
+        indexedDate: HouseworkIndexedDate,
+        title: String,
+        point: Int,
+        state: HouseworkState,
+        executorId: String?,
+        executedAt: Date?,
+        expiredAt: Date,
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+    ) {
+        self.init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? [],
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId
+        )
+    }
+
+}
+
+// MARK: - Codable
+
+public extension HouseworkItem {
+
+    internal enum CodingKeys: String, CodingKey {
+
+        case id
+        case indexedDate
+        case title
+        case point
+        case state
+        case executors
+        case executorId
+        case executedAt
+        case expiredAt
+        case templateHouseworkItemId
+
+    }
+
+    /// 担当者を複数持てるようにする前のドキュメントも読めるようにするデコード
+    ///
+    /// `executors`が無いドキュメント（旧バージョンのアプリが書いたもの）は、`executorId`の人に
+    /// ポイントを満額配分したものとして読む。旧アプリは`setData(merge: false)`で全体を上書きするため、
+    /// 新しいアプリが書いた家事でも、旧アプリが更新すると`executors`が消える（ADR-0023）。
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let point = try container.decode(Int.self, forKey: .point)
+        let executors = try container.decodeIfPresent([HouseworkExecutor].self, forKey: .executors)
+        let legacyExecutorId = try container.decodeIfPresent(String.self, forKey: .executorId)
+
+        try self.init(
+            id: container.decode(String.self, forKey: .id),
+            indexedDate: container.decode(HouseworkIndexedDate.self, forKey: .indexedDate),
+            title: container.decode(String.self, forKey: .title),
+            point: point,
+            state: container.decode(HouseworkState.self, forKey: .state),
+            executors: executors ?? legacyExecutorId.map { [.solo(userId: $0, point: point)] } ?? [],
+            executedAt: container.decodeIfPresent(Date.self, forKey: .executedAt),
+            expiredAt: container.decode(Date.self, forKey: .expiredAt),
+            templateHouseworkItemId: container.decodeIfPresent(
+                HouseworkTemplateItem.ItemId.self,
+                forKey: .templateHouseworkItemId
+            )
+        )
+    }
+
+    /// 旧バージョンのアプリが実行者を読めるよう、`executorId`に1人目の担当者も書く
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(indexedDate, forKey: .indexedDate)
+        try container.encode(title, forKey: .title)
+        try container.encode(point, forKey: .point)
+        try container.encode(state, forKey: .state)
+        try container.encode(executors, forKey: .executors)
+        try container.encodeIfPresent(executorId, forKey: .executorId)
+        try container.encodeIfPresent(executedAt, forKey: .executedAt)
+        try container.encode(expiredAt, forKey: .expiredAt)
+        try container.encodeIfPresent(templateHouseworkItemId, forKey: .templateHouseworkItemId)
     }
 
 }
