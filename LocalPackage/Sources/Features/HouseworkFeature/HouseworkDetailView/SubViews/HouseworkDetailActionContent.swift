@@ -14,7 +14,7 @@ struct HouseworkDetailActionContent: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
-    @State var isPresentedApprovalView = false
+    @State var isPresentedThanksView = false
 
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
@@ -26,22 +26,19 @@ struct HouseworkDetailActionContent: View {
         VStack(spacing: .space16) {
             switch item.state {
             case .incomplete:
-                requestReviewButton()
-            case .pendingApproval:
-                if item.canReview(ownUserId: account.id) {
-                    approvalButton()
-                } else {
-                    undoChangeStateButton()
-                }
+                completeButton()
             case .completed:
+                if item.canSendThanks(ownUserId: account.id) {
+                    sendThanksButton()
+                }
                 undoChangeStateButton()
             case .notTodo:
                 EmptyView()
             }
         }
         .disabled(isLoading)
-        .fullScreenCoverOnIOS(isPresented: $isPresentedApprovalView) {
-            HouseworkApprovalView(item: item)
+        .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
+            HouseworkThanksView(item: item)
         }
     }
 
@@ -49,15 +46,15 @@ struct HouseworkDetailActionContent: View {
 
 private extension HouseworkDetailActionContent {
 
-    func requestReviewButton() -> some View {
+    func completeButton() -> some View {
         Button {
             isLoading = true
             Task {
-                await tappedRequestConfirmButton()
+                await tappedCompleteButton()
                 isLoading = false
             }
         } label: {
-            Label("確認してもらう", systemImage: "paperplane.fill")
+            Label("完了にする", systemImage: "checkmark.circle.fill")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -77,11 +74,11 @@ private extension HouseworkDetailActionContent {
         .primaryButtonStyle()
     }
 
-    func approvalButton() -> some View {
+    func sendThanksButton() -> some View {
         Button {
-            isPresentedApprovalView = true
+            isPresentedThanksView = true
         } label: {
-            Label("確認する", systemImage: "checkmark.circle.fill")
+            Label("ありがとうを伝える", systemImage: "hands.clap.fill")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -93,14 +90,14 @@ private extension HouseworkDetailActionContent {
 
 private extension HouseworkDetailActionContent {
 
-    func tappedRequestConfirmButton() async {
+    func tappedCompleteButton() async {
         guard let cohabitantId else { return }
 
         do {
-            try await houseworkListStore.requestReview(
+            try await houseworkListStore.complete(
                 target: item.originalItem,
                 now: .now,
-                executor: account.id,
+                executor: account,
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: .detail
@@ -141,7 +138,7 @@ private extension HouseworkDetailActionContent {
     .environment(HouseworkListStore())
 }
 
-#Preview("HouseworkDetailActionContent_承認待ち_実施者アカウント", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDetailActionContent_完了_実施者アカウント", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
@@ -150,14 +147,14 @@ private extension HouseworkDetailActionContent {
             title: "洗濯",
             point: 10,
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-            state: .pendingApproval,
+            state: .completed,
             executorId: "dummy"
         )
     )
     .environment(HouseworkListStore())
 }
 
-#Preview("HouseworkDetailActionContent_承認待ち_確認者アカウント", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDetailActionContent_完了_実施者以外のアカウント", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
@@ -166,7 +163,7 @@ private extension HouseworkDetailActionContent {
             title: "洗濯",
             point: 10,
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-            state: .pendingApproval,
+            state: .completed,
             executorId: "executorAccount"
         )
     )

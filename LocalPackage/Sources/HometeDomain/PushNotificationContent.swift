@@ -26,45 +26,31 @@ public extension PushNotificationContent {
         )
     }
 
-    static func requestReviewMessage(houseworkTitle: String) -> Self {
+    static func completedMessage(executorName: String, houseworkTitle: String) -> Self {
         .init(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(houseworkTitle)」の完了に感謝を伝えましょう！"
+            title: "\(executorName)さんが家事を終えました",
+            message: "「\(houseworkTitle)」が完了しました"
         )
     }
 
-    static func approvedMessage(reviwerName: String, houseworkTitle: String, comment: String) -> Self {
+    static func completedBulkMessage(executorName: String, count: Int) -> Self {
         .init(
-            title: "\(reviwerName)が「\(houseworkTitle)」を承認しました！",
+            title: "\(executorName)さんが家事を終えました",
+            message: "\(count)件の家事が完了しました"
+        )
+    }
+
+    static func thanksMessage(senderName: String, houseworkTitle: String, comment: String) -> Self {
+        .init(
+            title: "\(senderName)さんから「\(houseworkTitle)」にありがとうが届きました",
             message: comment
         )
     }
 
-    static func rejectedMessage(reviwerName _: String, houseworkTitle: String, comment: String) -> Self {
+    static func thanksBulkMessage(senderName: String, count: Int) -> Self {
         .init(
-            title: "「\(houseworkTitle)」を再確認してください",
-            message: comment
-        )
-    }
-
-    static func requestReviewBulkMessage(count: Int) -> Self {
-        .init(
-            title: "確認が必要な家事があります",
-            message: "\(count)件の家事の完了に感謝を伝えましょう！"
-        )
-    }
-
-    static func approvedBulkMessage(reviwerName: String, count: Int) -> Self {
-        .init(
-            title: "\(reviwerName)が家事を承認しました！",
-            message: "\(count)件の家事が完了として承認されました"
-        )
-    }
-
-    static func rejectedBulkMessage(count: Int) -> Self {
-        .init(
-            title: "家事を再確認してください",
-            message: "\(count)件の家事について再確認をお願いします"
+            title: "\(senderName)さんからありがとうが届きました",
+            message: "\(count)件の家事にありがとうが届きました"
         )
     }
 
