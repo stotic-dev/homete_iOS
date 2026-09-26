@@ -86,6 +86,25 @@ public extension TodayHouseworkSummary {
         )
     }
 
+    /// メンバーごとの当日の実績（`members.value` の順。自分が先頭）
+    ///
+    /// 月間の貢献度集計と同じく、完了（`completed`）の家事だけを実行者ごとに集計する。
+    /// 凡例に全員を出すため、実績0件のメンバーも含める。メンバー外の実行者の家事は集計しない。
+    func memberContributions(members: CohabitantMemberList) -> [TodayMemberContribution] {
+        let completedItemsByUser = Dictionary(
+            grouping: allItems.filter { $0.state == .completed }
+        ) { $0.executorId ?? "" }
+        return members.value.map { member in
+            let items = completedItemsByUser[member.id] ?? []
+            return .init(
+                userId: member.id,
+                userName: member.userName,
+                completedCount: items.count,
+                point: items.reduce(0) { $0 + $1.point }
+            )
+        }
+    }
+
 }
 
 private extension TodayHouseworkSummary {
