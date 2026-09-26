@@ -20,6 +20,7 @@ public extension AppDependencies {
         signInWithAppleClient: .liveValue,
         purchaseClient: livePurchaseClient,
         houseworkTemplateClient: .liveValue,
+        frequentHouseworkClient: .liveValue,
         consentClient: liveConsentClient,
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,

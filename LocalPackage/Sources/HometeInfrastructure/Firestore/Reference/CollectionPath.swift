@@ -13,6 +13,8 @@ public enum CollectionPath: String {
     case houseworkTemplates = "HouseworkTemplates"
     case days = "Days"
     case editors = "Editors"
+    case frequentHouseworks = "FrequentHouseworks"
+    case frequentHouseworkCategories = "FrequentHouseworkCategories"
 
 }
 
