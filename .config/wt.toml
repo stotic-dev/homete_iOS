@@ -1,8 +1,28 @@
 # wt (worktrunk) プロジェクト設定
 # https://worktrunk.dev
+#
+# 新規worktreeの初回ビルドは、SPM依存のgit cloneとxcframeworkの署名検証が
+# Claude Codeのサンドボックス内では失敗する。wtのフックはサンドボックスの外
+# （wtを叩いたターミナル）で走るので、ここで依存解決と初回ビルドまで済ませておく。
+# 一度通っていれば、以降のビルド・テストはサンドボックス内でも通る。
 
+# LocalPackageの初回ビルドは10分以上かかるため、worktree作成をブロックしない post-start で実行する。
+# xcframeworkの署名検証はiOSシミュレータ向け（build-local-package）とmacOS向け（test-packages）で
+# 別スライスを処理するので、両方を一度ずつビルドしておく。
+# 同じ .build を使うため、リスト（パイプライン）で順に実行する。
+# ログは `wt config state logs` で確認できる。
+post-start = [
+  { build-local-package = "make build-local-package" },
+  # make test-packages と同じフラグでテストターゲットまでビルドする（テスト自体は流さない）
+  { build-package-tests = "scripts/with-local-package-lock.sh {{ worktree_path }}/LocalPackage -- swift build --package-path {{ worktree_path }}/LocalPackage --disable-sandbox --build-tests --enable-code-coverage" },
+]
+
+# pre-startのテーブルは上から順に直列で実行される。
 [pre-start]
 # GoogleService-Info*.plist / .env / private_keys など、git管理外の秘密情報を
 # 新規worktreeへコピーする。対象は .worktreeinclude で限定している。
 # ビルド・実行に必要なため pre-start（worktree作成をブロックしてでも先に完了させる）で実行する。
 copy-secrets = "wt step copy-ignored"
+# SwiftLint / SwiftFormat を含むProjectToolsをビルドする。
+# pre-commitフックのSwiftFormatが依存しておりコミットに必須、かつ短時間で終わるため pre-start で実行する。
+build-project-tools = "swift build --package-path ProjectTools --scratch-path ProjectTools/.build"

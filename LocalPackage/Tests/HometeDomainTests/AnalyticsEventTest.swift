@@ -1,7 +1,10 @@
+// swiftlint:disable file_length
 //
 //  AnalyticsEventTest.swift
 //  hometeTests
 //
+
+// swiftlint:disable file_length
 
 @testable import HometeDomain
 import Testing
@@ -137,28 +140,20 @@ struct AnalyticsEventTest {
                 ["action": "register", "step": "dashboard", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.requestReview(step: .detail, isSuccess: true),
-                ["action": "request_review", "step": "detail", "result": "success"]
+                HouseworkAnalyticsAction.complete(step: .detail, isSuccess: true),
+                ["action": "complete", "step": "detail", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.requestReview(step: .board, isSuccess: false),
-                ["action": "request_review", "step": "board", "result": "failure"]
+                HouseworkAnalyticsAction.complete(step: .board, isSuccess: false),
+                ["action": "complete", "step": "board", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.approve(isSuccess: true),
-                ["action": "approve", "step": "approval", "result": "success"]
+                HouseworkAnalyticsAction.sendThanks(step: .thanks, isSuccess: true),
+                ["action": "send_thanks", "step": "thanks", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.approve(isSuccess: false),
-                ["action": "approve", "step": "approval", "result": "failure"]
-            ),
-            (
-                HouseworkAnalyticsAction.reject(isSuccess: true),
-                ["action": "reject", "step": "approval", "result": "success"]
-            ),
-            (
-                HouseworkAnalyticsAction.reject(isSuccess: false),
-                ["action": "reject", "step": "approval", "result": "failure"]
+                HouseworkAnalyticsAction.sendThanks(step: .board, isSuccess: false),
+                ["action": "send_thanks", "step": "board", "result": "failure"]
             ),
             (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),
@@ -225,6 +220,57 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.houseworkTemplate(action)
 
         #expect(actual == AnalyticsEvent(name: "housework_template", parameters: expectedParameters))
+    }
+
+    @Test(
+        "いつもの家事に関する行動を、action/step/resultのパラメータを持つfrequent_houseworkイベントに変換する",
+        arguments: [
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .management, isSuccess: true),
+                ["action": "create", "step": "management", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .register, isSuccess: false),
+                ["action": "create", "step": "register", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.create(step: .template, isSuccess: true),
+                ["action": "create", "step": "template", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.edit(isSuccess: true),
+                ["action": "edit", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.delete(isSuccess: false),
+                ["action": "delete", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.importFromTemplate(isSuccess: true),
+                ["action": "import", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.limitReached(step: .register),
+                ["action": "limit_reached", "step": "register"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.createCategory(isSuccess: true),
+                ["action": "create_category", "result": "success"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.editCategory(isSuccess: false),
+                ["action": "edit_category", "result": "failure"]
+            ),
+            (
+                FrequentHouseworkAnalyticsAction.deleteCategory(isSuccess: true),
+                ["action": "delete_category", "result": "success"]
+            ),
+        ]
+    )
+    func frequentHousework(action: FrequentHouseworkAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.frequentHousework(action)
+
+        #expect(actual == AnalyticsEvent(name: "frequent_housework", parameters: expectedParameters))
     }
 
     @Test(

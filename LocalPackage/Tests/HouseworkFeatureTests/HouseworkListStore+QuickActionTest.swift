@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkListStore+QuickActionTest.swift
 //  LocalPackage
@@ -12,13 +13,11 @@ import Testing
 enum HouseworkListStoreQuickActionTest {
 
     @MainActor
-    struct RequestReviewCase {}
+    struct CompleteCase {}
     @MainActor
     struct RemoveCase {}
     @MainActor
-    struct ApproveCase {}
-    @MainActor
-    struct RejectCase {}
+    struct SendThanksCase {}
     @MainActor
     struct ReturnToIncompleteCase {}
     @MainActor
@@ -28,10 +27,10 @@ enum HouseworkListStoreQuickActionTest {
 
 }
 
-extension HouseworkListStoreQuickActionTest.RequestReviewCase {
+extension HouseworkListStoreQuickActionTest.CompleteCase {
 
-    @Test("登録済みの家事に承認依頼を行うと、未完了から承認待ちに更新する")
-    func perform_requestReview_registeredItem() async throws {
+    @Test("登録済みの家事を完了にすると、実施者と実施日時を付けて完了に更新する")
+    func perform_complete_registeredItem() async throws {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
@@ -39,7 +38,7 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
         let now = Date()
         let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let expected = inputItem.updateProperties(
-            state: .pendingApproval,
+            state: .completed,
             executorId: inputAccount.id,
             executedAt: now
         )
@@ -60,7 +59,7 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
             // Act
 
             try await store.perform(
-                .requestReview,
+                .complete,
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: now,
                 account: inputAccount,
@@ -70,8 +69,8 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
         }
     }
 
-    @Test("未登録（テンプレート由来）の家事に承認依頼を行うと、新規ドキュメントとして保存する")
-    func perform_requestReview_unregisteredItem() async throws {
+    @Test("未登録（テンプレート由来）の家事を完了にすると、新規ドキュメントとして保存する")
+    func perform_complete_unregisteredItem() async throws {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
@@ -79,7 +78,7 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
         let now = Date()
         let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let expected = inputItem.updateProperties(
-            state: .pendingApproval,
+            state: .completed,
             executorId: inputAccount.id,
             executedAt: now
         )
@@ -100,7 +99,7 @@ extension HouseworkListStoreQuickActionTest.RequestReviewCase {
             // Act
 
             try await store.perform(
-                .requestReview,
+                .complete,
                 on: .init(originalItem: inputItem, isRegistered: false),
                 now: now,
                 account: inputAccount,
@@ -151,103 +150,46 @@ extension HouseworkListStoreQuickActionTest.RemoveCase {
 
 }
 
-extension HouseworkListStoreQuickActionTest.ApproveCase {
+extension HouseworkListStoreQuickActionTest.SendThanksCase {
 
-    @Test("ありがとうを実行すると、固定の定型コメントで承認して完了状態にする")
-    func perform_approve() async throws {
+    @Test("ありがとうを実行すると、家事は更新せず定型コメントの通知だけを送る")
+    func perform_sendThanks() async throws {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
         let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
-        let now = Date()
-        let executedAt = Date.distantPast
         let inputItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
-            executorId: "otherUserId",
-            executedAt: executedAt
-        )
-        let expected = inputItem.updateProperties(
             state: .completed,
             executorId: "otherUserId",
-            executedAt: executedAt,
-            reviewerId: inputAccount.id,
-            approvedAt: now,
-            reviewerComment: "ありがとう！"
+            executedAt: .distantPast
+        )
+        let expectedNotification = PushNotificationContent(
+            title: "\(inputAccount.userName)さんから「\(inputItem.title)」にありがとうが届きました",
+            message: "ありがとう！"
         )
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                    Issue.record()
+                }),
+                cohabitantPushNotificationClient: .init { id, content in
                     // Assert
 
-                    #expect(item == expected)
-                    #expect(cohabitantId == inputCohabitantId)
+                    #expect(id == inputCohabitantId)
+                    #expect(content == expectedNotification)
                     confirmation()
-                }),
-                cohabitantPushNotificationClient: .previewValue,
+                },
                 items: [.makeForTest(items: [inputItem])]
             )
 
             // Act
 
             try await store.perform(
-                .approve,
+                .sendThanks,
                 on: .init(originalItem: inputItem, isRegistered: true),
-                now: now,
-                account: inputAccount,
-                cohabitantId: inputCohabitantId,
-                step: .board
-            )
-        }
-    }
-
-}
-
-extension HouseworkListStoreQuickActionTest.RejectCase {
-
-    @Test("再確認依頼を実行すると、固定の定型コメントで未完了に差し戻す")
-    func perform_reject() async throws {
-        // Arrange
-
-        let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
-        let now = Date()
-        let executedAt = Date.distantPast
-        let inputItem = HouseworkItem.makeForTest(
-            id: 1,
-            state: .pendingApproval,
-            executorId: "otherUserId",
-            executedAt: executedAt
-        )
-        let expected = inputItem.updateProperties(
-            state: .incomplete,
-            executorId: "otherUserId",
-            executedAt: executedAt,
-            reviewerId: inputAccount.id,
-            approvedAt: now,
-            reviewerComment: "再確認をお願いします"
-        )
-
-        try await confirmation { confirmation in
-            let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-                    // Assert
-
-                    #expect(item == expected)
-                    #expect(cohabitantId == inputCohabitantId)
-                    confirmation()
-                }),
-                cohabitantPushNotificationClient: .previewValue,
-                items: [.makeForTest(items: [inputItem])]
-            )
-
-            // Act
-
-            try await store.perform(
-                .reject,
-                on: .init(originalItem: inputItem, isRegistered: true),
-                now: now,
+                now: Date(),
                 account: inputAccount,
                 cohabitantId: inputCohabitantId,
                 step: .board
@@ -259,7 +201,7 @@ extension HouseworkListStoreQuickActionTest.RejectCase {
 
 extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
 
-    @Test("差し戻しを実行すると、実施者・確認情報をクリアして未完了に戻す")
+    @Test("未完了に戻すを実行すると、実施者情報をクリアして未完了に戻す")
     func perform_returnToIncomplete() async throws {
         // Arrange
 
@@ -269,10 +211,7 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
             id: 1,
             state: .completed,
             executorId: "otherUserId",
-            executedAt: .distantPast,
-            reviewerId: "reviewerUserId",
-            approvedAt: .distantPast,
-            reviewerComment: "ありがとう！"
+            executedAt: .distantPast
         )
         let expected = inputItem.updateProperties(state: .incomplete)
 
@@ -308,8 +247,8 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
 
 extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
 
-    @Test("notify: falseを指定すると、承認待ちへの更新をしても個別の通知は送られない")
-    func perform_requestReview_notifyFalse_doesNotSendNotification() async throws {
+    @Test("notify: falseを指定すると、完了に更新しても完了通知は送られない")
+    func perform_complete_notifyFalse_doesNotSendNotification() async throws {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
@@ -321,16 +260,14 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
                 houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
                     confirmation()
                 }),
-                cohabitantPushNotificationClient: .init { _, _ in
-                    Issue.record()
-                },
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
                 items: [.makeForTest(items: [inputItem])]
             )
 
             // Act
 
             try await store.perform(
-                .requestReview,
+                .complete,
                 on: .init(originalItem: inputItem, isRegistered: true),
                 now: Date(),
                 account: inputAccount,
@@ -342,86 +279,72 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
     }
 
     @Test("notify: falseを指定すると、ありがとうを実行しても個別の通知は送られない")
-    func perform_approve_notifyFalse_doesNotSendNotification() async throws {
+    func perform_sendThanks_notifyFalse_doesNotSendNotification() async throws {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
         let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
         let inputItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "otherUserId"
         )
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                Issue.record()
+            }),
+            cohabitantPushNotificationClient: .init { _, _ in
+                // Assert
 
-        try await confirmation { confirmation in
-            let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
-                    confirmation()
-                }),
-                cohabitantPushNotificationClient: .init { _, _ in
-                    Issue.record()
-                },
-                items: [.makeForTest(items: [inputItem])]
-            )
+                Issue.record()
+            },
+            items: [.makeForTest(items: [inputItem])]
+        )
 
-            // Act
+        // Act
 
-            try await store.perform(
-                .approve,
-                on: .init(originalItem: inputItem, isRegistered: true),
-                now: Date(),
-                account: inputAccount,
-                cohabitantId: inputCohabitantId,
-                step: .board,
-                notify: false
-            )
-        }
+        try await store.perform(
+            .sendThanks,
+            on: .init(originalItem: inputItem, isRegistered: true),
+            now: Date(),
+            account: inputAccount,
+            cohabitantId: inputCohabitantId,
+            step: .board,
+            notify: false
+        )
     }
 
 }
 
 extension HouseworkListStoreQuickActionTest.PerformBulkCase {
 
-    @Test("複数の家事にありがとうを一括適用すると、家事ごとに更新した上でまとめ通知を1件だけ送る")
-    func performBulk_approve_updatesEachItemAndSendsBulkNotification() async {
+    @Test("複数の家事を一括で完了にすると、家事ごとに更新した上で件数をまとめた完了通知を1件だけ送る")
+    func performBulk_complete_updatesEachItemAndSendsBulkCompletedNotification() async {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
         let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
-        let now = Date()
-        let executedAt = Date.distantPast
+        // 完了通知は今日の家事の完了でしか送らないため、家事の日付と同じ日にする
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         // DailyHouseworkListは先頭要素のindexedDateをメタデータに使うため、要素ごとに
-        // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる
-        let indexedDate = Date()
+        // .nowを引くと2件目が同じ日付のリストに属さず、Store側の検索から漏れる。
+        // 完了通知のdataに日付が載るため、実行日時に依らない固定値にする
+        let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
-            HouseworkItem.makeForTest(
-                id: 1,
-                indexedDate: indexedDate,
-                state: .pendingApproval,
-                executorId: "otherUserId",
-                executedAt: executedAt
-            ),
-            HouseworkItem.makeForTest(
-                id: 2,
-                indexedDate: indexedDate,
-                state: .pendingApproval,
-                executorId: "otherUserId",
-                executedAt: executedAt
-            ),
+            HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: .incomplete),
+            HouseworkItem.makeForTest(id: 2, indexedDate: indexedDate, state: .incomplete),
         ]
         let expectedItems = inputItems.map {
             $0.updateProperties(
                 state: .completed,
-                executorId: "otherUserId",
-                executedAt: executedAt,
-                reviewerId: inputAccount.id,
-                approvedAt: now,
-                reviewerComment: "ありがとう！"
+                executorId: inputAccount.id,
+                executedAt: now
             )
         }
-        let expectedNotification = PushNotificationContent.approvedBulkMessage(
-            reviwerName: inputAccount.userName,
-            count: inputItems.count
+        let expectedContent = PushNotificationContent(
+            title: "ownさんが家事を終えました",
+            message: "2件の家事が完了しました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
         )
 
         await confirmation(expectedCount: 3) { confirmation in
@@ -438,6 +361,66 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
                         // Assert
 
                         #expect(id == inputCohabitantId)
+                        #expect(content == expectedContent)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    calendar: .japanese,
+                    items: [.makeForTest(items: inputItems)]
+                )
+
+                // Act
+
+                Task {
+                    try? await store.performBulk(
+                        .complete,
+                        on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+                        now: now,
+                        account: inputAccount,
+                        cohabitantId: inputCohabitantId,
+                        step: .board
+                    )
+                }
+            }
+        }
+    }
+
+    @Test("複数の家事に一括でありがとうを伝えると、家事は更新せずまとめ通知を1件だけ送る")
+    func performBulk_sendThanks_sendsOnlyBulkNotification() async {
+        // Arrange
+
+        let inputCohabitantId = "cohabitantId"
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+        ]
+        let expectedNotification = PushNotificationContent(
+            title: "\(inputAccount.userName)さんからありがとうが届きました",
+            message: "\(inputItems.count)件の家事にありがとうが届きました"
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                        Issue.record()
+                    }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
+
+                        #expect(id == inputCohabitantId)
                         #expect(content == expectedNotification)
                         confirmation()
                         continuation.resume()
@@ -449,9 +432,9 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
 
                 Task {
                     try? await store.performBulk(
-                        .approve,
+                        .sendThanks,
                         on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
-                        now: now,
+                        now: Date(),
                         account: inputAccount,
                         cohabitantId: inputCohabitantId,
                         step: .board
@@ -506,15 +489,13 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
             houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
                 Issue.record()
             }),
-            cohabitantPushNotificationClient: .init { _, _ in
-                Issue.record()
-            }
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
         )
 
         // Act
 
         try await store.performBulk(
-            .approve,
+            .complete,
             on: [],
             now: Date(),
             account: inputAccount,

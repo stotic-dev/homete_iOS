@@ -23,11 +23,11 @@ extension HouseworkListStore {
         notify: Bool = true
     ) async throws {
         switch action {
-        case .requestReview:
-            try await requestReview(
+        case .complete:
+            try await complete(
                 target: item.originalItem,
                 now: now,
-                executor: account.id,
+                executor: account,
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: step,
@@ -42,23 +42,13 @@ extension HouseworkListStore {
                 step: step
             )
 
-        case .approve:
-            try await approved(
+        case .sendThanks:
+            try await sendThanks(
                 target: item.originalItem,
-                now: now,
-                reviwer: account,
+                sender: account,
                 comment: action.fixedComment,
                 cohabitantId: cohabitantId,
-                notify: notify
-            )
-
-        case .reject:
-            try await rejected(
-                target: item.originalItem,
-                now: now,
-                reviwer: account,
-                comment: action.fixedComment,
-                cohabitantId: cohabitantId,
+                step: step,
                 notify: notify
             )
 
@@ -78,8 +68,8 @@ extension HouseworkListStore {
     /// 複数選択で選んだ家事に、クイックアクションを一括で適用する
     ///
     /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制した上で、
-    /// 対象件数をまとめた1件の通知だけを送る。相手に通知しないアクション（やらない・差し戻し）では
-    /// まとめ通知も送らない。
+    /// 対象件数をまとめた1件の通知だけを送る。完了の通知は、ふりかえり通知の予約を兼ねるため
+    /// 今日の家事で1日1回だけ送る。相手に通知しないアクション（やらない・未完了に戻す）では何も送らない。
     // swiftlint:disable:next function_parameter_count
     func performBulk(
         _ action: HouseworkQuickAction,
@@ -89,7 +79,7 @@ extension HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
-        guard !items.isEmpty else { return }
+        guard let firstItem = items.first else { return }
 
         for item in items {
             try await perform(
@@ -103,10 +93,18 @@ extension HouseworkListStore {
             )
         }
 
-        let notification = action.bulkNotification(
-            count: items.count,
-            reviewerName: account.userName
-        )
+        if action == .complete {
+            // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
+            notifyCompleted(
+                houseworkDate: firstItem.originalItem.indexedDate.value,
+                now: now,
+                cohabitantId: cohabitantId
+            ) {
+                .completedBulkMessage(executorName: account.userName, count: items.count, data: $0)
+            }
+        }
+
+        let notification = action.bulkNotification(count: items.count, senderName: account.userName)
         guard let notification else { return }
 
         sendNotification(notification, cohabitantId: cohabitantId)

@@ -8,6 +8,7 @@ import {
   houseworkTemplatesPath,
   houseworkTemplateDaysPath,
   houseworkTemplateEditorsPath,
+  houseworkTemplateMonthlyItemsPath,
 } from "./clientCollections";
 
 export interface TestUser {
@@ -108,7 +109,7 @@ export async function createTestHousework(
 
 /**
  * 家事テンプレートのテストデータを追加
- * メタドキュメントに加えて、ネストしたDays/Editorsサブコレクションも作成する
+ * メタドキュメントに加えて、ネストしたDays/MonthlyItems/Editorsサブコレクションも作成する
  * @param {string} cohabitantId - CohabitantドキュメントのID
  * @param {string} templateId - テンプレートドキュメントのID
  * @return {Promise<void>}
@@ -128,6 +129,16 @@ export async function createTestHouseworkTemplate(
     .collection(houseworkTemplateDaysPath(cohabitantId, templateId))
     .doc("1")
     .set({dayOfWeek: 1, items: []});
+
+  await db
+    .collection(houseworkTemplateMonthlyItemsPath(cohabitantId, templateId))
+    .doc("monthly-item-1")
+    .set({
+      id: "monthly-item-1",
+      title: "Monthly Housework",
+      point: 10,
+      rule: {type: "dayOfMonth", day: 25},
+    });
 
   await db
     .collection(houseworkTemplateEditorsPath(cohabitantId, templateId))

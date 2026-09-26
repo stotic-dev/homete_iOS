@@ -40,8 +40,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case houseworkDetail = "housework_detail"
     /// 家事の登録
     case houseworkRegister = "housework_register"
-    /// 家事の承認
-    case houseworkApproval = "housework_approval"
+    /// 完了した家事にありがとうを伝える画面
+    case houseworkThanks = "housework_thanks"
     /// 家事テンプレートの一覧
     case houseworkTemplate = "housework_template"
     /// 家事テンプレートの詳細
@@ -54,6 +54,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case subscriptionManagement = "subscription_management"
     /// 設定画面から開くプッシュ通知権限ガイド
     case settingNotificationPermission = "setting_notification_permission"
+    /// 設定画面から開く通知設定（通知が許可されている場合の、ふりかえり通知の設定）
+    case settingNotification = "setting_notification"
     /// ライセンス一覧
     case licenseList = "license_list"
     /// ライセンス詳細

@@ -6,18 +6,16 @@
 import HometeDomain
 import SwiftUI
 
-/// 家事リストのセルからワンタップで行えるステータス変更アクション
+/// 家事リストのセルからワンタップで行えるアクション
 enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
 
-    /// 承認依頼（未完了 → 承認待ち）
-    case requestReview
+    /// 完了にする（未完了 → 完了）
+    case complete
     /// やらない（未完了 → やらない）
     case remove
-    /// ありがとう（承認待ち → 完了）
-    case approve
-    /// 再確認依頼（承認待ち → 未完了）
-    case reject
-    /// 差し戻し（完了 → 未完了）
+    /// ありがとう（完了した家事に感謝を伝える。ステータスは変わらない）
+    case sendThanks
+    /// 未完了に戻す（完了 → 未完了）
     case returnToIncomplete
 
     var id: Self {
@@ -26,29 +24,25 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
 
     var label: String {
         switch self {
-        case .requestReview:
-            "承認依頼"
+        case .complete:
+            "完了にする"
         case .remove:
             "やらない"
-        case .approve:
+        case .sendThanks:
             "ありがとう"
-        case .reject:
-            "再確認依頼"
         case .returnToIncomplete:
-            "差し戻し"
+            "未完了に戻す"
         }
     }
 
     var systemImage: String {
         switch self {
-        case .requestReview:
-            "paperplane.fill"
+        case .complete:
+            "checkmark.circle.fill"
         case .remove:
             "trash"
-        case .approve:
-            "checkmark.circle.fill"
-        case .reject:
-            "arrow.triangle.2.circlepath"
+        case .sendThanks:
+            "hands.clap.fill"
         case .returnToIncomplete:
             "arrow.uturn.backward"
         }
@@ -58,7 +52,7 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
         switch self {
         case .remove:
             .destructive
-        case .requestReview, .approve, .reject, .returnToIncomplete:
+        case .complete, .sendThanks, .returnToIncomplete:
             nil
         }
     }
@@ -67,14 +61,12 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
 
 extension HouseworkQuickAction {
 
-    /// ワンタップ実行時に自動設定する定型コメント（`approve`/`reject`のみ使用）
+    /// ワンタップ実行時に自動設定する定型コメント（`sendThanks`のみ使用）
     var fixedComment: String {
         switch self {
-        case .approve:
+        case .sendThanks:
             "ありがとう！"
-        case .reject:
-            "再確認をお願いします"
-        case .requestReview, .remove, .returnToIncomplete:
+        case .complete, .remove, .returnToIncomplete:
             ""
         }
     }
@@ -82,16 +74,13 @@ extension HouseworkQuickAction {
     /// 一括操作で相手に送る、まとめ通知の内容
     ///
     /// 家事ごとに個別通知を送ると件数分の通知が届いてしまうため、一括操作では対象件数をまとめた
-    /// 1件の通知のみを送る。相手に何も通知しないアクション（やらない・差し戻し）は`nil`。
-    func bulkNotification(count: Int, reviewerName: String) -> PushNotificationContent? {
+    /// 1件の通知のみを送る。相手に表示する通知を送らないアクション（完了・やらない・未完了に戻す）は`nil`。
+    /// - Note: 完了はふりかえり通知の予約を兼ねた完了通知を、1日1回だけ送る（`performBulk`）
+    func bulkNotification(count: Int, senderName: String) -> PushNotificationContent? {
         switch self {
-        case .requestReview:
-            .requestReviewBulkMessage(count: count)
-        case .approve:
-            .approvedBulkMessage(reviwerName: reviewerName, count: count)
-        case .reject:
-            .rejectedBulkMessage(count: count)
-        case .remove, .returnToIncomplete:
+        case .sendThanks:
+            .thanksBulkMessage(senderName: senderName, count: count)
+        case .complete, .remove, .returnToIncomplete:
             nil
         }
     }
@@ -100,12 +89,18 @@ extension HouseworkQuickAction {
 
 extension HouseworkQuickAction {
 
-    /// 家事の状態・実行者に応じて、その家事に対して行えるクイックアクションを返す
+    /// 家事の状態・実施者に応じて、その家事に対して行えるクイックアクションを返す
     static func actions(for item: HouseworkBoardItem, ownUserId: String) -> [Self] {
-        if item.state == .pendingApproval, !item.canReview(ownUserId: ownUserId) {
-            [.returnToIncomplete]
-        } else {
-            actions(for: item.state)
+        switch item.state {
+        case .incomplete:
+            [.complete, .remove]
+
+        // 自分が終えた家事に自分でありがとうを送れてしまわないようにする
+        case .completed:
+            item.canSendThanks(ownUserId: ownUserId) ? [.sendThanks, .returnToIncomplete] : [.returnToIncomplete]
+
+        case .notTodo:
+            []
         }
     }
 
@@ -115,13 +110,10 @@ extension HouseworkQuickAction {
     static func actions(for state: HouseworkState) -> [Self] {
         switch state {
         case .incomplete:
-            [.requestReview, .remove]
-
-        case .pendingApproval:
-            [.approve, .reject]
+            [.complete, .remove]
 
         case .completed:
-            [.returnToIncomplete]
+            [.sendThanks, .returnToIncomplete]
 
         case .notTodo:
             []

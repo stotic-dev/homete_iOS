@@ -76,7 +76,7 @@ private struct DebugRoutePlaceholderView: View {
                 .font(with: .headLineM)
             Text(String(describing: route))
                 .font(with: .body)
-                .foregroundStyle(.primary2)
+                .foregroundStyle(.onSurfaceVariant)
             Button("閉じる") {
                 dismiss()
             }

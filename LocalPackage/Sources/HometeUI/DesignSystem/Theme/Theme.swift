@@ -41,7 +41,7 @@ public extension Theme {
         public init() {
             backgroundColor = .primary3
             selectedForegroundColor = .onSurface
-            foregroundColor = .onPrimary3
+            foregroundColor = .onSurfaceVariant
         }
 
         public init(
@@ -59,14 +59,14 @@ public extension Theme {
     func applySegmentedControl() {
         #if canImport(UIKit)
         UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(Color.primary2)],
+            [.foregroundColor: UIColor(segmentedControl.foregroundColor)],
             for: .normal
         )
         UISegmentedControl.appearance().setTitleTextAttributes(
-            [.foregroundColor: UIColor(Color.onSurface)],
+            [.foregroundColor: UIColor(segmentedControl.selectedForegroundColor)],
             for: .selected
         )
-        UISegmentedControl.appearance().backgroundColor = UIColor(Color.primary3)
+        UISegmentedControl.appearance().backgroundColor = UIColor(segmentedControl.backgroundColor)
         #endif
     }
 

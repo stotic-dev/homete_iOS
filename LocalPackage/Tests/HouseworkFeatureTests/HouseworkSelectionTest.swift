@@ -71,9 +71,8 @@ extension HouseworkSelectionTest.AvailableActionsCase {
     @Test(
         "何も選択されていない場合は、タブのステータスから決まる既定のアクションを返す",
         arguments: [
-            (HouseworkState.incomplete, [HouseworkQuickAction.requestReview, .remove]),
-            (.pendingApproval, [.approve, .reject]),
-            (.completed, [.returnToIncomplete]),
+            (HouseworkState.incomplete, [HouseworkQuickAction.complete, .remove]),
+            (.completed, [.sendThanks, .returnToIncomplete]),
             (.notTodo, []),
         ]
     )
@@ -99,16 +98,16 @@ extension HouseworkSelectionTest.AvailableActionsCase {
         #expect(actual == expected)
     }
 
-    @Test("承認待ちで自分が実施した家事だけを選んだ場合は、差し戻しのみが行える")
-    func availableActions_pendingApprovalByOwnUserOnly_returnsReturnToIncompleteOnly() {
+    @Test("完了済みで自分が実施した家事だけを選んだ場合は、未完了に戻すのみが行える")
+    func availableActions_completedByOwnUserOnly_returnsReturnToIncompleteOnly() {
         // Arrange
 
         let selection = HouseworkSelection(
             items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId"),
-                .makeForPreview(id: "2", state: .pendingApproval, executorId: "ownUserId"),
+                .makeForPreview(id: "1", state: .completed, executorId: "ownUserId"),
+                .makeForPreview(id: "2", state: .completed, executorId: "ownUserId"),
             ],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -122,16 +121,16 @@ extension HouseworkSelectionTest.AvailableActionsCase {
         #expect(actual == [.returnToIncomplete])
     }
 
-    @Test("実行者が異なる承認待ちの家事が混在する場合は、両方のアクションを列挙順で返す")
+    @Test("実施者が異なる完了済みの家事が混在する場合は、両方のアクションを列挙順で返す")
     func availableActions_mixedExecutors_returnsUnionInDeclarationOrder() {
         // Arrange
 
         let selection = HouseworkSelection(
             items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId"),
-                .makeForPreview(id: "2", state: .pendingApproval, executorId: "otherUserId"),
+                .makeForPreview(id: "1", state: .completed, executorId: "ownUserId"),
+                .makeForPreview(id: "2", state: .completed, executorId: "otherUserId"),
             ],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -142,7 +141,7 @@ extension HouseworkSelectionTest.AvailableActionsCase {
 
         // Assert
 
-        #expect(actual == [.approve, .reject, .returnToIncomplete])
+        #expect(actual == [.sendThanks, .returnToIncomplete])
     }
 
     @Test("同じアクションを持つ家事を複数選んでも、アクションは重複しない")
@@ -165,7 +164,7 @@ extension HouseworkSelectionTest.AvailableActionsCase {
 
         // Assert
 
-        #expect(actual == [.requestReview, .remove])
+        #expect(actual == [.complete, .remove])
     }
 
 }
@@ -176,10 +175,10 @@ extension HouseworkSelectionTest.IsSelectableCase {
     func isSelectable_noSelection_returnsTrue() {
         // Arrange
 
-        let item = HouseworkBoardItem.makeForPreview(id: "1", state: .pendingApproval, executorId: "ownUserId")
+        let item = HouseworkBoardItem.makeForPreview(id: "1", state: .completed, executorId: "ownUserId")
         let selection = HouseworkSelection(
             items: [item],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: [],
             ownUserId: "ownUserId"
         )
@@ -197,13 +196,13 @@ extension HouseworkSelectionTest.IsSelectableCase {
     func isSelectable_sameActions_returnsTrue() {
         // Arrange
 
-        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "otherUserId")
+        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .completed, executorId: "otherUserId")
         let selection = HouseworkSelection(
             items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "otherUserId"),
+                .makeForPreview(id: "1", state: .completed, executorId: "otherUserId"),
                 item,
             ],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: ["1"],
             ownUserId: "ownUserId"
         )
@@ -217,17 +216,17 @@ extension HouseworkSelectionTest.IsSelectableCase {
         #expect(actual == true)
     }
 
-    @Test("承認待ちでも実行者が異なり対応可能アクションが変わる家事は一緒に選択できない")
+    @Test("完了済みでも実施者が異なり対応可能アクションが変わる家事は一緒に選択できない")
     func isSelectable_differentActionsInSameState_returnsFalse() {
         // Arrange
 
-        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .pendingApproval, executorId: "ownUserId")
+        let item = HouseworkBoardItem.makeForPreview(id: "2", state: .completed, executorId: "ownUserId")
         let selection = HouseworkSelection(
             items: [
-                .makeForPreview(id: "1", state: .pendingApproval, executorId: "otherUserId"),
+                .makeForPreview(id: "1", state: .completed, executorId: "otherUserId"),
                 item,
             ],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: ["1"],
             ownUserId: "ownUserId"
         )
@@ -286,7 +285,7 @@ extension HouseworkSelectionTest.TargetsCase {
 
         // Act
 
-        let actual = selection.targets(for: .requestReview)
+        let actual = selection.targets(for: .complete)
 
         // Assert
 
@@ -297,28 +296,28 @@ extension HouseworkSelectionTest.TargetsCase {
     func targets_unsupportedItemInSelection_isExcluded() {
         // Arrange
 
-        let reviewableItem = HouseworkBoardItem.makeForPreview(
+        let thanksTargetItem = HouseworkBoardItem.makeForPreview(
             id: "1",
-            state: .pendingApproval,
+            state: .completed,
             executorId: "otherUserId"
         )
         let selection = HouseworkSelection(
             items: [
-                reviewableItem,
-                .makeForPreview(id: "2", state: .pendingApproval, executorId: "ownUserId"),
+                thanksTargetItem,
+                .makeForPreview(id: "2", state: .completed, executorId: "ownUserId"),
             ],
-            state: .pendingApproval,
+            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
 
         // Act
 
-        let actual = selection.targets(for: .approve)
+        let actual = selection.targets(for: .sendThanks)
 
         // Assert
 
-        #expect(actual == [reviewableItem])
+        #expect(actual == [thanksTargetItem])
     }
 
 }

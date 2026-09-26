@@ -72,12 +72,12 @@ private extension HouseworkQuickActionMenuContent {
     )
 }
 
-#Preview("HouseworkQuickActionMenuContent_承認待ち_確認者", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkQuickActionMenuContent_完了_実施者以外", traits: .sizeThatFitsLayout) {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "other"
         ),
         step: .board,
@@ -90,27 +90,14 @@ private extension HouseworkQuickActionMenuContent {
     )
 }
 
-#Preview("HouseworkQuickActionMenuContent_承認待ち_実施者本人", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkQuickActionMenuContent_完了_実施者本人", traits: .sizeThatFitsLayout) {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "own"
         ),
-        step: .board,
-        onError: { _ in }
-    )
-    .environment(HouseworkListStore())
-    .environment(
-        \.loginContext,
-        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
-    )
-}
-
-#Preview("HouseworkQuickActionMenuContent_完了", traits: .sizeThatFitsLayout) {
-    HouseworkQuickActionMenuContent(
-        item: .makeForPreview(title: "洗濯", point: 10, state: .completed),
         step: .board,
         onError: { _ in }
     )

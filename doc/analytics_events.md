@@ -95,13 +95,14 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_board` | `HouseworkBoardView` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
-| `housework_approval` | `HouseworkApprovalView` |
+| `housework_thanks` | `HouseworkThanksView` |
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
-| `setting_notification_permission` | `SettingNotificationPermissionGuideView` |
+| `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
+| `setting_notification` | `DailyCompletionReminderSettingView`（通知設定。通知が許可されている場合） |
 | `license_list` | `LicenseListView` |
 | `license_detail` | `LicenseDetailView` |
 
@@ -167,7 +168,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `housework`
 
-家事の登録・完了報告・承認・却下・差し戻し・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・ありがとう・未完了に戻す・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
 
 | 項目 | 内容 |
 |---|---|
@@ -175,8 +176,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `request_review` / `approve` / `reject` / `return_incomplete` / `delete` | 何が起きたか |
-| `step` | — | `dashboard` / `board` / `detail` / `approval` | 起点画面 |
+| `action` | ○ | `register` / `complete` / `send_thanks` / `return_incomplete` / `delete` | 何が起きたか |
+| `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `result` | — | `success` / `failure` | 行動の結果 |
 
 送信されるパターンと、その送信タイミング:
@@ -184,16 +185,16 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | `step` | 送信タイミング |
 |---|---|---|
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる） |
-| `request_review` | `dashboard` / `board` / `detail` | 家事の確認依頼を行った（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「確認してもらう」） |
-| `approve` | `approval`（固定） | 家事の承認画面で「完了にする」をタップした |
-| `reject` | `approval`（固定） | 家事の承認画面で「再確認してもらう」をタップした |
+| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」） |
+| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクションは定型文、`thanks`はありがとうを伝える画面からメッセージを添えて送信） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
 
-いずれも`result`に`success` / `failure`が付与される（Firestoreへの書き込み結果）。
+いずれも`result`に`success` / `failure`が付与される。`send_thanks`だけはFirestoreを更新しないため、プッシュ通知の送信結果を表す。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
-`request_review` → `approve` / `reject`の比率は、承認フローがスムーズに回っているかの指標になる。
+`complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
+`complete` → `return_incomplete`の比率が高い場合は、完了の取り消しが頻発している（誤タップや認識のずれ）と読める。
 
 ### `housework_template`
 
@@ -222,6 +223,40 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 **分析での使い方:** `apply`を分母にテンプレート機能の利用開始率、`create` / `edit` / `delete`の件数比率で
 テンプレートがどの程度使い込まれているか（作りっぱなしか、継続的に編集されているか）が分かる。
+
+### `frequent_housework`
+
+いつもの家事（よくやる家事を登録しておき、単発登録・テンプレートから呼び出す機能）の追加・編集・削除・取り込みにおける行動。
+すべて`FrequentHouseworkStore`に送信箇所を集約する。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `FrequentHouseworkAnalyticsAction`、`FrequentHouseworkStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `create` / `edit` / `delete` / `import` / `limit_reached` / `create_category` / `edit_category` / `delete_category` | 何が起きたか |
+| `step` | — | `management` / `register` / `template` | 起点画面。起点が複数ある`create` / `limit_reached`のみ付与 |
+| `result` | — | `success` / `failure` | Firestoreへの書き込み結果。`limit_reached`以外に付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `create` | `management` / `register` / `template` | いつもの家事を追加した（管理画面の追加、登録シート・テンプレートの追加モーダルの「いつもの家事に保存する」）。家事1件につき1イベント |
+| `edit` | — | いつもの家事の名前・ポイント・カテゴリを変更した |
+| `delete` | — | いつもの家事を削除した |
+| `import` | — | テンプレートから取り込んだ。取り込み1回につき1イベント（件数によらない） |
+| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した |
+| `create_category` | — | カスタムカテゴリを追加した |
+| `edit_category` | — | カスタムカテゴリの名前を変更した |
+| `delete_category` | — | カスタムカテゴリを削除した |
+
+並べ替えは内容を変えない操作のため送信しない。
+
+**分析での使い方:** `create`の`step`比率で、いつもの家事がどの導線から増えているか（管理画面で意図的に作るのか、
+登録のついでに保存するのか）が分かる。`limit_reached`を分母に`paywall`の`step: frequent_housework_limit`の
+`closed(purchased)`を追うと、上限がどれだけ課金につながっているかが分かる。
 
 ### `cohabitant_registration`
 

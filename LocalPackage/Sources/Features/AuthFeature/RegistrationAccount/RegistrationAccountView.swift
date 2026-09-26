@@ -28,7 +28,7 @@ struct RegistrationAccountView: View {
                         .font(with: .headLineM)
                     Text("まずはあなたのニックネームを教えてください")
                         .font(with: .body)
-                        .foregroundStyle(.primary2)
+                        .foregroundStyle(.onSurfaceVariant)
                 }
                 VStack(spacing: .space8) {
                     Text("ユーザー名")

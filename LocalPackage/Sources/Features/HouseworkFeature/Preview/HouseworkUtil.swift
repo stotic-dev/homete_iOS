@@ -20,10 +20,7 @@ extension HouseworkItem {
         expiredAt: Date = .distantFuture,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
-        executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil
+        executedAt: Date? = nil
     ) -> Self {
         .init(
             id: id,
@@ -32,10 +29,7 @@ extension HouseworkItem {
             metaData: .init(indexedDate: indexedDate, expiredAt: expiredAt),
             state: state,
             executorId: executorId,
-            executedAt: executedAt,
-            reviewerId: reviewerId,
-            approvedAt: approvedAt,
-            reviewerComment: reviewerComment
+            executedAt: executedAt
         )
     }
 
@@ -52,9 +46,6 @@ extension HouseworkBoardItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        reviewerId: String? = nil,
-        approvedAt: Date? = nil,
-        reviewerComment: String? = nil,
         isRegistered: Bool = true
     ) -> Self {
         .init(
@@ -66,10 +57,7 @@ extension HouseworkBoardItem {
                 expiredAt: expiredAt,
                 state: state,
                 executorId: executorId,
-                executedAt: executedAt,
-                reviewerId: reviewerId,
-                approvedAt: approvedAt,
-                reviewerComment: reviewerComment
+                executedAt: executedAt
             ),
             isRegistered: isRegistered
         )

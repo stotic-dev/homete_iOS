@@ -39,7 +39,7 @@ private extension PasteboardInvitationBanner {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(alignment: .top, spacing: .space8) {
                 Image(systemName: "link")
-                    .foregroundStyle(.primary3)
+                    .foregroundStyle(.decorativeIcon)
                 VStack(alignment: .leading, spacing: .space4) {
                     Text("招待リンクからアプリを開きましたか？")
                         .font(with: .headLineS)

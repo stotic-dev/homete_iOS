@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkListStoreTest.swift
 //  hometeTests
@@ -23,42 +24,27 @@ struct HouseworkListStoreTest {
 
     }
 
-    @Test("新しい家事の登録すると、パートナーに通知を送信する")
-    func register() async {
+    @Test("新しい家事を登録すると保存だけを行い、パートナーには通知を送らない")
+    func register() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "新しい家事が登録されました",
-            message: inputHouseworkItem.title
-        )
 
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
-                        // Assert
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                    // Assert
 
-                        #expect(item == inputHouseworkItem)
-                        #expect(cohabitantId == inputCohabitantId)
-                        confirmation()
-                    }),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    #expect(item == inputHouseworkItem)
+                    #expect(cohabitantId == inputCohabitantId)
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
+            )
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    }
-                )
+            // Act
 
-                // Act
-
-                Task {
-                    try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
-                }
-            }
+            try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
         }
     }
 
@@ -92,21 +78,30 @@ struct HouseworkListStoreTest {
 
 extension HouseworkListStoreTest.UpdateStatusCase {
 
-    @Test("家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
-    func requestReview() async {
+    @Test("家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    func complete() async {
         // Arrange
 
-        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25)
         )
-        let requestedAt = Date()
-        let inputExecutor = "dummyExecutor"
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let expectedContent = PushNotificationContent(
+            title: "じっこうしゃさんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
-            state: .pendingApproval,
-            executorId: inputExecutor,
-            executedAt: requestedAt
+            state: .completed,
+            executorId: inputExecutor.id,
+            executedAt: completedAt
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -125,19 +120,20 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         // Assert
 
                         #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
+                        #expect(content == expectedContent)
                         confirmation()
                         continuation.resume()
                     },
+                    calendar: .japanese,
                     items: [.makeForTest(items: [inputHouseworkItem])]
                 )
 
                 // Act
 
                 Task {
-                    try await store.requestReview(
+                    try await store.complete(
                         target: inputHouseworkItem,
-                        now: requestedAt,
+                        now: completedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
                         isRegistered: true,
@@ -148,21 +144,30 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("テンプレートから生成された家事の完了確認を依頼すると、パートナーにその旨Push通知を送信する")
-    func requestReview_with_created_template() async {
+    @Test("テンプレートから生成された家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
+    func complete_with_created_template() async {
         // Arrange
 
-        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedNotificationContent = PushNotificationContent(
-            title: "確認が必要な家事があります",
-            message: "問題なければ「\(inputHouseworkItem.title)」の完了に感謝を伝えましょう！"
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: .previewDate(year: 2026, month: 9, day: 25)
         )
-        let requestedAt = Date()
-        let inputExecutor = "dummyExecutor"
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let expectedContent = PushNotificationContent(
+            title: "じっこうしゃさんが家事を終えました",
+            message: "「\(inputHouseworkItem.title)」が完了しました",
+            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+        )
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
-            state: .pendingApproval,
-            executorId: inputExecutor,
-            executedAt: requestedAt
+            state: .completed,
+            executorId: inputExecutor.id,
+            executedAt: completedAt
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -181,19 +186,20 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         // Assert
 
                         #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
+                        #expect(content == expectedContent)
                         confirmation()
                         continuation.resume()
                     },
+                    calendar: .japanese,
                     items: []
                 )
 
                 // Act
 
                 Task {
-                    try await store.requestReview(
+                    try await store.complete(
                         target: inputHouseworkItem,
-                        now: requestedAt,
+                        now: completedAt,
                         executor: inputExecutor,
                         cohabitantId: inputCohabitantId,
                         isRegistered: false,
@@ -210,7 +216,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "dummyExecutor",
             executedAt: .distantPast
         )
@@ -323,140 +329,98 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
-    @Test("家事を承認すると、承認情報を更新しパートナーに通知を送信する")
-    // swiftlint:disable:next function_body_length
-    func approved() async {
+    @Test("完了した家事にありがとうを伝えると、パートナーに通知を送信する")
+    func sendThanks() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let approvedAt = Date()
-        let inputReviewer = Account(
-            id: "reviewerId",
-            userName: "レビュアー",
+        let inputSender = Account(
+            id: "senderId",
+            userName: "おくりぬし",
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let inputComment = "お疲れ様でした！"
-        let updatedHouseworkItem = inputHouseworkItem.updateApproved(
-            at: approvedAt,
-            reviewer: inputReviewer.id,
-            comment: inputComment
-        )
-        let expectedNotificationContent = PushNotificationContent.approvedMessage(
-            reviwerName: inputReviewer.userName,
-            houseworkTitle: inputHouseworkItem.title,
-            comment: inputComment
+        let expectedNotificationContent = PushNotificationContent(
+            title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
+            message: inputComment
         )
 
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(
-                        insertOrUpdateItemHandler: { item, cohabitantId in
-                            // Assert
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { _, _ in
+                        // ありがとうは家事のステータスを変えないため、保存は行われない
+                        Issue.record()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { id, content in
+                    // Assert
 
-                            #expect(item == updatedHouseworkItem)
-                            #expect(cohabitantId == inputCohabitantId)
-                            confirmation()
-                        }
-                    ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
+                    #expect(id == inputCohabitantId)
+                    #expect(content == expectedNotificationContent)
+                    confirmation()
+                },
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
 
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
-                    items: [.makeForTest(items: [inputHouseworkItem])]
-                )
+            // Act
 
-                // Act
-
-                Task {
-                    try await store.approved(
-                        target: inputHouseworkItem,
-                        now: approvedAt,
-                        reviwer: inputReviewer,
-                        comment: inputComment,
-                        cohabitantId: inputCohabitantId
-                    )
-                }
-            }
+            try await store.sendThanks(
+                target: inputHouseworkItem,
+                sender: inputSender,
+                comment: inputComment,
+                cohabitantId: inputCohabitantId,
+                step: .thanks
+            )
         }
     }
 
-    @Test("家事を却下すると、却下情報を更新しパートナーに通知を送信する")
-    // swiftlint:disable:next function_body_length
-    func rejected() async {
+    @Test("一括操作でありがとうを伝えるときは、家事ごとの個別通知を送らない")
+    func sendThanks_withoutNotify() async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: .pendingApproval,
+            state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let rejectedAt = Date()
-        let inputReviewer = Account(
-            id: "reviewerId",
-            userName: "レビュアー",
+        let inputSender = Account(
+            id: "senderId",
+            userName: "おくりぬし",
             fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
-        let inputComment = "もう一度確認してください"
-        let updatedHouseworkItem = inputHouseworkItem.updateRejected(
-            at: rejectedAt,
-            reviewer: inputReviewer.id,
-            comment: inputComment
-        )
-        let expectedNotificationContent = PushNotificationContent.rejectedMessage(
-            reviwerName: inputReviewer.userName,
-            houseworkTitle: inputHouseworkItem.title,
-            comment: inputComment
-        )
-
-        await confirmation(expectedCount: 2) { confirmation in
-            let _: Void = await withCheckedContinuation { continuation in
-                let store = HouseworkListStore(
-                    houseworkClient: .init(
-                        insertOrUpdateItemHandler: { item, cohabitantId in
-                            // Assert
-
-                            #expect(item == updatedHouseworkItem)
-                            #expect(cohabitantId == inputCohabitantId)
-                            confirmation()
-                        }
-                    ),
-                    cohabitantPushNotificationClient: .init { id, content in
-                        // Assert
-
-                        #expect(id == inputCohabitantId)
-                        #expect(content == expectedNotificationContent)
-                        confirmation()
-                        continuation.resume()
-                    },
-                    items: [.makeForTest(items: [inputHouseworkItem])]
-                )
-
-                // Act
-
-                Task {
-                    try await store.rejected(
-                        target: inputHouseworkItem,
-                        now: rejectedAt,
-                        reviwer: inputReviewer,
-                        comment: inputComment,
-                        cohabitantId: inputCohabitantId
-                    )
+        let store = HouseworkListStore(
+            houseworkClient: .init(
+                insertOrUpdateItemHandler: { _, _ in
+                    Issue.record()
                 }
-            }
-        }
+            ),
+            cohabitantPushNotificationClient: .init { _, _ in
+                // Assert
+
+                Issue.record()
+            },
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: "ありがとう！",
+            cohabitantId: inputCohabitantId,
+            step: .board,
+            notify: false
+        )
     }
 
     @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")
@@ -489,6 +453,154 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             await Task.yield()
         }
         #expect(store.loadState == .failed(.noNetwork))
+    }
+
+}
+
+// MARK: - ふりかえり通知
+
+extension HouseworkListStoreTest {
+
+    @MainActor
+    struct DailyCompletionReminderCase {
+
+        private let inputCohabitantId = "cohabitantId"
+
+    }
+
+}
+
+extension HouseworkListStoreTest.DailyCompletionReminderCase {
+
+    @Test("今日完了した家事を受け取ると、今日のふりかえり通知を予約する")
+    // swiftlint:disable:next function_body_length
+    func startObserving_completedToday_schedulesReminder() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+                state: .completed
+            ),
+        ]
+        let expected = DailyCompletionReminderRequest(
+            identifier: "dailyCompletionReminder-2026-9-25",
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0),
+            title: "今日もおつかれさまでした",
+            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+        )
+        // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in inputItems }
+            )
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkManager: manager,
+                    dailyCompletionReminderUseCase: .init(
+                        client: .init(
+                            loadSetting: { .init(isEnabled: true, hour: 21, minute: 0) },
+                            schedule: { request in
+                                // Assert
+
+                                #expect(request == expected)
+                                confirmation()
+                                continuation.resume()
+                            },
+                            cancel: { _ in Issue.record() }
+                        )
+                    ),
+                    calendar: .japanese,
+                    now: { now }
+                )
+
+                // Act
+
+                Task {
+                    _ = store
+                    await manager.setupObserver(
+                        currentTime: now,
+                        cohabitantId: inputCohabitantId,
+                        calendar: .japanese,
+                        storagePolicy: .premium
+                    )
+                    streamContinuation.yield(inputItems)
+                }
+            }
+        }
+        streamContinuation.finish()
+    }
+
+    @Test("今日完了した家事が無ければ、今日のふりかえり通知を取り消す")
+    // swiftlint:disable:next function_body_length
+    func startObserving_noCompletedToday_cancelsReminder() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+                state: .incomplete
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 24),
+                state: .completed
+            ),
+        ]
+        // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in inputItems }
+            )
+        )
+
+        await confirmation { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkManager: manager,
+                    dailyCompletionReminderUseCase: .init(
+                        client: .init(
+                            loadSetting: { .init(isEnabled: true, hour: 21, minute: 0) },
+                            schedule: { _ in Issue.record() },
+                            cancel: { identifier in
+                                // Assert
+
+                                #expect(identifier == "dailyCompletionReminder-2026-9-25")
+                                confirmation()
+                                continuation.resume()
+                            }
+                        )
+                    ),
+                    calendar: .japanese,
+                    now: { now }
+                )
+
+                // Act
+
+                Task {
+                    _ = store
+                    await manager.setupObserver(
+                        currentTime: now,
+                        cohabitantId: inputCohabitantId,
+                        calendar: .japanese,
+                        storagePolicy: .premium
+                    )
+                    streamContinuation.yield(inputItems)
+                }
+            }
+        }
+        streamContinuation.finish()
     }
 
 }

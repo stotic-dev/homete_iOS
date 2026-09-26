@@ -18,7 +18,7 @@ struct HouseworkTemplateEmptyView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
-                .foregroundStyle(.primary2)
+                .foregroundStyle(.decorativeIcon)
             VStack(spacing: .space8) {
                 Text("テンプレートが未登録です")
                     .font(with: .headLineM)

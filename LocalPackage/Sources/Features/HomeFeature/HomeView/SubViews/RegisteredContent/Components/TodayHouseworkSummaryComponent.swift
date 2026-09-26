@@ -19,6 +19,7 @@ struct TodayHouseworkSummaryComponent: View {
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.registeredContentNavigationPath) var navigationPath
+    @Environment(\.cohabitantMembers) var members
 
     @State var isPresentingRegister = false
     @CommonError var commonError
@@ -66,10 +67,12 @@ private extension TodayHouseworkSummaryComponent {
 
             case .allCompleted:
                 progressContent(progress: summary.progress)
+                contributionChartContent(summary: summary)
                 allCompletedContent()
 
             case .hasIncomplete:
                 progressContent(progress: summary.progress)
+                contributionChartContent(summary: summary)
                 incompleteListContent(summary: summary)
             }
         }
@@ -85,7 +88,16 @@ private extension TodayHouseworkSummaryComponent {
                     .font(with: .headLineS)
             }
             ProgressView(value: progress)
-                .tint(.primary1)
+                .tint(.accent)
+        }
+    }
+
+    /// 誰も家事を完了していない間は、割合グラフを表示しない
+    @ViewBuilder
+    func contributionChartContent(summary: TodayHouseworkSummary) -> some View {
+        let contributions = summary.memberContributions(members: members)
+        if contributions.contains(where: { $0.completedCount > 0 }) {
+            TodayContributionChartSection(contributions: contributions)
         }
     }
 
@@ -110,7 +122,7 @@ private extension TodayHouseworkSummaryComponent {
         .overlay {
             RoundedRectangle(radius: .radius8)
                 .stroke(style: .init(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.primary1)
+                .foregroundStyle(.accent)
         }
     }
 
@@ -118,7 +130,7 @@ private extension TodayHouseworkSummaryComponent {
         VStack(spacing: .space8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary1)
+                .foregroundStyle(.accent)
             Text("今日の家事は全て完了しました")
                 .font(with: .headLineS)
         }
@@ -128,6 +140,15 @@ private extension TodayHouseworkSummaryComponent {
 
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
+            HStack {
+                Text("未完了の家事")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Text("\(summary.incompleteItems.count)件")
+                    .font(with: .body)
+                    .foregroundStyle(.onSubSurface)
+            }
             ForEach(summary.displayIncompleteItems) { item in
                 houseworkItemRow(item)
                     .contextMenu {
@@ -232,15 +253,15 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 3,
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .completed
+                        state: .completed,
+                        executorId: "ownUserId"
                     ),
                 ],
                 metaData: .init(
@@ -250,6 +271,13 @@ private extension TodayHouseworkSummaryComponent {
             ),
         ])
     )
+    .environment(\.cohabitantMembers, .init(
+        value: [
+            .init(id: "ownUserId", userName: "自分"),
+            .init(id: "otherUserId", userName: "同居人"),
+        ],
+        ownId: "ownUserId"
+    ))
     .setupEnvironmentForPreview()
     .setupLoginContextForPreview()
 }
@@ -277,8 +305,7 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "掃除",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 3,
@@ -299,8 +326,7 @@ private extension TodayHouseworkSummaryComponent {
                         indexedDate: today,
                         title: "買い物",
                         point: 30,
-                        state: .pendingApproval,
-                        executorId: "otherUserId"
+                        state: .incomplete
                     ),
                     .makeForTest(
                         id: 6,

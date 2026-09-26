@@ -22,12 +22,12 @@ struct HouseworkDetailItemListContent: View {
             HouseworkDetailItemRow(title: "実施予定日付") {
                 Text(item.formattedIndexedDate(calendar: calendar))
                     .font(with: .body)
-                    .foregroundStyle(.primary2)
+                    .foregroundStyle(.onSurfaceVariant)
             }
             HouseworkDetailItemRow(title: "ステータス") {
                 Text(item.state.segmentTitle)
                     .font(with: .body)
-                    .foregroundStyle(.primary2)
+                    .foregroundStyle(.onSurfaceVariant)
             }
             HouseworkDetailItemRow(title: "ポイント") {
                 PointLabel(point: item.point)
@@ -37,7 +37,7 @@ struct HouseworkDetailItemListContent: View {
                 HouseworkDetailItemRow(title: "実施者") {
                     Text(executorUserName)
                         .font(with: .body)
-                        .foregroundStyle(.primary2)
+                        .foregroundStyle(.onSurfaceVariant)
                 }
             }
         }
@@ -57,7 +57,7 @@ struct HouseworkDetailItemListContent: View {
     .setupEnvironmentForPreview()
 }
 
-#Preview("HouseworkDetailItemListContent_承認確認時", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDetailItemListContent_完了時", traits: .sizeThatFitsLayout) {
     HouseworkDetailItemListContent(
         cohabitantMemberList: .init(
             value: [.init(id: "test", userName: "hogehoge")],
@@ -66,6 +66,7 @@ struct HouseworkDetailItemListContent: View {
         item: .makeForPreview(
             title: "洗濯",
             point: 10,
+            state: .completed,
             executorId: "test",
             executedAt: .distantPast
         )

@@ -168,8 +168,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 indexedDate: jan10,
                 point: 30,
                 state: .completed,
-                executorId: "alice",
-                reviewerId: "bob"
+                executorId: "alice"
             ),
             .makeForTest(
                 id: 2,
@@ -183,8 +182,7 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 indexedDate: jan10,
                 point: 40,
                 state: .completed,
-                executorId: "alice",
-                reviewerId: "bob"
+                executorId: "alice"
             ),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)
@@ -222,16 +220,14 @@ extension HouseworkContributionTest.CalculatePointSummariesCase {
                 indexedDate: jan10,
                 point: 30,
                 state: .completed,
-                executorId: "alice",
-                reviewerId: "bob"
+                executorId: "alice"
             ),
             .makeForTest(
                 id: 2,
                 indexedDate: feb10,
                 point: 50,
                 state: .completed,
-                executorId: "alice",
-                reviewerId: "bob"
+                executorId: "alice"
             ),
         ]
         let contribution = HouseworkContribution.make(by: items, calendar: calendar)

@@ -113,29 +113,38 @@ import SnapshotTesting
         }
 
         for deviceName in snapshotDevices {
-            var snapshot = prefireSnapshot
             guard let device: DeviceConfig = PreviewDevice(rawValue: deviceName).snapshotDevice() else {
                 fatalError("Unknown device name from configuration file: \(deviceName)")
             }
 
-            snapshot.name = "\(prefireSnapshot.name)-\(deviceName)"
-            snapshot.device = device
+            // ライト・ダークの両方を撮る。前景に面の色を使ってしまうような
+            // 片方のモードでだけコントラストが破綻する退行は、ライトだけを撮っていると
+            // リリースまで検知できないため（doc/adr/0019 参照）。
+            // ライトは従来の参照PNG名を維持し、ダークだけ "-dark" を付ける。
+            for userInterfaceStyle in [UIUserInterfaceStyle.light, .dark] {
+                var snapshot = prefireSnapshot
 
-            // Ignore specific device safe area
-            snapshot.device.safeArea = .zero
+                snapshot.name = "\(prefireSnapshot.name)-\(deviceName)"
+                    + (userInterfaceStyle == .dark ? "-dark" : "")
+                snapshot.device = device
 
-            // Ignore specific device display scale.
-            // displayGamut を SRGB に固定し、スナップショットのレンダリング色空間を
-            // ローカル（Display P3 の Mac）と Xcode Cloud（sRGB）で統一する。
-            // これが無いと参照PNG（P3）とCIレンダリング（sRGB）の生ピクセル値が
-            // 彩度の高い色で大きくずれ、知覚比較が誤検出する。
-            snapshot.traits = UITraitCollection(traitsFrom: [
-                UITraitCollection(displayScale: 2.0),
-                UITraitCollection(displayGamut: .SRGB),
-            ])
+                // Ignore specific device safe area
+                snapshot.device.safeArea = .zero
 
-            if let failure = assertSnapshot(for: snapshot), !isRecordingSnapshots {
-                XCTFail(failure)
+                // Ignore specific device display scale.
+                // displayGamut を SRGB に固定し、スナップショットのレンダリング色空間を
+                // ローカル（Display P3 の Mac）と Xcode Cloud（sRGB）で統一する。
+                // これが無いと参照PNG（P3）とCIレンダリング（sRGB）の生ピクセル値が
+                // 彩度の高い色で大きくずれ、知覚比較が誤検出する。
+                snapshot.traits = UITraitCollection(traitsFrom: [
+                    UITraitCollection(displayScale: 2.0),
+                    UITraitCollection(displayGamut: .SRGB),
+                    UITraitCollection(userInterfaceStyle: userInterfaceStyle),
+                ])
+
+                if let failure = assertSnapshot(for: snapshot), !isRecordingSnapshots {
+                    XCTFail(failure)
+                }
             }
         }
 
