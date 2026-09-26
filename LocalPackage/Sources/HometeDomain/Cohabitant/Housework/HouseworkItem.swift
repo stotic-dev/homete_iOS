@@ -100,11 +100,6 @@ public extension HouseworkItem {
         executors.first?.userId
     }
 
-    /// 指定したユーザーが担当者に含まれるかどうか
-    func isExecutor(_ userId: String) -> Bool {
-        executors.contains { $0.userId == userId }
-    }
-
     /// 担当者が1人（ポイントを満額配分）の家事を作る
     init(
         id: String,

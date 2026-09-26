@@ -138,9 +138,12 @@ public final class HouseworkListStore {
             }
         }
         if comment.isEmpty {
-            notifyCompleted(houseworkDate: target.indexedDate.value, now: now, cohabitantId: cohabitantId) {
-                content($0)
-            }
+            notifyCompleted(
+                houseworkDate: target.indexedDate.value,
+                now: now,
+                cohabitantId: cohabitantId,
+                content: content
+            )
         } else {
             notifyCompletedWithComment(
                 houseworkDate: target.indexedDate.value,

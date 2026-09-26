@@ -34,10 +34,6 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         originalItem.point
     }
 
-    public var executorId: String? {
-        originalItem.executorId
-    }
-
     public var executedAt: Date? {
         originalItem.executedAt
     }
