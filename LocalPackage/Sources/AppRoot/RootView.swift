@@ -79,6 +79,11 @@ public extension RootView {
                 nonceGenerationClient: $0.nonceGeneratorClient
             )
             let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
+            let cohabitantStore = CohabitantStore(
+                cohabitantClient: $0.cohabitantClient,
+                accountInfoClient: $0.accountInfoClient,
+                analyticsClient: $0.analyticsClient
+            )
             let pendingInvitationStore = PendingInvitationStore()
             let subscriptionStore = SubscriptionStore(
                 purchaseClient: $0.purchaseClient,
@@ -87,7 +92,9 @@ public extension RootView {
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: accountAuthStore,
                 accountStore: accountStore,
+                cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
+                houseworkManager: $0.houseworkManager,
                 houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient
             )
@@ -95,11 +102,7 @@ public extension RootView {
             RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                 .environment(accountStore)
                 .environment(accountAuthStore)
-                .environment(CohabitantStore(
-                    cohabitantClient: $0.cohabitantClient,
-                    accountInfoClient: $0.accountInfoClient,
-                    analyticsClient: $0.analyticsClient
-                ))
+                .environment(cohabitantStore)
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
                 .task {

@@ -88,6 +88,15 @@ public final class CohabitantStore {
         await cohabitantClient.removeSnapshotListener(cohabitantListenerKey)
     }
 
+    /// サインアウト時に購読を止め、前のユーザーのグループ情報を破棄する
+    /// - Note: このStoreはrootで生成されてサインアウトしても解放されないため、明示的に止めないと
+    ///         無効になったグループIDのままFirestoreを購読し続ける
+    public func clearOnSignedOut() async {
+        await removeSnapshotListener()
+        members = .init(value: [], ownId: "")
+        loadState = .loading
+    }
+
 }
 
 public extension EnvironmentValues {

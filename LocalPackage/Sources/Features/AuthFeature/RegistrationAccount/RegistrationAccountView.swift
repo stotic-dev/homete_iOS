@@ -101,7 +101,9 @@ private extension RegistrationAccountView {
         authSubscriptionSyncUseCase: .init(
             accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
-            subscriptionStore: SubscriptionStore()
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: SubscriptionStore(),
+            houseworkManager: .init(houseworkClient: .previewValue)
         ),
         onRegistered: { _ in }
     )
@@ -113,7 +115,9 @@ private extension RegistrationAccountView {
         authSubscriptionSyncUseCase: .init(
             accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
-            subscriptionStore: SubscriptionStore()
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: SubscriptionStore(),
+            houseworkManager: .init(houseworkClient: .previewValue)
         ),
         onRegistered: { _ in }
     )

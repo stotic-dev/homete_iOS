@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  AuthSubscriptionSyncUseCaseTest.swift
 //  hometeTests
@@ -7,20 +8,34 @@ import Foundation
 @testable import HometeDomain
 import Testing
 
+enum AuthSubscriptionSyncUseCaseTest {
+
+    /// サインイン時の同期
+    @MainActor
+    struct SignedInCase {}
+    /// サインアウト時のクリーンアップ
+    @MainActor
+    struct SignedOutCase {}
+    /// プレミアム状態と家事データ保持期限の同期
+    @MainActor
+    struct RetentionSyncCase {}
+
+}
+
+/// テストごとに独立したUserDefaultsを用意する
+private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncStateStore {
+    let userDefaults = UserDefaults(suiteName: suiteName) ?? .standard
+    userDefaults.removePersistentDomain(forName: suiteName)
+    return HouseworkRetentionSyncStateStore(userDefaults: userDefaults)
+}
+
+/// サインイン中のユーザーを固定した`AccountAuthStore`を用意する
 @MainActor
-struct AuthSubscriptionSyncUseCaseTest {
+private func makeAuthStore(signedInAs authResult: AccountAuthResult?) -> AccountAuthStore {
+    AccountAuthStore(currentAuth: .init(result: authResult, alreadyLoadedAtInitiate: true))
+}
 
-    /// テストごとに独立したUserDefaultsを用意する
-    private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncStateStore {
-        let userDefaults = UserDefaults(suiteName: suiteName) ?? .standard
-        userDefaults.removePersistentDomain(forName: suiteName)
-        return HouseworkRetentionSyncStateStore(userDefaults: userDefaults)
-    }
-
-    /// サインイン中のユーザーを固定した`AccountAuthStore`を用意する
-    private func makeAuthStore(signedInAs authResult: AccountAuthResult?) -> AccountAuthStore {
-        AccountAuthStore(currentAuth: .init(result: authResult, alreadyLoadedAtInitiate: true))
-    }
+extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
     @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
     func syncOnSignedInSuccess() async {
@@ -64,7 +79,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
-                subscriptionStore: subscriptionStore
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: subscriptionStore,
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             let actual = await useCase.syncOnSignedIn(inputAuthResult)
@@ -98,7 +115,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: accountStore,
-                subscriptionStore: subscriptionStore
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: subscriptionStore,
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             _ = await useCase.syncOnSignedIn(inputAuthResult)
@@ -116,7 +135,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: inputAuthResult),
                 accountStore: AccountStore(accountInfoClient: accountInfoClient),
-                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             let actual = await useCase.syncOnSignedIn(inputAuthResult)
@@ -143,7 +164,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: newAuthResult),
                 accountStore: accountStore,
-                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             await useCase.syncOnSignedOut()
@@ -181,7 +204,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: nil),
                 accountStore: accountStore,
-                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient)
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             let actual = await useCase.syncOnSignedIn(staleAuthResult)
@@ -190,6 +215,10 @@ struct AuthSubscriptionSyncUseCaseTest {
             #expect(accountStore.account == nil)
         }
     }
+
+}
+
+extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
 
     @Test("サインアウト時にアカウント情報とサブスクリプション状態をクリアする")
     func syncOnSignedOut() async {
@@ -216,13 +245,49 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: nil),
                 accountStore: accountStore,
-                subscriptionStore: subscriptionStore
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: subscriptionStore,
+                houseworkManager: .init(houseworkClient: .previewValue)
             )
 
             await useCase.syncOnSignedOut()
 
             #expect(accountStore.account == nil)
             #expect(subscriptionStore.entitlementInfo == nil)
+        }
+    }
+
+    @Test("サインアウト時に同居人グループと家事の購読を止め、前のユーザーのデータを破棄する")
+    func syncOnSignedOutStopsCohabitantAndHouseworkObserving() async {
+        await confirmation("同居人グループの購読を解除する") { removedCohabitantListener in
+            await confirmation("家事の購読を解除する") { removedHouseworkListener in
+                let staleMember = CohabitantMember(id: "staleMemberId", userName: "前のユーザー")
+                let cohabitantStore = CohabitantStore(
+                    members: [staleMember],
+                    ownId: staleMember.id,
+                    cohabitantClient: .init(removeSnapshotListener: { _ in
+                        removedCohabitantListener()
+                    })
+                )
+                let houseworkManager = HouseworkManager(
+                    houseworkClient: .init(removeListenerHandler: { _ in
+                        removedHouseworkListener()
+                    }),
+                    allItems: [.makeForTest(id: 1)]
+                )
+                let useCase = AuthSubscriptionSyncUseCase(
+                    accountAuthStore: makeAuthStore(signedInAs: nil),
+                    accountStore: AccountStore(),
+                    cohabitantStore: cohabitantStore,
+                    subscriptionStore: SubscriptionStore(),
+                    houseworkManager: houseworkManager
+                )
+
+                await useCase.syncOnSignedOut()
+
+                #expect(cohabitantStore.members == CohabitantMemberList(value: [], ownId: ""))
+                #expect(await houseworkManager.allItems == [])
+            }
         }
     }
 
@@ -251,7 +316,9 @@ struct AuthSubscriptionSyncUseCaseTest {
                     let useCase = AuthSubscriptionSyncUseCase(
                         accountAuthStore: makeAuthStore(signedInAs: nil),
                         accountStore: AccountStore(),
+                        cohabitantStore: CohabitantStore(),
                         subscriptionStore: SubscriptionStore(),
+                        houseworkManager: .init(houseworkClient: .previewValue),
                         analyticsClient: analyticsClient
                     )
 
@@ -260,6 +327,10 @@ struct AuthSubscriptionSyncUseCaseTest {
             }
         }
     }
+
+}
+
+extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
 
     @Test("プレミアム状態が変化した場合はアカウントを更新し家事データの保持期限を同期する")
     func syncPremiumStateIfNeededWhenChanged() async {
@@ -291,7 +362,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
+                cohabitantStore: CohabitantStore(),
                 subscriptionStore: subscriptionStore,
+                houseworkManager: .init(houseworkClient: .previewValue),
                 houseworkClient: .init(syncRetentionHandler: {
                     #expect($0 == inputCohabitantId)
                     confirmation()
@@ -322,7 +395,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: .init(id: inputAccount.id)),
                 accountStore: accountStore,
+                cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),
+                houseworkManager: .init(houseworkClient: .previewValue),
                 houseworkClient: .init(syncRetentionHandler: { _ in
                     confirmation()
                 }),
@@ -349,7 +424,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
+                cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),
+                houseworkManager: .init(houseworkClient: .previewValue),
                 houseworkClient: .init(syncRetentionHandler: {
                     #expect($0 == inputCohabitantId)
                     confirmation()
@@ -377,7 +454,9 @@ struct AuthSubscriptionSyncUseCaseTest {
             let useCase = AuthSubscriptionSyncUseCase(
                 accountAuthStore: makeAuthStore(signedInAs: .init(id: "testAccountId")),
                 accountStore: accountStore,
+                cohabitantStore: CohabitantStore(),
                 subscriptionStore: SubscriptionStore(),
+                houseworkManager: .init(houseworkClient: .previewValue),
                 houseworkClient: .init(syncRetentionHandler: { _ in
                     confirmation()
                     throw DomainError.other

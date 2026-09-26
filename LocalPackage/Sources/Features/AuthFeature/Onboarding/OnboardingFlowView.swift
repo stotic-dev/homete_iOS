@@ -122,7 +122,9 @@ private extension OnboardingFlowView {
         authSubscriptionSyncUseCase: .init(
             accountAuthStore: AccountAuthStore(),
             accountStore: AccountStore(),
-            subscriptionStore: subscriptionStore
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: subscriptionStore,
+            houseworkManager: .init(houseworkClient: .previewValue)
         )
     )
     .environment(subscriptionStore)

@@ -8,7 +8,9 @@ public struct AuthSubscriptionSyncUseCase {
 
     private let accountAuthStore: AccountAuthStore
     private let accountStore: AccountStore
+    private let cohabitantStore: CohabitantStore
     private let subscriptionStore: SubscriptionStore
+    private let houseworkManager: HouseworkManager
     private let houseworkClient: HouseworkClient
     private let analyticsClient: AnalyticsClient
     private let retentionSyncStateStore: HouseworkRetentionSyncStateStore
@@ -16,14 +18,18 @@ public struct AuthSubscriptionSyncUseCase {
     public init(
         accountAuthStore: AccountAuthStore,
         accountStore: AccountStore,
+        cohabitantStore: CohabitantStore,
         subscriptionStore: SubscriptionStore,
+        houseworkManager: HouseworkManager,
         houseworkClient: HouseworkClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue
     ) {
         self.init(
             accountAuthStore: accountAuthStore,
             accountStore: accountStore,
+            cohabitantStore: cohabitantStore,
             subscriptionStore: subscriptionStore,
+            houseworkManager: houseworkManager,
             houseworkClient: houseworkClient,
             analyticsClient: analyticsClient,
             retentionSyncStateStore: .init()
@@ -33,14 +39,18 @@ public struct AuthSubscriptionSyncUseCase {
     init(
         accountAuthStore: AccountAuthStore,
         accountStore: AccountStore,
+        cohabitantStore: CohabitantStore,
         subscriptionStore: SubscriptionStore,
+        houseworkManager: HouseworkManager,
         houseworkClient: HouseworkClient,
         analyticsClient: AnalyticsClient = .previewValue,
         retentionSyncStateStore: HouseworkRetentionSyncStateStore
     ) {
         self.accountAuthStore = accountAuthStore
         self.accountStore = accountStore
+        self.cohabitantStore = cohabitantStore
         self.subscriptionStore = subscriptionStore
+        self.houseworkManager = houseworkManager
         self.houseworkClient = houseworkClient
         self.analyticsClient = analyticsClient
         self.retentionSyncStateStore = retentionSyncStateStore
@@ -64,12 +74,16 @@ public struct AuthSubscriptionSyncUseCase {
         return accountStore.account ?? account
     }
 
-    /// サインアウト時にアカウント情報とサブスクリプション状態、ユーザーに紐づく計測情報をクリアする
+    /// サインアウト時にFirestoreの購読を止め、アカウント情報とサブスクリプション状態、
+    /// ユーザーに紐づく計測情報をクリアする
     /// - Note: `is_premium`は`SubscriptionStore.logOut()`が`false`を送る。
     ///         匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため、削除ではなく値の更新にしている
     public func syncOnSignedOut() async {
+        // 購読を残すと、権限を失ったユーザーID・グループIDのままFirestoreへのアクセスが続く
         await accountStore.stopObserving()
         accountStore.clear()
+        await cohabitantStore.clearOnSignedOut()
+        await houseworkManager.clearOnSignedOut()
         await subscriptionStore.logOut()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
         analyticsClient.setUserProperty(.cleared(.cohabitantMemberCount))

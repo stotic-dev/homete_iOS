@@ -97,6 +97,20 @@ public final actor HouseworkManager {
         }
     }
 
+    /// サインアウト時に監視を止め、前のユーザーの家事データを破棄する
+    /// - Note: このManagerは`AppDependencies`が保持していてサインアウトしても解放されないため、
+    ///         明示的に止めないと無効になったグループIDのままFirestoreを購読し続ける
+    public func clearOnSignedOut() async {
+        observeTask?.cancel()
+        observeTask = nil
+        pendingFetchTask?.cancel()
+        pendingFetchTask = nil
+        await houseworkClient.removeListener(houseworkObserveKey)
+        allItems = []
+        fetchedRange = nil
+        notifyObservers()
+    }
+
     /// 指定日まで遡って参照できるように、未取得の期間を追加でフェッチする
     ///
     /// プレミアムユーザーが貢献度画面で取得済み期間より過去へ遡った際に呼ぶ。
