@@ -78,9 +78,9 @@ struct DailyCompletionReminderSettingView: View {
                 Text(
                     "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。"
                 )
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-                    .padding(.horizontal, .space16)
+                .font(with: .caption)
+                .foregroundStyle(.onSurfaceVariant)
+                .padding(.horizontal, .space16)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space16)

@@ -1,3 +1,4 @@
+// swiftlint:disable file_length
 //
 //  HouseworkManagerTest.swift
 //  hometeTests
@@ -376,6 +377,49 @@ struct HouseworkManagerTest {
 
         let fetchedRange = await manager.fetchedRange
         #expect(fetchedRange == initialFrom ... now)
+    }
+
+    @Test("初回フェッチ中にサインアウトした場合、家事データもリスナーも復活させない")
+    func setupObserverAbortsWhenClearedDuringFetch() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let gate = TestGate()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in
+                    Issue.record("打ち切られた世代がリスナーを張ってはいけない")
+                    return .init { $0.finish() }
+                },
+                fetchItemsHandler: { _, _, _ in
+                    await gate.wait()
+                    return [.makeForTest(id: 1, indexedDate: now, expiredAt: now)]
+                }
+            )
+        )
+
+        // Act: 初回フェッチの最中にサインアウトが割り込んだ状況を再現する
+
+        let task = Task {
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .premium
+            )
+        }
+        await gate.waitUntilArrived()
+        await manager.clearOnSignedOut()
+        gate.open()
+
+        await task.value
+
+        // Assert
+
+        let allItems = await manager.allItems
+        let fetchedRange = await manager.fetchedRange
+        #expect(allItems == [])
+        #expect(fetchedRange == nil)
     }
 
 }

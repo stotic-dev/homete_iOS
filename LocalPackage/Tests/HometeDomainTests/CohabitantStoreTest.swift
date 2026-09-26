@@ -13,6 +13,7 @@ import Testing
 struct CohabitantStoreTest {
 
     private let inputCohabitantId = "testCohabitantId"
+    private let inputOwnId = "testOwnId"
     private let inputListenerId = "cohabitantListenerKey"
 
     @Test("パートナーの監視中に、まだキャッシュしていないメンバーの場合はパートナーのリストにキャッシュとして追加し、cohabitant_member_countユーザープロパティを更新する")
@@ -61,7 +62,7 @@ struct CohabitantStoreTest {
 
             // Act
 
-            await store.addSnapshotListenerIfNeeded(inputCohabitantId)
+            await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: selfId)
 
             // Assert
 
@@ -93,7 +94,7 @@ struct CohabitantStoreTest {
         let store = CohabitantStore(
             cohabitantClient: .init(addSnapshotListener: { _, _ in stream })
         )
-        await store.addSnapshotListenerIfNeeded(inputCohabitantId)
+        await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: inputOwnId)
 
         let waiterForLoadState = Task {
             await withCheckedContinuation { continuation in
@@ -129,7 +130,7 @@ struct CohabitantStoreTest {
                     return stream
                 })
             )
-            await store.addSnapshotListenerIfNeeded(inputCohabitantId)
+            await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: inputOwnId)
             // 失敗の処理が終わるまで、リスナータスクに実行機会を与える
             for _ in 0 ..< 10 where store.loadState != .failed(.noNetwork) {
                 await Task.yield()
@@ -137,7 +138,68 @@ struct CohabitantStoreTest {
 
             // Act
 
-            await store.addSnapshotListenerIfNeeded(inputCohabitantId)
+            await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: inputOwnId)
+        }
+    }
+
+    @Test("別のグループの購読を開始すると、前のグループの購読を解除してメンバーを引き継がない")
+    func addSnapshotListenerIfNeededSwitchesToAnotherCohabitant() async {
+        await confirmation("前のグループの購読を解除する") { removedListener in
+            // Arrange: 前のグループのメンバーを取得済みの状態にする
+
+            let nextCohabitantId = "nextCohabitantId"
+            let store = CohabitantStore(
+                members: [.init(id: inputOwnId, userName: "自分")],
+                ownId: inputOwnId,
+                cohabitantClient: .init(
+                    addSnapshotListener: { _, _ in .init { $0.finish() } },
+                    removeSnapshotListener: { _ in
+                        removedListener()
+                    }
+                )
+            )
+            await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: inputOwnId)
+
+            // Act
+
+            await store.addSnapshotListenerIfNeeded(nextCohabitantId, ownId: inputOwnId)
+
+            // Assert: 解除しないまま張り直すと、前のグループのリスナーが誰にも止められなくなる
+
+            #expect(store.members == CohabitantMemberList(value: [], ownId: inputOwnId))
+        }
+    }
+
+    @Test("購読の準備中に解除された場合は、購読を張らずに解除する")
+    func addSnapshotListenerIfNeededAbortsWhenRemovedDuringSetup() async {
+        await confirmation("明示的な解除と、準備した購読の畳み込みで2回解除される", expectedCount: 2) { confirmation in
+            // Arrange
+
+            let gate = TestGate()
+            let store = CohabitantStore(
+                cohabitantClient: .init(
+                    addSnapshotListener: { _, _ in
+                        await gate.wait()
+                        return .init { $0.finish() }
+                    },
+                    removeSnapshotListener: { _ in
+                        confirmation()
+                    }
+                )
+            )
+
+            // Act: 購読の準備中にサインアウト（解除）が割り込んだ状況を再現する
+
+            let task = Task {
+                await store.addSnapshotListenerIfNeeded(inputCohabitantId, ownId: inputOwnId)
+            }
+            await gate.waitUntilArrived()
+            await store.removeSnapshotListener()
+            gate.open()
+
+            await task.value
+
+            // Assert: removeSnapshotListenerが2回呼ばれる（confirmationで検証）
         }
     }
 
