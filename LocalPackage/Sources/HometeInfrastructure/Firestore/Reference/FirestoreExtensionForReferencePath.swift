@@ -37,6 +37,13 @@ public extension Firestore {
             .collection(CollectionPath.days.rawValue)
     }
 
+    /// 特定テンプレートの MonthlyItems コレクションの参照を取得する
+    func houseworkTemplateMonthlyItemsRef(cohabitantId: String, templateId: String) -> CollectionReference {
+        houseworkTemplatesRef(cohabitantId: cohabitantId)
+            .document(templateId)
+            .collection(CollectionPath.monthlyItems.rawValue)
+    }
+
     /// 特定テンプレートの Editors コレクションの参照を取得する
     func houseworkTemplateEditorsRef(cohabitantId: String, templateId: String) -> CollectionReference {
         houseworkTemplatesRef(cohabitantId: cohabitantId)

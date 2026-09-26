@@ -148,6 +148,14 @@ struct AnalyticsEventTest {
                 ["action": "complete", "step": "board", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),
+                ["action": "redo", "step": "detail", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.redo(step: .board, isSuccess: false),
+                ["action": "redo", "step": "board", "result": "failure"]
+            ),
+            (
                 HouseworkAnalyticsAction.sendThanks(step: .thanks, isSuccess: true),
                 ["action": "send_thanks", "step": "thanks", "result": "success"]
             ),

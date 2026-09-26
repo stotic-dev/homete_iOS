@@ -1,11 +1,39 @@
 import * as logger from "firebase-functions/logger";
-import {getMessaging} from "firebase-admin/messaging";
+import {getMessaging, MulticastMessage} from "firebase-admin/messaging";
 import {FirestoreHelper} from "./FirestoreHelper";
 
 /** 通知の内容 */
 export interface CohabitantNotification {
     title: string;
     body: string;
+    /**
+     * 端末側で通知の種類を判定するための付加情報（任意）
+     *
+     * 指定した場合はNotification Service Extensionを起動させるため
+     * `mutable-content`を付けて送る。FCMのdataは文字列の値しか持てない。
+     */
+    data?: Record<string, string>;
+}
+
+/** dataに載せられるキーの上限（ペイロードの肥大化を防ぐ） */
+const MAX_DATA_KEYS = 10;
+
+/**
+ * dataが「文字列の値だけを持つオブジェクト」かを判定する
+ *
+ * FCMのdataは文字列の値しか受け付けないため、送信前に弾く。
+ * @param {unknown} data 検証する値
+ * @return {boolean} 送信できる形式ならtrue
+ */
+export function isValidNotificationData(
+  data: unknown
+): data is Record<string, string> {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return false;
+  }
+  const entries = Object.entries(data);
+  return entries.length <= MAX_DATA_KEYS &&
+    entries.every(([, value]) => typeof value === "string");
 }
 
 /** 送信処理の結果 */
@@ -34,6 +62,43 @@ export interface NotifyResult {
 }
 
 /**
+ * FCMへ送るマルチキャストメッセージを組み立てる
+ *
+ * dataがある通知だけ`mutable-content`を付ける。iOSはこのフラグが無いと
+ * Notification Service Extensionを起動しないため、端末側で通知の種類を見て
+ * 処理したい通知に限って付与する。
+ * @param {string[]} tokens 送信先のFCMトークン
+ * @param {CohabitantNotification} notification 通知内容
+ * @return {MulticastMessage} 送信するメッセージ
+ */
+export function buildMulticastMessage(
+  tokens: string[],
+  notification: CohabitantNotification
+): MulticastMessage {
+  const message: MulticastMessage = {
+    notification: {
+      title: notification.title,
+      body: notification.body,
+    },
+    tokens,
+  };
+
+  if (!notification.data) {
+    return message;
+  }
+
+  return {
+    ...message,
+    data: notification.data,
+    apns: {
+      payload: {
+        aps: {mutableContent: true},
+      },
+    },
+  };
+}
+
+/**
  * 既定の送信処理（FCMへ実際に送信する）
  * @param {string[]} tokens 送信先のFCMトークン
  * @param {CohabitantNotification} notification 通知内容
@@ -43,13 +108,9 @@ async function defaultSender(
   tokens: string[],
   notification: CohabitantNotification
 ): Promise<SendResult> {
-  const batchResponse = await getMessaging().sendEachForMulticast({
-    notification: {
-      title: notification.title,
-      body: notification.body,
-    },
-    tokens,
-  });
+  const batchResponse = await getMessaging().sendEachForMulticast(
+    buildMulticastMessage(tokens, notification)
+  );
 
   if (batchResponse.failureCount > 0) {
     const failedTokens = tokens.filter(

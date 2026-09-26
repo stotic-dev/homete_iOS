@@ -18,8 +18,10 @@
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・Firebase 依存 | `HometeDomain`, Firebase SDK |
-| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature |
+| `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
+| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
+| `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
 
 ### ディレクトリ構成
 
@@ -52,6 +54,9 @@ HometeInfrastructure/
   ├── Services（FirestoreService, SignInWithAppleService...）
   └── AppDependencies+liveValue
 
+HometeLocalNotification/
+  └── DailyCompletionReminderClient.liveValue（UNUserNotificationCenter + App Group UserDefaults）
+
 AppRoot/
   ├── RootView / AppTabView / LaunchScreenView
   ├── DependenciesInjectLayer
@@ -59,6 +64,9 @@ AppRoot/
 
 homete（メインターゲット）/
   └── HometeApp.swift（アプリエントリーポイント）
+
+hometeNotificationService（拡張ターゲット）/
+  └── NotificationService.swift（古いアプリからの完了通知の受信時にふりかえり通知を予約）
 ```
 
 ## モジュール間の依存関係
@@ -92,6 +100,12 @@ graph TD
 
     HometeInfrastructure --> Firebase
     HometeInfrastructure --> HometeDomain
+
+    HometeLocalNotification["HometeLocalNotification\nふりかえり通知の liveValue"]
+    hometeNotificationService["hometeNotificationService\n（Notification Service Extension）"]
+    AppRoot --> HometeLocalNotification
+    hometeNotificationService --> HometeLocalNotification
+    HometeLocalNotification --> HometeDomain
 
     AppRoot -->|DI \n Client liveValue| AuthFeature
     AppRoot -->|DI \n Client liveValue| HouseworkFeature

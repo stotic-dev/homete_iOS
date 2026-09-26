@@ -277,4 +277,28 @@ struct AccountStoreTest {
         }
     }
 
+    @Test("購読の準備中に世代が打ち切られた場合は、購読を張らずに解除する")
+    func startObservingIfNeededAbortsWhenCancelled() async {
+        await confirmation("準備した購読を畳む", expectedCount: 1) { confirmation in
+            // Arrange
+
+            let accountInfoClient = AccountInfoClient(
+                addSnapshotListener: { _, _ in .init { $0.finish() } },
+                removeSnapshotListener: { _ in
+                    confirmation()
+                }
+            )
+            let store = AccountStore(accountInfoClient: accountInfoClient)
+
+            // Act: 購読の準備中にサインアウトした状況を、キャンセル済みの世代で走らせて再現する
+
+            let task = Task { await store.startObservingIfNeeded("testId") }
+            task.cancel()
+
+            await task.value
+
+            // Assert: removeSnapshotListenerが呼ばれる（confirmationで検証）
+        }
+    }
+
 }

@@ -15,15 +15,20 @@ public struct NotificationPermissionClient: Sendable {
     /// プッシュ通知の権限が決定済み（許可・拒否のいずれか）かどうかを返す
     /// - Note: ダイアログを出さずに状態だけを知りたい場面で使う
     public let isAuthorizationDetermined: @Sendable () async -> Bool
+    /// プッシュ通知が許可されているかどうかを返す
+    /// - Note: ダイアログを出さずに、通知を届けられる状態かだけを知りたい場面で使う
+    public let isAuthorized: @Sendable () async -> Bool
 
     public init(
         requestAuthorization: @Sendable @escaping () async -> Bool = { false },
         registerForRemoteNotifications: @Sendable @escaping () async -> Void = {},
-        isAuthorizationDetermined: @Sendable @escaping () async -> Bool = { false }
+        isAuthorizationDetermined: @Sendable @escaping () async -> Bool = { false },
+        isAuthorized: @Sendable @escaping () async -> Bool = { false }
     ) {
         self.requestAuthorization = requestAuthorization
         self.registerForRemoteNotifications = registerForRemoteNotifications
         self.isAuthorizationDetermined = isAuthorizationDetermined
+        self.isAuthorized = isAuthorized
     }
 
 }

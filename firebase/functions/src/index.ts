@@ -34,3 +34,4 @@ export * from "./notifyCohabitants";
 export * from "./deleteUserData";
 export * from "./syncHouseworkRetention";
 export * from "./cohabitantInvitation";
+export * from "./debugRevokeRefreshTokens";

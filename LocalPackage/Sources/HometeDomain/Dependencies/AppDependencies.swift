@@ -26,11 +26,16 @@ public struct AppDependencies: Sendable {
     public let notificationPermissionClient: NotificationPermissionClient
     public let notificationGuideStateClient: NotificationGuideStateClient
     public let pasteboardClient: PasteboardClient
+    public let dailyCompletionReminderClient: DailyCompletionReminderClient
+    /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
+    public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
     /// 広告の同意取得（ATT含む）とMobileAdsの初期化を行うUseCase
     public let adsSetupUseCase: AdsSetupUseCase
     /// プッシュ通知の権限リクエストを行うUseCase
     public let notificationPermissionUseCase: NotificationPermissionUseCase
+    /// 今日完了した家事がある日に、ふりかえり通知を予約するUseCase
+    public let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
 
     public init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
@@ -49,7 +54,9 @@ public struct AppDependencies: Sendable {
         mobileAdsClient: MobileAdsClient = .previewValue,
         notificationPermissionClient: NotificationPermissionClient = .previewValue,
         notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
-        pasteboardClient: PasteboardClient = .previewValue
+        pasteboardClient: PasteboardClient = .previewValue,
+        dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
+        debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
@@ -68,12 +75,15 @@ public struct AppDependencies: Sendable {
         self.notificationPermissionClient = notificationPermissionClient
         self.notificationGuideStateClient = notificationGuideStateClient
         self.pasteboardClient = pasteboardClient
+        self.dailyCompletionReminderClient = dailyCompletionReminderClient
+        self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
         notificationPermissionUseCase = .init(
             notificationPermissionClient: notificationPermissionClient,
             notificationGuideStateClient: notificationGuideStateClient
         )
+        dailyCompletionReminderUseCase = .init(client: dailyCompletionReminderClient)
     }
 
 }

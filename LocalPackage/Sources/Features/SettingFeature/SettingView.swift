@@ -42,7 +42,7 @@ private extension SettingViewScreen {
             SubscriptionManagementView()
 
         case .notificationPermission:
-            SettingNotificationPermissionGuideView()
+            SettingNotificationScreen()
 
         #if DEBUG
         case .debugMenu:

@@ -98,7 +98,12 @@ private extension RegistrationAccountView {
 #Preview("RegistrationAccountView_未入力") {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: ""),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        authSubscriptionSyncUseCase: .init(
+            accountStore: AccountStore(),
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: SubscriptionStore(),
+            houseworkManager: .init(houseworkClient: .previewValue)
+        ),
         onRegistered: { _ in }
     )
 }
@@ -106,7 +111,12 @@ private extension RegistrationAccountView {
 #Preview("RegistrationAccountView_入力済み") {
     RegistrationAccountView(
         authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(accountStore: AccountStore(), subscriptionStore: SubscriptionStore()),
+        authSubscriptionSyncUseCase: .init(
+            accountStore: AccountStore(),
+            cohabitantStore: CohabitantStore(),
+            subscriptionStore: SubscriptionStore(),
+            houseworkManager: .init(houseworkClient: .previewValue)
+        ),
         onRegistered: { _ in }
     )
 }

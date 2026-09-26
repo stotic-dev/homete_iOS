@@ -12,18 +12,17 @@ public struct RootView: View {
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
 
     @State var theme = Theme()
-    @State var fcmToken: String?
-    @State var launchState = LaunchState.launching
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(LaunchStateStore.self) var launchStateStore
 
     public var body: some View {
         ZStack {
-            switch launchState {
+            switch launchStateStore.launchState {
             case .launching:
                 LaunchScreenView()
             case let .preLoggedIn(auth):
@@ -40,16 +39,12 @@ public struct RootView: View {
                 LoginView()
             }
         }
-        .animation(.spring, value: launchState)
+        .animation(.spring, value: launchStateStore.launchState)
         .onChange(of: accountAuthStore.currentAuth) {
-            Task {
-                await onChangeAuth()
-            }
+            launchStateStore.syncAuthChange(accountAuthStore.currentAuth)
         }
         .onChange(of: accountStore.account) {
-            Task {
-                await onChangeAccount()
-            }
+            launchStateStore.syncAccountChange(accountStore.account)
         }
         .onChange(of: subscriptionStore.isPremium) {
             Task {
@@ -63,7 +58,7 @@ public struct RootView: View {
             onOpenURL(url)
         }
         .apply(theme: theme)
-        .environment(\.launchStateProxy, .init(launchState: $launchState))
+        .environment(\.launchStateProxy, .init { launchStateStore.update($0) })
     }
 
 }
@@ -72,7 +67,18 @@ public extension RootView {
 
     static func make(dependencies: AppDependencies) -> some View {
         DependenciesInjectLayer {
+            let accountAuthStore = AccountAuthStore(
+                accountAuthClient: $0.accountAuthClient,
+                analyticsClient: $0.analyticsClient,
+                signInWithAppleClient: $0.signInWithAppleClient,
+                nonceGenerationClient: $0.nonceGeneratorClient
+            )
             let accountStore = AccountStore(accountInfoClient: $0.accountInfoClient)
+            let cohabitantStore = CohabitantStore(
+                cohabitantClient: $0.cohabitantClient,
+                accountInfoClient: $0.accountInfoClient,
+                analyticsClient: $0.analyticsClient
+            )
             let pendingInvitationStore = PendingInvitationStore()
             let subscriptionStore = SubscriptionStore(
                 purchaseClient: $0.purchaseClient,
@@ -80,26 +86,25 @@ public extension RootView {
             )
             let authSubscriptionSyncUseCase = AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
+                cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
+                houseworkManager: $0.houseworkManager,
                 houseworkClient: $0.houseworkClient,
+                analyticsClient: $0.analyticsClient
+            )
+            let launchStateStore = LaunchStateStore(
+                accountStore: accountStore,
+                authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
                 analyticsClient: $0.analyticsClient
             )
 
             RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                 .environment(accountStore)
-                .environment(AccountAuthStore(
-                    accountAuthClient: $0.accountAuthClient,
-                    analyticsClient: $0.analyticsClient,
-                    signInWithAppleClient: $0.signInWithAppleClient,
-                    nonceGenerationClient: $0.nonceGeneratorClient
-                ))
-                .environment(CohabitantStore(
-                    cohabitantClient: $0.cohabitantClient,
-                    accountInfoClient: $0.accountInfoClient,
-                    analyticsClient: $0.analyticsClient
-                ))
+                .environment(accountAuthStore)
+                .environment(cohabitantStore)
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
+                .environment(launchStateStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
                 }
@@ -127,42 +132,7 @@ private extension RootView {
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
         guard let fcmToken = notification.object as? String else { return }
-        self.fcmToken = fcmToken
-    }
-
-    func onChangeAuth() async {
-        guard let authResult = accountAuthStore.currentAuth.result else {
-            launchState = .notLoggedIn
-            await authSubscriptionSyncUseCase.syncOnSignedOut()
-            return
-        }
-
-        if let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) {
-            await updateFcmTokenIfNeeded()
-            let context = LoginContext(account: account)
-            analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-            launchState = .loggedIn(context: context)
-        } else {
-            launchState = .preLoggedIn(auth: authResult)
-        }
-    }
-
-    func onChangeAccount() async {
-        guard launchState.isLoggedIn,
-              let account = accountStore.account else { return }
-
-        await updateFcmTokenIfNeeded()
-        let context = LoginContext(account: account)
-        analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-        launchState = .loggedIn(context: context)
-        // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
-        await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
-    }
-
-    func updateFcmTokenIfNeeded() async {
-        guard let fcmToken else { return }
-        await accountStore.updateFcmTokenIfNeeded(fcmToken)
-        self.fcmToken = nil
+        launchStateStore.receive(fcmToken: fcmToken)
     }
 
 }

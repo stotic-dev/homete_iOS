@@ -18,6 +18,7 @@ let package = Package(
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
+        lib("HometeLocalNotification"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
         lib("AppRoot")
@@ -114,6 +115,12 @@ let package = Package(
             ],
             plugins: [swiftLintPlugin()]
         ),
+        // Notification Service Extensionからも使うため、Firebaseなど重い依存を持たせない
+        .target(
+            name: "HometeLocalNotification",
+            dependencies: ["HometeDomain"],
+            plugins: [swiftLintPlugin()]
+        ),
         .target(
             name: "AppRoot",
             dependencies: [
@@ -127,7 +134,8 @@ let package = Package(
                 "HouseworkTemplateFeature",
                 "ContributionFeature",
                 "FrequentHouseworkFeature",
-                "HometeInfrastructure"
+                "HometeInfrastructure",
+                "HometeLocalNotification"
             ],
             plugins: [swiftLintPlugin()]
         ),
