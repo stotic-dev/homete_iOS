@@ -79,11 +79,14 @@ struct DailyCompletionReminderSettingView: View {
                     "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。"
                 )
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.onSurfaceVariant)
+                    .padding(.horizontal, .space16)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space16)
         }
+        // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
+        .background(.groupedBackground)
         .navigationTitle("通知設定")
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
@@ -97,28 +100,24 @@ struct DailyCompletionReminderSettingView: View {
 private extension DailyCompletionReminderSettingView {
 
     var sectionHeader: some View {
-        HStack(spacing: .space8) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.onSurface)
-            Text("毎日の家事のふりかえり")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-            Spacer()
-        }
+        Text("毎日の家事のふりかえり")
+            .font(with: .boldCaption)
+            .foregroundStyle(.onSurfaceVariant)
+            .padding(.horizontal, .space16)
     }
 
     var settingCard: some View {
         VStack(spacing: .space8) {
             Toggle(isOn: enabledBinding) {
                 Text("ふりかえりの通知を受け取る")
-                    .font(with: .headLineS)
+                    .font(with: .body)
                     .foregroundStyle(.onSurface)
             }
             if setting.isEnabled {
                 Divider()
                 DatePicker(selection: timeBinding, displayedComponents: .hourAndMinute) {
                     Text("毎日の通知時刻")
-                        .font(with: .headLineS)
+                        .font(with: .body)
                         .foregroundStyle(.onSurface)
                 }
                 // 時・分の変換に使うcalendarと表示のタイムゾーンを揃え、設定した時刻がずれて表示されないようにする
