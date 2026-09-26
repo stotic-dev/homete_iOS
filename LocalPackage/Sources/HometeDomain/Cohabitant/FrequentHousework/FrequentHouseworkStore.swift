@@ -15,11 +15,15 @@ public final class FrequentHouseworkStore {
 
     public private(set) var items: [FrequentHouseworkItem]
     public private(set) var customCategories: [FrequentHouseworkCustomCategory]
-    /// いつもの家事の初回受信の状態
+    /// いつもの家事とカスタムカテゴリの初回受信の状態
+    /// - Note: 両方の最初のスナップショットが揃うまでは`loading`のまま。
+    ///         揃う前は件数上限・名前の重複・カテゴリの判定が正しくできないため、画面は追加や編集をさせない
     public private(set) var loadState: ListenerLoadState
 
     private var itemsObserveTask: Task<Void, Never>?
     private var categoriesObserveTask: Task<Void, Never>?
+    private var hasReceivedItems = false
+    private var hasReceivedCategories = false
 
     private let frequentHouseworkClient: FrequentHouseworkClient
     private let analyticsClient: AnalyticsClient
@@ -61,6 +65,8 @@ public extension FrequentHouseworkStore {
     func startObserving(cohabitantId: String) async {
         await stopObserving()
         loadState = .loading
+        hasReceivedItems = false
+        hasReceivedCategories = false
 
         let itemsStream = await frequentHouseworkClient.addItemsSnapshotListener(itemsListenerKey, cohabitantId)
         let categoriesStream = await frequentHouseworkClient.addCategoriesSnapshotListener(
@@ -70,13 +76,18 @@ public extension FrequentHouseworkStore {
         itemsObserveTask = Task {
             for await items in itemsStream {
                 self.items = items
-                self.loadState = .loaded
+                self.hasReceivedItems = true
+                self.markLoadedIfReady()
             }
+            self.markFailedIfEndedBeforeLoaded()
         }
         categoriesObserveTask = Task {
             for await categories in categoriesStream {
                 self.customCategories = categories
+                self.hasReceivedCategories = true
+                self.markLoadedIfReady()
             }
+            self.markFailedIfEndedBeforeLoaded()
         }
     }
 
@@ -88,6 +99,23 @@ public extension FrequentHouseworkStore {
         categoriesObserveTask = nil
         await frequentHouseworkClient.removeListener(itemsListenerKey)
         await frequentHouseworkClient.removeListener(categoriesListenerKey)
+    }
+
+}
+
+private extension FrequentHouseworkStore {
+
+    func markLoadedIfReady() {
+        guard hasReceivedItems, hasReceivedCategories else { return }
+        loadState = .loaded
+    }
+
+    /// 最初のスナップショットが揃う前にリスナーが終わった場合は、読み込みに失敗したとみなす
+    /// - Note: 購読の解除（タスクのキャンセル）で終わった場合は対象外。
+    ///         リスナーのエラーはClientでログ出力のうえストリームの終了に変換されるため、終了したことで検知する
+    func markFailedIfEndedBeforeLoaded() {
+        guard !Task.isCancelled, loadState == .loading else { return }
+        loadState = .failed(.other)
     }
 
 }
