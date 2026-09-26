@@ -143,6 +143,34 @@ describe("CohabitantNotifier E2E Tests", () => {
       {tokens: ["token-receiver"], notification: notificationWithData},
     ]);
   });
+
+  it("サイレント通知は内容を保ったまま送信処理へ渡される", async () => {
+    // Arrange
+    const senderId = `notify-silent-sender-${testCounter}`;
+    const receiverId = `notify-silent-receiver-${testCounter}`;
+    const cohabitantId = `notify-silent-cohabitant-${testCounter}`;
+    await createTestAccount(senderId, cohabitantId, "token-sender");
+    await createTestAccount(receiverId, cohabitantId, "token-receiver");
+    await createTestCohabitant(cohabitantId, [senderId, receiverId]);
+    const {sender, sent} = makeRecordingSender();
+    const silentNotification: CohabitantNotification = {
+      silent: true,
+      data: {type: "houseworkCompleted", houseworkDate: "1767193200"},
+    };
+
+    // Act
+    await notifyOtherCohabitants(
+      cohabitantId,
+      senderId,
+      silentNotification,
+      sender
+    );
+
+    // Assert
+    expect(sent).toEqual([
+      {tokens: ["token-receiver"], notification: silentNotification},
+    ]);
+  });
 });
 
 describe("buildMulticastMessage", () => {
@@ -173,6 +201,27 @@ describe("buildMulticastMessage", () => {
       tokens: ["token"],
       data: {type: "houseworkCompleted"},
       apns: {payload: {aps: {mutableContent: true}}},
+    });
+  });
+
+  it("サイレント通知はnotificationを付けずcontent-availableで組み立てる", () => {
+    // Act
+    const actual = buildMulticastMessage(
+      ["token"],
+      {silent: true, data: {type: "houseworkCompleted"}}
+    );
+
+    // Assert
+    expect(actual).toEqual({
+      tokens: ["token"],
+      data: {type: "houseworkCompleted"},
+      apns: {
+        headers: {
+          "apns-push-type": "background",
+          "apns-priority": "5",
+        },
+        payload: {aps: {contentAvailable: true}},
+      },
     });
   });
 });

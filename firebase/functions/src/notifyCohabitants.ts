@@ -1,6 +1,7 @@
 import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {
+  CohabitantNotification,
   isValidNotificationData,
   notifyOtherCohabitants,
 } from "./models/CohabitantNotifier";
@@ -8,10 +9,69 @@ import {appCheckOptions} from "./appCheckOptions";
 
 interface NotifyCohabitantsRequest {
   cohabitantId: string;
-  title: string;
-  body: string;
-  /** 端末側で通知の種類を判定するための付加情報（任意、値は文字列のみ） */
+  /** 通知のタイトル（サイレント通知では不要） */
+  title?: string;
+  /** 通知の本文（サイレント通知では不要） */
+  body?: string;
+  /**
+   * 端末側で通知の種類を判定するための付加情報（値は文字列のみ）
+   *
+   * 表示する通知では任意、サイレント通知では必須。
+   */
   data?: unknown;
+  /**
+   * trueなら画面に表示しないサイレント通知として送る（任意）
+   *
+   * 省略時は表示する通知として扱う。古いアプリは指定しないため、既定値を変えないこと。
+   */
+  silent?: boolean;
+}
+
+/**
+ * リクエストから送信する通知を組み立てる
+ * @param {NotifyCohabitantsRequest} request 呼び出し時のリクエスト
+ * @return {CohabitantNotification} 送信する通知
+ */
+function makeNotification(
+  request: NotifyCohabitantsRequest
+): CohabitantNotification {
+  const {title, body, data, silent} = request;
+
+  if (data !== undefined && !isValidNotificationData(data)) {
+    logger.error("Invalid argument: 'data' must be a string map.", {
+      data: request,
+    });
+    throw new HttpsError(
+      "invalid-argument",
+      "'data' must be an object whose values are all strings."
+    );
+  }
+
+  if (silent === true) {
+    // サイレント通知はdataを届けることだけが目的なので、dataが無ければ送る意味がない
+    if (data === undefined || Object.keys(data).length === 0) {
+      logger.error("Invalid argument: Silent notification requires data.", {
+        data: request,
+      });
+      throw new HttpsError(
+        "invalid-argument",
+        "A silent notification must be called with non-empty 'data'."
+      );
+    }
+    return {silent: true, data};
+  }
+
+  if (!title || !body) {
+    logger.error("Invalid argument: Missing required parameters.", {
+      data: request,
+    });
+    throw new HttpsError(
+      "invalid-argument",
+      "The function must be called with 'cohabitantId', 'title', and " +
+      "'body' arguments."
+    );
+  }
+  return data === undefined ? {title, body} : {title, body, data};
 }
 
 export const notifyothercohabitants = onCall(
@@ -33,34 +93,25 @@ export const notifyothercohabitants = onCall(
     }
 
     const senderId = request.auth.uid;
-    const {cohabitantId, title, body, data} = request.data;
+    const {cohabitantId} = request.data;
 
-    if (!cohabitantId || !title || !body) {
+    if (!cohabitantId) {
       logger.error("Invalid argument: Missing required parameters.", {
         data: request.data,
       });
       throw new HttpsError(
         "invalid-argument",
-        "The function must be called with 'cohabitantId', 'title', and " +
-        "'body' arguments."
+        "The function must be called with 'cohabitantId'."
       );
     }
 
-    if (data !== undefined && !isValidNotificationData(data)) {
-      logger.error("Invalid argument: 'data' must be a string map.", {
-        data: request.data,
-      });
-      throw new HttpsError(
-        "invalid-argument",
-        "'data' must be an object whose values are all strings."
-      );
-    }
+    const notification = makeNotification(request.data);
 
     try {
       const result = await notifyOtherCohabitants(
         cohabitantId,
         senderId,
-        data === undefined ? {title, body} : {title, body, data}
+        notification
       );
 
       if (!result) {

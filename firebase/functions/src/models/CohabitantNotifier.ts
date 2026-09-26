@@ -2,8 +2,8 @@ import * as logger from "firebase-functions/logger";
 import {getMessaging, MulticastMessage} from "firebase-admin/messaging";
 import {FirestoreHelper} from "./FirestoreHelper";
 
-/** 通知の内容 */
-export interface CohabitantNotification {
+/** 画面に表示する通知の内容 */
+export interface AlertNotification {
     title: string;
     body: string;
     /**
@@ -13,6 +13,32 @@ export interface CohabitantNotification {
      * `mutable-content`を付けて送る。FCMのdataは文字列の値しか持てない。
      */
     data?: Record<string, string>;
+}
+
+/**
+ * 画面に表示しない通知（サイレント通知）の内容
+ *
+ * 受け取った端末のアプリをバックグラウンドで起こし、dataを渡すためだけに使う。
+ * OSの判断で配信が遅れたり間引かれたりするため、届かなくても困らない用途に限る。
+ */
+export interface SilentNotification {
+    silent: true;
+    /** 端末側で通知の種類を判定するための付加情報。FCMのdataは文字列の値しか持てない */
+    data: Record<string, string>;
+}
+
+/** 通知の内容 */
+export type CohabitantNotification = AlertNotification | SilentNotification;
+
+/**
+ * サイレント通知かを判定する
+ * @param {CohabitantNotification} notification 判定する通知
+ * @return {boolean} サイレント通知ならtrue
+ */
+export function isSilentNotification(
+  notification: CohabitantNotification
+): notification is SilentNotification {
+  return "silent" in notification && notification.silent;
 }
 
 /** dataに載せられるキーの上限（ペイロードの肥大化を防ぐ） */
@@ -64,9 +90,11 @@ export interface NotifyResult {
 /**
  * FCMへ送るマルチキャストメッセージを組み立てる
  *
- * dataがある通知だけ`mutable-content`を付ける。iOSはこのフラグが無いと
- * Notification Service Extensionを起動しないため、端末側で通知の種類を見て
- * 処理したい通知に限って付与する。
+ * - 表示する通知: dataがあるものだけ`mutable-content`を付ける。iOSはこのフラグが無いと
+ *   Notification Service Extensionを起動しないため、端末側で通知の種類を見て
+ *   処理したい通知に限って付与する。
+ * - サイレント通知: `notification`を付けず`content-available`だけを付ける。
+ *   APNsの規約に従い、push typeは`background`、優先度は`5`で送る。
  * @param {string[]} tokens 送信先のFCMトークン
  * @param {CohabitantNotification} notification 通知内容
  * @return {MulticastMessage} 送信するメッセージ
@@ -75,6 +103,22 @@ export function buildMulticastMessage(
   tokens: string[],
   notification: CohabitantNotification
 ): MulticastMessage {
+  if (isSilentNotification(notification)) {
+    return {
+      tokens,
+      data: notification.data,
+      apns: {
+        headers: {
+          "apns-push-type": "background",
+          "apns-priority": "5",
+        },
+        payload: {
+          aps: {contentAvailable: true},
+        },
+      },
+    };
+  }
+
   const message: MulticastMessage = {
     notification: {
       title: notification.title,
