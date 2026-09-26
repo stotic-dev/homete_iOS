@@ -9,6 +9,7 @@ import Testing
 enum FrequentHouseworkLimitPolicyTest {
 
     struct CanAddCase {}
+    struct IsLimitReachedCase {}
     struct RemainingCountCase {}
     struct UnusableItemIdsCase {}
 
@@ -52,6 +53,47 @@ extension FrequentHouseworkLimitPolicyTest.CanAddCase {
         // Assert
 
         #expect(actual == true)
+    }
+
+}
+
+extension FrequentHouseworkLimitPolicyTest.IsLimitReachedCase {
+
+    @Test(
+        "無料プランは、10件以上登録していると上限に達している",
+        arguments: [
+            (9, false),
+            (10, true),
+            (12, true),
+        ]
+    )
+    func freeIsLimitReached(currentCount: Int, expected: Bool) {
+        // Arrange
+
+        let policy = FrequentHouseworkLimitPolicy(isPremium: false)
+
+        // Act
+
+        let actual = policy.isLimitReached(currentCount: currentCount)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test("プレミアムプランは、件数に関係なく上限に達しない")
+    func premiumNeverReachesLimit() {
+        // Arrange
+
+        let policy = FrequentHouseworkLimitPolicy(isPremium: true)
+
+        // Act
+
+        let actual = policy.isLimitReached(currentCount: 100)
+
+        // Assert
+
+        #expect(actual == false)
     }
 
 }

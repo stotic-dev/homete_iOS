@@ -40,7 +40,7 @@ struct FrequentHouseworkEditModal: View {
                 NavigationBarPrimaryActionButton(systemImage: "checkmark") {
                     tappedConfirmButton()
                 }
-                .disabled(validation != .valid)
+                .disabled(!validation.isValid)
             }
         }
         .presentationDetents([.medium, .large])
@@ -87,7 +87,7 @@ private extension FrequentHouseworkEditModal {
         }
     }
 
-    var validation: FrequentHouseworkEditInput.Validation {
+    var validation: FrequentHouseworkContext.TitleValidation {
         input.validation(context: context, editingId: editingId)
     }
 
