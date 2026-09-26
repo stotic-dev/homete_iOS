@@ -75,3 +75,29 @@ iOSのローカル通知は予約時点で内容が固定され、発火時に�
 * 1日のうち最初に完了した家事を送った後、その家事が未完了に戻されても、受け取った側の予約はアプリを開くまで残る
 
 通知フィルタ権限（`com.apple.developer.usernotifications.filtering`）を取得すれば、表示する通知をNotification Service Extensionで握りつぶし、今と同じ確実さで予約できる。ただしAppleへの申請と承認が必要なため、今回は見送った。
+
+## 追記（2026-09-26）サイレント通知をやめ、1日1回の表示する完了通知に戻す
+
+実機で確かめたところ、ユーザーがアプリをタスク一覧から終了していると、サイレント通知ではアプリが起動せず予約できなかった。iOSの仕様で、強制終了されたアプリはユーザーが次に開くまでバックグラウンドで起動されない。
+
+アプリが終了していても予約できるよう、完了は再び`data`付きの表示する通知（`mutable-content`、APNsのpush typeは`alert`）で送り、Notification Service Extensionで予約する。
+
+* 表示する完了通知は、この端末から1日1回だけ送る（サイレント通知のときの送信制限をそのまま使う）。家事のステータスに関わる通知を増やさないという方針に対し、1日1件の表示は許容した
+* 文言は以前の完了通知と同じ（「〇〇さんが家事を終えました」「「家事名」が完了しました」、一括完了は件数）
+* `AppDelegate`でのサイレント通知の受信と、`notifyothercohabitants`の`silent`オプションは使わなくなったため削除した
+
+### 通知を表示せずに拡張を起動する方法について
+
+Notification Service Extensionが起動するのは、アラートを表示する通知に`mutable-content: 1`が付いている場合だけで、サイレント通知では起動しない。拡張でアラートの文言を消しても無視され、元の通知が表示される。表示させずに受け取るには、通知フィルタ権限（`com.apple.developer.usernotifications.filtering`）が必要になる。この権限はAppleへの申請と承認が必要なため、今回は1日1件の表示を受け入れる方針とした。
+
+### この変更で解消・残るデメリット
+
+* 解消: アプリを強制終了している同居人の端末でも、完了通知を受け取った時点で予約できる
+* 残る: 端末の通知表示をオフにしている人の端末では拡張が起動しない（その人にはふりかえり通知も届かないため実害はない）
+* 残る: 1日のうち最初に完了した家事を送った後、その家事が未完了に戻されても、受け取った側の予約はアプリを開くまで残る
+
+## 参考（追記分）
+
+* [UNNotificationServiceExtension | Apple Developer Documentation](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension)
+* [didReceive(_:withContentHandler:) | Apple Developer Documentation](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension/didreceive(_:withcontenthandler:))
+* [com.apple.developer.usernotifications.filtering | Apple Developer Documentation](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.usernotifications.filtering)

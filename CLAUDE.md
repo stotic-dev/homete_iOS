@@ -109,7 +109,7 @@ Domain Models（Codable構造体）
 
 **エントリーポイント:**
 - `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
-- `hometeNotificationService/NotificationService.swift` - Notification Service Extension。古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する。現行のアプリは完了をサイレント通知で送り、`AppDelegate`が受け取って予約する（[ADR-0021](doc/adr/0021-daily-completion-reminder-on-device.md)）
+- `hometeNotificationService/NotificationService.swift` - Notification Service Extension。同居人から届く家事の完了通知を受けて、今日のふりかえり通知を予約する。アプリが終了していても起動する（[ADR-0021](doc/adr/0021-daily-completion-reminder-on-device.md)）
 - `LocalPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
 - `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
 
@@ -139,7 +139,7 @@ View → Store（AppDependenciesを受け取る）
 - コレクションパスは`CollectionPath.swift`で定義
 
 **Cloud Functions** (`firebase/functions/src/`):
-- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する。`silent: true`を渡すと`title` / `body`なしで、表示しないサイレント通知（`content-available`）として`data`だけを送る
+- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 
 **認証:**
