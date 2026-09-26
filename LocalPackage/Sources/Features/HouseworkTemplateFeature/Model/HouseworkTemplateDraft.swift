@@ -8,26 +8,42 @@
 import Foundation
 import HometeDomain
 
-/// 家事テンプレート編集中の状態を表すモデル。曜日別のアイテム集合を保持し、編集操作を提供する。
+/// 家事テンプレート編集中の状態を表すモデル。曜日別のアイテム集合と毎月の家事を保持し、編集操作を提供する。
 struct HouseworkTemplateDraft: Equatable {
 
     private(set) var days: [DayOfWeek: [HouseworkTemplateItem]]
+    /// 毎月の家事。常に表示順（同じルールならID順）に並べておく
+    /// - Note: Firestoreから読んだ順（ドキュメントID順）と編集で追加した順が違っても、
+    ///         並び順だけの違いを「未保存の変更」やコンフリクトと判定しないため
+    private(set) var monthlyItems: [HouseworkTemplateMonthlyItem]
 
     /// 保存するテンプレートのモデルを返す
     var saveDays: [HouseworkTemplateDay] {
         days.map { .init(dayOfWeek: $0.key, items: $0.value) }
     }
 
-    init(days: [DayOfWeek: [HouseworkTemplateItem]] = [:]) {
+    /// 毎月の家事を表示順（`MonthlyRecurrenceRule.isOrderedBefore`）に並べて返す
+    var displayedMonthlyItems: [HouseworkTemplateMonthlyItem] {
+        monthlyItems
+    }
+
+    init(
+        days: [DayOfWeek: [HouseworkTemplateItem]] = [:],
+        monthlyItems: [HouseworkTemplateMonthlyItem] = []
+    ) {
         self.days = days
+        self.monthlyItems = Self.sortedForDisplay(monthlyItems)
     }
 
     /// 入力されたテンプレートから編集用のモデルを生成
-    static func make(_ template: [HouseworkTemplateDay]) -> Self {
+    static func make(
+        _ template: [HouseworkTemplateDay],
+        monthlyItems: [HouseworkTemplateMonthlyItem] = []
+    ) -> Self {
         let days: [DayOfWeek: [HouseworkTemplateItem]] = template.reduce(into: [:]) { partialResult, day in
             partialResult.updateValue(day.items, forKey: day.dayOfWeek)
         }
-        return .init(days: days)
+        return .init(days: days, monthlyItems: monthlyItems)
     }
 
     /// 指定された曜日に登録されているアイテム一覧を返す
@@ -42,25 +58,40 @@ struct HouseworkTemplateDraft: Equatable {
         }
     }
 
+    /// あるアイテムの繰り返し方を返す。どこにも登録されていない場合は`nil`
+    func recurrence(for itemId: HouseworkTemplateItem.ItemId) -> HouseworkRecurrence? {
+        if let monthlyItem = monthlyItems.first(where: { $0.id == itemId }) {
+            return .monthly(monthlyItem.rule)
+        }
+        let registeredDays = registeredDays(for: itemId)
+        return registeredDays.isEmpty ? nil : .weekly(Set(registeredDays))
+    }
+
     /// 初期状態との差分があるか
     func hasUnsavedChanges(comparedTo initial: HouseworkTemplateDraft) -> Bool {
         self != initial
     }
 
-    /// 新規アイテムを指定された曜日それぞれに追加する
-    mutating func addItem(_ item: HouseworkTemplateItem, to targetDays: Set<DayOfWeek>) {
-        for day in targetDays {
-            days[day, default: []].append(item)
+    /// 新規アイテムを指定された繰り返し方で追加する（毎週なら指定された曜日それぞれに追加する）
+    mutating func addItem(_ item: HouseworkTemplateItem, recurrence: HouseworkRecurrence) {
+        switch recurrence {
+        case let .weekly(targetDays):
+            for day in targetDays {
+                days[day, default: []].append(item)
+            }
+
+        case let .monthly(rule):
+            monthlyItems = Self.sortedForDisplay(monthlyItems + [.init(item: item, rule: rule)])
         }
     }
 
-    /// 既存アイテムを全曜日から削除し、指定された曜日に再登録する
-    mutating func replaceItem(_ item: HouseworkTemplateItem, in targetDays: Set<DayOfWeek>) {
+    /// 既存アイテムを全ての登録先（全曜日・毎月）から削除し、指定された繰り返し方で再登録する
+    mutating func replaceItem(_ item: HouseworkTemplateItem, recurrence: HouseworkRecurrence) {
         removeItem(item.id, from: nil)
-        addItem(item, to: targetDays)
+        addItem(item, recurrence: recurrence)
     }
 
-    /// アイテムを削除する。`day` を指定するとその曜日のみ、`nil` の場合は全曜日から削除する
+    /// アイテムを削除する。`day` を指定するとその曜日のみ、`nil` の場合は全曜日と毎月の家事から削除する
     mutating func removeItem(_ itemId: HouseworkTemplateItem.ItemId, from day: DayOfWeek?) {
         if let day {
             days[day]?.removeAll { $0.id == itemId }
@@ -68,6 +99,7 @@ struct HouseworkTemplateDraft: Equatable {
             for day in DayOfWeek.allCases {
                 days[day]?.removeAll { $0.id == itemId }
             }
+            monthlyItems.removeAll { $0.id == itemId }
         }
     }
 
@@ -97,6 +129,19 @@ struct HouseworkTemplateDraft: Equatable {
             updatedAt: now
         )
         days[destination, default: []].append(added)
+    }
+
+}
+
+private extension HouseworkTemplateDraft {
+
+    static func sortedForDisplay(_ monthlyItems: [HouseworkTemplateMonthlyItem]) -> [HouseworkTemplateMonthlyItem] {
+        monthlyItems.sorted { lhs, rhs in
+            if lhs.rule == rhs.rule {
+                return lhs.id.id < rhs.id.id
+            }
+            return MonthlyRecurrenceRule.isOrderedBefore(lhs.rule, rhs.rule)
+        }
     }
 
 }
