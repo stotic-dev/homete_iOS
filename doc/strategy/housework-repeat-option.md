@@ -2,7 +2,7 @@
 
 > 関連Issue: [#281 家事登録に繰り返しの項目が欲しい](https://github.com/stotic-dev/homete_iOS/issues/281)
 > ブランチ: `feat/housework-repeat-option`（スタックPRの土台。分割は「PR分割」を参照）
-> 毎月の家事の保存方式は [ADR-0020](../adr/0020-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
+> 毎月の家事の保存方式は [ADR-0022](../adr/0022-monthly-housework-template-items.md)、テンプレートの前提は [housework_template.md](housework_template.md) / [ADR-0003](../adr/0003-housework-template-virtual-view.md) を参照。
 
 ## ステータス
 
@@ -59,7 +59,7 @@
 
 ### 非機能要件 / 制約
 
-- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
+- 既存の `Days` のデータ構造は変えず、データ移行もしない（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - テンプレート機能は無料で提供している機能（[premium_plan.md](../premium_plan.md)）なので、繰り返し設定もプランで制限しない
 - 登録画面から書き込むときも、テンプレートの `version` を上げる。こうしておくと、他のメンバーがテンプレートを編集中でも、そのメンバーの保存は既存の仕組みでコンフリクトとして検知されるので、登録した家事が上書きで消えない
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
@@ -95,7 +95,7 @@ public struct HouseworkTemplateMonthlyItem: Identifiable, Codable, Sendable, Equ
 }
 ```
 
-Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-0020](../adr/0020-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
+Firestore上の形（`rule.type` / `day` / `ordinal` / `dayOfWeek`）は[ADR-0022](../adr/0022-monthly-housework-template-items.md)のとおり。`Codable` の実装で変換する。
 
 ### 2. 表示のマージ処理
 
@@ -121,11 +121,17 @@ public struct HouseworkTemplateContext {
 
 | 追加・変更 | 内容 |
 |---|---|
-| `fetchMonthlyItems` / `addMonthlyItemsSnapshotListener` | `MonthlyItems` の取得と監視 |
-| `updateDays` → `updateTemplate` | 毎週（変更があった `Days`）と毎月（`MonthlyItems` の upsert・delete）を、1回のトランザクションで `version` を確認して書き込む |
-| `appendItems`（新規） | 登録画面用。トランザクションで最新の `Days` を読んで家事を追加し（毎月なら `MonthlyItems` に1件追加し）、`version + 1` する。呼び出し側が `currentVersion` を持っている必要はない |
+| `fetchMonthlyItems` / `addMonthlyItemsSnapshotListener` | `MonthlyItems` の取得と監視。解釈できないドキュメント（旧アプリが知らない種類の `rule` など）は除外する。`FirestoreService.fetch` は1件でもデコードに失敗すると全体が失敗するため、Implで `LenientDecoded` に包んで読む（リスナーは元から1件ずつ `try?` でデコードしている） |
+| `updateDays` → `updateTemplate` | 書き込む内容を `HouseworkTemplateUpdate`（`days` / `upsertedMonthlyItems` / `deletedMonthlyItemIds`）で受け取り、1回のトランザクションで `version` を確認して書き込む |
+| `appendItem`（新規） | 登録画面用。家事1件と `HouseworkRecurrence` を受け取り、トランザクションで最新の `Days` を読んで追記する（毎月なら `MonthlyItems` に1件追加する）。そのあと `version + 1` する。呼び出し側が `currentVersion` を持っている必要はない |
 
-`HouseworkTemplateListStore` は `MonthlyItems` も監視して `context` に含める。保存（`saveDays`）は毎月の家事の変更も受け取る形にし、Analyticsの `create` / `edit` / `delete` 判定（`itemChanges`）でも毎月の家事を比較対象に入れる。
+`HouseworkTemplateListStore` の変更:
+
+- `monthlyItems` を持ち、`configure` で `Days` と一緒に取得・監視して `context` に含める
+- 監視の開始・停止は `startObservingDays` / `stopObservingDays` を `startObservingItems` / `stopObservingItems` に改名し、`Days` と `MonthlyItems` をまとめて扱う
+- `saveDays` → `saveTemplate(days:monthlyItems:...)`。`monthlyItems` には保存後の全件を渡し、現在の内容との差分だけを書き込む
+- `appendItem(_:recurrence:templateId:cohabitantId:)` を追加する（`create` イベントを送る）
+- Analyticsの `create` / `edit` / `delete` 判定（`itemChanges`）では、家事ごとの繰り返し方を `HouseworkRecurrence` で比べる。毎週→毎月の切り替えも「編集」として扱う
 
 ### 4. セキュリティルール
 
@@ -147,10 +153,10 @@ match /MonthlyItems/{itemId} {
 
 ### 6. 家事登録画面
 
-- `RegisterHouseworkView` に `RecurrenceSelector` を追加する。選択値は `enum HouseworkRecurrence { case none, weekly(Set<DayOfWeek>), monthly(MonthlyRecurrenceRule) }` で持つ
+- `RegisterHouseworkView` に `RecurrenceSelector` を追加する。選択値は `HouseworkRecurrence?`（`nil` = くり返さない）で持つ。`HouseworkRecurrence` は `weekly(Set<DayOfWeek>)` / `monthly(MonthlyRecurrenceRule)` の2択で、テンプレートの家事の繰り返し方としても使う
 - 「登録する」ボタンの処理を分ける
-  - `none`: 今までどおり `HouseworkListStore.register`
-  - それ以外: `HouseworkTemplateListStore` にテンプレートの作成（なければ）と `appendItems` を行わせる
+  - `nil`: 今までどおり `HouseworkListStore.register`
+  - それ以外: `HouseworkTemplateListStore` にテンプレートの作成（なければ）と `appendItem` を行わせる
 - `HouseworkTemplateListStore` は2つの呼び出し元（`HomeView` / `HouseworkBoardScreen`）でOptionalで持っているので、`RegisterHouseworkView` にも environment 経由で渡す。`nil`（未構成）のときは繰り返しの設定欄を出さない
 - 登録画面の入力項目が増えて縦に長くなるので、入力履歴（`entryHistoryContent`）とのレイアウトを見直す（スクロールできるようにする）
 
@@ -171,11 +177,12 @@ match /MonthlyItems/{itemId} {
 |---|---|---|
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/MonthlyRecurrenceRule.swift` | 毎月の繰り返しルールと日付の判定 |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateMonthlyItem.swift` | 毎月の家事 |
-| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrence.swift` | 登録画面で選ぶ繰り返し（しない / 毎週 / 毎月） |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkRecurrence.swift` | 家事の繰り返し方（毎週 / 毎月） |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/HouseworkTemplate/HouseworkTemplateUpdate.swift` | 保存で書き込む内容 |
 | 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateContext.swift` | `monthlyItems` と `templateItems(on:calendar:)` |
 | 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateDay.swift` | `applyTemplate` をアイテム配列で使えるように切り出す |
-| 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateListStore.swift` | `MonthlyItems` の監視、保存、`appendItems` |
-| 修正Client | `LocalPackage/Sources/HometeDomain/Dependencies/HouseworkTemplateClient.swift` | 毎月の家事の取得・監視、`updateTemplate`、`appendItems` |
+| 修正ドメイン | `.../HouseworkTemplate/HouseworkTemplateListStore.swift` | `MonthlyItems` の監視、`saveTemplate`、`appendItem` |
+| 修正Client | `LocalPackage/Sources/HometeDomain/Dependencies/HouseworkTemplateClient.swift` | 毎月の家事の取得・監視、`updateTemplate`、`appendItem` |
 | 修正Impl | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplHouseworkTemplateClient.swift` | 上記のFirestore実装 |
 | 修正Analytics | `LocalPackage/Sources/HometeDomain/AnalyticsLog/HouseworkTemplateAnalyticsAction.swift` | `step` / `recurrence` パラメータ |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkBoardList.swift` / `TodayHouseworkSummary.swift` ほか | マージ処理の呼び出しを置き換え |
@@ -194,8 +201,8 @@ match /MonthlyItems/{itemId} {
 
 | # | ブランチ（予定） | ベース | 内容 |
 |---|---|---|---|
-| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0020、Firestoreルール（`MonthlyItems`）とルールテスト |
-| 2 | `feat/housework-repeat-option-domain` | #1 | ドメインモデル、日付判定、Client/Impl（取得・監視・`updateTemplate`・`appendItems`）、`HouseworkTemplateListStore`、ユニットテスト |
+| 1 | `feat/housework-repeat-option` | `main` | 方針ドキュメント・ADR-0022、Firestoreルール（`MonthlyItems`）とルールテスト |
+| 2 | `feat/housework-repeat-option-domain` | #1 | ドメインモデル、日付判定、Client/Impl（取得・監視・`updateTemplate`・`appendItem`）、`HouseworkTemplateListStore`、ユニットテスト |
 | 3 | `feat/housework-repeat-option-display` | #2 | 家事ボード・今日の家事・未完了一覧に毎月の家事を表示する（マージ処理の一般化） |
 | 4 | `feat/housework-repeat-option-template-ui` | #3 | テンプレート画面の「毎月」セクション、編集モーダル・詳細画面、`RecurrenceSelector`、Analytics（`step: template` / `recurrence`） |
 | 5 | `feat/housework-repeat-option-register` | #4 | 登録画面の繰り返し設定、Analytics（`step: register`）、`analytics_events.md` の更新 |
@@ -213,22 +220,22 @@ match /MonthlyItems/{itemId} {
 - [x] 29〜31日の指定は、その日がない月は月末に表示する
 - [x] 繰り返しを設定して登録したときは、登録元の日付に単発では登録しない（繰り返しに任せる）
 - [x] 毎月の家事はテンプレート画面に「毎月」セクションを足して管理する
-- [x] 毎月の家事の保存方式（[ADR-0020](../adr/0020-monthly-housework-template-items.md)）
+- [x] 毎月の家事の保存方式（[ADR-0022](../adr/0022-monthly-housework-template-items.md)）
 - [x] 第N◯曜日のNは第1〜第4と「最終」にする
-- [x] ADR-0020のレビュー（提案済 → 承認済）
+- [x] ADR-0022のレビュー（提案済 → 承認済）
 
 ### Phase 2: 実装
 
 **PR #1**
-- [ ] `firebase/firestore.rules` に `MonthlyItems` を追加
-- [ ] ルールテストにメンバー・非メンバーの読み書きを追加
-- [ ] `deleteUserData` のE2Eテストに `MonthlyItems` の削除確認を追加
+- [x] `firebase/firestore.rules` に `MonthlyItems` を追加
+- [x] ルールテストにメンバー・非メンバーの読み書きを追加
+- [x] `deleteUserData` のE2Eテストに `MonthlyItems` の削除確認・残存確認を追加
 
 **PR #2**
-- [ ] `MonthlyRecurrenceRule` / `WeekOrdinal` / `HouseworkTemplateMonthlyItem` / `HouseworkRecurrence` を追加
-- [ ] 日付判定のユニットテスト（31日指定の2月・4月、うるう年、第1週・最終週、月初が各曜日のケース）
-- [ ] `HouseworkTemplateClient` に取得・監視・`updateTemplate`・`appendItems` を追加し、Implを実装
-- [ ] `HouseworkTemplateListStore` の `MonthlyItems` 監視・保存・`appendItems`・変更検知（`itemChanges`）とテスト
+- [x] `MonthlyRecurrenceRule` / `WeekOrdinal` / `HouseworkTemplateMonthlyItem` / `HouseworkRecurrence` / `HouseworkTemplateUpdate` を追加
+- [x] 日付判定のユニットテスト（31日指定の2月・3月・4月、うるう年、第1〜第4週・最終週、曜日違い）とCodableのテスト
+- [x] `HouseworkTemplateClient` に取得・監視・`updateTemplate`・`appendItem` を追加し、Implを実装
+- [x] `HouseworkTemplateListStore` の `MonthlyItems` 監視・`saveTemplate`・`appendItem`・変更検知（`itemChanges`）とテスト
 
 **PR #3**
 - [ ] `HouseworkTemplateContext.templateItems(on:calendar:)` とテスト

@@ -98,7 +98,7 @@ private extension HouseworkTemplateScreen {
 
     func onAppear() async {
         // currentVersionで変更検知するためテンプレートの変更監視を止める
-        await houseworkTemplateListStore.stopObservingDays()
+        await houseworkTemplateListStore.stopObservingItems()
 
         guard let templateId = houseworkTemplateListStore.selectedTemplateId,
               let cohabitantId = account.cohabitantId else { return }
@@ -164,7 +164,7 @@ private extension HouseworkTemplateScreen {
         )
 
         // テンプレートの変更検知で家事の内容をリアルタイムに更新するために監視を再開する
-        await houseworkTemplateListStore.startObservingDays(
+        await houseworkTemplateListStore.startObservingItems(
             templateId: templateId,
             cohabitantId: cohabitantId
         )
