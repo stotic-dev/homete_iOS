@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -290,18 +290,18 @@ public func complete(
 
 ### Phase 2: 実装
 
-- [ ] `HouseworkExecutor` と `HouseworkItem.executors`（旧データとの互換デコード・`executorId` との二重書き込み）＋テスト
-- [ ] `HouseworkExecutorAllocation`（均等割り・%の調整・最大剰余方式・検証）＋テスト
-- [ ] `HouseworkListStore.complete` の引数変更（担当者・コメント）と、代わりに記録したときの通知文言＋テスト
-- [ ] `DailyCompletionReminderUseCase`：コメントありの完了は毎回送る＋テスト
-- [ ] 一括完了の呼び出しを追従させる
-- [ ] 貢献度・今日のサマリーの集計を担当者ごとに変える＋テスト
-- [ ] `canSendThanks` の判定変更＋テスト
-- [ ] 完了用ハーフモーダル（`HouseworkCompleteSheet`）とPreview
-- [ ] 家事詳細・クイックアクション（1件）から完了用ハーフモーダルを表示
-- [ ] ありがとう画面をコメント欄だけのハーフモーダルにする＋Preview
-- [ ] 家事詳細の担当者表示とPreview
-- [ ] Analyticsの `executor_type` 追加と `doc/analytics_events.md` の更新
+- [x] `HouseworkExecutor` と `HouseworkItem.executors`（旧データとの互換デコード・`executorId` との二重書き込み）＋テスト
+- [x] `HouseworkExecutorAllocation`（均等割り・%の調整・最大剰余方式・検証）＋テスト
+- [x] `HouseworkListStore.complete` の引数変更（担当者・コメント）と、代わりに記録したときの通知文言＋テスト
+- [x] `DailyCompletionReminderUseCase`：コメントありの完了は毎回送る＋テスト
+- [x] 一括完了の呼び出しを追従させる
+- [x] 貢献度・今日のサマリーの集計を担当者ごとに変える＋テスト
+- [x] `canSendThanks` の判定変更＋テスト
+- [x] 完了用ハーフモーダル（`HouseworkCompleteSheet`）とPreview
+- [x] 家事詳細・クイックアクション（1件）から完了用ハーフモーダルを表示
+- [x] ありがとう画面をコメント欄だけのハーフモーダルにする＋Preview
+- [x] 家事詳細の担当者表示とPreview
+- [x] Analyticsの `executor_type` 追加と `doc/analytics_events.md` の更新
 
 ### Phase 3: 検証
 
