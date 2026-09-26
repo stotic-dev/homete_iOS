@@ -11,8 +11,8 @@ import Observation
 /// 同時に走ると完了順が入れ替わる。特にトークン失効による自動サインアウトはFirebase Auth側の
 /// 判断で非同期に起きるので、サインイン処理の途中に割り込む。
 ///
-/// そこで反映処理のTaskをこのStoreが1本だけ保持し、**次の世代が前の世代の完了を待つ**ことで
-/// 直列化している。加えて認証が切り替わったときだけ前の世代を打ち切る。これにより
+/// そこで反映処理をキューに積み、**このStoreが1本ずつ順番に走らせる**ことで直列化している。
+/// 加えて認証が切り替わったときだけ、走っている世代を打ち切ってから最新の認証を積み直す。これにより
 ///
 /// - 最後に届いた変化が必ず勝つ
 /// - サインアウトの後片付け（`syncOnSignedOut`）が必ず最後に走る
@@ -27,8 +27,12 @@ public final class LaunchStateStore {
 
     public private(set) var launchState: LaunchState
 
-    /// 反映処理の世代。1本だけ保持し、次の世代が前の世代の完了を待つ
-    @ObservationIgnored private var syncTask: Task<Void, Never>?
+    /// 未着手の世代。認証が切り替わったときは捨てて、最新の認証だけを積み直す
+    @ObservationIgnored private var pendingKinds: [SyncKind] = []
+    /// 走っている世代。認証が切り替わったときに打ち切る対象
+    @ObservationIgnored private var runningTask: Task<Void, Never>?
+    /// 積まれた世代を順番に走らせるTask。走らせている間だけ保持する
+    @ObservationIgnored private var drainTask: Task<Void, Never>?
     /// 受け取り済みでアカウントへ未反映のFCMトークン
     @ObservationIgnored private var fcmToken: String?
 
@@ -56,7 +60,7 @@ public final class LaunchStateStore {
         if auth.result == nil {
             launchState = .notLoggedIn
         }
-        // 認証が切り替わると進行中の反映は無効な認証情報を握っているため、打ち切る
+        // 認証が切り替わると、走っている反映も未着手の反映も無効な認証情報を握っているため、打ち切る
         enqueue(.auth(auth), invalidatesPrevious: true)
     }
 
@@ -82,10 +86,10 @@ public final class LaunchStateStore {
         self.launchState = launchState
     }
 
-    /// 進行中の反映処理の完了を待つ
+    /// 積まれた反映処理がすべて終わるのを待つ
     /// - Note: 世代の直列化を検証するためにテストから使う
     func waitForSync() async {
-        await syncTask?.value
+        await drainTask?.value
     }
 
 }
@@ -101,29 +105,56 @@ private extension LaunchStateStore {
 
     }
 
-    /// 前の世代の完了を待ってから次の世代を走らせる
-    ///
-    /// キャンセルは協調的なので`cancel()`だけでは前の世代が後から再開して状態を上書きしうる。
-    /// 完了を待ち合わせることで、後片付けが必ず最後に走る順序を保証する。
-    /// - Parameter invalidatesPrevious: 前の世代を打ち切るかどうか。
+    /// 世代を積み、1本ずつ順番に走らせる
+    /// - Parameter invalidatesPrevious: 走っている世代と未着手の世代を打ち切るかどうか。
     ///   打ち切った世代は`LaunchState`を更新せずに終わるため、
     ///   **代わりに画面を進める世代を必ず積むイベントでのみ`true`にする**
     func enqueue(_ kind: SyncKind, invalidatesPrevious: Bool) {
-        let previous = syncTask
         if invalidatesPrevious {
-            previous?.cancel()
+            // 未着手の世代はこの後に積む最新の認証で必ず上書きされるため、走らせずに捨てる
+            pendingKinds.removeAll()
+            runningTask?.cancel()
         }
-        syncTask = Task { [weak self] in
-            await previous?.value
-            guard let self else { return }
+        pendingKinds.append(kind)
+        startDrainIfNeeded()
+    }
 
-            switch kind {
-            case let .auth(auth):
-                await applyAuthChange(auth)
+    func startDrainIfNeeded() {
+        guard drainTask == nil else { return }
+        drainTask = Task {
+            await self.drain()
+        }
+    }
 
-            case let .account(account):
-                await applyAccountChange(account)
+    /// 積まれた世代を、前の世代の完了を待ちながら順番に走らせる
+    ///
+    /// 待ち合わせるTask（このメソッドを走らせているTask）と1世代分の処理のTask（`runningTask`）を
+    /// 分けているのは、`Task.value`の待ち合わせにキャンセルが伝播しないため。ひとつのTaskに
+    /// 「前の世代を待ってから自分の処理を走らせる」と書くと、キャンセルは待っている世代にしか届かず、
+    /// **走っている世代は打ち切られないまま古い認証情報で`LaunchState`やストアを書き換えてしまう。**
+    ///
+    /// また、キャンセルは協調的なので`cancel()`だけでは打ち切った世代が後から再開して状態を
+    /// 上書きしうる。打ち切った世代の完了も待つことで、後片付けが必ず最後に走る順序を保証する。
+    func drain() async {
+        while !pendingKinds.isEmpty {
+            let kind = pendingKinds.removeFirst()
+            let task = Task {
+                await self.apply(kind)
             }
+            runningTask = task
+            await task.value
+            runningTask = nil
+        }
+        drainTask = nil
+    }
+
+    func apply(_ kind: SyncKind) async {
+        switch kind {
+        case let .auth(auth):
+            await applyAuthChange(auth)
+
+        case let .account(account):
+            await applyAccountChange(account)
         }
     }
 

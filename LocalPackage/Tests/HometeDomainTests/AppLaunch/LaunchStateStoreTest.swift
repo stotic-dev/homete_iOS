@@ -22,6 +22,7 @@ struct LaunchStateStoreTest {
     private func makeStore(
         accountStore: AccountStore,
         houseworkClient: HouseworkClient = .previewValue,
+        purchaseClient: PurchaseClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue
     ) -> LaunchStateStore {
         LaunchStateStore(
@@ -29,7 +30,7 @@ struct LaunchStateStoreTest {
             authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase(
                 accountStore: accountStore,
                 cohabitantStore: CohabitantStore(),
-                subscriptionStore: SubscriptionStore(),
+                subscriptionStore: SubscriptionStore(purchaseClient: purchaseClient),
                 houseworkManager: .init(houseworkClient: houseworkClient)
             ),
             analyticsClient: analyticsClient
@@ -122,6 +123,41 @@ struct LaunchStateStoreTest {
         await store.waitForSync()
 
         // Assert: 世代が直列化されていないと、後から再開したサインイン側がアカウントを書き戻す
+
+        #expect(store.launchState == .notLoggedIn)
+        #expect(accountStore.account == nil)
+    }
+
+    @Test("アカウント変更が積まれた状態でサインアウトが届いても、走っているサインイン反映が打ち切られる")
+    func syncAuthChangeSignedOutCancelsRunningSignIn() async {
+        // Arrange: `accountStore.load`が発火させるアカウント変更を待ち行列に積んだ上で、
+        //          サインインの反映がawaitで止まっている状況を再現する
+        let loadedAccount = makeAccount()
+        let gate = TestGate()
+        let accountInfoClient = AccountInfoClient(
+            fetch: { _ in loadedAccount },
+            addSnapshotListener: { _, _ in
+                await gate.wait()
+                return .init { $0.finish() }
+            }
+        )
+        let accountStore = AccountStore(accountInfoClient: accountInfoClient)
+        let purchaseClient = PurchaseClient(logIn: { _ in
+            // 打ち切られた世代が、権限を失ったアカウントに課金情報を紐付けてはいけない
+            Issue.record()
+        })
+        let store = makeStore(accountStore: accountStore, purchaseClient: purchaseClient)
+
+        // Act
+
+        store.syncAuthChange(signedInAuth)
+        await gate.waitUntilArrived()
+        store.syncAccountChange(loadedAccount)
+        store.syncAuthChange(signedOutAuth)
+        gate.open()
+        await store.waitForSync()
+
+        // Assert: 待ち行列の末尾だけを打ち切ると、走っているサインインにキャンセルが届かない
 
         #expect(store.launchState == .notLoggedIn)
         #expect(accountStore.account == nil)
