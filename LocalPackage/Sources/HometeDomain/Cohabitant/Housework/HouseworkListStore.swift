@@ -183,10 +183,8 @@ public final class HouseworkListStore {
 
     /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する
     ///
-    /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる
-    /// （最初に送った日時は変えない）。コメントなしのありがとう（家事ボードのクイックアクション・一括操作）
-    /// は通知を送らない。通知は、コメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送り、
-    /// 書いてあるコメントを直しただけでは送らない。記録と通知の完了を待ち、失敗は呼び出し元に返す。
+    /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる（最初に送った日時は変えない）。
+    /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。呼び出し元に返すのは記録の失敗だけ。
     /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
     // swiftlint:disable:next function_parameter_count
     public func sendThanks(
@@ -199,29 +197,30 @@ public final class HouseworkListStore {
     ) async throws {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て編集かどうかを判断する
         let currentThanks = (items.item(target) ?? target).thanks[sender.id]
-        // コメントなしのありがとう（クイックアクション・一括操作）は送信済みの家事には出さないが、
-        // 画面の表示がリスナーに追いつく前に操作されるとすり抜ける。書いたコメントを消さないよう何もしない
+        // 画面の表示がリスナーに追いつく前の一括操作で、書いたコメントをコメントなしで消さないよう何もしない
         if comment == nil, currentThanks != nil { return }
         let isEditing = currentThanks != nil
         let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
 
         do {
             try await houseworkClient.upsertThanks(target.id, sender.id, thanks, cohabitantId)
-            if let comment, currentThanks?.comment == nil {
-                try await cohabitantPushNotificationClient.send(
-                    cohabitantId,
-                    .thanksMessage(
-                        senderName: sender.userName,
-                        houseworkTitle: target.title,
-                        comment: comment
-                    )
-                )
-            }
         } catch {
             analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: false)))
             throw error
         }
         analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
+
+        guard let comment, currentThanks?.comment == nil else { return }
+
+        // 記録できた後に通知だけ失敗しても、送り直すと編集扱いになり通知は送られないため、失敗として返さない
+        do {
+            try await cohabitantPushNotificationClient.send(
+                cohabitantId,
+                .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+            )
+        } catch {
+            print("failed to notify cohabitants of thanks: \(error)")
+        }
     }
 
     public func returnToIncomplete(
