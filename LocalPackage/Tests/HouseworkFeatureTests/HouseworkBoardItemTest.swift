@@ -113,7 +113,7 @@ extension HouseworkBoardItemTest.CanSendThanksCase {
 extension HouseworkBoardItemTest.PointCase {
 
     @Test("表示するポイントは、頑張り度で上乗せした後のポイントになる")
-    func point_returnsBoostedPoint() {
+    func earnedPoint_returnsBoostedPoint() {
         // Arrange
         let item = HouseworkBoardItem.makeForPreview(
             id: "1",
@@ -124,7 +124,7 @@ extension HouseworkBoardItemTest.PointCase {
         )
 
         // Act
-        let result = item.point
+        let result = item.earnedPoint
 
         // Assert
         #expect(result == 15)

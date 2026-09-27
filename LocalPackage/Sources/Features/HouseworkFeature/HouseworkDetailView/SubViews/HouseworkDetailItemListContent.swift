@@ -30,7 +30,7 @@ struct HouseworkDetailItemListContent: View {
                     .foregroundStyle(.onSurfaceVariant)
             }
             HouseworkDetailItemRow(title: "ポイント") {
-                PointLabel(point: item.point)
+                PointLabel(point: item.earnedPoint)
             }
             if let effortLabel {
                 HouseworkDetailItemRow(title: "頑張り度") {
