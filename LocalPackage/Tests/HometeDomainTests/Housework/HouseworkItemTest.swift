@@ -61,6 +61,43 @@ extension HouseworkItemTest.UpdateStateCase {
         #expect(result == expected)
     }
 
+    @Test("もう一度やった家事は、元の家事の頑張り度に関係なく、ふつうで上乗せ前のポイントを満額配分する")
+    func makeRedone_fromBoostedItem_returnsNormalEffort() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let now = Date()
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            title: "洗濯",
+            point: 100,
+            state: .completed,
+            executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 120)],
+            effort: .hard,
+            executedAt: Date(),
+            expiredAt: expiredAt
+        )
+
+        // Act
+        let result = item.makeRedone(id: "id2", at: now, executor: "userB")
+
+        // Assert
+        let expected = HouseworkItem(
+            id: "id2",
+            indexedDate: .init(value: indexedDate),
+            title: "洗濯",
+            point: 100,
+            state: .completed,
+            executors: [HouseworkExecutor(userId: "userB", percentage: 100, point: 100)],
+            effort: .normal,
+            executedAt: now,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: nil
+        )
+        #expect(result == expected)
+    }
+
     @Test("未完了状態に戻すと、stateがincompleteになり実行者情報がクリアされ、頑張り度はふつうに戻る")
     func updateIncomplete_clearsExecutorInfo() {
         // Arrange

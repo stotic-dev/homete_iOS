@@ -201,6 +201,49 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test("頑張り度を選んで完了にすると、Analyticsに頑張り度を送る")
+    func complete_withEffort_logsEffort() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1, point: 10)
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+            analyticsClient: .init(log: { event in logger.value.append(event) }),
+            calendar: .japanese,
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        try await store.complete(
+            target: inputHouseworkItem,
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            reporter: inputExecutor,
+            executors: [.init(userId: inputExecutor.id, percentage: 100, point: 15)],
+            effort: .veryHard,
+            executorNames: [inputExecutor.userName],
+            comment: "",
+            cohabitantId: inputCohabitantId,
+            isRegistered: true,
+            step: .detail,
+            notify: false
+        )
+
+        // Assert
+
+        #expect(logger.value == [
+            .housework(.complete(step: .detail, executorType: .ownOnly, effort: .veryHard, isSuccess: true)),
+        ])
+    }
+
     @Test("テンプレートから生成された家事を完了にすると、ふりかえり通知の予約を兼ねた完了通知を送る")
     // swiftlint:disable:next function_body_length
     func complete_with_created_template() async {
