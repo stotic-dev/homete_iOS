@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
+import FrequentHouseworkFeature
 import HometeDomain
 import HometeResources
 import HometeUI
@@ -13,24 +14,34 @@ import SwiftUI
 import Prefire
 #endif
 
+/// 家事の登録シート
+/// - Note: 「いつもの家事」から選ぶのと「新しく入力」するのを同じ登録予定リストにためて、まとめて登録する
 public struct RegisterHouseworkView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(HouseworkListStore.self) var houseworkListStore
     /// 同居人グループに未所属などで用意されていない場合は`nil`
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore: HouseworkTemplateListStore?
+    @Environment(FrequentHouseworkStore.self) var frequentHouseworkStore: FrequentHouseworkStore?
+    @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.frequentHouseworkContext) var frequentHouseworkContext
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
+
     @LoadingState var loadingState
-
-    @State var houseworkTitle = ""
-    @State var completePoint = 10
-    @State var recurrenceInput = HouseworkRecurrenceInput(kind: .none)
-    @State var isPresentingDuplicationAlert = false
-
-    @FocusState var isShowingKeyboard: Bool
     @CommonError var commonErrorContent
+
+    @State var draft = RegisterHouseworkDraft()
+    @State var selectedTab = RegisterSourceTab.manual
+    @State var isPresentingPendingList = false
+    @State var isPresentingDiscardAlert = false
+    @State var isPresentingLimitAlert = false
+    @State var isPresentingFrequentSaveFailure = false
+    @State var isShowPaywall = false
+    @State var isShowFrequentManagement = false
 
     @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
 
@@ -42,52 +53,70 @@ public struct RegisterHouseworkView: View {
     }
 
     public var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: .space16) {
-                Spacer()
-                    .frame(height: .space24)
-                Text("家事を追加")
-                    .font(with: .headLineL)
-                inputTextField()
-                inputPointPicker()
-                if canSetRecurrence {
-                    inputRecurrence()
-                }
-                entryHistoryContent()
-                    .opacity(houseworkEntryHistoryList.hasHistory ? 1 : 0)
-                Spacer()
+        NavigationStack {
+            RegisterSourceTabs(selectedTab: $selectedTab) {
+                frequentTab()
+            } manualContent: {
+                manualTab()
             }
-            .padding(.horizontal, .space16)
-            if isShowingKeyboard {
-                Color.clear
-                    .ignoresSafeArea()
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        isShowingKeyboard = false
-                    }
-            }
-            Button("登録する") {
-                loadingState.task {
-                    await tappedRegisterButton()
+            .navigationTitle("家事を追加")
+            .inlineNavigationBarTitleDisplayMode()
+            .leadingToolbarItem {
+                Button("キャンセル") {
+                    tappedCancelButton()
                 }
             }
-            .font(with: .headLineM)
-            .floatingButtonStyle()
-            .disabled(houseworkTitle.isEmpty || !recurrenceInput.isValid)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding([.trailing, .bottom], .space24)
+            .safeAreaInset(edge: .bottom) {
+                PendingEntriesBar(
+                    entries: pendingEntries,
+                    canRegister: draft.input.recurrenceInput.isValid,
+                    onTapSummary: { isPresentingPendingList = true },
+                    onTapRegister: { tappedRegisterButton() }
+                )
+            }
         }
-        .fullScreenLoadingIndicator(loadingState)
-        .commonError(content: $commonErrorContent)
-        .alert("登録できません", isPresented: $isPresentingDuplicationAlert) {
-            Button(
-                role: .cancel,
-                action: {},
-                label: { Text("閉じる") }
+        .interactiveDismissDisabled(draft.hasInput)
+        .sheet(isPresented: $isPresentingPendingList) {
+            PendingEntriesSheet(
+                entries: pendingEntries,
+                onTapRemove: { entry in draft.remove(entry) },
+                onTapClose: { isPresentingPendingList = false }
             )
-        } message: {
-            Text("\"\(houseworkTitle)\"は既に登録されています。")
         }
+        .fullScreenCoverOnIOS(isPresented: $isShowFrequentManagement) {
+            router.resolve(.frequentHouseworkManagement)
+        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
+        .alert("入力した内容を破棄しますか？", isPresented: $isPresentingDiscardAlert) {
+            Button("破棄する", role: .destructive) {
+                dismiss()
+            }
+            Button("入力を続ける", role: .cancel) {}
+        }
+        .alert(
+            "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
+            isPresented: $isPresentingLimitAlert
+        ) {
+            Button("プレミアムプランを見る") {
+                showPaywall()
+            }
+            Button("閉じる", role: .cancel) {}
+        } message: {
+            Text("プレミアムプランにすると、件数を気にせず登録できます。")
+        }
+        .alert("いつもの家事に保存できませんでした", isPresented: $isPresentingFrequentSaveFailure) {
+            Button("OK") {
+                dismiss()
+            }
+        } message: {
+            Text("家事は登録できています。いつもの家事への保存は、管理画面からやり直せます。")
+        }
+        .commonError(content: $commonErrorContent)
+        .fullScreenLoadingIndicator(loadingState)
         .onAppear {
             onAppear()
         }
@@ -96,59 +125,57 @@ public struct RegisterHouseworkView: View {
 
 }
 
-// MARK: - コンポーネント
+// MARK: - 表示内容
 
 private extension RegisterHouseworkView {
 
-    func inputTextField() -> some View {
-        ClearableTextField(
-            text: $houseworkTitle,
-            placeholder: "家事の名前を入力",
-            focus: $isShowingKeyboard
+    var limitPolicy: FrequentHouseworkLimitPolicy {
+        .init(isPremium: subscriptionStore.isPremium)
+    }
+
+    var pendingEntries: [PendingEntry] {
+        draft.pendingEntries(context: frequentHouseworkContext)
+    }
+
+    /// 繰り返しを設定できるか
+    /// - Note: テンプレートの読み込み中・読み込み失敗時は、既存のテンプレートの有無が分からず重複して作成しかねないので設定させない
+    var canSetRecurrence: Bool {
+        houseworkTemplateListStore?.loadState == .loaded
+    }
+
+    func frequentTab() -> some View {
+        FrequentHouseworkPicker(
+            filterCategories: frequentHouseworkContext.sections.map(\.category),
+            sections: frequentHouseworkContext.sections,
+            selectedIds: Set(draft.selectedFrequentItemIds),
+            disabledIds: limitPolicy.unusableItemIds(in: frequentHouseworkContext),
+            onTapItem: { item in draft.toggleFrequentItem(item.id) },
+            onTapManage: { isShowFrequentManagement = true }
         )
     }
 
-    func inputPointPicker() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("完了ポイント")
-                .font(with: .headLineM)
-            PointWheelPickerField(point: $completePoint)
-                .font(with: .headLineL)
-        }
-    }
-
-    func inputRecurrence() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            // 曜日・日付は登録しようとしている日から決めるので、種類だけを選ばせる
-            RecurrenceSelector(
-                input: $recurrenceInput,
-                kinds: HouseworkRecurrenceInput.Kind.allCases,
-                titleFont: .headLineM,
-                showsDetail: false
-            )
-            if let recurrence = recurrenceInput.recurrence {
-                Text(recurrenceNote(recurrence))
-                    .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+    func manualTab() -> some View {
+        ManualHouseworkForm(
+            entry: $draft.input,
+            categories: frequentHouseworkContext.categories,
+            saveAsFrequentState: saveAsFrequentState,
+            canSetRecurrence: canSetRecurrence,
+            canQueue: draft.canQueueCurrentInput,
+            history: houseworkEntryHistoryList.items,
+            onTapQueue: { tappedQueueButton() },
+            onTapHistory: { item in tappedEntryHistoryRow(item) },
+            onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() }
+        )
+        .onChange(of: saveAsFrequentState) { _, newState in
+            // 名前を変えて重複・上限に当たったら、オンのままにしない
+            if !newState.isAvailable {
+                draft.input.savesAsFrequent = false
             }
         }
     }
 
-    func entryHistoryContent() -> some View {
-        VStack(alignment: .leading, spacing: .space16) {
-            Text("入力履歴")
-                .font(with: .headLineM)
-            List {
-                ForEach(houseworkEntryHistoryList.items, id: \.self) { item in
-                    Button(item) {
-                        tappedEntryHistoryRow(item)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .font(with: .body)
-                }
-            }
-            .listStyle(.inset)
-        }
+    var saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState {
+        draft.saveAsFrequentState(context: frequentHouseworkContext, limitPolicy: limitPolicy)
     }
 
 }
@@ -157,131 +184,190 @@ private extension RegisterHouseworkView {
 
 private extension RegisterHouseworkView {
 
-    /// 繰り返しを設定できるか
-    /// - Note: テンプレートの読み込み中・読み込み失敗時は、既存のテンプレートの有無が分からず重複して作成しかねないので設定させない
-    var canSetRecurrence: Bool {
-        houseworkTemplateListStore?.loadState == .loaded
-    }
-
-    /// 選んだ繰り返しで、いつ表示されるかの説明
-    func recurrenceNote(_ recurrence: HouseworkRecurrence) -> String {
-        let schedule = switch recurrence {
-        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
-            "毎日"
-
-        case let .weekly(days):
-            "毎週" + DayOfWeek.displayOrdered.filter { days.contains($0) }.map(\.fullLabel).joined(separator: "・")
-
-        case let .monthly(.dayOfMonth(day)) where day >= 29:
-            "毎月\(day)日（\(day)日がない月は月末）"
-
-        case let .monthly(rule):
-            rule.label
-        }
-        return "家事テンプレートに登録され、今日以降の\(schedule)に表示されます"
-    }
-
-    func tappedEntryHistoryRow(_ item: String) {
-        houseworkTitle = item
-        houseworkEntryHistoryList.moveToFrontIfExists(item)
-    }
-
     func onAppear() {
         // 繰り返しの各種類の初期値は、登録しようとしている日の曜日・日付にしておく
-        recurrenceInput = .init(
-            kind: recurrenceInput.kind,
+        draft.input.recurrenceInput = .init(
+            kind: draft.input.recurrenceInput.kind,
             basedOn: dailyHouseworkList.metaData.indexedDate.value,
             calendar: calendar
         )
+        selectedTab = .initial(hasFrequentHousework: !frequentHouseworkContext.isEmpty)
     }
 
-    func tappedRegisterButton() async {
-        guard let cohabitantId else { return }
-
-        if let recurrence = recurrenceInput.recurrence,
-           let houseworkTemplateListStore {
-            await registerRecurringHousework(
-                recurrence: recurrence,
-                templateListStore: houseworkTemplateListStore,
-                cohabitantId: cohabitantId
-            )
-            return
-        }
-
-        let newItem = HouseworkItem(
-            id: UUID().uuidString,
-            title: houseworkTitle,
-            point: completePoint,
-            metaData: dailyHouseworkList.metaData
-        )
-
-        guard !dailyHouseworkList.isAlreadyRegistered(newItem) else {
-            isPresentingDuplicationAlert = true
-            return
-        }
-
-        houseworkEntryHistoryList.addNewHistory(houseworkTitle)
-
-        do {
-            try await houseworkListStore.register(
-                newItems: [.init(item: newItem, source: .manual)],
-                cohabitantId: cohabitantId,
-                step: step
-            )
+    func tappedCancelButton() {
+        guard draft.hasInput else {
             dismiss()
-        } catch {
-            print("Failed registering a new housework item: \(error)")
-            commonErrorContent = .init(error: error)
+            return
+        }
+        isPresentingDiscardAlert = true
+    }
+
+    func tappedQueueButton() {
+        draft.queueCurrentInput(id: UUID().uuidString)
+    }
+
+    func tappedEntryHistoryRow(_ item: String) {
+        draft.input.title = item
+        houseworkEntryHistoryList.moveToFrontIfExists(item)
+    }
+
+    func tappedSaveAsFrequentWhenLimitReached() {
+        frequentHouseworkStore?.logLimitReached(step: .register)
+        isPresentingLimitAlert = true
+    }
+
+    func tappedRegisterButton() {
+        guard let cohabitantId else { return }
+        let entries = pendingEntries
+        guard !entries.isEmpty else { return }
+        loadingState.task {
+            await register(entries, cohabitantId: cohabitantId)
         }
     }
 
-    /// 繰り返しを設定した家事は、その日の家事としては登録せずテンプレートに追加する（該当日に仮想表示される）
-    func registerRecurringHousework(
-        recurrence: HouseworkRecurrence,
-        templateListStore: HouseworkTemplateListStore,
-        cohabitantId: String
-    ) async {
-        let newItem = HouseworkTemplateItem(
-            id: .init(uuid: UUID()),
-            title: houseworkTitle,
-            point: completePoint,
-            updatedAt: now
-        )
-
-        houseworkEntryHistoryList.addNewHistory(houseworkTitle)
+    /// 登録予定リストをまとめて登録する
+    /// - Note: 家事の登録に失敗した場合はシートを閉じずに知らせ、登録予定リストを残す
+    func register(_ entries: [PendingEntry], cohabitantId: String) async {
+        entries
+            .filter { $0.registerSource == .manual }
+            .forEach { houseworkEntryHistoryList.addNewHistory($0.title) }
 
         do {
-            try await templateListStore.appendItemCreatingTemplateIfNeeded(
-                newItem,
+            try await registerHousework(entries, cohabitantId: cohabitantId)
+        } catch {
+            print("Failed registering new housework items: \(error)")
+            commonErrorContent = .init(error: error)
+            return
+        }
+        await saveAsFrequentIfNeeded(entries, cohabitantId: cohabitantId)
+    }
+
+    /// 繰り返しなしはその日の家事として一括で、繰り返しありはテンプレートに追加する
+    func registerHousework(_ entries: [PendingEntry], cohabitantId: String) async throws {
+        let newItems = entries
+            .filter { $0.recurrence == nil }
+            .map { NewHouseworkEntry(item: makeHouseworkItem($0), source: $0.registerSource) }
+        try await houseworkListStore.register(newItems: newItems, cohabitantId: cohabitantId, step: step)
+
+        for entry in entries {
+            guard let recurrence = entry.recurrence, let houseworkTemplateListStore else { continue }
+            try await houseworkTemplateListStore.appendItemCreatingTemplateIfNeeded(
+                makeTemplateItem(entry),
                 recurrence: recurrence,
                 cohabitantId: cohabitantId,
                 newTemplateId: UUID().uuidString
             )
+        }
+    }
+
+    /// 「いつもの家事に保存する」をオンにした家事を保存する
+    /// - Note: 家事は登録できているため、ここだけ失敗した場合は知らせたうえでシートを閉じる
+    func saveAsFrequentIfNeeded(_ entries: [PendingEntry], cohabitantId: String) async {
+        let inputs = entries
+            .filter(\.savesAsFrequent)
+            .map { FrequentHouseworkInput(title: $0.title, point: $0.point, categoryId: $0.categoryId) }
+        guard !inputs.isEmpty, let frequentHouseworkStore else {
+            dismiss()
+            return
+        }
+        do {
+            try await frequentHouseworkStore.add(
+                inputs,
+                limitPolicy: limitPolicy,
+                step: .register,
+                cohabitantId: cohabitantId
+            )
             dismiss()
         } catch {
-            print("Failed registering a recurring housework item: \(error)")
-            commonErrorContent = .init(error: error)
+            print("Failed saving frequent housework: \(error)")
+            isPresentingFrequentSaveFailure = true
         }
+    }
+
+    func makeHouseworkItem(_ entry: PendingEntry) -> HouseworkItem {
+        .init(
+            id: UUID().uuidString,
+            title: entry.title,
+            point: entry.point,
+            metaData: dailyHouseworkList.metaData
+        )
+    }
+
+    func makeTemplateItem(_ entry: PendingEntry) -> HouseworkTemplateItem {
+        .init(
+            id: .init(uuid: UUID()),
+            title: entry.title,
+            point: entry.point,
+            updatedAt: now
+        )
+    }
+
+    func showPaywall() {
+        analyticsClient.log(.paywall(.shown(step: .frequentHouseworkLimit)))
+        isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(
+            step: .frequentHouseworkLimit,
+            isPremium: subscriptionStore.isPremium
+        )))
     }
 
 }
 
 #if DEBUG
-#Preview("RegisterHouseworkView") {
-    RegisterHouseworkView(
-        dailyHouseworkList: .init(
+extension RegisterHouseworkView {
+
+    /// Preview用の、登録しようとしている日の家事一覧
+    static func previewDailyHouseworkList() -> DailyHouseworkList {
+        .init(
             items: [],
             metaData: .init(
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .now
+                expiredAt: .previewDate(year: 2026, month: 2, day: 1)
             )
-        ),
+        )
+    }
+
+    /// Preview用の、登録済みのいつもの家事
+    static func previewFrequentHouseworkContext() -> FrequentHouseworkContext {
+        .init(items: [
+            .makeForPreview(id: "1", title: "風呂掃除", categoryId: "preset.cleaning"),
+            .makeForPreview(id: "2", title: "換気扇", point: 30, categoryId: "preset.cleaning", sortOrder: 1),
+            .makeForPreview(id: "3", title: "布団干し", point: 20, categoryId: "preset.laundry"),
+        ])
+    }
+
+}
+
+#Preview("RegisterHouseworkView_いつもの家事あり") {
+    RegisterHouseworkView(
+        draft: .init(selectedFrequentItemIds: ["1", "3"]),
+        selectedTab: .frequent,
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(\.frequentHouseworkContext, RegisterHouseworkView.previewFrequentHouseworkContext())
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_いつもの家事なし") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
         step: .board
     )
     .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
-        let historyList = HouseworkHistoryList(items: [
-            "洗濯", "掃除",
-        ])
+        let historyList = HouseworkHistoryList(items: ["洗濯", "掃除"])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
     .environment(HouseworkListStore(
@@ -289,50 +375,7 @@ private extension RegisterHouseworkView {
         cohabitantPushNotificationClient: .previewValue
     ))
     .environment(HouseworkTemplateListStore(loadState: .loaded))
-    #if canImport(Prefire)
-        .snapshot(perceptualPrecision: 0.95)
-    #endif
-}
-
-#Preview("RegisterHouseworkView_毎週くり返し") {
-    RegisterHouseworkView(
-        recurrenceInput: .init(kind: .weekly, weekdays: [.thursday]),
-        dailyHouseworkList: .init(
-            items: [],
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .now
-            )
-        ),
-        step: .board
-    )
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
-    .environment(HouseworkTemplateListStore(loadState: .loaded))
-    #if canImport(Prefire)
-        .snapshot(perceptualPrecision: 0.95)
-    #endif
-}
-
-#Preview("RegisterHouseworkView_毎月くり返し_月末") {
-    RegisterHouseworkView(
-        recurrenceInput: .init(kind: .monthly, dayOfMonth: 31),
-        dailyHouseworkList: .init(
-            items: [],
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 31)),
-                expiredAt: .now
-            )
-        ),
-        step: .board
-    )
-    .environment(HouseworkListStore(
-        houseworkClient: .previewValue,
-        cohabitantPushNotificationClient: .previewValue
-    ))
-    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
     #if canImport(Prefire)
         .snapshot(perceptualPrecision: 0.95)
     #endif
@@ -341,21 +384,16 @@ private extension RegisterHouseworkView {
 #Preview("RegisterHouseworkView_通信中") {
     RegisterHouseworkView(
         loadingState: .init(store: .init(isLoading: true)),
-        dailyHouseworkList: .init(
-            items: [],
-            metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .now
-            )
-        ),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
         step: .board
     )
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
     ))
+    .environment(SubscriptionStore())
     #if canImport(Prefire)
-    .prefireIgnored()
+        .prefireIgnored()
     #endif
 }
 #endif
