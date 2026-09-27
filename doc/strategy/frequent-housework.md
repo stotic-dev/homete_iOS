@@ -535,10 +535,10 @@ public struct FrequentHouseworkPicker: View {
 
 **PR 2b: カテゴリ管理とテンプレートからの取り込み**
 
-- [ ] 追加／編集モーダルのカテゴリ選択に「＋ 新しいカテゴリ」
-- [ ] カテゴリ管理画面（名前変更・削除・並べ替え・追加）
-- [ ] テンプレートから取り込むシート（管理画面のメニューと空状態から開く）
-- [ ] 追加する画面の `AppScreen`（`frequent_housework_category` / `frequent_housework_import`）
+- [x] 追加／編集モーダルのカテゴリ選択に「＋ 新しいカテゴリ」
+- [x] カテゴリ管理画面（名前変更・削除・並べ替え・追加）
+- [x] テンプレートから取り込むシート（管理画面のメニューと空状態から開く）
+- [x] 追加する画面の `AppScreen`（`frequent_housework_category` / `frequent_housework_import`）
 
 **PR 3: 登録シートの2タブ化とまとめて登録**
 

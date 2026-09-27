@@ -20,6 +20,9 @@ struct FrequentHouseworkManagementView: View {
     let limitStatus: FrequentHouseworkLimitStatus?
     let onTapClose: () -> Void
     let onTapAdd: () -> Void
+    let onTapManageCategories: () -> Void
+    /// テンプレートから取り込む導線。テンプレートに家事がない場合は`nil`
+    let onTapImport: (() -> Void)?
     let onTapItem: (FrequentHouseworkItem) -> Void
     let onDelete: (FrequentHouseworkItem) -> Void
     /// カテゴリ内で並べ替えた後の家事IDの順
@@ -70,10 +73,8 @@ private extension FrequentHouseworkManagementView {
     @ViewBuilder
     func loadedContent() -> some View {
         if sections.isEmpty {
-            FrequentHouseworkEmptyView {
-                onTapAdd()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            FrequentHouseworkEmptyView(onTapAdd: onTapAdd, onTapImport: onTapImport)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             itemList()
         }
@@ -130,6 +131,7 @@ private extension FrequentHouseworkManagementView {
         .buttonStyle(.plain)
     }
 
+    /// 並びは「編集」「追加」の主操作を先に置き、その他の操作をまとめたサブメニューを一番右に寄せる
     @ViewBuilder
     func trailingNavigationItem() -> some View {
         if loadState == .loaded {
@@ -145,8 +147,29 @@ private extension FrequentHouseworkManagementView {
                     Image(systemName: "plus")
                 }
                 .accessibilityLabel("いつもの家事を追加")
+                subMenu()
             }
         }
+    }
+
+    func subMenu() -> some View {
+        Menu {
+            Button {
+                onTapManageCategories()
+            } label: {
+                Label("カテゴリを管理", systemImage: "folder")
+            }
+            if let onTapImport {
+                Button {
+                    onTapImport()
+                } label: {
+                    Label("テンプレートから取り込む", systemImage: "square.and.arrow.down")
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+        }
+        .accessibilityLabel("その他の操作")
     }
 
 }
@@ -167,6 +190,8 @@ private extension FrequentHouseworkManagementView {
             limitStatus: .init(count: 11, limit: 10, isReached: true),
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -185,6 +210,8 @@ private extension FrequentHouseworkManagementView {
             limitStatus: nil,
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },
@@ -203,6 +230,8 @@ private extension FrequentHouseworkManagementView {
             limitStatus: nil,
             onTapClose: {},
             onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
             onTapItem: { _ in },
             onDelete: { _ in },
             onMove: { _ in },

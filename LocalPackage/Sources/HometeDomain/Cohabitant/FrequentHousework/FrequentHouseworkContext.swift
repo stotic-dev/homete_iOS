@@ -161,15 +161,28 @@ public extension FrequentHouseworkContext {
         }
     }
 
+    /// カスタムカテゴリの名前を検証する
+    /// - Parameter excludingId: 名前を変更中のカテゴリ自身を比較対象から外すためのID
+    func validateCategoryName(_ name: String, excludingId: String? = nil) -> CategoryNameValidation {
+        let normalizedName = Self.normalize(name)
+        guard !normalizedName.isEmpty else { return .emptyName }
+        guard !containsCategoryName(normalizedName, excludingId: excludingId) else { return .duplicatedName }
+        return .valid(normalizedName)
+    }
+
     /// 検証を通ったカスタムカテゴリの名前（前後の空白を除いたもの）
     /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
     func validatedCategoryName(_ name: String, excludingId: String? = nil) throws -> String {
-        let normalizedName = Self.normalize(name)
-        guard !normalizedName.isEmpty else { throw FrequentHouseworkError.emptyCategoryName }
-        guard !containsCategoryName(normalizedName, excludingId: excludingId) else {
+        switch validateCategoryName(name, excludingId: excludingId) {
+        case let .valid(normalizedName):
+            return normalizedName
+
+        case .emptyName:
+            throw FrequentHouseworkError.emptyCategoryName
+
+        case .duplicatedName:
             throw FrequentHouseworkError.duplicatedCategoryName
         }
-        return normalizedName
     }
 
 }
@@ -187,6 +200,24 @@ public extension FrequentHouseworkContext {
         case emptyTitle
         /// 同じ名前のいつもの家事がすでにある
         case duplicatedTitle
+
+        public var isValid: Bool {
+            if case .valid = self { true } else { false }
+        }
+
+    }
+
+    /// カスタムカテゴリの名前の検証結果
+    /// - Note: 追加・変更ボタンの非活性（画面）と書き込み前の検証（Store）で同じ判定を使うため、
+    ///         エラーではなく結果の値として返す
+    enum CategoryNameValidation: Equatable, Sendable {
+
+        /// 決定できる（前後の空白を除いた名前）
+        case valid(String)
+        /// 名前が空
+        case emptyName
+        /// 同じ名前のカテゴリがすでにある（プリセット・「その他」を含む）
+        case duplicatedName
 
         public var isValid: Bool {
             if case .valid = self { true } else { false }

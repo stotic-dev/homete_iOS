@@ -11,6 +11,7 @@ import Testing
 enum FrequentHouseworkContextAssemblyTest {
 
     struct ValidateTitleCase {}
+    struct ValidateCategoryNameCase {}
     struct MakeAddedItemsCase {}
     struct MakeUpdatedItemCase {}
     struct MakeReorderedItemsCase {}
@@ -59,6 +60,53 @@ extension FrequentHouseworkContextAssemblyTest.ValidateTitleCase {
         // Assert
 
         #expect(actual == .valid("洗濯"))
+    }
+
+}
+
+extension FrequentHouseworkContextAssemblyTest.ValidateCategoryNameCase {
+
+    @Test(
+        "名前が空なら空、プリセット・「その他」・既存のカスタムと重複するなら重複、それ以外は前後の空白を除いた名前を返す",
+        arguments: [
+            ("  ", FrequentHouseworkContext.CategoryNameValidation.emptyName),
+            ("掃除", FrequentHouseworkContext.CategoryNameValidation.duplicatedName),
+            ("その他", FrequentHouseworkContext.CategoryNameValidation.duplicatedName),
+            ("ペット ", FrequentHouseworkContext.CategoryNameValidation.duplicatedName),
+            (" 庭 ", FrequentHouseworkContext.CategoryNameValidation.valid("庭")),
+        ]
+    )
+    func validateCategoryName(name: String, expected: FrequentHouseworkContext.CategoryNameValidation) {
+        // Arrange
+
+        let context = FrequentHouseworkContext(
+            customCategories: [.makeForTest(id: "1", name: "ペット")]
+        )
+
+        // Act
+
+        let actual = context.validateCategoryName(name)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test("名前を変更中のカテゴリ自身と同じ名前のままなら、決定できると判定する")
+    func validateCategoryNameIgnoresEditingItself() {
+        // Arrange
+
+        let context = FrequentHouseworkContext(
+            customCategories: [.makeForTest(id: "1", name: "ペット")]
+        )
+
+        // Act
+
+        let actual = context.validateCategoryName("ペット", excludingId: "1")
+
+        // Assert
+
+        #expect(actual == .valid("ペット"))
     }
 
 }
