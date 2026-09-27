@@ -22,7 +22,8 @@ extension HouseworkItem {
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
         effort: HouseworkEffort = .normal,
-        executedAt: Date? = nil
+        executedAt: Date? = nil,
+        thanks: [String: HouseworkThanks] = [:]
     ) -> Self {
         .init(
             id: id,
@@ -34,7 +35,8 @@ extension HouseworkItem {
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            thanks: thanks
         )
     }
 
@@ -53,6 +55,7 @@ extension HouseworkBoardItem {
         executors: [HouseworkExecutor] = [],
         effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
+        thanks: [String: HouseworkThanks] = [:],
         isRegistered: Bool = true
     ) -> Self {
         .init(
@@ -66,7 +69,8 @@ extension HouseworkBoardItem {
                 executorId: executorId,
                 executors: executors,
                 effort: effort,
-                executedAt: executedAt
+                executedAt: executedAt,
+                thanks: thanks
             ),
             isRegistered: isRegistered
         )

@@ -20,6 +20,12 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(item.id)
         }
+    } upsertThanksHandler: { houseworkId, senderId, thanks, cohabitantId in
+        try await FirestoreService.shared.update(fieldPath: "thanks.\(senderId)", value: thanks) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(houseworkId)
+        }
     } snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
         let targetDateList = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: anchorDate,

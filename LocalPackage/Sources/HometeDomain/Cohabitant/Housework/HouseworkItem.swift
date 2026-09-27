@@ -31,6 +31,12 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let expiredAt: Date
     /// 紐づくテンプレートの家事ID
     public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+    /// 届いたありがとう（キーは送った人のユーザID）
+    public let thanks: [String: HouseworkThanks]
+    /// ドキュメントを作った日時。家事の並び順を固定するのに使う
+    ///
+    /// 作成日時の記録を始める前に作られた家事と、旧バージョンのアプリが上書きした家事は`nil`（ADR-0026）。
+    public let createdAt: Date?
 
     public init(
         id: String,
@@ -42,7 +48,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         effort: HouseworkEffort,
         executedAt: Date?,
         expiredAt: Date,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -54,8 +62,15 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.executedAt = executedAt
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
+        self.thanks = thanks
+        self.createdAt = createdAt
     }
 
+    /// 完了にする
+    ///
+    /// ありがとうは1回の完了に対して届くものなので、前の完了の記録は引き継がない。
+    /// 未完了に戻した直後に、まだ完了表示のままだった同居人の端末からありがとうが書き込まれる
+    /// こともあるため、未完了に戻すときだけでなく完了にするときにも消す。
     /// - Parameter executors: 担当者。ポイントは`effort`で上乗せした後のポイントを配分したもの
     public func updateCompleted(
         at now: Date,
@@ -78,7 +93,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             effort: effort,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            createdAt: createdAt
         )
     }
 
@@ -97,10 +113,14 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: now
         )
     }
 
+    /// 未完了に戻す
+    ///
+    /// 完了を取り消すので、その完了に届いたありがとうの記録も消す。
     public func updateIncomplete() -> Self {
         .init(
             id: id,
@@ -112,7 +132,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             effort: .normal,
             executedAt: nil,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            createdAt: createdAt
         )
     }
 
@@ -127,7 +148,27 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
+        )
+    }
+
+    /// 新しくドキュメントを作る家事に、作成日時を付ける
+    public func updateCreatedAt(_ now: Date) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: now
         )
     }
 
@@ -163,7 +204,9 @@ public extension HouseworkItem {
         executorId: String?,
         executedAt: Date?,
         expiredAt: Date,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) {
         self.init(
             id: id,
@@ -175,7 +218,9 @@ public extension HouseworkItem {
             effort: .normal,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -198,6 +243,8 @@ public extension HouseworkItem {
         case executedAt
         case expiredAt
         case templateHouseworkItemId
+        case thanks
+        case createdAt
 
     }
 
@@ -207,6 +254,8 @@ public extension HouseworkItem {
     /// ポイントを満額配分したものとして読む。旧アプリは`setData(merge: false)`で全体を上書きするため、
     /// 新しいアプリが書いた家事でも、旧アプリが更新すると`executors`が消える（ADR-0023）。
     /// `effort`が無いドキュメントも同じ理由で起こり得るため、「ふつう」として読む（ADR-0024）。
+    /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む（ADR-0025）。
+    /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
@@ -226,7 +275,9 @@ public extension HouseworkItem {
             templateHouseworkItemId: container.decodeIfPresent(
                 HouseworkTemplateItem.ItemId.self,
                 forKey: .templateHouseworkItemId
-            )
+            ),
+            thanks: container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:],
+            createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt)
         )
     }
 
@@ -244,6 +295,8 @@ public extension HouseworkItem {
         try container.encodeIfPresent(executedAt, forKey: .executedAt)
         try container.encode(expiredAt, forKey: .expiredAt)
         try container.encodeIfPresent(templateHouseworkItemId, forKey: .templateHouseworkItemId)
+        try container.encode(thanks, forKey: .thanks)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
     }
 
 }
@@ -258,7 +311,8 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executedAt: Date? = nil,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:]
     ) {
         self.init(
             id: id,
@@ -269,7 +323,8 @@ public extension HouseworkItem {
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: metaData.expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 

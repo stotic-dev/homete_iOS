@@ -19,6 +19,7 @@ struct HouseworkBoardView: View {
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.cohabitantMembers) var members
 
     @Binding var houseworkBoardList: HouseworkBoardList
     @Binding var dateList: HouseworkDateList
@@ -141,6 +142,7 @@ private extension HouseworkBoardView {
                             houseworkListStore: houseworkListStore,
                             state: state,
                             list: houseworkBoardList,
+                            memberList: members,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
                             onCreateTapped: { isPresentingAddHouseworkView = true },
