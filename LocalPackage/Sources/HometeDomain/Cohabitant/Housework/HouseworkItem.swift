@@ -62,7 +62,13 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         executors: [HouseworkExecutor],
         effort: HouseworkEffort
     ) -> Self {
-        .init(
+        // 担当者のポイントの合計は、頑張り度で上乗せした後のポイントと一致させる（ADR-0024）。
+        // 配分と頑張り度を別々に受け取るため、組み合わせを取り違えたときに開発中に気付けるようにする
+        assert(
+            executors.reduce(0) { $0 + $1.point } == effort.boostedPoint(point),
+            "担当者のポイントの合計が、頑張り度で上乗せした後のポイントと一致しません"
+        )
+        return .init(
             id: id,
             indexedDate: indexedDate,
             title: title,
