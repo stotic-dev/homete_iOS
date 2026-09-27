@@ -16,6 +16,8 @@ struct HouseworkDetailItemListContent: View {
 
     let cohabitantMemberList: CohabitantMemberList
     let item: HouseworkBoardItem
+    /// 家事に届いたありがとう。届いていなければ空
+    var thanksMessages: [HouseworkThanksMessage] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
@@ -43,6 +45,15 @@ struct HouseworkDetailItemListContent: View {
                     }
                 }
             }
+            if !thanksMessages.isEmpty {
+                HouseworkDetailItemRow(title: "ありがとう") {
+                    VStack(alignment: .leading, spacing: .space16) {
+                        ForEach(thanksMessages.indices, id: \.self) { index in
+                            thanksMessageRow(thanksMessages[index])
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -61,6 +72,23 @@ private extension HouseworkDetailItemListContent {
         guard item.executors.count > 1 else { return userName }
 
         return "\(userName) \(executor.percentage)%（\(executor.point)pt）"
+    }
+
+    func thanksMessageRow(_ thanksMessage: HouseworkThanksMessage) -> some View {
+        VStack(alignment: .leading, spacing: .space4) {
+            Label {
+                Text("\(thanksMessage.senderName)さんから")
+            } icon: {
+                Image(systemName: "heart.fill")
+                    .foregroundStyle(.thanksHeart)
+            }
+            .font(with: .boldCaption)
+            .foregroundStyle(.onSubSurface)
+            Text(thanksMessage.message)
+                .font(with: .body)
+                .foregroundStyle(.onSurfaceVariant)
+        }
+        .accessibilityElement(children: .combine)
     }
 
 }
@@ -110,6 +138,27 @@ private extension HouseworkDetailItemListContent {
             ],
             executedAt: .distantPast
         )
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailItemListContent_ありがとうあり", traits: .sizeThatFitsLayout) {
+    HouseworkDetailItemListContent(
+        cohabitantMemberList: .init(
+            value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
+            ownId: "own"
+        ),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executorId: "own",
+            executedAt: .distantPast
+        ),
+        thanksMessages: [
+            .init(senderName: "はなこ", message: "いつも洗濯してくれてありがとう！助かっています。"),
+            .init(senderName: "じろう", message: HouseworkThanksMessage.defaultMessage),
+        ]
     )
     .setupEnvironmentForPreview()
 }

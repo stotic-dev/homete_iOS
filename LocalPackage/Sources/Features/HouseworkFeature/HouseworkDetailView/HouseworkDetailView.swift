@@ -54,7 +54,8 @@ private extension HouseworkDetailView {
         VStack(spacing: .zero) {
             HouseworkDetailItemListContent(
                 cohabitantMemberList: cohabitantStore.members,
-                item: item
+                item: item,
+                thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
             )
             Spacer()
             HouseworkDetailActionContent(
