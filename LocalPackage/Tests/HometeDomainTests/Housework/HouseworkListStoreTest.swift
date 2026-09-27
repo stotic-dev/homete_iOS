@@ -607,6 +607,46 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test("送信済みの家事にコメントなしのありがとうを送っても、記録を上書きせず通知も送らない")
+    func sendThanks_withoutCommentToAlreadySent_doesNothing() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: .distantPast)]
+        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let store = HouseworkListStore(
+            houseworkClient: .init(
+                upsertThanksHandler: { _, _, _, _ in
+                    // Assert
+
+                    Issue.record()
+                }
+            ),
+            cohabitantPushNotificationClient: .init { _, _ in
+                // Assert
+
+                Issue.record()
+            },
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: nil,
+            now: Date(timeIntervalSince1970: 1000),
+            cohabitantId: inputCohabitantId,
+            step: .board
+        )
+    }
+
     @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")
     func startObserving_updatesLoadStateToFailed() async {
         // Arrange

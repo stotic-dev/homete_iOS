@@ -155,6 +155,9 @@ public final class HouseworkListStore {
     ) async throws {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て編集かどうかを判断する
         let currentThanks = (items.item(target) ?? target).thanks[sender.id]
+        // コメントなしのありがとう（クイックアクション・一括操作）は送信済みの家事には出さないが、
+        // 画面の表示がリスナーに追いつく前に操作されるとすり抜ける。書いたコメントを消さないよう何もしない
+        if comment == nil, currentThanks != nil { return }
         let isEditing = currentThanks != nil
         let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
 
