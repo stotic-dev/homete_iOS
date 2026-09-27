@@ -105,7 +105,7 @@ extension HouseworkItemTest.UpdateStateCase {
             title: "洗濯",
             point: 100,
             state: .completed,
-            executorId: "executorId",
+            executors: [HouseworkExecutor(userId: "executorId", percentage: 100, point: 120)],
             effort: .hard,
             executedAt: executedAt,
             expiredAt: expiredAt
@@ -115,16 +115,17 @@ extension HouseworkItemTest.UpdateStateCase {
         let result = item.updateNotTodo()
 
         // Assert
-        let expected = HouseworkItem.makeForTest(
-            id: 1,
-            indexedDate: indexedDate,
+        let expected = HouseworkItem(
+            id: "id1",
+            indexedDate: .init(value: indexedDate),
             title: "洗濯",
             point: 100,
             state: .notTodo,
-            executorId: "executorId",
+            executors: [HouseworkExecutor(userId: "executorId", percentage: 100, point: 120)],
             effort: .hard,
             executedAt: executedAt,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            templateHouseworkItemId: nil
         )
         #expect(result == expected)
     }

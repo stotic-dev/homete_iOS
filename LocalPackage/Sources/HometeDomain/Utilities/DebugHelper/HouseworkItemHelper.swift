@@ -30,7 +30,7 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
+            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
@@ -57,7 +57,7 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
+            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
@@ -82,8 +82,7 @@ public extension HouseworkItem {
         let inputPoint = point ?? self.point
         let inputState = state ?? self.state
         let inputEffort = effort ?? self.effort
-        let inputExecutors = executorId.map { [.solo(userId: $0, point: inputEffort.boostedPoint(inputPoint))] }
-            ?? executors
+        let inputExecutors = executorId.map { [.solo(userId: $0, point: inputPoint)] } ?? executors
         let inputExecutedAt = executedAt
         let inputExpiredAt = expiredAt ?? self.expiredAt
         let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
