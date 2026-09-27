@@ -22,7 +22,9 @@ public extension HouseworkItem {
         effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -34,7 +36,9 @@ public extension HouseworkItem {
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -49,7 +53,9 @@ public extension HouseworkItem {
         effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: id,
@@ -61,7 +67,9 @@ public extension HouseworkItem {
             effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -75,7 +83,8 @@ public extension HouseworkItem {
         effort: HouseworkEffort? = nil,
         executedAt: Date? = nil,
         expiredAt: Date? = nil,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        createdAt: Date? = nil
     ) -> HouseworkItem {
         let inputIndexedDate = indexedDate ?? self.indexedDate
         let inputTitle = title ?? self.title
@@ -98,7 +107,8 @@ public extension HouseworkItem {
             effort: inputEffort,
             executedAt: inputExecutedAt,
             expiredAt: inputExpiredAt,
-            templateHouseworkItemId: inputTemplateHouseworkItemId
+            templateHouseworkItemId: inputTemplateHouseworkItemId,
+            createdAt: createdAt ?? self.createdAt
         )
     }
 

@@ -181,7 +181,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `return_incomplete` / `delete` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
@@ -195,11 +195,12 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
 | `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
-| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクションは定型文、`thanks`はありがとうを伝える画面からメッセージを添えて送信） |
+| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなし、`thanks`はありがとうを伝える画面からメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `edit_thanks` | `thanks` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
 
-いずれも`result`に`success` / `failure`が付与される。`send_thanks`だけはFirestoreを更新しないため、プッシュ通知の送信結果を表す。
+いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
 `source`の比率は、いつもの家事が実際の登録をどれだけ肩代わりしているかの指標になる。

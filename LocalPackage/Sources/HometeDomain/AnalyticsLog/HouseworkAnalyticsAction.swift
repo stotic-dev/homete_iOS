@@ -73,6 +73,8 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     case redo(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 完了した家事にありがとうを伝えた
     case sendThanks(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 送ったありがとうのメッセージを編集した
+    case editThanks(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を未完了に戻した
     case returnIncomplete(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を削除した
@@ -115,6 +117,7 @@ private extension HouseworkAnalyticsAction {
              let .complete(step, _, _, _),
              let .redo(step, _),
              let .sendThanks(step, _),
+             let .editThanks(step, _),
              let .returnIncomplete(step, _),
              let .delete(step, _):
             step.rawValue
@@ -130,6 +133,7 @@ private extension HouseworkAnalyticsAction {
         case .register,
              .redo,
              .sendThanks,
+             .editThanks,
              .returnIncomplete,
              .delete:
             nil
@@ -154,6 +158,7 @@ private extension HouseworkAnalyticsAction {
         case .register,
              .redo,
              .sendThanks,
+             .editThanks,
              .returnIncomplete,
              .delete:
             nil
@@ -175,6 +180,9 @@ private extension HouseworkAnalyticsAction {
         case .sendThanks:
             "send_thanks"
 
+        case .editThanks:
+            "edit_thanks"
+
         case .returnIncomplete:
             "return_incomplete"
 
@@ -189,7 +197,7 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, source, _):
             source.rawValue
 
-        case .complete, .redo, .sendThanks, .returnIncomplete, .delete:
+        case .complete, .redo, .sendThanks, .editThanks, .returnIncomplete, .delete:
             nil
         }
     }
@@ -201,6 +209,7 @@ private extension HouseworkAnalyticsAction {
              let .complete(_, _, _, isSuccess),
              let .redo(_, isSuccess),
              let .sendThanks(_, isSuccess),
+             let .editThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
              let .delete(_, isSuccess):
             isSuccess ? "success" : "failure"

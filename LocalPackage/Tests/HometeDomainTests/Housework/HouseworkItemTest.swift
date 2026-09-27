@@ -13,6 +13,7 @@ import Testing
 enum HouseworkItemTest {
 
     struct UpdateStateCase {}
+    struct ThanksCase {}
     struct CodableCase {}
 
 }
@@ -94,7 +95,8 @@ extension HouseworkItemTest.UpdateStateCase {
             effort: .normal,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: now
         )
         #expect(result == expected)
     }
@@ -166,6 +168,183 @@ extension HouseworkItemTest.UpdateStateCase {
             templateHouseworkItemId: nil
         )
         #expect(result == expected)
+    }
+
+}
+
+// MARK: - ThanksCase
+
+extension HouseworkItemTest.ThanksCase {
+
+    @Test("未完了に戻すと、届いていたありがとうの記録が消える")
+    func updateIncomplete_clearsThanks() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(),
+            expiredAt: expiredAt,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
+        )
+
+        // Act
+        let result = item.updateIncomplete()
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .incomplete,
+            expiredAt: expiredAt
+        )
+        #expect(result == expected)
+    }
+
+    @Test("完了・未完了・やらないに更新しても、作成日時は変わらない")
+    func updateState_keepsCreatedAt() {
+        // Arrange
+        let createdAt = Date(timeIntervalSince1970: 1000)
+        let item = HouseworkItem.makeForTest(id: 1, createdAt: createdAt)
+
+        // Act
+        let result = item
+            .updateCompleted(at: Date(), executors: [.solo(userId: "executorId", point: 100)], effort: .normal)
+            .updateIncomplete()
+            .updateNotTodo()
+
+        // Assert
+        #expect(result.createdAt == createdAt)
+    }
+
+    @Test("完了にすると、未完了の家事に残っていたありがとうの記録は引き継がない")
+    func updateCompleted_clearsThanks() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let now = Date()
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .incomplete,
+            expiredAt: expiredAt,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
+        )
+
+        // Act
+        let result = item.updateCompleted(
+            at: now,
+            executors: [.solo(userId: "executorId", point: 100)],
+            effort: .normal
+        )
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: now,
+            expiredAt: expiredAt
+        )
+        #expect(result == expected)
+    }
+
+    @Test("もう一度やった家事は、元の家事に届いたありがとうを引き継がない")
+    func makeRedone_doesNotInheritThanks() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let now = Date()
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(),
+            expiredAt: expiredAt,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
+        )
+
+        // Act
+        let result = item.makeRedone(id: "redoneId", at: now, executor: "executorId")
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: "redoneId",
+            indexedDate: indexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: now,
+            expiredAt: expiredAt,
+            createdAt: now
+        )
+        #expect(result == expected)
+    }
+
+    @Test("ありがとうの記録を持たない既存の家事データは、ありがとうなしとして読み込める")
+    func decode_withoutThanks_returnsEmptyThanks() throws {
+        // Arrange
+        let json = Data("""
+        {
+            "id": "id1",
+            "indexedDate": { "value": 0 },
+            "title": "洗濯",
+            "point": 100,
+            "state": { "completed": {} },
+            "executorId": "executorId",
+            "executedAt": 0,
+            "expiredAt": 0
+        }
+        """.utf8)
+
+        // Act
+        let result = try JSONDecoder().decode(HouseworkItem.self, from: json)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: 0),
+            title: "洗濯",
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(timeIntervalSinceReferenceDate: 0),
+            expiredAt: Date(timeIntervalSinceReferenceDate: 0)
+        )
+        #expect(result == expected)
+    }
+
+    @Test("エンコードしてデコードすると、届いたありがとうの記録も元に戻る")
+    func encodeThenDecode_keepsThanks() throws {
+        // Arrange
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: .zero),
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(timeIntervalSinceReferenceDate: .zero),
+            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date(timeIntervalSinceReferenceDate: .zero))]
+        )
+
+        // Act
+        let data = try JSONEncoder().encode(item)
+        let actual = try JSONDecoder().decode(HouseworkItem.self, from: data)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: .zero),
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(timeIntervalSinceReferenceDate: .zero),
+            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date(timeIntervalSinceReferenceDate: .zero))]
+        )
+        #expect(actual == expected)
     }
 
 }
@@ -398,7 +577,7 @@ extension HouseworkItemTest.CodableCase {
         #expect(actual == expected)
     }
 
-    @Test("エンコードしてデコードすると、元の家事に戻る")
+    @Test("エンコードしてデコードすると、作成日時も含めて元の家事に戻る")
     func encodeThenDecode_returnsSameItem() throws {
         // Arrange
         let item = HouseworkItem(
@@ -414,7 +593,8 @@ extension HouseworkItemTest.CodableCase {
             effort: .veryHard,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
             expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
 
         // Act
@@ -435,7 +615,8 @@ extension HouseworkItemTest.CodableCase {
             effort: .veryHard,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
             expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
         #expect(actual == expected)
     }

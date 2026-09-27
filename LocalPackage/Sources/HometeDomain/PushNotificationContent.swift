@@ -82,13 +82,6 @@ public extension PushNotificationContent {
         )
     }
 
-    static func thanksBulkMessage(senderName: String, count: Int) -> Self {
-        .init(
-            title: "\(senderName)さんからありがとうが届きました",
-            message: "\(count)件の家事にありがとうが届きました"
-        )
-    }
-
 }
 
 private extension PushNotificationContent {
