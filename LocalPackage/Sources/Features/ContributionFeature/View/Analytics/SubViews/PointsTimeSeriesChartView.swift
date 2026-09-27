@@ -26,7 +26,7 @@ struct PointsTimeSeriesChartView: View {
                 Text("\(periodUnitLabel)獲得ポイント")
                     .font(with: .headLineS)
                 Spacer()
-                GraphDescriptionPopoverButton(
+                DescriptionPopoverButton(
                     title: "獲得ポイントからわかること",
                     message: """
                     期間中、\(periodUnitLabel)に獲得したポイントを表します。
