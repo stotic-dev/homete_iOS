@@ -91,15 +91,46 @@ private extension HouseBoardListRow {
 
     func thanksStatusLabel(_ status: HouseworkThanksStatus) -> some View {
         HStack(spacing: .space4) {
-            Image(systemName: status.systemImage)
-            if let label = status.label {
-                Text(label)
+            Image(systemName: thanksSystemImage(status))
+            // アイコンだけで伝わらない、ありがとうが届いたことだけ文言を添える
+            if status == .received {
+                Text("ありがとうが届きました")
                     .font(with: .boldCaption)
             }
         }
-        .foregroundStyle(status.foregroundStyle)
+        .foregroundStyle(thanksForegroundStyle(status))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(status.accessibilityLabel)
+        .accessibilityLabel(thanksAccessibilityLabel(status))
+    }
+
+    func thanksSystemImage(_ status: HouseworkThanksStatus) -> String {
+        switch status {
+        case .notSent:
+            "heart"
+        case .sent, .received:
+            "heart.fill"
+        }
+    }
+
+    /// 伝え終えた家事は、赤ピンクのハートで伝えたことがひと目で分かるようにする
+    func thanksForegroundStyle(_ status: HouseworkThanksStatus) -> Color {
+        switch status {
+        case .notSent, .received:
+            .accent
+        case .sent:
+            .thanksHeart
+        }
+    }
+
+    func thanksAccessibilityLabel(_ status: HouseworkThanksStatus) -> String {
+        switch status {
+        case .notSent:
+            "まだありがとうを伝えていません"
+        case .sent:
+            "ありがとうを伝えました"
+        case .received:
+            "ありがとうが届きました"
+        }
     }
 
     /// セル全体のタップ（詳細への遷移）とは別に、ハートだけで反応するボタン

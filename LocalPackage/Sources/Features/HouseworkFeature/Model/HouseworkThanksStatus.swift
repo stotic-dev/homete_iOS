@@ -4,8 +4,6 @@
 //
 
 import HometeDomain
-import HometeResources
-import SwiftUI
 
 /// 完了リストの家事セルに出す、ありがとうの状況
 ///
@@ -19,47 +17,6 @@ enum HouseworkThanksStatus: Equatable, CaseIterable {
     case sent
     /// 自分が終えた家事に、ありがとうが届いた
     case received
-
-    var systemImage: String {
-        switch self {
-        case .notSent:
-            "heart"
-        case .sent, .received:
-            "heart.fill"
-        }
-    }
-
-    /// 伝え終えた家事は、赤いハートで伝えたことがひと目で分かるようにする
-    var foregroundStyle: Color {
-        switch self {
-        case .notSent, .received:
-            .accent
-        case .sent:
-            .thanksHeart
-        }
-    }
-
-    /// セルに添える文言。アイコンだけで伝わる状況では`nil`
-    var label: String? {
-        switch self {
-        case .notSent, .sent:
-            nil
-        case .received:
-            "ありがとうが届きました"
-        }
-    }
-
-    /// VoiceOverで読み上げる説明
-    var accessibilityLabel: String {
-        switch self {
-        case .notSent:
-            "まだありがとうを伝えていません"
-        case .sent:
-            "ありがとうを伝えました"
-        case .received:
-            "ありがとうが届きました"
-        }
-    }
 
 }
 
