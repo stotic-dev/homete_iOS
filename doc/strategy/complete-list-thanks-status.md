@@ -207,12 +207,13 @@ struct CompletionInfo: Equatable {
 
 - 担当者名は`HouseworkBoardListContent`で`\.cohabitantMembers`の`userName(_:)`から担当者ごとに引いて渡す（詳細画面と同じ取り方）
 - 行は受け取った値を並べるだけにし、判断は持たせない
+- `HouseworkThanksStatus`は状況だけを表し、アイコン・色・添える文言・VoiceOverの読み上げは`HouseBoardListRow`が決める（`.claude/rules/ui-attributes-in-view.md`）
 - 見た目: 今のメタデータ（「完了」ラベル）の位置に担当者名を出し、行の右端にありがとうの状況のアイコンを出す。未送信は目立つよう輪郭のハート、送信済みは赤ピンク（`thanksHeart`）の塗りのハート、受け取り済みはアクセント色の塗りのハート
 - 未送信のハートは、セルのタップ（詳細への遷移）とは別に反応するボタンにする。タップできるかは`HouseworkBoardListContent`が決めて`onTapThanks`で渡す
 
 ### 6. 詳細画面・ありがとう画面
 
-- `HouseworkDetailItemListContent`: 「ありがとう」の項目に、`HouseworkThanksMessage.make(item:memberList:)`で組み立てた送った人とメッセージを並べる
+- `HouseworkDetailItemListContent`: 「ありがとう」の項目に、`HouseworkThanksMessage.make(item:memberList:)`で組み立てた送った人とコメントを並べる。コメントなしで送られたありがとうは`comment`が`nil`で届き、View側で「ありがとう！」と出す
 
 - `HouseworkDetailActionContent`: `hasSentThanks`なら「送ったメッセージを編集」ボタンを出し、同じ`HouseworkThanksView`を開く
 - `HouseworkThanksView`
