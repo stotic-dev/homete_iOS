@@ -126,6 +126,8 @@ public var earnedPoint: Int {
 - `point` は上乗せ前のまま持つ。「未完了に戻す」で元のポイントに戻せるようにするため（[ADR-0024](../adr/0024-housework-effort-level-as-separate-field.md)）
 - `executors[].point` の合計は `earnedPoint` と一致させる。集計（`HouseworkContribution` / `TodayHouseworkSummary`）はすでに `executors[].point` を足しているので変更不要
 - デコードは `effort` を `decodeIfPresent` し、無ければ `.normal`
+- `HouseworkEffort` 自体も、知らない値は `.normal` として読む（将来段階を増やしたときに、今のアプリで家事リスト全体のデコードが失敗しないように）
+- `updateCompleted` では、担当者のポイントの合計が `effort.boostedPoint(point)` と一致することを `assert` で確かめる。配分と頑張り度を別々に受け取るため、組み合わせの取り違えに開発中に気付けるようにする
 - `updateCompleted(at:executors:)` → `updateCompleted(at:executors:effort:)`
 - `updateIncomplete()` は `effort` を `.normal` に戻す。`updateNotTodo()` は引き継ぐ
 - `makeRedone` は `.normal` で作る。担当者は `.solo(userId:point:)` なので `point` と一致する
@@ -192,7 +194,7 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 
 | 対象 | 変更前 | 変更後 |
 |---|---|---|
-| `HouseworkBoardItem.point` | `originalItem.point` | `originalItem.earnedPoint`（家事ボードのセル・家事詳細の表示に使われる） |
+| `HouseworkBoardItem.point` | `originalItem.point` | `earnedPoint` に改名し `originalItem.earnedPoint` を返す（家事詳細の表示に使う）。`HouseworkItem.point`（上乗せ前）と同名で意味が逆になるのを避けるため |
 | `HouseBoardListRow`（`HouseworkItem` を直接受け取る） | `houseworkItem.point` | `houseworkItem.earnedPoint` |
 | `HouseworkDetailItemListContent` | — | 完了した家事に「頑張り度」の行を追加（例：`がんばった（10pt → 12pt）`） |
 
