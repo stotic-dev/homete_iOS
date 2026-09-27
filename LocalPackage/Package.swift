@@ -69,7 +69,7 @@ let package = Package(
         feature(name: "SettingFeature"),
         feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
         feature(name: "CohabitantRegistrationFeature"),
-        feature(name: "HouseworkFeature"),
+        feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeature"]),
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature"),
 
