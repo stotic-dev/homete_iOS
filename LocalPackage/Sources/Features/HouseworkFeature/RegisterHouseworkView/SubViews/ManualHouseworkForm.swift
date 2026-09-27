@@ -36,15 +36,20 @@ struct ManualHouseworkForm: View {
                 if canSetRecurrence {
                     inputRecurrence()
                 }
-                queueButton()
                 if !history.isEmpty {
                     entryHistoryContent()
                 }
             }
             .padding(.horizontal, .space16)
-            .padding(.bottom, .space16)
+            // 入力欄の下端がフローティングボタンに隠れないようにする
+            .padding(.bottom, .space64)
         }
         .scrollDismissesKeyboard(.interactively)
+        .overlay(alignment: .bottomLeading) {
+            queueButton()
+                .padding(.leading, .space24)
+                .padding(.bottom, .space24)
+        }
     }
 
 }
@@ -144,13 +149,20 @@ private extension ManualHouseworkForm {
         )
     }
 
+    /// - Note: 入力欄の並びの中に置くと「これを押さないと登録できない」と読めてしまうため、
+    ///         スクロールに載せず宙に浮かせて、あくまで追加の操作であることを示す
     func queueButton() -> some View {
-        Button("続けて入力する") {
+        Button {
             onTapQueue()
+        } label: {
+            HStack(spacing: .space4) {
+                Image(systemName: "plus")
+                Text("続けて入力する")
+            }
+            .font(with: .headLineS)
         }
-        .subPrimaryButtonStyle()
+        .floatingButtonStyle()
         .disabled(!canQueue)
-        .frame(maxWidth: .infinity)
     }
 
     func entryHistoryContent() -> some View {
