@@ -65,8 +65,8 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         categoriesContinuation.yield(expectedCategories)
         itemsContinuation.yield(expectedItems)
         await waiter.value
-        #expect(store.items == expectedItems)
-        #expect(store.customCategories == expectedCategories)
+        #expect(store.context.items == expectedItems)
+        #expect(store.context.customCategories == expectedCategories)
         #expect(store.loadState == .loaded)
 
         // Cleanup
@@ -98,7 +98,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let waiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.items
+                    store.context.items
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -182,7 +182,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let categoriesWaiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.customCategories
+                    store.context.customCategories
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -275,7 +275,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         let waiter = Task {
             await withCheckedContinuation { continuation in
                 ObservationHelper.continuousObservationTracking {
-                    store.customCategories
+                    store.context.customCategories
                 } onChange: {
                     continuation.resume(returning: ())
                 }
@@ -283,7 +283,7 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         }
         categoriesContinuation.yield(expectedCategories)
         await waiter.value
-        #expect(store.customCategories == expectedCategories)
+        #expect(store.context.customCategories == expectedCategories)
 
         // Cleanup
 
@@ -363,16 +363,15 @@ extension FrequentHouseworkStoreTest.ObservingCase {
 extension FrequentHouseworkStoreTest.AddCase {
 
     @MainActor
-    @Test("追加すると、名前の前後の空白を除き、各カテゴリの末尾の並び順で書き込む")
-    func addWritesItemsAtEndOfEachCategory() async throws {
+    @Test("追加すると、現在の内容から組み立てた家事を書き込む")
+    func addWritesAssembledItems() async throws {
         // Arrange
 
         let existing = FrequentHouseworkItem.makeForTest(id: "existing", categoryId: "preset.cleaning", sortOrder: 2)
-        let generatedIds = TestBox(value: ["new1", "new2", "new3"])
         let now = FrequentHouseworkStoreTest.fixedNow
         let expectedItems: [FrequentHouseworkItem] = [
             .init(
-                id: "new1",
+                id: "new",
                 title: "風呂掃除",
                 point: 20,
                 categoryId: "preset.cleaning",
@@ -380,16 +379,6 @@ extension FrequentHouseworkStoreTest.AddCase {
                 createdAt: now,
                 updatedAt: now
             ),
-            .init(
-                id: "new2",
-                title: "窓拭き",
-                point: 30,
-                categoryId: "preset.cleaning",
-                sortOrder: 4,
-                createdAt: now,
-                updatedAt: now
-            ),
-            .init(id: "new3", title: "買い出し", point: 10, categoryId: nil, sortOrder: 0, createdAt: now, updatedAt: now),
         ]
 
         try await confirmation { confirmation in
@@ -403,19 +392,15 @@ extension FrequentHouseworkStoreTest.AddCase {
                         confirmation()
                     }
                 ),
-                items: [existing],
+                context: .init(items: [existing]),
                 now: { now },
-                idGenerator: { generatedIds.value.removeFirst() }
+                idGenerator: { "new" }
             )
 
             // Act
 
             try await store.add(
-                [
-                    .init(title: " 風呂掃除 ", point: 20, categoryId: "preset.cleaning"),
-                    .init(title: "窓拭き", point: 30, categoryId: "preset.cleaning"),
-                    .init(title: "買い出し", point: 10, categoryId: nil),
-                ],
+                [.init(title: "風呂掃除", point: 20, categoryId: "preset.cleaning")],
                 limitPolicy: .premium,
                 step: .management,
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
@@ -485,49 +470,14 @@ extension FrequentHouseworkStoreTest.AddCase {
     }
 
     @MainActor
-    @Test(
-        "名前が空・既存と重複・入力同士で重複している場合は、書き込まずにエラーを返す",
-        arguments: [
-            ([FrequentHouseworkInput(title: "  ", point: 10, categoryId: nil)], FrequentHouseworkError.emptyTitle),
-            ([FrequentHouseworkInput(title: "洗濯", point: 10, categoryId: nil)], FrequentHouseworkError.duplicatedTitle),
-            (
-                [
-                    FrequentHouseworkInput(title: "窓拭き", point: 10, categoryId: nil),
-                    FrequentHouseworkInput(title: "窓拭き ", point: 20, categoryId: nil),
-                ],
-                FrequentHouseworkError.duplicatedTitle
-            ),
-        ]
-    )
-    func addInvalidInputThrows(inputs: [FrequentHouseworkInput], expectedError: FrequentHouseworkError) async {
-        // Arrange
-
-        let store = FrequentHouseworkStore(
-            frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: [.makeForTest(id: "1", title: "洗濯")]
-        )
-
-        // Act & Assert
-
-        await #expect(throws: expectedError) {
-            try await store.add(
-                inputs,
-                limitPolicy: .premium,
-                step: .management,
-                cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
-            )
-        }
-    }
-
-    @MainActor
-    @Test("無料プランで上限を超える場合は、書き込まずにlimitExceededを返す")
+    @Test("組み立てにプランを渡すため、無料プランで上限を超える場合は書き込まずにlimitExceededを返す")
     func addOverLimitThrows() async {
         // Arrange
 
         let existingItems = (0 ..< 9).map { FrequentHouseworkItem.makeForTest(id: "\($0)", sortOrder: $0) }
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: existingItems
+            context: .init(items: existingItems)
         )
 
         // Act & Assert
@@ -571,7 +521,7 @@ extension FrequentHouseworkStoreTest.ImportCase {
                         confirmation()
                     }
                 ),
-                items: [.makeForTest(id: "1", title: "洗濯", sortOrder: 0)],
+                context: .init(items: [.makeForTest(id: "1", title: "洗濯", sortOrder: 0)]),
                 now: { now },
                 idGenerator: { "new" }
             )
@@ -623,8 +573,8 @@ extension FrequentHouseworkStoreTest.ImportCase {
 extension FrequentHouseworkStoreTest.UpdateCase {
 
     @MainActor
-    @Test("カテゴリを変えずに編集すると、並び順と作成日時を保ったまま内容と更新日時を書き込む")
-    func updateInSameCategoryKeepsSortOrder() async throws {
+    @Test("編集すると、現在の内容から組み立てた家事を書き込む")
+    func updateWritesAssembledItem() async throws {
         // Arrange
 
         let now = FrequentHouseworkStoreTest.fixedNow
@@ -655,7 +605,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
                         confirmation()
                     }
                 ),
-                items: [current],
+                context: .init(items: [current]),
                 now: { now }
             )
 
@@ -670,84 +620,13 @@ extension FrequentHouseworkStoreTest.UpdateCase {
     }
 
     @MainActor
-    @Test("カテゴリを変えて編集すると、移動先のカテゴリの末尾に並べる")
-    func updateToOtherCategoryMovesToEnd() async throws {
-        // Arrange
-
-        let now = FrequentHouseworkStoreTest.fixedNow
-        let current = FrequentHouseworkItem.makeForTest(id: "1", title: "布団干し", categoryId: nil, sortOrder: 0)
-        let laundry = FrequentHouseworkItem.makeForTest(
-            id: "2",
-            title: "洗濯",
-            categoryId: "preset.laundry",
-            sortOrder: 4
-        )
-        let expectedItem = FrequentHouseworkItem(
-            id: "1",
-            title: "布団干し",
-            point: 10,
-            categoryId: "preset.laundry",
-            sortOrder: 5,
-            createdAt: current.createdAt,
-            updatedAt: now
-        )
-
-        try await confirmation { confirmation in
-            let store = FrequentHouseworkStore(
-                frequentHouseworkClient: .init(
-                    upsertItems: { items, _ in
-                        // Assert
-
-                        #expect(items == [expectedItem])
-                        confirmation()
-                    }
-                ),
-                items: [current, laundry],
-                now: { now }
-            )
-
-            // Act
-
-            try await store.update(
-                itemId: "1",
-                input: .init(title: "布団干し", point: 10, categoryId: "preset.laundry"),
-                cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
-            )
-        }
-    }
-
-    @MainActor
-    @Test("ほかの家事と同じ名前に編集しようとすると、書き込まずにduplicatedTitleを返す")
-    func updateToDuplicatedTitleThrows() async {
-        // Arrange
-
-        let store = FrequentHouseworkStore(
-            frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: [
-                .makeForTest(id: "1", title: "風呂"),
-                .makeForTest(id: "2", title: "洗濯"),
-            ]
-        )
-
-        // Act & Assert
-
-        await #expect(throws: FrequentHouseworkError.duplicatedTitle) {
-            try await store.update(
-                itemId: "1",
-                input: .init(title: "洗濯", point: 10, categoryId: nil),
-                cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
-            )
-        }
-    }
-
-    @MainActor
     @Test("編集中に家事が削除されていた場合は、復活させないよう書き込まない")
     func updateDeletedItemDoesNothing() async throws {
         // Arrange
 
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(upsertItems: { _, _ in Issue.record() }),
-            items: []
+            context: .init()
         )
 
         // Act & Assert
@@ -789,16 +668,15 @@ extension FrequentHouseworkStoreTest.DeleteAndReorderCase {
     }
 
     @MainActor
-    @Test("並べ替えると、並び順が変わった家事だけを新しい並び順で書き込む")
-    func reorderWritesOnlyChangedItems() async throws {
+    @Test("並べ替えると、組み立てた並び順の家事を書き込む")
+    func reorderWritesReorderedItems() async throws {
         // Arrange
 
         let first = FrequentHouseworkItem.makeForTest(id: "1", sortOrder: 0)
         let second = FrequentHouseworkItem.makeForTest(id: "2", sortOrder: 1)
-        let third = FrequentHouseworkItem.makeForTest(id: "3", sortOrder: 2)
         let expectedItems: [FrequentHouseworkItem] = [
-            .makeForTest(id: "3", sortOrder: 1),
-            .makeForTest(id: "2", sortOrder: 2),
+            .makeForTest(id: "2", sortOrder: 0),
+            .makeForTest(id: "1", sortOrder: 1),
         ]
 
         try await confirmation { confirmation in
@@ -811,12 +689,12 @@ extension FrequentHouseworkStoreTest.DeleteAndReorderCase {
                         confirmation()
                     }
                 ),
-                items: [first, second, third]
+                context: .init(items: [first, second])
             )
 
             // Act
 
-            try await store.reorderItems(["1", "3", "2"], cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+            try await store.reorderItems(["2", "1"], cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
         }
     }
 
@@ -827,8 +705,8 @@ extension FrequentHouseworkStoreTest.DeleteAndReorderCase {
 extension FrequentHouseworkStoreTest.CategoryCase {
 
     @MainActor
-    @Test("カテゴリを追加すると、カスタムカテゴリの末尾の並び順で書き込み、追加したカテゴリを返す")
-    func addCategoryWritesAtEnd() async throws {
+    @Test("カテゴリを追加すると、組み立てたカテゴリを書き込み、そのカテゴリを返す")
+    func addCategoryWritesAssembledCategory() async throws {
         // Arrange
 
         let now = FrequentHouseworkStoreTest.fixedNow
@@ -837,7 +715,7 @@ extension FrequentHouseworkStoreTest.CategoryCase {
             frequentHouseworkClient: .init(
                 upsertCategories: { categories, _ in upsertedCategories.value = categories }
             ),
-            customCategories: [.makeForTest(id: "pet", name: "ペット", sortOrder: 2)],
+            context: .init(customCategories: [.makeForTest(id: "pet", name: "ペット", sortOrder: 2)]),
             now: { now },
             idGenerator: { "new" }
         )
@@ -857,33 +735,8 @@ extension FrequentHouseworkStoreTest.CategoryCase {
     }
 
     @MainActor
-    @Test(
-        "カテゴリ名が空・プリセットや「その他」・既存のカスタムと重複する場合は、書き込まずにエラーを返す",
-        arguments: [
-            (" ", FrequentHouseworkError.emptyCategoryName),
-            ("洗濯", FrequentHouseworkError.duplicatedCategoryName),
-            ("その他", FrequentHouseworkError.duplicatedCategoryName),
-            ("ペット", FrequentHouseworkError.duplicatedCategoryName),
-        ]
-    )
-    func addInvalidCategoryThrows(name: String, expectedError: FrequentHouseworkError) async {
-        // Arrange
-
-        let store = FrequentHouseworkStore(
-            frequentHouseworkClient: .init(upsertCategories: { _, _ in Issue.record() }),
-            customCategories: [.makeForTest(id: "pet", name: "ペット")]
-        )
-
-        // Act & Assert
-
-        await #expect(throws: expectedError) {
-            try await store.addCategory(name: name, cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
-        }
-    }
-
-    @MainActor
-    @Test("カテゴリ名を変更すると、並び順と作成日時を保ったまま名前を書き込む")
-    func renameCategoryKeepsOrder() async throws {
+    @Test("カテゴリ名を変更すると、組み立てたカテゴリを書き込む")
+    func renameCategoryWritesAssembledCategory() async throws {
         // Arrange
 
         let current = FrequentHouseworkCustomCategory.makeForTest(id: "pet", name: "ペット", sortOrder: 1)
@@ -904,7 +757,7 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                         confirmation()
                     }
                 ),
-                customCategories: [current]
+                context: .init(customCategories: [current])
             )
 
             // Act
@@ -931,8 +784,10 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                 deleteCategory: { id, _ in await deletedIds.append(id) }
             ),
             analyticsClient: .init(log: { event in loggedEvents.value.append(event) }),
-            items: [.makeForTest(id: "1", categoryId: "pet")],
-            customCategories: [.makeForTest(id: "pet")]
+            context: .init(
+                items: [.makeForTest(id: "1", categoryId: "pet")],
+                customCategories: [.makeForTest(id: "pet")]
+            )
         )
 
         // Act
@@ -947,8 +802,8 @@ extension FrequentHouseworkStoreTest.CategoryCase {
     }
 
     @MainActor
-    @Test("カテゴリを並べ替えると、並び順が変わったカテゴリだけを新しい並び順で書き込む")
-    func reorderCategoriesWritesOnlyChanged() async throws {
+    @Test("カテゴリを並べ替えると、組み立てた並び順のカテゴリを書き込む")
+    func reorderCategoriesWritesReorderedCategories() async throws {
         // Arrange
 
         let expected: [FrequentHouseworkCustomCategory] = [
@@ -966,17 +821,16 @@ extension FrequentHouseworkStoreTest.CategoryCase {
                         confirmation()
                     }
                 ),
-                customCategories: [
+                context: .init(customCategories: [
                     .makeForTest(id: "a", sortOrder: 0),
                     .makeForTest(id: "b", sortOrder: 1),
-                    .makeForTest(id: "c", sortOrder: 2),
-                ]
+                ])
             )
 
             // Act
 
             try await store.reorderCategories(
-                ["b", "a", "c"],
+                ["b", "a"],
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
             )
         }
