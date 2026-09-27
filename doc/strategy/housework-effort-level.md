@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -55,8 +55,9 @@ Issue起票時点では承認フローがあったため「承認依頼する時
 
 11. 完了した家事のポイントは、どこでも**上乗せ後のポイント**を出す
     - 家事ボードのセル、家事詳細、今日のサマリー、貢献度グラフ
-12. 家事詳細に「頑張り度」を表示する（完了した家事のみ）
-    - 「ポイント」欄は、頑張り度が「ふつう」以外なら元のポイントからの内訳を出す（例：`10pt → 12pt`）
+12. 家事詳細に「頑張り度」の行を表示する（完了した家事のみ）
+    - 「ポイント」欄は上乗せ後のポイントを出す
+    - 「頑張り度」の行は、「ふつう」以外なら元のポイントからの内訳を添える（例：`がんばった（10pt → 12pt）`）
 13. 同居人への完了通知には頑張り度を載せない（文言は変えない）
 
 ### 非機能要件 / 制約
@@ -128,27 +129,31 @@ public var earnedPoint: Int {
 - `updateCompleted(at:executors:)` → `updateCompleted(at:executors:effort:)`
 - `updateIncomplete()` は `effort` を `.normal` に戻す。`updateNotTodo()` は引き継ぐ
 - `makeRedone` は `.normal` で作る。担当者は `.solo(userId:point:)` なので `point` と一致する
-- 既存の `init` に `effort: HouseworkEffort = .normal` を追加し、呼び出し元の変更を最小にする
+- メインの `init` の `effort` は必須引数にする（SwiftLintの `function_default_parameter_at_end` に合わせ、途中の引数にデフォルト値を置かない）。`executorId` を受け取る互換用の `init` は `.normal` で作る
 
-### 3. 配分：`HouseworkExecutorAllocation` の総ポイントを差し替えられるようにする
+### 3. 配分：`HouseworkExecutorAllocation` に頑張り度を持たせる
 
 `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkExecutorAllocation.swift`
 
-今は `totalPoint` が `let` で、選べる人数の上限と配分の両方に使っている。これを分ける。
+もとは `totalPoint` が `let` で、選べる人数の上限と配分の両方に使っていた。これを分け、配分するポイントは頑張り度から計算する。
 
 ```swift
-/// 選べる人数の上限を決めるポイント（上乗せ前の家事のポイント）
+/// 家事のポイント（頑張り度で上乗せする前）。選べる人数の上限はこのポイントで決める
 public let basePoint: Int
-/// 配分するポイント（頑張り度で上乗せした後）
-public private(set) var totalPoint: Int
+/// 頑張り度
+public private(set) var effort: HouseworkEffort
+
+/// 担当者に配分するポイント（頑張り度で上乗せした後）
+public var totalPoint: Int { effort.boostedPoint(basePoint) }
 
 public init(memberIds: [String], selectedIds: [String], basePoint: Int, effort: HouseworkEffort = .normal)
 
-/// 頑張り度を変える。選んだ担当者と割合はそのままにして、配分するポイントだけ差し替える
+/// 頑張り度を変える。選んだ担当者と割合はそのままにして、配分するポイントだけ変える
 public mutating func updateEffort(_ effort: HouseworkEffort)
 ```
 
-- `maxExecutorCount(totalPoint:)` は `basePoint` を渡す。上乗せ後のポイントは必ず上乗せ前以上なので、上乗せ前で上限を決めておけば、頑張り度を切り替えても0ptの担当者が出ない（均等割りの場合）
+- 頑張り度を配分の中に持たせることで、完了用ハーフモーダルは `allocation` だけを `@State` で持てばよく、頑張り度と配分するポイントを二重に管理しない
+- `maxExecutorCount(basePoint:)` は上乗せ前のポイントで上限を決める。上乗せ後のポイントは必ず上乗せ前以上なので、頑張り度を切り替えても均等割りで0ptの担当者は出ない
 - 割合を手で調整していた場合の0pt判定（`.zeroPoint`）は、今までどおり `validationError` で見る
 
 ### 4. UI：完了用ハーフモーダルに頑張り度を足す
@@ -170,10 +175,10 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 - 担当者のポイント表示が頑張り度で変わるため、頑張り度を担当者より上に置く
 - 選択は `Picker` の `.segmented` スタイル。切り替えたら `allocation.updateEffort(_:)` を呼ぶ
 - 「ふつう」以外のときは、セグメントの下に `10pt → 12pt` を出す（「ふつう」では出さない）
-- 頑張り度の選択UIは `SubViews/HouseworkEffortSelectionContent.swift`（新規）に切り出す。表示する文言・上乗せ後のポイントは親から渡す
-- 状態は `@State var effort: HouseworkEffort` を持つ。`allocation` の総ポイントと二重管理にならないよう、Previewの初期状態を作るときは `allocation` と `effort` を揃えて渡す
+- 頑張り度の選択UIは `SubViews/HouseworkEffortSelectionContent.swift`（新規）に切り出す。選択中の頑張り度と内訳の文言は親から渡し、選択はクロージャで親に伝える
+- 頑張り度の表示名と内訳の文言は `Model/HouseworkEffort+Presentation.swift`（新規）に置き、家事詳細と共用する
+- 確定時は `allocation.effort` を `houseworkListStore.complete(..., effort:, ...)` に渡す
 - `executorLimitMessage` の「この家事は◯ptなので」は上乗せ前のポイントのまま
-- 確定時に `houseworkListStore.complete(..., effort: effort, ...)` を渡す
 
 ### 5. Store：`HouseworkListStore.complete`
 
@@ -188,11 +193,10 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 | 対象 | 変更前 | 変更後 |
 |---|---|---|
 | `HouseworkBoardItem.point` | `originalItem.point` | `originalItem.earnedPoint`（家事ボードのセル・家事詳細の表示に使われる） |
-| `HouseworkDetailItemListContent` の「ポイント」 | `PointLabel(point:)` | 「ふつう」以外なら `10pt → 12pt` の内訳 |
-| `HouseworkDetailItemListContent` | — | 完了した家事に「頑張り度」の行を追加 |
-| `HouseworkThanks/Components/HouseworkItemPropertyListContent` | `item.point` | 使われていれば `earnedPoint` に揃える（#291で使わなくなっていれば削除も検討） |
+| `HouseBoardListRow`（`HouseworkItem` を直接受け取る） | `houseworkItem.point` | `houseworkItem.earnedPoint` |
+| `HouseworkDetailItemListContent` | — | 完了した家事に「頑張り度」の行を追加（例：`がんばった（10pt → 12pt）`） |
 
-- `HouseworkBoardItem.point` を参照している他の箇所（完了用ハーフモーダルの `totalPoint` 等）は、上乗せ前が必要な箇所だけ `originalItem.point` に書き換える。実装時に参照箇所を洗い出して一覧化する
+- 上乗せ前のポイントが必要な箇所（完了用ハーフモーダルの `basePoint`・人数上限の文言、一括完了の満額配分）は `originalItem.point` を参照する
 
 ### 7. Analytics
 
@@ -220,7 +224,10 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkListStore+QuickAction.swift` | 一括完了で `.normal` を渡す |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 頑張り度の選択を追加 |
 | 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/SubViews/HouseworkEffortSelectionContent.swift` | 頑張り度のセグメントと上乗せ後のポイント |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift` | 頑張り度の行・ポイントの内訳 |
+| 新規Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkEffort+Presentation.swift` | 頑張り度の表示名とポイントの内訳 |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseBoardListRow.swift` | 上乗せ後のポイントを表示 |
+| 修正Preview | `LocalPackage/Sources/Features/HouseworkFeature/Preview/HouseworkUtil.swift` | プレビュー用ヘルパーに `effort` |
+| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift` | 頑張り度の行（ポイントの内訳付き） |
 | 修正ドキュメント | `doc/analytics_events.md` | `effort` パラメータ |
 | 新規ADR | `doc/adr/0024-housework-effort-level-as-separate-field.md` | データの持ち方の選定 |
 
@@ -242,19 +249,19 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 
 コミットは対応単位で分ける（[.claude/rules/git-commit.md](../../.claude/rules/git-commit.md)）。
 
-- [ ] ドメイン層: `HouseworkEffort` / `HouseworkItem` / `HouseworkExecutorAllocation` / `HouseworkListStore`（ユニットテスト含む）
-- [ ] 完了用ハーフモーダルに頑張り度の選択を追加
-- [ ] 家事ボード・家事詳細の表示を上乗せ後のポイントに
-- [ ] Analyticsの `effort` パラメータ
-- [ ] `#Preview` の追加（頑張り度を選んだ状態のハーフモーダル、頑張り度付きの家事詳細）
-- [ ] ドキュメント更新（`doc/analytics_events.md`）
+- [x] ドメイン層: `HouseworkEffort` / `HouseworkItem` / `HouseworkExecutorAllocation` / `HouseworkListStore`（ユニットテスト含む）
+- [x] 完了用ハーフモーダルに頑張り度の選択を追加
+- [x] 家事ボード・家事詳細の表示を上乗せ後のポイントに
+- [x] Analyticsの `effort` パラメータ
+- [x] `#Preview` の追加（頑張り度のセグメント、頑張り度付きの家事詳細）
+- [x] ドキュメント更新（`doc/analytics_events.md`）
 
 ### Phase 3: 検証
 
-- [ ] `make build-local-package` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] `make test-packages` 通過（追加分含む）
-- [ ] `make check-previews` 通過
+- [x] `make build-local-package` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] `make test-packages` 通過（追加分含む）
+- [x] `make check-previews` 通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）の参照画像をXcode Cloudで更新
 - [ ] シミュレータで簡易E2E確認（がんばったで完了 → 詳細でポイントの内訳 → 未完了に戻す）
 
