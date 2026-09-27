@@ -34,32 +34,17 @@ struct FrequentHouseworkEditInput: Equatable {
 
     /// 決定できるかどうか
     /// - Parameter editingId: 編集中の家事のID。自分自身とは名前の重複を判定しない
-    func validation(context: FrequentHouseworkContext, editingId: String?) -> Validation {
-        if FrequentHouseworkContext.normalize(title).isEmpty {
-            return .emptyTitle
-        }
-        if context.containsTitle(title, excludingId: editingId) {
-            return .duplicatedTitle
-        }
-        return .valid
+    /// - Note: 書き込み前の検証（`FrequentHouseworkStore`）と同じ判定を使う。
+    ///         別々に実装すると、片方だけ直したときに決定ボタンは押せるのに書き込みが弾かれる状態になる
+    func validation(
+        context: FrequentHouseworkContext,
+        editingId: String?
+    ) -> FrequentHouseworkContext.TitleValidation {
+        context.validateTitle(title, excludingId: editingId)
     }
 
     var domainInput: FrequentHouseworkInput {
         .init(title: title, point: point, categoryId: categoryId)
-    }
-
-}
-
-extension FrequentHouseworkEditInput {
-
-    enum Validation: Equatable {
-
-        case valid
-        /// 名前が空
-        case emptyTitle
-        /// 同じ名前のいつもの家事がすでにある
-        case duplicatedTitle
-
     }
 
 }

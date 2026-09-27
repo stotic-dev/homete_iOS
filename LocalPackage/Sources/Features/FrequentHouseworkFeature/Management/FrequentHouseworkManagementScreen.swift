@@ -80,7 +80,7 @@ private extension FrequentHouseworkManagementScreen {
     }
 
     var limitStatus: FrequentHouseworkLimitStatus? {
-        limitPolicy.limit.map { .init(count: context.items.count, limit: $0) }
+        .init(policy: limitPolicy, count: context.items.count)
     }
 
 }
@@ -92,7 +92,7 @@ private extension FrequentHouseworkManagementScreen {
     func tappedAddButton() {
         // 読み込み前の空の一覧で判定すると、件数上限や名前の重複をすり抜けてしまう
         guard store?.loadState == .loaded else { return }
-        guard limitPolicy.canAdd(1, currentCount: context.items.count) else {
+        guard !limitPolicy.isLimitReached(currentCount: context.items.count) else {
             store?.logLimitReached(step: .management)
             isPresentingLimitAlert = true
             return

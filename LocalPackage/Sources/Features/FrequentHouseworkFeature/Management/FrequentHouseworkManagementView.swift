@@ -164,7 +164,7 @@ private extension FrequentHouseworkManagementView {
             loadState: .loaded,
             sections: FrequentHouseworkContext(items: items).sections,
             unusableItemIds: ["4"],
-            limitStatus: .init(count: 11, limit: 10),
+            limitStatus: .init(count: 11, limit: 10, isReached: true),
             onTapClose: {},
             onTapAdd: {},
             onTapItem: { _ in },

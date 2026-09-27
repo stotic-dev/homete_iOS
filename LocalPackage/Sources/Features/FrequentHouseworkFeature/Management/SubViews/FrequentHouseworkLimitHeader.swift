@@ -35,12 +35,12 @@ struct FrequentHouseworkLimitHeader: View {
 
 #if DEBUG
 #Preview("FrequentHouseworkLimitHeader_上限未満", traits: .sizeThatFitsLayout) {
-    FrequentHouseworkLimitHeader(status: .init(count: 7, limit: 10), onTapUpgrade: {})
+    FrequentHouseworkLimitHeader(status: .init(count: 7, limit: 10, isReached: false), onTapUpgrade: {})
         .padding()
 }
 
 #Preview("FrequentHouseworkLimitHeader_上限到達", traits: .sizeThatFitsLayout) {
-    FrequentHouseworkLimitHeader(status: .init(count: 12, limit: 10), onTapUpgrade: {})
+    FrequentHouseworkLimitHeader(status: .init(count: 12, limit: 10, isReached: true), onTapUpgrade: {})
         .padding()
 }
 #endif
