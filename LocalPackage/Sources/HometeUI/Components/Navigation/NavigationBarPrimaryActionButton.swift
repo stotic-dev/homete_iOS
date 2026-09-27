@@ -14,8 +14,8 @@ public struct NavigationBarPrimaryActionButton: View {
 
         /// アイコンだけ
         case systemImage(String)
-        /// 文字。件数など、アイコンだけでは伝えられない情報があるとき
-        case title(String)
+        /// アイコンと文字。件数など、アイコンだけでは伝えられない情報があるとき
+        case titleAndSystemImage(title: String, systemImage: String)
 
     }
 
@@ -27,8 +27,8 @@ public struct NavigationBarPrimaryActionButton: View {
         self.action = action
     }
 
-    public init(title: String, action: @escaping () -> Void) {
-        content = .title(title)
+    public init(title: String, systemImage: String, action: @escaping () -> Void) {
+        content = .titleAndSystemImage(title: title, systemImage: systemImage)
         self.action = action
     }
 
@@ -61,10 +61,12 @@ private extension NavigationBarPrimaryActionButton {
                 action()
             }
 
-        case let .title(title):
-            Button(title, role: .confirm) {
+        case let .titleAndSystemImage(title, systemImage):
+            Button(title, systemImage: systemImage, role: .confirm) {
                 action()
             }
+            // ツールバーの既定はアイコンだけの表示になるため、文字も出す
+            .labelStyle(.titleAndIcon)
         }
     }
     #endif
@@ -77,8 +79,9 @@ private extension NavigationBarPrimaryActionButton {
             case let .systemImage(systemImage):
                 Image(systemName: systemImage)
 
-            case let .title(title):
-                Text(title)
+            case let .titleAndSystemImage(title, systemImage):
+                Label(title, systemImage: systemImage)
+                    .labelStyle(.titleAndIcon)
             }
         }
     }

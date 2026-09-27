@@ -67,7 +67,12 @@ public struct RegisterHouseworkView: View {
                 }
             }
             .trailingToolbarItem {
-                registerButton()
+                HStack(spacing: .space8) {
+                    if selectedTab == .frequent {
+                        manageFrequentButton()
+                    }
+                    registerButton()
+                }
             }
             .safeAreaInset(edge: .bottom) {
                 PendingEntriesBar(
@@ -157,11 +162,22 @@ private extension RegisterHouseworkView {
 
     /// - Note: 件数を出すのは、登録予定リストを開かなくても何件まとめて登録されるのかが分かるようにするため
     func registerButton() -> some View {
-        NavigationBarPrimaryActionButton(title: "\(pendingEntries.count)件登録") {
+        NavigationBarPrimaryActionButton(title: "+\(pendingEntries.count)", systemImage: "paperplane.fill") {
             tappedRegisterButton()
         }
         // 繰り返しの入力が途中のときは、入力中の家事を含めて登録できない
         .disabled(pendingEntries.isEmpty || !draft.input.recurrenceInput.isValid)
+        .accessibilityLabel("\(pendingEntries.count)件登録する")
+    }
+
+    /// - Note: いつもの家事を選ぶときにしか使わないため、「いつもの家事」タブのときだけ出す
+    func manageFrequentButton() -> some View {
+        Button {
+            isShowFrequentManagement = true
+        } label: {
+            Image(systemName: "list.bullet")
+        }
+        .accessibilityLabel("いつもの家事を管理")
     }
 
     func manualTab() -> some View {

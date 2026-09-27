@@ -63,22 +63,12 @@ private extension FrequentHouseworkPicker {
         return sections.filter { $0.category.id == selectedCategoryId }.flatMap(\.items)
     }
 
+    /// - Note: 管理の導線は、この部品を出す画面のナビゲーションバーに置く
     func registeredContent() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            manageButton()
             categoryFilter()
             itemGrid()
         }
-    }
-
-    func manageButton() -> some View {
-        Button("管理") {
-            onTapManage()
-        }
-        .font(with: .headLineS)
-        .foregroundStyle(.accent)
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding(.horizontal, .space16)
     }
 
     /// - Note: タブのスワイプより横スクロールを優先させるため、カテゴリだけを横`ScrollView`に入れる
