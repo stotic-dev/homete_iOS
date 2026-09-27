@@ -135,9 +135,17 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
 
 public extension HouseworkItem {
 
-    /// 頑張り度で上乗せした後のポイント。表示と集計にはこちらを使う
+    /// 頑張り度で上乗せした後のポイント。表示にはこちらを使う
+    ///
+    /// 担当者がいる家事では、担当者のポイントの合計を返す。集計は`executors[].point`を足しているため、
+    /// 表示も同じ値から求めて画面ごとに食い違わないようにする。`effort`から計算しないのは、
+    /// 保存された`effort`が上乗せ後の配分と対応しなくなる場合があるため（ADR-0024）。
+    /// - 旧バージョンのアプリが上書きして`effort`だけが消えた
+    /// - 新しいアプリが保存した知らない頑張り度を「ふつう」として読んだ
     var earnedPoint: Int {
-        effort.boostedPoint(point)
+        guard !executors.isEmpty else { return effort.boostedPoint(point) }
+
+        return executors.reduce(0) { $0 + $1.point }
     }
 
     /// 旧バージョンのアプリ向けに保存する実行者のユーザーID（1人目の担当者）

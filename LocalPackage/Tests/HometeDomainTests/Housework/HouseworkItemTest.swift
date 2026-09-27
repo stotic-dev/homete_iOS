@@ -256,6 +256,43 @@ extension HouseworkItemTest.CodableCase {
         #expect(actual == expected)
     }
 
+    @Test(
+        "知らない頑張り度のドキュメントでも、獲得ポイントは担当者のポイントの合計と一致する",
+        arguments: [
+            // 新しいアプリが保存した、今のアプリが知らない頑張り度
+            #""effort": "superHard","#,
+            // 頑張り度を知らない旧バージョンのアプリが上書きして、effortだけが消えた
+            "",
+        ]
+    )
+    func decode_effortNotMatchingExecutors_earnedPointEqualsExecutorsTotal(effortField: String) throws {
+        // Arrange
+        let json = """
+        {
+            "id": "id1",
+            "indexedDate": { "value": 0 },
+            "title": "洗濯",
+            "point": 10,
+            "state": { "completed": {} },
+            "executors": [
+                { "userId": "userA", "percentage": 50, "point": 10 },
+                { "userId": "userB", "percentage": 50, "point": 10 }
+            ],
+            \(effortField)
+            "executorId": "userA",
+            "executedAt": 0,
+            "expiredAt": 0
+        }
+        """
+        let item = try JSONDecoder().decode(HouseworkItem.self, from: Data(json.utf8))
+
+        // Act
+        let actual = item.earnedPoint
+
+        // Assert
+        #expect(actual == 20)
+    }
+
     @Test("executorsとexecutorIdの両方があるドキュメントは、executorsを優先して読む")
     func decode_documentWithExecutors_prefersExecutors() throws {
         // Arrange
