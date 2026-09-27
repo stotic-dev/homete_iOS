@@ -97,13 +97,10 @@ private extension HouseworkThanksView {
                     .font(with: .body)
                     .padding(.space16)
                     .frame(minHeight: 150, alignment: .topLeading)
-                    .onChange(of: inputMessage) {
-                        limitInputMessage()
-                    }
             }
             Text("\(inputMessage.count)/\(HouseworkThanks.commentMaxLength)")
                 .font(with: .caption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
@@ -140,15 +137,16 @@ private extension HouseworkThanksView {
         sentThanks != nil
     }
 
-    /// 空のまま、または編集で内容を変えていないときは送れない
-    var canSubmit: Bool {
-        !inputMessage.isEmpty && inputMessage != sentThanks?.comment
+    /// コメントが上限の文字数を超えているか
+    ///
+    /// 入力中に切り詰めると、日本語の変換中の文字まで消えてしまうため、超えた入力も受け付けた上で送れなくする。
+    var isOverCommentLimit: Bool {
+        inputMessage.count > HouseworkThanks.commentMaxLength
     }
 
-    /// コメントの上限を超えた入力を切り詰める
-    func limitInputMessage() {
-        guard inputMessage.count > HouseworkThanks.commentMaxLength else { return }
-        inputMessage = String(inputMessage.prefix(HouseworkThanks.commentMaxLength))
+    /// 空のまま・上限を超えている・編集で内容を変えていないときは送れない
+    var canSubmit: Bool {
+        !inputMessage.isEmpty && !isOverCommentLimit && inputMessage != sentThanks?.comment
     }
 
     func tappedSendThanksButton() async {
