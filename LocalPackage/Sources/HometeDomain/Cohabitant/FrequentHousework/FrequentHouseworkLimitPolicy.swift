@@ -42,6 +42,11 @@ public enum FrequentHouseworkLimitPolicy: Equatable, Sendable {
         return currentCount + count <= limit
     }
 
+    /// 上限に達していて、これ以上追加できないか
+    public func isLimitReached(currentCount: Int) -> Bool {
+        !canAdd(1, currentCount: currentCount)
+    }
+
     /// 上限を超えていて使えない家事のID
     /// - Note: プレミアムから無料に戻った場合に、表示順で上限より後ろの家事を使えなくする
     public func unusableItemIds(in context: FrequentHouseworkContext) -> Set<String> {

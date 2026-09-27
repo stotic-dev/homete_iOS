@@ -13,6 +13,7 @@ public struct FrequentHouseworkManagementScreen: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.frequentHouseworkContext) var context
+    @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.routeResolver) var router
@@ -22,14 +23,16 @@ public struct FrequentHouseworkManagementScreen: View {
     @LoadingState var loadingState
     @CommonError var commonErrorContent
 
+    @State var navigationPath = AppNavigationPath<FrequentHouseworkManagementRoute>()
     @State var editTarget: FrequentHouseworkEditTarget?
+    @State var isPresentingImport = false
     @State var isPresentingLimitAlert = false
     @State var isShowPaywall = false
 
     public init() {}
 
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath.path) {
             FrequentHouseworkManagementView(
                 loadState: store?.loadState ?? .loading,
                 sections: context.sections,
@@ -37,17 +40,28 @@ public struct FrequentHouseworkManagementScreen: View {
                 limitStatus: limitStatus,
                 onTapClose: { dismiss() },
                 onTapAdd: { tappedAddButton() },
+                onTapManageCategories: { navigationPath.push(.categoryManagement) },
+                onTapImport: canImportFromTemplate ? { isPresentingImport = true } : nil,
                 onTapItem: { item in editTarget = .edit(item) },
                 onDelete: { item in deleteItem(item) },
                 onMove: { orderedIds in reorderItems(orderedIds) },
                 onTapUpgrade: { showPaywall() },
                 onRetry: { retry() }
             )
+            .navigationDestination(for: FrequentHouseworkManagementRoute.self) { route in
+                navigationHandler(route)
+            }
         }
         .sheet(item: $editTarget) { target in
-            FrequentHouseworkEditModal(target: target, context: context) { input in
-                confirmedEdit(input, target: target)
-            }
+            FrequentHouseworkEditModal(
+                target: target,
+                context: context,
+                onConfirm: { input in confirmedEdit(input, target: target) },
+                onCreateCategory: { name in try await createCategory(name: name) }
+            )
+        }
+        .sheet(isPresented: $isPresentingImport) {
+            FrequentHouseworkImportScreen()
         }
         .alert(
             "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
@@ -71,6 +85,20 @@ public struct FrequentHouseworkManagementScreen: View {
 
 }
 
+// MARK: - 画面遷移
+
+private extension FrequentHouseworkManagementScreen {
+
+    @ViewBuilder
+    func navigationHandler(_ route: FrequentHouseworkManagementRoute) -> some View {
+        switch route {
+        case .categoryManagement:
+            FrequentHouseworkCategoryScreen()
+        }
+    }
+
+}
+
 // MARK: - 表示内容
 
 private extension FrequentHouseworkManagementScreen {
@@ -80,7 +108,12 @@ private extension FrequentHouseworkManagementScreen {
     }
 
     var limitStatus: FrequentHouseworkLimitStatus? {
-        limitPolicy.limit.map { .init(count: context.items.count, limit: $0) }
+        .init(policy: limitPolicy, count: context.items.count)
+    }
+
+    /// テンプレートから取り込めるか（取り込む家事がないシートを開かせないため）
+    var canImportFromTemplate: Bool {
+        templateContext.houseworkTemplate.contains { !$0.items.isEmpty }
     }
 
 }
@@ -92,7 +125,7 @@ private extension FrequentHouseworkManagementScreen {
     func tappedAddButton() {
         // 読み込み前の空の一覧で判定すると、件数上限や名前の重複をすり抜けてしまう
         guard store?.loadState == .loaded else { return }
-        guard limitPolicy.canAdd(1, currentCount: context.items.count) else {
+        guard !limitPolicy.isLimitReached(currentCount: context.items.count) else {
             store?.logLimitReached(step: .management)
             isPresentingLimitAlert = true
             return
@@ -125,6 +158,13 @@ private extension FrequentHouseworkManagementScreen {
                 commonErrorContent = .init(error: error)
             }
         }
+    }
+
+    /// 編集モーダルから開いた「＋ 新しいカテゴリ」でカテゴリを追加する
+    /// - Returns: 追加したカテゴリ。読み込み前・リスナーが止まった後は名前の重複を判定できないため`nil`
+    func createCategory(name: String) async throws -> FrequentHouseworkCustomCategory? {
+        guard let store, store.loadState == .loaded, let cohabitantId else { return nil }
+        return try await store.addCategory(name: name, cohabitantId: cohabitantId)
     }
 
     func deleteItem(_ item: FrequentHouseworkItem) {

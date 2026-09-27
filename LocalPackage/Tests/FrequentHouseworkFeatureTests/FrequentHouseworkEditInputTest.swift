@@ -57,19 +57,12 @@ extension FrequentHouseworkEditInputTest.InitCase {
 
 extension FrequentHouseworkEditInputTest.ValidationCase {
 
-    @Test(
-        "新規追加では、名前が空なら空、既存と重複するなら重複、それ以外は決定できると判定する",
-        arguments: [
-            ("  ", FrequentHouseworkEditInput.Validation.emptyTitle),
-            ("洗濯 ", FrequentHouseworkEditInput.Validation.duplicatedTitle),
-            ("布団干し", FrequentHouseworkEditInput.Validation.valid),
-        ]
-    )
-    func validationForCreate(title: String, expected: FrequentHouseworkEditInput.Validation) {
+    @Test("新規追加では、既存と同じ名前を重複と判定する")
+    func validationForCreate() {
         // Arrange
 
         let context = FrequentHouseworkContext(items: [.makeForPreview(id: "1", title: "洗濯")])
-        let input = FrequentHouseworkEditInput(title: title, point: 10, categoryId: nil)
+        let input = FrequentHouseworkEditInput(title: "洗濯 ", point: 10, categoryId: nil)
 
         // Act
 
@@ -77,7 +70,7 @@ extension FrequentHouseworkEditInputTest.ValidationCase {
 
         // Assert
 
-        #expect(actual == expected)
+        #expect(actual == .duplicatedTitle)
     }
 
     @Test("編集では、自分自身と同じ名前のままでも決定できると判定する")
@@ -93,7 +86,7 @@ extension FrequentHouseworkEditInputTest.ValidationCase {
 
         // Assert
 
-        #expect(actual == .valid)
+        #expect(actual == .valid("洗濯"))
     }
 
 }

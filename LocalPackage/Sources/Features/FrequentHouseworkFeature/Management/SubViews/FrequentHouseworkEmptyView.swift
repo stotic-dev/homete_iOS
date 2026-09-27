@@ -10,6 +10,8 @@ import SwiftUI
 struct FrequentHouseworkEmptyView: View {
 
     let onTapAdd: () -> Void
+    /// テンプレートから取り込む導線。テンプレートに家事がない場合は`nil`
+    let onTapImport: (() -> Void)?
 
     var body: some View {
         VStack(spacing: .space24) {
@@ -23,10 +25,18 @@ struct FrequentHouseworkEmptyView: View {
                     .font(with: .body)
                     .multilineTextAlignment(.center)
             }
-            Button("いつもの家事を追加する") {
-                onTapAdd()
+            VStack(spacing: .space8) {
+                Button("いつもの家事を追加する") {
+                    onTapAdd()
+                }
+                .primaryButtonStyle()
+                if let onTapImport {
+                    Button("テンプレートから取り込む") {
+                        onTapImport()
+                    }
+                    .subPrimaryButtonStyle()
+                }
             }
-            .primaryButtonStyle()
         }
         .padding(.horizontal, .space16)
     }
@@ -34,7 +44,11 @@ struct FrequentHouseworkEmptyView: View {
 }
 
 #if DEBUG
-#Preview("FrequentHouseworkEmptyView") {
-    FrequentHouseworkEmptyView(onTapAdd: {})
+#Preview("FrequentHouseworkEmptyView_追加のみ") {
+    FrequentHouseworkEmptyView(onTapAdd: {}, onTapImport: nil)
+}
+
+#Preview("FrequentHouseworkEmptyView_テンプレートあり") {
+    FrequentHouseworkEmptyView(onTapAdd: {}, onTapImport: {})
 }
 #endif

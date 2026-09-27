@@ -58,20 +58,28 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 家事を登録する
-    /// - Note: 登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている
+    /// 家事をまとめて登録する
+    /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
+    ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
+    ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
     public func register(
-        newItem: HouseworkItem,
+        newItems: [NewHouseworkEntry],
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
+        guard !newItems.isEmpty else { return }
         do {
-            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
+            // まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
+            let createdAt = now()
+            try await houseworkClient.insertItems(
+                newItems.map { $0.item.updateCreatedAt(createdAt) },
+                cohabitantId
+            )
         } catch {
-            analyticsClient.log(.housework(.register(step: step, isSuccess: false)))
+            logRegistered(newItems, step: step, isSuccess: false)
             throw error
         }
-        analyticsClient.log(.housework(.register(step: step, isSuccess: true)))
+        logRegistered(newItems, step: step, isSuccess: true)
     }
 
     /// 家事を完了にする
@@ -80,7 +88,8 @@ public final class HouseworkListStore {
     /// コメントを添えたときは、入力したコメントが届かずに消えないよう、1日1回の制限に関係なく毎回送る。
     /// - Parameters:
     ///   - reporter: 完了にした人。通知の送り主になる
-    ///   - executors: 担当者と、配分した割合・ポイント
+    ///   - executors: 担当者と、配分した割合・ポイント（`effort`で上乗せした後のポイントを配分したもの）
+    ///   - effort: 頑張り度
     ///   - executorNames: 担当者の名前（`executors`と同じ順）。代わりに記録したときの通知の文言に使う
     ///   - comment: 完了通知に添えるコメント。空なら添えない
     ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す。
@@ -90,6 +99,7 @@ public final class HouseworkListStore {
         now: Date,
         reporter: Account,
         executors: [HouseworkExecutor],
+        effort: HouseworkEffort,
         executorNames: [String],
         comment: String,
         cohabitantId: String,
@@ -98,22 +108,27 @@ public final class HouseworkListStore {
         notify: Bool = true
     ) async throws {
         let executorType = HouseworkAnalyticsExecutorType(executors: executors, reporterId: reporter.id)
+        let analyticsAction = { (isSuccess: Bool) -> HouseworkAnalyticsAction in
+            .complete(step: step, executorType: executorType, effort: effort, isSuccess: isSuccess)
+        }
         do {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
                 try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                    $0.updateCompleted(at: now, executors: executors)
+                    $0.updateCompleted(at: now, executors: executors, effort: effort)
                 }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
-                let updatedItem = target.updateCompleted(at: now, executors: executors)
+                let updatedItem = target
+                    .updateCompleted(at: now, executors: executors, effort: effort)
+                    .updateCreatedAt(now)
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
-            analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: false)))
+            analyticsClient.log(.housework(analyticsAction(false)))
             throw error
         }
-        analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: true)))
+        analyticsClient.log(.housework(analyticsAction(true)))
 
         guard notify else { return }
 
@@ -181,36 +196,49 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 完了した家事に「ありがとう」を伝える
+    /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する
     ///
-    /// 家事のステータスは変えず、相手への通知だけを送る。通知の送信そのものがこの操作の成果なので、
-    /// 他の操作のように送りっぱなしにはせず、完了を待って失敗は呼び出し元に返す。
-    ///
-    /// - Parameter notify: 一括操作では件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
+    /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる（最初に送った日時は変えない）。
+    /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。呼び出し元に返すのは記録の失敗だけ。
+    /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
+    // swiftlint:disable:next function_parameter_count
     public func sendThanks(
         target: HouseworkItem,
         sender: Account,
-        comment: String,
+        comment: String?,
+        now: Date,
         cohabitantId: String,
-        step: HouseworkAnalyticsStep,
-        notify: Bool = true
+        step: HouseworkAnalyticsStep
     ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する
+        let current = items.item(target) ?? target
+        // 画面を開いている間に未完了へ戻された家事は、ありがとうを消す仕様なので記録しない
+        guard current.state == .completed else { return }
+        let currentThanks = current.thanks[sender.id]
+        // 画面の表示がリスナーに追いつく前の一括操作で、書いたコメントをコメントなしで消さないよう何もしない
+        if comment == nil, currentThanks != nil { return }
+        let isEditing = currentThanks != nil
+        let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
+
         do {
-            if notify {
-                try await cohabitantPushNotificationClient.send(
-                    cohabitantId,
-                    .thanksMessage(
-                        senderName: sender.userName,
-                        houseworkTitle: target.title,
-                        comment: comment
-                    )
-                )
-            }
+            try await houseworkClient.upsertThanks(target.id, sender.id, thanks, cohabitantId)
         } catch {
-            analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: false)))
+            analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: false)))
             throw error
         }
-        analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: true)))
+        analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
+
+        guard let comment, currentThanks?.comment == nil else { return }
+
+        // 記録できた後に通知だけ失敗しても、送り直すと編集扱いになり通知は送られないため、失敗として返さない
+        do {
+            try await cohabitantPushNotificationClient.send(
+                cohabitantId,
+                .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+            )
+        } catch {
+            print("failed to notify cohabitants of thanks: \(error)")
+        }
     }
 
     public func returnToIncomplete(
@@ -241,7 +269,7 @@ public final class HouseworkListStore {
                     $0.updateNotTodo()
                 }
             } else {
-                let updatedItem = target.updateNotTodo()
+                let updatedItem = target.updateNotTodo().updateCreatedAt(now())
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
@@ -279,16 +307,15 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 任意の通知内容を相手へ送信する
-    ///
-    /// 一括操作のように、複数件の更新をまとめて1件の通知にしたい場合に使う。
-    public func sendNotification(_ content: PushNotificationContent, cohabitantId: String) {
-        pushNotificationWithAsync(notification: content, cohabitantId: cohabitantId)
-    }
-
 }
 
 private extension HouseworkListStore {
+
+    func logRegistered(_ entries: [NewHouseworkEntry], step: HouseworkAnalyticsStep, isSuccess: Bool) {
+        for entry in entries {
+            analyticsClient.log(.housework(.register(step: step, source: entry.source, isSuccess: isSuccess)))
+        }
+    }
 
     func startObserving() async {
         let stream = await houseworkManager.createObserver(houseworkListObserveKey)
@@ -347,6 +374,16 @@ private extension HouseworkListStore {
         )
     }
 
+    func thanksAnalyticsAction(
+        isEditing: Bool,
+        step: HouseworkAnalyticsStep,
+        isSuccess: Bool
+    ) -> HouseworkAnalyticsAction {
+        isEditing
+            ? .editThanks(step: step, isSuccess: isSuccess)
+            : .sendThanks(step: step, isSuccess: isSuccess)
+    }
+
     /// コメントを添えた完了通知を、1日1回の制限に関係なく送る
     ///
     /// ふりかえり通知の予約用データは、`notifyCompleted`と同じ条件のときだけ付ける。
@@ -370,15 +407,6 @@ private extension HouseworkListStore {
             } catch {
                 print("failed to notify cohabitants of completed housework with comment: \(error)")
             }
-        }
-    }
-
-    func pushNotificationWithAsync(notification: PushNotificationContent, cohabitantId: String) {
-        Task.detached {
-            try await self.cohabitantPushNotificationClient.send(
-                cohabitantId,
-                notification
-            )
         }
     }
 

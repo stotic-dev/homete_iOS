@@ -129,27 +129,60 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事に関する行動を、action/step/executor_type/resultのパラメータを持つhouseworkイベントに変換する",
+        "家事に関する行動を、action/step/executor_type/effort/source/resultのパラメータを持つhouseworkイベントに変換する",
         arguments: [
             (
-                HouseworkAnalyticsAction.register(step: .board, isSuccess: true),
-                ["action": "register", "step": "board", "result": "success"]
+                HouseworkAnalyticsAction.register(step: .board, source: .frequent, isSuccess: true),
+                ["action": "register", "step": "board", "source": "frequent", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.register(step: .dashboard, isSuccess: false),
-                ["action": "register", "step": "dashboard", "result": "failure"]
+                HouseworkAnalyticsAction.register(step: .dashboard, source: .manual, isSuccess: false),
+                ["action": "register", "step": "dashboard", "source": "manual", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .detail, executorType: .ownOnly, isSuccess: true),
-                ["action": "complete", "step": "detail", "executor_type": "self", "result": "success"]
+                HouseworkAnalyticsAction.complete(
+                    step: .detail,
+                    executorType: .ownOnly,
+                    effort: .normal,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "detail",
+                    "executor_type": "self",
+                    "effort": "normal",
+                    "result": "success",
+                ]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .board, executorType: .others, isSuccess: false),
-                ["action": "complete", "step": "board", "executor_type": "others", "result": "failure"]
+                HouseworkAnalyticsAction.complete(
+                    step: .board,
+                    executorType: .others,
+                    effort: .hard,
+                    isSuccess: false
+                ),
+                [
+                    "action": "complete",
+                    "step": "board",
+                    "executor_type": "others",
+                    "effort": "hard",
+                    "result": "failure",
+                ]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .dashboard, executorType: .shared, isSuccess: true),
-                ["action": "complete", "step": "dashboard", "executor_type": "shared", "result": "success"]
+                HouseworkAnalyticsAction.complete(
+                    step: .dashboard,
+                    executorType: .shared,
+                    effort: .veryHard,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "dashboard",
+                    "executor_type": "shared",
+                    "effort": "very_hard",
+                    "result": "success",
+                ]
             ),
             (
                 HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),
@@ -166,6 +199,14 @@ struct AnalyticsEventTest {
             (
                 HouseworkAnalyticsAction.sendThanks(step: .board, isSuccess: false),
                 ["action": "send_thanks", "step": "board", "result": "failure"]
+            ),
+            (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: true),
+                ["action": "edit_thanks", "step": "thanks", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: false),
+                ["action": "edit_thanks", "step": "thanks", "result": "failure"]
             ),
             (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),

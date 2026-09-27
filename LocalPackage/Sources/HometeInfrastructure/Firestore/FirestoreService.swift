@@ -32,6 +32,20 @@ public final actor FirestoreService {
         try await predicate(firestore).setData(encoded, merge: false)
     }
 
+    /// 既存ドキュメントの1つのフィールドだけを更新する
+    ///
+    /// ドキュメント全体を上書きしないので、同じドキュメントの別のフィールドを同時に書き換える
+    /// ほかの端末の変更を消さない。
+    /// - Parameter fieldPath: ドット区切りで入れ子のフィールドも指定できる（例: `thanks.<userId>`）
+    public func update(
+        fieldPath: String,
+        value: some Encodable & Sendable,
+        predicate: (Firestore) -> DocumentReference
+    ) async throws {
+        let encoded = try Firestore.Encoder().encode(value)
+        try await predicate(firestore).updateData([fieldPath: encoded])
+    }
+
     /// 複数のドキュメントをまとめて作成または上書きする（全件成功か全件失敗のどちらかになる）
     /// - Parameter reference: 書き込む値ごとのドキュメント参照
     public func batchInsertOrUpdate<T: Encodable & Sendable>(

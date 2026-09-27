@@ -15,7 +15,6 @@ enum DailyHouseworkListTest {
 
     struct MakeInitialValueCase {}
     struct IsRegisteredCase {}
-    struct IsAlreadyRegisteredCase {}
 
 }
 
@@ -96,37 +95,6 @@ extension DailyHouseworkListTest.IsRegisteredCase {
 
         // Assert
         #expect(result == !inputItems.isEmpty)
-    }
-
-}
-
-extension DailyHouseworkListTest.IsAlreadyRegisteredCase {
-
-    @Test(
-        "同じタイトルの家事が含まれていれば登録済みの家事とみなす",
-        arguments: [
-            HouseworkItem.makeForTest(id: 1, title: "洗濯", point: 1),
-            .makeForTest(id: 3, title: "洗濯", point: 1),
-            .makeForTest(id: 1, title: "掃除", point: 1),
-        ]
-    )
-    func alreadyRegistered_trueWhenSameTitleExists(inputItem: HouseworkItem) {
-        // Arrange
-        let items: [HouseworkItem] = [
-            .makeForTest(id: 1, title: "洗濯", point: 1),
-            .makeForTest(id: 2, title: "ゴミ捨て", point: 1, state: .completed),
-        ]
-        let list = DailyHouseworkList(
-            items: items,
-            metaData: .init(indexedDate: .init(value: .now), expiredAt: .now)
-        )
-
-        // Act
-        let result = list.isAlreadyRegistered(inputItem)
-
-        // Assert
-        let expected = items.contains { $0.title == inputItem.title }
-        #expect(result == expected)
     }
 
 }

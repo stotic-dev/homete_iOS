@@ -15,25 +15,37 @@ public struct HouseworkThanksView: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
+    @Environment(\.now) var now
     @CommonError var commonError
     @LoadingState var loadingState
 
-    @State var inputMessage = ""
+    @State var inputMessage: String
 
     let item: HouseworkBoardItem
+    /// すでに送ったありがとう。あればコメントの編集として開く
+    let sentThanks: HouseworkThanks?
+
+    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil) {
+        self.item = item
+        self.sentThanks = sentThanks
+        _inputMessage = State(initialValue: sentThanks?.comment ?? "")
+    }
 
     public var body: some View {
         NavigationStack {
             ContentFittingSheetScrollView {
-                HouseworkCommentInputContent(
-                    title: "メッセージ",
-                    placeholder: "感謝を伝えましょう！",
-                    text: $inputMessage
-                )
+                VStack(spacing: .space8) {
+                    HouseworkCommentInputContent(
+                        title: "メッセージ",
+                        placeholder: "感謝を伝えましょう！",
+                        text: $inputMessage
+                    )
+                    commentLengthLabel()
+                }
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space24)
             }
-            .navigationTitle("ありがとうを伝える")
+            .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 sendThanksButton()
@@ -49,6 +61,13 @@ public struct HouseworkThanksView: View {
 
 private extension HouseworkThanksView {
 
+    func commentLengthLabel() -> some View {
+        Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
+            .font(with: .caption)
+            .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+    }
+
     func sendThanksButton() -> some View {
         NavigationBarPrimaryActionButton(systemImage: "heart.fill") {
             loadingState.task {
@@ -56,7 +75,8 @@ private extension HouseworkThanksView {
             }
         }
         .foregroundStyle(.onPrimary1)
-        .disabled(inputMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        .accessibilityLabel(submitButtonLabel)
+        .disabled(!canSubmit)
     }
 
 }
@@ -65,6 +85,50 @@ private extension HouseworkThanksView {
 
 private extension HouseworkThanksView {
 
+    /// すでに送ったメッセージを直すかどうか
+    ///
+    /// コメントなしで送ったありがとうに書き足す場合は、まだメッセージを送っていないので編集として扱わない。
+    var isEditingMessage: Bool {
+        sentThanks?.comment != nil
+    }
+
+    var navigationTitle: String {
+        if isEditingMessage {
+            "メッセージを編集"
+        } else if sentThanks != nil {
+            "メッセージを添える"
+        } else {
+            "ありがとうを伝える"
+        }
+    }
+
+    var submitButtonLabel: String {
+        if isEditingMessage {
+            "メッセージを更新する"
+        } else if sentThanks != nil {
+            "メッセージを送る"
+        } else {
+            "ありがとうを伝える"
+        }
+    }
+
+    /// 前後の空白・改行を除いた、送るメッセージ
+    var trimmedMessage: String {
+        inputMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// コメントが上限の文字数を超えているか
+    ///
+    /// 入力中に切り詰めると、日本語の変換中の文字まで消えてしまうため、超えた入力も受け付けた上で送れなくする。
+    var isOverCommentLimit: Bool {
+        trimmedMessage.count > HouseworkThanks.commentMaxLength
+    }
+
+    /// 空のまま・上限を超えている・編集で内容を変えていないときは送れない
+    var canSubmit: Bool {
+        !trimmedMessage.isEmpty && !isOverCommentLimit && trimmedMessage != sentThanks?.comment
+    }
+
     func tappedSendThanksButton() async {
         guard let cohabitantId = account.cohabitantId else { return }
 
@@ -72,7 +136,8 @@ private extension HouseworkThanksView {
             try await houseworkListStore.sendThanks(
                 target: item.originalItem,
                 sender: account,
-                comment: inputMessage.trimmingCharacters(in: .whitespacesAndNewlines),
+                comment: trimmedMessage,
+                now: now,
                 cohabitantId: cohabitantId,
                 step: .thanks
             )
@@ -94,6 +159,38 @@ private extension HouseworkThanksView {
         executorId: "test",
         executedAt: .distantFuture
     ))
+    .setupEnvironmentForPreview()
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkThanksView_メッセージを添える") {
+    HouseworkThanksView(
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+            state: .completed,
+            executorId: "test",
+            executedAt: .distantFuture
+        ),
+        sentThanks: .init(comment: nil, sentAt: .distantFuture)
+    )
+    .setupEnvironmentForPreview()
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkThanksView_編集") {
+    HouseworkThanksView(
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+            state: .completed,
+            executorId: "test",
+            executedAt: .distantFuture
+        ),
+        sentThanks: .init(comment: "いつもありがとう！", sentAt: .distantFuture)
+    )
     .setupEnvironmentForPreview()
     .environment(HouseworkListStore())
 }

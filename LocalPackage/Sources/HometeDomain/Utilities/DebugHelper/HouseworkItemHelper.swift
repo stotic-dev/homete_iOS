@@ -19,9 +19,12 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
+        effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -29,10 +32,13 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
+            executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
+            effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -44,9 +50,12 @@ public extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
+        effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: id,
@@ -54,10 +63,13 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
+            executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
+            effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -68,15 +80,19 @@ public extension HouseworkItem {
         state: HouseworkState? = nil,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
+        effort: HouseworkEffort? = nil,
         executedAt: Date? = nil,
         expiredAt: Date? = nil,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        createdAt: Date? = nil
     ) -> HouseworkItem {
         let inputIndexedDate = indexedDate ?? self.indexedDate
         let inputTitle = title ?? self.title
         let inputPoint = point ?? self.point
         let inputState = state ?? self.state
-        let inputExecutors = executorId.map { [.solo(userId: $0, point: inputPoint)] } ?? executors
+        let inputEffort = effort ?? self.effort
+        let inputExecutors = executorId
+            .map { [.solo(userId: $0, point: inputEffort.boostedPoint(inputPoint))] } ?? executors
         let inputExecutedAt = executedAt
         let inputExpiredAt = expiredAt ?? self.expiredAt
         let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
@@ -88,9 +104,11 @@ public extension HouseworkItem {
             point: inputPoint,
             state: inputState,
             executors: inputExecutors,
+            effort: inputEffort,
             executedAt: inputExecutedAt,
             expiredAt: inputExpiredAt,
-            templateHouseworkItemId: inputTemplateHouseworkItemId
+            templateHouseworkItemId: inputTemplateHouseworkItemId,
+            createdAt: createdAt ?? self.createdAt
         )
     }
 

@@ -13,4 +13,18 @@ public enum HouseworkRecurrence: Sendable, Hashable {
     /// 毎月
     case monthly(MonthlyRecurrenceRule)
 
+    /// いつ表示されるかの表示名（「毎日」「毎週月・木」「毎月31日」）
+    public var scheduleLabel: String {
+        switch self {
+        case let .weekly(days) where days.count == DayOfWeek.allCases.count:
+            "毎日"
+
+        case let .weekly(days):
+            "毎週" + DayOfWeek.displayOrdered.filter { days.contains($0) }.map(\.fullLabel).joined(separator: "・")
+
+        case let .monthly(rule):
+            rule.label
+        }
+    }
+
 }

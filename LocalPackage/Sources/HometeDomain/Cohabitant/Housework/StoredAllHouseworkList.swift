@@ -24,8 +24,11 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
         let targetDates = Set(
             HouseworkIndexedDate.calcTargetPeriod(anchorDate: anchorDate, offsetDays: offsetDays, calendar: calendar)
         )
+        // 家事を操作するたびに並びが入れ替わらないよう、作った順に並べておく
         let dailyLists: [DailyHouseworkList] = Dictionary(
-            grouping: items.filter { targetDates.contains($0.indexedDate.value) }
+            grouping: items
+                .filter { targetDates.contains($0.indexedDate.value) }
+                .sorted(by: isCreatedBefore)
         ) { $0.indexedDate }
             .compactMap {
                 guard let firstItem = $1.first else { return nil }
@@ -47,6 +50,17 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
 
     public mutating func removeAll() {
         value = []
+    }
+
+}
+
+private extension StoredAllHouseworkList {
+
+    /// 作成日時の古い順。作成日時を持たない家事は、記録を始める前に作られたものなので先頭に置く
+    ///
+    /// 作成日時が同じ家事や、どちらも持たない家事はIDで並べ、端末や起動をまたいでも同じ並びにする。
+    static func isCreatedBefore(_ lhs: HouseworkItem, _ rhs: HouseworkItem) -> Bool {
+        (lhs.createdAt ?? .distantPast, lhs.id) < (rhs.createdAt ?? .distantPast, rhs.id)
     }
 
 }
