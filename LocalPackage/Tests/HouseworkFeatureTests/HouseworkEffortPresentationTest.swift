@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-@testable import HometeDomain
+import HometeDomain
 @testable import HouseworkFeature
 import Testing
 

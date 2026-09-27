@@ -51,4 +51,9 @@ struct HouseworkEffortSelectionContent: View {
     HouseworkEffortSelectionContent(selection: .hard, pointBreakdown: "10pt → 12pt", onSelect: { _ in })
         .padding()
 }
+
+#Preview("HouseworkEffortSelectionContent_超頑張った", traits: .sizeThatFitsLayout) {
+    HouseworkEffortSelectionContent(selection: .veryHard, pointBreakdown: "100pt → 150pt", onSelect: { _ in })
+        .padding()
+}
 #endif
