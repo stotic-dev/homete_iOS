@@ -542,13 +542,16 @@ public struct FrequentHouseworkPicker: View {
 
 **PR 3: 登録シートの2タブ化とまとめて登録**
 
-- [ ] 選ぶ部品 `FrequentHouseworkPicker` と2タブの枠 `RegisterSourceTabs`（使う画面と同じPRで入れるためPR 2から移した）
-- [ ] `HouseworkClient.insertItems` / `HouseworkListStore.register(newItems:…)` / `PushNotificationContent.addNewHouseworkItems`
-- [ ] `housework` `register` への `source` 追加
-- [ ] `RegisterHouseworkDraft` とユニットテスト（選択の切り替え・続けて入力・取り消し・登録予定の組み立て・破棄確認の要否）
-- [ ] `RegisterHouseworkView` の作り直し（2タブ・登録予定リスト・キャンセル・保存チェック・入力履歴）
-- [ ] 重複チェック（`isAlreadyRegistered`）とアラートの削除
-- [ ] Preview（いつもの家事あり／なし・登録予定あり・通信中）
+- [x] 選ぶ部品 `FrequentHouseworkPicker` と2タブの枠 `RegisterSourceTabs`（使う画面と同じPRで入れるためPR 2から移した）
+- [x] `HouseworkClient.insertItems` / `HouseworkListStore.register(newItems:…)`
+  - `PushNotificationContent.addNewHouseworkItems` は不要になった。登録時の同居人への通知は設計後に廃止され、
+    家事のステータスに関わる通知はふりかえり通知だけになっているため
+- [x] `housework` `register` への `source` 追加
+- [x] `RegisterHouseworkDraft` とユニットテスト（選択の切り替え・続けて入力・取り消し・登録予定の組み立て・破棄確認の要否）
+- [x] `RegisterHouseworkView` の作り直し（2タブ・登録予定リスト・キャンセル・保存チェック・入力履歴）
+  - 設計後に入った「くり返し」は登録予定リストに混在させ、登録時にテンプレート行きとボード行きに振り分ける
+- [x] 重複チェック（`isAlreadyRegistered`）とアラートの削除
+- [x] Preview（いつもの家事あり／なし・登録予定あり・通信中）
 
 **PR 4: テンプレートのモーダル**
 
