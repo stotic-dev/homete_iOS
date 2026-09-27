@@ -30,6 +30,11 @@ struct FrequentHouseworkImportView: View {
                         onTapClose()
                     }
                 }
+                .trailingToolbarItem {
+                    if !candidates.isEmpty {
+                        importButton()
+                    }
+                }
         }
         .trackScreenView(.frequentHouseworkImport)
     }
@@ -46,9 +51,6 @@ private extension FrequentHouseworkImportView {
             emptyContent()
         } else {
             candidateList()
-                .safeAreaInset(edge: .bottom) {
-                    importButton()
-                }
         }
     }
 
@@ -73,6 +75,8 @@ private extension FrequentHouseworkImportView {
                 ForEach(candidates) { candidate in
                     candidateRow(candidate)
                 }
+            } header: {
+                Text(importCount == 0 ? "取り込む家事を選んでください" : "\(importCount)件を取り込みます")
             } footer: {
                 Text("取り込んだ家事のカテゴリは未設定になります。あとから編集して変更できます。")
             }
@@ -107,13 +111,11 @@ private extension FrequentHouseworkImportView {
     }
 
     func importButton() -> some View {
-        Button("\(importCount)件取り込む") {
+        NavigationBarPrimaryActionButton(systemImage: "checkmark") {
             onTapImport()
         }
-        .primaryButtonStyle()
         .disabled(importCount == 0)
-        .padding(.space16)
-        .background(.surface)
+        .accessibilityLabel("\(importCount)件取り込む")
     }
 
 }
