@@ -39,7 +39,7 @@ public final actor FirestoreService {
     /// - Parameter fieldPath: ドット区切りで入れ子のフィールドも指定できる（例: `thanks.<userId>`）
     public func update(
         fieldPath: String,
-        value: some Encodable,
+        value: some Encodable & Sendable,
         predicate: (Firestore) -> DocumentReference
     ) async throws {
         let encoded = try Firestore.Encoder().encode(value)
