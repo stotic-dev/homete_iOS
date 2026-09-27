@@ -10,6 +10,12 @@ import SwiftUI
 /// いつもの家事の管理画面（カテゴリごとのセクションで一覧表示する）
 struct FrequentHouseworkManagementView: View {
 
+    #if os(iOS)
+    /// 並べ替え・削除の編集モード
+    /// - Note: ツールバーの出し分けに使うため、`EditButton`任せにせずこの画面で持つ
+    @State var editMode = EditMode.inactive
+    #endif
+
     /// いつもの家事・カテゴリの読み込み状態
     /// - Note: 読み込み済みになるまでは件数上限・名前の重複・カテゴリを正しく判定できないため、一覧も追加も出さない
     let loadState: ListenerLoadState
@@ -42,6 +48,10 @@ struct FrequentHouseworkManagementView: View {
             .trailingToolbarItem {
                 trailingNavigationItem()
             }
+        // ツールバーの中身にも編集モードを伝えるため、ツールバーより外側で環境に載せる
+        #if os(iOS)
+            .environment(\.editMode, $editMode)
+        #endif
             .trackScreenView(.frequentHouseworkManagement)
     }
 
@@ -132,6 +142,7 @@ private extension FrequentHouseworkManagementView {
     }
 
     /// 並びは「編集」「追加」の主操作を先に置き、その他の操作をまとめたサブメニューを一番右に寄せる
+    /// - Note: 編集中は並べ替え・削除に使えない操作を出さず、「完了」だけにする
     @ViewBuilder
     func trailingNavigationItem() -> some View {
         if loadState == .loaded {
@@ -141,15 +152,25 @@ private extension FrequentHouseworkManagementView {
                     EditButton()
                 }
                 #endif
-                Button {
-                    onTapAdd()
-                } label: {
-                    Image(systemName: "plus")
+                if !isEditing {
+                    Button {
+                        onTapAdd()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("いつもの家事を追加")
+                    subMenu()
                 }
-                .accessibilityLabel("いつもの家事を追加")
-                subMenu()
             }
         }
+    }
+
+    var isEditing: Bool {
+        #if os(iOS)
+        editMode.isEditing
+        #else
+        false
+        #endif
     }
 
     func subMenu() -> some View {

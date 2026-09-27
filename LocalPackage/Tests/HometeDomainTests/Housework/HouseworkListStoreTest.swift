@@ -24,20 +24,33 @@ struct HouseworkListStoreTest {
 
     }
 
-    @Test("新しい家事を登録すると作成日時を付けて保存だけを行い、パートナーには通知を送らない")
+    @Test("新しい家事をまとめて登録すると作成日時を揃えて1回の一括書き込みだけを行い、パートナーには通知を送らない")
     func register() async throws {
         // Arrange
 
         let inputNow = Date(timeIntervalSince1970: 1000)
-        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
-        let expectedItem = inputHouseworkItem.updateProperties(createdAt: inputNow)
+        let inputDate = Date(timeIntervalSince1970: 0)
+        let inputEntries = [
+            NewHouseworkEntry(
+                item: .makeForTest(id: 1, indexedDate: inputDate, expiredAt: inputDate),
+                source: .frequent
+            ),
+            NewHouseworkEntry(
+                item: .makeForTest(id: 2, indexedDate: inputDate, expiredAt: inputDate),
+                source: .manual
+            ),
+        ]
+        let expected = [
+            HouseworkItem.makeForTest(id: 1, indexedDate: inputDate, expiredAt: inputDate, createdAt: inputNow),
+            HouseworkItem.makeForTest(id: 2, indexedDate: inputDate, expiredAt: inputDate, createdAt: inputNow),
+        ]
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                houseworkClient: .init(insertItemsHandler: { items, cohabitantId in
                     // Assert
 
-                    #expect(item == expectedItem)
+                    #expect(items == expected)
                     #expect(cohabitantId == inputCohabitantId)
                     confirmation()
                 }),
@@ -47,8 +60,22 @@ struct HouseworkListStoreTest {
 
             // Act
 
-            try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
+            try await store.register(newItems: inputEntries, cohabitantId: inputCohabitantId, step: .board)
         }
+    }
+
+    @Test("登録する家事が0件の場合は、書き込みを行わない")
+    func registerWithNoItemsDoesNothing() async throws {
+        // Arrange
+
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertItemsHandler: { _, _ in Issue.record() }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
+        )
+
+        // Act
+
+        try await store.register(newItems: [], cohabitantId: inputCohabitantId, step: .board)
     }
 
 }

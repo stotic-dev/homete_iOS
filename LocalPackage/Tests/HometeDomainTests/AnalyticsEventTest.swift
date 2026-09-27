@@ -129,15 +129,15 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事に関する行動を、action/step/executor_type/resultのパラメータを持つhouseworkイベントに変換する",
+        "家事に関する行動を、action/step/executor_type/effort/source/resultのパラメータを持つhouseworkイベントに変換する",
         arguments: [
             (
-                HouseworkAnalyticsAction.register(step: .board, isSuccess: true),
-                ["action": "register", "step": "board", "result": "success"]
+                HouseworkAnalyticsAction.register(step: .board, source: .frequent, isSuccess: true),
+                ["action": "register", "step": "board", "source": "frequent", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.register(step: .dashboard, isSuccess: false),
-                ["action": "register", "step": "dashboard", "result": "failure"]
+                HouseworkAnalyticsAction.register(step: .dashboard, source: .manual, isSuccess: false),
+                ["action": "register", "step": "dashboard", "source": "manual", "result": "failure"]
             ),
             (
                 HouseworkAnalyticsAction.complete(

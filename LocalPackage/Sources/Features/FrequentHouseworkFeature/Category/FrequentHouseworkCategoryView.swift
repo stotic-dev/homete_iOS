@@ -11,6 +11,12 @@ import SwiftUI
 /// - Note: プリセットは変更できないため、一覧に出すだけにする
 struct FrequentHouseworkCategoryView: View {
 
+    #if os(iOS)
+    /// 並べ替え・削除の編集モード
+    /// - Note: ツールバーの出し分けに使うため、`EditButton`任せにせずこの画面で持つ
+    @State var editMode = EditMode.inactive
+    #endif
+
     /// 並べ替え順のカスタムカテゴリ
     let customCategories: [FrequentHouseworkCustomCategory]
     let onTapAdd: () -> Void
@@ -29,6 +35,10 @@ struct FrequentHouseworkCategoryView: View {
         .trailingToolbarItem {
             trailingNavigationItem()
         }
+        // ツールバーの中身にも編集モードを伝えるため、ツールバーより外側で環境に載せる
+        #if os(iOS)
+        .environment(\.editMode, $editMode)
+        #endif
         .trackScreenView(.frequentHouseworkCategory)
     }
 
@@ -93,6 +103,7 @@ private extension FrequentHouseworkCategoryView {
         .buttonStyle(.plain)
     }
 
+    /// - Note: 編集中は並べ替え・削除に使えない操作を出さず、「完了」だけにする
     func trailingNavigationItem() -> some View {
         HStack(spacing: .space8) {
             #if os(iOS)
@@ -100,13 +111,23 @@ private extension FrequentHouseworkCategoryView {
                 EditButton()
             }
             #endif
-            Button {
-                onTapAdd()
-            } label: {
-                Image(systemName: "plus")
+            if !isEditing {
+                Button {
+                    onTapAdd()
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("カテゴリを追加")
             }
-            .accessibilityLabel("カテゴリを追加")
         }
+    }
+
+    var isEditing: Bool {
+        #if os(iOS)
+        editMode.isEditing
+        #else
+        false
+        #endif
     }
 
 }

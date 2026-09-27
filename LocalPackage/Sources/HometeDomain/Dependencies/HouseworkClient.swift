@@ -10,6 +10,9 @@ import Foundation
 public struct HouseworkClient: Sendable {
 
     public let insertOrUpdateItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
+    /// 家事をまとめて登録する
+    /// - Note: `WriteBatch`で一括書き込みし、全件成功か全件失敗かのどちらかにする
+    public let insertItems: @Sendable (_ items: [HouseworkItem], _ cohabitantId: String) async throws -> Void
     public let removeItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
     /// 家事に送ったありがとうを記録する（送った人の分だけを書き換え、ほかの人の記録には触れない）
     public let upsertThanks: @Sendable (
@@ -42,6 +45,10 @@ public extension HouseworkClient {
             _ item: HouseworkItem,
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
+        insertItemsHandler: @escaping @Sendable (
+            _ items: [HouseworkItem],
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _ in },
         removeItemHandler: @escaping @Sendable (
             _ item: HouseworkItem,
             _ cohabitantId: String
@@ -67,6 +74,7 @@ public extension HouseworkClient {
         syncRetentionHandler: @escaping @Sendable (_ cohabitantId: String) async throws -> Void = { _ in }
     ) {
         insertOrUpdateItem = insertOrUpdateItemHandler
+        insertItems = insertItemsHandler
         removeItem = removeItemHandler
         upsertThanks = upsertThanksHandler
         snapshotListener = snapshotListenerHandler

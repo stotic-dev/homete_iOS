@@ -14,6 +14,12 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(item.id)
         }
+    } insertItemsHandler: { items, cohabitantId in
+        try await FirestoreService.shared.batchInsertOrUpdate(data: items) { firestore, item in
+            firestore
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
     } removeItemHandler: { item, cohabitantId in
         try await FirestoreService.shared.delete {
             $0
