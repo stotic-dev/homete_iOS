@@ -19,7 +19,7 @@ public struct HouseBoardListRow: View {
 
     public var body: some View {
         HStack(spacing: .space16) {
-            PointLabel(point: houseworkItem.point)
+            PointLabel(point: houseworkItem.earnedPoint)
             VStack(alignment: .leading, spacing: .space4) {
                 Text(houseworkItem.title)
                     .font(with: .body)
