@@ -100,6 +100,9 @@ public final class HouseworkListStore {
         notify: Bool = true
     ) async throws {
         let executorType = HouseworkAnalyticsExecutorType(executors: executors, reporterId: reporter.id)
+        let analyticsAction = { (isSuccess: Bool) -> HouseworkAnalyticsAction in
+            .complete(step: step, executorType: executorType, effort: effort, isSuccess: isSuccess)
+        }
         do {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
@@ -112,10 +115,10 @@ public final class HouseworkListStore {
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
-            analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: false)))
+            analyticsClient.log(.housework(analyticsAction(false)))
             throw error
         }
-        analyticsClient.log(.housework(.complete(step: step, executorType: executorType, isSuccess: true)))
+        analyticsClient.log(.housework(analyticsAction(true)))
 
         guard notify else { return }
 
