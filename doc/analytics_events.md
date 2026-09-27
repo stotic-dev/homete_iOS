@@ -196,7 +196,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
 
-いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録と、送る場合はプッシュ通知の送信までを含めた結果を表す（通知はコメントが初めて付いたときだけ送る）。
+いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
 `complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
