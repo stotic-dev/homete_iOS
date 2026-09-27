@@ -108,9 +108,18 @@ private extension HouseworkCompleteView {
 
     func effortSection() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("頑張り度")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+            HStack(spacing: .space4) {
+                Text("頑張り度")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                DescriptionPopoverButton(
+                    title: "頑張り度とは？",
+                    message: """
+                    いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。
+                    「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。
+                    """
+                )
+            }
             HouseworkEffortSelectionContent(
                 selection: allocation.effort,
                 pointBreakdown: allocation.effort.pointBreakdown(basePoint: allocation.basePoint)
@@ -134,7 +143,7 @@ private extension HouseworkCompleteView {
                     .foregroundStyle(.onSurfaceVariant)
             }
             if allocation.canAdjustPercentage {
-                DisclosureGroup("配分を調整する", isExpanded: $isExpandedAllocation) {
+                DisclosureGroup(isExpanded: $isExpandedAllocation) {
                     HouseworkExecutorAllocationContent(
                         entries: allocationEntries,
                         percentageRange: HouseworkExecutorAllocation.percentageRange
@@ -142,6 +151,17 @@ private extension HouseworkCompleteView {
                         allocation.updatePercentage(percentage, for: userId)
                     }
                     .padding(.top, .space8)
+                } label: {
+                    HStack(spacing: .space4) {
+                        Text("配分を調整する")
+                        DescriptionPopoverButton(
+                            title: "配分の調整とは？",
+                            message: """
+                            何人かで分担した家事のポイントを、それぞれがやった割合に合わせて分けられます。
+                            割合の合計が100%になるように調整してください。
+                            """
+                        )
+                    }
                 }
                 .font(with: .body)
                 .tint(.onSurface)
