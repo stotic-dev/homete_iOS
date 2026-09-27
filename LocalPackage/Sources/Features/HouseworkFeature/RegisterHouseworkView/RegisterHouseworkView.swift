@@ -160,9 +160,8 @@ private extension RegisterHouseworkView {
         )
     }
 
-    /// - Note: 件数を出すのは、登録予定リストを開かなくても何件まとめて登録されるのかが分かるようにするため
     func registerButton() -> some View {
-        NavigationBarPrimaryActionButton(title: "+\(pendingEntries.count)", systemImage: "paperplane.fill") {
+        NavigationBarPrimaryActionButton(systemImage: "paperplane.fill") {
             tappedRegisterButton()
         }
         // 繰り返しの入力が途中のときは、入力中の家事を含めて登録できない
