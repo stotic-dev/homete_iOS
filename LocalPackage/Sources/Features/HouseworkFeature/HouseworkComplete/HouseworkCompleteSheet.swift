@@ -10,7 +10,7 @@ import SwiftUI
 
 /// 家事を完了にするハーフモーダル
 ///
-/// 担当者（自分以外や複数人も選べる）とポイントの配分を入力する。
+/// 頑張り度と、担当者（自分以外や複数人も選べる）・ポイントの配分を入力する。
 public struct HouseworkCompleteSheet: View {
 
     @Environment(\.cohabitantMembers) var members
@@ -75,9 +75,13 @@ struct HouseworkCompleteView: View {
     var body: some View {
         NavigationStack {
             ContentFittingSheetScrollView {
-                executorSection()
-                    .padding(.horizontal, .space16)
-                    .padding(.vertical, .space24)
+                VStack(alignment: .leading, spacing: .space24) {
+                    // 担当者に配分するポイントが頑張り度で変わるため、頑張り度を先に選ばせる
+                    effortSection()
+                    executorSection()
+                }
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space24)
             }
             .navigationTitle("完了にする")
             .inlineNavigationBarTitleDisplayMode()
@@ -101,6 +105,20 @@ struct HouseworkCompleteView: View {
 // MARK: - UI定義
 
 private extension HouseworkCompleteView {
+
+    func effortSection() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("頑張り度")
+                .font(with: .headLineS)
+                .foregroundStyle(.onSurface)
+            HouseworkEffortSelectionContent(
+                selection: allocation.effort,
+                pointBreakdown: allocation.effort.pointBreakdown(basePoint: allocation.basePoint)
+            ) { effort in
+                allocation.updateEffort(effort)
+            }
+        }
+    }
 
     func executorSection() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
