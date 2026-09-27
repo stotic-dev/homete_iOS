@@ -2,7 +2,7 @@
 
 > 関連Issue: [#314 家事ボードの完了リストで担当者とありがとうができていないところをぱっと見でわかるようにしたい](https://github.com/stotic-dev/homete_iOS/issues/314)
 > ブランチ: `feat/314-complete-list-metadata`
-> 保存先の判断: [ADR-0023](../adr/0023-store-housework-thanks-in-housework-document.md)
+> 保存先の判断: [ADR-0024](../adr/0024-store-housework-thanks-in-housework-document.md)
 
 ## ステータス
 
@@ -25,15 +25,17 @@
 
 #### 表示（家事ボードの完了リストのみ）
 
-1. 完了リストの各行に、担当者（`executorId`のユーザー名）を表示する
+1. 完了リストの各行に、担当者（`executors`のユーザー名）を表示する。複数人で担当した家事は「たろうさん・はなこさん」のように「・」でつなぐ（グループを抜けた人は出さない）
 2. ありがとうの状況は、見ている本人の目線で出し分ける
 
    | 家事の担当者 | 自分の送信状況 / 受信状況 | 表示 |
    |---|---|---|
-   | 自分以外 | まだ送っていない | 未送信（`heart`） |
-   | 自分以外 | 送った | 送信済み（`heart.fill`） |
-   | 自分 | 誰からも届いていない | 何も出さない |
-   | 自分 | 1人以上から届いた | 受け取った（`heart.fill` + 「ありがとうが届きました」） |
+   | 自分以外を含む | まだ送っていない | 未送信（`heart`） |
+   | 自分以外を含む | 送った | 送信済み（`heart.fill`） |
+   | 自分だけ | 誰からも届いていない | 何も出さない |
+   | 自分だけ | 1人以上から届いた | 受け取った（`heart.fill` + 「ありがとうが届きました」） |
+
+   - 自分を含む複数人で担当した家事は、他の担当者へありがとうを送れる（[ADR-0023](../adr/0023-housework-multiple-executors-with-allocated-points.md)）ため、届いた状況より自分が送ったかどうかを出す
 
 3. ホームの今日のサマリーと未完了一覧の行は、今と同じ表示のまま（担当者も、ありがとうの状況も出さない）
 
@@ -56,14 +58,15 @@
 
 #### 通知
 
-11. コメントなしのありがとう（行のクイックアクション・一括操作）では、Push通知を送らない
+11. コメントなしのありがとう（一括操作）では、Push通知を送らない
+    - 行のクイックアクション（1件）は、mainの変更（#308）でメッセージを入力するハーフモーダルを出すようになったため、詳細画面と同じくコメント付きで送る
     - 固定コメント「ありがとう！」（`HouseworkQuickAction.fixedComment`）と、一括のまとめ通知（`thanksBulkMessage`）は廃止する
 12. コメント付きで送ったとき（詳細画面から送る）は、今と同じ`thanksMessage`のPush通知を送る
 13. 編集したときは、**コメントが初めて付いたときだけ**Push通知を送る（コメントなしで送った後に書き足したとき）。書いてあるコメントを直しただけでは送らない
 
 ### 非機能要件 / 制約
 
-- 保存先は家事ドキュメントのフィールドにする（サブコレクションにしない）。判断の経緯は[ADR-0023](../adr/0023-store-housework-thanks-in-housework-document.md)
+- 保存先は家事ドキュメントのフィールドにする（サブコレクションにしない）。判断の経緯は[ADR-0024](../adr/0024-store-housework-thanks-in-housework-document.md)
 - 既存の家事ドキュメントには`thanks`フィールドがないため、読むときに無ければ空として扱う（データの移行はしない）
 - ありがとうの書き込みは、ドキュメント全体を上書きする`insertOrUpdate`ではなく、`thanks.<送った人のID>`のフィールドだけを更新する。2人が同時に送っても、互いの記録を消さないため
 - Firestoreのセキュリティルールは変更しない（既存の`Houseworks`の`update`ルールで書き込める）
@@ -83,7 +86,7 @@ public struct HouseworkThanks: Equatable, Sendable, Hashable, Codable {
     /// コメントの最大文字数
     public static let commentMaxLength = 200
 
-    /// 添えたコメント。行のクイックアクション・一括操作から送った場合は`nil`
+    /// 添えたコメント。一括操作から送った場合は`nil`
     public let comment: String?
     /// 最初に送った日時（コメントを編集しても変えない）
     public let sentAt: Date
@@ -194,12 +197,12 @@ enum HouseworkThanksStatus: Equatable {
 ```swift
 /// 完了リストでだけ出す、担当者とありがとうの状況
 struct CompletionInfo: Equatable {
-    let executorName: String?
+    let executorNames: [String]
     let thanksStatus: HouseworkThanksStatus?
 }
 ```
 
-- 担当者名は`HouseworkBoardListContent`で`cohabitantStore.members.userName(executorId)`から引いて渡す（詳細画面と同じ取り方）
+- 担当者名は`HouseworkBoardListContent`で`\.cohabitantMembers`の`userName(_:)`から担当者ごとに引いて渡す（詳細画面と同じ取り方）
 - 行は受け取った値を並べるだけにし、判断は持たせない
 - 見た目: 今のメタデータ（「完了」ラベル）の位置に担当者名を出し、行の右端にありがとうの状況のアイコンを出す。未送信は目立つよう輪郭のハート、送信済み・受け取り済みは塗りのハート
 
@@ -208,8 +211,8 @@ struct CompletionInfo: Equatable {
 - `HouseworkDetailActionContent`: `hasSentThanks`なら「送ったメッセージを編集」ボタンを出し、同じ`HouseworkThanksView`を開く
 - `HouseworkThanksView`
   - 初期値として送ったコメントを受け取る（`initialComment: String?`）。編集時はタイトル・ボタンの文言を編集用に切り替える
-  - 200文字を超える入力は切り詰め、残りの文字数を表示する
-  - 送信ボタンは今と同じく空欄では押せない
+  - 入力欄の下に文字数を出し、200文字を超えたら警告色にして送れなくする（入力は切り詰めない。数えるのは前後の空白・改行を除いた文字数）
+  - 送信ボタンはナビゲーションバーのハートアイコン（mainの変更に合わせる）。空欄のとき、上限を超えたとき、編集で内容を変えていないときは押せない
 
 ### 7. Analytics
 
@@ -222,7 +225,7 @@ struct CompletionInfo: Equatable {
 | 種別 | パス | 役割 |
 |---|---|---|
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkThanks.swift` | ありがとうの記録 |
-| 修正ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkItem.swift` | `thanks`の追加、デコード、未完了に戻すときに消す |
+| 修正ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkItem.swift` | `thanks`の追加、デコード・エンコード、完了・未完了にするときに消す |
 | 修正ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkListStore.swift` | `sendThanks`の記録・通知条件 |
 | 修正ドメイン | `LocalPackage/Sources/HometeDomain/PushNotificationContent.swift` | `thanksBulkMessage`の削除 |
 | 修正ドメイン | `LocalPackage/Sources/HometeDomain/AnalyticsLog/HouseworkAnalyticsAction.swift` | `editThanks`の追加 |
@@ -244,7 +247,7 @@ struct CompletionInfo: Equatable {
 ### Phase 1: 設計確定
 
 - [x] 表示の目線は「自分が送ったか」。自分が終えた家事は「受け取った」を出す
-- [x] 保存先は家事ドキュメントのフィールド（ADR-0023）
+- [x] 保存先は家事ドキュメントのフィールド（ADR-0024）
 - [x] コメントは200文字まで
 - [x] 未完了に戻したらありがとうの記録を消す
 - [x] 1人1家事1回まで。送った後は編集のみ。送信済みではありがとうのアクションを出さない
@@ -285,7 +288,7 @@ struct CompletionInfo: Equatable {
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/314
-- ADR: [ADR-0023 家事のありがとうを家事ドキュメントに記録する](../adr/0023-store-housework-thanks-in-housework-document.md)
+- ADR: [ADR-0024 家事のありがとうを家事ドキュメントに記録する](../adr/0024-store-housework-thanks-in-housework-document.md)
 - 既存実装（参考）:
   - `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift`（担当者名の引き方）
   - `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkItemMetaData.swift`（行のメタデータ）
