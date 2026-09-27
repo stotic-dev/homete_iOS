@@ -62,16 +62,17 @@ public struct RegisterHouseworkView: View {
             .navigationTitle("家事を追加")
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
-                Button("キャンセル") {
+                NavigationBarButton(label: .close) {
                     tappedCancelButton()
                 }
+            }
+            .trailingToolbarItem {
+                registerButton()
             }
             .safeAreaInset(edge: .bottom) {
                 PendingEntriesBar(
                     entries: pendingEntries,
-                    canRegister: draft.input.recurrenceInput.isValid,
-                    onTapSummary: { isPresentingPendingList = true },
-                    onTapRegister: { tappedRegisterButton() }
+                    onTapSummary: { isPresentingPendingList = true }
                 )
             }
         }
@@ -152,6 +153,15 @@ private extension RegisterHouseworkView {
             onTapItem: { item in draft.toggleFrequentItem(item.id) },
             onTapManage: { isShowFrequentManagement = true }
         )
+    }
+
+    /// - Note: 件数を出すのは、登録予定リストを開かなくても何件まとめて登録されるのかが分かるようにするため
+    func registerButton() -> some View {
+        NavigationBarPrimaryActionButton(title: "\(pendingEntries.count)件登録") {
+            tappedRegisterButton()
+        }
+        // 繰り返しの入力が途中のときは、入力中の家事を含めて登録できない
+        .disabled(pendingEntries.isEmpty || !draft.input.recurrenceInput.isValid)
     }
 
     func manualTab() -> some View {

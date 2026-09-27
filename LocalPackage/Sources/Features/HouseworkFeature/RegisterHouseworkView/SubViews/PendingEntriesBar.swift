@@ -6,27 +6,17 @@
 import HometeUI
 import SwiftUI
 
-/// 家事の登録シートの下部に常に出す、登録予定リストの要約と登録ボタン
+/// 家事の登録シートの下部に常に出す、登録予定リストの要約
+/// - Note: 登録そのものはナビゲーションバーのボタンで行う。ここはタップして中身を見直すための導線
 struct PendingEntriesBar: View {
 
     let entries: [PendingEntry]
-    /// 登録できるか（繰り返しの入力が途中のときは押させない）
-    let canRegister: Bool
     let onTapSummary: () -> Void
-    let onTapRegister: () -> Void
 
     var body: some View {
-        VStack(spacing: .space8) {
-            summary()
-            Button("\(entries.count)件登録する") {
-                onTapRegister()
-            }
-            .primaryButtonStyle()
-            .frame(maxWidth: .infinity)
-            .disabled(entries.isEmpty || !canRegister)
-        }
-        .padding(.space16)
-        .background(.surface)
+        summary()
+            .padding(.space16)
+            .background(.surface)
     }
 
 }
@@ -68,9 +58,7 @@ private extension PendingEntriesBar {
 #Preview("PendingEntriesBar_0件", traits: .sizeThatFitsLayout) {
     PendingEntriesBar(
         entries: [],
-        canRegister: true,
-        onTapSummary: {},
-        onTapRegister: {}
+        onTapSummary: {}
     )
 }
 
@@ -102,9 +90,7 @@ private extension PendingEntriesBar {
                 categoryId: nil
             ),
         ],
-        canRegister: true,
-        onTapSummary: {},
-        onTapRegister: {}
+        onTapSummary: {}
     )
 }
 #endif
