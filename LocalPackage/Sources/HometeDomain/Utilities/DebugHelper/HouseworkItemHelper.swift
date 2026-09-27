@@ -22,7 +22,8 @@ public extension HouseworkItem {
         executedAt: Date? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
-        thanks: [String: HouseworkThanks] = [:]
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -34,7 +35,8 @@ public extension HouseworkItem {
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -49,7 +51,8 @@ public extension HouseworkItem {
         executedAt: Date? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
-        thanks: [String: HouseworkThanks] = [:]
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) -> Self {
         .init(
             id: id,
@@ -61,7 +64,8 @@ public extension HouseworkItem {
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -74,7 +78,8 @@ public extension HouseworkItem {
         executors: [HouseworkExecutor] = [],
         executedAt: Date? = nil,
         expiredAt: Date? = nil,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        createdAt: Date? = nil
     ) -> HouseworkItem {
         let inputIndexedDate = indexedDate ?? self.indexedDate
         let inputTitle = title ?? self.title
@@ -94,7 +99,8 @@ public extension HouseworkItem {
             executors: inputExecutors,
             executedAt: inputExecutedAt,
             expiredAt: inputExpiredAt,
-            templateHouseworkItemId: inputTemplateHouseworkItemId
+            templateHouseworkItemId: inputTemplateHouseworkItemId,
+            createdAt: createdAt ?? self.createdAt
         )
     }
 

@@ -85,6 +85,33 @@ struct StoredAllHouseworkListTest {
         #expect(actual == expectedItem)
     }
 
+    @Test("日付ごとの家事は、受け取った順に関係なく作成日時の古い順に並べ、作成日時を持たない家事は先頭にIDの順で並べる")
+    func makeMultiDateList_sortsByCreatedAt() {
+        // Arrange
+
+        let date = Self.inputFirstDate
+        let legacyItem1 = HouseworkItem.makeForTest(id: 1, indexedDate: date)
+        let legacyItem2 = HouseworkItem.makeForTest(id: 2, indexedDate: date)
+        let olderItem = HouseworkItem.makeForTest(id: 3, indexedDate: date, createdAt: Date(timeIntervalSince1970: 100))
+        let newerItem = HouseworkItem.makeForTest(id: 4, indexedDate: date, createdAt: Date(timeIntervalSince1970: 200))
+
+        // Act
+
+        let actual = StoredAllHouseworkList.makeMultiDateList(
+            items: [newerItem, legacyItem2, olderItem, legacyItem1],
+            anchorDate: Self.anchorDate,
+            offsetDays: Self.offsetDays,
+            calendar: .japanese
+        )
+
+        // Assert
+
+        let expected = StoredAllHouseworkList(value: [
+            .makeForTest(items: [legacyItem1, legacyItem2, olderItem, newerItem]),
+        ])
+        #expect(actual == expected)
+    }
+
 }
 
 private extension StoredAllHouseworkListTest {

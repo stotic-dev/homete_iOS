@@ -161,6 +161,22 @@ extension HouseworkItemTest.ThanksCase {
         #expect(result == expected)
     }
 
+    @Test("完了・未完了・やらないに更新しても、作成日時は変わらない")
+    func updateState_keepsCreatedAt() {
+        // Arrange
+        let createdAt = Date(timeIntervalSince1970: 1000)
+        let item = HouseworkItem.makeForTest(id: 1, createdAt: createdAt)
+
+        // Act
+        let result = item
+            .updateCompleted(at: Date(), executors: [.solo(userId: "executorId", point: 100)])
+            .updateIncomplete()
+            .updateNotTodo()
+
+        // Assert
+        #expect(result.createdAt == createdAt)
+    }
+
     @Test("完了にすると、未完了の家事に残っていたありがとうの記録は引き継がない")
     func updateCompleted_clearsThanks() {
         // Arrange
@@ -216,7 +232,8 @@ extension HouseworkItemTest.ThanksCase {
             state: .completed,
             executorId: "executorId",
             executedAt: now,
-            expiredAt: expiredAt
+            expiredAt: expiredAt,
+            createdAt: now
         )
         #expect(result == expected)
     }
@@ -435,7 +452,7 @@ extension HouseworkItemTest.CodableCase {
         #expect(actual == expected)
     }
 
-    @Test("エンコードしてデコードすると、元の家事に戻る")
+    @Test("エンコードしてデコードすると、作成日時も含めて元の家事に戻る")
     func encodeThenDecode_returnsSameItem() throws {
         // Arrange
         let item = HouseworkItem(
@@ -450,7 +467,8 @@ extension HouseworkItemTest.CodableCase {
             ],
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
             expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
 
         // Act
@@ -470,7 +488,8 @@ extension HouseworkItemTest.CodableCase {
             ],
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
             expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
         #expect(actual == expected)
     }

@@ -24,22 +24,25 @@ struct HouseworkListStoreTest {
 
     }
 
-    @Test("新しい家事を登録すると保存だけを行い、パートナーには通知を送らない")
+    @Test("新しい家事を登録すると作成日時を付けて保存だけを行い、パートナーには通知を送らない")
     func register() async throws {
         // Arrange
 
+        let inputNow = Date(timeIntervalSince1970: 1000)
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        let expectedItem = inputHouseworkItem.updateProperties(createdAt: inputNow)
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
                 houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
                     // Assert
 
-                    #expect(item == inputHouseworkItem)
+                    #expect(item == expectedItem)
                     #expect(cohabitantId == inputCohabitantId)
                     confirmation()
                 }),
-                cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+                now: { inputNow }
             )
 
             // Act
@@ -146,7 +149,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
             state: .completed,
             executorId: inputExecutor.id,
-            executedAt: completedAt
+            executedAt: completedAt,
+            createdAt: completedAt
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -302,7 +306,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "dummyExecutor",
             executedAt: redoneAt,
             expiredAt: .previewDate(year: 2026, month: 12, day: 25),
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: redoneAt
         )
 
         try await confirmation { confirmation in
@@ -471,6 +476,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     func remove_with_created_template() async throws {
         // Arrange
 
+        let inputNow = Date(timeIntervalSince1970: 1000)
         let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
 
         try await confirmation { confirmation in
@@ -484,13 +490,15 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         title: inputHouseworkItem.title,
                         point: inputHouseworkItem.point,
                         state: .notTodo,
-                        expiredAt: inputHouseworkItem.expiredAt
+                        expiredAt: inputHouseworkItem.expiredAt,
+                        createdAt: inputNow
                     )
                     #expect(item == expected)
                     #expect(cohabitantId == inputCohabitantId)
                     confirmation()
                 }),
                 cohabitantPushNotificationClient: .previewValue,
+                now: { inputNow },
                 items: []
             )
 

@@ -28,6 +28,10 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
     /// 届いたありがとう（キーは送った人のユーザID）
     public let thanks: [String: HouseworkThanks]
+    /// ドキュメントを作った日時。家事の並び順を固定するのに使う
+    ///
+    /// 作成日時の記録を始める前に作られた家事と、旧バージョンのアプリが上書きした家事は`nil`（ADR-0025）。
+    public let createdAt: Date?
 
     public init(
         id: String,
@@ -39,7 +43,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         executedAt: Date?,
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
-        thanks: [String: HouseworkThanks] = [:]
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -51,6 +56,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
         self.thanks = thanks
+        self.createdAt = createdAt
     }
 
     /// 完了にする
@@ -68,7 +74,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            createdAt: createdAt
         )
     }
 
@@ -86,7 +93,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: nil
+            templateHouseworkItemId: nil,
+            createdAt: now
         )
     }
 
@@ -103,7 +111,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: [],
             executedAt: nil,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            createdAt: createdAt
         )
     }
 
@@ -118,7 +127,25 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            thanks: thanks,
+            createdAt: createdAt
+        )
+    }
+
+    /// 新しくドキュメントを作る家事に、作成日時を付ける
+    public func updateCreatedAt(_ now: Date) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: now
         )
     }
 
@@ -142,7 +169,8 @@ public extension HouseworkItem {
         executedAt: Date?,
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
-        thanks: [String: HouseworkThanks] = [:]
+        thanks: [String: HouseworkThanks] = [:],
+        createdAt: Date? = nil
     ) {
         self.init(
             id: id,
@@ -154,7 +182,8 @@ public extension HouseworkItem {
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            thanks: thanks,
+            createdAt: createdAt
         )
     }
 
@@ -177,6 +206,7 @@ public extension HouseworkItem {
         case expiredAt
         case templateHouseworkItemId
         case thanks
+        case createdAt
 
     }
 
@@ -186,6 +216,7 @@ public extension HouseworkItem {
     /// ポイントを満額配分したものとして読む。旧アプリは`setData(merge: false)`で全体を上書きするため、
     /// 新しいアプリが書いた家事でも、旧アプリが更新すると`executors`が消える（ADR-0023）。
     /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む（ADR-0024）。
+    /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0025）。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
@@ -205,7 +236,8 @@ public extension HouseworkItem {
                 HouseworkTemplateItem.ItemId.self,
                 forKey: .templateHouseworkItemId
             ),
-            thanks: container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:]
+            thanks: container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:],
+            createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt)
         )
     }
 
@@ -223,6 +255,7 @@ public extension HouseworkItem {
         try container.encode(expiredAt, forKey: .expiredAt)
         try container.encodeIfPresent(templateHouseworkItemId, forKey: .templateHouseworkItemId)
         try container.encode(thanks, forKey: .thanks)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
     }
 
 }

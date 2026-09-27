@@ -66,7 +66,7 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep
     ) async throws {
         do {
-            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
+            try await houseworkClient.insertOrUpdateItem(newItem.updateCreatedAt(now()), cohabitantId)
         } catch {
             analyticsClient.log(.housework(.register(step: step, isSuccess: false)))
             throw error
@@ -106,7 +106,7 @@ public final class HouseworkListStore {
                 }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
-                let updatedItem = target.updateCompleted(at: now, executors: executors)
+                let updatedItem = target.updateCompleted(at: now, executors: executors).updateCreatedAt(now)
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
@@ -254,7 +254,7 @@ public final class HouseworkListStore {
                     $0.updateNotTodo()
                 }
             } else {
-                let updatedItem = target.updateNotTodo()
+                let updatedItem = target.updateNotTodo().updateCreatedAt(now())
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {

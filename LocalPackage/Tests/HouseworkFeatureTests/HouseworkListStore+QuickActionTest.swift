@@ -80,7 +80,8 @@ extension HouseworkListStoreQuickActionTest.CompleteCase {
         let expected = inputItem.updateProperties(
             state: .completed,
             executorId: inputAccount.id,
-            executedAt: now
+            executedAt: now,
+            createdAt: now
         )
 
         try await confirmation { confirmation in
