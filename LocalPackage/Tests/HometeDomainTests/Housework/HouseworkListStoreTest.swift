@@ -137,6 +137,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         now: completedAt,
                         reporter: inputExecutor,
                         executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        effort: .normal,
                         executorNames: [inputExecutor.userName],
                         comment: "",
                         cohabitantId: inputCohabitantId,
@@ -145,6 +146,58 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     )
                 }
             }
+        }
+    }
+
+    @Test("頑張り度を選んで完了にすると、上乗せ前のポイントのまま頑張り度と上乗せ後の配分を保存する")
+    func complete_withEffort_savesEffortAndBoostedExecutors() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1, point: 10)
+        let inputExecutor = Account(
+            id: "dummyExecutor",
+            userName: "じっこうしゃ",
+            fcmToken: nil,
+            cohabitantId: inputCohabitantId
+        )
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let expectedItem = inputHouseworkItem.updateProperties(
+            state: .completed,
+            executors: [.init(userId: inputExecutor.id, percentage: 100, point: 12)],
+            effort: .hard,
+            executedAt: completedAt
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, _ in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+                calendar: .japanese,
+                items: [.makeForTest(items: [inputHouseworkItem])]
+            )
+
+            // Act
+
+            try await store.complete(
+                target: inputHouseworkItem,
+                now: completedAt,
+                reporter: inputExecutor,
+                executors: [.init(userId: inputExecutor.id, percentage: 100, point: 12)],
+                effort: .hard,
+                executorNames: [inputExecutor.userName],
+                comment: "",
+                cohabitantId: inputCohabitantId,
+                isRegistered: true,
+                step: .detail,
+                notify: false
+            )
         }
     }
 
@@ -207,6 +260,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         now: completedAt,
                         reporter: inputExecutor,
                         executors: [.init(userId: inputExecutor.id, percentage: 100, point: inputHouseworkItem.point)],
+                        effort: .normal,
                         executorNames: [inputExecutor.userName],
                         comment: "",
                         cohabitantId: inputCohabitantId,
@@ -249,6 +303,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 HouseworkExecutor(userId: "reporter", percentage: 60, point: 6),
                 HouseworkExecutor(userId: "partner", percentage: 40, point: 4),
             ],
+            effort: .normal,
             executedAt: completedAt,
             expiredAt: inputHouseworkItem.expiredAt,
             templateHouseworkItemId: nil
@@ -291,6 +346,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         now: completedAt,
                         reporter: inputReporter,
                         executors: inputExecutors,
+                        effort: .normal,
                         executorNames: ["きろくしゃ", "パートナー"],
                         comment: "一緒に片付けました",
                         cohabitantId: inputCohabitantId,

@@ -67,7 +67,7 @@ struct HouseworkCompleteView: View {
         self.allocation = allocation ?? .init(
             memberIds: selectableMembers.map(\.id),
             selectedIds: [account.id],
-            totalPoint: item.point
+            basePoint: item.originalItem.point
         )
         self.isExpandedAllocation = isExpandedAllocation
     }
@@ -182,10 +182,10 @@ extension HouseworkCompleteView {
 
     /// 家事のポイントより多い人数は選べないことを伝える文言
     var executorLimitMessage: String? {
-        let maxCount = HouseworkExecutorAllocation.maxExecutorCount(totalPoint: item.point)
+        let maxCount = HouseworkExecutorAllocation.maxExecutorCount(basePoint: item.originalItem.point)
         guard selectableMembers.count > maxCount else { return nil }
 
-        return "この家事は\(item.point)ptなので、担当者は\(maxCount)人まで選べます"
+        return "この家事は\(item.originalItem.point)ptなので、担当者は\(maxCount)人まで選べます"
     }
 
     var validationMessage: String? {
@@ -218,6 +218,7 @@ extension HouseworkCompleteView {
                 now: now,
                 reporter: account,
                 executors: executors,
+                effort: allocation.effort,
                 executorNames: executors.map { userName($0.userId) },
                 comment: "",
                 cohabitantId: cohabitantId,
@@ -263,7 +264,7 @@ extension HouseworkCompleteView {
         allocation: .init(
             memberIds: ["own", "child", "partner"],
             selectedIds: ["own", "child", "partner"],
-            totalPoint: 10
+            basePoint: 10
         ),
         isExpandedAllocation: true
     )

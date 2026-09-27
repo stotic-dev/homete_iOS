@@ -80,7 +80,8 @@ public final class HouseworkListStore {
     /// コメントを添えたときは、入力したコメントが届かずに消えないよう、1日1回の制限に関係なく毎回送る。
     /// - Parameters:
     ///   - reporter: 完了にした人。通知の送り主になる
-    ///   - executors: 担当者と、配分した割合・ポイント
+    ///   - executors: 担当者と、配分した割合・ポイント（`effort`で上乗せした後のポイントを配分したもの）
+    ///   - effort: 頑張り度
     ///   - executorNames: 担当者の名前（`executors`と同じ順）。代わりに記録したときの通知の文言に使う
     ///   - comment: 完了通知に添えるコメント。空なら添えない
     ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す。
@@ -90,6 +91,7 @@ public final class HouseworkListStore {
         now: Date,
         reporter: Account,
         executors: [HouseworkExecutor],
+        effort: HouseworkEffort,
         executorNames: [String],
         comment: String,
         cohabitantId: String,
@@ -102,11 +104,11 @@ public final class HouseworkListStore {
             if isRegistered {
                 // Houseworksコレクションに登録されている家事の場合はステータスを更新する
                 try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                    $0.updateCompleted(at: now, executors: executors)
+                    $0.updateCompleted(at: now, executors: executors, effort: effort)
                 }
             } else {
                 // 登録されていない場合はドキュメントを新規作成する
-                let updatedItem = target.updateCompleted(at: now, executors: executors)
+                let updatedItem = target.updateCompleted(at: now, executors: executors, effort: effort)
                 try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
             }
         } catch {
