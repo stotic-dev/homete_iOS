@@ -77,7 +77,7 @@ struct HouseworkEffortTest {
         let data = try JSONEncoder().encode(effort)
 
         // Assert
-        #expect(String(decoding: data, as: UTF8.self) == expected)
+        #expect(String(bytes: data, encoding: .utf8) == expected)
     }
 
     @Test("家事の獲得ポイントは、上乗せ前のポイントに頑張り度を反映したものになる")
