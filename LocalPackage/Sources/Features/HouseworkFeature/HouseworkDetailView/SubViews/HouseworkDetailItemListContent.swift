@@ -84,7 +84,8 @@ private extension HouseworkDetailItemListContent {
             }
             .font(with: .boldCaption)
             .foregroundStyle(.onSubSurface)
-            Text(thanksMessage.message)
+            // メッセージを書かずに伝えたありがとうは、ハートをタップしたときの気持ちを代わりに添える
+            Text(thanksMessage.comment ?? "ありがとう！")
                 .font(with: .body)
                 .foregroundStyle(.onSurfaceVariant)
         }
@@ -156,8 +157,8 @@ private extension HouseworkDetailItemListContent {
             executedAt: .distantPast
         ),
         thanksMessages: [
-            .init(senderName: "はなこ", message: "いつも洗濯してくれてありがとう！助かっています。"),
-            .init(senderName: "じろう", message: HouseworkThanksMessage.defaultMessage),
+            .init(senderName: "はなこ", comment: "いつも洗濯してくれてありがとう！助かっています。"),
+            .init(senderName: "じろう", comment: nil),
         ]
     )
     .setupEnvironmentForPreview()

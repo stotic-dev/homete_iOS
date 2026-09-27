@@ -36,14 +36,14 @@ struct HouseworkThanksMessageTest {
 
         // Assert
         let expected: [HouseworkThanksMessage] = [
-            .init(senderName: "はなこ", message: "いつもありがとう"),
-            .init(senderName: "じろう", message: "助かりました"),
+            .init(senderName: "はなこ", comment: "いつもありがとう"),
+            .init(senderName: "じろう", comment: "助かりました"),
         ]
         #expect(result == expected)
     }
 
-    @Test("メッセージを書かずに伝えたありがとうは、「ありがとう！」と表示する")
-    func make_thanksWithoutComment_returnsDefaultMessage() {
+    @Test("メッセージを書かずに伝えたありがとうは、コメントなしとして並べる")
+    func make_thanksWithoutComment_returnsNilComment() {
         // Arrange
         let item = HouseworkBoardItem.makeForPreview(
             id: "1",
@@ -63,7 +63,7 @@ struct HouseworkThanksMessageTest {
         let result = HouseworkThanksMessage.make(item: item, memberList: memberList)
 
         // Assert
-        #expect(result == [.init(senderName: "はなこ", message: "ありがとう！")])
+        #expect(result == [.init(senderName: "はなこ", comment: nil)])
     }
 
     @Test("グループを抜けたなどで名前が分からない人のありがとうは出さない")

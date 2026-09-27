@@ -8,11 +8,9 @@ import HometeDomain
 /// 家事詳細に出す、誰から届いたありがとうか
 struct HouseworkThanksMessage: Equatable {
 
-    /// メッセージを書かずに伝えたありがとうの表示
-    static let defaultMessage = "ありがとう！"
-
     let senderName: String
-    let message: String
+    /// 添えられたコメント。メッセージを書かずに伝えたありがとうは`nil`
+    let comment: String?
 
 }
 
@@ -27,7 +25,7 @@ extension HouseworkThanksMessage {
             .compactMap { senderId, thanks in
                 guard let senderName = memberList.userName(senderId) else { return nil }
 
-                return .init(senderName: senderName, message: thanks.comment ?? defaultMessage)
+                return .init(senderName: senderName, comment: thanks.comment)
             }
     }
 
