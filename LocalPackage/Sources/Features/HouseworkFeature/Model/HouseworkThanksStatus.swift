@@ -29,13 +29,13 @@ enum HouseworkThanksStatus: Equatable, CaseIterable {
         }
     }
 
-    /// まだ伝えていない家事と、届いたありがとうは目に留まるよう強調し、送り終えたものは控えめにする
+    /// 伝え終えた家事は、赤いハートで伝えたことがひと目で分かるようにする
     var foregroundStyle: Color {
         switch self {
         case .notSent, .received:
             .accent
         case .sent:
-            .onSurfaceVariant
+            .thanksHeart
         }
     }
 
