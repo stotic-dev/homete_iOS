@@ -13,7 +13,9 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
     case complete
     /// やらない（未完了 → やらない）
     case remove
-    /// ありがとう（完了した家事に、コメントなしで感謝を記録する。ステータスは変わらず、通知も送らない）
+    /// ありがとう（完了した家事に感謝を伝える。ステータスは変わらない）
+    ///
+    /// 1件ではメッセージを入力するハーフモーダルを出す。一括操作ではコメントなしで記録し、通知も送らない。
     case sendThanks
     /// もう一度やった（完了した家事と同じ家事を、完了済みとして新しく登録する。元の家事は変わらない）
     case redo

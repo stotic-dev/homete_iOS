@@ -96,4 +96,41 @@ struct HouseworkThanksStatusTest {
         #expect(result == nil)
     }
 
+    @Test("自分を含む複数人で担当した家事は、他の担当者から届いていても、自分が伝えたかどうかを出す")
+    func make_sharedWithOwnUser_returnsNotSent() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 10,
+            state: .completed,
+            executors: [
+                .init(userId: "ownUserId", percentage: 50, point: 5),
+                .init(userId: "otherUserId", percentage: 50, point: 5),
+            ],
+            thanks: ["otherUserId": .init(comment: nil, sentAt: .distantPast)]
+        )
+
+        // Act
+        let result = HouseworkThanksStatus.make(item: item, ownUserId: "ownUserId")
+
+        // Assert
+        #expect(result == .notSent)
+    }
+
+    @Test("担当者のいない完了済みの家事には、ありがとうの状況を出さない")
+    func make_noExecutor_returnsNil() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            state: .completed,
+            thanks: ["otherUserId": .init(comment: nil, sentAt: .distantPast)]
+        )
+
+        // Act
+        let result = HouseworkThanksStatus.make(item: item, ownUserId: "ownUserId")
+
+        // Assert
+        #expect(result == nil)
+    }
+
 }

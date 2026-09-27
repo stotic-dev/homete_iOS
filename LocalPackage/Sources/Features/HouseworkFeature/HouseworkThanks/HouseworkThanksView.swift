@@ -6,13 +6,12 @@
 //
 
 import HometeDomain
-import HometeResources
 import HometeUI
 import SwiftUI
 
+/// 完了した家事にありがとうを伝えるハーフモーダル
 public struct HouseworkThanksView: View {
 
-    @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
@@ -34,32 +33,27 @@ public struct HouseworkThanksView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: .space40) {
-                    VStack(spacing: .space24) {
-                        if let executorId = item.executorId,
-                           let executorUserName = cohabitantStore.members.userName(executorId) {
-                            notificationSection(executorUserName)
-                        }
-                        houseworkPropertySection()
-                        inputMessageSection()
-                    }
-                    actionButtonContent()
+            ContentFittingSheetScrollView {
+                VStack(spacing: .space8) {
+                    HouseworkCommentInputContent(
+                        title: "メッセージ",
+                        placeholder: "感謝を伝えましょう！",
+                        text: $inputMessage
+                    )
+                    commentLengthLabel()
                 }
                 .padding(.horizontal, .space16)
-                .padding(.bottom, .space24)
+                .padding(.vertical, .space24)
             }
-            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
-            .softTopScrollEdgeEffect()
-            .leadingToolbarItem {
-                NavigationBarButton(label: .close) {
-                    dismiss()
-                }
+            .trailingToolbarItem {
+                sendThanksButton()
             }
-            .fullScreenLoadingIndicator(loadingState)
         }
+        .presentationDragIndicator(.visible)
+        .fullScreenLoadingIndicator(loadingState)
+        .commonError(content: $commonError)
         .trackScreenView(.houseworkThanks)
     }
 
@@ -67,63 +61,21 @@ public struct HouseworkThanksView: View {
 
 private extension HouseworkThanksView {
 
-    func notificationSection(_ executorName: String) -> some View {
-        section {
-            VStack(spacing: .zero) {
-                Text("\(executorName)さんが")
-                Text("「\(item.title)」を")
-                Text("終えてくれました")
-            }
-            .font(with: .body)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, .space16)
-        }
+    func commentLengthLabel() -> some View {
+        Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
+            .font(with: .caption)
+            .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
+            .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
-    func houseworkPropertySection() -> some View {
-        section {
-            HouseworkItemPropertyListContent(item: item)
-                .padding(.vertical, .space8)
-        }
-    }
-
-    func inputMessageSection() -> some View {
-        VStack(spacing: .space16) {
-            Text("メッセージ")
-                .font(with: .headLineS)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            section {
-                TextField("感謝を伝えましょう！", text: $inputMessage, axis: .vertical)
-                    .font(with: .body)
-                    .padding(.space16)
-                    .frame(minHeight: 150, alignment: .topLeading)
-            }
-            Text("\(inputMessage.count)/\(HouseworkThanks.commentMaxLength)")
-                .font(with: .caption)
-                .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-        }
-    }
-
-    func section(@ViewBuilder content: () -> some View) -> some View {
-        content()
-            .frame(maxWidth: .infinity)
-            .background {
-                RoundedRectangle(radius: .radius8)
-                    .fill(.subSurface)
-            }
-    }
-
-    func actionButtonContent() -> some View {
-        Button {
+    func sendThanksButton() -> some View {
+        NavigationBarPrimaryActionButton(systemImage: "heart.fill") {
             loadingState.task {
                 await tappedSendThanksButton()
             }
-        } label: {
-            Text(submitButtonLabel)
-                .frame(maxWidth: .infinity)
         }
-        .primaryButtonStyle()
+        .foregroundStyle(.onPrimary1)
+        .accessibilityLabel(submitButtonLabel)
         .disabled(!canSubmit)
     }
 
@@ -160,16 +112,21 @@ private extension HouseworkThanksView {
         }
     }
 
+    /// 前後の空白・改行を除いた、送るメッセージ
+    var trimmedMessage: String {
+        inputMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     /// コメントが上限の文字数を超えているか
     ///
     /// 入力中に切り詰めると、日本語の変換中の文字まで消えてしまうため、超えた入力も受け付けた上で送れなくする。
     var isOverCommentLimit: Bool {
-        inputMessage.count > HouseworkThanks.commentMaxLength
+        trimmedMessage.count > HouseworkThanks.commentMaxLength
     }
 
     /// 空のまま・上限を超えている・編集で内容を変えていないときは送れない
     var canSubmit: Bool {
-        !inputMessage.isEmpty && !isOverCommentLimit && inputMessage != sentThanks?.comment
+        !trimmedMessage.isEmpty && !isOverCommentLimit && trimmedMessage != sentThanks?.comment
     }
 
     func tappedSendThanksButton() async {
@@ -179,7 +136,7 @@ private extension HouseworkThanksView {
             try await houseworkListStore.sendThanks(
                 target: item.originalItem,
                 sender: account,
-                comment: inputMessage,
+                comment: trimmedMessage,
                 now: now,
                 cohabitantId: cohabitantId,
                 step: .thanks
@@ -203,10 +160,6 @@ private extension HouseworkThanksView {
         executedAt: .distantFuture
     ))
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(
-        members: [.init(id: "test", userName: "hogehoge")],
-        ownId: "test"
-    ))
     .environment(HouseworkListStore())
 }
 
@@ -223,10 +176,6 @@ private extension HouseworkThanksView {
         sentThanks: .init(comment: nil, sentAt: .distantFuture)
     )
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(
-        members: [.init(id: "test", userName: "hogehoge")],
-        ownId: "test"
-    ))
     .environment(HouseworkListStore())
 }
 
@@ -243,10 +192,6 @@ private extension HouseworkThanksView {
         sentThanks: .init(comment: "いつもありがとう！", sentAt: .distantFuture)
     )
     .setupEnvironmentForPreview()
-    .environment(CohabitantStore(
-        members: [.init(id: "test", userName: "hogehoge")],
-        ownId: "test"
-    ))
     .environment(HouseworkListStore())
 }
 #endif

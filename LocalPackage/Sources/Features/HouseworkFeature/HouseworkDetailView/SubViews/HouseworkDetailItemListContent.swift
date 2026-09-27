@@ -32,15 +32,35 @@ struct HouseworkDetailItemListContent: View {
             HouseworkDetailItemRow(title: "ポイント") {
                 PointLabel(point: item.point)
             }
-            if let executorId = item.executorId,
-               let executorUserName = cohabitantMemberList.userName(executorId) {
-                HouseworkDetailItemRow(title: "実施者") {
-                    Text(executorUserName)
-                        .font(with: .body)
-                        .foregroundStyle(.onSurfaceVariant)
+            if !executors.isEmpty {
+                HouseworkDetailItemRow(title: "担当者") {
+                    VStack(alignment: .leading, spacing: .space8) {
+                        ForEach(executors, id: \.userId) { executor in
+                            Text(executorLabel(executor))
+                                .font(with: .body)
+                                .foregroundStyle(.onSurfaceVariant)
+                        }
+                    }
                 }
             }
         }
+    }
+
+}
+
+private extension HouseworkDetailItemListContent {
+
+    /// グループのメンバーの担当者（グループを抜けたメンバーは名前が分からないため出さない）
+    var executors: [HouseworkExecutor] {
+        item.executors.filter { cohabitantMemberList.userName($0.userId) != nil }
+    }
+
+    /// 複数人で担当した家事は、名前に割合とポイントを添える
+    func executorLabel(_ executor: HouseworkExecutor) -> String {
+        let userName = cohabitantMemberList.userName(executor.userId) ?? ""
+        guard item.executors.count > 1 else { return userName }
+
+        return "\(userName) \(executor.percentage)%（\(executor.point)pt）"
     }
 
 }
@@ -68,6 +88,26 @@ struct HouseworkDetailItemListContent: View {
             point: 10,
             state: .completed,
             executorId: "test",
+            executedAt: .distantPast
+        )
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailItemListContent_複数人で担当", traits: .sizeThatFitsLayout) {
+    HouseworkDetailItemListContent(
+        cohabitantMemberList: .init(
+            value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
+            ownId: "own"
+        ),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executors: [
+                .init(userId: "own", percentage: 60, point: 6),
+                .init(userId: "partner", percentage: 40, point: 4),
+            ],
             executedAt: .distantPast
         )
     )

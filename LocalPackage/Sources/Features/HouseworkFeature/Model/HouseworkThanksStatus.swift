@@ -68,13 +68,15 @@ extension HouseworkThanksStatus {
     /// 家事の状態と、見ている本人から、セルに出すありがとうの状況を決める
     ///
     /// 完了済みでない家事と、自分が終えてまだ誰からも届いていない家事は、伝える状況がないため`nil`を返す。
+    /// 自分を含む複数人で担当した家事は、他の担当者へ伝えられるため、届いた状況より自分が伝えたかどうかを優先して出す。
     static func make(item: HouseworkBoardItem, ownUserId: String) -> Self? {
-        guard item.state == .completed else { return nil }
-
-        if item.isExecutedBy(ownUserId) {
-            return item.originalItem.thanks.isEmpty ? nil : .received
+        if item.isThankable(by: ownUserId) {
+            return item.sentThanks(ownUserId: ownUserId) == nil ? .notSent : .sent
         }
-        return item.sentThanks(ownUserId: ownUserId) == nil ? .notSent : .sent
+        guard item.state == .completed, item.isExecutedBy(ownUserId) else { return nil }
+
+        let hasReceivedThanks = item.originalItem.thanks.keys.contains { $0 != ownUserId }
+        return hasReceivedThanks ? .received : nil
     }
 
 }

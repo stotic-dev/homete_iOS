@@ -7,6 +7,7 @@
 
 import Foundation
 @testable import HometeDomain
+import Observation
 import Testing
 
 enum FrequentHouseworkStoreTest {
@@ -28,18 +29,21 @@ enum FrequentHouseworkStoreTest {
 extension FrequentHouseworkStoreTest.ObservingCase {
 
     @MainActor
-    @Test("購読を開始すると、受け取ったいつもの家事を反映し、読み込み済みになる")
-    func startObservingReflectsItems() async {
+    @Test("いつもの家事とカテゴリの最初のスナップショットが揃うと、両方を反映して読み込み済みになる")
+    func startObservingReflectsItemsAndCategories() async {
         // Arrange
 
         let expectedItems: [FrequentHouseworkItem] = [.makeForTest(id: "1")]
+        let expectedCategories: [FrequentHouseworkCustomCategory] = [.makeForTest(id: "pet")]
         let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let (categoriesStream, categoriesContinuation) = AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream()
         let store = FrequentHouseworkStore(
             frequentHouseworkClient: .init(
                 addItemsSnapshotListener: { _, cohabitantId in
                     #expect(cohabitantId == FrequentHouseworkStoreTest.inputCohabitantId)
                     return itemsStream
-                }
+                },
+                addCategoriesSnapshotListener: { _, _ in categoriesStream }
             )
         )
 
@@ -58,15 +62,195 @@ extension FrequentHouseworkStoreTest.ObservingCase {
                 }
             }
         }
+        categoriesContinuation.yield(expectedCategories)
         itemsContinuation.yield(expectedItems)
         await waiter.value
         #expect(store.items == expectedItems)
+        #expect(store.customCategories == expectedCategories)
         #expect(store.loadState == .loaded)
 
         // Cleanup
 
-        itemsContinuation.finish()
+        // 先に購読を解除する（解除せずにストリームを終えると失敗扱いになり、waiterが再度呼ばれるため）
         await store.stopObserving()
+        itemsContinuation.finish()
+        categoriesContinuation.finish()
+    }
+
+    @MainActor
+    @Test("いつもの家事だけが届いてカテゴリがまだ届いていない間は、読み込み中のまま")
+    func startObservingStaysLoadingUntilCategoriesArrive() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream }
+            )
+        )
+
+        // Act
+
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+
+        // Assert
+
+        let waiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.items
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.yield([.makeForTest(id: "1")])
+        await waiter.value
+        #expect(store.loadState == .loading)
+
+        // Cleanup
+
+        await store.stopObserving()
+        itemsContinuation.finish()
+    }
+
+    @MainActor
+    @Test("最初のスナップショットが揃う前にリスナーが終わると、読み込みに失敗した状態になる")
+    func startObservingFailsWhenListenerEndsBeforeLoaded() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream }
+            )
+        )
+
+        // Act
+
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+
+        // Assert
+
+        let waiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.finish()
+        await waiter.value
+        #expect(store.loadState == .failed(.other))
+
+        // Cleanup
+
+        await store.stopObserving()
+    }
+
+    @MainActor
+    @Test("片方のリスナーが先に終わって失敗になった後は、もう片方が届いても失敗のままにする")
+    func startObservingStaysFailedAfterOneListenerEnds() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let (categoriesStream, categoriesContinuation) = AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream },
+                addCategoriesSnapshotListener: { _, _ in categoriesStream }
+            )
+        )
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        let failedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.yield([.makeForTest(id: "1")])
+        itemsContinuation.finish()
+        await failedWaiter.value
+
+        // Act
+
+        let categoriesWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.customCategories
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        categoriesContinuation.yield([.makeForTest(id: "pet")])
+        await categoriesWaiter.value
+
+        // Assert
+
+        #expect(store.loadState == .failed(.other))
+
+        // Cleanup
+
+        await store.stopObserving()
+        categoriesContinuation.finish()
+    }
+
+    @MainActor
+    @Test("読み込み済みになった後にリスナーが終わると、以降のデータが更新されないため失敗した状態にする")
+    func startObservingFailsWhenListenerEndsAfterLoaded() async {
+        // Arrange
+
+        let (itemsStream, itemsContinuation) = AsyncStream<[FrequentHouseworkItem]>.makeStream()
+        let (categoriesStream, categoriesContinuation) = AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in itemsStream },
+                addCategoriesSnapshotListener: { _, _ in categoriesStream }
+            )
+        )
+        await store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        // 読み込み済みの後にも失敗へ変わるため、1回だけ変化を拾う監視にする
+        let loadedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                withObservationTracking {
+                    _ = store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        itemsContinuation.yield([.makeForTest(id: "1")])
+        categoriesContinuation.yield([])
+        await loadedWaiter.value
+
+        // Act
+
+        let failedWaiter = Task {
+            await withCheckedContinuation { continuation in
+                ObservationHelper.continuousObservationTracking {
+                    store.loadState
+                } onChange: {
+                    continuation.resume(returning: ())
+                }
+            }
+        }
+        categoriesContinuation.finish()
+        await failedWaiter.value
+
+        // Assert
+
+        #expect(store.loadState == .failed(.other))
+
+        // Cleanup
+
+        await store.stopObserving()
+        itemsContinuation.finish()
     }
 
     @MainActor
@@ -104,6 +288,49 @@ extension FrequentHouseworkStoreTest.ObservingCase {
         // Cleanup
 
         categoriesContinuation.finish()
+        await store.stopObserving()
+    }
+
+    @MainActor
+    @Test("購読の開始が重なっても、前の開始が終わってから次を始めるため、解除と登録が1回分ずつ順に並ぶ")
+    func overlappingStartObservingIsSerialized() async {
+        // Arrange
+
+        let events = TestLockedArray<String>()
+        let store = FrequentHouseworkStore(
+            frequentHouseworkClient: .init(
+                addItemsSnapshotListener: { _, _ in
+                    await events.append("addItems")
+                    return AsyncStream<[FrequentHouseworkItem]>.makeStream().stream
+                },
+                addCategoriesSnapshotListener: { _, _ in
+                    await events.append("addCategories")
+                    return AsyncStream<[FrequentHouseworkCustomCategory]>.makeStream().stream
+                },
+                removeListener: { id in await events.append("remove:\(id)") }
+            )
+        )
+        let oneCycle = [
+            "remove:frequentHouseworksListener",
+            "remove:frequentHouseworkCategoriesListener",
+            "addItems",
+            "addCategories",
+        ]
+        let expected = oneCycle + oneCycle
+
+        // Act
+
+        async let first: Void = store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        async let second: Void = store.startObserving(cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId)
+        _ = await (first, second)
+
+        // Assert
+
+        let actual = await events.values
+        #expect(actual == expected)
+
+        // Cleanup
+
         await store.stopObserving()
     }
 

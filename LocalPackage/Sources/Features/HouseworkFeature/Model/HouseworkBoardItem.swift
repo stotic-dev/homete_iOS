@@ -34,17 +34,17 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         originalItem.point
     }
 
-    public var executorId: String? {
-        originalItem.executorId
-    }
-
     public var executedAt: Date? {
         originalItem.executedAt
     }
 
-    /// 自分が終えた家事かどうか
+    public var executors: [HouseworkExecutor] {
+        originalItem.executors
+    }
+
+    /// 担当者に含まれているかどうか
     public func isExecutedBy(_ userId: String) -> Bool {
-        originalItem.executorId == userId
+        executors.contains { $0.userId == userId }
     }
 
     /// 自分が送ったありがとう。まだ送っていなければ`nil`
@@ -54,15 +54,21 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
 
     /// ありがとうを伝えられるかどうか
     ///
-    /// 自分が終えた家事に自分でありがとうを送っても意味がないため、実施者本人には送らせない。
+    /// 自分が終えた家事に自分でありがとうを送っても意味がないため、担当者に自分以外が含まれるときだけ送れる。
+    /// 複数人で手分けした家事なら、自分が担当者に含まれていても他の担当者へ送れる。
     /// 1人が1つの家事に送れるのは1回までで、送った後はコメントの編集だけできる。
     public func canSendThanks(ownUserId: String) -> Bool {
-        state == .completed && !isExecutedBy(ownUserId) && sentThanks(ownUserId: ownUserId) == nil
+        isThankable(by: ownUserId) && sentThanks(ownUserId: ownUserId) == nil
     }
 
     /// 送ったありがとうのコメントを編集できるかどうか
     public func canEditThanks(ownUserId: String) -> Bool {
-        state == .completed && !isExecutedBy(ownUserId) && sentThanks(ownUserId: ownUserId) != nil
+        isThankable(by: ownUserId) && sentThanks(ownUserId: ownUserId) != nil
+    }
+
+    /// 完了済みで、担当者に自分以外が含まれているかどうか
+    public func isThankable(by ownUserId: String) -> Bool {
+        state == .completed && executors.contains { $0.userId != ownUserId }
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {

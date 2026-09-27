@@ -23,6 +23,10 @@ struct HouseworkBoardListContent: View {
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
+    /// クイックアクションで「完了にする」が選ばれた。ハーフモーダルは親が出す
+    let onSelectComplete: (HouseworkBoardItem) -> Void
+    /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
+    let onSelectThanks: (HouseworkBoardItem) -> Void
 
     @State var selectedIDs: Set<String> = []
     @CommonError var commonError
@@ -46,6 +50,8 @@ struct HouseworkBoardListContent: View {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .board,
+                                onSelectComplete: { onSelectComplete(item) },
+                                onSelectThanks: { onSelectThanks(item) },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -126,7 +132,7 @@ private extension HouseworkBoardListContent {
         guard state == .completed else { return nil }
 
         return .init(
-            executorName: item.executorId.flatMap { memberList.userName($0) },
+            executorNames: item.executors.compactMap { memberList.userName($0.userId) },
             thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: loginContext.account.id)
         )
     }
@@ -166,7 +172,9 @@ private extension HouseworkBoardListContent {
         memberList: .init(value: [], ownId: ""),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
-        onCreateTapped: {}
+        onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in }
     )
     .setupLoginContextForPreview()
 }
@@ -216,6 +224,8 @@ private extension HouseworkBoardListContent {
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in },
         selectedIDs: ["1"]
     )
     .setupLoginContextForPreview()

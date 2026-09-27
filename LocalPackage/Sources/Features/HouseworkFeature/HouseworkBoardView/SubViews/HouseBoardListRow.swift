@@ -27,8 +27,8 @@ public struct HouseBoardListRow: View {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(houseworkItem.title)
                     .font(with: .body)
-                if let executorName = completionInfo?.executorName {
-                    executorLabel(executorName)
+                if let label = completionInfo?.executorLabel {
+                    executorLabel(label)
                 } else if let metaData = HouseworkItemMetaData.make(item: houseworkItem) {
                     metaDataLabel(metaData)
                 }
@@ -48,9 +48,16 @@ public extension HouseBoardListRow {
     /// 完了リストの家事セルに出す、担当者とありがとうの状況
     struct CompletionInfo: Equatable {
 
-        /// 家事を終えた人の名前。グループを抜けたなどで分からない場合は`nil`
-        let executorName: String?
+        /// 家事を終えた人の名前。グループを抜けたなどで分からない人は含めない
+        let executorNames: [String]
         let thanksStatus: HouseworkThanksStatus?
+
+        /// 担当者の表示。複数人で担当した家事は「・」でつなぐ。名前が1人も分からなければ`nil`
+        var executorLabel: String? {
+            guard !executorNames.isEmpty else { return nil }
+
+            return executorNames.map { "\($0)さん" }.joined(separator: "・")
+        }
 
     }
 
@@ -64,8 +71,8 @@ private extension HouseBoardListRow {
             .foregroundStyle(metaData.foregroundStyle)
     }
 
-    func executorLabel(_ executorName: String) -> some View {
-        Label("\(executorName)さん", systemImage: "person.fill")
+    func executorLabel(_ label: String) -> some View {
+        Label(label, systemImage: "person.fill")
             .font(with: .boldCaption)
             .foregroundStyle(.onSubSurface)
     }
@@ -117,7 +124,7 @@ private extension HouseBoardListRow {
             state: .completed,
             executorId: "otherUserId"
         ),
-        completionInfo: .init(executorName: "はなこ", thanksStatus: .notSent)
+        completionInfo: .init(executorNames: ["はなこ"], thanksStatus: .notSent)
     )
 }
 
@@ -130,7 +137,7 @@ private extension HouseBoardListRow {
             state: .completed,
             executorId: "otherUserId"
         ),
-        completionInfo: .init(executorName: "はなこ", thanksStatus: .sent)
+        completionInfo: .init(executorNames: ["はなこ"], thanksStatus: .sent)
     )
 }
 
@@ -143,7 +150,7 @@ private extension HouseBoardListRow {
             state: .completed,
             executorId: "ownUserId"
         ),
-        completionInfo: .init(executorName: "たろう", thanksStatus: .received)
+        completionInfo: .init(executorNames: ["たろう"], thanksStatus: .received)
     )
 }
 
@@ -156,7 +163,23 @@ private extension HouseBoardListRow {
             state: .completed,
             executorId: "ownUserId"
         ),
-        completionInfo: .init(executorName: "たろう", thanksStatus: nil)
+        completionInfo: .init(executorNames: ["たろう"], thanksStatus: nil)
+    )
+}
+
+#Preview("HouseBoardListRow_完了_複数人で担当", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(
+            title: "洗濯",
+            point: 20,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executors: [
+                .init(userId: "ownUserId", percentage: 50, point: 10),
+                .init(userId: "otherUserId", percentage: 50, point: 10),
+            ]
+        ),
+        completionInfo: .init(executorNames: ["たろう", "はなこ"], thanksStatus: .notSent)
     )
 }
 

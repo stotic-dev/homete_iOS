@@ -18,6 +18,7 @@ public extension HouseworkItem {
         point: Int = 100,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
+        executors: [HouseworkExecutor] = [],
         executedAt: Date? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
@@ -29,7 +30,7 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executorId: executorId,
+            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
@@ -44,6 +45,7 @@ public extension HouseworkItem {
         point: Int = 100,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
+        executors: [HouseworkExecutor] = [],
         executedAt: Date? = nil,
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
@@ -55,7 +57,7 @@ public extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executorId: executorId,
+            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
@@ -69,6 +71,7 @@ public extension HouseworkItem {
         point: Int? = nil,
         state: HouseworkState? = nil,
         executorId: String? = nil,
+        executors: [HouseworkExecutor] = [],
         executedAt: Date? = nil,
         expiredAt: Date? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
@@ -77,7 +80,7 @@ public extension HouseworkItem {
         let inputTitle = title ?? self.title
         let inputPoint = point ?? self.point
         let inputState = state ?? self.state
-        let inputExecutorId = executorId
+        let inputExecutors = executorId.map { [.solo(userId: $0, point: inputPoint)] } ?? executors
         let inputExecutedAt = executedAt
         let inputExpiredAt = expiredAt ?? self.expiredAt
         let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
@@ -88,7 +91,7 @@ public extension HouseworkItem {
             title: inputTitle,
             point: inputPoint,
             state: inputState,
-            executorId: inputExecutorId,
+            executors: inputExecutors,
             executedAt: inputExecutedAt,
             expiredAt: inputExpiredAt,
             templateHouseworkItemId: inputTemplateHouseworkItemId

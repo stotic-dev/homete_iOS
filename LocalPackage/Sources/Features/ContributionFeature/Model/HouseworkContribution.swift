@@ -18,22 +18,25 @@ public struct HouseworkContribution: Equatable, Sendable {
         list.values.flatMap(\.values).map(\.indexedDay).max()
     }
 
+    /// 完了した家事を、担当者ごとに配分されたポイントで集計する
+    ///
+    /// 複数人で担当した家事は、担当者それぞれに配分されたポイントと1件の達成を数える。
     static func make(by houseworkItems: [HouseworkItem], calendar: Calendar) -> Self {
-        let completedItems = houseworkItems.filter { $0.state == .completed }
-        let groupedByUserItems: [String: [HouseworkItem]] = Dictionary(
-            grouping: completedItems
-        ) { $0.executorId ?? "" }
-        let list: [String: [Date: PointOfDay]] = groupedByUserItems.mapValues { items in
-            let groupedByDate = Dictionary(grouping: items) { item in
-                calendar.startOfDay(for: item.indexedDate.value)
+        let contributions = houseworkItems
+            .filter { $0.state == .completed }
+            .flatMap { item in
+                let indexedDay = calendar.startOfDay(for: item.indexedDate.value)
+                return item.executors.map { executor in
+                    ExecutorContribution(userId: executor.userId, indexedDay: indexedDay, point: executor.point)
+                }
             }
-            return groupedByDate.mapValues { dailyItems in
-                let totalPoint = dailyItems.reduce(0) { $0 + $1.point }
-                let indexedDay = calendar.startOfDay(for: dailyItems[0].indexedDate.value)
-                return PointOfDay(
-                    indexedDay: indexedDay,
-                    point: .init(value: totalPoint),
-                    achievedCount: dailyItems.count
+        let groupedByUser = Dictionary(grouping: contributions, by: \.userId)
+        let list: [String: [Date: PointOfDay]] = groupedByUser.mapValues { userContributions in
+            Dictionary(grouping: userContributions, by: \.indexedDay).mapValues { dailyContributions in
+                PointOfDay(
+                    indexedDay: dailyContributions[0].indexedDay,
+                    point: .init(value: dailyContributions.reduce(0) { $0 + $1.point }),
+                    achievedCount: dailyContributions.count
                 )
             }
         }
@@ -123,6 +126,19 @@ public struct HouseworkContribution: Equatable, Sendable {
             }
 
         return .init(items: userItems)
+    }
+
+}
+
+private extension HouseworkContribution {
+
+    /// 担当者1人分の、ある日の家事1件の実績
+    struct ExecutorContribution {
+
+        let userId: String
+        let indexedDay: Date
+        let point: Int
+
     }
 
 }
