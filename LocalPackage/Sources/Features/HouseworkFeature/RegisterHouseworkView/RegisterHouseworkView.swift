@@ -66,14 +66,11 @@ public struct RegisterHouseworkView: View {
                     tappedCancelButton()
                 }
             }
-            .trailingToolbarItem {
-                HStack(spacing: .space8) {
-                    if selectedTab == .frequent {
-                        manageFrequentButton()
-                    }
-                    registerButton()
-                }
+            #if os(iOS)
+            .toolbar {
+                trailingNavigationItems()
             }
+            #endif
             .safeAreaInset(edge: .bottom) {
                 PendingEntriesBar(
                     entries: pendingEntries,
@@ -160,6 +157,26 @@ private extension RegisterHouseworkView {
         )
     }
 
+    // ナビゲーションバー右側のボタン
+    // - Note: 1つの`ToolbarItem`にまとめるとiOS26でガラスの背景がひとつながりになり、登録ボタンに付けた
+    //         ブランドカラーが効かずシステム標準の色で塗られる。`ToolbarSpacer`で項目を分けて出す
+    #if os(iOS)
+    @ToolbarContentBuilder
+    func trailingNavigationItems() -> some ToolbarContent {
+        if selectedTab == .frequent {
+            ToolbarItem(placement: .topBarTrailing) {
+                manageFrequentButton()
+            }
+            if #available(iOS 26.0, *) {
+                ToolbarSpacer(.fixed)
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            registerButton()
+        }
+    }
+    #endif
+
     func registerButton() -> some View {
         NavigationBarPrimaryActionButton(systemImage: "paperplane.fill") {
             tappedRegisterButton()
@@ -176,6 +193,7 @@ private extension RegisterHouseworkView {
         } label: {
             Image(systemName: "list.bullet")
         }
+        .foregroundStyle(.onSurface)
         .accessibilityLabel("いつもの家事を管理")
     }
 
