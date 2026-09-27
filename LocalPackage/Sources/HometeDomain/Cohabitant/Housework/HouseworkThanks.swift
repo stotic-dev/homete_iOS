@@ -7,7 +7,7 @@ import Foundation
 
 /// 完了した家事に届いた「ありがとう」の記録
 ///
-/// 家事ドキュメントの`thanks`に、送った人のユーザIDをキーにして持つ（[ADR-0024](doc/adr/0024-store-housework-thanks-in-housework-document.md)）。
+/// 家事ドキュメントの`thanks`に、送った人のユーザIDをキーにして持つ（[ADR-0025](doc/adr/0025-store-housework-thanks-in-housework-document.md)）。
 public struct HouseworkThanks: Equatable, Sendable, Hashable, Codable {
 
     /// コメントの最大文字数

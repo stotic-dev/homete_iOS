@@ -35,7 +35,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let thanks: [String: HouseworkThanks]
     /// ドキュメントを作った日時。家事の並び順を固定するのに使う
     ///
-    /// 作成日時の記録を始める前に作られた家事と、旧バージョンのアプリが上書きした家事は`nil`（ADR-0025）。
+    /// 作成日時の記録を始める前に作られた家事と、旧バージョンのアプリが上書きした家事は`nil`（ADR-0026）。
     public let createdAt: Date?
 
     public init(

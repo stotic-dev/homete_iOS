@@ -39,4 +39,4 @@
 
 ## 参考
 
-* [ADR-0024](0024-store-housework-thanks-in-housework-document.md) ありがとうの記録（同じく家事ドキュメントにフィールドを足した判断）
+* [ADR-0025](0025-store-housework-thanks-in-housework-document.md) ありがとうの記録（同じく家事ドキュメントにフィールドを足した判断）

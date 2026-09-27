@@ -2,7 +2,7 @@
 
 > 関連Issue: [#314 家事ボードの完了リストで担当者とありがとうができていないところをぱっと見でわかるようにしたい](https://github.com/stotic-dev/homete_iOS/issues/314)
 > ブランチ: `feat/314-complete-list-metadata`
-> 保存先の判断: [ADR-0024](../adr/0024-store-housework-thanks-in-housework-document.md)
+> 保存先の判断: [ADR-0025](../adr/0025-store-housework-thanks-in-housework-document.md)
 
 ## ステータス
 
@@ -69,7 +69,7 @@
 
 ### 非機能要件 / 制約
 
-- 保存先は家事ドキュメントのフィールドにする（サブコレクションにしない）。判断の経緯は[ADR-0024](../adr/0024-store-housework-thanks-in-housework-document.md)
+- 保存先は家事ドキュメントのフィールドにする（サブコレクションにしない）。判断の経緯は[ADR-0025](../adr/0025-store-housework-thanks-in-housework-document.md)
 - 既存の家事ドキュメントには`thanks`フィールドがないため、読むときに無ければ空として扱う（データの移行はしない）
 - ありがとうの書き込みは、ドキュメント全体を上書きする`insertOrUpdate`ではなく、`thanks.<送った人のID>`のフィールドだけを更新する。2人が同時に送っても、互いの記録を消さないため
 - Firestoreのセキュリティルールは変更しない（既存の`Houseworks`の`update`ルールで書き込める）
@@ -254,7 +254,7 @@ struct CompletionInfo: Equatable {
 ### Phase 1: 設計確定
 
 - [x] 表示の目線は「自分が送ったか」。自分が終えた家事は「受け取った」を出す
-- [x] 保存先は家事ドキュメントのフィールド（ADR-0024）
+- [x] 保存先は家事ドキュメントのフィールド（ADR-0025）
 - [x] コメントは200文字まで
 - [x] 未完了に戻したらありがとうの記録を消す
 - [x] 1人1家事1回まで。送った後は編集のみ。送信済みではありがとうのアクションを出さない
@@ -295,7 +295,7 @@ struct CompletionInfo: Equatable {
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/314
-- ADR: [ADR-0024 家事のありがとうを家事ドキュメントに記録する](../adr/0024-store-housework-thanks-in-housework-document.md)
+- ADR: [ADR-0025 家事のありがとうを家事ドキュメントに記録する](../adr/0025-store-housework-thanks-in-housework-document.md)
 - 既存実装（参考）:
   - `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailItemListContent.swift`（担当者名の引き方）
   - `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkItemMetaData.swift`（行のメタデータ）
