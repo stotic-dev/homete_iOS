@@ -58,20 +58,23 @@ public final class HouseworkListStore {
         }
     }
 
-    /// 家事を登録する
-    /// - Note: 登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている
+    /// 家事をまとめて登録する
+    /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
+    ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
+    ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
     public func register(
-        newItem: HouseworkItem,
+        newItems: [NewHouseworkEntry],
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
+        guard !newItems.isEmpty else { return }
         do {
-            try await houseworkClient.insertOrUpdateItem(newItem, cohabitantId)
+            try await houseworkClient.insertItems(newItems.map(\.item), cohabitantId)
         } catch {
-            analyticsClient.log(.housework(.register(step: step, isSuccess: false)))
+            logRegistered(newItems, step: step, isSuccess: false)
             throw error
         }
-        analyticsClient.log(.housework(.register(step: step, isSuccess: true)))
+        logRegistered(newItems, step: step, isSuccess: true)
     }
 
     /// 家事を完了にする
@@ -294,6 +297,12 @@ public final class HouseworkListStore {
 }
 
 private extension HouseworkListStore {
+
+    func logRegistered(_ entries: [NewHouseworkEntry], step: HouseworkAnalyticsStep, isSuccess: Bool) {
+        for entry in entries {
+            analyticsClient.log(.housework(.register(step: step, source: entry.source, isSuccess: isSuccess)))
+        }
+    }
 
     func startObserving() async {
         let stream = await houseworkManager.createObserver(houseworkListObserveKey)

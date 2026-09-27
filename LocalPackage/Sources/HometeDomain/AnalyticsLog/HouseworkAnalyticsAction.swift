@@ -44,13 +44,24 @@ public enum HouseworkAnalyticsExecutorType: String, Equatable, Sendable {
 
 }
 
+/// 登録した家事の入力元
+public enum HouseworkRegisterSource: String, Equatable, Sendable {
+
+    /// いつもの家事から選んだ
+    case frequent
+    /// 新しく入力した
+    case manual
+
+}
+
 /// 家事に関する行動
 /// - Note: GA4はプロパティごとに定義できるイベント名の数に上限があるため、行動ごとにイベント名を増やさず
 ///         `housework`イベント1つにまとめ、この型が生成するパラメータで区別する
 public enum HouseworkAnalyticsAction: Equatable, Sendable {
 
     /// 家事を登録した
-    case register(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// - Note: まとめて登録した場合も、家事1件につき1イベント送る
+    case register(step: HouseworkAnalyticsStep, source: HouseworkRegisterSource, isSuccess: Bool)
     /// 家事を完了にした
     case complete(
         step: HouseworkAnalyticsStep,
@@ -72,7 +83,7 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
 extension HouseworkAnalyticsAction {
 
     /// `housework`イベントに載せるパラメータ
-    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`effort`・`result`はそれぞれ意味を持つケースのみ追加する
+    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`effort`・`source`・`result`はそれぞれ意味を持つケースのみ追加する
     var parameters: [String: String] {
         var parameters = ["action": action]
         if let step {
@@ -83,6 +94,9 @@ extension HouseworkAnalyticsAction {
         }
         if let effort {
             parameters["effort"] = effort
+        }
+        if let source {
+            parameters["source"] = source
         }
         if let result {
             parameters["result"] = result
@@ -97,7 +111,7 @@ private extension HouseworkAnalyticsAction {
     /// どの画面での行動かを示す
     var step: String? {
         switch self {
-        case let .register(step, _),
+        case let .register(step, _, _),
              let .complete(step, _, _, _),
              let .redo(step, _),
              let .sendThanks(step, _),
@@ -169,10 +183,21 @@ private extension HouseworkAnalyticsAction {
         }
     }
 
+    /// いつもの家事から選んだか、新しく入力したか。登録にだけ意味を持つ
+    var source: String? {
+        switch self {
+        case let .register(_, source, _):
+            source.rawValue
+
+        case .complete, .redo, .sendThanks, .returnIncomplete, .delete:
+            nil
+        }
+    }
+
     /// 行動の結果。GA上でそのまま読める値にするため、真偽値ではなく意味のある文字列にする
     var result: String? {
         switch self {
-        case let .register(_, isSuccess),
+        case let .register(_, _, isSuccess),
              let .complete(_, _, _, isSuccess),
              let .redo(_, isSuccess),
              let .sendThanks(_, isSuccess),

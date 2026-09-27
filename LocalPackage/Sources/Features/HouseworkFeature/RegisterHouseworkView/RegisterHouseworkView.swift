@@ -224,7 +224,7 @@ private extension RegisterHouseworkView {
 
         do {
             try await houseworkListStore.register(
-                newItem: newItem,
+                newItems: [.init(item: newItem, source: .manual)],
                 cohabitantId: cohabitantId,
                 step: step
             )

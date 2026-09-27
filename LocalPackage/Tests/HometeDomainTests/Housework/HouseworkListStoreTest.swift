@@ -24,18 +24,22 @@ struct HouseworkListStoreTest {
 
     }
 
-    @Test("新しい家事を登録すると保存だけを行い、パートナーには通知を送らない")
+    @Test("新しい家事をまとめて登録すると1回の一括書き込みだけを行い、パートナーには通知を送らない")
     func register() async throws {
         // Arrange
 
-        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        let inputEntries = [
+            NewHouseworkEntry(item: .makeForTest(id: 1), source: .frequent),
+            NewHouseworkEntry(item: .makeForTest(id: 2), source: .manual),
+        ]
+        let expected = inputEntries.map(\.item)
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                houseworkClient: .init(insertItemsHandler: { items, cohabitantId in
                     // Assert
 
-                    #expect(item == inputHouseworkItem)
+                    #expect(items == expected)
                     #expect(cohabitantId == inputCohabitantId)
                     confirmation()
                 }),
@@ -44,8 +48,22 @@ struct HouseworkListStoreTest {
 
             // Act
 
-            try await store.register(newItem: inputHouseworkItem, cohabitantId: inputCohabitantId, step: .board)
+            try await store.register(newItems: inputEntries, cohabitantId: inputCohabitantId, step: .board)
         }
+    }
+
+    @Test("登録する家事が0件の場合は、書き込みを行わない")
+    func registerWithNoItemsDoesNothing() async throws {
+        // Arrange
+
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertItemsHandler: { _, _ in Issue.record() }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
+        )
+
+        // Act
+
+        try await store.register(newItems: [], cohabitantId: inputCohabitantId, step: .board)
     }
 
     @Test("sendNotificationを実行すると、渡した内容がそのまま通知として送信される")
