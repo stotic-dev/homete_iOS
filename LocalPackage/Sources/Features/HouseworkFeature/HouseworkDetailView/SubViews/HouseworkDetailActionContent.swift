@@ -105,8 +105,14 @@ private extension HouseworkDetailActionContent {
         Button {
             isPresentedThanksView = true
         } label: {
-            Label("送ったメッセージを編集", systemImage: "square.and.pencil")
-                .frame(maxWidth: .infinity)
+            // コメントなしで送った場合は、まだメッセージを送っていないので「添える」にする
+            if item.sentThanks(ownUserId: account.id)?.comment == nil {
+                Label("メッセージを添える", systemImage: "text.bubble")
+                    .frame(maxWidth: .infinity)
+            } else {
+                Label("送ったメッセージを編集", systemImage: "square.and.pencil")
+                    .frame(maxWidth: .infinity)
+            }
         }
         .subPrimaryButtonStyle()
     }
@@ -213,7 +219,7 @@ private extension HouseworkDetailActionContent {
     .environment(HouseworkListStore())
 }
 
-#Preview("HouseworkDetailActionContent_完了_ありがとう送信済み", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkDetailActionContent_完了_コメントなしで送信済み", traits: .sizeThatFitsLayout) {
     HouseworkDetailActionContent(
         isLoading: .constant(false),
         commonErrorContent: .constant(.initial),
@@ -225,6 +231,23 @@ private extension HouseworkDetailActionContent {
             state: .completed,
             executorId: "executorAccount",
             thanks: ["ownAccount": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 1, day: 1))]
+        )
+    )
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkDetailActionContent_完了_メッセージ送信済み", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "executorAccount",
+            thanks: ["ownAccount": .init(comment: "ありがとう", sentAt: .previewDate(year: 2026, month: 1, day: 1))]
         )
     )
     .environment(HouseworkListStore())

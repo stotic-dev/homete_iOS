@@ -50,7 +50,7 @@ public struct HouseworkThanksView: View {
                 .padding(.bottom, .space24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .navigationTitle(isEditing ? "メッセージを編集" : "ありがとうを伝える")
+            .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .softTopScrollEdgeEffect()
             .leadingToolbarItem {
@@ -120,7 +120,7 @@ private extension HouseworkThanksView {
                 await tappedSendThanksButton()
             }
         } label: {
-            Text(isEditing ? "メッセージを更新する" : "ありがとうを伝える")
+            Text(submitButtonLabel)
                 .frame(maxWidth: .infinity)
         }
         .primaryButtonStyle()
@@ -133,8 +133,31 @@ private extension HouseworkThanksView {
 
 private extension HouseworkThanksView {
 
-    var isEditing: Bool {
-        sentThanks != nil
+    /// すでに送ったメッセージを直すかどうか
+    ///
+    /// コメントなしで送ったありがとうに書き足す場合は、まだメッセージを送っていないので編集として扱わない。
+    var isEditingMessage: Bool {
+        sentThanks?.comment != nil
+    }
+
+    var navigationTitle: String {
+        if isEditingMessage {
+            "メッセージを編集"
+        } else if sentThanks != nil {
+            "メッセージを添える"
+        } else {
+            "ありがとうを伝える"
+        }
+    }
+
+    var submitButtonLabel: String {
+        if isEditingMessage {
+            "メッセージを更新する"
+        } else if sentThanks != nil {
+            "メッセージを送る"
+        } else {
+            "ありがとうを伝える"
+        }
     }
 
     /// コメントが上限の文字数を超えているか
@@ -179,6 +202,26 @@ private extension HouseworkThanksView {
         executorId: "test",
         executedAt: .distantFuture
     ))
+    .setupEnvironmentForPreview()
+    .environment(CohabitantStore(
+        members: [.init(id: "test", userName: "hogehoge")],
+        ownId: "test"
+    ))
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkThanksView_メッセージを添える") {
+    HouseworkThanksView(
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 1970, month: 1, day: 1)),
+            state: .completed,
+            executorId: "test",
+            executedAt: .distantFuture
+        ),
+        sentThanks: .init(comment: nil, sentAt: .distantFuture)
+    )
     .setupEnvironmentForPreview()
     .environment(CohabitantStore(
         members: [.init(id: "test", userName: "hogehoge")],
