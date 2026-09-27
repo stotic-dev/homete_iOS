@@ -52,7 +52,12 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     /// 家事を登録した
     case register(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を完了にした
-    case complete(step: HouseworkAnalyticsStep, executorType: HouseworkAnalyticsExecutorType, isSuccess: Bool)
+    case complete(
+        step: HouseworkAnalyticsStep,
+        executorType: HouseworkAnalyticsExecutorType,
+        effort: HouseworkEffort,
+        isSuccess: Bool
+    )
     /// 完了した家事をもう一度やった
     case redo(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 完了した家事にありがとうを伝えた
@@ -69,7 +74,7 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
 extension HouseworkAnalyticsAction {
 
     /// `housework`イベントに載せるパラメータ
-    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`result`はそれぞれ意味を持つケースのみ追加する
+    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`effort`・`result`はそれぞれ意味を持つケースのみ追加する
     var parameters: [String: String] {
         var parameters = ["action": action]
         if let step {
@@ -77,6 +82,9 @@ extension HouseworkAnalyticsAction {
         }
         if let executorType {
             parameters["executor_type"] = executorType
+        }
+        if let effort {
+            parameters["effort"] = effort
         }
         if let result {
             parameters["result"] = result
@@ -92,7 +100,7 @@ private extension HouseworkAnalyticsAction {
     var step: String? {
         switch self {
         case let .register(step, _),
-             let .complete(step, _, _),
+             let .complete(step, _, _, _),
              let .redo(step, _),
              let .sendThanks(step, _),
              let .editThanks(step, _),
@@ -105,8 +113,33 @@ private extension HouseworkAnalyticsAction {
     /// 完了にしたときの担当者の組み合わせ
     var executorType: String? {
         switch self {
-        case let .complete(_, executorType, _):
+        case let .complete(_, executorType, _, _):
             executorType.rawValue
+
+        case .register,
+             .redo,
+             .sendThanks,
+             .editThanks,
+             .returnIncomplete,
+             .delete:
+            nil
+        }
+    }
+
+    /// 完了にしたときの頑張り度
+    var effort: String? {
+        switch self {
+        case let .complete(_, _, effort, _):
+            switch effort {
+            case .normal:
+                "normal"
+
+            case .hard:
+                "hard"
+
+            case .veryHard:
+                "very_hard"
+            }
 
         case .register,
              .redo,
@@ -148,7 +181,7 @@ private extension HouseworkAnalyticsAction {
     var result: String? {
         switch self {
         case let .register(_, isSuccess),
-             let .complete(_, _, isSuccess),
+             let .complete(_, _, _, isSuccess),
              let .redo(_, isSuccess),
              let .sendThanks(_, isSuccess),
              let .editThanks(_, isSuccess),

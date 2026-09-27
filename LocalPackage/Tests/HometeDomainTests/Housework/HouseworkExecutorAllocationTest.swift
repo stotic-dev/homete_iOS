@@ -16,6 +16,7 @@ enum HouseworkExecutorAllocationTest {
     struct PointsCase {}
     struct ValidationCase {}
     struct MakeExecutorsCase {}
+    struct EffortCase {}
 
 }
 
@@ -32,7 +33,7 @@ extension HouseworkExecutorAllocationTest.InitCase {
         let actual = HouseworkExecutorAllocation(
             memberIds: memberIds,
             selectedIds: ["userC", "own"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Assert
@@ -52,7 +53,7 @@ extension HouseworkExecutorAllocationTest.InitCase {
         let actual = HouseworkExecutorAllocation(
             memberIds: memberIds,
             selectedIds: memberIds,
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Assert
@@ -73,7 +74,7 @@ extension HouseworkExecutorAllocationTest.InitCase {
         let actual = HouseworkExecutorAllocation(
             memberIds: memberIds,
             selectedIds: memberIds,
-            totalPoint: 2
+            basePoint: 2
         )
 
         // Assert
@@ -96,7 +97,7 @@ extension HouseworkExecutorAllocationTest.ToggleCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.updatePercentage(80, for: "own")
 
@@ -118,7 +119,7 @@ extension HouseworkExecutorAllocationTest.ToggleCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -138,7 +139,7 @@ extension HouseworkExecutorAllocationTest.ToggleCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own"],
-            totalPoint: 1
+            basePoint: 1
         )
 
         // Act
@@ -157,7 +158,7 @@ extension HouseworkExecutorAllocationTest.ToggleCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -179,7 +180,7 @@ extension HouseworkExecutorAllocationTest.UpdatePercentageCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own", "userB"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -199,7 +200,7 @@ extension HouseworkExecutorAllocationTest.UpdatePercentageCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -220,7 +221,7 @@ extension HouseworkExecutorAllocationTest.UpdatePercentageCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own", "userB"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -240,7 +241,7 @@ extension HouseworkExecutorAllocationTest.UpdatePercentageCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -265,7 +266,7 @@ extension HouseworkExecutorAllocationTest.PointsCase {
         let sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -282,7 +283,7 @@ extension HouseworkExecutorAllocationTest.PointsCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own", "userB"],
-            totalPoint: 7
+            basePoint: 7
         )
         sut.updatePercentage(45, for: "own")
 
@@ -299,7 +300,7 @@ extension HouseworkExecutorAllocationTest.PointsCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.updatePercentage(50, for: "own")
 
@@ -322,7 +323,7 @@ extension HouseworkExecutorAllocationTest.ValidationCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own"],
             selectedIds: ["own"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.toggle("own")
 
@@ -339,7 +340,7 @@ extension HouseworkExecutorAllocationTest.ValidationCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.updatePercentage(24, for: "own")
 
@@ -357,7 +358,7 @@ extension HouseworkExecutorAllocationTest.ValidationCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own", "userB"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.updatePercentage(95, for: "own")
 
@@ -374,7 +375,7 @@ extension HouseworkExecutorAllocationTest.ValidationCase {
         let sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 3
+            basePoint: 3
         )
 
         // Act
@@ -396,7 +397,7 @@ extension HouseworkExecutorAllocationTest.MakeExecutorsCase {
         let sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB", "userC"],
             selectedIds: ["own", "userB", "userC"],
-            totalPoint: 10
+            basePoint: 10
         )
 
         // Act
@@ -417,7 +418,7 @@ extension HouseworkExecutorAllocationTest.MakeExecutorsCase {
         var sut = HouseworkExecutorAllocation(
             memberIds: ["own", "userB"],
             selectedIds: ["own", "userB"],
-            totalPoint: 10
+            basePoint: 10
         )
         sut.updatePercentage(95, for: "own")
 
@@ -425,6 +426,76 @@ extension HouseworkExecutorAllocationTest.MakeExecutorsCase {
         #expect(throws: HouseworkExecutorAllocationError.zeroPoint) {
             try sut.makeExecutors()
         }
+    }
+
+}
+
+// MARK: - EffortCase
+
+extension HouseworkExecutorAllocationTest.EffortCase {
+
+    @Test("頑張り度を変えると、担当者と割合はそのままで、上乗せ後のポイントを配分する")
+    func updateEffort_keepsEntriesAndAllocatesBoostedPoint() throws {
+        // Arrange
+        var sut = HouseworkExecutorAllocation(
+            memberIds: ["own", "userB"],
+            selectedIds: ["own", "userB"],
+            basePoint: 10
+        )
+        sut.updatePercentage(70, for: "own")
+
+        // Act
+        sut.updateEffort(.hard)
+
+        // Assert
+        // 12pt × 70% = 8.4、12pt × 30% = 3.6 → 8・4
+        let actual = try sut.makeExecutors()
+        let expected = [
+            HouseworkExecutor(userId: "own", percentage: 70, point: 8),
+            HouseworkExecutor(userId: "userB", percentage: 30, point: 4),
+        ]
+        #expect(actual == expected)
+    }
+
+    @Test("選べる人数の上限は、頑張り度で上乗せする前のポイントで決める")
+    func canToggle_usesBasePointForMaxCount() {
+        // Arrange
+        // 2ptの家事は超頑張ったで3ptになるが、選べるのは2人まで
+        let sut = HouseworkExecutorAllocation(
+            memberIds: ["own", "userB", "userC"],
+            selectedIds: ["own", "userB"],
+            basePoint: 2,
+            effort: .veryHard
+        )
+
+        // Act
+        let actual = sut.canToggle("userC")
+
+        // Assert
+        #expect(actual == false)
+    }
+
+    @Test("上乗せ後のポイントを、最大剰余方式で担当者に配分する")
+    func makeExecutors_withEffort_allocatesBoostedPoint() throws {
+        // Arrange
+        // 10pt × 1.5 = 15pt を 34・33・33% で分ける → 5.1・4.95・4.95 → 5・5・5
+        let sut = HouseworkExecutorAllocation(
+            memberIds: ["own", "userB", "userC"],
+            selectedIds: ["own", "userB", "userC"],
+            basePoint: 10,
+            effort: .veryHard
+        )
+
+        // Act
+        let actual = try sut.makeExecutors()
+
+        // Assert
+        let expected = [
+            HouseworkExecutor(userId: "own", percentage: 34, point: 5),
+            HouseworkExecutor(userId: "userB", percentage: 33, point: 5),
+            HouseworkExecutor(userId: "userC", percentage: 33, point: 5),
+        ]
+        #expect(actual == expected)
     }
 
 }

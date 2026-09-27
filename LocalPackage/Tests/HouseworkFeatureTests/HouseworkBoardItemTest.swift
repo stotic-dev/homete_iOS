@@ -14,6 +14,7 @@ enum HouseworkBoardItemTest {
 
     struct CanSendThanksCase {}
     struct CanEditThanksCase {}
+    struct PointCase {}
 
 }
 
@@ -179,6 +180,28 @@ extension HouseworkBoardItemTest.CanEditThanksCase {
 
         // Assert
         #expect(result == false)
+    }
+
+}
+
+extension HouseworkBoardItemTest.PointCase {
+
+    @Test("表示するポイントは、頑張り度で上乗せした後のポイントになる")
+    func earnedPoint_returnsBoostedPoint() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 10,
+            state: .completed,
+            executorId: "ownUserId",
+            effort: .veryHard
+        )
+
+        // Act
+        let result = item.earnedPoint
+
+        // Assert
+        #expect(result == 15)
     }
 
 }

@@ -10,7 +10,7 @@ import SwiftUI
 
 /// 家事を完了にするハーフモーダル
 ///
-/// 担当者（自分以外や複数人も選べる）とポイントの配分を入力する。
+/// 頑張り度と、担当者（自分以外や複数人も選べる）・ポイントの配分を入力する。
 public struct HouseworkCompleteSheet: View {
 
     @Environment(\.cohabitantMembers) var members
@@ -67,7 +67,7 @@ struct HouseworkCompleteView: View {
         self.allocation = allocation ?? .init(
             memberIds: selectableMembers.map(\.id),
             selectedIds: [account.id],
-            totalPoint: item.point
+            basePoint: item.originalItem.point
         )
         self.isExpandedAllocation = isExpandedAllocation
     }
@@ -75,9 +75,13 @@ struct HouseworkCompleteView: View {
     var body: some View {
         NavigationStack {
             ContentFittingSheetScrollView {
-                executorSection()
-                    .padding(.horizontal, .space16)
-                    .padding(.vertical, .space24)
+                VStack(alignment: .leading, spacing: .space24) {
+                    // 担当者に配分するポイントが頑張り度で変わるため、頑張り度を先に選ばせる
+                    effortSection()
+                    executorSection()
+                }
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space24)
             }
             .navigationTitle("完了にする")
             .inlineNavigationBarTitleDisplayMode()
@@ -102,6 +106,29 @@ struct HouseworkCompleteView: View {
 
 private extension HouseworkCompleteView {
 
+    func effortSection() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            HStack(spacing: .space4) {
+                Text("頑張り度")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                DescriptionPopoverButton(
+                    title: "頑張り度とは？",
+                    message: """
+                    いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。
+                    「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。
+                    """
+                )
+            }
+            HouseworkEffortSelectionContent(
+                selection: allocation.effort,
+                pointBreakdown: allocation.effort.pointBreakdown(basePoint: allocation.basePoint)
+            ) { effort in
+                allocation.updateEffort(effort)
+            }
+        }
+    }
+
     func executorSection() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("担当者")
@@ -116,7 +143,7 @@ private extension HouseworkCompleteView {
                     .foregroundStyle(.onSurfaceVariant)
             }
             if allocation.canAdjustPercentage {
-                DisclosureGroup("配分を調整する", isExpanded: $isExpandedAllocation) {
+                DisclosureGroup(isExpanded: $isExpandedAllocation) {
                     HouseworkExecutorAllocationContent(
                         entries: allocationEntries,
                         percentageRange: HouseworkExecutorAllocation.percentageRange
@@ -124,6 +151,17 @@ private extension HouseworkCompleteView {
                         allocation.updatePercentage(percentage, for: userId)
                     }
                     .padding(.top, .space8)
+                } label: {
+                    HStack(spacing: .space4) {
+                        Text("配分を調整する")
+                        DescriptionPopoverButton(
+                            title: "配分の調整とは？",
+                            message: """
+                            何人かで分担した家事のポイントを、それぞれがやった割合に合わせて分けられます。
+                            割合の合計が100%になるように調整してください。
+                            """
+                        )
+                    }
                 }
                 .font(with: .body)
                 .tint(.onSurface)
@@ -182,10 +220,10 @@ extension HouseworkCompleteView {
 
     /// 家事のポイントより多い人数は選べないことを伝える文言
     var executorLimitMessage: String? {
-        let maxCount = HouseworkExecutorAllocation.maxExecutorCount(totalPoint: item.point)
+        let maxCount = HouseworkExecutorAllocation.maxExecutorCount(basePoint: item.originalItem.point)
         guard selectableMembers.count > maxCount else { return nil }
 
-        return "この家事は\(item.point)ptなので、担当者は\(maxCount)人まで選べます"
+        return "この家事は\(item.originalItem.point)ptなので、担当者は\(maxCount)人まで選べます"
     }
 
     var validationMessage: String? {
@@ -218,6 +256,7 @@ extension HouseworkCompleteView {
                 now: now,
                 reporter: account,
                 executors: executors,
+                effort: allocation.effort,
                 executorNames: executors.map { userName($0.userId) },
                 comment: "",
                 cohabitantId: cohabitantId,
@@ -263,7 +302,7 @@ extension HouseworkCompleteView {
         allocation: .init(
             memberIds: ["own", "child", "partner"],
             selectedIds: ["own", "child", "partner"],
-            totalPoint: 10
+            basePoint: 10
         ),
         isExpandedAllocation: true
     )

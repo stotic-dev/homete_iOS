@@ -21,6 +21,7 @@ extension HouseworkItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
+        effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         thanks: [String: HouseworkThanks] = [:]
     ) -> Self {
@@ -30,7 +31,8 @@ extension HouseworkItem {
             title: title,
             point: point,
             state: state,
-            executors: executorId.map { [.solo(userId: $0, point: point)] } ?? executors,
+            executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
+            effort: effort,
             executedAt: executedAt,
             expiredAt: expiredAt,
             templateHouseworkItemId: nil,
@@ -51,6 +53,7 @@ extension HouseworkBoardItem {
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
+        effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
         thanks: [String: HouseworkThanks] = [:],
         isRegistered: Bool = true
@@ -65,6 +68,7 @@ extension HouseworkBoardItem {
                 state: state,
                 executorId: executorId,
                 executors: executors,
+                effort: effort,
                 executedAt: executedAt,
                 thanks: thanks
             ),

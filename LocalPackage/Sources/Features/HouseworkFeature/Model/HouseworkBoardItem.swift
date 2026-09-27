@@ -30,8 +30,15 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         originalItem.state
     }
 
-    public var point: Int {
-        originalItem.point
+    /// 表示するポイント（頑張り度で上乗せした後）
+    ///
+    /// 上乗せ前のポイントは`originalItem.point`で参照する。
+    public var earnedPoint: Int {
+        originalItem.earnedPoint
+    }
+
+    public var effort: HouseworkEffort {
+        originalItem.effort
     }
 
     public var executedAt: Date? {

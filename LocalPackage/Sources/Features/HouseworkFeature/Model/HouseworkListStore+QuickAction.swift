@@ -26,11 +26,13 @@ extension HouseworkListStore {
         switch action {
         // 担当者やコメントを選ばずに完了にする経路（一括完了）では、自分だけを担当者にする
         case .complete:
+            // 一括完了は頑張り度を選ぶ画面を通らないため「ふつう」で記録し、上乗せ前のポイントを満額配分する
             try await complete(
                 target: item.originalItem,
                 now: now,
                 reporter: account,
-                executors: [.solo(userId: account.id, point: item.point)],
+                executors: [.solo(userId: account.id, point: item.originalItem.point)],
+                effort: .normal,
                 executorNames: [account.userName],
                 comment: "",
                 cohabitantId: cohabitantId,
