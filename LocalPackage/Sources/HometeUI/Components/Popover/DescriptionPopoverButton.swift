@@ -33,8 +33,9 @@ public struct DescriptionPopoverButton: View {
         Button {
             isShowPopover = true
         } label: {
+            // 親の`.tint`に引きずられて置き場所ごとに色が変わらないよう、アクセントカラーを基準に固定する
             Image(systemName: "questionmark.circle")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.accentColor.secondary)
         }
         .popover(isPresented: $isShowPopover) {
             VStack(alignment: .leading, spacing: .space8) {
