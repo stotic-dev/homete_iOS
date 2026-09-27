@@ -71,6 +71,11 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         thanks = try container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:]
     }
 
+    /// 完了にする
+    ///
+    /// ありがとうは1回の完了に対して届くものなので、前の完了の記録は引き継がない。
+    /// 未完了に戻した直後に、まだ完了表示のままだった同居人の端末からありがとうが書き込まれる
+    /// こともあるため、未完了に戻すときだけでなく完了にするときにも消す。
     public func updateCompleted(at now: Date, executor: String) -> Self {
         .init(
             id: id,
@@ -81,8 +86,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            templateHouseworkItemId: templateHouseworkItemId
         )
     }
 

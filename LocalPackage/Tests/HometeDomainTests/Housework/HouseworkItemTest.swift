@@ -152,6 +152,35 @@ extension HouseworkItemTest.ThanksCase {
         #expect(result == expected)
     }
 
+    @Test("完了にすると、未完了の家事に残っていたありがとうの記録は引き継がない")
+    func updateCompleted_clearsThanks() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let now = Date()
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .incomplete,
+            expiredAt: expiredAt,
+            thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
+        )
+
+        // Act
+        let result = item.updateCompleted(at: now, executor: "executorId")
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: now,
+            expiredAt: expiredAt
+        )
+        #expect(result == expected)
+    }
+
     @Test("もう一度やった家事は、元の家事に届いたありがとうを引き継がない")
     func makeRedone_doesNotInheritThanks() {
         // Arrange
