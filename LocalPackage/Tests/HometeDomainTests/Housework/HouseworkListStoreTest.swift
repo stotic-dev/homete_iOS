@@ -739,6 +739,47 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
     }
 
+    @Test("画面を開いている間に未完了へ戻された家事には、ありがとうを記録せず通知も送らない")
+    func sendThanks_returnedToIncomplete_doesNothing() async throws {
+        // Arrange
+
+        let inputIndexedDate = Date(timeIntervalSince1970: 0)
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: inputIndexedDate,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast
+        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let store = HouseworkListStore(
+            houseworkClient: .init(
+                upsertThanksHandler: { _, _, _, _ in
+                    // Assert
+
+                    Issue.record()
+                }
+            ),
+            cohabitantPushNotificationClient: .init { _, _ in
+                // Assert
+
+                Issue.record()
+            },
+            items: [.makeForTest(items: [.makeForTest(id: 1, indexedDate: inputIndexedDate, state: .incomplete)])]
+        )
+
+        // Act
+
+        try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: "お疲れ様でした！",
+            now: Date(timeIntervalSince1970: 1000),
+            cohabitantId: inputCohabitantId,
+            step: .thanks
+        )
+    }
+
     @Test("ありがとうを記録できた後に通知の送信だけ失敗しても、失敗として返さない")
     func sendThanks_notificationFailed_doesNotThrow() async throws {
         // Arrange

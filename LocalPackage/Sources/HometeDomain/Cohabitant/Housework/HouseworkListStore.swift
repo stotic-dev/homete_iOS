@@ -195,8 +195,11 @@ public final class HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
-        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て編集かどうかを判断する
-        let currentThanks = (items.item(target) ?? target).thanks[sender.id]
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する
+        let current = items.item(target) ?? target
+        // 画面を開いている間に未完了へ戻された家事は、ありがとうを消す仕様なので記録しない
+        guard current.state == .completed else { return }
+        let currentThanks = current.thanks[sender.id]
         // 画面の表示がリスナーに追いつく前の一括操作で、書いたコメントをコメントなしで消さないよう何もしない
         if comment == nil, currentThanks != nil { return }
         let isEditing = currentThanks != nil
