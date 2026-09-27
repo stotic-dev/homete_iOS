@@ -121,7 +121,41 @@ private extension HouseworkBoardListContent {
         Button {
             navigationPath.push(.houseworkDetail(item))
         } label: {
-            HouseBoardListRow(houseworkItem: item.originalItem, completionInfo: completionInfo(of: item))
+            let completionInfo = completionInfo(of: item)
+            HouseBoardListRow(
+                houseworkItem: item.originalItem,
+                completionInfo: completionInfo,
+                onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
+            )
+        }
+    }
+
+    /// ハートのタップで伝えられるのは、まだ伝えていない家事だけ。選択中はセルの選択を優先する
+    func thanksAction(of item: HouseworkBoardItem, status: HouseworkThanksStatus?) -> (() -> Void)? {
+        guard status == .notSent, !isSelecting else { return nil }
+
+        return {
+            Task {
+                await sendThanks(to: item)
+            }
+        }
+    }
+
+    /// ハートのタップでは、メッセージを書かずにありがとうだけを伝える（コメントがないので通知は送らない）
+    func sendThanks(to item: HouseworkBoardItem) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.perform(
+                .sendThanks,
+                on: item,
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId,
+                step: .board
+            )
+        } catch {
+            commonError = .init(error: error)
         }
     }
 

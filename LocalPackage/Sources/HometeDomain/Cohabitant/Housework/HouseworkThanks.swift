@@ -13,7 +13,7 @@ public struct HouseworkThanks: Equatable, Sendable, Hashable, Codable {
     /// コメントの最大文字数
     public static let commentMaxLength = 200
 
-    /// 添えたコメント。家事ボードのクイックアクション・一括操作から送った場合は`nil`
+    /// 添えたコメント。完了リストのハート・クイックアクション・一括操作から送った場合は`nil`
     public let comment: String?
     /// 最初に送った日時（コメントを編集しても変えない）
     public let sentAt: Date

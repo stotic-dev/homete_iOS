@@ -14,11 +14,19 @@ public struct HouseBoardListRow: View {
 
     let houseworkItem: HouseworkItem
     let completionInfo: CompletionInfo?
+    let onTapThanks: (() -> Void)?
 
-    /// - Parameter completionInfo: 家事ボードの完了リストでだけ渡す、担当者とありがとうの状況
-    public init(houseworkItem: HouseworkItem, completionInfo: CompletionInfo? = nil) {
+    /// - Parameters:
+    ///   - completionInfo: 家事ボードの完了リストでだけ渡す、担当者とありがとうの状況
+    ///   - onTapThanks: ハートのタップでありがとうを伝えられるときだけ渡す
+    public init(
+        houseworkItem: HouseworkItem,
+        completionInfo: CompletionInfo? = nil,
+        onTapThanks: (() -> Void)? = nil
+    ) {
         self.houseworkItem = houseworkItem
         self.completionInfo = completionInfo
+        self.onTapThanks = onTapThanks
     }
 
     public var body: some View {
@@ -35,7 +43,11 @@ public struct HouseBoardListRow: View {
             }
             Spacer()
             if let thanksStatus = completionInfo?.thanksStatus {
-                thanksStatusLabel(thanksStatus)
+                if let onTapThanks {
+                    thanksButton(thanksStatus, action: onTapThanks)
+                } else {
+                    thanksStatusLabel(thanksStatus)
+                }
             }
         }
         .tag(houseworkItem.id)
@@ -90,6 +102,17 @@ private extension HouseBoardListRow {
         .accessibilityLabel(status.accessibilityLabel)
     }
 
+    /// セル全体のタップ（詳細への遷移）とは別に、ハートだけで反応するボタン
+    func thanksButton(_ status: HouseworkThanksStatus, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            thanksStatusLabel(status)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel("ありがとうを伝える")
+    }
+
 }
 
 #if DEBUG
@@ -124,7 +147,8 @@ private extension HouseBoardListRow {
             state: .completed,
             executorId: "otherUserId"
         ),
-        completionInfo: .init(executorNames: ["はなこ"], thanksStatus: .notSent)
+        completionInfo: .init(executorNames: ["はなこ"], thanksStatus: .notSent),
+        onTapThanks: {}
     )
 }
 
