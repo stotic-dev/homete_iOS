@@ -119,7 +119,9 @@ public let effort: HouseworkEffort
 
 /// 頑張り度で上乗せした後のポイント
 public var earnedPoint: Int {
-    effort.boostedPoint(point)
+    guard !executors.isEmpty else { return effort.boostedPoint(point) }
+
+    return executors.reduce(0) { $0 + $1.point }
 }
 ```
 
@@ -127,6 +129,9 @@ public var earnedPoint: Int {
 - `executors[].point` の合計は `earnedPoint` と一致させる。集計（`HouseworkContribution` / `TodayHouseworkSummary`）はすでに `executors[].point` を足しているので変更不要
 - デコードは `effort` を `decodeIfPresent` し、無ければ `.normal`
 - `HouseworkEffort` 自体も、知らない値は `.normal` として読む（将来段階を増やしたときに、今のアプリで家事リスト全体のデコードが失敗しないように）
+- `earnedPoint` は担当者がいれば担当者のポイントの合計を返し、`effort` からは計算しない。次のケースで `effort` と上乗せ後の配分が対応しなくなり、`effort` から計算すると表示（上乗せ前）と集計（上乗せ後）が画面ごとに食い違うため（PR #319 のレビュー指摘）
+  - 新しいアプリが保存した知らない頑張り度を `.normal` として読んだ
+  - 担当者の複数化（#291）には対応しているが頑張り度には対応していない旧アプリが上書きして、`effort` だけが消えた
 - `updateCompleted` では、担当者のポイントの合計が `effort.boostedPoint(point)` と一致することを `assert` で確かめる。配分と頑張り度を別々に受け取るため、組み合わせの取り違えに開発中に気付けるようにする
 - `updateCompleted(at:executors:)` → `updateCompleted(at:executors:effort:)`
 - `updateIncomplete()` は `effort` を `.normal` に戻す。`updateNotTodo()` は引き継ぐ
@@ -181,6 +186,7 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 - 頑張り度の表示名と内訳の文言は `Model/HouseworkEffort+Presentation.swift`（新規）に置き、家事詳細と共用する
 - 確定時は `allocation.effort` を `houseworkListStore.complete(..., effort:, ...)` に渡す
 - `executorLimitMessage` の「この家事は◯ptなので」は上乗せ前のポイントのまま
+- 「頑張り度」の見出しと「配分を調整する」の横に「？」ボタンを置き、ポップアップで意味を説明する（PR #319 のレビュー指摘）。集計画面のグラフで使っていた `GraphDescriptionPopoverButton` を `HometeUI` の `DescriptionPopoverButton` に移して共用する
 
 ### 5. Store：`HouseworkListStore.complete`
 
@@ -226,6 +232,7 @@ public mutating func updateEffort(_ effort: HouseworkEffort)
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkListStore+QuickAction.swift` | 一括完了で `.normal` を渡す |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/HouseworkCompleteSheet.swift` | 頑張り度の選択を追加 |
 | 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkComplete/SubViews/HouseworkEffortSelectionContent.swift` | 頑張り度のセグメントと上乗せ後のポイント |
+| 移動View | `LocalPackage/Sources/HometeUI/Components/Popover/DescriptionPopoverButton.swift` | 集計画面の `GraphDescriptionPopoverButton` を共通化。頑張り度と配分の説明に使う |
 | 新規Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkEffort+Presentation.swift` | 頑張り度の表示名とポイントの内訳 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseBoardListRow.swift` | 上乗せ後のポイントを表示 |
 | 修正Preview | `LocalPackage/Sources/Features/HouseworkFeature/Preview/HouseworkUtil.swift` | プレビュー用ヘルパーに `effort` |
