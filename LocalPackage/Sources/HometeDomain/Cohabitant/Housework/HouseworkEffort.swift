@@ -19,6 +19,15 @@ public enum HouseworkEffort: String, CaseIterable, Codable, Identifiable, Sendab
         self
     }
 
+    /// 未知の値を「ふつう」として扱うデコード
+    ///
+    /// 将来段階を増やしたり名前を変えたりしたとき、素のCodable準拠では知らない値の家事が1件あるだけで
+    /// 家事リスト全体のデコードが失敗する。今のアプリでも読めるよう、知らない値は上乗せしない「ふつう」に寄せる。
+    public init(from decoder: any Decoder) throws {
+        let rawValue = try decoder.singleValueContainer().decode(String.self)
+        self = Self(rawValue: rawValue) ?? .normal
+    }
+
     /// 家事のポイントに掛ける割合（%）
     public var ratePercentage: Int {
         switch self {

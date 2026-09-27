@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import Foundation
 @testable import HometeDomain
 import Testing
 
@@ -30,6 +31,53 @@ struct HouseworkEffortTest {
         let actual = effort.boostedPoint(point)
 
         #expect(actual == expected)
+    }
+
+    @Test(
+        "Firestoreに保存した文字列を、対応する頑張り度として読む",
+        arguments: [
+            ("normal", HouseworkEffort.normal),
+            ("hard", HouseworkEffort.hard),
+            ("veryHard", HouseworkEffort.veryHard),
+        ]
+    )
+    func decode_savedValue(rawValue: String, expected: HouseworkEffort) throws {
+        // Arrange
+        let data = Data("\"\(rawValue)\"".utf8)
+
+        // Act
+        let actual = try JSONDecoder().decode(HouseworkEffort.self, from: data)
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("知らない値は、上乗せしないふつうとして読む")
+    func decode_unknownValue_returnsNormal() throws {
+        // Arrange
+        let data = Data("\"superHard\"".utf8)
+
+        // Act
+        let actual = try JSONDecoder().decode(HouseworkEffort.self, from: data)
+
+        // Assert
+        #expect(actual == .normal)
+    }
+
+    @Test(
+        "頑張り度はケース名の文字列で保存する",
+        arguments: [
+            (HouseworkEffort.normal, "\"normal\""),
+            (HouseworkEffort.hard, "\"hard\""),
+            (HouseworkEffort.veryHard, "\"veryHard\""),
+        ]
+    )
+    func encode_savesCaseName(effort: HouseworkEffort, expected: String) throws {
+        // Act
+        let data = try JSONEncoder().encode(effort)
+
+        // Assert
+        #expect(String(decoding: data, as: UTF8.self) == expected)
     }
 
     @Test("家事の獲得ポイントは、上乗せ前のポイントに頑張り度を反映したものになる")
