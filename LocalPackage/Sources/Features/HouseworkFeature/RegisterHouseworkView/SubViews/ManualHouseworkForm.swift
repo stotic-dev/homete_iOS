@@ -29,21 +29,19 @@ struct ManualHouseworkForm: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: .space16) {
-                inputTitleField()
-                inputPointPicker()
+            VStack(alignment: .leading, spacing: .space24) {
+                houseworkSection()
                 saveAsFrequentSection()
-                if canSetRecurrence {
-                    inputRecurrence()
-                }
                 if !history.isEmpty {
-                    entryHistoryContent()
+                    entryHistorySection()
                 }
             }
-            .padding(.horizontal, .space16)
+            .padding(.space16)
             // 入力欄の下端がフローティングボタンに隠れないようにする
             .padding(.bottom, .space64)
         }
+        // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
+        .background(.groupedBackground)
         .scrollDismissesKeyboard(.interactively)
         .overlay(alignment: .bottomLeading) {
             queueButton()
@@ -58,10 +56,41 @@ struct ManualHouseworkForm: View {
 
 private extension ManualHouseworkForm {
 
+    /// セクションの見出しと、中身をひとまとまりに見せるカード
+    /// - Note: 見出しの字下げは、カードの中の文字の位置に揃える
+    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text(title)
+                .font(with: .boldCaption)
+                .foregroundStyle(.onSurfaceVariant)
+                .padding(.horizontal, .space16)
+            VStack(spacing: .space16) {
+                content()
+            }
+            .padding(.space16)
+            .background(.subSurface)
+            .cornerRadius(.radius16)
+        }
+    }
+
+    func houseworkSection() -> some View {
+        section("登録する家事") {
+            inputTitleField()
+            Divider()
+            inputPointPicker()
+            if canSetRecurrence {
+                Divider()
+                inputRecurrence()
+            }
+        }
+    }
+
     func inputTitleField() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("家事の名前")
-                .font(with: .headLineS)
+                .font(with: .body)
+                .foregroundStyle(.onSurface)
+                .frame(maxWidth: .infinity, alignment: .leading)
             ClearableTextField(
                 text: $entry.title,
                 placeholder: "家事の名前を入力",
@@ -71,18 +100,21 @@ private extension ManualHouseworkForm {
     }
 
     func inputPointPicker() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
+        HStack(spacing: .space8) {
             Text("完了ポイント")
-                .font(with: .headLineS)
+                .font(with: .body)
+                .foregroundStyle(.onSurface)
+            Spacer()
             PointWheelPickerField(point: $entry.point)
-                .font(with: .headLineM)
+                .font(with: .body)
         }
     }
 
     /// - Note: 家事自体はカテゴリを持たないため、カテゴリはいつもの家事に保存するときだけ意味を持つ
     func saveAsFrequentSection() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
+        section("いつもの家事") {
             saveAsFrequentControl()
+            Divider()
             categoryPicker()
                 .disabled(!entry.savesAsFrequent)
         }
@@ -93,12 +125,12 @@ private extension ManualHouseworkForm {
         switch saveAsFrequentState {
         case .available:
             Toggle("いつもの家事に保存する", isOn: $entry.savesAsFrequent)
-                .font(with: .headLineS)
+                .font(with: .body)
 
         case .duplicated:
             VStack(alignment: .leading, spacing: .space4) {
                 Toggle("いつもの家事に保存する", isOn: .constant(false))
-                    .font(with: .headLineS)
+                    .font(with: .body)
                     .disabled(true)
                 Text("同じ名前のいつもの家事があります")
                     .font(with: .caption)
@@ -111,7 +143,7 @@ private extension ManualHouseworkForm {
             } label: {
                 HStack(spacing: .space8) {
                     Text("いつもの家事に保存する")
-                        .font(with: .headLineS)
+                        .font(with: .body)
                         .foregroundStyle(.onSurface)
                     Spacer()
                     Text("無料プランは\(FrequentHouseworkLimitPolicy.freeLimit)件まで")
@@ -127,7 +159,8 @@ private extension ManualHouseworkForm {
     func categoryPicker() -> some View {
         HStack(spacing: .space8) {
             Text("カテゴリ")
-                .font(with: .headLineS)
+                .font(with: .body)
+                .foregroundStyle(.onSurface)
             Spacer()
             Picker("カテゴリ", selection: $entry.categoryId) {
                 ForEach(categories) { category in
@@ -144,7 +177,7 @@ private extension ManualHouseworkForm {
         RecurrenceSelector(
             input: $entry.recurrenceInput,
             kinds: HouseworkRecurrenceInput.Kind.allCases,
-            titleFont: .headLineS,
+            titleFont: .body,
             showsDetail: false
         )
     }
@@ -165,11 +198,12 @@ private extension ManualHouseworkForm {
         .disabled(!canQueue)
     }
 
-    func entryHistoryContent() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("入力履歴")
-                .font(with: .headLineS)
-            ForEach(history, id: \.self) { item in
+    func entryHistorySection() -> some View {
+        section("入力履歴") {
+            ForEach(Array(history.enumerated()), id: \.element) { index, item in
+                if index > 0 {
+                    Divider()
+                }
                 Button(item) {
                     onTapHistory(item)
                 }
