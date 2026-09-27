@@ -131,6 +131,7 @@ private extension FrequentHouseworkManagementView {
         .buttonStyle(.plain)
     }
 
+    /// 並びは「編集」「追加」の主操作を先に置き、その他の操作をまとめたサブメニューを一番右に寄せる
     @ViewBuilder
     func trailingNavigationItem() -> some View {
         if loadState == .loaded {
@@ -140,13 +141,13 @@ private extension FrequentHouseworkManagementView {
                     EditButton()
                 }
                 #endif
-                subMenu()
                 Button {
                     onTapAdd()
                 } label: {
                     Image(systemName: "plus")
                 }
                 .accessibilityLabel("いつもの家事を追加")
+                subMenu()
             }
         }
     }
