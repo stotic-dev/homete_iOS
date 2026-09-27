@@ -140,16 +140,49 @@ struct AnalyticsEventTest {
                 ["action": "register", "step": "dashboard", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .detail, executorType: .ownOnly, isSuccess: true),
-                ["action": "complete", "step": "detail", "executor_type": "self", "result": "success"]
+                HouseworkAnalyticsAction.complete(
+                    step: .detail,
+                    executorType: .ownOnly,
+                    effort: .normal,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "detail",
+                    "executor_type": "self",
+                    "effort": "normal",
+                    "result": "success",
+                ]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .board, executorType: .others, isSuccess: false),
-                ["action": "complete", "step": "board", "executor_type": "others", "result": "failure"]
+                HouseworkAnalyticsAction.complete(
+                    step: .board,
+                    executorType: .others,
+                    effort: .hard,
+                    isSuccess: false
+                ),
+                [
+                    "action": "complete",
+                    "step": "board",
+                    "executor_type": "others",
+                    "effort": "hard",
+                    "result": "failure",
+                ]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .dashboard, executorType: .shared, isSuccess: true),
-                ["action": "complete", "step": "dashboard", "executor_type": "shared", "result": "success"]
+                HouseworkAnalyticsAction.complete(
+                    step: .dashboard,
+                    executorType: .shared,
+                    effort: .veryHard,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "dashboard",
+                    "executor_type": "shared",
+                    "effort": "very_hard",
+                    "result": "success",
+                ]
             ),
             (
                 HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),

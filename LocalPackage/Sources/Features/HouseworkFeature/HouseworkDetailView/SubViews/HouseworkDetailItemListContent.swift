@@ -30,7 +30,14 @@ struct HouseworkDetailItemListContent: View {
                     .foregroundStyle(.onSurfaceVariant)
             }
             HouseworkDetailItemRow(title: "ポイント") {
-                PointLabel(point: item.point)
+                PointLabel(point: item.earnedPoint)
+            }
+            if let effortLabel {
+                HouseworkDetailItemRow(title: "頑張り度") {
+                    Text(effortLabel)
+                        .font(with: .body)
+                        .foregroundStyle(.onSurfaceVariant)
+                }
             }
             if !executors.isEmpty {
                 HouseworkDetailItemRow(title: "担当者") {
@@ -53,6 +60,16 @@ private extension HouseworkDetailItemListContent {
     /// グループのメンバーの担当者（グループを抜けたメンバーは名前が分からないため出さない）
     var executors: [HouseworkExecutor] {
         item.executors.filter { cohabitantMemberList.userName($0.userId) != nil }
+    }
+
+    /// 完了した家事の頑張り度。上乗せしたときはポイントの内訳を添える（例: `がんばった（10pt → 12pt）`）
+    var effortLabel: String? {
+        guard item.state == .completed else { return nil }
+
+        guard let pointBreakdown = item.effort.pointBreakdown(basePoint: item.originalItem.point) else {
+            return item.effort.title
+        }
+        return "\(item.effort.title)（\(pointBreakdown)）"
     }
 
     /// 複数人で担当した家事は、名前に割合とポイントを添える
@@ -108,6 +125,24 @@ private extension HouseworkDetailItemListContent {
                 .init(userId: "own", percentage: 60, point: 6),
                 .init(userId: "partner", percentage: 40, point: 4),
             ],
+            executedAt: .distantPast
+        )
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailItemListContent_がんばった", traits: .sizeThatFitsLayout) {
+    HouseworkDetailItemListContent(
+        cohabitantMemberList: .init(
+            value: [.init(id: "test", userName: "hogehoge")],
+            ownId: "test"
+        ),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executorId: "test",
+            effort: .hard,
             executedAt: .distantPast
         )
     )

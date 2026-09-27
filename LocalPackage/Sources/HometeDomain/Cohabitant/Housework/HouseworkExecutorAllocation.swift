@@ -26,19 +26,32 @@ public struct HouseworkExecutorAllocation: Equatable, Sendable {
 
     /// 選べるメンバーのユーザーID（メンバー一覧の並び順）
     public let memberIds: [String]
-    /// 家事のポイント
-    public let totalPoint: Int
+    /// 家事のポイント（頑張り度で上乗せする前）。選べる人数の上限はこのポイントで決める
+    public let basePoint: Int
+    /// 頑張り度
+    public private(set) var effort: HouseworkEffort
     /// 選んだ担当者と割合（メンバー一覧の並び順）
     public private(set) var entries: [Entry]
 
     /// - Parameter selectedIds: 最初に選んでおく担当者。選べる人数の上限を超えた分は先頭から切り詰める
-    public init(memberIds: [String], selectedIds: [String], totalPoint: Int) {
+    public init(
+        memberIds: [String],
+        selectedIds: [String],
+        basePoint: Int,
+        effort: HouseworkEffort = .normal
+    ) {
         self.memberIds = memberIds
-        self.totalPoint = totalPoint
+        self.basePoint = basePoint
+        self.effort = effort
         let orderedIds = memberIds
             .filter { selectedIds.contains($0) }
-            .prefix(Self.maxExecutorCount(totalPoint: totalPoint))
+            .prefix(Self.maxExecutorCount(basePoint: basePoint))
         entries = Self.evenEntries(userIds: Array(orderedIds))
+    }
+
+    /// 担当者に配分するポイント（頑張り度で上乗せした後）
+    public var totalPoint: Int {
+        effort.boostedPoint(basePoint)
     }
 
 }
@@ -50,8 +63,10 @@ public extension HouseworkExecutorAllocation {
     /// 選べる人数の上限
     ///
     /// 0ptの担当者を許さないため、家事のポイントより多い人数は選べない。
-    static func maxExecutorCount(totalPoint: Int) -> Int {
-        max(totalPoint, 1)
+    /// 上乗せ後のポイントは上乗せ前以上なので、上乗せ前のポイントで上限を決めておけば、
+    /// 頑張り度を切り替えても選んだ担当者が上限を超えない。
+    static func maxExecutorCount(basePoint: Int) -> Int {
+        max(basePoint, 1)
     }
 
     func isSelected(_ userId: String) -> Bool {
@@ -62,7 +77,7 @@ public extension HouseworkExecutorAllocation {
     ///
     /// 選択済みの担当者はいつでも外せる。未選択のメンバーは、人数の上限に達していなければ選べる。
     func canToggle(_ userId: String) -> Bool {
-        isSelected(userId) || entries.count < Self.maxExecutorCount(totalPoint: totalPoint)
+        isSelected(userId) || entries.count < Self.maxExecutorCount(basePoint: basePoint)
     }
 
     /// 担当者の選択を切り替え、均等割りをやり直す
@@ -74,6 +89,19 @@ public extension HouseworkExecutorAllocation {
             : entries.map(\.userId) + [userId]
         let orderedIds = memberIds.filter { selectedIds.contains($0) }
         entries = Self.evenEntries(userIds: orderedIds)
+    }
+
+}
+
+// MARK: - 頑張り度
+
+public extension HouseworkExecutorAllocation {
+
+    /// 頑張り度を変える
+    ///
+    /// 選んだ担当者と割合はそのままにして、配分するポイントだけを変える。
+    mutating func updateEffort(_ effort: HouseworkEffort) {
+        self.effort = effort
     }
 
 }
