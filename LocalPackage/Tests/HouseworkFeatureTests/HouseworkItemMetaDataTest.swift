@@ -45,4 +45,44 @@ struct HouseworkItemMetaDataTest {
         #expect(actual == expected)
     }
 
+    @Test("ありがとうが届いた完了済みの家事は、ありがとうが届いたことを示すメタデータになる")
+    func make_completedWithThanks_returnsThanked() {
+        // Arrange
+
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "otherUserId",
+            thanks: [.init(senderId: "sender", comment: "ありがとう", sentAt: .distantPast)]
+        )
+
+        // Act
+
+        let actual = HouseworkItemMetaData.make(item: item)
+
+        // Assert
+
+        #expect(actual == .thanked)
+    }
+
+    @Test("やらないにした家事は、ありがとうが残っていてもやらないを示すメタデータになる")
+    func make_notTodoWithThanks_returnsNotTodo() {
+        // Arrange
+
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            state: .notTodo,
+            executorId: "otherUserId",
+            thanks: [.init(senderId: "sender", comment: "ありがとう", sentAt: .distantPast)]
+        )
+
+        // Act
+
+        let actual = HouseworkItemMetaData.make(item: item)
+
+        // Assert
+
+        #expect(actual == .notTodo)
+    }
+
 }

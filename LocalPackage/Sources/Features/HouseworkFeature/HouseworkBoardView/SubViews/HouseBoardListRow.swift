@@ -67,6 +67,19 @@ private extension HouseBoardListRow {
     )
 }
 
+#Preview("HouseBoardListRow_ありがとう受け取り", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(
+            title: "洗濯",
+            point: 20,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "otherUserId",
+            thanks: [.init(senderId: "senderId", comment: "ありがとう", sentAt: .distantPast)]
+        )
+    )
+}
+
 #Preview("HouseBoardListRow_やらない", traits: .sizeThatFitsLayout) {
     HouseBoardListRow(
         houseworkItem: .makeForPreview(

@@ -15,6 +15,8 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
 
     /// 完了している
     case completed
+    /// 完了していて、ありがとうが届いている
+    case thanked
     /// やらないことにした
     case notTodo
 
@@ -22,6 +24,8 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
         switch self {
         case .completed:
             "完了"
+        case .thanked:
+            "ありがとうが届いています"
         case .notTodo:
             "やらない"
         }
@@ -31,13 +35,18 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
         switch self {
         case .completed:
             "checkmark.seal.fill"
+        case .thanked:
+            "hands.clap.fill"
         case .notTodo:
             "minus.circle"
         }
     }
 
+    /// ありがとうが届いたことを、ひと目で気づけるようアクセントカラーで目立たせる
     var foregroundStyle: Color {
         switch self {
+        case .thanked:
+            .primary1
         case .completed, .notTodo:
             .onSubSurface
         }
@@ -56,7 +65,7 @@ extension HouseworkItemMetaData {
             nil
 
         case .completed:
-            .completed
+            item.thanks.isEmpty ? .completed : .thanked
 
         case .notTodo:
             .notTodo
