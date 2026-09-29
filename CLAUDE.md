@@ -300,6 +300,12 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 - 本番環境設定: GitHub secretsからデコード（`FIREBASE_CONFIG_PROD_BASE64`）
 - 設定ファイルはリポジトリにコミットしない（`.gitignore`に含まれる）
 
+### 広告（AdMob）の app-ads.txt
+
+`firebase/hosting/public/app-ads.txt` をFirebase Hostingのルートで配信し、App Storeのマーケティングリンク（`fastlane/metadata/ja/marketing_url.txt`）を同じドメインに向けている。設置・更新の手順は **[doc/app_ads_txt.md](doc/app_ads_txt.md)**、配信先の選定経緯は [ADR-0028](doc/adr/0028-app-ads-txt-on-firebase-hosting.md) が正。
+
+本番への反映は `deploy-hosting.yml`（`environment=prod`）と `sync-metadata.yml` の手動実行が必要で、どちらも忘れるとクローラーに届かない。
+
 ### ドメインモデル
 
 コアエンティティは家事管理システムを表現:
