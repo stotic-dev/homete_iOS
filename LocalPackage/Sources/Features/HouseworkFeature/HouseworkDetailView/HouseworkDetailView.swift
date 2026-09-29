@@ -52,11 +52,14 @@ private extension HouseworkDetailView {
 
     func mainContent() -> some View {
         VStack(spacing: .zero) {
-            HouseworkDetailItemListContent(
-                cohabitantMemberList: cohabitantStore.members,
-                item: item
-            )
-            Spacer()
+            // ありがとうが届くほど縦に伸びるため、アクションボタンを押し出さないようスクロールさせる
+            ScrollView {
+                HouseworkDetailItemListContent(
+                    cohabitantMemberList: cohabitantStore.members,
+                    item: item
+                )
+            }
+            .scrollBounceBehavior(.basedOnSize)
             HouseworkDetailActionContent(
                 isLoading: $loadingState.isLoading,
                 commonErrorContent: $commonErrorContent,

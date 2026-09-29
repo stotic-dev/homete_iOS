@@ -40,7 +40,28 @@ struct HouseworkDetailItemListContent: View {
                         .foregroundStyle(.onSurfaceVariant)
                 }
             }
+            if !item.originalItem.thanks.isEmpty {
+                HouseworkDetailItemRow(title: "もらったありがとう") {
+                    VStack(spacing: .space8) {
+                        ForEach(item.originalItem.thanks, id: \.self) { thanks in
+                            HouseworkDetailThanksCard(
+                                senderName: senderName(of: thanks),
+                                comment: thanks.comment
+                            )
+                        }
+                    }
+                }
+            }
         }
+    }
+
+}
+
+private extension HouseworkDetailItemListContent {
+
+    /// 送った人がグループを抜けていて名前が引けない場合も、ありがとうが届いた事実は残して見せる
+    func senderName(of thanks: HouseworkThanks) -> String {
+        cohabitantMemberList.userName(thanks.senderId) ?? "同居人"
     }
 
 }
@@ -69,6 +90,30 @@ struct HouseworkDetailItemListContent: View {
             state: .completed,
             executorId: "test",
             executedAt: .distantPast
+        )
+    )
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailItemListContent_ありがとう受け取り時", traits: .sizeThatFitsLayout) {
+    HouseworkDetailItemListContent(
+        cohabitantMemberList: .init(
+            value: [
+                .init(id: "executor", userName: "hogehoge"),
+                .init(id: "sender", userName: "fugafuga"),
+            ],
+            ownId: "executor"
+        ),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executorId: "executor",
+            executedAt: .distantPast,
+            thanks: [
+                .init(senderId: "sender", comment: "いつもありがとう！", sentAt: .distantPast),
+                .init(senderId: "leftMember", comment: "助かりました", sentAt: .distantPast),
+            ]
         )
     )
     .setupEnvironmentForPreview()
