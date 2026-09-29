@@ -12,7 +12,6 @@ enum HouseworkQuickActionTest {
 
     struct ActionsForItemCase {}
     struct ActionsForStateCase {}
-    struct BulkNotificationCase {}
 
 }
 
@@ -50,6 +49,26 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
         // Assert
 
         #expect(actual == [.sendThanks, .redo, .returnToIncomplete])
+    }
+
+    @Test("完了済みで自分以外が実施した家事でも、すでにありがとうを送っていれば、ありがとうは行えない")
+    func actions_completedByOtherUserAlreadyThanked_returnsRedoAndReturnToIncomplete() {
+        // Arrange
+
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            state: .completed,
+            executorId: "otherUserId",
+            thanks: ["ownUserId": .init(comment: nil, sentAt: .distantPast)]
+        )
+
+        // Act
+
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+
+        // Assert
+
+        #expect(actual == [.redo, .returnToIncomplete])
     }
 
     @Test("完了済みで自分が実施した家事は、もう一度やったと未完了に戻すが行える")
@@ -106,39 +125,6 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
         // Assert
 
         #expect(actual == expected)
-    }
-
-}
-
-extension HouseworkQuickActionTest.BulkNotificationCase {
-
-    @Test("ありがとうの一括通知は送信者名と件数を含むメッセージになる")
-    func bulkNotification_sendThanks_returnsSenderNameAndCountMessage() {
-        // Act
-
-        let actual = HouseworkQuickAction.sendThanks.bulkNotification(count: 2, senderName: "おくりぬし")
-
-        // Assert
-
-        let expected = PushNotificationContent(
-            title: "おくりぬしさんからありがとうが届きました",
-            message: "2件の家事にありがとうが届きました"
-        )
-        #expect(actual == expected)
-    }
-
-    @Test(
-        "相手に表示する通知を送らないアクションはnilを返す",
-        arguments: [HouseworkQuickAction.complete, .remove, .redo, .returnToIncomplete]
-    )
-    func bulkNotification_nonNotifyingActions_returnsNil(action: HouseworkQuickAction) {
-        // Act
-
-        let actual = action.bulkNotification(count: 1, senderName: "おくりぬし")
-
-        // Assert
-
-        #expect(actual == nil)
     }
 
 }

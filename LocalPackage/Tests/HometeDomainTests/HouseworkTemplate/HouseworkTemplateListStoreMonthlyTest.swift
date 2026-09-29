@@ -5,6 +5,8 @@
 //  Created by Taichi Sato on 2026/09/26.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @testable import HometeDomain
 import Testing
@@ -162,7 +164,7 @@ struct HouseworkTemplateListStoreMonthlyTest {
         try await confirmation { confirmation in
             let store = HouseworkTemplateListStore(
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.edit(isSuccess: true)))
+                    #expect(event == .houseworkTemplate(.edit(isSuccess: true, recurrence: .monthly(.dayOfMonth(1)))))
                     confirmation()
                 }),
                 selectedDays: [.init(dayOfWeek: .monday, items: [item])]
@@ -203,7 +205,11 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     }
                 ),
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.create(isSuccess: true)))
+                    #expect(event == .houseworkTemplate(.create(
+                        isSuccess: true,
+                        step: .register,
+                        recurrence: inputRecurrence
+                    )))
                     confirmation()
                 })
             )
@@ -231,7 +237,10 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     appendItem: { _, _, _, _ in throw DomainError.noNetwork }
                 ),
                 analyticsClient: .init(log: { event in
-                    #expect(event == .houseworkTemplate(.create(isSuccess: false)))
+                    let expected = AnalyticsEvent.houseworkTemplate(
+                        .create(isSuccess: false, step: .register, recurrence: .monthly(.dayOfMonth(25)))
+                    )
+                    #expect(event == expected)
                     confirmation()
                 })
             )
@@ -246,6 +255,118 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     cohabitantId: Self.inputCohabitantId
                 )
             }
+        }
+    }
+
+    @Test("テンプレートを選択済みの場合は、作成せずに選択中のテンプレートへ家事を追加する")
+    func appendItemCreatingTemplateIfNeededUsesSelectedTemplate() async throws {
+        // Arrange
+
+        let inputItem = HouseworkTemplateItem(id: .init(id: "item"), title: "掃除", point: 5, updatedAt: .distantPast)
+
+        try await confirmation { confirmation in
+            let store = HouseworkTemplateListStore(
+                houseworkTemplateClient: .init(
+                    upsertTemplate: { _, _ in Issue.record() },
+                    appendItem: { _, _, templateId, _ in
+                        #expect(templateId == Self.inputTemplateId)
+                        confirmation()
+                    }
+                ),
+                selectedTemplateId: Self.inputTemplateId,
+                loadState: .loaded
+            )
+
+            // Act
+
+            try await store.appendItemCreatingTemplateIfNeeded(
+                inputItem,
+                recurrence: .monthly(.dayOfMonth(25)),
+                cohabitantId: Self.inputCohabitantId,
+                newTemplateId: "unused"
+            )
+        }
+    }
+
+    @Test("テンプレートがない場合は、新しいIDでテンプレートを作成して選択し、監視を始めてから家事を追加する")
+    func appendItemCreatingTemplateIfNeededCreatesTemplate() async throws {
+        // Arrange
+
+        let inputItem = HouseworkTemplateItem(id: .init(id: "item"), title: "掃除", point: 5, updatedAt: .distantPast)
+        let inputNewTemplateId = "newTemplateId"
+        let calledOperations = TestLockedArray<String>()
+        let store = HouseworkTemplateListStore(
+            houseworkTemplateClient: .init(
+                upsertTemplate: { meta, _ in
+                    #expect(meta == .init(templateId: inputNewTemplateId, name: "default"))
+                    await calledOperations.append("upsertTemplate")
+                },
+                appendItem: { _, _, templateId, _ in
+                    #expect(templateId == inputNewTemplateId)
+                    await calledOperations.append("appendItem")
+                },
+                addDaysSnapshotListener: { id, _, _ in
+                    await calledOperations.append(id)
+                    return .makeStream().stream
+                },
+                addMonthlyItemsSnapshotListener: { id, _, _ in
+                    await calledOperations.append(id)
+                    return .makeStream().stream
+                }
+            ),
+            loadState: .loaded
+        )
+
+        // Act
+
+        try await store.appendItemCreatingTemplateIfNeeded(
+            inputItem,
+            recurrence: .weekly([.monday]),
+            cohabitantId: Self.inputCohabitantId,
+            newTemplateId: inputNewTemplateId
+        )
+
+        // Assert
+
+        let operations = await calledOperations.values
+        #expect(operations == [
+            "upsertTemplate",
+            "houseworkTemplateDaysListener",
+            "houseworkTemplateMonthlyItemsListener",
+            "appendItem",
+        ])
+        #expect(store.selectedTemplateId == inputNewTemplateId)
+
+        // Cleanup
+
+        await store.stopObservingItems()
+    }
+
+    @Test(
+        "テンプレートの読み込みが終わっていない場合は、テンプレートを作成せずにnotLoadedをthrowする",
+        arguments: [ListenerLoadState.loading, .failed(.noNetwork)]
+    )
+    func appendItemCreatingTemplateIfNeededThrowsWhenNotLoaded(loadState: ListenerLoadState) async {
+        // Arrange
+
+        let inputItem = HouseworkTemplateItem(id: .init(id: "item"), title: "掃除", point: 5, updatedAt: .distantPast)
+        let store = HouseworkTemplateListStore(
+            houseworkTemplateClient: .init(
+                upsertTemplate: { _, _ in Issue.record() },
+                appendItem: { _, _, _, _ in Issue.record() }
+            ),
+            loadState: loadState
+        )
+
+        // Act + Assert
+
+        await #expect(throws: HouseworkTemplateError.notLoaded) {
+            try await store.appendItemCreatingTemplateIfNeeded(
+                inputItem,
+                recurrence: .weekly([.monday]),
+                cohabitantId: Self.inputCohabitantId,
+                newTemplateId: "newTemplateId"
+            )
         }
     }
 

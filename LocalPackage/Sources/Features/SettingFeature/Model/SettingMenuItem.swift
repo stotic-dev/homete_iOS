@@ -12,6 +12,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
     case memberInvitation
     case taskTemplate
+    case frequentHousework
     case notificationPermission
     case premiumPlan
     case termsOfService
@@ -32,8 +33,8 @@ enum SettingMenuItem: Equatable, CaseIterable {
     ) -> [Self] {
         allCases.filter {
             switch $0 {
-            case .taskTemplate:
-                // テンプレート設定項目はグループ参加状態の時のみ表示する
+            case .taskTemplate, .frequentHousework:
+                // テンプレート・いつもの家事はグループで共有するため、グループ参加状態の時のみ表示する
                 isRegisteredGroup
 
             case .memberInvitation:
@@ -54,6 +55,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "家事テンプレート"
+
+        case .frequentHousework:
+            "いつもの家事"
 
         case .notificationPermission:
             "通知設定"
@@ -88,6 +92,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
 
         case .taskTemplate:
             "house"
+
+        case .frequentHousework:
+            "star.square.on.square"
 
         case .notificationPermission:
             "bell.badge.fill"

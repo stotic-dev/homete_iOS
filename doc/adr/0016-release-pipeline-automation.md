@@ -1,6 +1,6 @@
 ## タイトル: リリースPR作成〜App Store提出までのパイプラインを自動化し、タグ作成をGitHub Actions側に一本化する
 
-* **ステータス: 承認済**
+* **ステータス: 承認済**（リリースPRマージ時のメタデータ同期・Xcode Cloud起動は [ADR-0027](0027-release-merged-tag-and-release-only.md) で廃止）
 * 意思決定者: @stotic-dev
 * 日付: 2026-09-05
 * 技術的背景やその他関連チケット No: [#237](https://github.com/stotic-dev/homete_iOS/issues/237) / [#238](https://github.com/stotic-dev/homete_iOS/issues/238)

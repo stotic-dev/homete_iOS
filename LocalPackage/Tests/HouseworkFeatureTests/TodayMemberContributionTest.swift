@@ -108,4 +108,34 @@ struct TodayMemberContributionTest {
         #expect(actual == expected)
     }
 
+    @Test("複数人で担当した家事は、担当者それぞれに配分されたポイントと1件の完了で集計する")
+    func aggregatesSharedItemsByAllocatedPoints() {
+        // Arrange
+
+        let summary = TodayHouseworkSummary.makeForTest(allItems: [
+            .makeForTest(
+                id: 1,
+                point: 10,
+                state: .completed,
+                executors: [
+                    .init(userId: "ownUserId", percentage: 70, point: 7),
+                    .init(userId: "otherUserId", percentage: 30, point: 3),
+                ]
+            ),
+            .makeForTest(id: 2, point: 20, state: .completed, executorId: "otherUserId"),
+        ])
+
+        // Act
+
+        let actual = summary.memberContributions(members: Self.members)
+
+        // Assert
+
+        let expected: [TodayMemberContribution] = [
+            .init(userId: "ownUserId", userName: "自分", completedCount: 1, point: 7),
+            .init(userId: "otherUserId", userName: "同居人", completedCount: 2, point: 23),
+        ]
+        #expect(actual == expected)
+    }
+
 }

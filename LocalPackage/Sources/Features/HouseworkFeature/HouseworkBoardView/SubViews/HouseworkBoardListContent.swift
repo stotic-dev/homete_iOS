@@ -18,9 +18,15 @@ struct HouseworkBoardListContent: View {
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
+    /// 完了した家事の担当者名を引くための同居人一覧
+    let memberList: CohabitantMemberList
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
     let onCreateTapped: () -> Void
+    /// クイックアクションで「完了にする」が選ばれた。ハーフモーダルは親が出す
+    let onSelectComplete: (HouseworkBoardItem) -> Void
+    /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
+    let onSelectThanks: (HouseworkBoardItem) -> Void
 
     @State var selectedIDs: Set<String> = []
     @CommonError var commonError
@@ -44,6 +50,8 @@ struct HouseworkBoardListContent: View {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .board,
+                                onSelectComplete: { onSelectComplete(item) },
+                                onSelectThanks: { onSelectThanks(item) },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -113,8 +121,54 @@ private extension HouseworkBoardListContent {
         Button {
             navigationPath.push(.houseworkDetail(item))
         } label: {
-            HouseBoardListRow(houseworkItem: item.originalItem)
+            let completionInfo = completionInfo(of: item)
+            HouseBoardListRow(
+                houseworkItem: item.originalItem,
+                completionInfo: completionInfo,
+                onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
+            )
         }
+    }
+
+    /// ハートのタップで伝えられるのは、まだ伝えていない家事だけ。選択中はセルの選択を優先する
+    func thanksAction(of item: HouseworkBoardItem, status: HouseworkThanksStatus?) -> (() -> Void)? {
+        guard status == .notSent, !isSelecting else { return nil }
+
+        return {
+            Task {
+                await sendThanks(to: item)
+            }
+        }
+    }
+
+    /// ハートのタップでは、メッセージを書かずにありがとうだけを伝える（コメントがないので通知は送らない）
+    func sendThanks(to item: HouseworkBoardItem) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.perform(
+                .sendThanks,
+                on: item,
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId,
+                step: .board
+            )
+        } catch {
+            commonError = .init(error: error)
+        }
+    }
+
+    /// 完了リストの家事セルに出す、担当者とありがとうの状況
+    ///
+    /// 未完了リストには担当者もありがとうもないため出さない。
+    func completionInfo(of item: HouseworkBoardItem) -> HouseBoardListRow.CompletionInfo? {
+        guard state == .completed else { return nil }
+
+        return .init(
+            executorNames: item.executors.compactMap { memberList.userName($0.userId) },
+            thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: loginContext.account.id)
+        )
     }
 
 }
@@ -149,9 +203,12 @@ private extension HouseworkBoardListContent {
                 indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
             ),
         ]),
+        memberList: .init(value: [], ownId: ""),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
-        onCreateTapped: {}
+        onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in }
     )
     .setupLoginContextForPreview()
 }
@@ -191,9 +248,18 @@ private extension HouseworkBoardListContent {
                 executorId: "ownUserId"
             ),
         ]),
+        memberList: .init(
+            value: [
+                .init(id: "ownUserId", userName: "たろう"),
+                .init(id: "otherUserId", userName: "はなこ"),
+            ],
+            ownId: "ownUserId"
+        ),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in },
         selectedIDs: ["1"]
     )
     .setupLoginContextForPreview()

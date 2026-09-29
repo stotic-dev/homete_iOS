@@ -15,6 +15,7 @@ struct HouseworkDetailActionContent: View {
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @State var isPresentedThanksView = false
+    @State var isPresentedCompleteSheet = false
 
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
@@ -30,6 +31,8 @@ struct HouseworkDetailActionContent: View {
             case .completed:
                 if item.canSendThanks(ownUserId: account.id) {
                     sendThanksButton()
+                } else if item.canEditThanks(ownUserId: account.id) {
+                    editThanksButton()
                 }
                 redoButton()
                 undoChangeStateButton()
@@ -38,8 +41,11 @@ struct HouseworkDetailActionContent: View {
             }
         }
         .disabled(isLoading)
-        .fullScreenCoverOnIOS(isPresented: $isPresentedThanksView) {
-            HouseworkThanksView(item: item)
+        .sheet(isPresented: $isPresentedCompleteSheet) {
+            HouseworkCompleteSheet(item: item, step: .detail)
+        }
+        .sheet(isPresented: $isPresentedThanksView) {
+            HouseworkThanksView(item: item, sentThanks: item.sentThanks(ownUserId: account.id))
         }
     }
 
@@ -49,11 +55,7 @@ private extension HouseworkDetailActionContent {
 
     func completeButton() -> some View {
         Button {
-            isLoading = true
-            Task {
-                await tappedCompleteButton()
-                isLoading = false
-            }
+            isPresentedCompleteSheet = true
         } label: {
             Label("完了にする", systemImage: "checkmark.circle.fill")
                 .frame(maxWidth: .infinity)
@@ -99,28 +101,27 @@ private extension HouseworkDetailActionContent {
         .subPrimaryButtonStyle()
     }
 
+    func editThanksButton() -> some View {
+        Button {
+            isPresentedThanksView = true
+        } label: {
+            // コメントなしで送った場合は、まだメッセージを送っていないので「添える」にする
+            if item.sentThanks(ownUserId: account.id)?.comment == nil {
+                Label("メッセージを添える", systemImage: "text.bubble")
+                    .frame(maxWidth: .infinity)
+            } else {
+                Label("送ったメッセージを編集", systemImage: "square.and.pencil")
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .subPrimaryButtonStyle()
+    }
+
 }
 
 // プレゼンテーションロジック
 
 private extension HouseworkDetailActionContent {
-
-    func tappedCompleteButton() async {
-        guard let cohabitantId else { return }
-
-        do {
-            try await houseworkListStore.complete(
-                target: item.originalItem,
-                now: .now,
-                executor: account,
-                cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered,
-                step: .detail
-            )
-        } catch {
-            commonErrorContent = .init(error: error)
-        }
-    }
 
     func tappedRedoButton() async {
         guard let cohabitantId else { return }
@@ -196,6 +197,40 @@ private extension HouseworkDetailActionContent {
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .completed,
             executorId: "executorAccount"
+        )
+    )
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkDetailActionContent_完了_コメントなしで送信済み", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "executorAccount",
+            thanks: ["ownAccount": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 1, day: 1))]
+        )
+    )
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkDetailActionContent_完了_メッセージ送信済み", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "executorAccount",
+            thanks: ["ownAccount": .init(comment: "ありがとう", sentAt: .previewDate(year: 2026, month: 1, day: 1))]
         )
     )
     .environment(HouseworkListStore())

@@ -10,8 +10,9 @@ extension HouseworkListStore {
 
     /// 家事リストのセルから行うクイックアクションを実行する
     ///
-    /// - Parameter notify: 相手への通知を送るかどうか。複数選択の一括操作では、
+    /// - Parameter notify: 完了の通知を送るかどうか。複数選択の一括操作では、
     ///   家事ごとの個別通知の代わりに件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
+    ///   ありがとうはコメントなしで記録するため、この値に関わらず通知しない。
     // swiftlint:disable:next function_parameter_count
     func perform(
         _ action: HouseworkQuickAction,
@@ -23,11 +24,17 @@ extension HouseworkListStore {
         notify: Bool = true
     ) async throws {
         switch action {
+        // 担当者やコメントを選ばずに完了にする経路（一括完了）では、自分だけを担当者にする
         case .complete:
+            // 一括完了は頑張り度を選ぶ画面を通らないため「ふつう」で記録し、上乗せ前のポイントを満額配分する
             try await complete(
                 target: item.originalItem,
                 now: now,
-                executor: account,
+                reporter: account,
+                executors: [.solo(userId: account.id, point: item.originalItem.point)],
+                effort: .normal,
+                executorNames: [account.userName],
+                comment: "",
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
                 step: step,
@@ -55,10 +62,10 @@ extension HouseworkListStore {
             try await sendThanks(
                 target: item.originalItem,
                 sender: account,
-                comment: action.fixedComment,
+                comment: nil,
+                now: now,
                 cohabitantId: cohabitantId,
-                step: step,
-                notify: notify
+                step: step
             )
 
         case .returnToIncomplete:
@@ -76,9 +83,9 @@ extension HouseworkListStore {
 
     /// 複数選択で選んだ家事に、クイックアクションを一括で適用する
     ///
-    /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制した上で、
-    /// 対象件数をまとめた1件の通知だけを送る。完了の通知は、ふりかえり通知の予約を兼ねるため
-    /// 今日の家事で1日1回だけ送る。相手に通知しないアクション（やらない・未完了に戻す）では何も送らない。
+    /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制する。
+    /// 完了だけは、ふりかえり通知の予約を兼ねて件数をまとめた1件の通知を今日の家事で1日1回だけ送る。
+    /// ほかのアクション（やらない・ありがとう・未完了に戻す）では何も送らない。
     // swiftlint:disable:next function_parameter_count
     func performBulk(
         _ action: HouseworkQuickAction,
@@ -112,11 +119,6 @@ extension HouseworkListStore {
                 .completedBulkMessage(executorName: account.userName, count: items.count, data: $0)
             }
         }
-
-        let notification = action.bulkNotification(count: items.count, senderName: account.userName)
-        guard let notification else { return }
-
-        sendNotification(notification, cohabitantId: cohabitantId)
     }
 
 }

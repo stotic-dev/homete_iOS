@@ -56,8 +56,7 @@ platform :ios do
     )
   end
 
-  # 通常のリリースはGitHub Actions（release-merged.yml）がXcode Cloudの
-  # 「Upload For AppStore」workflowをキックする形に移行した（doc/adr/0016）。
+  # 通常のリリースはXcode Cloudの「Upload For AppStore」workflow（release/*ブランチへのpushで起動）で行う（doc/adr/0027）。
   # このレーンはローカルから手動でビルド・アップロードする場合の代替手段として残す。
   # タグ作成もGitHub Actions側（PRマージ時）で行うようになったため、ここでは打たない。
   desc "指定されたipaでApp Storeリリースを行う（ローカル手動実行用のフォールバック）"

@@ -63,8 +63,7 @@ case "$CI_WORKFLOW" in
         echo "=== Upload For AppStore workflow ==="
 
         # doc/adr/0016: バージョンタグの作成はGitHub Actions側（release-merged.yml、
-        # リリースPRのmainマージ時）に一本化した。このworkflowはGitHub Actions側から
-        # APIでキックされる時点で既にタグが打たれている前提のため、ここでは何もしない。
+        # リリースPRのmainマージ時）に一本化したため、ここでは何もしない。
         echo "Tag creation is handled by GitHub Actions (release-merged.yml). Nothing to do here."
         echo "==========================="
         ;;

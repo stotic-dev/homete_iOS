@@ -14,6 +14,7 @@ enum DailyCompletionReminderUseCaseTest {
     struct UpdateSettingCase {}
     struct DailyLimitCase {}
     struct NotifyCompletedCase {}
+    struct NotifyCompletedWithCommentCase {}
 
 }
 
@@ -516,6 +517,102 @@ extension DailyCompletionReminderUseCaseTest.NotifyCompletedCase {
 
 }
 
+// MARK: - notifyCompletedWithComment
+
+extension DailyCompletionReminderUseCaseTest.NotifyCompletedWithCommentCase {
+
+    @Test("今日の家事の完了を今日まだ送っていなければ、予約用データを付けて送り、送信日を記録する")
+    func notifyCompletedWithComment_notSentToday_sendsWithDataAndRecords() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let recorder = CommentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedWithCommentResult(
+            sent: [.init(houseworkDate: .previewDate(year: 2026, month: 9, day: 25))],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedWithComment(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedWithCommentResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("今日すでに送っていても、予約用データを付けずに送る")
+    func notifyCompletedWithComment_alreadySentToday_sendsWithoutData() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(
+            setting: .init(isEnabled: true, hour: 21, minute: 0),
+            completedSignalSentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+        let recorder = CommentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedWithCommentResult(
+            sent: [nil],
+            sentDayIdentifier: "dailyCompletionReminder-2026-9-25"
+        )
+
+        // Act
+
+        try await sut.notifyCompletedWithComment(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 25),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedWithCommentResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("今日以外の家事でも、予約用データを付けずに送り、送信日は記録しない")
+    func notifyCompletedWithComment_notToday_sendsWithoutDataAndDoesNotRecord() async throws {
+        // Arrange
+
+        let store = ReminderClientStore(setting: .init(isEnabled: true, hour: 21, minute: 0))
+        let recorder = CommentSignalRecorder()
+        let sut = DailyCompletionReminderUseCase(client: store.client)
+        let expected = NotifyCompletedWithCommentResult(
+            sent: [nil],
+            sentDayIdentifier: nil
+        )
+
+        // Act
+
+        try await sut.notifyCompletedWithComment(
+            houseworkDate: .previewDate(year: 2026, month: 9, day: 24),
+            now: .previewDate(year: 2026, month: 9, day: 25, hour: 10),
+            calendar: .japanese
+        ) { await recorder.append($0) }
+
+        // Assert
+
+        let actual = await NotifyCompletedWithCommentResult(
+            sent: recorder.sent,
+            sentDayIdentifier: store.completedSignalSentDayIdentifier
+        )
+        #expect(actual == expected)
+    }
+
+}
+
 // MARK: - Helpers
 
 private func todayRequest(
@@ -628,6 +725,23 @@ private actor ReminderClientStore {
 
     private func append(_ entry: Entry) {
         entries.append(entry)
+    }
+
+}
+
+private struct NotifyCompletedWithCommentResult: Equatable {
+
+    let sent: [HouseworkCompletedNotificationData?]
+    let sentDayIdentifier: String?
+
+}
+
+private actor CommentSignalRecorder {
+
+    private(set) var sent: [HouseworkCompletedNotificationData?] = []
+
+    func append(_ data: HouseworkCompletedNotificationData?) {
+        sent.append(data)
     }
 
 }

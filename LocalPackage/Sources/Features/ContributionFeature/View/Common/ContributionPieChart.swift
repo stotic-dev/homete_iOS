@@ -20,7 +20,7 @@ struct ContributionPieChart: View {
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
-                GraphDescriptionPopoverButton(
+                DescriptionPopoverButton(
                     title: "家事達成割合とは？",
                     message: """
                     指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。

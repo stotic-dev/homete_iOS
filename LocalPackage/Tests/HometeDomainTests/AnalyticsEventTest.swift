@@ -129,23 +129,60 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事に関する行動を、action/step/resultのパラメータを持つhouseworkイベントに変換する",
+        "家事に関する行動を、action/step/executor_type/effort/source/resultのパラメータを持つhouseworkイベントに変換する",
         arguments: [
             (
-                HouseworkAnalyticsAction.register(step: .board, isSuccess: true),
-                ["action": "register", "step": "board", "result": "success"]
+                HouseworkAnalyticsAction.register(step: .board, source: .frequent, isSuccess: true),
+                ["action": "register", "step": "board", "source": "frequent", "result": "success"]
             ),
             (
-                HouseworkAnalyticsAction.register(step: .dashboard, isSuccess: false),
-                ["action": "register", "step": "dashboard", "result": "failure"]
+                HouseworkAnalyticsAction.register(step: .dashboard, source: .manual, isSuccess: false),
+                ["action": "register", "step": "dashboard", "source": "manual", "result": "failure"]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .detail, isSuccess: true),
-                ["action": "complete", "step": "detail", "result": "success"]
+                HouseworkAnalyticsAction.complete(
+                    step: .detail,
+                    executorType: .ownOnly,
+                    effort: .normal,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "detail",
+                    "executor_type": "self",
+                    "effort": "normal",
+                    "result": "success",
+                ]
             ),
             (
-                HouseworkAnalyticsAction.complete(step: .board, isSuccess: false),
-                ["action": "complete", "step": "board", "result": "failure"]
+                HouseworkAnalyticsAction.complete(
+                    step: .board,
+                    executorType: .others,
+                    effort: .hard,
+                    isSuccess: false
+                ),
+                [
+                    "action": "complete",
+                    "step": "board",
+                    "executor_type": "others",
+                    "effort": "hard",
+                    "result": "failure",
+                ]
+            ),
+            (
+                HouseworkAnalyticsAction.complete(
+                    step: .dashboard,
+                    executorType: .shared,
+                    effort: .veryHard,
+                    isSuccess: true
+                ),
+                [
+                    "action": "complete",
+                    "step": "dashboard",
+                    "executor_type": "shared",
+                    "effort": "very_hard",
+                    "result": "success",
+                ]
             ),
             (
                 HouseworkAnalyticsAction.redo(step: .detail, isSuccess: true),
@@ -162,6 +199,14 @@ struct AnalyticsEventTest {
             (
                 HouseworkAnalyticsAction.sendThanks(step: .board, isSuccess: false),
                 ["action": "send_thanks", "step": "board", "result": "failure"]
+            ),
+            (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: true),
+                ["action": "edit_thanks", "step": "thanks", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: false),
+                ["action": "edit_thanks", "step": "thanks", "result": "failure"]
             ),
             (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),
@@ -188,7 +233,7 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "家事テンプレートに関する行動を、action/resultのパラメータを持つhousework_templateイベントに変換する",
+        "家事テンプレートに関する行動を、action/result（追加・編集時はstep/recurrenceも）のパラメータを持つhousework_templateイベントに変換する",
         arguments: [
             (
                 HouseworkTemplateAnalyticsAction.apply(isSuccess: true),
@@ -199,20 +244,31 @@ struct AnalyticsEventTest {
                 ["action": "apply", "result": "failure"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.create(isSuccess: true),
-                ["action": "create", "result": "success"]
+                HouseworkTemplateAnalyticsAction.create(
+                    isSuccess: true,
+                    step: .template,
+                    recurrence: .weekly([.monday])
+                ),
+                ["action": "create", "result": "success", "step": "template", "recurrence": "weekly"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.create(isSuccess: false),
-                ["action": "create", "result": "failure"]
+                HouseworkTemplateAnalyticsAction.create(
+                    isSuccess: false,
+                    step: .register,
+                    recurrence: .monthly(.dayOfMonth(25))
+                ),
+                ["action": "create", "result": "failure", "step": "register", "recurrence": "monthly"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.edit(isSuccess: true),
-                ["action": "edit", "result": "success"]
+                HouseworkTemplateAnalyticsAction.edit(
+                    isSuccess: true,
+                    recurrence: .weekly([.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday])
+                ),
+                ["action": "edit", "result": "success", "recurrence": "daily"]
             ),
             (
-                HouseworkTemplateAnalyticsAction.edit(isSuccess: false),
-                ["action": "edit", "result": "failure"]
+                HouseworkTemplateAnalyticsAction.edit(isSuccess: false, recurrence: .weekly([.friday])),
+                ["action": "edit", "result": "failure", "recurrence": "weekly"]
             ),
             (
                 HouseworkTemplateAnalyticsAction.delete(isSuccess: true),
@@ -449,6 +505,10 @@ struct AnalyticsEventTest {
             (
                 PaywallAnalyticsAction.shown(step: .subscriptionManagement),
                 ["step": "subscription_management", "action": "shown"]
+            ),
+            (
+                PaywallAnalyticsAction.shown(step: .frequentHouseworkLimit),
+                ["step": "frequent_housework_limit", "action": "shown"]
             ),
             (
                 PaywallAnalyticsAction.closed(step: .onboarding, isPremium: true),

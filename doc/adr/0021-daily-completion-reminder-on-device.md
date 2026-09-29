@@ -101,3 +101,9 @@ Notification Service Extensionが起動するのは、アラートを表示す�
 * [UNNotificationServiceExtension | Apple Developer Documentation](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension)
 * [didReceive(_:withContentHandler:) | Apple Developer Documentation](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension/didreceive(_:withcontenthandler:))
 * [com.apple.developer.usernotifications.filtering | Apple Developer Documentation](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.developer.usernotifications.filtering)
+
+## 追記（2026-09-26）コメント付きの完了は1日1回の対象外にする
+
+* 家事の完了時にコメントを添えられるようにした（[#291](https://github.com/stotic-dev/homete_iOS/issues/291)、[実装方針](../strategy/housework-executor-selection.md)）。コメントは「ありがとう」と同じくユーザーが明示的に送るメッセージなので、1日1回の制限に従うと入力したコメントが送られずに消えてしまう
+* コメントを入力した完了は毎回通知を送る。ふりかえり通知の予約用データは今までどおり「今日の家事で、その日まだ送っていない」ときだけ付け、付けたときだけ送った日を記録する
+* コメントなしの完了は今までどおり1日1回。家事のステータスに関わる通知を増やさない方針の例外は、ユーザーがコメントを書いたときに限る

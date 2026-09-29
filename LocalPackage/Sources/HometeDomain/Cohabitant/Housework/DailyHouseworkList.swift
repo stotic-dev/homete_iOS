@@ -29,11 +29,6 @@ public struct DailyHouseworkList: Equatable, Sendable {
         !items.isEmpty
     }
 
-    /// すでに同じ家事が登録されているかどうか
-    public func isAlreadyRegistered(_ item: HouseworkItem) -> Bool {
-        items.contains { $0.title == item.title }
-    }
-
     public init(items: [HouseworkItem], metaData: DailyHouseworkMetaData) {
         self.items = items
         self.metaData = metaData

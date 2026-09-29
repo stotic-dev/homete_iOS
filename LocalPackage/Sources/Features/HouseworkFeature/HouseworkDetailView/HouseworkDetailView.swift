@@ -53,7 +53,8 @@ private extension HouseworkDetailView {
             VStack(spacing: .space40) {
                 HouseworkDetailItemListContent(
                     cohabitantMemberList: cohabitantStore.members,
-                    item: item
+                    item: item,
+                    thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
                 )
                 HouseworkDetailActionContent(
                     isLoading: $loadingState.isLoading,

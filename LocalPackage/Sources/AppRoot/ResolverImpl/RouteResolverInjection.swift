@@ -3,6 +3,7 @@
 //
 
 import CohabitantRegistrationFeature
+import FrequentHouseworkFeature
 import HomeFeature
 import HometeDomain
 import HometeInfrastructure
@@ -25,6 +26,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     SettingViewScreen()
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
+                case .frequentHouseworkManagement:
+                    FrequentHouseworkManagementScreen()
                 case .paywall:
                     // PaywallScreenはHometeInfrastructureにあり、HometeUIに依存しない。
                     // 計測のためだけに依存を増やさず、画面を組み立てるここでModifierを付ける

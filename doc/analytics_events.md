@@ -95,10 +95,15 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_board` | `HouseworkBoardView` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
-| `housework_thanks` | `HouseworkThanksView` |
+| `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
+| `housework_thanks` | `HouseworkThanksView`（ありがとうを伝えるハーフモーダル） |
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
+| `frequent_housework_management` | `FrequentHouseworkManagementView` |
+| `frequent_housework_edit` | `FrequentHouseworkEditModal` |
+| `frequent_housework_category` | `FrequentHouseworkCategoryView`（いつもの家事のカテゴリ管理） |
+| `frequent_housework_import` | `FrequentHouseworkImportView`（テンプレートからの取り込み） |
 | `setting` | `SettingView` |
 | `subscription_management` | `SubscriptionManagementView` |
 | `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
@@ -176,26 +181,33 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `return_incomplete` / `delete` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
+| `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
+| `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
+| `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
 | `result` | — | `success` / `failure` | 行動の結果 |
 
 送信されるパターンと、その送信タイミング:
 
 | `action` | `step` | 送信タイミング |
 |---|---|---|
-| `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる） |
-| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」） |
+| `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
+| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
-| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクションは定型文、`thanks`はありがとうを伝える画面からメッセージを添えて送信） |
+| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなし、`thanks`はありがとうを伝える画面からメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `edit_thanks` | `thanks` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
 
-いずれも`result`に`success` / `failure`が付与される。`send_thanks`だけはFirestoreを更新しないため、プッシュ通知の送信結果を表す。
+いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
+`source`の比率は、いつもの家事が実際の登録をどれだけ肩代わりしているかの指標になる。
 `complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
 `complete` → `return_incomplete`の比率が高い場合は、完了の取り消しが頻発している（誤タップや認識のずれ）と読める。
+`complete`のうち`executor_type`が`others` / `shared`の割合で、代わりに記録する・手分けする使い方がどれだけあるかが分かる。
+`complete`のうち`effort`が`hard` / `very_hard`の割合で、頑張り度がどれだけ使われているかが分かる（一括完了は頑張り度を選べず常に`normal`になるため、実際の利用率より低く出る点に注意）。
 `complete`に対する`redo`の比率で、1日に同じ家事を繰り返す運用がどれだけあるかが分かる。
 
 ### `housework_template`
@@ -210,14 +222,16 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|---|---|
 | `action` | ○ | `apply` / `create` / `edit` / `delete` | 何が起きたか |
 | `result` | ○ | `success` / `failure` | 行動の結果 |
+| `step` | `create`のみ | `template` / `register` | どの画面から家事を追加したか（テンプレート画面 / 家事登録画面で繰り返しを設定） |
+| `recurrence` | `create` / `edit`のみ | `daily` / `weekly` / `monthly` | 追加・編集後の繰り返し方（毎日 / 毎週 / 毎月◯日）。全曜日を選んだ毎週は`daily`にする |
 
 送信されるパターンと、その送信タイミング:
 
 | `action` | 送信タイミング |
 |---|---|
-| `apply` | テンプレートを初めて作成した（テンプレート機能自体の利用開始） |
-| `create` | 「保存」時に、編集画面のドラフトと保存前の内容を比較して新規追加されたテンプレート家事があった（家事1件につき1イベント） |
-| `edit` | 「保存」時に、内容（タイトル・ポイント・登録曜日）が変更されたテンプレート家事があった（家事1件につき1イベント） |
+| `apply` | テンプレートを初めて作成した（テンプレート機能自体の利用開始）。家事登録画面で繰り返しを設定して登録したときに、テンプレートが無ければ自動で作成するので、そのときも送る |
+| `create` | テンプレート画面: 「保存」時に、編集画面のドラフトと保存前の内容を比較して新規追加されたテンプレート家事があった（家事1件につき1イベント、`step: template`）。家事登録画面: 繰り返しを設定して登録した（`step: register`） |
+| `edit` | 「保存」時に、内容（タイトル・ポイント・繰り返し方）が変更されたテンプレート家事があった（家事1件につき1イベント）。毎週⇔毎月の切り替えも追加・削除ではなく編集として扱う |
 | `delete` | 「保存」時に、削除されたテンプレート家事があった（家事1件につき1イベント） |
 
 `create` / `edit` / `delete`はテンプレート編集画面のローカルなドラフト操作ではなく、「保存」ボタンで実際にFirestoreへ
@@ -225,6 +239,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 **分析での使い方:** `apply`を分母にテンプレート機能の利用開始率、`create` / `edit` / `delete`の件数比率で
 テンプレートがどの程度使い込まれているか（作りっぱなしか、継続的に編集されているか）が分かる。
+`create`の`step`比率で繰り返しの主な登録導線（テンプレート画面か家事登録画面か）が、`recurrence`比率で毎月の繰り返しがどの程度使われているかが分かる。
 
 ### `frequent_housework`
 
@@ -249,7 +264,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `edit` | — | いつもの家事の名前・ポイント・カテゴリを変更した |
 | `delete` | — | いつもの家事を削除した |
 | `import` | — | テンプレートから取り込んだ。取り込み1回につき1イベント（件数によらない） |
-| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した |
+| `limit_reached` | `management` / `register` / `template` | 無料プランの上限（10件）の案内を表示した。取り込みシートで残り件数を超えて選ぼうとした場合も、起点は`management`とする |
 | `create_category` | — | カスタムカテゴリを追加した |
 | `edit_category` | — | カスタムカテゴリの名前を変更した |
 | `delete_category` | — | カスタムカテゴリを削除した |
@@ -420,7 +435,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` | Paywallへの起点 |
+| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` | Paywallへの起点 |
 | `action` | ○ | `shown` / `closed` | 表示 / クローズのどちらか |
 | `result` | — | `purchased` / `not_purchased` | `closed`のみ付与。閉じた時点でプレミアムが有効なら`purchased` |
 
@@ -436,6 +451,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `contribution_storage_limit` | 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`） |
 | `setting` | 設定画面の「プレミアムプランに登録」項目（`SettingView`） |
 | `subscription_management` | サブスク管理画面の「プランを変更」ボタン（`SubscriptionManagementView`） |
+| `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen` / `FrequentHouseworkImportScreen`） |
 
 `step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
 閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）

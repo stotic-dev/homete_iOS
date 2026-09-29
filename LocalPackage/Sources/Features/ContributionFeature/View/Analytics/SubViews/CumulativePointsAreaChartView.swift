@@ -28,7 +28,7 @@ struct CumulativePointsAreaChartView: View {
                 Text(graphTitle)
                     .font(with: .headLineS)
                 Spacer()
-                GraphDescriptionPopoverButton(
+                DescriptionPopoverButton(
                     title: "獲得ポイントの累積からわかること",
                     message: """
                     期間の最初から日が経つごとに積み上がっていく合計ポイントです。
