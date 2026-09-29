@@ -49,28 +49,25 @@ public struct HouseworkDetailView: View {
 private extension HouseworkDetailView {
 
     func mainContent() -> some View {
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(spacing: .zero) {
-                    HouseworkDetailItemListContent(
-                        cohabitantMemberList: cohabitantStore.members,
-                        item: item
-                    )
-                    Spacer(minLength: .space24)
-                    HouseworkDetailActionContent(
-                        isLoading: $loadingState.isLoading,
-                        commonErrorContent: $commonErrorContent,
-                        account: account,
-                        item: item
-                    )
-                }
-                .padding(.horizontal, .space16)
-                .padding(.bottom, .space24)
-                // 収まる場合はアクションボタンを画面下部に置き、収まらない場合だけスクロールさせる
-                .frame(minHeight: proxy.size.height)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .softTopScrollEdgeEffect()
+        ScrollView {
+            HouseworkDetailItemListContent(
+                cohabitantMemberList: cohabitantStore.members,
+                item: item
+            )
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .softTopScrollEdgeEffect()
+        .safeAreaInset(edge: .bottom) {
+            HouseworkDetailActionContent(
+                isLoading: $loadingState.isLoading,
+                commonErrorContent: $commonErrorContent,
+                account: account,
+                item: item
+            )
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
         }
     }
 
