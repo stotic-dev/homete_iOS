@@ -96,8 +96,8 @@ jobs:
             echo "---"
             echo ""
             echo "このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが"
-            echo "外部TestFlightにビルドを配信します。マージすると、タグ作成・GitHub Release publish・"
-            echo "メタデータ同期・Xcode CloudのUpload For AppStore起動が自動で走ります（doc/adr/0016）。"
+            echo "外部TestFlightにビルドを配信し、「Upload For AppStore」workflowがApp Store Connectへビルドを"
+            echo "アップロードします。マージするとタグ作成・GitHub Release publishだけが走ります（doc/adr/0027）。"
           } > pr_body.md
 
       - name: Create pull request

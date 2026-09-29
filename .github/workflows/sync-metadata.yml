@@ -1,11 +1,10 @@
 name: Sync Metadata
 
-# doc/adr/0016: release-merged.yml からのGitHub Release publish後にキックされる。
-# fastlane/metadata配下のテキストメタデータをApp Store Connectへ同期する
+# doc/adr/0016: fastlane/metadata配下のテキストメタデータをApp Store Connectへ同期する
 # （fastlane sync_metadataレーン、Fastfile参照）。ビルドのアップロードは行わない。
 # versionはASC上のバージョン作成にも使うため必須。対象バージョンがASCに無ければ新規作成し、
 # 既にあればメタデータの更新のみ行う（Fastfileのsync_metadataレーン参照）。
-# 単独での再実行やスクリーンショット追加後の確認用に workflow_dispatch でも起動できる。
+# release-merged.yml からは起動しない（doc/adr/0027）。必要なときに workflow_dispatch で手動実行する。
 on:
   workflow_dispatch:
     inputs:
