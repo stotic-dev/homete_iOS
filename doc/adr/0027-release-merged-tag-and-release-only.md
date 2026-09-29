@@ -9,7 +9,7 @@
 
 [ADR-0016](0016-release-pipeline-automation.md) では、リリースPRのmainマージをトリガーに `release-merged.yml` が「タグ作成 → GitHub Release publish → メタデータ同期 → Xcode Cloud起動」を直列で実行する構成にした。
 
-v1.0.0のリリースで、このうちXcode Cloud起動のステップが失敗した（`XCODE_CLOUD_APPSTORE_WORKFLOW_ID` のシークレットが登録されておらず、`scripts/trigger-xcode-cloud-build.sh` に空のワークフローIDが渡った）。リリース自体は別の手段で完了していた。マージ時に自動で走らせたい処理は、実際にはタグ付けとGitHub Releaseの公開だけだった。
+v1.0.0のリリースで、このうちXcode Cloud起動のステップが失敗した（`XCODE_CLOUD_APPSTORE_WORKFLOW_ID` のシークレットが登録されておらず、`scripts/trigger-xcode-cloud-build.sh` に空のワークフローIDが渡った）。一方で、Xcode Cloudの「Upload For AppStore」は開始条件が「すべてのタグ」になっており、`release-merged.yml` がpushしたタグで起動していた。つまりAPIでの起動ステップは不要で、マージ時にメタデータ同期とApp Storeへのビルドアップロードが自動で走ること自体も望んでいなかった。マージ時に自動で走らせたい処理は、タグ付けとGitHub Releaseの公開だけだった。
 
 ## 決定事項
 
@@ -18,6 +18,8 @@ v1.0.0のリリースで、このうちXcode Cloud起動のステップが失敗
   * `sync-metadata.yml` 自体は残し、必要なときに `workflow_dispatch` で手動実行する
 * 呼び出し元がなくなった `scripts/trigger-xcode-cloud-build.sh` を削除する
 * 起動するワークフローがなくなったので、`release-merged.yml` の `actions: write` 権限を外す
+* Xcode Cloud「Upload For AppStore」の開始条件を「すべてのタグ」から「`release/` ブランチへの変更」に変える（App Store Connect側の設定のため、リポジトリでは管理しない）
+  * タグのpushでは起動しなくなり、リリースPRへのpushの度にApp Store Connectへビルドがアップロードされる
 
 ## 考慮した選択肢
 
@@ -29,11 +31,13 @@ v1.0.0のリリースで、このうちXcode Cloud起動のステップが失敗
 ### 決定にあたり考慮したメリット
 
 * 動作確認できていないAPI呼び出しや、未登録のシークレットが原因でリリースワークフローが失敗しなくなる
+* リリースPRのマージがApp Store Connectへの反映を伴わなくなり、マージの影響範囲がタグとGitHub Releaseに限られる
 * ワークフローが必要とするシークレット・権限が減る（ASC APIキー、`actions: write` が不要になる）
 
 ### 決定にあたり考慮したデメリット
 
-* メタデータ同期とApp Storeへのビルドアップロードは手動で実行する必要がある。順序（メタデータ同期でASC上のバージョンを作ってからビルドをアップロードする等）も人が守る必要がある
+* メタデータ同期は必要なときに手動で実行する必要がある
+* 「Upload For AppStore」の開始条件はApp Store Connect側の設定で、リポジトリの記述と食い違っても気付きにくい
 
 ## 参考
 
