@@ -126,6 +126,7 @@ private extension HouseworkThanksView {
         do {
             try await houseworkListStore.sendThanks(
                 target: item.originalItem,
+                now: .now,
                 sender: account,
                 comment: inputMessage,
                 cohabitantId: cohabitantId,

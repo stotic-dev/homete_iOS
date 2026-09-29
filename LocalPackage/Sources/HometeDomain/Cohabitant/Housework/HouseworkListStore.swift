@@ -139,12 +139,18 @@ public final class HouseworkListStore {
 
     /// 完了した家事に「ありがとう」を伝える
     ///
-    /// 家事のステータスは変えず、相手への通知だけを送る。通知の送信そのものがこの操作の成果なので、
-    /// 他の操作のように送りっぱなしにはせず、完了を待って失敗は呼び出し元に返す。
+    /// 家事のステータスは変えずにありがとうを家事へ記録し、相手へ通知する。
+    /// 記録がこの操作の成果なので、通知は他の操作と同じく送りっぱなしにし、失敗しても操作は失敗扱いにしない。
+    ///
+    /// ありがとうの画面はメッセージ入力で滞在が長く、開いた時点の家事が送信時には消えていたり
+    /// 未完了に戻されていたりする。未完了の家事に記録すると次の完了に前回のありがとうが付いて見えるため、
+    /// 最新の家事が完了済みでなければ記録せずエラーにする。
     ///
     /// - Parameter notify: 一括操作では件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
+    // swiftlint:disable:next function_parameter_count
     public func sendThanks(
         target: HouseworkItem,
+        now: Date,
         sender: Account,
         comment: String,
         cohabitantId: String,
@@ -152,21 +158,28 @@ public final class HouseworkListStore {
         notify: Bool = true
     ) async throws {
         do {
-            if notify {
-                try await cohabitantPushNotificationClient.send(
-                    cohabitantId,
-                    .thanksMessage(
-                        senderName: sender.userName,
-                        houseworkTitle: target.title,
-                        comment: comment
-                    )
-                )
+            guard let latestItem = items.item(target),
+                  latestItem.state == .completed else {
+                throw DomainError.other
             }
+            let updatedItem = latestItem.addingThanks(.init(senderId: sender.id, comment: comment, sentAt: now))
+            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         } catch {
             analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: false)))
             throw error
         }
         analyticsClient.log(.housework(.sendThanks(step: step, isSuccess: true)))
+
+        if notify {
+            pushNotificationWithAsync(
+                notification: .thanksMessage(
+                    senderName: sender.userName,
+                    houseworkTitle: target.title,
+                    comment: comment
+                ),
+                cohabitantId: cohabitantId
+            )
+        }
     }
 
     public func returnToIncomplete(

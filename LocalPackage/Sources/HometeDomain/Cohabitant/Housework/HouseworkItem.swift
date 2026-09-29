@@ -26,6 +26,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let expiredAt: Date
     /// 紐づくテンプレートの家事ID
     public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+    /// 届いたありがとう（送られた順）
+    public let thanks: [HouseworkThanks]
 
     public init(
         id: String,
@@ -36,7 +38,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         executorId: String?,
         executedAt: Date?,
         expiredAt: Date,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId?
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
+        thanks: [HouseworkThanks] = []
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -47,6 +50,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.executedAt = executedAt
         self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
+        self.thanks = thanks
     }
 
     public func updateCompleted(at now: Date, executor: String) -> Self {
@@ -59,7 +63,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executor,
             executedAt: now,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 
@@ -81,6 +86,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    /// 未完了に戻す
+    ///
+    /// 完了そのものを取り消すため、完了に対して届いたありがとうも残さない。
     public func updateIncomplete() -> Self {
         .init(
             id: id,
@@ -95,6 +103,22 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    /// ありがとうを追加する
+    public func addingThanks(_ newThanks: HouseworkThanks) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executorId: executorId,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks + [newThanks]
+        )
+    }
+
     public func updateNotTodo() -> Self {
         .init(
             id: id,
@@ -105,7 +129,47 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
+        )
+    }
+
+}
+
+extension HouseworkItem {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case id
+        case indexedDate
+        case title
+        case point
+        case state
+        case executorId
+        case executedAt
+        case expiredAt
+        case templateHouseworkItemId
+        case thanks
+
+    }
+
+    /// ありがとうを保存する前に登録された家事には`thanks`が無いため、無ければ空として読む
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            id: container.decode(String.self, forKey: .id),
+            indexedDate: container.decode(HouseworkIndexedDate.self, forKey: .indexedDate),
+            title: container.decode(String.self, forKey: .title),
+            point: container.decode(Int.self, forKey: .point),
+            state: container.decode(HouseworkState.self, forKey: .state),
+            executorId: container.decodeIfPresent(String.self, forKey: .executorId),
+            executedAt: container.decodeIfPresent(Date.self, forKey: .executedAt),
+            expiredAt: container.decode(Date.self, forKey: .expiredAt),
+            templateHouseworkItemId: container.decodeIfPresent(
+                HouseworkTemplateItem.ItemId.self,
+                forKey: .templateHouseworkItemId
+            ),
+            thanks: container.decodeIfPresent([HouseworkThanks].self, forKey: .thanks) ?? []
         )
     }
 

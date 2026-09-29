@@ -54,6 +54,7 @@ extension HouseworkListStore {
         case .sendThanks:
             try await sendThanks(
                 target: item.originalItem,
+                now: now,
                 sender: account,
                 comment: action.fixedComment,
                 cohabitantId: cohabitantId,

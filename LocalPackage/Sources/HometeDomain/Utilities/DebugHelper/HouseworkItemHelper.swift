@@ -20,7 +20,8 @@ public extension HouseworkItem {
         executorId: String? = nil,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [HouseworkThanks] = []
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -31,7 +32,8 @@ public extension HouseworkItem {
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 
@@ -44,7 +46,8 @@ public extension HouseworkItem {
         executorId: String? = nil,
         executedAt: Date? = nil,
         expiredAt: Date = .now,
-        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil
+        templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
+        thanks: [HouseworkThanks] = []
     ) -> Self {
         .init(
             id: id,
@@ -55,7 +58,8 @@ public extension HouseworkItem {
             executorId: executorId,
             executedAt: executedAt,
             expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks
         )
     }
 

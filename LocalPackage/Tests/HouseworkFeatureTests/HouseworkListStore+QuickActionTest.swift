@@ -152,48 +152,67 @@ extension HouseworkListStoreQuickActionTest.RemoveCase {
 
 extension HouseworkListStoreQuickActionTest.SendThanksCase {
 
-    @Test("ありがとうを実行すると、家事は更新せず定型コメントの通知だけを送る")
-    func perform_sendThanks() async throws {
+    @Test("ありがとうを実行すると、定型コメントのありがとうを家事に記録して通知を送る")
+    func perform_sendThanks() async {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
         let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputNow = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let inputItem = HouseworkItem.makeForTest(
             id: 1,
             state: .completed,
             executorId: "otherUserId",
             executedAt: .distantPast
         )
+        let expectedItem = inputItem.addingThanks(
+            .init(senderId: inputAccount.id, comment: "ありがとう！", sentAt: inputNow)
+        )
         let expectedNotification = PushNotificationContent(
             title: "\(inputAccount.userName)さんから「\(inputItem.title)」にありがとうが届きました",
             message: "ありがとう！"
         )
 
-        try await confirmation { confirmation in
-            let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
-                    Issue.record()
-                }),
-                cohabitantPushNotificationClient: .init { id, content in
-                    // Assert
+        await confirmation(expectedCount: 2) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkClient: .init(insertOrUpdateItemHandler: { item, cohabitantId in
+                        // Assert
 
-                    #expect(id == inputCohabitantId)
-                    #expect(content == expectedNotification)
-                    confirmation()
-                },
-                items: [.makeForTest(items: [inputItem])]
-            )
+                        #expect(item == expectedItem)
+                        #expect(cohabitantId == inputCohabitantId)
+                        confirmation()
+                    }),
+                    cohabitantPushNotificationClient: .init { id, content in
+                        // Assert
 
-            // Act
+                        #expect(id == inputCohabitantId)
+                        #expect(content == expectedNotification)
+                        confirmation()
+                        continuation.resume()
+                    },
+                    items: [.makeForTest(items: [inputItem])]
+                )
 
-            try await store.perform(
-                .sendThanks,
-                on: .init(originalItem: inputItem, isRegistered: true),
-                now: Date(),
-                account: inputAccount,
-                cohabitantId: inputCohabitantId,
-                step: .board
-            )
+                // Act
+
+                Task {
+                    do {
+                        try await store.perform(
+                            .sendThanks,
+                            on: .init(originalItem: inputItem, isRegistered: true),
+                            now: inputNow,
+                            account: inputAccount,
+                            cohabitantId: inputCohabitantId,
+                            step: .board
+                        )
+                    } catch {
+                        // 保存に失敗すると通知が送られずcontinuationが再開されないため、ここで失敗にして抜ける
+                        Issue.record(error)
+                        continuation.resume()
+                    }
+                }
+            }
         }
     }
 
@@ -278,7 +297,7 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
         }
     }
 
-    @Test("notify: falseを指定すると、ありがとうを実行しても個別の通知は送られない")
+    @Test("notify: falseを指定すると、ありがとうを記録しても個別の通知は送られない")
     func perform_sendThanks_notifyFalse_doesNotSendNotification() async throws {
         // Arrange
 
@@ -289,29 +308,32 @@ extension HouseworkListStoreQuickActionTest.NotifyFalseCase {
             state: .completed,
             executorId: "otherUserId"
         )
-        let store = HouseworkListStore(
-            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
-                Issue.record()
-            }),
-            cohabitantPushNotificationClient: .init { _, _ in
-                // Assert
 
-                Issue.record()
-            },
-            items: [.makeForTest(items: [inputItem])]
-        )
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                    confirmation()
+                }),
+                cohabitantPushNotificationClient: .init { _, _ in
+                    // Assert
 
-        // Act
+                    Issue.record()
+                },
+                items: [.makeForTest(items: [inputItem])]
+            )
 
-        try await store.perform(
-            .sendThanks,
-            on: .init(originalItem: inputItem, isRegistered: true),
-            now: Date(),
-            account: inputAccount,
-            cohabitantId: inputCohabitantId,
-            step: .board,
-            notify: false
-        )
+            // Act
+
+            try await store.perform(
+                .sendThanks,
+                on: .init(originalItem: inputItem, isRegistered: true),
+                now: Date(),
+                account: inputAccount,
+                cohabitantId: inputCohabitantId,
+                step: .board,
+                notify: false
+            )
+        }
     }
 
 }
@@ -385,7 +407,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
         }
     }
 
-    @Test("複数の家事に一括でありがとうを伝えると、家事は更新せずまとめ通知を1件だけ送る")
+    @Test("複数の家事に一括でありがとうを伝えると、家事ごとにありがとうを記録してまとめ通知を1件だけ送る")
     func performBulk_sendThanks_sendsOnlyBulkNotification() async {
         // Arrange
 
@@ -411,11 +433,14 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
             message: "\(inputItems.count)件の家事にありがとうが届きました"
         )
 
-        await confirmation { confirmation in
+        await confirmation(expectedCount: inputItems.count + 1) { confirmation in
             let _: Void = await withCheckedContinuation { continuation in
                 let store = HouseworkListStore(
-                    houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
-                        Issue.record()
+                    houseworkClient: .init(insertOrUpdateItemHandler: { item, _ in
+                        // Assert
+
+                        #expect(item.thanks.count == 1)
+                        confirmation()
                     }),
                     cohabitantPushNotificationClient: .init { id, content in
                         // Assert
