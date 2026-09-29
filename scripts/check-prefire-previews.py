@@ -85,12 +85,19 @@ def collect_inaccessible_symbols(lines: list[str]) -> dict[str, int]:
 
 
 def collect_preview_blocks(lines: list[str]) -> list[tuple[int, int]]:
+    """`.prefireIgnored()`が付いていない`#Preview`ブロックの範囲を返す。
+
+    `.prefireIgnored()`が付いたプレビューはPrefireが生成コードへ展開しないので、
+    モジュールが`.prefire.yml`に未登録でも、private/fileprivateなシンボルを
+    参照していても、VRTのビルドは壊れない。
+    """
     blocks: list[tuple[int, int]] = []
     index = 0
     while index < len(lines):
         if lines[index].lstrip().startswith("#Preview"):
             end = find_block_end(lines, index)
-            blocks.append((index, end))
+            if not any(".prefireIgnored()" in line for line in lines[index:end + 1]):
+                blocks.append((index, end))
             index = end + 1
             continue
         index += 1
