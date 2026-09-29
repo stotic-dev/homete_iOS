@@ -1,15 +1,18 @@
 //
 //  LaunchScreenView.swift
+//  LocalPackage
 //
 
 import HometeDomain
 import HometeResources
-import HometeUI
 import SwiftUI
 
-struct LaunchScreenView: View {
+/// 起動状態の判定が終わるまで表示する、アプリ名とアイコンだけの画面
+public struct LaunchScreenView: View {
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Text("Homete")
                 .font(with: .headLineL)
