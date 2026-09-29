@@ -95,18 +95,9 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "### マージ後の手順"
-            echo ""
-            echo "マージするとタグ作成とGitHub Release publishだけが自動で走ります（doc/adr/0027）。"
-            echo "App Storeへのリリースは以下を手動で、この順に実行してください。"
-            echo ""
-            echo "- [ ] GitHub Actionsの「Sync Metadata」workflowを \`version=${VERSION}\` で実行する（ASC上のバージョン作成とメタデータ同期）"
-            echo "- [ ] Xcode Cloudの「Upload For AppStore」workflowをmainで実行する"
-            echo ""
-            echo "---"
-            echo ""
             echo "このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが"
-            echo "外部TestFlightにビルドを配信します。"
+            echo "外部TestFlightにビルドを配信し、「Upload For AppStore」workflowがApp Store Connectへビルドを"
+            echo "アップロードします。マージするとタグ作成・GitHub Release publishだけが走ります（doc/adr/0027）。"
           } > pr_body.md
 
       - name: Create pull request
