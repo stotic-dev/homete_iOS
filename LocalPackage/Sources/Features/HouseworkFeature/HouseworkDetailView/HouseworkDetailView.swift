@@ -50,25 +50,23 @@ private extension HouseworkDetailView {
 
     func mainContent() -> some View {
         ScrollView {
-            HouseworkDetailItemListContent(
-                cohabitantMemberList: cohabitantStore.members,
-                item: item
-            )
+            VStack(spacing: .space40) {
+                HouseworkDetailItemListContent(
+                    cohabitantMemberList: cohabitantStore.members,
+                    item: item
+                )
+                HouseworkDetailActionContent(
+                    isLoading: $loadingState.isLoading,
+                    commonErrorContent: $commonErrorContent,
+                    account: account,
+                    item: item
+                )
+            }
             .padding(.horizontal, .space16)
             .padding(.bottom, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
         .softTopScrollEdgeEffect()
-        .safeAreaInset(edge: .bottom) {
-            HouseworkDetailActionContent(
-                isLoading: $loadingState.isLoading,
-                commonErrorContent: $commonErrorContent,
-                account: account,
-                item: item
-            )
-            .padding(.horizontal, .space16)
-            .padding(.bottom, .space24)
-        }
     }
 
 }
