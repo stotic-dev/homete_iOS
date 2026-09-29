@@ -45,6 +45,11 @@ jobs:
 
       - name: Publish GitHub Release
         run: |
+          # 同じバージョンのReleaseが既にあれば削除して作り直す（タグと同様に上書き扱いにする）。
+          # --cleanup-tagは付けない（直前でpushしたタグまで消えてしまうため）
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            gh release delete "$VERSION" --yes
+          fi
           gh release create "$VERSION" \
             --title "$VERSION" \
             --generate-notes \
