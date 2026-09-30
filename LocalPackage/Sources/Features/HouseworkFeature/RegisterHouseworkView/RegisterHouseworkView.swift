@@ -71,18 +71,20 @@ public struct RegisterHouseworkView: View {
                 trailingNavigationItems()
             }
             #endif
-            // 一覧を開くボタンは浮いて見せつつ、`safeAreaInset`で場所は確保する
-            // （タブの中身の下端がボタンに隠れないようにするため）。
-            // 0件のときは余白ごと出さないので、`padding`はボタンと一緒に出し入れする
-            .safeAreaInset(edge: .bottom, alignment: .trailing) {
-                if !pendingEntries.isEmpty {
-                    PendingEntriesButton(
-                        count: pendingEntries.count,
-                        onTap: { isPresentingPendingList = true }
-                    )
-                    .padding(.trailing, .space24)
-                    .padding(.bottom, .space24)
+            // 2つのフローティングボタンは右下にまとめて縦に並べる。
+            // `safeAreaInset`で場所を確保するとスクロール領域がその手前で切れ、
+            // 中身がボタンの裏に回らず透けて見えなくなるため、`overlay`で浮かせる
+            .overlay(alignment: .bottomTrailing) {
+                VStack(alignment: .trailing, spacing: .space16) {
+                    if selectedTab == .manual {
+                        queueButton()
+                    }
+                    if !pendingEntries.isEmpty {
+                        pendingEntriesButton()
+                    }
                 }
+                .padding(.trailing, .space24)
+                .padding(.bottom, .space24)
             }
             // 名前を1文字入れた時点で入力中の家事が登録予定に入るため、
             // ボタンの出現でフォームが跳ねないようにする
@@ -207,15 +209,36 @@ private extension RegisterHouseworkView {
         .accessibilityLabel("いつもの家事を管理")
     }
 
+    /// 「続けて入力する」ボタン
+    /// - Note: 入力欄の並びの中に置くと「これを押さないと登録できない」と読めてしまうため、
+    ///         スクロールに載せず宙に浮かせて、あくまで追加の操作であることを示す
+    func queueButton() -> some View {
+        Button {
+            tappedQueueButton()
+        } label: {
+            HStack(spacing: .space4) {
+                Image(systemName: "plus")
+                Text("続けて入力する")
+            }
+            .font(with: .headLineS)
+        }
+        .floatingButtonStyle()
+        .disabled(!draft.canQueueCurrentInput)
+    }
+
+    func pendingEntriesButton() -> some View {
+        PendingEntriesButton(count: pendingEntries.count) {
+            isPresentingPendingList = true
+        }
+    }
+
     func manualTab() -> some View {
         ManualHouseworkForm(
             entry: $draft.input,
             categories: frequentHouseworkContext.categories,
             saveAsFrequentState: saveAsFrequentState,
             canSetRecurrence: canSetRecurrence,
-            canQueue: draft.canQueueCurrentInput,
             history: houseworkEntryHistoryList.items,
-            onTapQueue: { tappedQueueButton() },
             onTapHistory: { item in tappedEntryHistoryRow(item) },
             onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() }
         )
