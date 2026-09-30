@@ -29,13 +29,24 @@ import SnapshotTesting
 #endif
 
     /// Xcode Cloud では CI_PRIMARY_REPOSITORY_PATH 配下の ci_scripts/__Snapshots__ を参照する。
-    /// ローカル開発では nil を返し、verifySnapshot のデフォルト（#file 基準）を使用する。
+    ///
+    /// ローカルでも明示的に指定する。参照PNGは hometeSnapshotTests/__Snapshots__ にあるが、
+    /// この生成ファイルは hometeSnapshotTests/Sources/ に置かれるため、verifySnapshot の
+    /// デフォルト（#filePath 基準の __Snapshots__）だと Sources/__Snapshots__ を見てしまい、
+    /// 参照PNGを二重に作ってしまう。__Snapshots__ を Sources/ の外に出しているのは、
+    /// テストターゲットの同期グループに含めて .xctest バンドルへ61MBのPNGをコピーさせない
+    /// ためである（doc/adr/0029)。
     private var snapshotDirectoryOverride: String? {
-        guard ProcessInfo.processInfo.environment["CI_XCODE_CLOUD"] == "TRUE",
-              let repositoryPath = ProcessInfo.processInfo.environment["CI_PRIMARY_REPOSITORY_PATH"] else {
-            return nil
+        if ProcessInfo.processInfo.environment["CI_XCODE_CLOUD"] == "TRUE",
+           let repositoryPath = ProcessInfo.processInfo.environment["CI_PRIMARY_REPOSITORY_PATH"] {
+            return "\(repositoryPath)/ci_scripts/__Snapshots__"
         }
-        return "\(repositoryPath)/ci_scripts/__Snapshots__"
+        return URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("__Snapshots__")
+            .appendingPathComponent("PreviewTests.generated")
+            .path
     }
 
     /// 参照PNGを再記録する専用ワークフロー（doc/adr/0005）でのみ SNAPSHOT_TESTING_RECORD が

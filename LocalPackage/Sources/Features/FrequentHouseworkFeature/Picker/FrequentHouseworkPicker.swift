@@ -120,6 +120,8 @@ private extension FrequentHouseworkPicker {
                 }
             }
             .padding(.horizontal, .space16)
+            // 最後の行が、呼び出し側が右下に浮かせるボタンに隠れないようにする
+            .padding(.bottom, .space64)
         }
     }
 
