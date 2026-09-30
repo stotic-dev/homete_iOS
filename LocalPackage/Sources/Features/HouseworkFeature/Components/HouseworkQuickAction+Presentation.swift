@@ -27,6 +27,7 @@ extension HouseworkQuickAction {
         }
     }
 
+    /// ありがとうは、家事セルで伝えたかどうかを示すハートと同じ図柄にして、同じ操作だと分かるようにする
     var systemImage: String {
         switch self {
         case .complete:
@@ -34,7 +35,7 @@ extension HouseworkQuickAction {
         case .remove:
             "trash"
         case .sendThanks:
-            "hands.clap.fill"
+            "heart"
         case .redo:
             "arrow.clockwise"
         case .returnToIncomplete:
