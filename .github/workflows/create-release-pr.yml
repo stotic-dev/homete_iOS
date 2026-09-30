@@ -32,6 +32,15 @@ jobs:
             exit 1
           fi
 
+      # 同名ブランチが残っていると最後のpushがnon-fast-forwardで拒否される。
+      # PRが紐づいている可能性があるためforce pushで上書きはせず、ここで止めて削除を促す。
+      - name: Ensure release branch does not exist
+        run: |
+          if git ls-remote --exit-code --heads origin "release/v${VERSION}" > /dev/null; then
+            echo "::error::release/v${VERSION} がリモートに既に存在します。不要であれば git push origin --delete release/v${VERSION} で削除してから再実行してください"
+            exit 1
+          fi
+
       - name: Create release branch
         run: git checkout -b "release/v${VERSION}"
 
@@ -49,9 +58,6 @@ jobs:
         run: |
           git add homete.xcodeproj/project.pbxproj
           git commit --allow-empty -m "chore: リリースバージョンをv${VERSION}に更新"
-
-      - name: Push release branch
-        run: git push origin "release/v${VERSION}"
 
       # 前回リリースタグ以降にmainへマージされたPRを一覧化する。
       # PRタイトルにバッククォートや$等が含まれても安全なよう、ここではファイルへの
@@ -97,6 +103,11 @@ jobs:
             echo "外部TestFlightにビルドを配信し、「Upload For AppStore」workflowがApp Store Connectへビルドを"
             echo "アップロードします。マージするとタグ作成・GitHub Release publishだけが走ります（doc/adr/0027）。"
           } > pr_body.md
+
+      # PR本文の生成で失敗してもリモートにブランチだけが残らないよう、pushはPR作成の直前に行う。
+      # 残ると次回実行時にnon-fast-forwardで拒否され、手動でブランチを消すまで再実行できなくなる。
+      - name: Push release branch
+        run: git push origin "release/v${VERSION}"
 
       - name: Create pull request
         env:
