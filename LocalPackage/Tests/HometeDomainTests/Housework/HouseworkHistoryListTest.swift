@@ -18,12 +18,20 @@ enum HouseworkHistoryListTest {
 
 extension HouseworkHistoryListTest.MoveToFrontIfExistsCase {
 
-    @Test("存在する要素を指定すると先頭へ移動する")
+    @Test("存在する名前を指定すると、その履歴がポイントごと先頭へ移動する")
     func moveExistingItemToFront() {
         // Arrange
-        var list = HouseworkHistoryList(items: ["1", "2", "3"])
-        let target = "2"
-        let expected = HouseworkHistoryList(items: ["2", "1", "3"])
+        var list = HouseworkHistoryList(items: [
+            .init(title: "洗濯", point: 10),
+            .init(title: "掃除", point: 20),
+            .init(title: "皿洗い", point: 30),
+        ])
+        let target = "掃除"
+        let expected = HouseworkHistoryList(items: [
+            .init(title: "掃除", point: 20),
+            .init(title: "洗濯", point: 10),
+            .init(title: "皿洗い", point: 30),
+        ])
 
         // Act
         list.moveToFrontIfExists(target)
@@ -32,12 +40,15 @@ extension HouseworkHistoryListTest.MoveToFrontIfExistsCase {
         #expect(list == expected)
     }
 
-    @Test("既に先頭の要素を指定しても変更されない")
+    @Test("既に先頭の名前を指定しても変更されない")
     func noChangeWhenItemAlreadyAtFront() {
         // Arrange
-        let initial = HouseworkHistoryList(items: ["a", "b", "c"])
+        let initial = HouseworkHistoryList(items: [
+            .init(title: "洗濯", point: 10),
+            .init(title: "掃除", point: 20),
+        ])
         var list = initial
-        let target = "a"
+        let target = "洗濯"
 
         // Act
         list.moveToFrontIfExists(target)
@@ -46,12 +57,15 @@ extension HouseworkHistoryListTest.MoveToFrontIfExistsCase {
         #expect(list == initial)
     }
 
-    @Test("存在しない要素を指定しても変更されない")
+    @Test("存在しない名前を指定しても変更されない")
     func noChangeWhenItemDoesNotExist() {
         // Arrange
-        let initial = HouseworkHistoryList(items: ["x", "y", "z"])
+        let initial = HouseworkHistoryList(items: [
+            .init(title: "洗濯", point: 10),
+            .init(title: "掃除", point: 20),
+        ])
         var list = initial
-        let target = "w"
+        let target = "ゴミ出し"
 
         // Act
         list.moveToFrontIfExists(target)
@@ -65,17 +79,17 @@ extension HouseworkHistoryListTest.MoveToFrontIfExistsCase {
 extension HouseworkHistoryListTest.AddNewHistoryCase {
 
     @Test(
-        "履歴に存在しない要素を追加する場合、その要素が先頭に追加される",
+        "履歴に存在しない家事を追加する場合、その家事が先頭に追加される",
         arguments: [
-            ["洗濯", "皿洗い"],
+            [HouseworkEntryHistoryItem(title: "洗濯", point: 10), .init(title: "皿洗い", point: 20)],
             [],
         ]
     )
-    func addNewItem(initialList: [String]) {
+    func addNewItem(initialList: [HouseworkEntryHistoryItem]) {
         // Arrange
-        let value = "掃除"
+        let value = HouseworkEntryHistoryItem(title: "掃除", point: 30)
         var list = HouseworkHistoryList(items: initialList)
-        let expected = HouseworkHistoryList(items: ["掃除"] + initialList)
+        let expected = HouseworkHistoryList(items: [.init(title: "掃除", point: 30)] + initialList)
 
         // Act
         list.addNewHistory(value)
@@ -84,18 +98,45 @@ extension HouseworkHistoryListTest.AddNewHistoryCase {
         #expect(list == expected)
     }
 
-    @Test("既に存在する要素を追加する場合、リストは変更されない")
-    func addValueAlreadyAtFrontDoesNotChange() {
+    @Test("既に存在する名前を追加する場合、その履歴が先頭へ移動する")
+    func addValueAlreadyExistsMovesToFront() {
         // Arrange
-        let initial = HouseworkHistoryList(items: ["洗濯", "掃除", "皿洗い"])
-        var list = initial
-        let value = "掃除"
+        var list = HouseworkHistoryList(items: [
+            .init(title: "洗濯", point: 10),
+            .init(title: "掃除", point: 20),
+            .init(title: "皿洗い", point: 30),
+        ])
+        let value = HouseworkEntryHistoryItem(title: "掃除", point: 20)
 
         // Act
         list.addNewHistory(value)
 
         // Assert
-        let expected = HouseworkHistoryList(items: ["掃除", "洗濯", "皿洗い"])
+        let expected = HouseworkHistoryList(items: [
+            .init(title: "掃除", point: 20),
+            .init(title: "洗濯", point: 10),
+            .init(title: "皿洗い", point: 30),
+        ])
+        #expect(list == expected)
+    }
+
+    @Test("既に存在する名前を違うポイントで追加する場合、ポイントが新しいものに置き換わる")
+    func addValueAlreadyExistsUpdatesPoint() {
+        // Arrange
+        var list = HouseworkHistoryList(items: [
+            .init(title: "洗濯", point: 10),
+            .init(title: "掃除", point: 20),
+        ])
+        let value = HouseworkEntryHistoryItem(title: "掃除", point: 50)
+
+        // Act
+        list.addNewHistory(value)
+
+        // Assert
+        let expected = HouseworkHistoryList(items: [
+            .init(title: "掃除", point: 50),
+            .init(title: "洗濯", point: 10),
+        ])
         #expect(list == expected)
     }
 

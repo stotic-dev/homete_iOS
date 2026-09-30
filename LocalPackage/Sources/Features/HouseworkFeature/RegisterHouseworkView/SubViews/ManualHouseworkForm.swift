@@ -19,8 +19,8 @@ struct ManualHouseworkForm: View {
     let saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState
     /// 繰り返しを設定できるか（テンプレートの読み込みが終わっているか）
     let canSetRecurrence: Bool
-    let history: [String]
-    let onTapHistory: (String) -> Void
+    let history: [HouseworkEntryHistoryItem]
+    let onTapHistory: (HouseworkEntryHistoryItem) -> Void
     /// 上限に達している状態で「いつもの家事に保存する」を押したとき
     let onTapSaveAsFrequentWhenLimitReached: () -> Void
 
@@ -172,20 +172,35 @@ private extension ManualHouseworkForm {
         )
     }
 
+    /// - Note: 前回登録したときの完了ポイントも一緒に戻すため、名前の横にポイントを添えて何が入るかを示す
     func entryHistorySection() -> some View {
         section("入力履歴") {
             ForEach(Array(history.enumerated()), id: \.element) { index, item in
                 if index > 0 {
                     Divider()
                 }
-                Button(item) {
-                    onTapHistory(item)
-                }
-                .font(with: .body)
-                .foregroundStyle(.onSurface)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                entryHistoryRow(item)
             }
         }
+    }
+
+    func entryHistoryRow(_ item: HouseworkEntryHistoryItem) -> some View {
+        Button {
+            onTapHistory(item)
+        } label: {
+            HStack(spacing: .space8) {
+                Text(item.title)
+                    .font(with: .body)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Text("\(item.point)pt")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurfaceVariant)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(item.title) \(item.point)ポイント")
     }
 
 }
@@ -197,7 +212,10 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .available,
         canSetRecurrence: true,
-        history: ["洗濯", "掃除"],
+        history: [
+            .init(title: "洗濯", point: 20),
+            .init(title: "掃除", point: 10),
+        ],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )

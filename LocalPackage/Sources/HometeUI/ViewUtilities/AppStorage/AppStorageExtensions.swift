@@ -36,9 +36,6 @@ public extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValu
 
 public enum AppStorageCustomTypeKey: String {
 
-    /// 家事入力の履歴
-    case houseworkEntryHistoryList
-
     /// 家事テンプレートで折りたたまれている曜日
     case collapsedHouseworkTemplateDays
 
