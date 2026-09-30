@@ -253,9 +253,11 @@ private extension RegisterHouseworkView {
         draft.queueCurrentInput(id: UUID().uuidString)
     }
 
-    func tappedEntryHistoryRow(_ item: String) {
-        draft.input.title = item
-        houseworkEntryHistoryList.moveToFrontIfExists(item)
+    /// - Note: 名前だけでなく完了ポイントも戻す。ポイントを毎回入れ直さずに済ませるのが履歴の目的のため
+    func tappedEntryHistoryRow(_ item: HouseworkEntryHistoryItem) {
+        draft.input.title = item.title
+        draft.input.point = item.point
+        houseworkEntryHistoryList.moveToFrontIfExists(item.title)
         let list = houseworkEntryHistoryList
         Task {
             await saveEntryHistory(list)
@@ -384,7 +386,7 @@ private extension RegisterHouseworkView {
         guard !manualEntries.isEmpty else { return }
         var list = houseworkEntryHistoryList
         for entry in manualEntries {
-            list.addNewHistory(entry.title)
+            list.addNewHistory(.init(title: entry.title, point: entry.point))
         }
         houseworkEntryHistoryList = list
         await saveEntryHistory(list)
@@ -404,7 +406,10 @@ private extension RegisterHouseworkView {
 extension HouseworkHistoryList {
 
     /// Preview用の、保存済みの入力履歴
-    static let previewEntryHistory = HouseworkHistoryList(items: ["洗濯", "掃除"])
+    static let previewEntryHistory = HouseworkHistoryList(items: [
+        .init(title: "洗濯", point: 20),
+        .init(title: "掃除", point: 10),
+    ])
 
 }
 

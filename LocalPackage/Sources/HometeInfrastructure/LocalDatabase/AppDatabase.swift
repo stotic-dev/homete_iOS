@@ -54,6 +54,7 @@ private extension AppDatabase {
             try db.create(table: HouseworkEntryHistoryRecord.databaseTableName) { table in
                 // 履歴の同一性は家事の名前で見るため、名前をそのまま主キーにする
                 table.primaryKey("title", .text)
+                table.column("point", .integer).notNull()
                 table.column("sortOrder", .integer).notNull()
             }
         }

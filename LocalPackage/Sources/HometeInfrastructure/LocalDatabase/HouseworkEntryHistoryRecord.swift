@@ -11,6 +11,7 @@ struct HouseworkEntryHistoryRecord: Codable, FetchableRecord, PersistableRecord,
     static let databaseTableName = "houseworkEntryHistory"
 
     let title: String
+    let point: Int
     /// 表示順。0が先頭（＝最後に使ったもの）
     let sortOrder: Int
 

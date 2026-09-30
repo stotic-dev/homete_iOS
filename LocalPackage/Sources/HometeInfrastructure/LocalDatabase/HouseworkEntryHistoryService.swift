@@ -20,14 +20,14 @@ public enum HouseworkEntryHistoryService {
                 .order(HouseworkEntryHistoryRecord.Columns.sortOrder)
                 .fetchAll(db)
         }
-        return .init(items: records.map(\.title))
+        return .init(items: records.map { .init(title: $0.title, point: $0.point) })
     }
 
     /// 入力履歴を並び順ごと保存する
     /// - Note: 履歴から消えたものを残さないため、渡されたリストに無い行は同じトランザクションで削除する
     public static func save(_ list: HouseworkHistoryList) async throws {
-        let records = list.items.enumerated().map { index, title in
-            HouseworkEntryHistoryRecord(title: title, sortOrder: index)
+        let records = list.items.enumerated().map { index, item in
+            HouseworkEntryHistoryRecord(title: item.title, point: item.point, sortOrder: index)
         }
         let queue = try await AppDatabase.shared.queue()
         try await queue.write { db in
@@ -52,6 +52,11 @@ private extension HouseworkEntryHistoryService {
         "houseworkEntryHistoryList"
     }
 
+    /// 旧バージョンの履歴は家事の名前しか持たないため、ポイントは登録フォームの初期値で埋める
+    static var legacyHistoryPoint: Int {
+        10
+    }
+
     /// 旧バージョンの履歴が残っていればDBへ取り込み、`UserDefaults`側を削除する
     static func importLegacyHistoryIfNeeded(_ queue: DatabaseQueue) async throws {
         guard let rawValue = UserDefaults.standard.string(forKey: legacyHistoryKey) else { return }
@@ -60,7 +65,11 @@ private extension HouseworkEntryHistoryService {
             // 取り込み後に削除する前で落ちた場合に二重登録しないよう、まだ1件も無いときだけ取り込む
             guard try HouseworkEntryHistoryRecord.fetchCount(db) == 0 else { return }
             for (index, title) in titles.enumerated() {
-                try HouseworkEntryHistoryRecord(title: title, sortOrder: index).insert(db)
+                try HouseworkEntryHistoryRecord(
+                    title: title,
+                    point: legacyHistoryPoint,
+                    sortOrder: index
+                ).insert(db)
             }
         }
         UserDefaults.standard.removeObject(forKey: legacyHistoryKey)
