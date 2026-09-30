@@ -22,13 +22,16 @@ struct HouseworkBoardListContent: View {
     let memberList: CohabitantMemberList
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
+    /// 選択中の家事のID
+    ///
+    /// 一括操作のボタンはナビゲーションバー側に置いているため、選択の保持は親のViewが行う
+    @Binding var selectedIDs: Set<String>
     let onCreateTapped: () -> Void
     /// クイックアクションで「完了にする」が選ばれた。ハーフモーダルは親が出す
     let onSelectComplete: (HouseworkBoardItem) -> Void
     /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
     let onSelectThanks: (HouseworkBoardItem) -> Void
 
-    @State var selectedIDs: Set<String> = []
     @CommonError var commonError
 
     var body: some View {
@@ -66,22 +69,6 @@ struct HouseworkBoardListContent: View {
             #if os(iOS)
                 .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
             #endif
-                .safeAreaInset(edge: .bottom) {
-                    if isSelecting {
-                        HouseworkBulkActionBar(
-                            actions: selection.availableActions,
-                            isEnabled: !selection.isEmpty,
-                            onTap: { action in
-                                Task {
-                                    await performBulk(action)
-                                }
-                            }
-                        )
-                    }
-                }
-                .onChange(of: isSelecting) {
-                    selectedIDs = []
-                }
                 .commonError(content: $commonError)
         }
     }
@@ -97,24 +84,6 @@ private extension HouseworkBoardListContent {
             selectedIDs: selectedIDs,
             ownUserId: loginContext.account.id
         )
-    }
-
-    func performBulk(_ action: HouseworkQuickAction) async {
-        guard let cohabitantId = loginContext.cohabitantId else { return }
-
-        do {
-            try await houseworkListStore.performBulk(
-                action,
-                on: selection.targets(for: action),
-                now: now,
-                account: loginContext.account,
-                cohabitantId: cohabitantId,
-                step: .board
-            )
-            selectedIDs = []
-        } catch {
-            commonError = .init(error: error)
-        }
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
@@ -206,6 +175,7 @@ private extension HouseworkBoardListContent {
         memberList: .init(value: [], ownId: ""),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
+        selectedIDs: .constant([]),
         onCreateTapped: {},
         onSelectComplete: { _ in },
         onSelectThanks: { _ in }
@@ -257,10 +227,10 @@ private extension HouseworkBoardListContent {
         ),
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
+        selectedIDs: .constant(["1"]),
         onCreateTapped: {},
         onSelectComplete: { _ in },
-        onSelectThanks: { _ in },
-        selectedIDs: ["1"]
+        onSelectThanks: { _ in }
     )
     .setupLoginContextForPreview()
 }

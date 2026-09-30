@@ -12,7 +12,7 @@ import SwiftUI
 struct HouseworkBoardView: View {
 
     @Environment(\.calendar) var calendar
-    @Environment(\.now) var anchorDate
+    @Environment(\.now) var now
     @Environment(\.routeResolver) var router
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
@@ -20,6 +20,7 @@ struct HouseworkBoardView: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.cohabitantMembers) var members
+    @Environment(\.loginContext) var loginContext
 
     @Binding var houseworkBoardList: HouseworkBoardList
     @Binding var dateList: HouseworkDateList
@@ -30,12 +31,15 @@ struct HouseworkBoardView: View {
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
     @State var isSelecting = false
+    /// 複数選択モードで選択中の家事のID
+    @State var selectedHouseworkIDs: Set<String> = []
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
     /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
     @State var thankingItem: HouseworkBoardItem?
 
     @LoadingState var loadingState
+    @CommonError var commonError
 
     /// 家事の購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
@@ -65,16 +69,16 @@ struct HouseworkBoardView: View {
                 navigationHandler(route)
             }
             .softTopScrollEdgeEffect()
+            .leadingToolbarItem {
+                if isSelecting {
+                    cancelSelectingButton()
+                }
+            }
             .trailingToolbarItem {
-                HStack(spacing: .space16) {
-                    Button(isSelecting ? "完了" : "選択") {
-                        withAnimation {
-                            isSelecting.toggle()
-                        }
-                    }
-                    NavigationBarButton(label: .houseworkTemplate) {
-                        isShowHouseworkTemplate = true
-                    }
+                if isSelecting {
+                    bulkActionContent()
+                } else {
+                    defaultToolbarContent()
                 }
             }
             .environment(\.houseworkBoardNavigationPath, navigationPath)
@@ -121,6 +125,11 @@ struct HouseworkBoardView: View {
                 isSelecting = false
             }
         }
+        // 選択モードの出入りで選択を持ち越さない（タブの切り替えも選択モードの終了を経由する）
+        .onChange(of: isSelecting) {
+            selectedHouseworkIDs = []
+        }
+        .commonError(content: $commonError)
         .fullScreenLoadingIndicator(loadingState)
         .trackScreenView(.houseworkBoard)
     }
@@ -128,6 +137,16 @@ struct HouseworkBoardView: View {
 }
 
 private extension HouseworkBoardView {
+
+    /// 表示中のタブと選択状態から組み立てた、複数選択の判定
+    var selection: HouseworkSelection {
+        .init(
+            items: houseworkBoardList.items(matching: selectedHouseworkState),
+            state: selectedHouseworkState,
+            selectedIDs: selectedHouseworkIDs,
+            ownUserId: loginContext.account.id
+        )
+    }
 
     func boardContent() -> some View {
         VStack(spacing: .space16) {
@@ -145,6 +164,7 @@ private extension HouseworkBoardView {
                             memberList: members,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
+                            selectedIDs: $selectedHouseworkIDs,
                             onCreateTapped: { isPresentingAddHouseworkView = true },
                             onSelectComplete: { completingItem = $0 },
                             onSelectThanks: { thankingItem = $0 }
@@ -168,6 +188,60 @@ private extension HouseworkBoardView {
 
     func dismissedPaywall() {
         analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
+    }
+
+    /// 選択モードでないときのナビゲーションバー右側（選択モードへの入口とテンプレート）
+    func defaultToolbarContent() -> some View {
+        HStack(spacing: .space16) {
+            Button("選択") {
+                withAnimation {
+                    isSelecting = true
+                }
+            }
+            NavigationBarButton(label: .houseworkTemplate) {
+                isShowHouseworkTemplate = true
+            }
+        }
+    }
+
+    /// 選択モードを抜けるボタン。左上に置いて、選択モードに入っていること自体を分かりやすくする
+    func cancelSelectingButton() -> some View {
+        NavigationBarButton(label: .close) {
+            withAnimation {
+                isSelecting = false
+            }
+        }
+        .accessibilityLabel("選択をやめる")
+    }
+
+    func bulkActionContent() -> some View {
+        HouseworkBulkActionToolbarContent(
+            actions: selection.availableActions,
+            isEnabled: !selection.isEmpty,
+            onTap: { action in
+                Task {
+                    await performBulk(action)
+                }
+            }
+        )
+    }
+
+    func performBulk(_ action: HouseworkQuickAction) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await houseworkListStore.performBulk(
+                action,
+                on: selection.targets(for: action),
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId,
+                step: .board
+            )
+            selectedHouseworkIDs = []
+        } catch {
+            commonError = .init(error: error)
+        }
     }
 
     func addHouseworkButton(action: @escaping () -> Void) -> some View {
@@ -211,6 +285,40 @@ private extension HouseworkBoardView {
     )
     .apply(theme: .init())
     .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .environment(HouseworkListStore())
+    .environment(SubscriptionStore())
+}
+
+#Preview("HouseworkBoardView_選択モード") {
+    let list = HouseworkBoardList(items: [
+        .makeForPreview(
+            id: "1",
+            title: "洗濯",
+            point: 20
+        ),
+        .makeForPreview(
+            id: "2",
+            title: "掃除",
+            point: 100
+        ),
+    ])
+    HouseworkBoardView(
+        houseworkBoardList: .constant(list),
+        dateList: .constant(.init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )),
+        isSelecting: true,
+        selectedHouseworkIDs: ["1"],
+        loadFailure: nil,
+        onUpdateHouseboardList: {},
+        onRetry: {}
+    )
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
     .environment(SubscriptionStore())
