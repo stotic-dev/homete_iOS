@@ -32,6 +32,15 @@ jobs:
             exit 1
           fi
 
+      # 同名ブランチが残っていると最後のpushがnon-fast-forwardで拒否される。
+      # PRが紐づいている可能性があるためforce pushで上書きはせず、ここで止めて削除を促す。
+      - name: Ensure release branch does not exist
+        run: |
+          if git ls-remote --exit-code --heads origin "release/v${VERSION}" > /dev/null; then
+            echo "::error::release/v${VERSION} がリモートに既に存在します。不要であれば git push origin --delete release/v${VERSION} で削除してから再実行してください"
+            exit 1
+          fi
+
       - name: Create release branch
         run: git checkout -b "release/v${VERSION}"
 
