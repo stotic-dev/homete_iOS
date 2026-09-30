@@ -71,12 +71,24 @@ public struct RegisterHouseworkView: View {
                 trailingNavigationItems()
             }
             #endif
-            .safeAreaInset(edge: .bottom) {
-                PendingEntriesBar(
-                    entries: pendingEntries,
-                    onTapSummary: { isPresentingPendingList = true }
-                )
+            // 2つのフローティングボタンは右下にまとめて縦に並べる。
+            // `safeAreaInset`で場所を確保するとスクロール領域がその手前で切れ、
+            // 中身がボタンの裏に回らず透けて見えなくなるため、`overlay`で浮かせる
+            .overlay(alignment: .bottomTrailing) {
+                VStack(alignment: .trailing, spacing: .space16) {
+                    if selectedTab == .manual {
+                        queueButton()
+                    }
+                    if !pendingEntries.isEmpty {
+                        pendingEntriesButton()
+                    }
+                }
+                .padding(.trailing, .space24)
+                .padding(.bottom, .space24)
             }
+            // 名前を1文字入れた時点で入力中の家事が登録予定に入るため、
+            // ボタンの出現でフォームが跳ねないようにする
+            .animation(.default, value: pendingEntries.isEmpty)
         }
         .interactiveDismissDisabled(draft.hasInput)
         .sheet(isPresented: $isPresentingPendingList) {
@@ -197,15 +209,36 @@ private extension RegisterHouseworkView {
         .accessibilityLabel("いつもの家事を管理")
     }
 
+    /// 「続けて入力する」ボタン
+    /// - Note: 入力欄の並びの中に置くと「これを押さないと登録できない」と読めてしまうため、
+    ///         スクロールに載せず宙に浮かせて、あくまで追加の操作であることを示す
+    func queueButton() -> some View {
+        Button {
+            tappedQueueButton()
+        } label: {
+            HStack(spacing: .space4) {
+                Image(systemName: "plus")
+                Text("続けて入力する")
+            }
+            .font(with: .headLineS)
+        }
+        .floatingButtonStyle()
+        .disabled(!draft.canQueueCurrentInput)
+    }
+
+    func pendingEntriesButton() -> some View {
+        PendingEntriesButton(count: pendingEntries.count) {
+            isPresentingPendingList = true
+        }
+    }
+
     func manualTab() -> some View {
         ManualHouseworkForm(
             entry: $draft.input,
             categories: frequentHouseworkContext.categories,
             saveAsFrequentState: saveAsFrequentState,
             canSetRecurrence: canSetRecurrence,
-            canQueue: draft.canQueueCurrentInput,
             history: houseworkEntryHistoryList.items,
-            onTapQueue: { tappedQueueButton() },
             onTapHistory: { item in tappedEntryHistoryRow(item) },
             onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() }
         )
@@ -413,6 +446,34 @@ extension RegisterHouseworkView {
         let historyList = HouseworkHistoryList(items: ["洗濯", "掃除"])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
+
+// - Note: 「続けて入力する」と「登録予定」の2つのフローティングボタンが重ならないかを見るためのPreview
+#Preview("RegisterHouseworkView_新しく入力_登録予定あり") {
+    RegisterHouseworkView(
+        draft: .init(queuedEntries: [
+            .init(
+                id: "1",
+                title: "ゴミ出し",
+                point: 10,
+                categoryId: nil,
+                savesAsFrequent: false,
+                recurrenceInput: .init(kind: .none)
+            ),
+        ]),
+        selectedTab: .manual,
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
