@@ -28,6 +28,7 @@ public extension AppDependencies {
         notificationGuideStateClient: .liveValue,
         pasteboardClient: livePasteboardClient,
         dailyCompletionReminderClient: .liveValue,
+        remoteConfigClient: .liveValue,
         debugAuthClient: liveDebugAuthClient
     )
 
