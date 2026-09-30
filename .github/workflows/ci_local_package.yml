@@ -52,17 +52,17 @@ jobs:
         run: make test-packages
 
       - name: Setup Node.js
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Danger
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         run: npm install -g danger
 
       - name: Cache ProjectTools build
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: actions/cache@v4
         with:
           path: ProjectTools/.build
@@ -71,11 +71,11 @@ jobs:
             project-tools-${{ runner.os }}-
 
       - name: Build ProjectTools
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
 
       - name: Cache DangerTools build
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: actions/cache@v4
         with:
           path: DangerTools/.build
@@ -84,11 +84,11 @@ jobs:
             danger-tools-${{ runner.os }}-
 
       - name: Build DangerTools
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         run: swift build --package-path DangerTools --scratch-path DangerTools/.build
 
       - name: Run Danger (Coverage)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         working-directory: DangerTools
         run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd .. --id "danger-coverage"
         env:
