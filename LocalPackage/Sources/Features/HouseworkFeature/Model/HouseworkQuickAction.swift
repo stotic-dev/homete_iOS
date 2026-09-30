@@ -4,7 +4,6 @@
 //
 
 import HometeDomain
-import SwiftUI
 
 /// 家事リストのセルからワンタップで行えるアクション
 enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
@@ -24,45 +23,6 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
 
     var id: Self {
         self
-    }
-
-    var label: String {
-        switch self {
-        case .complete:
-            "完了にする"
-        case .remove:
-            "やらない"
-        case .sendThanks:
-            "ありがとう"
-        case .redo:
-            "もう一度やった"
-        case .returnToIncomplete:
-            "未完了に戻す"
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .complete:
-            "checkmark.circle.fill"
-        case .remove:
-            "trash"
-        case .sendThanks:
-            "hands.clap.fill"
-        case .redo:
-            "arrow.clockwise"
-        case .returnToIncomplete:
-            "arrow.uturn.backward"
-        }
-    }
-
-    var role: ButtonRole? {
-        switch self {
-        case .remove:
-            .destructive
-        case .complete, .sendThanks, .redo, .returnToIncomplete:
-            nil
-        }
     }
 
 }
