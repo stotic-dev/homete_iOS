@@ -212,7 +212,9 @@ launching → notLoggedIn → Sign In with Apple
 **スナップショットテスト** (`hometeSnapshotTests/`):
 - ライブラリ: PointFreeのswift-snapshot-testing 1.18.7
 - テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
-- Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `homete/Views` と `LocalPackage/Sources`
+- Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `LocalPackage/Sources`
+- テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` とテストターゲットのリンク設定の両方を更新する
+- `AppRoot` はVRT対象外。スナップショットを撮りたいViewは `HometeUI` かFeature配下に置く
 - 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
 
@@ -267,6 +269,7 @@ launching → notLoggedIn → Sign In with Apple
 
 1. **`VRT`** - スナップショットテスト
    - `ci_post_clone.sh`: SPMプラグイン検証スキップ + スナップショット参照ファイル確認
+   - スキームは `hometeSnapshotTests`（`homete` スキームだとアプリ本体がビルドされ高速化の効果が出ない）
 
 2. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info-dev.plist` をデコード配置
