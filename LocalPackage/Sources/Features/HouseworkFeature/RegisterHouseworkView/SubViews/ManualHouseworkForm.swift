@@ -8,6 +8,8 @@ import HometeUI
 import SwiftUI
 
 /// 家事の登録シートの「新しく入力」タブ
+/// - Note: 画面の背景はシート既定のままにして「いつもの家事」タブと揃え、
+///         セクションのカードとの境目は`sectionCardStyle()`の影で見せる
 struct ManualHouseworkForm: View {
 
     @Binding var entry: RegisterHouseworkDraft.ManualEntry
@@ -37,11 +39,9 @@ struct ManualHouseworkForm: View {
                 }
             }
             .padding(.space16)
-            // 入力欄の下端がフローティングボタンに隠れないようにする
+            // 入力欄の下端が「続けて入力する」ボタンに隠れないようにする
             .padding(.bottom, .space64)
         }
-        // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
-        .background(.groupedBackground)
         .scrollDismissesKeyboard(.interactively)
         .overlay(alignment: .bottomLeading) {
             queueButton()
@@ -67,9 +67,7 @@ private extension ManualHouseworkForm {
             VStack(spacing: .space16) {
                 content()
             }
-            .padding(.space16)
-            .background(.subSurface)
-            .cornerRadius(.radius16)
+            .sectionCardStyle()
         }
     }
 
