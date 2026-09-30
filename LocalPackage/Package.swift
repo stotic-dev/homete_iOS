@@ -34,6 +34,7 @@ let package = Package(
             from: "3.0.0"
         ),
         .package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", from: "5.81.2"),
+        .package(url: "https://github.com/groue/GRDB.swift", from: "7.0.0"),
     ],
     targets: [
 
@@ -111,7 +112,8 @@ let package = Package(
                     condition: .when(platforms: [.iOS])
                 ),
                 .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
-                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
+                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
+                .product(name: "GRDB", package: "GRDB.swift")
             ],
             plugins: [swiftLintPlugin()]
         ),

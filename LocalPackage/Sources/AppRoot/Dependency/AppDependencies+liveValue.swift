@@ -22,6 +22,7 @@ public extension AppDependencies {
         purchaseClient: livePurchaseClient,
         houseworkTemplateClient: .liveValue,
         frequentHouseworkClient: .liveValue,
+        houseworkEntryHistoryClient: .liveValue,
         consentClient: liveConsentClient,
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,

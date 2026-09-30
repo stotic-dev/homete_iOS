@@ -5,9 +5,10 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
-import Foundation
-
-public struct HouseworkHistoryList: Equatable {
+/// 家事の入力履歴（新しく使ったものが先頭）
+/// - Note: 並び順はこの値型が持ち、永続化層（SQLite）は並び順を含めて保存するだけにしている。
+///         こうしておくと「使ったものを先頭に出す」判断をDBを介さずユニットテストできる
+public struct HouseworkHistoryList: Equatable, Sendable {
 
     public private(set) var items: [String]
 
@@ -38,47 +39,6 @@ public struct HouseworkHistoryList: Equatable {
             return
         }
         moveToFrontIfExists(value)
-    }
-
-}
-
-extension HouseworkHistoryList: Codable {
-
-    enum CodingKeys: String, CodingKey {
-
-        case items
-
-    }
-
-    public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(items, forKey: .items)
-    }
-
-    public init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        items = try container.decode([String].self, forKey: .items)
-    }
-
-}
-
-extension HouseworkHistoryList: RawRepresentable {
-
-    public init?(rawValue: String) {
-        guard let data = rawValue.data(using: .utf8),
-              let decoded = try? JSONDecoder().decode(HouseworkHistoryList.self, from: data) else {
-            return nil
-        }
-        self = decoded
-    }
-
-    public var rawValue: String {
-        guard
-            let data = try? JSONEncoder().encode(self),
-            let jsonString = String(data: data, encoding: .utf8) else {
-            return ""
-        }
-        return jsonString
     }
 
 }
