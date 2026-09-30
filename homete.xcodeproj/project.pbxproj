@@ -85,6 +85,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				__Snapshots__,
 			);
 			target = BC1BB2672E909B8C001D168F /* hometeSnapshotTests */;
 		};
