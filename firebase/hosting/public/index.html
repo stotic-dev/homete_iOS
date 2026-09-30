@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>homeau - 同居人と家事を分け合うアプリ</title>
+  <meta name="description" content="homeauは同居人と家事を分担・記録して、お互いをほめ合えるiOSアプリです。">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="homeau">
+  <meta property="og:title" content="homeau - 同居人と家事を分け合うアプリ">
+  <meta property="og:description" content="家事をがんばったら、ほめてもらおう。homeauは同居人と家事を分担・記録できるiOSアプリです。">
+  <meta property="og:image" content="https://homete-ios-dev.web.app/invite/ogp.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary">
+
+  <!-- 招待ページと同じデザイントークンを使う（dev/prodで同じHTMLを配信する） -->
+  <style>
+    :root {
+      --bg: #fdf9f3;
+      --surface: #ffffff;
+      --text: #33302c;
+      --text-sub: #6d675f;
+      --accent: #f2994a;
+      --border: #e8e0d5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #201d1a;
+        --surface: #2b2724;
+        --text: #f4efe8;
+        --text-sub: #b3aca2;
+        --accent: #f2994a;
+        --border: #3b3631;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 32px 20px 48px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      line-height: 1.7;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    main {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .lead {
+      text-align: center;
+      color: var(--text-sub);
+      margin: 0 0 32px;
+      font-size: 15px;
+    }
+
+    .button {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 14px 20px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #ffffff;
+      margin: 0 0 32px;
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
+
+    ul.features {
+      list-style: none;
+      margin: 0 0 32px;
+      padding: 0;
+    }
+
+    ul.features li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .feature-title {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .feature-detail {
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    ul.links {
+      list-style: none;
+      margin: 0 0 32px;
+      padding: 0;
+    }
+
+    ul.links li {
+      margin-bottom: 8px;
+    }
+
+    ul.links a {
+      color: var(--accent);
+    }
+
+    footer {
+      color: var(--text-sub);
+      font-size: 13px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="logo">homeau</p>
+    <p class="lead">家事をがんばったら、ほめてもらおう</p>
+
+    <a class="button" href="https://apps.apple.com/app/id6744935314">App Storeでダウンロード</a>
+
+    <h2>homeauでできること</h2>
+    <ul class="features">
+      <li>
+        <span class="feature-title">家事を記録してチェックする</span>
+        <span class="feature-detail">今日やる家事をリストにして、終わったらチェックしていくだけで記録が残ります。</span>
+      </li>
+      <li>
+        <span class="feature-title">同居人と分担を共有する</span>
+        <span class="feature-detail">グループに招待すると、家事リストを家族・ルームメイトと共有できます。</span>
+      </li>
+      <li>
+        <span class="feature-title">お互いをほめ合う</span>
+        <span class="feature-detail">同居人が家事を終えると通知が届き、「ほめる」でリアクションを返せます。</span>
+      </li>
+    </ul>
+
+    <h2>各種ポリシー・お問い合わせ</h2>
+    <ul class="links">
+      <li><a href="https://stotic-dev.github.io/homete_iOS/terms.html">利用規約</a></li>
+      <li><a href="https://stotic-dev.github.io/homete_iOS/privacy.html">プライバシーポリシー</a></li>
+      <li><a href="https://github.com/stotic-dev/homete_iOS/issues/new">お問い合わせ（GitHub Issue）</a></li>
+    </ul>
+
+    <footer>
+      <p>&copy; 2026 stotic-dev</p>
+    </footer>
+  </main>
+</body>
+</html>

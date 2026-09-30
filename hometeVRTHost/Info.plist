@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- hometeアプリはLocalizable.xcstringsのコンパイル結果としてja.lprojを持つ。
+	     VRTホストは文字列カタログを持たないため、-AppleLanguages (ja) を指定したときに
+	     Locale.currentがjaへ解決されるよう、利用可能なローカライズを明示する。 -->
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ja</string>
+	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<false/>
+</dict>
+</plist>

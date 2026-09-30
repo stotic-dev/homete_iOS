@@ -1,7 +1,11 @@
 name: danger
 
+# doc/adr/0030: VRT参照スナップショットの自動commitに [ci skip] を付けたため、
+# pull_request イベントではこのワークフローも一緒に止まってしまう。
+# GitHub のスキップ指示は push / pull_request にしか効かないので、
+# pull_request_target に切り替えてスキップ対象から外す。
 on:
-  pull_request:
+  pull_request_target:
     branches: ["**"]
   workflow_dispatch:
 
@@ -11,12 +15,21 @@ permissions:
 
 jobs:
   danger:
+    # pull_request_target はベースリポジトリのSecretを持つため、fork PRのコードを
+    # そのまま実行させない（fork PRは従来の pull_request でもSecretが渡らずDangerは動かなかった）。
+    if: >-
+      github.event_name != 'pull_request_target'
+      || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
       SWIFT_VERSION: "6.2"
       SWIFT_TOOLCHAIN_DIR: /opt/hostedtoolcache/swift-Ubuntu
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          # pull_request_target のデフォルトはベースブランチのチェックアウトになるため、
+          # SwiftLintの対象をPRの変更内容に合わせるには head の実コミットを明示的に取る。
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Cache Swift toolchain
         id: cache-swift

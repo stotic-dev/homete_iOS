@@ -27,8 +27,6 @@ public struct HouseworkDetailView: View {
 
     public var body: some View {
         mainContent()
-            .padding(.horizontal, .space16)
-            .padding(.bottom, .space24)
             .fullScreenLoadingIndicator(loadingState)
             .navigationTitle(item.title)
             .inlineNavigationBarTitleDisplayMode()
@@ -51,20 +49,25 @@ public struct HouseworkDetailView: View {
 private extension HouseworkDetailView {
 
     func mainContent() -> some View {
-        VStack(spacing: .zero) {
-            HouseworkDetailItemListContent(
-                cohabitantMemberList: cohabitantStore.members,
-                item: item,
-                thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
-            )
-            Spacer()
-            HouseworkDetailActionContent(
-                isLoading: $loadingState.isLoading,
-                commonErrorContent: $commonErrorContent,
-                account: account,
-                item: item
-            )
+        ScrollView {
+            VStack(spacing: .space40) {
+                HouseworkDetailItemListContent(
+                    cohabitantMemberList: cohabitantStore.members,
+                    item: item,
+                    thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
+                )
+                HouseworkDetailActionContent(
+                    isLoading: $loadingState.isLoading,
+                    commonErrorContent: $commonErrorContent,
+                    account: account,
+                    item: item
+                )
+            }
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
         }
+        .scrollBounceBehavior(.basedOnSize)
+        .softTopScrollEdgeEffect()
     }
 
 }

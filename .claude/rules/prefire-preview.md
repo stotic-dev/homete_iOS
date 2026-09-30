@@ -41,6 +41,8 @@ import Prefire
 
 `.prefire.yml` の `testable_imports`（Feature系モジュール）または `imports`（`HometeDomain` など）に列挙されていないモジュールのViewは、生成されたテストから参照できない。
 
+逆に、そのモジュールの `#Preview` が**すべて `.prefireIgnored()` 付き**なら登録は不要。Prefireは無視されたプレビューを生成コードへ展開しないため、上記1・3のどちらにも触れない（`make check-previews` も `.prefireIgnored()` の付いたブロックは検査しない）。`AppRoot` が実例で、VRT専用ホスト `hometeVRTHost` にFirebaseを引き込まないよう`.prefire.yml` から外してある（[ADR-0029](../../doc/adr/0029-vrt-dedicated-host-app-target.md)）。`AppRoot` 配下にスナップショットを撮りたいViewを足したくなったら、`HometeUI` かFeature配下へ移すこと。
+
 ### 4. `contextMenu` / `alert` / `sheet` など提示系モディファイアはPreviewでラップしない
 
 VRT（Prefireのスナップショット撮影）は画面を静的にレンダリングするだけなので、`.contextMenu { }` の中身、`.alert(...)`、`.sheet(...)` のように**ユーザー操作（長押し・ボタンタップなど）をトリガーに表示される内容はスナップショットに映らない**。これらでラップした`#Preview`を書いても、実際にはラップの外側（何もトリガーしていない状態の画面）しか撮影されず、中身の見た目はVRTで一切検証できない。

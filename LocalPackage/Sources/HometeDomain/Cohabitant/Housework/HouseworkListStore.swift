@@ -199,7 +199,8 @@ public final class HouseworkListStore {
     /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する
     ///
     /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる（最初に送った日時は変えない）。
-    /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。呼び出し元に返すのは記録の失敗だけ。
+    /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。
+    /// 呼び出し元に返すのは記録の失敗だけで、通知の送信は待たない。
     /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
     // swiftlint:disable:next function_parameter_count
     public func sendThanks(
@@ -230,15 +231,10 @@ public final class HouseworkListStore {
 
         guard let comment, currentThanks?.comment == nil else { return }
 
-        // 記録できた後に通知だけ失敗しても、送り直すと編集扱いになり通知は送られないため、失敗として返さない
-        do {
-            try await cohabitantPushNotificationClient.send(
-                cohabitantId,
-                .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
-            )
-        } catch {
-            print("failed to notify cohabitants of thanks: \(error)")
-        }
+        notifyThanks(
+            cohabitantId: cohabitantId,
+            content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+        )
     }
 
     public func returnToIncomplete(
@@ -382,6 +378,20 @@ private extension HouseworkListStore {
         isEditing
             ? .editThanks(step: step, isSuccess: isSuccess)
             : .sendThanks(step: step, isSuccess: isSuccess)
+    }
+
+    /// ありがとうに添えたコメントを同居人へ知らせる
+    ///
+    /// 送信は待たずに行い、失敗しても記録は失敗扱いにしない。
+    /// 送り直しても編集扱いになって通知は送られないが、ありがとう自体は記録できているため。
+    func notifyThanks(cohabitantId: String, content: PushNotificationContent) {
+        Task.detached {
+            do {
+                try await self.cohabitantPushNotificationClient.send(cohabitantId, content)
+            } catch {
+                print("failed to notify cohabitants of thanks: \(error)")
+            }
+        }
     }
 
     /// コメントを添えた完了通知を、1日1回の制限に関係なく送る

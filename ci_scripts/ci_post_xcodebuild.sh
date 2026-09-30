@@ -90,10 +90,12 @@ case "$CI_WORKFLOW" in
         # する。これにより push が main を巻き込んだマージコミットにならず、実HEADのみを親とする
         # 単一コミットになる。
         #
-        # このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、[ci skip] ではなく
-        # Xcode Cloud側のワークフロー起動条件（Custom Conditions）で「スナップショットディレクトリのみの
-        # 変更では起動しない」設定を別途入れている。[ci skip] を使わないのは、それがGitHub Actions側の
-        # Dangerワークフローの起動も止めてしまうため。
+        # doc/adr/0030: このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、
+        # コミットメッセージに [ci skip] を付ける（Xcode Cloudが公式サポートするスキップ指示）。
+        # GitHub Actions側のスキップ指示は push / pull_request イベントにしか効かないため、
+        # Dangerワークフロー（ci_danger.yml）は pull_request_target に切り替えてスキップ対象から
+        # 外してある。これによりVRTビルドだけを止め、Dangerによるbefore/after画像差分の報告は
+        # このbot commitに対しても走る。
         if [ "$CI_XCODEBUILD_ACTION" != "build-for-testing" ]; then
             echo "Skipping VRT CLI re-run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
@@ -202,7 +204,7 @@ case "$CI_WORKFLOW" in
         git config user.name "stotic-dev"
 
         git commit -m "$(cat <<'COMMIT_MSG'
-chore: VRT参照スナップショットを自動更新
+chore: VRT参照スナップショットを自動更新 [ci skip]
 
 doc/adr/0005: Xcode Cloud上で記録した参照PNGの自動commitです。
 PRコメントのDangerによるbefore/after画像差分でレビューしてください。

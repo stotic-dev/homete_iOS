@@ -46,11 +46,11 @@
 4. **報告は既存の Danger をそのまま使う**
    * `DangerTools/Dangerfile.swift:15-58` が既に、PR で変更/追加された `__Snapshots__/PreviewTests.generated/*.png` について `raw.githubusercontent.com` の base/head SHA を使った before/after 画像比較テーブルを PR コメントに投稿する実装を持つ。
    * リポジトリが public のため raw URL がコメント内でそのままレンダリングされる。**報告側の新規実装は不要**。
-   * bot の push は PAT 経由のため GitHub Actions の `pull_request: synchronize` が発火し、Danger が自動で走る。
+   * bot の push は PAT（現在は GitHub App のインストールアクセストークン）経由のため GitHub Actions のイベントが発火し、Danger が自動で走る。`[ci skip]` 導入後は `pull_request_target` で受ける（[ADR-0030](0030-vrt-snapshot-commit-ci-skip.md)）。
 
-5. **ループ対策は Custom Conditions のみで行う**
-   * Pull Request Changes の Custom Conditions（ファイル/フォルダ条件）で `__Snapshots__` 配下のみの変更では起動しない設定を入れる。
-   * 当初はコミットメッセージへの `[ci skip]`（Apple 公式サポート）との二重掛けを想定していたが、`[ci skip]` は GitHub Actions 側にも解釈され `ci_danger.yml`（Danger によるコードレビュー自動化）まで止めてしまうため不採用とした。ループ対策は Custom Conditions 側のみに一本化する。
+5. **ループ対策は Custom Conditions のみで行う** → **[ADR-0030](0030-vrt-snapshot-commit-ci-skip.md) で置き換え済み**
+   * 当初の決定: Pull Request Changes の Custom Conditions（ファイル/フォルダ条件）で `__Snapshots__` 配下のみの変更では起動しない設定を入れる。コミットメッセージへの `[ci skip]`（Apple 公式サポート）は、GitHub Actions 側にも解釈され `ci_danger.yml`（Danger によるコードレビュー自動化）まで止めてしまうため不採用とした。
+   * **現在の決定（[ADR-0030](0030-vrt-snapshot-commit-ci-skip.md)）**: Custom Conditions では「スナップショットディレクトリのみの変更なら起動しない」という除外条件を表現できず（書けるのは包含指定のみ）、bot push で VRT ビルドが再起動する事象が実際に発生した。そのため bot commit のメッセージに `[ci skip]` を付け、`ci_danger.yml` のトリガーを `pull_request_target`（GitHub のスキップ指示が効かないイベント）に切り替えて Danger だけ起動させる方式に変更した。
 
 ### 段階的な検証順序
 
@@ -65,7 +65,7 @@
      4. 秘密鍵を base64エンコードし（例: `base64 -i downloaded-key.pem | pbcopy`）、Xcode Cloud の「VRT」ワークフローの環境変数に `GH_APP_ID`（App ID）と `GH_APP_PRIVATE_KEY_BASE64`（Secret指定）として登録する。`GITHUB_REPOSITORY` は既存のものをそのまま使う。
      5. 登録後、次回ビルドで installation access token の取得ログ（`✓ Obtained GitHub App installation access token`）が出ることと、push が成功することを確認する。
 3. **既存参照との差分（modified）ケースの確認 ✅ 確認済み（2026-08-01）**: `AnalyticsPeriodHeader` の余白を意図的に変更（`.space8` → `.space16`）した状態で push したところ、既存の参照PNGを残したままミスマッチとして検出・再記録され、`AnalyticsPeriodHeader` を利用する20ファイル（iPhone 16 / iPhone SE 2nd generation の2デバイス分）が commit・push されることを確認した（`071c1a7`）。確認後、View の変更は元に戻した（次回ビルドで参照PNGも元の見た目に再記録される想定）。
-4. **ループ停止の確認**: Custom Conditions によって、bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。
+4. **ループ停止の確認**: bot の push が新しい Xcode Cloud ビルドを起動しないことを確認する。Custom Conditions では止まらなかったため、`[ci skip]` 方式に切り替えた（[ADR-0030](0030-vrt-snapshot-commit-ci-skip.md)）。
 
 ## 考慮した選択肢
 
