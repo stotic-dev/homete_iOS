@@ -1,96 +1,37 @@
 //
-//  PendingEntriesBar.swift
+//  PendingEntriesButton.swift
 //  LocalPackage
 //
 
 import HometeUI
 import SwiftUI
 
-/// 家事の登録シートの下部に常に出す、登録予定リストの要約
-/// - Note: 登録そのものはナビゲーションバーのボタンで行う。ここはタップして中身を見直すための導線
-struct PendingEntriesBar: View {
+/// 家事の登録シートの下部に浮かべる、登録予定リストを開くボタン
+/// - Note: 登録そのものはナビゲーションバーのボタンで行う。ここはタップして中身を見直すための導線。
+///         見直す中身がない0件のときに出さない判断は、登録予定リストを持つ呼び出し側に任せる
+struct PendingEntriesButton: View {
 
-    let entries: [PendingEntry]
-    let onTapSummary: () -> Void
+    let count: Int
+    let onTap: () -> Void
 
     var body: some View {
-        summary()
-            .padding(.space16)
-            .background(.surface)
-    }
-
-}
-
-private extension PendingEntriesBar {
-
-    func summary() -> some View {
         Button {
-            onTapSummary()
+            onTap()
         } label: {
-            HStack(spacing: .space8) {
-                Text("登録予定 \(entries.count)件")
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
-                Text(titleSummary)
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-                    .lineLimit(1)
-                Spacer()
-                if !entries.isEmpty {
-                    Image(systemName: "chevron.up")
-                        .font(.caption)
-                        .foregroundStyle(.onSurfaceVariant)
-                }
+            HStack(spacing: .space4) {
+                Image(systemName: "checklist")
+                Text("登録予定 \(count)件")
             }
-            .contentShape(Rectangle())
+            .font(with: .headLineS)
         }
-        .buttonStyle(.plain)
-        .disabled(entries.isEmpty)
-    }
-
-    var titleSummary: String {
-        entries.map(\.title).joined(separator: "・")
+        .floatingButtonStyle()
+        .accessibilityLabel("登録予定\(count)件を見る")
     }
 
 }
 
 #if DEBUG
-#Preview("PendingEntriesBar_0件", traits: .sizeThatFitsLayout) {
-    PendingEntriesBar(
-        entries: [],
-        onTapSummary: {}
-    )
-}
-
-#Preview("PendingEntriesBar_3件", traits: .sizeThatFitsLayout) {
-    PendingEntriesBar(
-        entries: [
-            .init(
-                source: .frequent(itemId: "1"),
-                title: "布団干し",
-                point: 20,
-                recurrence: nil,
-                savesAsFrequent: false,
-                categoryId: nil
-            ),
-            .init(
-                source: .frequent(itemId: "2"),
-                title: "換気扇",
-                point: 30,
-                recurrence: nil,
-                savesAsFrequent: false,
-                categoryId: nil
-            ),
-            .init(
-                source: .editing,
-                title: "ゴミ出し",
-                point: 10,
-                recurrence: nil,
-                savesAsFrequent: true,
-                categoryId: nil
-            ),
-        ],
-        onTapSummary: {}
-    )
+#Preview("PendingEntriesButton_3件", traits: .sizeThatFitsLayout) {
+    PendingEntriesButton(count: 3, onTap: {})
 }
 #endif

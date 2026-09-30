@@ -71,12 +71,22 @@ public struct RegisterHouseworkView: View {
                 trailingNavigationItems()
             }
             #endif
-            .safeAreaInset(edge: .bottom) {
-                PendingEntriesBar(
-                    entries: pendingEntries,
-                    onTapSummary: { isPresentingPendingList = true }
-                )
+            // 一覧を開くボタンは浮いて見せつつ、`safeAreaInset`で場所は確保する
+            // （タブの中身の下端がボタンに隠れないようにするため）。
+            // 0件のときは余白ごと出さないので、`padding`はボタンと一緒に出し入れする
+            .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                if !pendingEntries.isEmpty {
+                    PendingEntriesButton(
+                        count: pendingEntries.count,
+                        onTap: { isPresentingPendingList = true }
+                    )
+                    .padding(.trailing, .space24)
+                    .padding(.bottom, .space24)
+                }
             }
+            // 名前を1文字入れた時点で入力中の家事が登録予定に入るため、
+            // ボタンの出現でフォームが跳ねないようにする
+            .animation(.default, value: pendingEntries.isEmpty)
         }
         .interactiveDismissDisabled(draft.hasInput)
         .sheet(isPresented: $isPresentingPendingList) {
@@ -413,6 +423,34 @@ extension RegisterHouseworkView {
         let historyList = HouseworkHistoryList(items: ["洗濯", "掃除"])
         userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
     }
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
+
+// - Note: 「続けて入力する」と「登録予定」の2つのフローティングボタンが重ならないかを見るためのPreview
+#Preview("RegisterHouseworkView_新しく入力_登録予定あり") {
+    RegisterHouseworkView(
+        draft: .init(queuedEntries: [
+            .init(
+                id: "1",
+                title: "ゴミ出し",
+                point: 10,
+                categoryId: nil,
+                savesAsFrequent: false,
+                recurrenceInput: .init(kind: .none)
+            ),
+        ]),
+        selectedTab: .manual,
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue
