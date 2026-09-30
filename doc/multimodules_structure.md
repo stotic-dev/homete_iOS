@@ -17,7 +17,7 @@
 | `HomeFeature` | ホーム画面・招待リンクからのグループ参加 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
-| `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・Firebase 依存 | `HometeDomain`, Firebase SDK |
+| `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0028](adr/0028-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
@@ -52,6 +52,7 @@ Features/
 HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）
   ├── Services（FirestoreService, SignInWithAppleService...）
+  ├── LocalDatabase（端末内SQLite。AppDatabase + 各テーブルのService）
   └── AppDependencies+liveValue
 
 HometeLocalNotification/
