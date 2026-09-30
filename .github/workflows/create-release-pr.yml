@@ -102,6 +102,9 @@ jobs:
             echo "このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが"
             echo "外部TestFlightにビルドを配信し、「Upload For AppStore」workflowがApp Store Connectへビルドを"
             echo "アップロードします。マージするとタグ作成・GitHub Release publishだけが走ります（doc/adr/0027）。"
+            echo ""
+            echo "\`fastlane/metadata/\`・\`fastlane/screenshots/\` の変更をこのブランチへpushすると、"
+            echo "Sync MetadataワークフローがApp Store Connectへメタデータを同期します（doc/adr/0032）。"
           } > pr_body.md
 
       # PR本文の生成で失敗してもリモートにブランチだけが残らないよう、pushはPR作成の直前に行う。
