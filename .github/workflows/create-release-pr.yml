@@ -15,9 +15,8 @@ permissions:
 
 jobs:
   create-release-pr:
-    runs-on: macos-26
+    runs-on: ubuntu-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
       VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v4.2.2
@@ -25,9 +24,6 @@ jobs:
           ref: main
           fetch-depth: 0
           fetch-tags: true
-
-      - name: Select Xcode version
-        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
 
       - name: Validate version format
         run: |
@@ -39,8 +35,10 @@ jobs:
       - name: Create release branch
         run: git checkout -b "release/v${VERSION}"
 
+      # agvtool new-marketing-versionと同じく全ターゲットのMARKETING_VERSIONを揃える。
+      # Xcodeに依存しないのでmacOSランナーを使わずに済む。
       - name: Bump MARKETING_VERSION
-        run: xcrun agvtool new-marketing-version "$VERSION"
+        run: sed -i -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${VERSION};/" homete.xcodeproj/project.pbxproj
 
       - name: Configure git
         run: |
@@ -64,7 +62,7 @@ jobs:
         run: |
           LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
           if [ -n "$LAST_TAG" ]; then
-            SINCE_EPOCH=$(date -u -d "$(git log -1 --format=%cI "$LAST_TAG")" +%s)
+            SINCE_EPOCH=$(git log -1 --format=%ct "$LAST_TAG")
           else
             SINCE_EPOCH=0
           fi
