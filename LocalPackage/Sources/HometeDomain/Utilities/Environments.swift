@@ -16,4 +16,9 @@ public extension EnvironmentValues {
     /// - Note: `SubscriptionStore`の加入状態から`AppTabView`で注入する
     @Entry var houseworkStoragePolicy = HouseworkStoragePolicy.free
 
+    /// アプリ全体で広告表示が有効かどうか
+    /// - Note: `RemoteConfigStore`が起動時に確定させた値を`RootView`で注入する。
+    ///         プレビューでは広告を出さない既定値のままになる
+    @Entry var isAdsEnabled = RemoteConfigBoolKey.adsEnabled.defaultValue
+
 }
