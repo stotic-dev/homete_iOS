@@ -79,6 +79,68 @@ gRPC・abseil・leveldbをソースからビルドするため、Xcode Cloudの`
 * Xcode Cloudの`VRT`ワークフローが `hometeSnapshotTests` スキームを使っていることが前提。
   `homete` スキームを使っている場合は `homete.app` がビルドされ続けるため効果が出ない
 
+## 実測結果（2026-09-30）
+
+Xcode Cloud の `VRT` ワークフローで比較した（変更前 Build 548 / 変更後 Build 559）。
+
+| | 変更前 | 変更後 |
+|---|---|---|
+| ビルドしたターゲット数 | 105 | **19** |
+| ビルド（build-for-testing） | 80秒 | **40秒** |
+| パッケージ解決 | 62秒 | 62秒 |
+| テスト成果物（TEST_PRODUCTS） | 76.6 MiB | **26.4 MiB** |
+| アクション間の受け渡し | 88秒 | **72秒** |
+| テスト実行（220テスト）× 2 | — | 74.0秒 / 73.1秒 |
+| テスト1回あたりの起動オーバーヘッド | 42.7秒 | 44.9秒 |
+| VRT全体 | 11分34秒 | **9分46秒** |
+
+Firebase・gRPC・abseil・BoringSSL・leveldb・GoogleMobileAds・RevenueCat・AppRoot・
+HometeInfrastructure がビルド対象から完全に消えた。
+
+ただし**Xcode Cloud上での短縮幅は限定的**だった。Xcode Cloud はビルド成果物をキャッシュして
+いるため、Firebaseのビルドは変更前でも80秒しかかかっていない。当初想定した「Firebaseの
+コンパイルが支配的」はXcode Cloudには当てはまらない。
+
+一方**ローカルでは効果が大きい**。キャッシュが無い状態では gRPC・abseil・leveldb を
+ソースからビルドし直すため、その分が丸ごと消える。ローカル実測は `build-for-testing` が
+コールドで69秒、テストバンドル29MB。
+
+### 参照スナップショットをテストバンドルへコピーしない方法
+
+`hometeSnapshotTests/__Snapshots__` の参照PNG 61MB が `.xctest` バンドルへコピーされていた
+（`CopyPNGFile` 884件）。参照画像はバンドルから読まれないため完全な死荷重で、テスト成果物を
+76.6 MiB に膨らませ、build-for-testing → test-without-building の受け渡しを重くしていた。
+
+**Xcode 27では、file-system synchronized group 配下のリソースに対して次の2つはどちらも効かない**
+（Build 553 / 554 で実測。`CopyPNGFile` が884件のまま、成果物サイズも変化なし）。
+
+- `PBXFileSystemSynchronizedBuildFileExceptionSet` の `membershipExceptions` にディレクトリ名を並べる
+- テストターゲットの `EXCLUDED_SOURCE_FILE_NAMES` にパターンを指定する（ビルドログに痕跡すら出ない）
+
+効いたのは**同期グループの範囲自体を狭める**方法。グループの `path` を
+`hometeSnapshotTests/Sources` にして、`__Snapshots__` をグループの外に出す。
+
+`__Snapshots__` の場所は動かしていないので、`ci_scripts/__Snapshots__` のシンボリックリンク、
+`ci_scripts/*.sh` のパス、`DangerTools/Dangerfile.swift` の参照先はいずれも変更不要。
+884ファイルを `git mv` する案を採らなかったのは、`danger.git.createdFiles` にリネーム先が
+全件入り、Dangerが before/after 画像表を884個投稿してしまうため。
+
+生成ファイルが `Sources/` 配下へ移ることで `verifySnapshot` のデフォルト（`#filePath` 基準の
+`__Snapshots__`）が `Sources/__Snapshots__` を指してしまうので、stencilの
+`snapshotDirectoryOverride` をローカルでも明示的に返すようにした。
+
+### テストの二重実行は意図的なもの
+
+VRTはスナップショットテストを2回実行する（[ADR-0005](0005-vrt-snapshot-recording-on-xcode-cloud.md)）。
+1回目は `ci_post_xcodebuild.sh` 内の record モードで参照を更新してコミットし、2回目のXcode Cloud
+公式アクションが記録済みの参照と突き合わせて検証する。**1回目と2回目で描画が揺れるフレーキーな
+スナップショットをここで落とせる**ため、実行時間の短縮を理由に一本化してはならない。
+
+テスト1回あたり「起動オーバーヘッド約45秒 + テスト実行約74秒」がかかり、これが2回分ある。
+起動オーバーヘッドはテストバンドルを76.6 MiB→26.4 MiB に縮めても変わらなかった
+（42.7秒→44.9秒）ので、`xcodebuild test-without-building` の固定コストであり、
+ローカルでも同じ35〜45秒が再現する。
+
 ## 参考
 
 * [Xcodeの新しいJSONプロジェクト形式（Sarunw）](https://sarunw.com/posts/xcode-json-project-format-xcproj/)
