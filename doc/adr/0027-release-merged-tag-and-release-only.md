@@ -42,5 +42,6 @@ v1.0.0のリリースで、このうちXcode Cloud起動のステップが失敗
 ## 参考
 
 * [ADR-0016](0016-release-pipeline-automation.md)
+* [ADR-0032](0032-sync-metadata-on-release-branch-push.md): 「メタデータ同期は手動実行」という本ADRの決定のうち、リリースブランチへのメタデータ変更pushについては自動実行に変更した
 * `.github/workflows/release-merged.yml`
 * `.github/workflows/sync-metadata.yml`
