@@ -1,6 +1,6 @@
 test_configuration:
   - target: hometeVRTHost
-  - test_target_path: ${PROJECT_DIR}/hometeSnapshotTests
+  - test_target_path: ${PROJECT_DIR}/hometeSnapshotTests/Sources
   - simulator_device: "iPhone17,3"
   - required_os: 27
   - preview_default_enabled: true

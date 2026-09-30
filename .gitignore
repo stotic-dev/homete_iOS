@@ -88,7 +88,7 @@ scripts/appstoreconnect.env
 Build/
 
 # Prefire generated test file
-hometeSnapshotTests/PreviewTests.generated.swift
+hometeSnapshotTests/Sources/PreviewTests.generated.swift
 
 # Xcode Cloud (machine-local manifest)
 **/xcshareddata/xcodecloud/
