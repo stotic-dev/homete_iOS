@@ -8,6 +8,8 @@ import HometeUI
 import SwiftUI
 
 /// 家事の登録シートの「新しく入力」タブ
+/// - Note: 画面の背景はシート既定のままにして「いつもの家事」タブと揃え、
+///         セクションのカードとの境目は`sectionCardStyle()`の影で見せる
 struct ManualHouseworkForm: View {
 
     @Binding var entry: RegisterHouseworkDraft.ManualEntry
@@ -17,10 +19,7 @@ struct ManualHouseworkForm: View {
     let saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState
     /// 繰り返しを設定できるか（テンプレートの読み込みが終わっているか）
     let canSetRecurrence: Bool
-    /// 「続けて入力する」を押せるか
-    let canQueue: Bool
     let history: [String]
-    let onTapQueue: () -> Void
     let onTapHistory: (String) -> Void
     /// 上限に達している状態で「いつもの家事に保存する」を押したとき
     let onTapSaveAsFrequentWhenLimitReached: () -> Void
@@ -37,17 +36,10 @@ struct ManualHouseworkForm: View {
                 }
             }
             .padding(.space16)
-            // 入力欄の下端がフローティングボタンに隠れないようにする
-            .padding(.bottom, .space64)
+            // 入力欄の下端が、右下に浮く2つのフローティングボタンに隠れないようにする
+            .padding(.bottom, .space64 * 2)
         }
-        // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
-        .background(.groupedBackground)
         .scrollDismissesKeyboard(.interactively)
-        .overlay(alignment: .bottomLeading) {
-            queueButton()
-                .padding(.leading, .space24)
-                .padding(.bottom, .space24)
-        }
     }
 
 }
@@ -67,9 +59,7 @@ private extension ManualHouseworkForm {
             VStack(spacing: .space16) {
                 content()
             }
-            .padding(.space16)
-            .background(.subSurface)
-            .cornerRadius(.radius16)
+            .sectionCardStyle()
         }
     }
 
@@ -182,22 +172,6 @@ private extension ManualHouseworkForm {
         )
     }
 
-    /// - Note: 入力欄の並びの中に置くと「これを押さないと登録できない」と読めてしまうため、
-    ///         スクロールに載せず宙に浮かせて、あくまで追加の操作であることを示す
-    func queueButton() -> some View {
-        Button {
-            onTapQueue()
-        } label: {
-            HStack(spacing: .space4) {
-                Image(systemName: "plus")
-                Text("続けて入力する")
-            }
-            .font(with: .headLineS)
-        }
-        .floatingButtonStyle()
-        .disabled(!canQueue)
-    }
-
     func entryHistorySection() -> some View {
         section("入力履歴") {
             ForEach(Array(history.enumerated()), id: \.element) { index, item in
@@ -223,9 +197,7 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .available,
         canSetRecurrence: true,
-        canQueue: false,
         history: ["洗濯", "掃除"],
-        onTapQueue: {},
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )
@@ -244,9 +216,7 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .duplicated,
         canSetRecurrence: true,
-        canQueue: true,
         history: [],
-        onTapQueue: {},
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )
@@ -265,9 +235,7 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .available,
         canSetRecurrence: true,
-        canQueue: true,
         history: [],
-        onTapQueue: {},
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )
@@ -286,9 +254,7 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .available,
         canSetRecurrence: true,
-        canQueue: true,
         history: [],
-        onTapQueue: {},
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )
@@ -307,9 +273,7 @@ private extension ManualHouseworkForm {
         categories: FrequentHouseworkContext().categories,
         saveAsFrequentState: .limitReached,
         canSetRecurrence: false,
-        canQueue: true,
         history: [],
-        onTapQueue: {},
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {}
     )
