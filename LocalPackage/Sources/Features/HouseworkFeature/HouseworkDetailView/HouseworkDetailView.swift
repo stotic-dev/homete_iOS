@@ -18,6 +18,8 @@ public struct HouseworkDetailView: View {
     @LoadingState var loadingState
 
     @State var item: HouseworkBoardItem
+    @State var isPresentedMemoEditSheet = false
+    @State var isPresentedMemoNotEditableAlert = false
 
     @CommonError var commonErrorContent
 
@@ -38,6 +40,16 @@ public struct HouseworkDetailView: View {
                 }
             }
             .commonError(content: $commonErrorContent)
+            .sheet(isPresented: $isPresentedMemoEditSheet) {
+                HouseworkMemoEditScreen(memo: item.originalItem.memo) { memo in
+                    savedMemo(memo)
+                }
+            }
+            .alert("メモを保存できませんでした", isPresented: $isPresentedMemoNotEditableAlert) {
+                Button("閉じる", role: .cancel) {}
+            } message: {
+                Text("この家事は完了または「やらない」になったため、メモを編集できません。")
+            }
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()
             }
@@ -56,6 +68,14 @@ private extension HouseworkDetailView {
                     item: item,
                     thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
                 )
+                if isMemoVisible {
+                    HouseworkDetailMemoContent(
+                        memo: item.originalItem.memo.hasContent ? item.originalItem.memo : nil,
+                        isEditable: item.originalItem.canEditMemo,
+                        onTapEdit: { isPresentedMemoEditSheet = true },
+                        onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
+                    )
+                }
                 HouseworkDetailActionContent(
                     isLoading: $loadingState.isLoading,
                     commonErrorContent: $commonErrorContent,
@@ -68,6 +88,17 @@ private extension HouseworkDetailView {
         }
         .scrollBounceBehavior(.basedOnSize)
         .softTopScrollEdgeEffect()
+    }
+
+}
+
+// MARK: 表示内容
+
+private extension HouseworkDetailView {
+
+    /// メモ欄を出すか。完了済み・「やらない」の家事は、メモがあるときだけ閲覧用に出す
+    var isMemoVisible: Bool {
+        item.originalItem.canEditMemo || item.originalItem.memo.hasContent
     }
 
 }
@@ -92,6 +123,58 @@ private extension HouseworkDetailView {
         }
     }
 
+    func savedMemo(_ memo: HouseworkMemo) {
+        guard let cohabitantId = account.cohabitantId else { return }
+
+        let target = item
+        loadingState.task {
+            do {
+                try await houseworkListStore.updateMemo(
+                    target: target.originalItem,
+                    memo: memo,
+                    cohabitantId: cohabitantId,
+                    isRegistered: target.isRegistered,
+                    step: .detail
+                )
+            } catch {
+                handleMemoError(error)
+            }
+        }
+    }
+
+    func tappedMemoChecklistItem(_ checklistItemId: HouseworkMemoChecklistItem.ID) {
+        guard let cohabitantId = account.cohabitantId, let memo = item.originalItem.memo else { return }
+
+        let target = item
+        // 保存を待たずにチェックを反映し、失敗したら元に戻す
+        item = .init(
+            originalItem: target.originalItem.updateMemo(memo.toggled(checklistItemId)),
+            isRegistered: target.isRegistered
+        )
+        Task {
+            do {
+                try await houseworkListStore.toggleMemoChecklistItem(
+                    target: target.originalItem,
+                    itemId: checklistItemId,
+                    cohabitantId: cohabitantId,
+                    isRegistered: target.isRegistered
+                )
+            } catch {
+                item = houseworkListStore.items.item(target.originalItem)
+                    .map { .init(originalItem: $0, isRegistered: true) } ?? target
+                handleMemoError(error)
+            }
+        }
+    }
+
+    func handleMemoError(_ error: any Error) {
+        if error as? HouseworkMemoError == .notEditable {
+            isPresentedMemoNotEditableAlert = true
+        } else {
+            commonErrorContent = .init(error: error)
+        }
+    }
+
     func didChangeItems() {
         guard let targetItem = houseworkListStore.items.item(item.originalItem) else { return }
 
@@ -109,6 +192,27 @@ private extension HouseworkDetailView {
             item: .makeForPreview(
                 title: "洗濯",
                 point: 10
+            )
+        )
+    }
+    .environment(HouseworkListStore())
+    .environment(CohabitantStore())
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailView_メモあり") {
+    NavigationStack {
+        HouseworkDetailView(
+            item: .makeForPreview(
+                title: "買い出し",
+                point: 10,
+                memo: .init(
+                    text: "駅前のスーパーで",
+                    checklist: [
+                        .init(id: "1", title: "牛乳", isChecked: true),
+                        .init(id: "2", title: "卵", isChecked: false),
+                    ]
+                )
             )
         )
     }
