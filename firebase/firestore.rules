@@ -44,6 +44,34 @@ service cloud.firestore {
         && request.auth.uid in cohabitantMembers(cohabitantId);
     }
 
+    // 家事メモ（家事・毎月のテンプレート・いつもの家事が持つ`memo`）の検査（ADR-0033）
+    //
+    // プランごとの文字数上限（無料200文字など）はクライアントで判定し、ここでは見ない。
+    // テンプレートやいつもの家事は、書いた人とそこから家事を作る人のプランが違いうるため、
+    // 書き込んだ人のプランで判定すると、同居人が家事を完了できなくなるなどの食い違いが起きる。
+    // ここではプランに依存しない次の2つだけを検査する。
+
+    // 1ドキュメント1MiBの制限からドキュメントを守る安全上限。
+    // テキストはクライアントの上限（5,000文字）より大きく取る。Swiftの文字数（書記素クラスタ）と
+    // `size()`では絵文字などの数え方が違うため。
+    // チェックリストの項目名の長さは、配列を走査できないため検査しない（1MiBの制限で頭打ちになる）。
+    function isValidMemo(data) {
+      return !('memo' in data)
+        || (
+          data.memo is map
+          && data.memo.text is string
+          && data.memo.text.size() <= 20000
+          && data.memo.checklist is list
+          && data.memo.checklist.size() <= 100
+        );
+    }
+
+    // 旧バージョンのアプリは`memo`を知らずにドキュメント全体を上書きするため、メモが消える更新を拒否する。
+    // 新しいアプリはメモを消したときも空の`memo`を残すので、この条件に掛からない。
+    function keepsMemo() {
+      return !('memo' in resource.data) || 'memo' in request.resource.data;
+    }
+
     // ドキュメントIDはFirebase Authのuid。`id`フィールドにも同じ値を持つ
     // （Functionsが `where("id", "==", uid)` で引くため）。
     match /Account/{userId} {
@@ -108,21 +136,34 @@ service cloud.firestore {
         // クライアント書き込みであり、ルールだけでは正当性を検証できない。
         // サーバー側でRevenueCatのエンタイトルメントを検証するまでの残存リスク。
         allow read: if isCohabitantMember(cohabitantId);
-        allow create, update: if isCohabitantMember(cohabitantId)
-                              && request.resource.data.id == houseworkId;
+        allow create: if isCohabitantMember(cohabitantId)
+                      && request.resource.data.id == houseworkId
+                      && isValidMemo(request.resource.data);
+        allow update: if isCohabitantMember(cohabitantId)
+                      && request.resource.data.id == houseworkId
+                      && isValidMemo(request.resource.data)
+                      && keepsMemo();
         allow delete: if isCohabitantMember(cohabitantId);
       }
 
       match /HouseworkTemplates/{templateId} {
         allow read, write: if isCohabitantMember(cohabitantId);
 
+        // NOTE: 毎週の家事は1ドキュメントに家事を配列で持ち、配列を走査できないため
+        // メモの安全上限・消失の拒否を検査していない。旧バージョンのアプリが保存し直すと
+        // その曜日の家事のメモが消える残存リスクは、強制アップデートで塞ぐ（ADR-0033）。
         match /Days/{dayOfWeek} {
           allow read, write: if isCohabitantMember(cohabitantId);
         }
 
         // 毎月繰り返す家事。1ドキュメント = 1家事（ADR-0022）
         match /MonthlyItems/{itemId} {
-          allow read, write: if isCohabitantMember(cohabitantId);
+          allow read, delete: if isCohabitantMember(cohabitantId);
+          allow create: if isCohabitantMember(cohabitantId)
+                        && isValidMemo(request.resource.data);
+          allow update: if isCohabitantMember(cohabitantId)
+                        && isValidMemo(request.resource.data)
+                        && keepsMemo();
         }
 
         // テンプレートの編集ロック。ドキュメントIDが編集者のuidで、
@@ -140,8 +181,13 @@ service cloud.firestore {
       // ここでは検証できない（Houseworksの`expiredAt`と同じ残存リスク）。
       match /FrequentHouseworks/{itemId} {
         allow read, delete: if isCohabitantMember(cohabitantId);
-        allow create, update: if isCohabitantMember(cohabitantId)
-                              && request.resource.data.id == itemId;
+        allow create: if isCohabitantMember(cohabitantId)
+                      && request.resource.data.id == itemId
+                      && isValidMemo(request.resource.data);
+        allow update: if isCohabitantMember(cohabitantId)
+                      && request.resource.data.id == itemId
+                      && isValidMemo(request.resource.data)
+                      && keepsMemo();
       }
 
       match /FrequentHouseworkCategories/{categoryId} {
