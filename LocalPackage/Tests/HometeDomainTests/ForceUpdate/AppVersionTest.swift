@@ -39,6 +39,7 @@ struct AppVersionTest {
             ("1.4", "1.4.0"),
             ("1.4.0", "1.4.0.0"),
             (" 1.4.0 ", "1.4.0"),
+            ("1.4.0\n", "1.4.0"),
         ]
     )
     func sameVersionIsEqual(lhs: String, rhs: String) throws {

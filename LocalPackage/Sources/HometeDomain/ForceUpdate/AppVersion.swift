@@ -14,7 +14,8 @@ public struct AppVersion: Comparable, Sendable {
 
     /// - Returns: 空文字、数字以外を含む、空の桁がある（`1..0`など）場合は`nil`
     public init?(_ string: String) {
-        let trimmed = string.trimmingCharacters(in: .whitespaces)
+        // コンソールへの貼り付けで末尾に改行が入っても、ブロックが黙って効かなくならないよう取り除く
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
         var components: [Int] = []
