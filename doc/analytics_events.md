@@ -80,6 +80,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `screen_name` | 実装View |
 |---|---|
 | `launch` | `LaunchScreenView` |
+| `force_update` | `ForceUpdateView`（最低バージョンを下回ったときの強制アップデート画面） |
 | `login` | `LoginView` |
 | `registration_account` | `RegistrationAccountView` |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
