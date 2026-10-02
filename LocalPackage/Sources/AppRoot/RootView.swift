@@ -25,21 +25,27 @@ public struct RootView: View {
 
     public var body: some View {
         ZStack {
-            switch launchStateStore.launchState {
-            case .launching:
-                LaunchScreenView()
-            case let .preLoggedIn(auth):
-                OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
-                    .transition(.asymmetric(
-                        insertion: .push(from: .leading),
-                        removal: .opacity
-                    ))
-            case let .loggedIn(context):
-                AppTabView()
-                    .environment(\.loginContext, context)
-                    .transition(.scale)
-            case .notLoggedIn:
-                LoginView()
+            if let forceUpdateRequirement = remoteConfigStore.forceUpdateRequirement {
+                // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
+                // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
+                ForceUpdateView(message: forceUpdateRequirement.message)
+            } else {
+                switch launchStateStore.launchState {
+                case .launching:
+                    LaunchScreenView()
+                case let .preLoggedIn(auth):
+                    OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
+                        .transition(.asymmetric(
+                            insertion: .push(from: .leading),
+                            removal: .opacity
+                        ))
+                case let .loggedIn(context):
+                    AppTabView()
+                        .environment(\.loginContext, context)
+                        .transition(.scale)
+                case .notLoggedIn:
+                    LoginView()
+                }
             }
         }
         .animation(.spring, value: launchStateStore.launchState)
@@ -99,7 +105,11 @@ public extension RootView {
                 houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient
             )
-            let remoteConfigStore = RemoteConfigStore(remoteConfigClient: $0.remoteConfigClient)
+            let remoteConfigStore = RemoteConfigStore(
+                remoteConfigClient: $0.remoteConfigClient,
+                currentAppVersion: Bundle.main
+                    .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+            )
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
@@ -120,6 +130,9 @@ public extension RootView {
                 .task {
                     // 起動処理とは並行に走らせ、完了を待たない
                     await remoteConfigStore.setupOnLaunch()
+                }
+                .task {
+                    await remoteConfigStore.observeConfigUpdates()
                 }
                 .routeResolverInjection()
                 .adComponentResolverInjection()
