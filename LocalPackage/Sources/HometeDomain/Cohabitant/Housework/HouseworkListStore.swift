@@ -275,6 +275,42 @@ public final class HouseworkListStore {
         analyticsClient.log(.housework(.delete(step: step, isSuccess: true)))
     }
 
+    /// 家事のメモ（テキスト・チェックリストの項目）を保存する
+    ///
+    /// メモの追加・更新は同居人に通知しない。
+    /// - Throws: 画面を開いている間に同居人が完了・「やらない」にして、メモを編集できなくなっていた場合は
+    ///           `HouseworkMemoError.notEditable`
+    public func updateMemo(
+        target: HouseworkItem,
+        memo: HouseworkMemo,
+        cohabitantId: String,
+        isRegistered: Bool,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        do {
+            try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { _ in memo }
+        } catch {
+            analyticsClient.log(.housework(.editMemo(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.editMemo(step: step, isSuccess: true)))
+    }
+
+    /// メモのチェックリストの項目のチェックを切り替えて保存する
+    ///
+    /// 同居人が同時に別の項目をチェックしても消さないよう、リスナーで受け取った最新のメモに対して切り替える。
+    /// - Throws: メモを編集できなくなっていた場合は`HouseworkMemoError.notEditable`
+    public func toggleMemoChecklistItem(
+        target: HouseworkItem,
+        itemId: HouseworkMemoChecklistItem.ID,
+        cohabitantId: String,
+        isRegistered: Bool
+    ) async throws {
+        try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { current in
+            (current.memo ?? .empty).toggled(itemId)
+        }
+    }
+
     /// 同居人の端末でふりかえり通知を予約するため、家事の完了を通知で知らせる
     ///
     /// 受け取った端末では、アプリが終了していてもNotification Service Extensionが起動して予約する。
@@ -333,6 +369,27 @@ private extension HouseworkListStore {
                 print("error occurred at housework snapshot listener: \(error)")
                 loadState = .failed(error)
             }
+        }
+    }
+
+    /// メモを保存する。登録済みの家事はメモのフィールドだけを、未登録の家事はドキュメントごと書く
+    /// - Parameter makeMemo: 最新の家事から、保存するメモを作る
+    func saveMemo(
+        target: HouseworkItem,
+        cohabitantId: String,
+        isRegistered: Bool,
+        makeMemo: (HouseworkItem) -> HouseworkMemo
+    ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の状態を見て判断する
+        let current = isRegistered ? items.item(target) ?? target : target
+        guard current.canEditMemo else { throw HouseworkMemoError.notEditable }
+
+        let memo = makeMemo(current)
+        if isRegistered {
+            try await houseworkClient.updateMemo(target.id, memo, cohabitantId)
+        } else {
+            let updatedItem = current.updateMemo(memo).updateCreatedAt(now())
+            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
         }
     }
 
