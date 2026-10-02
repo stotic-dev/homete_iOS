@@ -6,12 +6,15 @@ public struct HouseworkTemplateItem: Identifiable, Codable, Sendable, Equatable,
     public let title: String
     public let point: Int
     public let updatedAt: Date
+    /// テンプレートから作る家事に引き継ぐメモ
+    public let memo: HouseworkMemo?
 
-    public init(id: ItemId, title: String, point: Int, updatedAt: Date) {
+    public init(id: ItemId, title: String, point: Int, updatedAt: Date, memo: HouseworkMemo? = nil) {
         self.id = id
         self.title = title
         self.point = point
         self.updatedAt = updatedAt
+        self.memo = memo
     }
 
 }

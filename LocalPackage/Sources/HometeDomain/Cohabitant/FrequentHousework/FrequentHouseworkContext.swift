@@ -254,7 +254,8 @@ public extension FrequentHouseworkContext {
                 categoryId: input.categoryId,
                 sortOrder: workingContext.nextSortOrder(forCategoryId: input.categoryId),
                 createdAt: timestamp,
-                updatedAt: timestamp
+                updatedAt: timestamp,
+                memo: input.memo
             ))
         }
         return newItems
@@ -279,7 +280,8 @@ public extension FrequentHouseworkContext {
             categoryId: input.categoryId,
             sortOrder: isSameCategory ? current.sortOrder : nextSortOrder(forCategoryId: input.categoryId),
             createdAt: current.createdAt,
-            updatedAt: timestamp
+            updatedAt: timestamp,
+            memo: input.memo
         )
     }
 
@@ -295,7 +297,8 @@ public extension FrequentHouseworkContext {
                 categoryId: item.categoryId,
                 sortOrder: index,
                 createdAt: item.createdAt,
-                updatedAt: item.updatedAt
+                updatedAt: item.updatedAt,
+                memo: item.memo
             )
         }
     }

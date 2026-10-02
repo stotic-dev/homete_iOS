@@ -16,8 +16,13 @@ enum FrequentHouseworkContextAssemblyTest {
     struct MakeUpdatedItemCase {}
     struct MakeReorderedItemsCase {}
     struct MakeCategoryCase {}
+    struct MemoCase {}
 
     static let fixedNow = Date.previewDate(year: 2026, month: 9, day: 26)
+    static let memo = HouseworkMemo(
+        text: "スーパーで",
+        checklist: [.init(id: "1", title: "牛乳", isChecked: false)]
+    )
 
 }
 
@@ -471,6 +476,102 @@ extension FrequentHouseworkContextAssemblyTest.MakeCategoryCase {
         // Act
 
         let actual = context.makeReorderedCategories(orderedIds: ["b", "a", "c"])
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+}
+
+// MARK: - メモの引き継ぎ
+
+extension FrequentHouseworkContextAssemblyTest.MemoCase {
+
+    @Test("追加する家事は、入力したメモを持つ")
+    func makeAddedItemsKeepsMemo() throws {
+        // Arrange
+
+        let now = FrequentHouseworkContextAssemblyTest.fixedNow
+        let context = FrequentHouseworkContext()
+        let expected: [FrequentHouseworkItem] = [
+            .init(
+                id: "new",
+                title: "買い出し",
+                point: 10,
+                categoryId: nil,
+                sortOrder: 0,
+                createdAt: now,
+                updatedAt: now,
+                memo: FrequentHouseworkContextAssemblyTest.memo
+            ),
+        ]
+
+        // Act
+
+        let actual = try context.makeAddedItems(
+            from: [.init(title: "買い出し", point: 10, categoryId: nil, memo: FrequentHouseworkContextAssemblyTest.memo)],
+            limitPolicy: .premium,
+            timestamp: now,
+            idGenerator: { "new" }
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test("編集後の家事は、入力したメモに差し替わる")
+    func makeUpdatedItemReplacesMemo() throws {
+        // Arrange
+
+        let now = FrequentHouseworkContextAssemblyTest.fixedNow
+        let current = FrequentHouseworkItem.makeForTest(
+            id: "1",
+            title: "買い出し",
+            memo: .init(text: "古いメモ", checklist: [])
+        )
+        let context = FrequentHouseworkContext(items: [current])
+        let expected = FrequentHouseworkItem(
+            id: "1",
+            title: "買い出し",
+            point: 10,
+            categoryId: nil,
+            sortOrder: 0,
+            createdAt: current.createdAt,
+            updatedAt: now,
+            memo: FrequentHouseworkContextAssemblyTest.memo
+        )
+
+        // Act
+
+        let actual = try context.makeUpdatedItem(
+            itemId: "1",
+            input: .init(title: "買い出し", point: 10, categoryId: nil, memo: FrequentHouseworkContextAssemblyTest.memo),
+            timestamp: now
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test("並べ替えても、メモは引き継がれる")
+    func makeReorderedItemsKeepsMemo() {
+        // Arrange
+
+        let context = FrequentHouseworkContext(items: [
+            .makeForTest(id: "1", sortOrder: 0),
+            .makeForTest(id: "2", sortOrder: 1, memo: FrequentHouseworkContextAssemblyTest.memo),
+        ])
+        let expected: [FrequentHouseworkItem] = [
+            .makeForTest(id: "2", sortOrder: 0, memo: FrequentHouseworkContextAssemblyTest.memo),
+            .makeForTest(id: "1", sortOrder: 1),
+        ]
+
+        // Act
+
+        let actual = context.makeReorderedItems(orderedIds: ["2", "1"])
 
         // Assert
 
