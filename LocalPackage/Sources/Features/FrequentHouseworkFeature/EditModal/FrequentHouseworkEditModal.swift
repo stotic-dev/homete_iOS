@@ -37,7 +37,9 @@ struct FrequentHouseworkEditModal: View {
                 inputTitleField()
                 inputPointPicker()
                 inputCategoryPicker()
-                memoRow()
+                HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
+                    isPresentedMemoEditSheet = true
+                }
                 Spacer()
             }
             .padding(.horizontal, .space16)
@@ -185,28 +187,6 @@ private extension FrequentHouseworkEditModal {
             PointWheelPickerField(point: $input.point)
                 .font(with: .headLineM)
         }
-    }
-
-    func memoRow() -> some View {
-        Button {
-            isPresentedMemoEditSheet = true
-        } label: {
-            HStack(spacing: .space8) {
-                Text("メモ")
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
-                Spacer()
-                Text(input.memo.hasContent ? "あり" : "なし")
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
-                Image(systemName: "chevron.right")
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-                    .accessibilityHidden(true)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     /// カテゴリの選択肢

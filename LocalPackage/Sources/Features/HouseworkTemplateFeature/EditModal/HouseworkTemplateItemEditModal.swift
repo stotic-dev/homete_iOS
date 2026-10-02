@@ -81,7 +81,9 @@ struct HouseworkTemplateItemEditModal: View {
             inputTitleField()
             inputPointPicker()
             inputRecurrenceSelector()
-            memoRow()
+            HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
+                isPresentedMemoEditSheet = true
+            }
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -141,28 +143,6 @@ private extension HouseworkTemplateItemEditModal {
 
     func inputRecurrenceSelector() -> some View {
         RecurrenceSelector(input: $input.recurrence)
-    }
-
-    func memoRow() -> some View {
-        Button {
-            isPresentedMemoEditSheet = true
-        } label: {
-            HStack(spacing: .space8) {
-                Text("メモ")
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
-                Spacer()
-                Text(input.memo.hasContent ? "あり" : "なし")
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
-                Image(systemName: "chevron.right")
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-                    .accessibilityHidden(true)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     func trailingNavigationItem() -> some View {

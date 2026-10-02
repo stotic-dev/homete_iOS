@@ -74,30 +74,10 @@ private extension ManualHouseworkForm {
                 inputRecurrence()
             }
             Divider()
-            memoRow()
-        }
-    }
-
-    func memoRow() -> some View {
-        Button {
-            onTapMemo()
-        } label: {
-            HStack(spacing: .space8) {
-                Text("メモ")
-                    .font(with: .body)
-                    .foregroundStyle(.onSurface)
-                Spacer()
-                Text(entry.memo.hasContent ? "あり" : "なし")
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
-                Image(systemName: "chevron.right")
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-                    .accessibilityHidden(true)
+            HouseworkMemoRow(hasContent: entry.memo.hasContent, titleFont: .body) {
+                onTapMemo()
             }
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
     }
 
     func inputTitleField() -> some View {
