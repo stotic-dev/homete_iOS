@@ -20,6 +20,7 @@ struct FrequentHouseworkEditModal: View {
     /// - Note: 追加直後は購読が届くまで`context`に入らないため、選択肢と名前の重複の判定に足す
     @State var addedCategories: [FrequentHouseworkCustomCategory] = []
     @State var isPresentingCategoryNameAlert = false
+    @State var isPresentedMemoEditSheet = false
     @State var newCategoryName = ""
     @FocusState var isShowingKeyboard: Bool
 
@@ -36,6 +37,7 @@ struct FrequentHouseworkEditModal: View {
                 inputTitleField()
                 inputPointPicker()
                 inputCategoryPicker()
+                memoRow()
                 Spacer()
             }
             .padding(.horizontal, .space16)
@@ -55,6 +57,12 @@ struct FrequentHouseworkEditModal: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .sheet(isPresented: $isPresentedMemoEditSheet) {
+            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0033）
+            HouseworkMemoEditScreen(memo: input.memo) { memo in
+                input.memo = memo
+            }
+        }
         .alert("新しいカテゴリ", isPresented: $isPresentingCategoryNameAlert) {
             TextField("カテゴリの名前", text: $newCategoryName)
             Button("キャンセル", role: .cancel) {}
@@ -177,6 +185,28 @@ private extension FrequentHouseworkEditModal {
             PointWheelPickerField(point: $input.point)
                 .font(with: .headLineM)
         }
+    }
+
+    func memoRow() -> some View {
+        Button {
+            isPresentedMemoEditSheet = true
+        } label: {
+            HStack(spacing: .space8) {
+                Text("メモ")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Text(input.memo.hasContent ? "あり" : "なし")
+                    .font(with: .body)
+                    .foregroundStyle(.onSurfaceVariant)
+                Image(systemName: "chevron.right")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurfaceVariant)
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     /// カテゴリの選択肢
