@@ -9,8 +9,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -181,6 +181,17 @@ function keepsMemo() {
 
 `HouseworkAnalyticsAction`に`editMemo(step:isSuccess:)`を足す。チェックの切り替えは送らない（頻度が高く、メモの利用状況を見るにはテキスト・項目の保存で足りるため）。`doc/analytics_events.md`を更新する。
 
+### 8. 実装時に追加した事項
+
+- 編集中のメモは`HometeDomain`の`HouseworkMemoDraft`で持つ。保存するときは前後の空白を除き、項目名が空の項目を落とす。保存できるかの判定（変更があるか・上限）もここに置いてユニットテストする。
+- 画面を開いている間に同居人が家事を完了・「やらない」にした場合、`HouseworkListStore`は`HouseworkMemoError.notEditable`を返し、家事詳細は専用のアラートで知らせる。
+- 編集シートを開く画面ごとの`screen_view`は`housework_memo_edit`、ペイウォールの起点は`housework_memo_limit`。
+- テンプレートの詳細画面にもメモを閲覧用に出す（チェックは作られた家事の側で付ける）。
+- テンプレートからいつもの家事を取り込む機能（`importFromTemplate`）では、メモを引き継がない。取り込みの候補は名前で重複を除いていて、複数のテンプレートの家事が1件にまとまるため。
+- いつもの家事の編集でメモに触れなかった場合（入力が`nil`）は、編集中に同居人が付けたメモを残す。
+- 家事詳細のチェックは1つずつ保存する（保存がリスナーに反映される前に次のチェックを保存して、先のチェックを消さないため）。
+- 編集シートから保存するときは、同じ項目のチェック状態を最新のメモに合わせる（シートを開いている間に同居人が付けたチェックを戻さないため）。
+
 ### ファイル配置
 
 | 種別 | パス | 役割 |
@@ -215,25 +226,25 @@ function keepsMemo() {
 
 ### Phase 2: 実装
 
-- [ ] Domain: `HouseworkMemo` / `HouseworkMemoLimitPolicy` とテスト
-- [ ] Domain: `HouseworkItem`に`memo`（Codable後方互換、全状態変更での引き継ぎ、`canEditMemo` / `updateMemo`）とテスト
-- [ ] Domain: テンプレート（毎週・毎月）といつもの家事に`memo`、生成時のコピーとテスト
-- [ ] Client / Store: `HouseworkClient.updateMemo`、`HouseworkListStore.updateMemo`とテスト
-- [ ] Analytics: `editMemo`と`doc/analytics_events.md`
-- [ ] View: `HometeUI`のメモ編集シート・表示コンポーネント
-- [ ] View: 家事追加画面・保留リスト
-- [ ] View: 家事詳細画面
-- [ ] View: 家事ボードの行の「メモあり」
-- [ ] View: テンプレート編集・いつもの家事の編集
-- [ ] Firestoreルールとルールのテスト
-- [ ] 追加・変更した画面のPreview
+- [x] Domain: `HouseworkMemo` / `HouseworkMemoLimitPolicy` とテスト
+- [x] Domain: `HouseworkItem`に`memo`（Codable後方互換、全状態変更での引き継ぎ、`canEditMemo` / `updateMemo`）とテスト
+- [x] Domain: テンプレート（毎週・毎月）といつもの家事に`memo`、生成時のコピーとテスト
+- [x] Client / Store: `HouseworkClient.updateMemo`、`HouseworkListStore.updateMemo`とテスト
+- [x] Analytics: `editMemo`と`doc/analytics_events.md`
+- [x] View: `HometeUI`のメモ編集シート・表示コンポーネント
+- [x] View: 家事追加画面・保留リスト
+- [x] View: 家事詳細画面
+- [x] View: 家事ボードの行の「メモあり」
+- [x] View: テンプレート編集・いつもの家事の編集
+- [x] Firestoreルールとルールのテスト
+- [x] 追加・変更した画面のPreview
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
-- [ ] `npm run test:rules` 通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
+- [x] `npm run test:rules` 通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
 - [ ] 実機/シミュレータで動作確認
 
