@@ -196,7 +196,7 @@ private extension HouseworkMemoEditView {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.onSurfaceVariant)
             }
-            .accessibilityLabel("「\(item.title)」を削除")
+            .accessibilityLabel(deleteAccessibilityLabel(item))
         }
         .padding(.horizontal, .space16)
         .padding(.vertical, .space8)
@@ -240,6 +240,12 @@ private extension HouseworkMemoEditView {
             RoundedRectangle(radius: .radius8)
                 .fill(.subSurface)
         }
+    }
+
+    /// 名前が空の項目は「「」を削除」と読まれないようにする
+    func deleteAccessibilityLabel(_ item: HouseworkMemoDraft.Item) -> String {
+        let title = item.title.trimmingCharacters(in: .whitespaces)
+        return title.isEmpty ? "項目を削除" : "「\(title)」を削除"
     }
 
     func titleBinding(of id: HouseworkMemoDraft.Item.ID) -> Binding<String> {
