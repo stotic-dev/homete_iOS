@@ -8,6 +8,7 @@
 /// 家事を完了にするときと、完了済みの家事に手伝った人を足すとき（`forAddingExecutors`）の両方で使う。
 /// 担当者の並び順は`memberIds`（`CohabitantMemberList.value`の順。自分が先頭）に合わせる。
 /// 均等割りの端数と、ポイントへの換算で小数部分が同じだったときの優先順は、どちらもこの順で決める。
+/// 例外は`forAddingExecutors`で作った直後で、保存済みの配分を再現するため保存時の並び順を引き継ぐ。
 public struct HouseworkExecutorAllocation: Equatable, Sendable {
 
     public struct Entry: Equatable, Sendable {
@@ -35,7 +36,7 @@ public struct HouseworkExecutorAllocation: Equatable, Sendable {
     public let lockedIds: [String]
     /// 頑張り度
     public private(set) var effort: HouseworkEffort
-    /// 選んだ担当者と割合（メンバー一覧の並び順）
+    /// 選んだ担当者と割合（メンバー一覧の並び順。`forAddingExecutors`の初期値だけ保存時の並び順）
     public private(set) var entries: [Entry]
 
     /// - Parameters:
@@ -64,9 +65,11 @@ public struct HouseworkExecutorAllocation: Equatable, Sendable {
     /// 頑張り度はこの操作では変えないので、上乗せしない「ふつう」を指定して`totalPoint`を`earnedPoint`と
     /// 一致させる。保存された`effort`から計算し直さないのは、上乗せ後の配分と対応しない場合があるため（ADR-0024）。
     ///
-    /// もともとの担当者は外せないようにし、割合も保存済みの値のまま並べる。開いて保存しただけで
+    /// もともとの担当者は外せないようにし、割合と並び順も保存済みのまま引き継ぐ。開いて保存しただけで
     /// 配分が変わらないようにするためで、人を足したときは`toggle(_:)`が全員を均等割りにし直す。
-    /// - Parameter executors: もともとの担当者。`percentage`をそのまま初期値に使う
+    /// メンバー一覧に居ない担当者（アカウントを削除した同居人）は引き継げないため、`entries`には入らない。
+    /// この場合は割合の合計が100%にならず保存できず、`canAddExecutor`も`false`になる。
+    /// - Parameter executors: もともとの担当者。`percentage`と並び順をそのまま初期値に使う
     public static func forAddingExecutors(
         memberIds: [String],
         executors: [HouseworkExecutor],
@@ -80,10 +83,12 @@ public struct HouseworkExecutorAllocation: Equatable, Sendable {
             effort: .normal,
             lockedIds: executorIds
         )
-        allocation.entries = allocation.entries.map { entry in
-            let percentage = executors.first { $0.userId == entry.userId }?.percentage
-            return .init(userId: entry.userId, percentage: percentage ?? entry.percentage)
-        }
+        // 保存済みの割合だけでなく、保存済みの並び順も引き継ぐ。ポイントへの換算は端数の行き先が
+        // 並び順で決まるため、メンバー一覧の並び順（自分が先頭）に並べ替えると、同じ家事でも
+        // 見ている人によって1ptの行き先が入れ替わってしまう
+        allocation.entries = executors
+            .filter { memberIds.contains($0.userId) }
+            .map { .init(userId: $0.userId, percentage: $0.percentage) }
         return allocation
     }
 
@@ -133,8 +138,13 @@ public extension HouseworkExecutorAllocation {
     ///
     /// 人数の上限に達していて選べない場合と、同居人が自分だけで足せる相手がいない場合を区別しない。
     /// どちらも「これ以上足せない」ことに変わりはなく、呼び出し側は導線を出すかどうかだけを決める。
+    ///
+    /// メンバー一覧に居ない担当者（アカウントを削除した同居人）がいる家事も足せないものとして扱う。
+    /// 足すと均等割りをやり直す際に、その人の配分が黙って残りのメンバーへ移ってしまうため。
     var canAddExecutor: Bool {
-        entries.count < maxExecutorCount && memberIds.contains { !isSelected($0) }
+        guard lockedIds.allSatisfy({ memberIds.contains($0) }) else { return false }
+
+        return entries.count < maxExecutorCount && memberIds.contains { !isSelected($0) }
     }
 
     /// 担当者の選択を切り替え、均等割りをやり直す

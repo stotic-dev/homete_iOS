@@ -505,7 +505,73 @@ extension HouseworkExecutorAllocationTest.EffortCase {
 
 extension HouseworkExecutorAllocationTest.ForAddingExecutorsCase {
 
-    @Test("もともとの担当者は、保存済みの割合のまま並ぶ")
+    @Test("もともとの担当者は、保存済みの割合と並び順のまま並ぶ")
+    func forAddingExecutors_keepsSavedPercentageAndOrder() {
+        // Arrange
+        // メンバー一覧の並び順（own → userB → userC）とは違う順で保存された担当者
+        let executors = [
+            HouseworkExecutor(userId: "userC", percentage: 30, point: 3),
+            HouseworkExecutor(userId: "own", percentage: 70, point: 7),
+        ]
+
+        // Act
+        let actual = HouseworkExecutorAllocation.forAddingExecutors(
+            memberIds: ["own", "userB", "userC"],
+            executors: executors,
+            earnedPoint: 10
+        )
+
+        // Assert
+        let expected: [HouseworkExecutorAllocation.Entry] = [
+            .init(userId: "userC", percentage: 30),
+            .init(userId: "own", percentage: 70),
+        ]
+        #expect(actual.entries == expected)
+    }
+
+    @Test("見ている人によらず、保存済みのポイントをそのまま再現する")
+    func forAddingExecutors_reproducesSavedPoints() throws {
+        // Arrange
+        // 15ptを50%ずつで分けると端数が1pt出るため、並び順が変わるとポイントが入れ替わる
+        let executors = [
+            HouseworkExecutor(userId: "userB", percentage: 50, point: 8),
+            HouseworkExecutor(userId: "own", percentage: 50, point: 7),
+        ]
+        let sut = HouseworkExecutorAllocation.forAddingExecutors(
+            memberIds: ["own", "userB"],
+            executors: executors,
+            earnedPoint: 15
+        )
+
+        // Act
+        let actual = try sut.makeExecutors()
+
+        // Assert
+        #expect(actual == executors)
+    }
+
+    @Test("メンバー一覧に居ない担当者がいる家事では、担当者を足せない")
+    func forAddingExecutors_withUnknownExecutor_cannotAddExecutor() {
+        // Arrange
+        // 3人で担当した後に1人がアカウントを削除すると、executorsにだけ残る
+        let executors = [
+            HouseworkExecutor(userId: "own", percentage: 50, point: 5),
+            HouseworkExecutor(userId: "deleted", percentage: 50, point: 5),
+        ]
+        let sut = HouseworkExecutorAllocation.forAddingExecutors(
+            memberIds: ["own", "userB"],
+            executors: executors,
+            earnedPoint: 10
+        )
+
+        // Act
+        let actual = sut.canAddExecutor
+
+        // Assert
+        #expect(actual == false)
+    }
+
+    @Test("均等割りの家事では、保存済みの割合がそのまま並ぶ")
     func forAddingExecutors_keepsSavedPercentage() {
         // Arrange
         let executors = [
