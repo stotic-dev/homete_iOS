@@ -112,3 +112,156 @@ struct RemoteConfigStoreTest {
     }
 
 }
+
+// MARK: - 強制アップデート
+
+extension RemoteConfigStoreTest {
+
+    @Test("起動時に取得・反映した最低バージョンを現在のバージョンが下回る場合、強制アップデートが必要になる")
+    func setupOnLaunchRequiresForceUpdate() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            fetchAndActivate: {
+                isActivated.value = true
+            },
+            string: { key in
+                switch key {
+                case .minimumRequiredVersion:
+                    isActivated.value ? "2.0.0" : key.defaultValue
+                case .forceUpdateMessage:
+                    isActivated.value ? "案内" : key.defaultValue
+                }
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+
+        // Act
+
+        await store.setupOnLaunch()
+
+        // Assert
+
+        #expect(store.forceUpdateRequirement == .init(message: "案内"))
+    }
+
+    @Test("起動時の取得に失敗した場合も、前回反映済みの最低バージョンで強制アップデートを判定する")
+    func setupOnLaunchFailureUsesActivatedMinimumVersion() async {
+        // Arrange
+
+        let remoteConfigClient = RemoteConfigClient(
+            fetchAndActivate: {
+                throw FetchError()
+            },
+            string: { key in
+                // 前回の起動で反映済みの値
+                key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+
+        // Act
+
+        await store.setupOnLaunch()
+
+        // Assert
+
+        #expect(store.forceUpdateRequirement == .init(message: nil))
+    }
+
+    @Test("フォアグラウンド復帰時に最低バージョンが引き上げられていれば、強制アップデートが必要になる")
+    func refreshRequiresForceUpdate() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            fetchAndActivate: {
+                isActivated.value = true
+            },
+            string: { key in
+                key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+
+        // Act
+
+        await store.refresh()
+
+        // Assert
+
+        #expect(store.forceUpdateRequirement == .init(message: nil))
+    }
+
+    @Test("フォアグラウンド復帰時に最低バージョンが引き下げられていれば、強制アップデートを解除する")
+    func refreshCancelsForceUpdate() async {
+        // Arrange
+
+        let remoteConfigClient = RemoteConfigClient(
+            string: { key in
+                key == .minimumRequiredVersion ? "1.0.0" : key.defaultValue
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0",
+            forceUpdateRequirement: .init(message: nil)
+        )
+
+        // Act
+
+        await store.refresh()
+
+        // Assert
+
+        #expect(store.forceUpdateRequirement == nil)
+    }
+
+    @Test("コンソールで公開された最低バージョンの変更を受け取ると、強制アップデートを判定し直す")
+    func observeConfigUpdatesRequiresForceUpdate() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            configUpdates: {
+                AsyncStream { continuation in
+                    isActivated.value = true
+                    continuation.yield()
+                    continuation.finish()
+                }
+            },
+            bool: { _ in
+                Issue.record("起動中は広告表示の値を読み直さない")
+                return true
+            },
+            string: { key in
+                key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0",
+            isAdsEnabled: false
+        )
+
+        // Act
+
+        await store.observeConfigUpdates()
+
+        // Assert
+
+        #expect(store.forceUpdateRequirement == .init(message: nil))
+        #expect(store.isAdsEnabled == false)
+    }
+
+}
