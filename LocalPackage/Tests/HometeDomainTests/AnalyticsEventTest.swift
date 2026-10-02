@@ -193,6 +193,14 @@ struct AnalyticsEventTest {
                 ["action": "redo", "step": "board", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.addHelper(step: .detail, isSuccess: true),
+                ["action": "add_helper", "step": "detail", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.addHelper(step: .detail, isSuccess: false),
+                ["action": "add_helper", "step": "detail", "result": "failure"]
+            ),
+            (
                 HouseworkAnalyticsAction.sendThanks(step: .thanks, isSuccess: true),
                 ["action": "send_thanks", "step": "thanks", "result": "success"]
             ),
