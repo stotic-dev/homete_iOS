@@ -414,6 +414,23 @@ extension RegisterHouseworkDraftTest.HasInputCase {
         #expect(actual == expected)
     }
 
+    @Test("名前が空でも、入力中の家事にメモを書いていれば破棄の確認が要る")
+    func hasInputWithOnlyMemo() {
+        // Arrange
+
+        var input = RegisterHouseworkDraftTest.makeInput(title: "")
+        input.memo = .init(text: "燃えるゴミ", checklist: [])
+        let draft = RegisterHouseworkDraft(input: input)
+
+        // Act
+
+        let actual = draft.hasInput
+
+        // Assert
+
+        #expect(actual == true)
+    }
+
 }
 
 // MARK: - いつもの家事に保存する

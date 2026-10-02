@@ -83,8 +83,12 @@ extension RegisterHouseworkDraft {
     }
 
     /// キャンセル時に破棄の確認が要るか
+    /// - Note: 名前より先にメモを書くこともあるため、入力中のメモも含める
     var hasInput: Bool {
-        !selectedFrequentItemIds.isEmpty || !queuedEntries.isEmpty || !Self.isBlank(input.title)
+        !selectedFrequentItemIds.isEmpty
+            || !queuedEntries.isEmpty
+            || !Self.isBlank(input.title)
+            || input.memo.hasContent
     }
 
     /// 「続けて入力する」を押せるか
