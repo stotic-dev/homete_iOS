@@ -68,6 +68,7 @@ private extension HouseworkTemplateItemEditModalScreen {
 struct HouseworkTemplateItemEditModal: View {
 
     @Environment(\.dismiss) var dismiss
+    @State var isPresentedMemoEditSheet = false
 
     @Binding var input: TemplateItemEditInput
     @FocusState var isShowingKeyboard: Bool
@@ -80,6 +81,7 @@ struct HouseworkTemplateItemEditModal: View {
             inputTitleField()
             inputPointPicker()
             inputRecurrenceSelector()
+            memoRow()
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -93,6 +95,12 @@ struct HouseworkTemplateItemEditModal: View {
         }
         .trailingToolbarItem {
             trailingNavigationItem()
+        }
+        .sheet(isPresented: $isPresentedMemoEditSheet) {
+            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0033）
+            HouseworkMemoEditScreen(memo: input.memo) { memo in
+                input.memo = memo
+            }
         }
         .trackScreenView(.houseworkTemplateEdit)
     }
@@ -133,6 +141,28 @@ private extension HouseworkTemplateItemEditModal {
 
     func inputRecurrenceSelector() -> some View {
         RecurrenceSelector(input: $input.recurrence)
+    }
+
+    func memoRow() -> some View {
+        Button {
+            isPresentedMemoEditSheet = true
+        } label: {
+            HStack(spacing: .space8) {
+                Text("メモ")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Spacer()
+                Text(input.memo.hasContent ? "あり" : "なし")
+                    .font(with: .body)
+                    .foregroundStyle(.onSurfaceVariant)
+                Image(systemName: "chevron.right")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurfaceVariant)
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     func trailingNavigationItem() -> some View {
