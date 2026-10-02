@@ -288,7 +288,9 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep
     ) async throws {
         do {
-            try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { _ in memo }
+            try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { current in
+                memo.mergingCheckState(from: current.memo)
+            }
         } catch {
             analyticsClient.log(.housework(.editMemo(step: step, isSuccess: false)))
             throw error

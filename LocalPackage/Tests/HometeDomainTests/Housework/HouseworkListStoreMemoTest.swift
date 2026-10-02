@@ -208,4 +208,71 @@ struct HouseworkListStoreMemoTest {
         }
     }
 
+    @Test("メモを保存すると、シートを開いている間に同居人が付けたチェックを戻さない")
+    func updateMemo_keepsLatestCheckState() async throws {
+        // Arrange
+
+        let inputIndexedDate = Date(timeIntervalSince1970: 0)
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1, indexedDate: inputIndexedDate)
+        let latestItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: inputIndexedDate,
+            memo: .init(text: "", checklist: [.init(id: "milk", title: "牛乳", isChecked: true)])
+        )
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(updateMemoHandler: { _, memo, _ in
+                    // Assert
+
+                    let expected = HouseworkMemo(
+                        text: "スーパーで",
+                        checklist: [.init(id: "milk", title: "牛乳", isChecked: true)]
+                    )
+                    #expect(memo == expected)
+                    confirmation()
+                }),
+                items: [.makeForTest(items: [latestItem])]
+            )
+
+            // Act
+
+            try await store.updateMemo(
+                target: inputHouseworkItem,
+                memo: inputMemo,
+                cohabitantId: inputCohabitantId,
+                isRegistered: true,
+                step: .detail
+            )
+        }
+    }
+
+    @Test("メモの保存に失敗すると、Analyticsに失敗を送ってエラーを返す")
+    func updateMemo_failure_logsFailure() async {
+        // Arrange
+
+        struct SaveError: Error {}
+        let inputHouseworkItem = HouseworkItem.makeForTest(id: 1)
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
+        let store = HouseworkListStore(
+            houseworkClient: .init(updateMemoHandler: { _, _, _ in throw SaveError() }),
+            analyticsClient: .init(log: { event in logger.value.append(event) }),
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        try? await store.updateMemo(
+            target: inputHouseworkItem,
+            memo: inputMemo,
+            cohabitantId: inputCohabitantId,
+            isRegistered: true,
+            step: .detail
+        )
+
+        // Assert
+
+        #expect(logger.value == [.housework(.editMemo(step: .detail, isSuccess: false))])
+    }
+
 }

@@ -38,6 +38,25 @@ public struct HouseworkMemo: Codable, Sendable, Equatable, Hashable {
         )
     }
 
+    /// 同じ項目のチェック状態を`latest`に合わせたメモを返す
+    ///
+    /// 編集シートではチェックを変えられないため、シートを開いている間に同居人が付けたチェックを、
+    /// 保存で開いた時点の状態に戻さないようにする。`latest`に無い項目（追加した項目）はそのまま。
+    public func mergingCheckState(from latest: HouseworkMemo?) -> Self {
+        guard let latest else { return self }
+        let latestCheckStates = Dictionary(
+            latest.checklist.map { ($0.id, $0.isChecked) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        return .init(
+            text: text,
+            checklist: checklist.map { item in
+                guard let isChecked = latestCheckStates[item.id] else { return item }
+                return .init(id: item.id, title: item.title, isChecked: isChecked)
+            }
+        )
+    }
+
 }
 
 /// メモのチェックリストの項目

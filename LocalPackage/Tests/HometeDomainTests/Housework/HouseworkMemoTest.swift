@@ -11,6 +11,7 @@ enum HouseworkMemoTest {
     struct CharacterCountCase {}
     struct ToggledCase {}
     struct HasContentCase {}
+    struct MergingCheckStateCase {}
 
 }
 
@@ -104,6 +105,45 @@ extension HouseworkMemoTest.HasContentCase {
 
         // Assert
 
+        #expect(actual == expected)
+    }
+
+}
+
+extension HouseworkMemoTest.MergingCheckStateCase {
+
+    @Test("同じ項目のチェック状態だけを最新に合わせ、名前・テキスト・追加した項目は編集した内容のまま")
+    func mergingCheckState_usesLatestCheckState() {
+        // Arrange
+
+        let edited = HouseworkMemo(
+            text: "編集後",
+            checklist: [
+                .init(id: "milk", title: "牛乳2本", isChecked: false),
+                .init(id: "new", title: "卵", isChecked: false),
+            ]
+        )
+        let latest = HouseworkMemo(
+            text: "編集前",
+            checklist: [
+                .init(id: "milk", title: "牛乳", isChecked: true),
+                .init(id: "removed", title: "パン", isChecked: true),
+            ]
+        )
+
+        // Act
+
+        let actual = edited.mergingCheckState(from: latest)
+
+        // Assert
+
+        let expected = HouseworkMemo(
+            text: "編集後",
+            checklist: [
+                .init(id: "milk", title: "牛乳2本", isChecked: true),
+                .init(id: "new", title: "卵", isChecked: false),
+            ]
+        )
         #expect(actual == expected)
     }
 
