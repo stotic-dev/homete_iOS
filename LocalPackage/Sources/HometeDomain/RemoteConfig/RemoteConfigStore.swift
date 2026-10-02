@@ -76,9 +76,14 @@ private extension RemoteConfigStore {
     }
 
     func updateForceUpdateRequirement() {
+        let minimumRequiredVersion = remoteConfigClient.string(.minimumRequiredVersion)
+        if !minimumRequiredVersion.isEmpty, AppVersion(minimumRequiredVersion) == nil {
+            // ブロックしない側に倒すため、設定ミスに気づける手がかりだけ残す
+            print("[RemoteConfigStore] invalid minimum_required_version: \(minimumRequiredVersion)")
+        }
         forceUpdateRequirement = .make(
             currentVersion: currentAppVersion,
-            minimumRequiredVersion: remoteConfigClient.string(.minimumRequiredVersion),
+            minimumRequiredVersion: minimumRequiredVersion,
             message: remoteConfigClient.string(.forceUpdateMessage)
         )
     }
