@@ -98,6 +98,37 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
+    /// 完了済みの家事の担当者を入れ替える（手伝った人の追加）
+    ///
+    /// 完了日時・頑張り度・ありがとう・作成日時は変えず、担当者とポイントの配分だけを更新する。
+    /// 完了していない家事は担当者を持たないため、そのまま返す。画面を開いている間に同居人が
+    /// 未完了へ戻した場合に、担当者だけが付いた未完了の家事を作らないようにする。
+    /// - Parameter executors: 入れ替える担当者。ポイントの合計は入れ替える前の`earnedPoint`と一致させる
+    public func updateExecutors(_ executors: [HouseworkExecutor]) -> Self {
+        guard state == .completed else { return self }
+
+        // 手伝った人を足しても家事の合計ポイントは変えないため、入れ替える前の合計と一致することを
+        // 開発中に気付けるようにする（`updateCompleted`と同じ考え方）
+        assert(
+            executors.reduce(0) { $0 + $1.point } == earnedPoint,
+            "担当者のポイントの合計が、入れ替える前の合計ポイントと一致しません"
+        )
+        return .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt
+        )
+    }
+
     /// 同じ家事をもう一度やったものとして、完了済みの別の家事を作る
     ///
     /// 元の家事の完了記録は残したまま、実施した回数分のポイントを積めるように別IDの家事として作る。

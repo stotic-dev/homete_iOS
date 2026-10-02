@@ -3,8 +3,9 @@
 //  LocalPackage
 //
 
-/// 家事を完了にするときの担当者の選択と、ポイントの配分
+/// 家事の担当者の選択と、ポイントの配分
 ///
+/// 家事を完了にするときと、完了済みの家事に手伝った人を足すとき（`forAddingExecutors`）の両方で使う。
 /// 担当者の並び順は`memberIds`（`CohabitantMemberList.value`の順。自分が先頭）に合わせる。
 /// 均等割りの端数と、ポイントへの換算で小数部分が同じだったときの優先順は、どちらもこの順で決める。
 public struct HouseworkExecutorAllocation: Equatable, Sendable {
@@ -28,25 +29,62 @@ public struct HouseworkExecutorAllocation: Equatable, Sendable {
     public let memberIds: [String]
     /// 家事のポイント（頑張り度で上乗せする前）。選べる人数の上限はこのポイントで決める
     public let basePoint: Int
+    /// 選択を外せない担当者のユーザーID
+    ///
+    /// 完了済みの家事に手伝った人を足すときの、もともとの担当者が入る。完了にするときは空。
+    public let lockedIds: [String]
     /// 頑張り度
     public private(set) var effort: HouseworkEffort
     /// 選んだ担当者と割合（メンバー一覧の並び順）
     public private(set) var entries: [Entry]
 
-    /// - Parameter selectedIds: 最初に選んでおく担当者。選べる人数の上限を超えた分は先頭から切り詰める
+    /// - Parameters:
+    ///   - selectedIds: 最初に選んでおく担当者。選べる人数の上限を超えた分は先頭から切り詰める
+    ///   - lockedIds: 選択を外せない担当者
     public init(
         memberIds: [String],
         selectedIds: [String],
         basePoint: Int,
-        effort: HouseworkEffort = .normal
+        effort: HouseworkEffort = .normal,
+        lockedIds: [String] = []
     ) {
         self.memberIds = memberIds
         self.basePoint = basePoint
+        self.lockedIds = lockedIds
         self.effort = effort
         let orderedIds = memberIds
             .filter { selectedIds.contains($0) }
             .prefix(Self.maxExecutorCount(basePoint: basePoint))
         entries = Self.evenEntries(userIds: Array(orderedIds))
+    }
+
+    /// 完了済みの家事に手伝った人を足すときの配分を作る
+    ///
+    /// 家事の合計ポイントは変えずに配り直すため、配分の対象は上乗せ後のポイント（`HouseworkItem.earnedPoint`）。
+    /// 頑張り度はこの操作では変えないので、上乗せしない「ふつう」を指定して`totalPoint`を`earnedPoint`と
+    /// 一致させる。保存された`effort`から計算し直さないのは、上乗せ後の配分と対応しない場合があるため（ADR-0024）。
+    ///
+    /// もともとの担当者は外せないようにし、割合も保存済みの値のまま並べる。開いて保存しただけで
+    /// 配分が変わらないようにするためで、人を足したときは`toggle(_:)`が全員を均等割りにし直す。
+    /// - Parameter executors: もともとの担当者。`percentage`をそのまま初期値に使う
+    public static func forAddingExecutors(
+        memberIds: [String],
+        executors: [HouseworkExecutor],
+        earnedPoint: Int
+    ) -> Self {
+        let executorIds = executors.map(\.userId)
+        var allocation = Self(
+            memberIds: memberIds,
+            selectedIds: executorIds,
+            basePoint: earnedPoint,
+            effort: .normal,
+            lockedIds: executorIds
+        )
+        allocation.entries = allocation.entries.map { entry in
+            let percentage = executors.first { $0.userId == entry.userId }?.percentage
+            return .init(userId: entry.userId, percentage: percentage ?? entry.percentage)
+        }
+        return allocation
     }
 
     /// 担当者に配分するポイント（頑張り度で上乗せした後）
@@ -69,6 +107,14 @@ public extension HouseworkExecutorAllocation {
         max(basePoint, 1)
     }
 
+    /// この配分で選べる人数の上限
+    ///
+    /// 上限の基準になるポイントが完了時（上乗せ前）と手伝った人の追加時（上乗せ後）で違うため、
+    /// 呼び出し側が基準を意識しなくて済むようにここから引く。
+    var maxExecutorCount: Int {
+        Self.maxExecutorCount(basePoint: basePoint)
+    }
+
     func isSelected(_ userId: String) -> Bool {
         entries.contains { $0.userId == userId }
     }
@@ -76,8 +122,19 @@ public extension HouseworkExecutorAllocation {
     /// 選択を切り替えられるかどうか
     ///
     /// 選択済みの担当者はいつでも外せる。未選択のメンバーは、人数の上限に達していなければ選べる。
+    /// `lockedIds`の担当者はどちらもできない。
     func canToggle(_ userId: String) -> Bool {
-        isSelected(userId) || entries.count < Self.maxExecutorCount(basePoint: basePoint)
+        guard !lockedIds.contains(userId) else { return false }
+
+        return isSelected(userId) || entries.count < maxExecutorCount
+    }
+
+    /// 担当者をまだ足せるかどうか
+    ///
+    /// 人数の上限に達していて選べない場合と、同居人が自分だけで足せる相手がいない場合を区別しない。
+    /// どちらも「これ以上足せない」ことに変わりはなく、呼び出し側は導線を出すかどうかだけを決める。
+    var canAddExecutor: Bool {
+        entries.count < maxExecutorCount && memberIds.contains { !isSelected($0) }
     }
 
     /// 担当者の選択を切り替え、均等割りをやり直す
