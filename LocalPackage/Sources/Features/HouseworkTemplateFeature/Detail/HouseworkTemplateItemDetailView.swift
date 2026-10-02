@@ -22,16 +22,26 @@ struct HouseworkTemplateItemDetailView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: .space24) {
-            row(label: "ポイント") {
-                PointLabel(point: item.point)
+        // メモが長くても読み切れるようにスクロールさせる
+        ScrollView {
+            VStack(alignment: .leading, spacing: .space24) {
+                row(label: "ポイント") {
+                    PointLabel(point: item.point)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                recurrenceContent()
+                if let memo = item.memo, !memo.isEmpty {
+                    row(label: "メモ") {
+                        // テンプレートのメモのチェックは、作られた家事の側で付ける
+                        HouseworkMemoContent(memo: memo, isEditable: false, onToggle: { _ in })
+                    }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            recurrenceContent()
-            Spacer()
+            .padding(.horizontal, .space16)
+            .padding(.vertical, .space24)
         }
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space24)
+        .scrollBounceBehavior(.basedOnSize)
         .navigationTitle(item.title)
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
@@ -147,6 +157,29 @@ private extension HouseworkTemplateItemDetailView {
                 updatedAt: .distantPast
             ),
             recurrence: .weekly([.monday, .wednesday]),
+            onEdit: { _ in },
+            onDelete: {}
+        )
+    }
+}
+
+#Preview("HouseworkTemplateItemDetailView_メモあり") {
+    NavigationStack {
+        HouseworkTemplateItemDetailView(
+            item: .init(
+                id: .init(id: "1"),
+                title: "買い出し",
+                point: 10,
+                updatedAt: .distantPast,
+                memo: .init(
+                    text: "駅前のスーパーで",
+                    checklist: [
+                        .init(id: "1", title: "牛乳", isChecked: false),
+                        .init(id: "2", title: "卵", isChecked: false),
+                    ]
+                )
+            ),
+            recurrence: .weekly([.saturday]),
             onEdit: { _ in },
             onDelete: {}
         )
