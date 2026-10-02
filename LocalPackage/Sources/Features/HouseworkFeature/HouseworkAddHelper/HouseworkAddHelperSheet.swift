@@ -12,7 +12,7 @@ import SwiftUI
 ///
 /// もともとの担当者はそのままにして、手伝ってくれたメンバーを足す。家事の合計ポイントは変えず、
 /// 追加後の担当者で配り直す。
-public struct HouseworkAddHelperSheet: View {
+struct HouseworkAddHelperSheet: View {
 
     @Environment(\.cohabitantMembers) var members
     @Environment(\.loginContext.account) var account
@@ -20,12 +20,7 @@ public struct HouseworkAddHelperSheet: View {
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
 
-    public init(item: HouseworkBoardItem, step: HouseworkAnalyticsStep) {
-        self.item = item
-        self.step = step
-    }
-
-    public var body: some View {
+    var body: some View {
         HouseworkAddHelperView(item: item, step: step, members: members, account: account)
     }
 
@@ -157,7 +152,7 @@ private extension HouseworkAddHelperView {
             }
         }
         .foregroundStyle(.onPrimary1)
-        .disabled(allocation.validationError != nil)
+        .disabled(!canSave)
     }
 
 }
@@ -179,9 +174,21 @@ extension HouseworkAddHelperView {
                 userName: member.userName,
                 isSelected: entryIndex != nil,
                 isEnabled: allocation.canToggle(member.id),
+                isLocked: allocation.lockedIds.contains(member.id),
                 allocation: allocationValue
             )
         }
+    }
+
+    /// 保存できるかどうか
+    ///
+    /// 配分が確定できることに加えて、保存済みの担当者から変わっていることを条件にする。
+    /// 開いて保存しただけで書き込みとAnalyticsのイベントが発生すると、「後から手伝った人を足した」
+    /// 件数を数えられなくなるため。
+    var canSave: Bool {
+        guard let executors = try? allocation.makeExecutors() else { return false }
+
+        return executors != item.executors
     }
 
     var allocationEntries: [HouseworkExecutorAllocationContent.Entry] {

@@ -157,7 +157,7 @@ private extension HouseworkCompleteView {
                         DescriptionPopoverButton(
                             title: "配分の調整とは？",
                             message: """
-                            何人かで分担した家事のポイントを、それぞれがやった割合に合わせて分けられます。
+                            手分けした家事のポイントを、それぞれがやった割合に合わせて分けられます。
                             割合の合計が100%になるように調整してください。
                             """
                         )
@@ -203,6 +203,7 @@ extension HouseworkCompleteView {
                 userName: member.userName,
                 isSelected: entryIndex != nil,
                 isEnabled: allocation.canToggle(member.id),
+                isLocked: false,
                 allocation: allocationValue
             )
         }

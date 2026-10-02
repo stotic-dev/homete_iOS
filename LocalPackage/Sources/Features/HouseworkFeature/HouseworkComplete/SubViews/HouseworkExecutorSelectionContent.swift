@@ -15,8 +15,12 @@ struct HouseworkExecutorSelectionContent: View {
         let userId: String
         let userName: String
         let isSelected: Bool
-        /// 選択を切り替えられるかどうか（人数の上限に達した未選択のメンバーは選べない）
+        /// 選択を切り替えられるかどうか（人数の上限に達した未選択のメンバーと、`isLocked`の担当者は選べない）
         let isEnabled: Bool
+        /// 外せない担当者かどうか（完了済みの家事に手伝った人を足すときの、もともとの担当者）
+        ///
+        /// タップはできないが、担当者として数えられていることが伝わるよう薄くしない
+        let isLocked: Bool
         /// 配分した割合とポイント。未選択、または配分が確定できないときは`nil`
         let allocation: Allocation?
 
@@ -80,7 +84,7 @@ private extension HouseworkExecutorSelectionContent {
         }
         .buttonStyle(.plain)
         .disabled(!row.isEnabled)
-        .opacity(row.isEnabled ? 1 : 0.4)
+        .opacity(row.isEnabled || row.isLocked ? 1 : 0.4)
         .accessibilityAddTraits(row.isSelected ? .isSelected : [])
     }
 
@@ -95,9 +99,17 @@ private extension HouseworkExecutorSelectionContent {
                 userName: "たいち",
                 isSelected: true,
                 isEnabled: true,
+                isLocked: false,
                 allocation: .init(percentage: 100, point: 10)
             ),
-            .init(userId: "partner", userName: "はなこ", isSelected: false, isEnabled: true, allocation: nil),
+            .init(
+                userId: "partner",
+                userName: "はなこ",
+                isSelected: false,
+                isEnabled: true,
+                isLocked: false,
+                allocation: nil
+            ),
         ],
         onToggle: { _ in }
     )
@@ -112,6 +124,7 @@ private extension HouseworkExecutorSelectionContent {
                 userName: "たいち",
                 isSelected: true,
                 isEnabled: true,
+                isLocked: false,
                 allocation: .init(percentage: 34, point: 4)
             ),
             .init(
@@ -119,6 +132,7 @@ private extension HouseworkExecutorSelectionContent {
                 userName: "はなこ",
                 isSelected: true,
                 isEnabled: true,
+                isLocked: false,
                 allocation: .init(percentage: 33, point: 3)
             ),
             .init(
@@ -126,7 +140,33 @@ private extension HouseworkExecutorSelectionContent {
                 userName: "じろう",
                 isSelected: true,
                 isEnabled: true,
+                isLocked: false,
                 allocation: .init(percentage: 33, point: 3)
+            ),
+        ],
+        onToggle: { _ in }
+    )
+    .padding()
+}
+
+#Preview("HouseworkExecutorSelectionContent_外せない担当者", traits: .sizeThatFitsLayout) {
+    HouseworkExecutorSelectionContent(
+        rows: [
+            .init(
+                userId: "own",
+                userName: "たいち",
+                isSelected: true,
+                isEnabled: false,
+                isLocked: true,
+                allocation: .init(percentage: 100, point: 10)
+            ),
+            .init(
+                userId: "partner",
+                userName: "はなこ",
+                isSelected: false,
+                isEnabled: true,
+                isLocked: false,
+                allocation: nil
             ),
         ],
         onToggle: { _ in }
@@ -142,9 +182,17 @@ private extension HouseworkExecutorSelectionContent {
                 userName: "たいち",
                 isSelected: true,
                 isEnabled: true,
+                isLocked: false,
                 allocation: .init(percentage: 100, point: 1)
             ),
-            .init(userId: "partner", userName: "はなこ", isSelected: false, isEnabled: false, allocation: nil),
+            .init(
+                userId: "partner",
+                userName: "はなこ",
+                isSelected: false,
+                isEnabled: false,
+                isLocked: false,
+                allocation: nil
+            ),
         ],
         onToggle: { _ in }
     )
