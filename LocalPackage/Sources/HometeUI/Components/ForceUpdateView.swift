@@ -19,7 +19,9 @@ public struct ForceUpdateView: View {
     }
 
     public var body: some View {
-        VStack(spacing: .space32) {
+        // 配信される本文の長さは読めず、この画面は閉じられないため、
+        // 本文はスクロールさせ、ボタンは常に押せるよう下端に固定する
+        ScrollView {
             VStack(spacing: .space16) {
                 Image(systemName: "arrow.down.app.fill")
                     .font(.system(size: 56))
@@ -28,12 +30,18 @@ public struct ForceUpdateView: View {
                 Text("新しいバージョンがあります")
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
                 Text(message ?? "引き続き\(Constants.appName)をご利用いただくには、App Storeからアップデートをお願いします。")
                     .font(with: .body)
                     .foregroundStyle(.onSurfaceVariant)
                     .multilineTextAlignment(.center)
             }
-            Spacer(minLength: .space24)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, .space16)
+            .padding(.top, .space48)
+            .padding(.bottom, .space24)
+        }
+        .safeAreaInset(edge: .bottom) {
             Button {
                 onTapUpdateButton()
             } label: {
@@ -42,12 +50,9 @@ public struct ForceUpdateView: View {
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
-            Spacer()
-                .frame(height: .space24)
+            .padding(.horizontal, .space16)
+            .padding(.bottom, .space24)
         }
-        .padding(.horizontal, .space16)
-        .padding(.top, .space48)
-        .frame(maxHeight: .infinity, alignment: .top)
         .trackScreenView(.forceUpdate)
     }
 
@@ -68,4 +73,13 @@ private extension ForceUpdateView {
 
 #Preview("ForceUpdateView_配信された文言") {
     ForceUpdateView(message: "大切なお知らせがあります。データを正しく保存するため、最新のバージョンへのアップデートをお願いします。")
+}
+
+#Preview("ForceUpdateView_長い文言_大きな文字") {
+    ForceUpdateView(
+        message: "大切なお知らせがあります。このバージョンには、家事の記録が正しく保存されない不具合があります。"
+            + "データを守るため、最新のバージョンへのアップデートをお願いします。"
+            + "アップデートしても、これまでの家事の記録やグループの設定はそのまま引き継がれます。"
+    )
+    .environment(\.dynamicTypeSize, .accessibility3)
 }
