@@ -149,6 +149,36 @@ extension RemoteConfigStoreTest {
         #expect(store.forceUpdateRequirement == .init(message: "案内"))
     }
 
+    @Test("起動時は取得の完了を待たずに、前回反映済みの最低バージョンで強制アップデートを判定する")
+    func setupOnLaunchUsesActivatedMinimumVersionBeforeFetch() async {
+        // Arrange
+
+        let storeBox = TestBox<RemoteConfigStore?>(value: nil)
+        let requirementDuringFetch = TestBox<ForceUpdateRequirement?>(value: nil)
+        let remoteConfigClient = RemoteConfigClient(
+            fetchAndActivate: {
+                requirementDuringFetch.value = await storeBox.value?.forceUpdateRequirement
+            },
+            string: { key in
+                // 前回の起動で反映済みの値
+                key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
+            }
+        )
+        let store = RemoteConfigStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+        storeBox.value = store
+
+        // Act
+
+        await store.setupOnLaunch()
+
+        // Assert
+
+        #expect(requirementDuringFetch.value == .init(message: nil))
+    }
+
     @Test("起動時の取得に失敗した場合も、前回反映済みの最低バージョンで強制アップデートを判定する")
     func setupOnLaunchFailureUsesActivatedMinimumVersion() async {
         // Arrange
