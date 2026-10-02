@@ -104,7 +104,8 @@ public static func forAddingExecutors(
 - `canToggle(_:)`は`lockedIds`に含まれる担当者を`false`にする。`toggle(_:)`も同じ条件で何もしない
 - 配分の対象ポイントは、`effort`に`.normal`（上乗せ率100%）を渡し`basePoint`に`earnedPoint`を入れることで表す。`HouseworkEffort.normal.boostedPoint(x) == x`なので`totalPoint`は`earnedPoint`のままになり、人数の上限（`maxExecutorCount`）も合計ポイントを基準に決まる
 - 既存の`init(memberIds:selectedIds:basePoint:effort:)`は`lockedIds`を空にするだけで、完了時の挙動は変わらない
-- `entries`の初期値に保存済みの%を使うため、ファクトリは`entries`のセッターに触れる同一ファイル内に置く
+- `entries`の初期値には保存済みの%**と並び順**を使う。ポイントへの換算は端数の行き先が並び順で決まるため、`memberIds`順（自分が先頭）に並べ替えると、同じ家事でも見ている人によって1ptの行き先が入れ替わってしまう（保存済みの配分を再現できず、開いて保存しただけで配分が変わる）。セッターに触れるため、ファクトリは`entries`と同一ファイル内に置く
+- **メンバー一覧に居ない担当者**（アカウントを削除した同居人。`deleteUserData`はグループの`members`からは消すが、家事の`executors`には残る）がいる家事は、`canAddExecutor`を`false`にして導線を出さない。足すと均等割りをやり直す際に、その人の配分が黙って残りのメンバーへ移ってしまうため
 
 ### 2. `HouseworkItem.updateExecutors(_:)`を足す
 
@@ -164,18 +165,21 @@ case houseworkAddHelper = "housework_add_helper"
 
 - `HouseworkAddHelperSheet`: `\.cohabitantMembers`・`\.loginContext.account`を取り出して`HouseworkAddHelperView`に渡すだけ
 - `HouseworkAddHelperView`: `allocation`を`@State`で持ち、担当者のチェックリストと「配分を調整する」を並べる。ナビゲーションバー右のチェックアイコンで保存して`dismiss()`
-- 既存担当者が外せないことは、`HouseworkExecutorSelectionContent.Row.isEnabled`を`false`にして表すだけで足りる（同コンポーネントは既に`isEnabled`で非活性と不透明度を扱っている）ので、コンポーネント側の変更は不要
+- 既存担当者が外せないことは、`HouseworkExecutorSelectionContent.Row`に`isLocked`を足して表す。`isEnabled: false`の流用だと不透明度が落ちて「対象外のメンバー」に見えるため、ロック時はタップだけ不可にして薄くしない
+- **保存できるのは、配分が確定できて、かつ保存済みの担当者から変わっているときだけ**にする。開いて保存しただけで書き込みと`add_helper`イベントが発生すると、「後から手伝った人を足した」件数を数えられなくなる
 - 文言は「この家事を手伝ってくれた人を選ぶと、ポイントを分け合えます。」「もともとの担当者は外せません。」をキャプションで添える
 
 ### 6. 「手伝った人を追加」ボタンの表示判断
 
 `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift`（修正）
 
-`HouseworkDetailActionContent`は`@Environment`からStoreとメンバーを取り、どのボタンを出すかを判断している層なので、ここに算出プロパティを置く（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）。
+判断は`cohabitantStore.members`を持つ`HouseworkDetailView`側の算出プロパティに置き、`HouseworkDetailActionContent`には結果だけを渡す（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）。`HouseworkDetailActionContent`は`SubViews/`の末端コンポーネントなので、メンバー一覧から表示内容を導出させない。
 
 ```swift
-/// 手伝った人を足せるかどうか（未選択のメンバーがいて、人数の上限に達していない）
-var canAddHelper: Bool
+// HouseworkDetailView
+var canAddHelper: Bool  // 完了済みで、HouseworkExecutorAllocation.canAddExecutorがtrueのとき
+// HouseworkDetailActionContent
+let canAddHelper: Bool
 ```
 
 ### ファイル配置
@@ -222,8 +226,19 @@ var canAddHelper: Bool
       `TodayMemberContributionTest`の同等のケース）が既に固定している
 - [x] `make build-local-package` / SwiftLint / `make test-packages`（`swift-code-verification`スキル）
 - [x] `make check-previews`
+- [x] `ios-code-reviewer`によるレビューと指摘対応
 - [ ] シミュレータでの簡易E2E確認 → **未実施**。この機能は同居人グループに2人以上いることが前提で、
       E2E用シミュレータのアカウントがグループ未所属のため通せない
+
+## 残課題（別対応）
+
+- `HouseworkAddHelperView`と`HouseworkCompleteView`で、担当者チェックリスト・配分の調整・バリデーション文言の
+  組み立て（`executorSection()` / `executorRows` / `allocationEntries` / `validationMessage` / `userName`）が
+  100行ほど重複している。完了画面の見た目にも影響する変更になるため本対応では切り出さず、
+  `Features/HouseworkFeature/Model/`の値型または共通のセクションViewへまとめるのは別Issueとする
+- 手伝った人を足すと`executors`の並びが`memberIds`順（操作した人が先頭）になるため、旧アプリ向けの
+  `executorId`（1人目の担当者）が元の担当者から入れ替わることがある。完了時と同じ性質で、
+  旧アプリでの表示が少しずれるだけなので許容する（ADR-0023）
 
 ### Phase 4: PR
 
