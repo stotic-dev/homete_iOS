@@ -207,6 +207,10 @@ public final class HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する。
+        // 画面を開いている間に未完了へ戻された家事は担当者を持たない仕様なので、何もしない
+        guard (items.item(target) ?? target).state == .completed else { return }
+
         do {
             try await updateAndSave(target: target, cohabitantId: cohabitantId) {
                 $0.updateExecutors(executors)

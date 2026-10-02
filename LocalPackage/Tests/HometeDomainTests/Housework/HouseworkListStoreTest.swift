@@ -616,6 +616,43 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         #expect(logger.value == [.housework(.addHelper(step: .detail, isSuccess: true))])
     }
 
+    @Test("画面を開いている間に未完了へ戻された家事には、手伝った人を足さずAnalyticsも送らない")
+    func addHelpers_returnedToIncomplete_doesNothing() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            point: 10,
+            state: .completed,
+            executors: [.init(userId: "own", percentage: 100, point: 10)],
+            executedAt: .previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        )
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in Issue.record() }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+            analyticsClient: .init(log: { event in logger.value.append(event) }),
+            calendar: .japanese,
+            items: [.makeForTest(items: [inputHouseworkItem.updateIncomplete()])]
+        )
+
+        // Act
+
+        try await store.addHelpers(
+            target: inputHouseworkItem,
+            executors: [
+                .init(userId: "own", percentage: 50, point: 5),
+                .init(userId: "userB", percentage: 50, point: 5),
+            ],
+            cohabitantId: inputCohabitantId,
+            step: .detail
+        )
+
+        // Assert
+
+        #expect(logger.value.isEmpty)
+    }
+
     @Test("実施者、実施日をクリアして家事のステータスを未完了に戻す")
     func returnToIncomplete() async throws {
         // Arrange
