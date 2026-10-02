@@ -173,7 +173,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `housework`
 
-家事の登録・完了・もう一度やった・ありがとう・未完了に戻す・削除における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・もう一度やった・ありがとう・未完了に戻す・削除・メモの編集における行動。すべて`HouseworkListStore`に送信箇所を集約する。
 
 | 項目 | 内容 |
 |---|---|
@@ -181,7 +181,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
@@ -199,6 +199,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `edit_thanks` | `thanks` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
+| `edit_memo` | `detail` | 家事詳細でメモのテキスト・チェックリストの項目を編集して保存した。チェックの切り替えだけでは送らない（頻度が高く、メモの利用状況を見るには編集だけで足りるため）。家事を追加する画面で入力したメモは`register`に含まれ、これは送らない |
 
 いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
