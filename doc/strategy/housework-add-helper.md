@@ -8,8 +8,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -204,22 +204,26 @@ var canAddHelper: Bool
 
 ### Phase 2: 実装
 
-- [ ] `HouseworkExecutorAllocation`に`lockedIds`・`forAddingExecutors`を追加
-- [ ] `HouseworkItem.updateExecutors(_:)`を追加
-- [ ] `HouseworkListStore.addHelpers`を追加
-- [ ] `HouseworkAnalyticsAction.addHelper`・`AppScreen.houseworkAddHelper`を追加
-- [ ] `HouseworkAddHelperSheet` / `HouseworkAddHelperView`を新規作成（`#Preview`付き）
-- [ ] `HouseworkDetailActionContent`にボタン・表示判断・シートの提示を追加（`#Preview`を追加）
-- [ ] `doc/analytics_events.md`を更新
+- [x] `HouseworkExecutorAllocation`に`lockedIds`・`forAddingExecutors`を追加
+- [x] `HouseworkItem.updateExecutors(_:)`を追加
+- [x] `HouseworkListStore.addHelpers`を追加
+- [x] `HouseworkAnalyticsAction.addHelper`・`AppScreen.houseworkAddHelper`を追加
+- [x] `HouseworkAddHelperSheet` / `HouseworkAddHelperView`を新規作成（`#Preview`付き）
+- [x] `HouseworkDetailActionContent`にボタン・表示判断・シートの提示を追加（`#Preview`を追加）
+- [x] `doc/analytics_events.md`を更新
 
 ### Phase 3: 検証
 
-- [ ] ドメインのユニットテスト（配分の初期値・外せない担当者・合計ポイントの維持・完了以外では更新しない）
-- [ ] Storeのユニットテスト（保存内容とAnalytics）
-- [ ] 貢献度集計に追加後の配分が反映されることのテスト
-- [ ] `make build-local-package` / SwiftLint / `make test-packages`（`swift-code-verification`スキル）
-- [ ] `make check-previews`
-- [ ] シミュレータでの簡易E2E確認
+- [x] ドメインのユニットテスト（配分の初期値・外せない担当者・合計ポイントの維持・完了以外では更新しない）
+- [x] Storeのユニットテスト（保存内容とAnalytics）
+- [x] 貢献度集計に追加後の配分が反映されることの確認 → **テストの追加は不要**と判断。`addHelpers`は`executors`を
+      書き換えるだけで集計の経路は完了時と同じで、配分されたポイントで集計されることは既存テスト
+      （`HouseworkContributionTest`の「複数人で担当した家事は、担当者それぞれに配分されたポイントと1件の達成で集計される」、
+      `TodayMemberContributionTest`の同等のケース）が既に固定している
+- [x] `make build-local-package` / SwiftLint / `make test-packages`（`swift-code-verification`スキル）
+- [x] `make check-previews`
+- [ ] シミュレータでの簡易E2E確認 → **未実施**。この機能は同居人グループに2人以上いることが前提で、
+      E2E用シミュレータのアカウントがグループ未所属のため通せない
 
 ### Phase 4: PR
 
