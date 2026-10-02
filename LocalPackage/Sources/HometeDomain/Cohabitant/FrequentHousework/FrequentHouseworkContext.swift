@@ -281,7 +281,8 @@ public extension FrequentHouseworkContext {
             sortOrder: isSameCategory ? current.sortOrder : nextSortOrder(forCategoryId: input.categoryId),
             createdAt: current.createdAt,
             updatedAt: timestamp,
-            memo: input.memo
+            // メモに触れていない編集（`nil`）では、編集中に同居人が付けたメモを消さないよう最新のメモを残す
+            memo: input.memo ?? current.memo
         )
     }
 

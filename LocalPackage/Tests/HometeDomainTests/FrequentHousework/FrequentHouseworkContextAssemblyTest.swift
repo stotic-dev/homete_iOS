@@ -556,6 +556,41 @@ extension FrequentHouseworkContextAssemblyTest.MemoCase {
         #expect(actual == expected)
     }
 
+    @Test("メモに触れずに編集すると、編集中に同居人が付けたメモを残す")
+    func makeUpdatedItemWithoutMemoKeepsLatestMemo() throws {
+        // Arrange
+
+        let now = FrequentHouseworkContextAssemblyTest.fixedNow
+        let current = FrequentHouseworkItem.makeForTest(
+            id: "1",
+            title: "買い出し",
+            memo: FrequentHouseworkContextAssemblyTest.memo
+        )
+        let context = FrequentHouseworkContext(items: [current])
+        let expected = FrequentHouseworkItem(
+            id: "1",
+            title: "買い物",
+            point: 10,
+            categoryId: nil,
+            sortOrder: 0,
+            createdAt: current.createdAt,
+            updatedAt: now,
+            memo: FrequentHouseworkContextAssemblyTest.memo
+        )
+
+        // Act
+
+        let actual = try context.makeUpdatedItem(
+            itemId: "1",
+            input: .init(title: "買い物", point: 10, categoryId: nil),
+            timestamp: now
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
     @Test("並べ替えても、メモは引き継がれる")
     func makeReorderedItemsKeepsMemo() {
         // Arrange
