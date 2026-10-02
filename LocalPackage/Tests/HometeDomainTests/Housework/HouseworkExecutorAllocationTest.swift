@@ -501,8 +501,6 @@ extension HouseworkExecutorAllocationTest.EffortCase {
 
 }
 
-// swiftlint:enable file_length
-
 // MARK: - ForAddingExecutorsCase
 
 extension HouseworkExecutorAllocationTest.ForAddingExecutorsCase {
