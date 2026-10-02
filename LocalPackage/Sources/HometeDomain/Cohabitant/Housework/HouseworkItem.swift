@@ -37,6 +37,10 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     ///
     /// 作成日時の記録を始める前に作られた家事と、旧バージョンのアプリが上書きした家事は`nil`（ADR-0026）。
     public let createdAt: Date?
+    /// メモ
+    ///
+    /// 一度もメモを書いていない家事は`nil`。書いたメモを消した家事は空のメモを持つ（ADR-0033）。
+    public let memo: HouseworkMemo?
 
     public init(
         id: String,
@@ -50,7 +54,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
         thanks: [String: HouseworkThanks] = [:],
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        memo: HouseworkMemo? = nil
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -64,6 +69,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.templateHouseworkItemId = templateHouseworkItemId
         self.thanks = thanks
         self.createdAt = createdAt
+        self.memo = memo
     }
 
     /// 完了にする
@@ -94,7 +100,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executedAt: now,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -114,7 +121,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executedAt: now,
             expiredAt: expiredAt,
             templateHouseworkItemId: nil,
-            createdAt: now
+            createdAt: now,
+            memo: memo
         )
     }
 
@@ -133,7 +141,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executedAt: nil,
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -150,7 +159,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -168,7 +178,35 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: now
+            createdAt: now,
+            memo: memo
+        )
+    }
+
+    /// メモを編集できるか。完了済み・「やらない」の家事のメモは閲覧のみ
+    public var canEditMemo: Bool {
+        state == .incomplete
+    }
+
+    /// メモを更新する
+    ///
+    /// 編集できるのは未完了の家事だけなので、呼び出し側で`canEditMemo`を確認すること。
+    public func updateMemo(_ memo: HouseworkMemo) -> Self {
+        assert(canEditMemo, "未完了ではない家事のメモを更新しようとしています")
+        return .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -206,7 +244,8 @@ public extension HouseworkItem {
         expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
         thanks: [String: HouseworkThanks] = [:],
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        memo: HouseworkMemo? = nil
     ) {
         self.init(
             id: id,
@@ -220,7 +259,8 @@ public extension HouseworkItem {
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -245,6 +285,7 @@ public extension HouseworkItem {
         case templateHouseworkItemId
         case thanks
         case createdAt
+        case memo
 
     }
 
@@ -256,6 +297,7 @@ public extension HouseworkItem {
     /// `effort`が無いドキュメントも同じ理由で起こり得るため、「ふつう」として読む（ADR-0024）。
     /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む（ADR-0025）。
     /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
+    /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0033）。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
@@ -277,7 +319,8 @@ public extension HouseworkItem {
                 forKey: .templateHouseworkItemId
             ),
             thanks: container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:],
-            createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt)
+            createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt),
+            memo: container.decodeIfPresent(HouseworkMemo.self, forKey: .memo)
         )
     }
 
@@ -297,6 +340,7 @@ public extension HouseworkItem {
         try container.encodeIfPresent(templateHouseworkItemId, forKey: .templateHouseworkItemId)
         try container.encode(thanks, forKey: .thanks)
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(memo, forKey: .memo)
     }
 
 }
@@ -312,7 +356,8 @@ public extension HouseworkItem {
         executorId: String? = nil,
         executedAt: Date? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
-        thanks: [String: HouseworkThanks] = [:]
+        thanks: [String: HouseworkThanks] = [:],
+        memo: HouseworkMemo? = nil
     ) {
         self.init(
             id: id,
@@ -324,7 +369,8 @@ public extension HouseworkItem {
             executedAt: executedAt,
             expiredAt: metaData.expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks
+            thanks: thanks,
+            memo: memo
         )
     }
 
