@@ -282,6 +282,61 @@ extension RegisterHouseworkDraftTest.PendingEntriesCase {
 
 }
 
+extension RegisterHouseworkDraftTest.PendingEntriesCase {
+
+    @Test("いつもの家事のメモと、入力中の家事に書いたメモを、登録予定に持たせる")
+    func pendingEntriesKeepsMemo() {
+        // Arrange
+
+        let frequentMemo = HouseworkMemo(text: "", checklist: [.init(id: "1", title: "洗剤", isChecked: false)])
+        let inputMemo = HouseworkMemo(text: "燃えるゴミ", checklist: [])
+        let context = FrequentHouseworkContext(items: [
+            .init(
+                id: "1",
+                title: "風呂掃除",
+                point: 10,
+                categoryId: nil,
+                sortOrder: 0,
+                createdAt: .previewDate(year: 2026, month: 9, day: 1),
+                updatedAt: .previewDate(year: 2026, month: 9, day: 1),
+                memo: frequentMemo
+            ),
+        ])
+        var input = RegisterHouseworkDraftTest.makeInput(title: "ゴミ出し")
+        input.memo = inputMemo
+        let draft = RegisterHouseworkDraft(selectedFrequentItemIds: ["1"], input: input)
+        let expected: [PendingEntry] = [
+            .init(
+                source: .frequent(itemId: "1"),
+                title: "風呂掃除",
+                point: 10,
+                recurrence: nil,
+                savesAsFrequent: false,
+                categoryId: nil,
+                memo: frequentMemo
+            ),
+            .init(
+                source: .editing,
+                title: "ゴミ出し",
+                point: 10,
+                recurrence: nil,
+                savesAsFrequent: false,
+                categoryId: nil,
+                memo: inputMemo
+            ),
+        ]
+
+        // Act
+
+        let actual = draft.pendingEntries(context: context)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+}
+
 // MARK: - 取り消し
 
 extension RegisterHouseworkDraftTest.RemoveCase {

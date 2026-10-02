@@ -43,6 +43,7 @@ public struct RegisterHouseworkView: View {
     @State var isPresentingFrequentSaveFailure = false
     @State var isShowPaywall = false
     @State var isShowFrequentManagement = false
+    @State var isPresentingMemoEditSheet = false
 
     @State var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
 
@@ -98,6 +99,12 @@ public struct RegisterHouseworkView: View {
                 onTapRemove: { entry in draft.remove(entry) },
                 onTapClose: { isPresentingPendingList = false }
             )
+        }
+        .sheet(isPresented: $isPresentingMemoEditSheet) {
+            HouseworkMemoEditScreen(memo: draft.input.memo) { memo in
+                // まだ保存していない家事なので、すべて消したメモは「メモなし」に戻す
+                draft.input.memo = memo.isEmpty ? nil : memo
+            }
         }
         .fullScreenCoverOnIOS(isPresented: $isShowFrequentManagement) {
             router.resolve(.frequentHouseworkManagement)
@@ -244,7 +251,8 @@ private extension RegisterHouseworkView {
             canSetRecurrence: canSetRecurrence,
             history: houseworkEntryHistoryList.items,
             onTapHistory: { item in tappedEntryHistoryRow(item) },
-            onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() }
+            onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() },
+            onTapMemo: { isPresentingMemoEditSheet = true }
         )
         .onChange(of: saveAsFrequentState) { _, newState in
             // 名前を変えて重複・上限に当たったら、オンのままにしない
@@ -349,7 +357,7 @@ private extension RegisterHouseworkView {
     func saveAsFrequentIfNeeded(_ entries: [PendingEntry], cohabitantId: String) async {
         let inputs = entries
             .filter(\.savesAsFrequent)
-            .map { FrequentHouseworkInput(title: $0.title, point: $0.point, categoryId: $0.categoryId) }
+            .map { FrequentHouseworkInput(title: $0.title, point: $0.point, categoryId: $0.categoryId, memo: $0.memo) }
         guard !inputs.isEmpty, let frequentHouseworkStore else {
             dismiss()
             return
@@ -373,7 +381,8 @@ private extension RegisterHouseworkView {
             id: UUID().uuidString,
             title: entry.title,
             point: entry.point,
-            metaData: dailyHouseworkList.metaData
+            metaData: dailyHouseworkList.metaData,
+            memo: entry.memo
         )
     }
 
@@ -382,7 +391,8 @@ private extension RegisterHouseworkView {
             id: .init(uuid: UUID()),
             title: entry.title,
             point: entry.point,
-            updatedAt: now
+            updatedAt: now,
+            memo: entry.memo
         )
     }
 
