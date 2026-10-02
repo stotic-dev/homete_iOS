@@ -16,12 +16,15 @@ struct HouseworkDetailActionContent: View {
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @State var isPresentedThanksView = false
     @State var isPresentedCompleteSheet = false
+    @State var isPresentedAddHelperSheet = false
 
     @Binding var isLoading: Bool
     @Binding var commonErrorContent: DomainErrorAlertContent
 
     let account: Account
     let item: HouseworkBoardItem
+    /// 手伝った人を足せるかどうか（足せる相手がいないときは導線を出さない）
+    let canAddHelper: Bool
 
     var body: some View {
         VStack(spacing: .space16) {
@@ -33,6 +36,9 @@ struct HouseworkDetailActionContent: View {
                     sendThanksButton()
                 } else if item.canEditThanks(ownUserId: account.id) {
                     editThanksButton()
+                }
+                if canAddHelper {
+                    addHelperButton()
                 }
                 redoButton()
                 undoChangeStateButton()
@@ -47,6 +53,9 @@ struct HouseworkDetailActionContent: View {
         .sheet(isPresented: $isPresentedThanksView) {
             HouseworkThanksView(item: item, sentThanks: item.sentThanks(ownUserId: account.id))
         }
+        .sheet(isPresented: $isPresentedAddHelperSheet) {
+            HouseworkAddHelperSheet(item: item, step: .detail)
+        }
     }
 
 }
@@ -58,6 +67,16 @@ private extension HouseworkDetailActionContent {
             isPresentedCompleteSheet = true
         } label: {
             Label("完了にする", systemImage: "checkmark.circle.fill")
+                .frame(maxWidth: .infinity)
+        }
+        .subPrimaryButtonStyle()
+    }
+
+    func addHelperButton() -> some View {
+        Button {
+            isPresentedAddHelperSheet = true
+        } label: {
+            Label("手伝った人を追加", systemImage: "person.badge.plus")
                 .frame(maxWidth: .infinity)
         }
         .subPrimaryButtonStyle()
@@ -165,7 +184,8 @@ private extension HouseworkDetailActionContent {
             title: "洗濯",
             point: 10,
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
-        )
+        ),
+        canAddHelper: false
     )
     .environment(HouseworkListStore())
 }
@@ -181,7 +201,8 @@ private extension HouseworkDetailActionContent {
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .completed,
             executorId: "dummy"
-        )
+        ),
+        canAddHelper: true
     )
     .environment(HouseworkListStore())
 }
@@ -197,7 +218,25 @@ private extension HouseworkDetailActionContent {
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
             state: .completed,
             executorId: "executorAccount"
-        )
+        ),
+        canAddHelper: true
+    )
+    .environment(HouseworkListStore())
+}
+
+#Preview("HouseworkDetailActionContent_完了_手伝った人を追加できない", traits: .sizeThatFitsLayout) {
+    HouseworkDetailActionContent(
+        isLoading: .constant(false),
+        commonErrorContent: .constant(.initial),
+        account: .init(id: "ownAccount", userName: "", fcmToken: nil, cohabitantId: nil),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            state: .completed,
+            executorId: "executorAccount"
+        ),
+        canAddHelper: false
     )
     .environment(HouseworkListStore())
 }
@@ -214,7 +253,8 @@ private extension HouseworkDetailActionContent {
             state: .completed,
             executorId: "executorAccount",
             thanks: ["ownAccount": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 1, day: 1))]
-        )
+        ),
+        canAddHelper: true
     )
     .environment(HouseworkListStore())
 }
@@ -231,7 +271,8 @@ private extension HouseworkDetailActionContent {
             state: .completed,
             executorId: "executorAccount",
             thanks: ["ownAccount": .init(comment: "ありがとう", sentAt: .previewDate(year: 2026, month: 1, day: 1))]
-        )
+        ),
+        canAddHelper: true
     )
     .environment(HouseworkListStore())
 }

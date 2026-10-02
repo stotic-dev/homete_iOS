@@ -60,7 +60,8 @@ private extension HouseworkDetailView {
                     isLoading: $loadingState.isLoading,
                     commonErrorContent: $commonErrorContent,
                     account: account,
-                    item: item
+                    item: item,
+                    canAddHelper: canAddHelper
                 )
             }
             .padding(.horizontal, .space16)
@@ -75,6 +76,21 @@ private extension HouseworkDetailView {
 // MARK: プレゼンテーションロジック
 
 private extension HouseworkDetailView {
+
+    /// 手伝った人を足せるかどうか
+    ///
+    /// 完了済みで、まだ担当者になっていないメンバーがいて、人数の上限にも達していないときだけ足せる。
+    /// 足せないときは「手伝った人を追加」の導線を出さない。
+    var canAddHelper: Bool {
+        guard item.state == .completed else { return false }
+
+        return HouseworkExecutorAllocation.forAddingExecutors(
+            memberIds: cohabitantStore.members.value.map(\.id),
+            executors: item.executors,
+            earnedPoint: item.earnedPoint
+        )
+        .canAddExecutor
+    }
 
     func tappedDeleteHouseworkItem() async {
         guard let cohabitantId = account.cohabitantId else { return }
