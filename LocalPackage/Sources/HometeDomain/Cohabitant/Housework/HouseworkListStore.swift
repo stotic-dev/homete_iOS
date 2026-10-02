@@ -196,6 +196,28 @@ public final class HouseworkListStore {
         }
     }
 
+    /// 完了した家事に手伝った人を足す
+    ///
+    /// 家事の合計ポイントは変えず、担当者とポイントの配分だけを入れ替える。完了日時・頑張り度・
+    /// ありがとうは変えない。同居人への通知は送らない（家事のステータスに関わる通知はふりかえり通知だけ）。
+    /// - Parameter executors: 入れ替える担当者。ポイントの合計は入れ替える前の`earnedPoint`と一致させる
+    public func addHelpers(
+        target: HouseworkItem,
+        executors: [HouseworkExecutor],
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        do {
+            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
+                $0.updateExecutors(executors)
+            }
+        } catch {
+            analyticsClient.log(.housework(.addHelper(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.addHelper(step: step, isSuccess: true)))
+    }
+
     /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する
     ///
     /// 1人が1つの家事に送れるありがとうは1件で、送信済みの家事に対して呼ぶとコメントの編集になる（最初に送った日時は変えない）。

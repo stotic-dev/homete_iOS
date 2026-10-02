@@ -71,6 +71,8 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     )
     /// 完了した家事をもう一度やった
     case redo(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 完了した家事に手伝った人を追加した
+    case addHelper(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 完了した家事にありがとうを伝えた
     case sendThanks(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 送ったありがとうのメッセージを編集した
@@ -116,6 +118,7 @@ private extension HouseworkAnalyticsAction {
         case let .register(step, _, _),
              let .complete(step, _, _, _),
              let .redo(step, _),
+             let .addHelper(step, _),
              let .sendThanks(step, _),
              let .editThanks(step, _),
              let .returnIncomplete(step, _),
@@ -132,6 +135,7 @@ private extension HouseworkAnalyticsAction {
 
         case .register,
              .redo,
+             .addHelper,
              .sendThanks,
              .editThanks,
              .returnIncomplete,
@@ -157,6 +161,7 @@ private extension HouseworkAnalyticsAction {
 
         case .register,
              .redo,
+             .addHelper,
              .sendThanks,
              .editThanks,
              .returnIncomplete,
@@ -176,6 +181,9 @@ private extension HouseworkAnalyticsAction {
 
         case .redo:
             "redo"
+
+        case .addHelper:
+            "add_helper"
 
         case .sendThanks:
             "send_thanks"
@@ -197,7 +205,7 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, source, _):
             source.rawValue
 
-        case .complete, .redo, .sendThanks, .editThanks, .returnIncomplete, .delete:
+        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete:
             nil
         }
     }
@@ -208,6 +216,7 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, _, isSuccess),
              let .complete(_, _, _, isSuccess),
              let .redo(_, isSuccess),
+             let .addHelper(_, isSuccess),
              let .sendThanks(_, isSuccess),
              let .editThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
