@@ -20,6 +20,9 @@ public struct HouseworkDetailView: View {
     @State var item: HouseworkBoardItem
     @State var isPresentedMemoEditSheet = false
     @State var isPresentedMemoNotEditableAlert = false
+    /// チェックの保存中か
+    /// - Note: 保存がリスナーに反映される前に次のチェックを保存すると、古いメモを元に書いて先のチェックを消すため、1つずつ保存する
+    @State var isSavingMemoCheck = false
 
     @CommonError var commonErrorContent
 
@@ -71,7 +74,7 @@ private extension HouseworkDetailView {
                 if isMemoVisible {
                     HouseworkDetailMemoContent(
                         memo: item.originalItem.memo.hasContent ? item.originalItem.memo : nil,
-                        isEditable: item.originalItem.canEditMemo,
+                        isEditable: item.originalItem.canEditMemo && !isSavingMemoCheck,
                         onTapEdit: { isPresentedMemoEditSheet = true },
                         onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
                     )
@@ -143,7 +146,10 @@ private extension HouseworkDetailView {
     }
 
     func tappedMemoChecklistItem(_ checklistItemId: HouseworkMemoChecklistItem.ID) {
-        guard let cohabitantId = account.cohabitantId, let memo = item.originalItem.memo else { return }
+        guard let cohabitantId = account.cohabitantId,
+              let memo = item.originalItem.memo,
+              item.originalItem.canEditMemo,
+              !isSavingMemoCheck else { return }
 
         let target = item
         // 保存を待たずにチェックを反映し、失敗したら元に戻す
@@ -151,7 +157,9 @@ private extension HouseworkDetailView {
             originalItem: target.originalItem.updateMemo(memo.toggled(checklistItemId)),
             isRegistered: target.isRegistered
         )
+        isSavingMemoCheck = true
         Task {
+            defer { isSavingMemoCheck = false }
             do {
                 try await houseworkListStore.toggleMemoChecklistItem(
                     target: target.originalItem,

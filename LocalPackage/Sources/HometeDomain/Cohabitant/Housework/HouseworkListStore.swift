@@ -298,7 +298,8 @@ public final class HouseworkListStore {
 
     /// メモのチェックリストの項目のチェックを切り替えて保存する
     ///
-    /// 同居人が同時に別の項目をチェックしても消さないよう、リスナーで受け取った最新のメモに対して切り替える。
+    /// 同居人が同時に別の項目をチェックしたときに消しにくくするため、リスナーで受け取った最新のメモに対して切り替える。
+    /// 読んでから書くまでの間に同居人が書いた分は上書きしうる。
     /// - Throws: メモを編集できなくなっていた場合は`HouseworkMemoError.notEditable`
     public func toggleMemoChecklistItem(
         target: HouseworkItem,
