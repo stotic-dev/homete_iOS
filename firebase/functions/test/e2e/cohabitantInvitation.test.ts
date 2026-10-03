@@ -126,6 +126,21 @@ describe("cohabitantInvitation E2E Tests", () => {
         issueInvitation(userId, new Date())
       ).rejects.toMatchObject({code: "account-not-found"});
     });
+
+    it("Accountの所属グループのメンバーでない場合は発行できない", async () => {
+      // Arrange: 他人のグループIDを自分のAccountに書き込んだ状態
+      const attackerId = `invite-forged-${testCounter}`;
+      const victimId = `invite-forged-victim-${testCounter}`;
+      const cohabitantId = `invite-forged-cohabitant-${testCounter}`;
+      await createTestAccount(attackerId, cohabitantId);
+      await createTestAccount(victimId, cohabitantId);
+      await createTestCohabitant(cohabitantId, [victimId]);
+
+      // Act & Assert
+      await expect(
+        issueInvitation(attackerId, new Date())
+      ).rejects.toMatchObject({code: "cohabitant-not-found"});
+    });
   });
 
   describe("fetchInvitation", () => {
@@ -183,6 +198,23 @@ describe("cohabitantInvitation E2E Tests", () => {
 
       // Assert
       expect(actual.cohabitantId).toBe(cohabitantId);
+    });
+
+    it("発行後に招待者が所属を偽った場合はcohabitant-not-foundになる", async () => {
+      // Arrange: 未所属で発行 → 他人のグループIDを自分のAccountに書き込む
+      const attackerId = `fetch-forged-${testCounter}`;
+      const victimId = `fetch-forged-victim-${testCounter}`;
+      const cohabitantId = `fetch-forged-cohabitant-${testCounter}`;
+      await createTestAccount(attackerId);
+      await createTestAccount(victimId, cohabitantId);
+      await createTestCohabitant(cohabitantId, [victimId]);
+      const invitation = await issueInvitation(attackerId, new Date());
+      await (await fetchAccountRef(attackerId))?.update({cohabitantId});
+
+      // Act & Assert
+      await expect(
+        fetchInvitation(invitation.token, new Date())
+      ).rejects.toMatchObject({code: "cohabitant-not-found"});
     });
 
     it("存在しないトークンはinvitation-not-foundになる", async () => {
@@ -340,6 +372,47 @@ describe("cohabitantInvitation E2E Tests", () => {
         joinCohabitantByInvitation(joinerId, invitation.token, new Date())
       ).rejects.toMatchObject({code: "cohabitant-not-found"});
       expect(await fetchCohabitantId(joinerId)).toBeUndefined();
+    });
+
+    it("発行後に招待者が所属を偽っても、そのグループには参加できない", async () => {
+      // Arrange: 未所属で発行 → 他人のグループIDを自分のAccountに書き込む
+      const attackerId = `forged-owner-${testCounter}`;
+      const joinerId = `forged-joiner-${testCounter}`;
+      const victimId = `forged-victim-${testCounter}`;
+      const cohabitantId = `forged-cohabitant-${testCounter}`;
+      await createTestAccount(attackerId);
+      await createTestAccount(joinerId);
+      await createTestAccount(victimId, cohabitantId);
+      await createTestCohabitant(cohabitantId, [victimId]);
+      const invitation = await issueInvitation(attackerId, new Date());
+      await (await fetchAccountRef(attackerId))?.update({cohabitantId});
+
+      // Act & Assert
+      await expect(
+        joinCohabitantByInvitation(joinerId, invitation.token, new Date())
+      ).rejects.toMatchObject({code: "cohabitant-not-found"});
+      await expectCohabitantMembers(cohabitantId, [victimId]);
+      expect(await fetchCohabitantId(joinerId)).toBeUndefined();
+    });
+
+    it("招待者がグループを抜けた後は、その招待で参加できない", async () => {
+      // Arrange
+      const ownerId = `left-owner-${testCounter}`;
+      const memberId = `left-member-${testCounter}`;
+      const joinerId = `left-joiner-${testCounter}`;
+      const cohabitantId = `left-cohabitant-${testCounter}`;
+      await createTestAccount(ownerId, cohabitantId);
+      await createTestAccount(memberId, cohabitantId);
+      await createTestAccount(joinerId);
+      await createTestCohabitant(cohabitantId, [ownerId, memberId]);
+      const invitation = await issueInvitation(ownerId, new Date());
+      await createTestCohabitant(cohabitantId, [memberId]);
+
+      // Act & Assert
+      await expect(
+        joinCohabitantByInvitation(joinerId, invitation.token, new Date())
+      ).rejects.toMatchObject({code: "cohabitant-not-found"});
+      await expectCohabitantMembers(cohabitantId, [memberId]);
     });
 
     it("同じ招待で複数人が参加できる", async () => {
