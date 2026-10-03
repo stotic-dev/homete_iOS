@@ -6,7 +6,7 @@
 /// Remote Configの最新の値を取得し、値を使う領域のStoreへ反映させる
 ///
 /// fetch・activateは全キーまとめて1回だけ行い、値をいつ画面へ反映するかは各Storeに任せる。
-/// 経緯は ADR-0033 / ADR-0034 を参照。
+/// 経緯は ADR-0033 / ADR-0035 を参照。
 @MainActor
 public struct RemoteConfigSyncUseCase {
 

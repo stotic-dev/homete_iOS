@@ -7,7 +7,7 @@ import Observation
 
 /// 強制アップデートが必要かどうかを管理する
 ///
-/// 最低バージョンはRemote Configの`minimum_required_version`で配信する。経緯は ADR-0034 を参照。
+/// 最低バージョンはRemote Configの`minimum_required_version`で配信する。経緯は ADR-0035 を参照。
 @MainActor
 @Observable
 public final class ForceUpdateStore {

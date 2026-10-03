@@ -1,7 +1,7 @@
 # Remote Config
 
 > fetch・activateのタイミングと、キーごとの反映方針を決めた経緯は [ADR-0033](adr/0033-remote-config-fetch-and-per-key-apply-timing.md) を参照。
-> 強制アップデートの判定・表示方式とリアルタイム更新を採用した経緯は [ADR-0034](adr/0034-force-update-with-realtime-remote-config.md) を参照。
+> 強制アップデートの判定・表示方式とリアルタイム更新を採用した経緯は [ADR-0035](adr/0035-force-update-with-realtime-remote-config.md) を参照。
 
 ## パラメータ一覧
 
