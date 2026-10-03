@@ -99,7 +99,12 @@ public final actor FirestoreService {
                 }
 
                 guard let snapshots else { return }
-                let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
+                let convertedValues = snapshots.documents.compactMapSkippingFailures(
+                    transform: { try $0.data(as: Output.self) },
+                    onFailure: { document, error in
+                        print("skipped undecodable document(path: \(document.reference.path)): \(error)")
+                    }
+                )
                 continuation.yield(convertedValues)
             }
 
