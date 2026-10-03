@@ -16,12 +16,18 @@ public struct HouseworkDetailView: View {
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @LoadingState var loadingState
 
     @State var item: HouseworkBoardItem
     @State var isPresentedCompleteSheet = false
     @State var isPresentedThanksView = false
     @State var isPresentedAddHelperSheet = false
+    @State var isPresentedMemoEditSheet = false
+    @State var isPresentedMemoNotEditableAlert = false
+    /// チェックの保存中か
+    /// - Note: 保存がリスナーに反映される前に次のチェックを保存すると、古いメモを元に書いて先のチェックを消すため、1つずつ保存する
+    @State var isSavingMemoCheck = false
 
     @CommonError var commonErrorContent
 
@@ -52,6 +58,16 @@ public struct HouseworkDetailView: View {
                 HouseworkAddHelperSheet(item: item, step: .detail)
             }
             .commonError(content: $commonErrorContent)
+            .sheet(isPresented: $isPresentedMemoEditSheet) {
+                HouseworkMemoEditScreen(memo: item.originalItem.memo) { memo in
+                    savedMemo(memo)
+                }
+            }
+            .alert("メモを保存できませんでした", isPresented: $isPresentedMemoNotEditableAlert) {
+                Button("閉じる", role: .cancel) {}
+            } message: {
+                Text("この家事は完了または「やらない」になったため、メモを編集できません。")
+            }
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()
             }
@@ -64,16 +80,42 @@ private extension HouseworkDetailView {
 
     func mainContent() -> some View {
         ScrollView {
-            HouseworkDetailItemListContent(
-                cohabitantMemberList: cohabitantStore.members,
-                item: item,
-                thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
-            )
+            VStack(spacing: .space40) {
+                HouseworkDetailItemListContent(
+                    cohabitantMemberList: cohabitantStore.members,
+                    item: item,
+                    thanksMessages: HouseworkThanksMessage.make(item: item, memberList: cohabitantStore.members)
+                )
+                if isMemoVisible {
+                    HouseworkDetailMemoContent(
+                        memo: item.originalItem.memo.hasContent ? item.originalItem.memo : nil,
+                        isEditable: item.originalItem.canEditMemo,
+                        isUpdating: isSavingMemoCheck,
+                        onTapEdit: { isPresentedMemoEditSheet = true },
+                        onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
+                    )
+                }
+            }
             .padding(.horizontal, .space16)
             .padding(.bottom, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
         .softTopScrollEdgeEffect()
+    }
+
+}
+
+// MARK: 表示内容
+
+private extension HouseworkDetailView {
+
+    /// メモ欄を出すか。完了済み・「やらない」の家事は、メモがあるときだけ閲覧用に出す
+    var isMemoVisible: Bool {
+        item.originalItem.canEditMemo || item.originalItem.memo.hasContent
+    }
+
+    var memoLimitPolicy: HouseworkMemoLimitPolicy {
+        .init(isPremium: subscriptionStore.isPremium)
     }
 
 }
@@ -161,6 +203,65 @@ private extension HouseworkDetailView {
         }
     }
 
+    func savedMemo(_ memo: HouseworkMemo) {
+        guard let cohabitantId = account.cohabitantId else { return }
+
+        let target = item
+        loadingState.task {
+            do {
+                try await houseworkListStore.updateMemo(
+                    target: target.originalItem,
+                    memo: memo,
+                    cohabitantId: cohabitantId,
+                    isRegistered: target.isRegistered,
+                    step: .detail,
+                    limitPolicy: memoLimitPolicy
+                )
+            } catch {
+                handleMemoError(error)
+            }
+        }
+    }
+
+    func tappedMemoChecklistItem(_ checklistItemId: HouseworkMemoChecklistItem.ID) {
+        let target = item
+        guard let cohabitantId = account.cohabitantId,
+              let memo = target.originalItem.memo,
+              !isSavingMemoCheck,
+              let toggledItem = try? target.originalItem.updateMemo(
+                  memo.toggled(checklistItemId),
+                  limitPolicy: memoLimitPolicy
+              ) else { return }
+
+        // 保存を待たずにチェックを反映し、失敗したら元に戻す
+        item = .init(originalItem: toggledItem, isRegistered: target.isRegistered)
+        isSavingMemoCheck = true
+        Task {
+            defer { isSavingMemoCheck = false }
+            do {
+                try await houseworkListStore.toggleMemoChecklistItem(
+                    target: target.originalItem,
+                    itemId: checklistItemId,
+                    cohabitantId: cohabitantId,
+                    isRegistered: target.isRegistered,
+                    limitPolicy: memoLimitPolicy
+                )
+            } catch {
+                item = houseworkListStore.items.item(target.originalItem)
+                    .map { .init(originalItem: $0, isRegistered: true) } ?? target
+                handleMemoError(error)
+            }
+        }
+    }
+
+    func handleMemoError(_ error: any Error) {
+        if error as? HouseworkMemoError == .notEditable {
+            isPresentedMemoNotEditableAlert = true
+        } else {
+            commonErrorContent = .init(error: error)
+        }
+    }
+
     func didChangeItems() {
         guard let targetItem = houseworkListStore.items.item(item.originalItem) else { return }
 
@@ -183,6 +284,29 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailView_メモあり") {
+    NavigationStack {
+        HouseworkDetailView(
+            item: .makeForPreview(
+                title: "買い出し",
+                point: 10,
+                memo: .init(
+                    text: "駅前のスーパーで",
+                    checklist: [
+                        .init(id: "1", title: "牛乳", isChecked: true),
+                        .init(id: "2", title: "卵", isChecked: false),
+                    ]
+                )
+            )
+        )
+    }
+    .environment(HouseworkListStore())
+    .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
 }
 
@@ -200,6 +324,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
 }
 
@@ -215,6 +340,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
     #if canImport(Prefire)
         .prefireIgnored()

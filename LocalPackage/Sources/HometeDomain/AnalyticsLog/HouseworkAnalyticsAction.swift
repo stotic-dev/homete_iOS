@@ -81,6 +81,9 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     case returnIncomplete(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 家事を削除した
     case delete(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 家事のメモ（テキスト・チェックリストの項目）を編集した
+    /// - Note: チェックの切り替えは頻度が高く、利用状況を見るには編集だけで足りるため送らない
+    case editMemo(step: HouseworkAnalyticsStep, isSuccess: Bool)
 
 }
 
@@ -122,7 +125,8 @@ private extension HouseworkAnalyticsAction {
              let .sendThanks(step, _),
              let .editThanks(step, _),
              let .returnIncomplete(step, _),
-             let .delete(step, _):
+             let .delete(step, _),
+             let .editMemo(step, _):
             step.rawValue
         }
     }
@@ -139,7 +143,8 @@ private extension HouseworkAnalyticsAction {
              .sendThanks,
              .editThanks,
              .returnIncomplete,
-             .delete:
+             .delete,
+             .editMemo:
             nil
         }
     }
@@ -165,7 +170,8 @@ private extension HouseworkAnalyticsAction {
              .sendThanks,
              .editThanks,
              .returnIncomplete,
-             .delete:
+             .delete,
+             .editMemo:
             nil
         }
     }
@@ -196,6 +202,9 @@ private extension HouseworkAnalyticsAction {
 
         case .delete:
             "delete"
+
+        case .editMemo:
+            "edit_memo"
         }
     }
 
@@ -205,7 +214,7 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, source, _):
             source.rawValue
 
-        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete:
+        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete, .editMemo:
             nil
         }
     }
@@ -220,7 +229,8 @@ private extension HouseworkAnalyticsAction {
              let .sendThanks(_, isSuccess),
              let .editThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
-             let .delete(_, isSuccess):
+             let .delete(_, isSuccess),
+             let .editMemo(_, isSuccess):
             isSuccess ? "success" : "failure"
         }
     }

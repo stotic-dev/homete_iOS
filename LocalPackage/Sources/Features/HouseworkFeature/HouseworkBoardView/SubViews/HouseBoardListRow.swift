@@ -33,8 +33,14 @@ public struct HouseBoardListRow: View {
         HStack(spacing: .space16) {
             PointLabel(point: houseworkItem.earnedPoint)
             VStack(alignment: .leading, spacing: .space4) {
-                Text(houseworkItem.title)
-                    .font(with: .body)
+                HStack(spacing: .space4) {
+                    Text(houseworkItem.title)
+                        .font(with: .body)
+                    // 本文は詳細画面で見るので、一覧ではメモがあることだけを示す
+                    if houseworkItem.memo.hasContent {
+                        memoIndicator()
+                    }
+                }
                 if let label = completionInfo?.executorLabel {
                     executorLabel(label)
                 } else if let metaData = HouseworkItemMetaData.make(item: houseworkItem) {
@@ -81,6 +87,13 @@ private extension HouseBoardListRow {
         Label(metaData.label, systemImage: metaData.systemImage)
             .font(with: .boldCaption)
             .foregroundStyle(metaData.foregroundStyle)
+    }
+
+    func memoIndicator() -> some View {
+        Image(systemName: "note.text")
+            .font(with: .caption)
+            .foregroundStyle(.onSurfaceVariant)
+            .accessibilityLabel("メモあり")
     }
 
     func executorLabel(_ label: String) -> some View {
@@ -153,6 +166,17 @@ private extension HouseBoardListRow {
             title: "洗濯",
             point: 20,
             indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
+        )
+    )
+}
+
+#Preview("HouseBoardListRow_未完了_メモあり", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(
+            title: "買い出し",
+            point: 20,
+            indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+            memo: .init(text: "", checklist: [.init(id: "1", title: "牛乳", isChecked: false)])
         )
     )
 }

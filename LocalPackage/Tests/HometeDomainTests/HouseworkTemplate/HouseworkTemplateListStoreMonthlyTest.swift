@@ -62,7 +62,8 @@ struct HouseworkTemplateListStoreMonthlyTest {
                 monthlyItems: inputMonthlyItems,
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
-                currentVersion: 0
+                currentVersion: 0,
+                memoLimitPolicy: .free
             )
 
             // Assert
@@ -95,7 +96,8 @@ struct HouseworkTemplateListStoreMonthlyTest {
                 monthlyItems: [Self.recycling],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
-                currentVersion: 0
+                currentVersion: 0,
+                memoLimitPolicy: .free
             )
         }
     }
@@ -118,7 +120,8 @@ struct HouseworkTemplateListStoreMonthlyTest {
             monthlyItems: [Self.rent],
             templateId: Self.inputTemplateId,
             cohabitantId: Self.inputCohabitantId,
-            currentVersion: 0
+            currentVersion: 0,
+            memoLimitPolicy: .free
         )
 
         // Assert
@@ -177,7 +180,8 @@ struct HouseworkTemplateListStoreMonthlyTest {
                 monthlyItems: [.init(item: item, rule: .dayOfMonth(1))],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
-                currentVersion: 0
+                currentVersion: 0,
+                memoLimitPolicy: .free
             )
         }
     }
@@ -220,7 +224,8 @@ extension HouseworkTemplateListStoreMonthlyTest {
                 inputItem,
                 recurrence: inputRecurrence,
                 templateId: Self.inputTemplateId,
-                cohabitantId: Self.inputCohabitantId
+                cohabitantId: Self.inputCohabitantId,
+                memoLimitPolicy: .free
             )
         }
     }
@@ -252,7 +257,8 @@ extension HouseworkTemplateListStoreMonthlyTest {
                     inputItem,
                     recurrence: .monthly(.dayOfMonth(25)),
                     templateId: Self.inputTemplateId,
-                    cohabitantId: Self.inputCohabitantId
+                    cohabitantId: Self.inputCohabitantId,
+                    memoLimitPolicy: .free
                 )
             }
         }
@@ -283,6 +289,7 @@ extension HouseworkTemplateListStoreMonthlyTest {
                 inputItem,
                 recurrence: .monthly(.dayOfMonth(25)),
                 cohabitantId: Self.inputCohabitantId,
+                memoLimitPolicy: .free,
                 newTemplateId: "unused"
             )
         }
@@ -323,6 +330,7 @@ extension HouseworkTemplateListStoreMonthlyTest {
             inputItem,
             recurrence: .weekly([.monday]),
             cohabitantId: Self.inputCohabitantId,
+            memoLimitPolicy: .free,
             newTemplateId: inputNewTemplateId
         )
 
@@ -365,6 +373,7 @@ extension HouseworkTemplateListStoreMonthlyTest {
                 inputItem,
                 recurrence: .weekly([.monday]),
                 cohabitantId: Self.inputCohabitantId,
+                memoLimitPolicy: .free,
                 newTemplateId: "newTemplateId"
             )
         }

@@ -60,7 +60,12 @@ struct HouseworkListStoreTest {
 
             // Act
 
-            try await store.register(newItems: inputEntries, cohabitantId: inputCohabitantId, step: .board)
+            try await store.register(
+                newItems: inputEntries,
+                cohabitantId: inputCohabitantId,
+                step: .board,
+                memoLimitPolicy: .free
+            )
         }
     }
 
@@ -75,7 +80,7 @@ struct HouseworkListStoreTest {
 
         // Act
 
-        try await store.register(newItems: [], cohabitantId: inputCohabitantId, step: .board)
+        try await store.register(newItems: [], cohabitantId: inputCohabitantId, step: .board, memoLimitPolicy: .free)
     }
 
 }

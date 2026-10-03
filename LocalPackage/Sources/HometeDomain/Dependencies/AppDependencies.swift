@@ -28,6 +28,7 @@ public struct AppDependencies: Sendable {
     public let notificationGuideStateClient: NotificationGuideStateClient
     public let pasteboardClient: PasteboardClient
     public let dailyCompletionReminderClient: DailyCompletionReminderClient
+    public let remoteConfigClient: RemoteConfigClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
@@ -58,6 +59,7 @@ public struct AppDependencies: Sendable {
         notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
         pasteboardClient: PasteboardClient = .previewValue,
         dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
+        remoteConfigClient: RemoteConfigClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -79,6 +81,7 @@ public struct AppDependencies: Sendable {
         self.notificationGuideStateClient = notificationGuideStateClient
         self.pasteboardClient = pasteboardClient
         self.dailyCompletionReminderClient = dailyCompletionReminderClient
+        self.remoteConfigClient = remoteConfigClient
         self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)

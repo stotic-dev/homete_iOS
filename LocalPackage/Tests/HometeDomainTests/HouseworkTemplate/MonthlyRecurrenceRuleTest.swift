@@ -103,6 +103,33 @@ extension MonthlyRecurrenceRuleTest.CodableCase {
         #expect(actual == expected)
     }
 
+    @Test("メモを持つ毎月の家事も、エンコードしてデコードすると元に戻る")
+    func roundTripWithMemo() throws {
+        // Arrange
+
+        let expected = HouseworkTemplateMonthlyItem(
+            item: .init(
+                id: .init(id: "item"),
+                title: "資源ゴミ",
+                point: 3,
+                updatedAt: Date(timeIntervalSince1970: 100),
+                memo: .init(text: "段ボールも", checklist: [.init(id: "1", title: "瓶", isChecked: false)])
+            ),
+            rule: .dayOfMonth(10)
+        )
+
+        // Act
+
+        let actual = try JSONDecoder().decode(
+            HouseworkTemplateMonthlyItem.self,
+            from: JSONEncoder().encode(expected)
+        )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
     @Test("未知の種類のルールはデコードに失敗する")
     func decodeUnknownRuleType() {
         // Arrange

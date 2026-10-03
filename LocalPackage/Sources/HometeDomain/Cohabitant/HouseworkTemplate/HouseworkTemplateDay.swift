@@ -51,7 +51,8 @@ public struct HouseworkTemplateDay: Codable, Sendable, Equatable, Hashable {
                 title: $0.title,
                 point: $0.point,
                 metaData: .init(selectedDate: selectedDate, calendar: calendar, storagePolicy: storagePolicy),
-                templateHouseworkItemId: $0.id
+                templateHouseworkItemId: $0.id,
+                memo: $0.memo
             )
         }
         return registeredItems + incompleteTemplateItems

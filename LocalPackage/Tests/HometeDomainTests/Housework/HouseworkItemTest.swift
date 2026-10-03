@@ -16,6 +16,7 @@ enum HouseworkItemTest {
     struct UpdateExecutorsCase {}
     struct ThanksCase {}
     struct CodableCase {}
+    struct MemoCase {}
 
 }
 
@@ -695,6 +696,235 @@ extension HouseworkItemTest.UpdateExecutorsCase {
 
         // Assert
         #expect(result == item)
+    }
+
+}
+
+// MARK: - MemoCase
+
+extension HouseworkItemTest.MemoCase {
+
+    static let memo = HouseworkMemo(
+        text: "スーパーで",
+        checklist: [.init(id: "1", title: "牛乳", isChecked: true)]
+    )
+
+    @Test("完了にしても、メモは引き継がれる")
+    func updateCompleted_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, point: 10, expiredAt: date, memo: Self.memo)
+
+        // Act
+        let actual = item.updateCompleted(at: date, executors: [.solo(userId: "userA", point: 10)], effort: .normal)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            point: 10,
+            state: .completed,
+            executorId: "userA",
+            executedAt: date,
+            expiredAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("もう一度やった家事は、元の家事のメモをチェック状態ごと引き継ぐ")
+    func makeRedone_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            point: 10,
+            state: .completed,
+            executorId: "userA",
+            executedAt: date,
+            expiredAt: date,
+            memo: Self.memo
+        )
+
+        // Act
+        let actual = item.makeRedone(id: "id2", at: date, executor: "userB")
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 2,
+            indexedDate: date,
+            point: 10,
+            state: .completed,
+            executorId: "userB",
+            executedAt: date,
+            expiredAt: date,
+            createdAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("未完了に戻しても、メモは引き継がれる")
+    func updateIncomplete_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            state: .completed,
+            executorId: "userA",
+            executedAt: date,
+            expiredAt: date,
+            memo: Self.memo
+        )
+
+        // Act
+        let actual = item.updateIncomplete()
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+        #expect(actual == expected)
+    }
+
+    @Test("やらないにしても、メモは引き継がれる")
+    func updateNotTodo_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+
+        // Act
+        let actual = item.updateNotTodo()
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            state: .notTodo,
+            expiredAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("作成日時を付けても、メモは引き継がれる")
+    func updateCreatedAt_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+
+        // Act
+        let actual = item.updateCreatedAt(date)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            expiredAt: date,
+            createdAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("メモを更新すると、メモだけが変わる")
+    func updateMemo_replacesOnlyMemo() throws {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, createdAt: date)
+
+        // Act
+        let actual = try item.updateMemo(Self.memo, limitPolicy: .free)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            expiredAt: date,
+            createdAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
+    @Test(
+        "メモを編集できるのは未完了の家事だけ",
+        arguments: [
+            (HouseworkState.incomplete, true),
+            (.completed, false),
+            (.notTodo, false),
+        ]
+    )
+    func canEditMemo(state: HouseworkState, expected: Bool) {
+        // Arrange
+        let item = HouseworkItem.makeForTest(id: 1, state: state)
+
+        // Act
+        let actual = item.canEditMemo
+
+        // Assert
+        #expect(actual == expected)
+    }
+
+    @Test("メモを持たない既存の家事データは、メモなしとして読み込める")
+    func decode_withoutMemo_returnsNilMemo() throws {
+        // Arrange
+        let json = Data("""
+        {
+            "id": "id1",
+            "indexedDate": { "value": 0 },
+            "title": "洗濯",
+            "point": 100,
+            "state": { "incomplete": {} },
+            "expiredAt": 0
+        }
+        """.utf8)
+
+        // Act
+        let actual = try JSONDecoder().decode(HouseworkItem.self, from: json)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: 0),
+            title: "洗濯",
+            expiredAt: Date(timeIntervalSinceReferenceDate: 0)
+        )
+        #expect(actual == expected)
+    }
+
+    @Test(
+        "エンコードしてデコードすると、メモも元に戻る（消したメモは空のまま残る）",
+        arguments: [
+            Self.memo,
+            HouseworkMemo.empty,
+        ]
+    )
+    func encodeThenDecode_keepsMemo(memo: HouseworkMemo) throws {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: memo)
+
+        // Act
+        let data = try JSONEncoder().encode(item)
+        let actual = try JSONDecoder().decode(HouseworkItem.self, from: data)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: memo)
+        #expect(actual == expected)
+    }
+
+    @Test("メモを一度も書いていない家事は、memoを書き出さない")
+    func encode_withoutMemo_omitsMemoKey() throws {
+        // Arrange
+        let item = HouseworkItem.makeForTest(id: 1)
+
+        // Act
+        let data = try JSONEncoder().encode(item)
+
+        // Assert
+        let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(object?["memo"] == nil)
     }
 
 }

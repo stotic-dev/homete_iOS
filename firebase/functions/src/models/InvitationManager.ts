@@ -6,7 +6,11 @@ import {
 } from "firebase-admin/firestore";
 import {FirestoreCollections} from "./FirestoreCollections";
 import {AccountConverter, AccountFields} from "./Account";
-import {CohabitantConverter, CohabitantFields} from "./Cohabitant";
+import {
+  Cohabitant,
+  CohabitantConverter,
+  CohabitantFields,
+} from "./Cohabitant";
 import {InvitationConverter, InvitationFields} from "./Invitation";
 import {
   NotificationSender,
@@ -39,6 +43,46 @@ export class InvitationError extends Error {
     super(message);
     this.name = "InvitationError";
   }
+}
+
+/**
+ * 招待者が招待先グループのメンバーであることを確認する
+ *
+ * `Account.cohabitantId`は本人が自由に書き換えられるため、所属の根拠には
+ * `Cohabitant.members`を使う（firestore.rulesと同じ方針）。確認を怠ると、
+ * 他人のグループIDを自分のAccountに書き込んで招待を発行するだけで、
+ * そのグループへ参加できてしまう。
+ * 招待者が後からグループを抜けた場合も、その招待では参加させない。
+ * @param {Cohabitant | null} cohabitant 招待先のグループ（存在しない場合はnull）
+ * @param {string} cohabitantId 招待先のグループID
+ * @param {string} inviterId 招待者のユーザーID
+ */
+function assertInviterIsMember(
+  cohabitant: Cohabitant | null,
+  cohabitantId: string,
+  inviterId: string
+): asserts cohabitant is Cohabitant {
+  if (!cohabitant || !cohabitant.members.includes(inviterId)) {
+    throw new InvitationError(
+      "cohabitant-not-found",
+      `Inviter ${inviterId} does not belong to cohabitant ${cohabitantId}.`
+    );
+  }
+}
+
+/**
+ * グループIDからCohabitantを取得する
+ * @param {string} cohabitantId グループID
+ * @return {Promise<Cohabitant | null>} グループ（存在しない場合はnull）
+ */
+async function fetchCohabitant(
+  cohabitantId: string
+): Promise<Cohabitant | null> {
+  const snapshot = await getFirestore()
+    .collection(FirestoreCollections.COHABITANT)
+    .doc(cohabitantId)
+    .get();
+  return CohabitantConverter.fromFirestore(snapshot);
 }
 
 /** 発行された招待の内容 */
@@ -86,6 +130,14 @@ export async function issueInvitation(
     accountSnapshot.docs[0].data()
   );
   const cohabitantId = account.cohabitantId ?? null;
+
+  if (cohabitantId) {
+    assertInviterIsMember(
+      await fetchCohabitant(cohabitantId),
+      cohabitantId,
+      userId
+    );
+  }
 
   await db
     .collection(FirestoreCollections.INVITATION)
@@ -155,9 +207,20 @@ export async function fetchInvitation(
     null :
     AccountConverter.fromFirestoreData(inviterSnapshot.docs[0].data());
 
+  const cohabitantId =
+    invitation.cohabitantId ?? inviter?.cohabitantId ?? null;
+
+  if (cohabitantId) {
+    assertInviterIsMember(
+      await fetchCohabitant(cohabitantId),
+      cohabitantId,
+      invitation.createdBy
+    );
+  }
+
   return {
     inviterName: inviter?.userName ?? null,
-    cohabitantId: invitation.cohabitantId ?? inviter?.cohabitantId ?? null,
+    cohabitantId,
     expiresAt: invitation.expiresAt.getTime(),
   };
 }
@@ -270,14 +333,11 @@ export async function joinCohabitantByInvitation(
         .collection(FirestoreCollections.COHABITANT)
         .doc(targetCohabitantId);
       const cohabitantSnapshot = await transaction.get(cohabitantRef);
-      const cohabitant = CohabitantConverter.fromFirestore(cohabitantSnapshot);
-
-      if (!cohabitant) {
-        throw new InvitationError(
-          "cohabitant-not-found",
-          `Cohabitant ${targetCohabitantId} was not found.`
-        );
-      }
+      assertInviterIsMember(
+        CohabitantConverter.fromFirestore(cohabitantSnapshot),
+        targetCohabitantId,
+        invitation.createdBy
+      );
 
       transaction.update(cohabitantRef, {
         [CohabitantFields.MEMBERS]: FieldValue.arrayUnion(userId),

@@ -24,7 +24,8 @@ public extension HouseworkItem {
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        memo: HouseworkMemo? = nil
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -38,7 +39,8 @@ public extension HouseworkItem {
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -55,7 +57,8 @@ public extension HouseworkItem {
         expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        memo: HouseworkMemo? = nil
     ) -> Self {
         .init(
             id: id,
@@ -69,7 +72,8 @@ public extension HouseworkItem {
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
@@ -84,7 +88,8 @@ public extension HouseworkItem {
         executedAt: Date? = nil,
         expiredAt: Date? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
-        createdAt: Date? = nil
+        createdAt: Date? = nil,
+        memo: HouseworkMemo? = nil
     ) -> HouseworkItem {
         let inputIndexedDate = indexedDate ?? self.indexedDate
         let inputTitle = title ?? self.title
@@ -108,7 +113,8 @@ public extension HouseworkItem {
             executedAt: inputExecutedAt,
             expiredAt: inputExpiredAt,
             templateHouseworkItemId: inputTemplateHouseworkItemId,
-            createdAt: createdAt ?? self.createdAt
+            createdAt: createdAt ?? self.createdAt,
+            memo: memo ?? self.memo
         )
     }
 

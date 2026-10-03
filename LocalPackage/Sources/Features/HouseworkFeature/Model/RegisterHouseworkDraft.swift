@@ -41,6 +41,8 @@ extension RegisterHouseworkDraft {
         var categoryId: String?
         var savesAsFrequent: Bool
         var recurrenceInput: HouseworkRecurrenceInput
+        /// 家事に付けるメモ。書いていなければ`nil`
+        var memo: HouseworkMemo?
 
         /// 「新しく入力」タブの初期値（家事登録シートと同じく10ポイント）
         static let initial = ManualEntry(
@@ -71,7 +73,8 @@ extension RegisterHouseworkDraft {
                 point: item.point,
                 recurrence: nil,
                 savesAsFrequent: false,
-                categoryId: item.categoryId
+                categoryId: item.categoryId,
+                memo: item.memo
             )
         }
         let queued = queuedEntries.map { PendingEntry(queued: $0) }
@@ -80,8 +83,12 @@ extension RegisterHouseworkDraft {
     }
 
     /// キャンセル時に破棄の確認が要るか
+    /// - Note: 名前より先にメモを書くこともあるため、入力中のメモも含める
     var hasInput: Bool {
-        !selectedFrequentItemIds.isEmpty || !queuedEntries.isEmpty || !Self.isBlank(input.title)
+        !selectedFrequentItemIds.isEmpty
+            || !queuedEntries.isEmpty
+            || !Self.isBlank(input.title)
+            || input.memo.hasContent
     }
 
     /// 「続けて入力する」を押せるか

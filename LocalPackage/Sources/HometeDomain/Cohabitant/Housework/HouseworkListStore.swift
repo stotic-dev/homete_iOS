@@ -62,13 +62,19 @@ public final class HouseworkListStore {
     /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
     ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
     ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
+    /// - Parameter memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
+    /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（1件も書き込まない）
     public func register(
         newItems: [NewHouseworkEntry],
         cohabitantId: String,
-        step: HouseworkAnalyticsStep
+        step: HouseworkAnalyticsStep,
+        memoLimitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
         guard !newItems.isEmpty else { return }
         do {
+            for entry in newItems {
+                try entry.validateMemo(limitPolicy: memoLimitPolicy)
+            }
             // まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
             let createdAt = now()
             try await houseworkClient.insertItems(
@@ -301,6 +307,58 @@ public final class HouseworkListStore {
         analyticsClient.log(.housework(.delete(step: step, isSuccess: true)))
     }
 
+    /// 家事のメモ（テキスト・チェックリストの項目）を保存する
+    ///
+    /// メモの追加・更新は同居人に通知しない。
+    /// - Parameter limitPolicy: 上限の判定に使う、操作している本人のプラン
+    /// - Throws: 画面を開いている間に同居人が完了・「やらない」にして、メモを編集できなくなっていた場合は
+    ///           `HouseworkMemoError.notEditable`。上限を超えている場合は`HouseworkMemoError.limitExceeded`
+    public func updateMemo(
+        target: HouseworkItem,
+        memo: HouseworkMemo,
+        cohabitantId: String,
+        isRegistered: Bool,
+        step: HouseworkAnalyticsStep,
+        limitPolicy: HouseworkMemoLimitPolicy
+    ) async throws {
+        do {
+            try await saveMemo(
+                target: target,
+                cohabitantId: cohabitantId,
+                isRegistered: isRegistered,
+                limitPolicy: limitPolicy
+            ) { current in
+                memo.mergingCheckState(from: current.memo)
+            }
+        } catch {
+            analyticsClient.log(.housework(.editMemo(step: step, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.editMemo(step: step, isSuccess: true)))
+    }
+
+    /// メモのチェックリストの項目のチェックを切り替えて保存する
+    ///
+    /// 同居人が同時に別の項目をチェックしたときに消しにくくするため、リスナーで受け取った最新のメモに対して切り替える。
+    /// 読んでから書くまでの間に同居人が書いた分は上書きしうる。
+    /// - Throws: メモを編集できなくなっていた場合は`HouseworkMemoError.notEditable`
+    public func toggleMemoChecklistItem(
+        target: HouseworkItem,
+        itemId: HouseworkMemoChecklistItem.ID,
+        cohabitantId: String,
+        isRegistered: Bool,
+        limitPolicy: HouseworkMemoLimitPolicy
+    ) async throws {
+        try await saveMemo(
+            target: target,
+            cohabitantId: cohabitantId,
+            isRegistered: isRegistered,
+            limitPolicy: limitPolicy
+        ) { current in
+            (current.memo ?? .empty).toggled(itemId)
+        }
+    }
+
     /// 同居人の端末でふりかえり通知を予約するため、家事の完了を通知で知らせる
     ///
     /// 受け取った端末では、アプリが終了していてもNotification Service Extensionが起動して予約する。
@@ -359,6 +417,26 @@ private extension HouseworkListStore {
                 print("error occurred at housework snapshot listener: \(error)")
                 loadState = .failed(error)
             }
+        }
+    }
+
+    /// メモを保存する。登録済みの家事はメモのフィールドだけを、未登録の家事はドキュメントごと書く
+    /// - Parameter makeMemo: 最新の家事から、保存するメモを作る
+    func saveMemo(
+        target: HouseworkItem,
+        cohabitantId: String,
+        isRegistered: Bool,
+        limitPolicy: HouseworkMemoLimitPolicy,
+        makeMemo: (HouseworkItem) -> HouseworkMemo
+    ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の状態を見て判断する
+        let current = isRegistered ? items.item(target) ?? target : target
+        // 編集できるか・上限を超えていないかは家事が判定する
+        let updatedItem = try current.updateMemo(makeMemo(current), limitPolicy: limitPolicy)
+        if isRegistered {
+            try await houseworkClient.updateMemo(target.id, updatedItem.memo ?? .empty, cohabitantId)
+        } else {
+            try await houseworkClient.insertOrUpdateItem(updatedItem.updateCreatedAt(now()), cohabitantId)
         }
     }
 
