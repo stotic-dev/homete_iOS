@@ -80,7 +80,7 @@ private extension HouseworkDetailView {
 
     func mainContent() -> some View {
         ScrollView {
-            VStack(spacing: .space40) {
+            VStack(spacing: .space24) {
                 HouseworkDetailItemListContent(
                     cohabitantMemberList: cohabitantStore.members,
                     item: item,
@@ -97,7 +97,7 @@ private extension HouseworkDetailView {
                 }
             }
             .padding(.horizontal, .space16)
-            .padding(.bottom, .space24)
+            .padding(.vertical, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
         .softTopScrollEdgeEffect()

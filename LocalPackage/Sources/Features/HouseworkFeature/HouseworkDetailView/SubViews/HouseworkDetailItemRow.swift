@@ -8,18 +8,22 @@
 import HometeUI
 import SwiftUI
 
+/// 家事詳細のセクションのカードに並べる1項目。左に項目名、右に値を出す
 struct HouseworkDetailItemRow<Content: View>: View {
 
     let title: LocalizedStringKey
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: .space16) {
+        HStack(alignment: .firstTextBaseline, spacing: .space16) {
             Text(title)
-                .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .font(with: .body)
+                .foregroundStyle(.onSurface)
+            Spacer(minLength: .zero)
             content()
+                .multilineTextAlignment(.trailing)
         }
+        .accessibilityElement(children: .combine)
     }
 
 }
