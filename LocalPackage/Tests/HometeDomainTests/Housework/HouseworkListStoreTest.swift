@@ -621,6 +621,96 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         #expect(logger.value == [.housework(.addHelper(step: .detail, isSuccess: true))])
     }
 
+    @Test("リスナーの一覧に最新の家事が無くても、手元の家事に手伝った人を足して保存する")
+    func addHelpers_itemNotInList_savesWithLocalItem() async throws {
+        // Arrange
+
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: completedAt,
+            point: 10,
+            state: .completed,
+            executors: [.init(userId: "own", percentage: 100, point: 10)],
+            executedAt: completedAt
+        )
+        let inputExecutors: [HouseworkExecutor] = [
+            .init(userId: "own", percentage: 50, point: 5),
+            .init(userId: "userB", percentage: 50, point: 5),
+        ]
+        let expectedItem = inputHouseworkItem.updateExecutors(inputExecutors)
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, _ in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+                calendar: .japanese,
+                items: []
+            )
+
+            // Act
+
+            try await store.addHelpers(
+                target: inputHouseworkItem,
+                executors: inputExecutors,
+                cohabitantId: inputCohabitantId,
+                step: .detail
+            )
+        }
+    }
+
+    @Test("画面を開いている間に合計ポイントが変わった家事には、手伝った人を足さずAnalyticsも送らない")
+    func addHelpers_earnedPointChanged_doesNothing() async throws {
+        // Arrange
+
+        let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: completedAt,
+            point: 10,
+            state: .completed,
+            executors: [.init(userId: "own", percentage: 100, point: 10)],
+            executedAt: completedAt
+        )
+        // 画面を開いている間に同居人が「がんばった」で完了をやり直し、合計が12ptに増えた家事
+        let latestHouseworkItem = inputHouseworkItem.updateCompleted(
+            at: completedAt,
+            executors: [.init(userId: "own", percentage: 100, point: 12)],
+            effort: .hard
+        )
+        let logger = TestBox<[AnalyticsEvent]>(value: [])
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in Issue.record() }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+            analyticsClient: .init(log: { event in logger.value.append(event) }),
+            calendar: .japanese,
+            items: [.makeForTest(items: [latestHouseworkItem])]
+        )
+
+        // Act
+
+        try await store.addHelpers(
+            target: inputHouseworkItem,
+            executors: [
+                .init(userId: "own", percentage: 50, point: 5),
+                .init(userId: "userB", percentage: 50, point: 5),
+            ],
+            cohabitantId: inputCohabitantId,
+            step: .detail
+        )
+
+        // Assert
+
+        #expect(logger.value.isEmpty)
+    }
+
     @Test("画面を開いている間に未完了へ戻された家事には、手伝った人を足さずAnalyticsも送らない")
     func addHelpers_returnedToIncomplete_doesNothing() async throws {
         // Arrange
@@ -689,6 +779,42 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                     Issue.record()
                 },
                 items: [.makeForTest(items: [inputHouseworkItem])]
+            )
+
+            // Act
+
+            try await store.returnToIncomplete(
+                target: inputHouseworkItem,
+                cohabitantId: inputCohabitantId,
+                step: .detail
+            )
+        }
+    }
+
+    @Test("リスナーの一覧に最新の家事が無くても、手元の家事を未完了に戻して保存する")
+    func returnToIncomplete_itemNotInList_savesWithLocalItem() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "dummyExecutor",
+            executedAt: .distantPast
+        )
+        let expectedItem = inputHouseworkItem.updateIncomplete()
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, _ in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+                items: []
             )
 
             // Act
