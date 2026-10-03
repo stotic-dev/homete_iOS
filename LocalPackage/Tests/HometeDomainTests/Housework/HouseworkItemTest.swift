@@ -752,13 +752,13 @@ extension HouseworkItemTest.MemoCase {
     }
 
     @Test("メモを更新すると、メモだけが変わる")
-    func updateMemo_replacesOnlyMemo() {
+    func updateMemo_replacesOnlyMemo() throws {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
         let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, createdAt: date)
 
         // Act
-        let actual = item.updateMemo(Self.memo)
+        let actual = try item.updateMemo(Self.memo, limitPolicy: .free)
 
         // Assert
         let expected = HouseworkItem.makeForTest(

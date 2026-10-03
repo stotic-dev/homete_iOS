@@ -51,4 +51,14 @@ public enum HouseworkMemoLimitPolicy: Equatable, Sendable {
         return isCharacterCountValid && isItemCountValid
     }
 
+    /// 保存するメモが上限を超えていないか検査する
+    /// - Parameters:
+    ///   - memo: 保存するメモ。メモを持たない場合は`nil`（検査しない）
+    ///   - original: 編集前のメモ。新しく書く場合は`nil`
+    /// - Throws: 上限を超えている場合は`HouseworkMemoError.limitExceeded`
+    public func validate(_ memo: HouseworkMemo?, original: HouseworkMemo?) throws {
+        guard let memo, !canSave(memo, original: original) else { return }
+        throw HouseworkMemoError.limitExceeded
+    }
+
 }

@@ -46,7 +46,8 @@ struct HouseworkListStoreMemoTest {
                 memo: inputMemo,
                 cohabitantId: inputCohabitantId,
                 isRegistered: true,
-                step: .detail
+                step: .detail,
+                limitPolicy: .free
             )
         }
     }
@@ -94,7 +95,8 @@ struct HouseworkListStoreMemoTest {
                 memo: inputMemo,
                 cohabitantId: inputCohabitantId,
                 isRegistered: false,
-                step: .detail
+                step: .detail,
+                limitPolicy: .free
             )
         }
     }
@@ -118,7 +120,8 @@ struct HouseworkListStoreMemoTest {
             memo: inputMemo,
             cohabitantId: inputCohabitantId,
             isRegistered: true,
-            step: .detail
+            step: .detail,
+            limitPolicy: .free
         )
 
         // Assert
@@ -151,7 +154,8 @@ struct HouseworkListStoreMemoTest {
                 memo: inputMemo,
                 cohabitantId: inputCohabitantId,
                 isRegistered: true,
-                step: .detail
+                step: .detail,
+                limitPolicy: .free
             )
         }
     }
@@ -203,7 +207,8 @@ struct HouseworkListStoreMemoTest {
                 target: inputHouseworkItem,
                 itemId: "milk",
                 cohabitantId: inputCohabitantId,
-                isRegistered: true
+                isRegistered: true,
+                limitPolicy: .free
             )
         }
     }
@@ -242,7 +247,8 @@ struct HouseworkListStoreMemoTest {
                 memo: inputMemo,
                 cohabitantId: inputCohabitantId,
                 isRegistered: true,
-                step: .detail
+                step: .detail,
+                limitPolicy: .free
             )
         }
     }
@@ -267,7 +273,8 @@ struct HouseworkListStoreMemoTest {
             memo: inputMemo,
             cohabitantId: inputCohabitantId,
             isRegistered: true,
-            step: .detail
+            step: .detail,
+            limitPolicy: .free
         )
 
         // Assert

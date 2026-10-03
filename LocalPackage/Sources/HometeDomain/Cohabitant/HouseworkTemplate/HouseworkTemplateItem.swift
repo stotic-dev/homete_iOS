@@ -17,6 +17,16 @@ public struct HouseworkTemplateItem: Identifiable, Codable, Sendable, Equatable,
         self.memo = memo
     }
 
+    /// メモが上限を超えていないか検査する
+    /// - Parameter original: 保存前の同じ家事。新しく追加する場合は`nil`
+    /// - Throws: 上限を超えている場合は`HouseworkMemoError.limitExceeded`
+    public func validateMemo(
+        comparedTo original: HouseworkTemplateItem?,
+        limitPolicy: HouseworkMemoLimitPolicy
+    ) throws {
+        try limitPolicy.validate(memo, original: original?.memo)
+    }
+
 }
 
 public extension HouseworkTemplateItem {

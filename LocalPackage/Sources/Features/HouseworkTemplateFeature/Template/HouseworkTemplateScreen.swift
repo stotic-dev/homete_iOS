@@ -42,6 +42,7 @@ public struct HouseworkTemplateScreen: View {
                 draft: $editingDraft,
                 editorContext: $editorContext,
                 isShowAd: AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium),
+                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
                 loadFailure: loadFailure,
                 onTapRemoveAdsLink: { tappedRemoveAdsLink() },
                 onRetry: { await retry() }

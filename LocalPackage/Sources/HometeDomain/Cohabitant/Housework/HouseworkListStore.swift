@@ -62,13 +62,19 @@ public final class HouseworkListStore {
     /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
     ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
     ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
+    /// - Parameter memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
+    /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（1件も書き込まない）
     public func register(
         newItems: [NewHouseworkEntry],
         cohabitantId: String,
-        step: HouseworkAnalyticsStep
+        step: HouseworkAnalyticsStep,
+        memoLimitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
         guard !newItems.isEmpty else { return }
         do {
+            for entry in newItems {
+                try entry.validateMemo(limitPolicy: memoLimitPolicy)
+            }
             // まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
             let createdAt = now()
             try await houseworkClient.insertItems(
@@ -278,17 +284,24 @@ public final class HouseworkListStore {
     /// 家事のメモ（テキスト・チェックリストの項目）を保存する
     ///
     /// メモの追加・更新は同居人に通知しない。
+    /// - Parameter limitPolicy: 上限の判定に使う、操作している本人のプラン
     /// - Throws: 画面を開いている間に同居人が完了・「やらない」にして、メモを編集できなくなっていた場合は
-    ///           `HouseworkMemoError.notEditable`
+    ///           `HouseworkMemoError.notEditable`。上限を超えている場合は`HouseworkMemoError.limitExceeded`
     public func updateMemo(
         target: HouseworkItem,
         memo: HouseworkMemo,
         cohabitantId: String,
         isRegistered: Bool,
-        step: HouseworkAnalyticsStep
+        step: HouseworkAnalyticsStep,
+        limitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
         do {
-            try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { current in
+            try await saveMemo(
+                target: target,
+                cohabitantId: cohabitantId,
+                isRegistered: isRegistered,
+                limitPolicy: limitPolicy
+            ) { current in
                 memo.mergingCheckState(from: current.memo)
             }
         } catch {
@@ -307,9 +320,15 @@ public final class HouseworkListStore {
         target: HouseworkItem,
         itemId: HouseworkMemoChecklistItem.ID,
         cohabitantId: String,
-        isRegistered: Bool
+        isRegistered: Bool,
+        limitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
-        try await saveMemo(target: target, cohabitantId: cohabitantId, isRegistered: isRegistered) { current in
+        try await saveMemo(
+            target: target,
+            cohabitantId: cohabitantId,
+            isRegistered: isRegistered,
+            limitPolicy: limitPolicy
+        ) { current in
             (current.memo ?? .empty).toggled(itemId)
         }
     }
@@ -381,18 +400,17 @@ private extension HouseworkListStore {
         target: HouseworkItem,
         cohabitantId: String,
         isRegistered: Bool,
+        limitPolicy: HouseworkMemoLimitPolicy,
         makeMemo: (HouseworkItem) -> HouseworkMemo
     ) async throws {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の状態を見て判断する
         let current = isRegistered ? items.item(target) ?? target : target
-        guard current.canEditMemo else { throw HouseworkMemoError.notEditable }
-
-        let memo = makeMemo(current)
+        // 編集できるか・上限を超えていないかは家事が判定する
+        let updatedItem = try current.updateMemo(makeMemo(current), limitPolicy: limitPolicy)
         if isRegistered {
-            try await houseworkClient.updateMemo(target.id, memo, cohabitantId)
+            try await houseworkClient.updateMemo(target.id, updatedItem.memo ?? .empty, cohabitantId)
         } else {
-            let updatedItem = current.updateMemo(memo).updateCreatedAt(now())
-            try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+            try await houseworkClient.insertOrUpdateItem(updatedItem.updateCreatedAt(now()), cohabitantId)
         }
     }
 

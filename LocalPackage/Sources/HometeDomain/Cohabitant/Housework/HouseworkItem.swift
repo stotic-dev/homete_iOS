@@ -189,10 +189,11 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     }
 
     /// メモを更新する
-    ///
-    /// 編集できるのは未完了の家事だけなので、呼び出し側で`canEditMemo`を確認すること。
-    public func updateMemo(_ memo: HouseworkMemo) -> Self {
-        assert(canEditMemo, "未完了ではない家事のメモを更新しようとしています")
+    /// - Throws: 未完了ではない家事は`HouseworkMemoError.notEditable`、
+    ///           文字数・項目数がプランの上限を超えている場合は`HouseworkMemoError.limitExceeded`
+    public func updateMemo(_ memo: HouseworkMemo, limitPolicy: HouseworkMemoLimitPolicy) throws -> Self {
+        guard canEditMemo else { throw HouseworkMemoError.notEditable }
+        try limitPolicy.validate(memo, original: self.memo)
         return .init(
             id: id,
             indexedDate: indexedDate,

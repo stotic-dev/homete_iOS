@@ -159,6 +159,10 @@ private extension RegisterHouseworkView {
         .init(isPremium: subscriptionStore.isPremium)
     }
 
+    var memoLimitPolicy: HouseworkMemoLimitPolicy {
+        .init(isPremium: subscriptionStore.isPremium)
+    }
+
     var pendingEntries: [PendingEntry] {
         draft.pendingEntries(context: frequentHouseworkContext)
     }
@@ -339,7 +343,12 @@ private extension RegisterHouseworkView {
         let newItems = entries
             .filter { $0.recurrence == nil }
             .map { NewHouseworkEntry(item: makeHouseworkItem($0), source: $0.registerSource) }
-        try await houseworkListStore.register(newItems: newItems, cohabitantId: cohabitantId, step: step)
+        try await houseworkListStore.register(
+            newItems: newItems,
+            cohabitantId: cohabitantId,
+            step: step,
+            memoLimitPolicy: memoLimitPolicy
+        )
 
         for entry in entries {
             guard let recurrence = entry.recurrence, let houseworkTemplateListStore else { continue }
@@ -347,6 +356,7 @@ private extension RegisterHouseworkView {
                 makeTemplateItem(entry),
                 recurrence: recurrence,
                 cohabitantId: cohabitantId,
+                memoLimitPolicy: memoLimitPolicy,
                 newTemplateId: UUID().uuidString
             )
         }
@@ -366,6 +376,7 @@ private extension RegisterHouseworkView {
             try await frequentHouseworkStore.add(
                 inputs,
                 limitPolicy: limitPolicy,
+                memoLimitPolicy: memoLimitPolicy,
                 step: .register,
                 cohabitantId: cohabitantId
             )

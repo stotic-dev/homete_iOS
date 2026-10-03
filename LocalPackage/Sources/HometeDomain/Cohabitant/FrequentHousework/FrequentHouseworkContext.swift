@@ -233,10 +233,12 @@ public extension FrequentHouseworkContext {
 
     /// 入力から追加するいつもの家事を組み立てる
     /// - Note: 名前の重複と並び順は、先に組み立てた家事も含めて判定する。各カテゴリの末尾に、入力の順で並べる
-    /// - Throws: 名前が空・重複（入力同士の重複を含む）の場合、上限を超える場合は`FrequentHouseworkError`
+    /// - Throws: 名前が空・重複（入力同士の重複を含む）の場合、上限を超える場合は`FrequentHouseworkError`。
+    ///           メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`
     func makeAddedItems(
         from inputs: [FrequentHouseworkInput],
         limitPolicy: FrequentHouseworkLimitPolicy,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
         timestamp: Date,
         idGenerator: () -> String
     ) throws -> [FrequentHouseworkItem] {
@@ -247,6 +249,7 @@ public extension FrequentHouseworkContext {
         for input in inputs {
             let workingContext = replacingItems(items + newItems)
             let validTitle = try workingContext.validatedTitle(input.title)
+            try memoLimitPolicy.validate(input.memo, original: nil)
             newItems.append(.init(
                 id: idGenerator(),
                 title: validTitle,
@@ -264,14 +267,16 @@ public extension FrequentHouseworkContext {
     /// 編集後のいつもの家事を組み立てる
     /// - Returns: 対象の家事がない場合は`nil`（編集中に同居人が削除したものを復活させないため）
     /// - Note: カテゴリを変えた場合は、移動先のカテゴリの末尾に並べる
-    /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
+    /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`。メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`
     func makeUpdatedItem(
         itemId: String,
         input: FrequentHouseworkInput,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
         timestamp: Date
     ) throws -> FrequentHouseworkItem? {
         guard let current = items.first(where: { $0.id == itemId }) else { return nil }
         let validTitle = try validatedTitle(input.title, excludingId: itemId)
+        try memoLimitPolicy.validate(input.memo, original: current.memo)
         let isSameCategory = category(of: current).categoryId == input.categoryId
         return .init(
             id: current.id,

@@ -160,6 +160,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeAddedItemsCase {
                 .init(title: "買い出し", point: 10, categoryId: nil),
             ],
             limitPolicy: .premium,
+            memoLimitPolicy: .premium,
             timestamp: now,
             idGenerator: { generatedIds.value.removeFirst() }
         )
@@ -197,6 +198,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeAddedItemsCase {
             try context.makeAddedItems(
                 from: inputs,
                 limitPolicy: .premium,
+                memoLimitPolicy: .premium,
                 timestamp: FrequentHouseworkContextAssemblyTest.fixedNow,
                 idGenerator: { "new" }
             )
@@ -220,6 +222,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeAddedItemsCase {
                     .init(title: "窓拭き", point: 10, categoryId: nil),
                 ],
                 limitPolicy: .free,
+                memoLimitPolicy: .premium,
                 timestamp: FrequentHouseworkContextAssemblyTest.fixedNow,
                 idGenerator: { "new" }
             )
@@ -260,6 +263,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeUpdatedItemCase {
         let actual = try context.makeUpdatedItem(
             itemId: "1",
             input: .init(title: "風呂掃除", point: 20, categoryId: "preset.cleaning"),
+            memoLimitPolicy: .premium,
             timestamp: now
         )
 
@@ -296,6 +300,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeUpdatedItemCase {
         let actual = try context.makeUpdatedItem(
             itemId: "1",
             input: .init(title: "布団干し", point: 10, categoryId: "preset.laundry"),
+            memoLimitPolicy: .premium,
             timestamp: now
         )
 
@@ -319,6 +324,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeUpdatedItemCase {
             try context.makeUpdatedItem(
                 itemId: "1",
                 input: .init(title: "洗濯", point: 10, categoryId: nil),
+                memoLimitPolicy: .premium,
                 timestamp: FrequentHouseworkContextAssemblyTest.fixedNow
             )
         }
@@ -335,6 +341,7 @@ extension FrequentHouseworkContextAssemblyTest.MakeUpdatedItemCase {
         let actual = try context.makeUpdatedItem(
             itemId: "deleted",
             input: .init(title: "風呂", point: 10, categoryId: nil),
+            memoLimitPolicy: .premium,
             timestamp: FrequentHouseworkContextAssemblyTest.fixedNow
         )
 
@@ -512,6 +519,7 @@ extension FrequentHouseworkContextAssemblyTest.MemoCase {
         let actual = try context.makeAddedItems(
             from: [.init(title: "買い出し", point: 10, categoryId: nil, memo: FrequentHouseworkContextAssemblyTest.memo)],
             limitPolicy: .premium,
+            memoLimitPolicy: .premium,
             timestamp: now,
             idGenerator: { "new" }
         )
@@ -548,6 +556,7 @@ extension FrequentHouseworkContextAssemblyTest.MemoCase {
         let actual = try context.makeUpdatedItem(
             itemId: "1",
             input: .init(title: "買い出し", point: 10, categoryId: nil, memo: FrequentHouseworkContextAssemblyTest.memo),
+            memoLimitPolicy: .premium,
             timestamp: now
         )
 
@@ -583,6 +592,7 @@ extension FrequentHouseworkContextAssemblyTest.MemoCase {
         let actual = try context.makeUpdatedItem(
             itemId: "1",
             input: .init(title: "買い物", point: 10, categoryId: nil),
+            memoLimitPolicy: .premium,
             timestamp: now
         )
 

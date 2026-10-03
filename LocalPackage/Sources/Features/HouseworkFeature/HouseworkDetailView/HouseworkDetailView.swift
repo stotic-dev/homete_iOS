@@ -15,6 +15,7 @@ public struct HouseworkDetailView: View {
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @LoadingState var loadingState
 
     @State var item: HouseworkBoardItem
@@ -104,6 +105,10 @@ private extension HouseworkDetailView {
         item.originalItem.canEditMemo || item.originalItem.memo.hasContent
     }
 
+    var memoLimitPolicy: HouseworkMemoLimitPolicy {
+        .init(isPremium: subscriptionStore.isPremium)
+    }
+
 }
 
 // MARK: プレゼンテーションロジック
@@ -137,7 +142,8 @@ private extension HouseworkDetailView {
                     memo: memo,
                     cohabitantId: cohabitantId,
                     isRegistered: target.isRegistered,
-                    step: .detail
+                    step: .detail,
+                    limitPolicy: memoLimitPolicy
                 )
             } catch {
                 handleMemoError(error)
@@ -146,17 +152,17 @@ private extension HouseworkDetailView {
     }
 
     func tappedMemoChecklistItem(_ checklistItemId: HouseworkMemoChecklistItem.ID) {
-        guard let cohabitantId = account.cohabitantId,
-              let memo = item.originalItem.memo,
-              item.originalItem.canEditMemo,
-              !isSavingMemoCheck else { return }
-
         let target = item
+        guard let cohabitantId = account.cohabitantId,
+              let memo = target.originalItem.memo,
+              !isSavingMemoCheck,
+              let toggledItem = try? target.originalItem.updateMemo(
+                  memo.toggled(checklistItemId),
+                  limitPolicy: memoLimitPolicy
+              ) else { return }
+
         // 保存を待たずにチェックを反映し、失敗したら元に戻す
-        item = .init(
-            originalItem: target.originalItem.updateMemo(memo.toggled(checklistItemId)),
-            isRegistered: target.isRegistered
-        )
+        item = .init(originalItem: toggledItem, isRegistered: target.isRegistered)
         isSavingMemoCheck = true
         Task {
             defer { isSavingMemoCheck = false }
@@ -165,7 +171,8 @@ private extension HouseworkDetailView {
                     target: target.originalItem,
                     itemId: checklistItemId,
                     cohabitantId: cohabitantId,
-                    isRegistered: target.isRegistered
+                    isRegistered: target.isRegistered,
+                    limitPolicy: memoLimitPolicy
                 )
             } catch {
                 item = houseworkListStore.items.item(target.originalItem)
@@ -205,6 +212,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
 }
 
@@ -226,6 +234,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
 }
 
@@ -241,6 +250,7 @@ private extension HouseworkDetailView {
     }
     .environment(HouseworkListStore())
     .environment(CohabitantStore())
+    .environment(SubscriptionStore())
     .setupEnvironmentForPreview()
     #if canImport(Prefire)
         .prefireIgnored()
