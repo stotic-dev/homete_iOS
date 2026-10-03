@@ -20,9 +20,9 @@
   * バックグラウンドからの復帰時にも`fetchAndActivate()`を実行する（`RootView`）
   * fetchのタイムアウトは3秒（SDK既定は60秒）。サーバーへのリクエスト単位の値で、fetch全体の上限ではない（初回はFirebase Installationsのトークン取得が先に挟まる）。失敗・タイムアウト時は前回activate済みの値、それも無ければアプリ内デフォルト値が使われる
   * `minimumFetchInterval`はReleaseで12時間、Debug/Stgで0秒
-* **値をいつ画面へ反映するかは、キーごとに`RemoteConfigStore`で決める。**
-  * `ads_enabled`: 起動時のfetchが終わった時点（成功・失敗を問わない）で1回だけ読み、`isAdsEnabled`として起動中は固定する。復帰時のactivateでは読み直さない
-  * `minimum_required_version`（#330で追加予定）: activateのたびに再判定する想定
+* **値をいつ画面へ反映するかは、そのキーを使う領域のStoreで決める。** Remote Configは値の取得元という技術の都合なので、Remote Config単位のStoreは作らない
+  * `ads_enabled`（`AdvertisementStore`）: 起動時のfetchが終わった時点（成功・失敗を問わない）で1回だけ読み、`isAdsEnabled`として起動中は固定する。復帰時のactivateでは読み直さない
+  * `minimum_required_version`（#330で追加予定）: 強制アップデートの領域のStoreで、activateのたびに再判定する想定
 * `AdDisplayPolicy.isEnabled`（ハードコード定数）は廃止し、`EnvironmentValues.isAdsEnabled`経由でRemote Configの値を判定に使う。プレミアム加入者は広告非表示という判定式（`isEnabled && !isPremium`）は変えない
 * App Checkは適用しない。App Checkが保護できるのはAuth（プレビュー）/ Firestore / Realtime Database / Storage / Callable Functions / SQL Connect / AI Logicで、Remote Configは対象外のため（配信する値は広告のON/OFFや最低バージョンで、漏れても実害がない）
 

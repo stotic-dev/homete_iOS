@@ -26,6 +26,7 @@ public struct RegisterHouseworkView: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.frequentHouseworkContext) var frequentHouseworkContext
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.appDependencies.houseworkEntryHistoryClient) var houseworkEntryHistoryClient
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @Environment(\.calendar) var calendar
@@ -43,7 +44,7 @@ public struct RegisterHouseworkView: View {
     @State var isShowPaywall = false
     @State var isShowFrequentManagement = false
 
-    @AppStorage(key: .houseworkEntryHistoryList) var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
+    @State var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
 
     let dailyHouseworkList: DailyHouseworkList
     let step: HouseworkAnalyticsStep
@@ -134,6 +135,9 @@ public struct RegisterHouseworkView: View {
         .fullScreenLoadingIndicator(loadingState)
         .onAppear {
             onAppear()
+        }
+        .task {
+            await loadEntryHistory()
         }
         .trackScreenView(.houseworkRegister)
     }
@@ -282,9 +286,15 @@ private extension RegisterHouseworkView {
         draft.queueCurrentInput(id: UUID().uuidString)
     }
 
-    func tappedEntryHistoryRow(_ item: String) {
-        draft.input.title = item
-        houseworkEntryHistoryList.moveToFrontIfExists(item)
+    /// - Note: 名前だけでなく完了ポイントも戻す。ポイントを毎回入れ直さずに済ませるのが履歴の目的のため
+    func tappedEntryHistoryRow(_ item: HouseworkEntryHistoryItem) {
+        draft.input.title = item.title
+        draft.input.point = item.point
+        houseworkEntryHistoryList.moveToFrontIfExists(item.title)
+        let list = houseworkEntryHistoryList
+        Task {
+            await saveEntryHistory(list)
+        }
     }
 
     func tappedSaveAsFrequentWhenLimitReached() {
@@ -304,9 +314,7 @@ private extension RegisterHouseworkView {
     /// 登録予定リストをまとめて登録する
     /// - Note: 家事の登録に失敗した場合はシートを閉じずに知らせ、登録予定リストを残す
     func register(_ entries: [PendingEntry], cohabitantId: String) async {
-        entries
-            .filter { $0.registerSource == .manual }
-            .forEach { houseworkEntryHistoryList.addNewHistory($0.title) }
+        await recordEntryHistory(entries)
 
         do {
             try await registerHousework(entries, cohabitantId: cohabitantId)
@@ -392,7 +400,52 @@ private extension RegisterHouseworkView {
 
 }
 
+// MARK: - 入力履歴
+
+/// - Note: 履歴は入力を助けるための端末内の控えなので、読み書きに失敗しても家事の登録は止めない
+private extension RegisterHouseworkView {
+
+    func loadEntryHistory() async {
+        do {
+            houseworkEntryHistoryList = try await houseworkEntryHistoryClient.fetch()
+        } catch {
+            print("Failed loading housework entry history: \(error)")
+        }
+    }
+
+    /// 「新しく入力」で登録した家事を履歴に残す
+    func recordEntryHistory(_ entries: [PendingEntry]) async {
+        let manualEntries = entries.filter { $0.registerSource == .manual }
+        guard !manualEntries.isEmpty else { return }
+        var list = houseworkEntryHistoryList
+        for entry in manualEntries {
+            list.addNewHistory(.init(title: entry.title, point: entry.point))
+        }
+        houseworkEntryHistoryList = list
+        await saveEntryHistory(list)
+    }
+
+    func saveEntryHistory(_ list: HouseworkHistoryList) async {
+        do {
+            try await houseworkEntryHistoryClient.save(list)
+        } catch {
+            print("Failed saving housework entry history: \(error)")
+        }
+    }
+
+}
+
 #if DEBUG
+extension HouseworkHistoryList {
+
+    /// Preview用の、保存済みの入力履歴
+    static let previewEntryHistory = HouseworkHistoryList(items: [
+        .init(title: "洗濯", point: 20),
+        .init(title: "掃除", point: 10),
+    ])
+
+}
+
 extension RegisterHouseworkView {
 
     /// Preview用の、登録しようとしている日の家事一覧
@@ -442,10 +495,9 @@ extension RegisterHouseworkView {
         dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
         step: .board
     )
-    .injectAppStorageWithPreview("RegisterHouseworkView") { userDefaults in
-        let historyList = HouseworkHistoryList(items: ["洗濯", "掃除"])
-        userDefaults.setValue(historyList.rawValue, forKey: "houseworkEntryHistoryList")
-    }
+    .environment(\.appDependencies, .init(
+        houseworkEntryHistoryClient: .init(fetch: { .previewEntryHistory })
+    ))
     .environment(HouseworkListStore(
         houseworkClient: .previewValue,
         cohabitantPushNotificationClient: .previewValue

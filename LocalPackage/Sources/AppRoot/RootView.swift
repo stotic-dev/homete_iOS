@@ -21,11 +21,12 @@ public struct RootView: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(LaunchStateStore.self) var launchStateStore
-    @Environment(RemoteConfigStore.self) var remoteConfigStore
+    @Environment(AdvertisementStore.self) var advertisementStore
+    @Environment(ForceUpdateStore.self) var forceUpdateStore
 
     public var body: some View {
         ZStack {
-            if let forceUpdateRequirement = remoteConfigStore.forceUpdateRequirement {
+            if let forceUpdateRequirement = forceUpdateStore.forceUpdateRequirement {
                 // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
                 // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
                 ForceUpdateView(message: forceUpdateRequirement.message)
@@ -71,7 +72,7 @@ public struct RootView: View {
         }
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init { launchStateStore.update($0) })
-        .environment(\.isAdsEnabled, remoteConfigStore.isAdsEnabled)
+        .environment(\.isAdsEnabled, advertisementStore.isAdsEnabled)
     }
 
 }
@@ -105,7 +106,8 @@ public extension RootView {
                 houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient
             )
-            let remoteConfigStore = RemoteConfigStore(
+            let advertisementStore = AdvertisementStore(remoteConfigClient: $0.remoteConfigClient)
+            let forceUpdateStore = ForceUpdateStore(
                 remoteConfigClient: $0.remoteConfigClient,
                 currentAppVersion: Bundle.main
                     .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
@@ -123,16 +125,21 @@ public extension RootView {
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
                 .environment(launchStateStore)
-                .environment(remoteConfigStore)
+                .environment(advertisementStore)
+                .environment(forceUpdateStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
                 }
                 .task {
                     // 起動処理とは並行に走らせ、完了を待たない
-                    await remoteConfigStore.setupOnLaunch()
+                    await advertisementStore.setupOnLaunch()
                 }
                 .task {
-                    await remoteConfigStore.observeConfigUpdates()
+                    // 起動処理とは並行に走らせ、完了を待たない
+                    await forceUpdateStore.setupOnLaunch()
+                }
+                .task {
+                    await forceUpdateStore.observeConfigUpdates()
                 }
                 .routeResolverInjection()
                 .adComponentResolverInjection()
@@ -166,7 +173,10 @@ private extension RootView {
         case .active where hasEnteredBackground:
             hasEnteredBackground = false
             Task {
-                await remoteConfigStore.refresh()
+                await advertisementStore.refresh()
+            }
+            Task {
+                await forceUpdateStore.refresh()
             }
         default:
             break

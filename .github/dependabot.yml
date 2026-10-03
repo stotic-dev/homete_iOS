@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # LocalPackage（SPM）の直接依存のみを監視する。
+  # ProjectTools / DangerTools / homete.xcodeproj は対象外。
+  - package-ecosystem: "swift"
+    directory: "/LocalPackage"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    # 推移的依存（Firebase SDKが内部で引くgRPC等）のPRは作らない
+    allow:
+      - dependency-type: "direct"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"

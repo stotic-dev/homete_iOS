@@ -1,5 +1,5 @@
 //
-//  RemoteConfigStoreTest.swift
+//  ForceUpdateStoreTest.swift
 //  LocalPackage
 //
 
@@ -7,115 +7,9 @@
 import Testing
 
 @MainActor
-struct RemoteConfigStoreTest {
+struct ForceUpdateStoreTest {
 
     private struct FetchError: Error {}
-
-    @Test("起動時の取得が終わるまでは、広告表示はアプリ内デフォルト値の無効になる")
-    func initialAdsEnabledIsDefault() {
-        // Arrange
-
-        let remoteConfigClient = RemoteConfigClient(bool: { _ in true })
-
-        // Act
-
-        let store = RemoteConfigStore(remoteConfigClient: remoteConfigClient)
-
-        // Assert
-
-        #expect(store.isAdsEnabled == false)
-    }
-
-    @Test(
-        "起動時に取得・反映した後の値で広告表示の有無を確定する",
-        arguments: [true, false]
-    )
-    func setupOnLaunchSuccess(remoteValue: Bool) async {
-        // Arrange
-
-        let isActivated = TestBox(value: false)
-        let remoteConfigClient = RemoteConfigClient(
-            fetchAndActivate: {
-                isActivated.value = true
-            },
-            bool: { key in
-                #expect(key == .adsEnabled)
-                // 反映前に読むとデフォルト値が返る
-                return isActivated.value ? remoteValue : key.defaultValue
-            }
-        )
-        let store = RemoteConfigStore(
-            remoteConfigClient: remoteConfigClient,
-            isAdsEnabled: !remoteValue
-        )
-
-        // Act
-
-        await store.setupOnLaunch()
-
-        // Assert
-
-        #expect(store.isAdsEnabled == remoteValue)
-    }
-
-    @Test("起動時の取得に失敗した場合は、前回反映済みの値で広告表示の有無を確定する")
-    func setupOnLaunchFailure() async {
-        // Arrange
-
-        let remoteConfigClient = RemoteConfigClient(
-            fetchAndActivate: {
-                throw FetchError()
-            },
-            bool: { _ in
-                // 前回の起動で反映済みの値
-                true
-            }
-        )
-        let store = RemoteConfigStore(remoteConfigClient: remoteConfigClient)
-
-        // Act
-
-        await store.setupOnLaunch()
-
-        // Assert
-
-        #expect(store.isAdsEnabled == true)
-    }
-
-    @Test("フォアグラウンド復帰時は最新の値を取得するが、起動中の広告表示の有無は変えない")
-    func refreshKeepsAdsEnabled() async {
-        await confirmation { confirmation in
-            // Arrange
-
-            let remoteConfigClient = RemoteConfigClient(
-                fetchAndActivate: {
-                    confirmation()
-                },
-                bool: { _ in
-                    Issue.record("起動中は広告表示の値を読み直さない")
-                    return true
-                }
-            )
-            let store = RemoteConfigStore(
-                remoteConfigClient: remoteConfigClient,
-                isAdsEnabled: false
-            )
-
-            // Act
-
-            await store.refresh()
-
-            // Assert
-
-            #expect(store.isAdsEnabled == false)
-        }
-    }
-
-}
-
-// MARK: - 強制アップデート
-
-extension RemoteConfigStoreTest {
 
     @Test("起動時に取得・反映した最低バージョンを現在のバージョンが下回る場合、強制アップデートが必要になる")
     func setupOnLaunchRequiresForceUpdate() async {
@@ -135,7 +29,7 @@ extension RemoteConfigStoreTest {
                 }
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0"
         )
@@ -153,7 +47,7 @@ extension RemoteConfigStoreTest {
     func setupOnLaunchUsesActivatedMinimumVersionBeforeFetch() async {
         // Arrange
 
-        let storeBox = TestBox<RemoteConfigStore?>(value: nil)
+        let storeBox = TestBox<ForceUpdateStore?>(value: nil)
         let requirementDuringFetch = TestBox<ForceUpdateRequirement?>(value: nil)
         let remoteConfigClient = RemoteConfigClient(
             fetchAndActivate: {
@@ -164,7 +58,7 @@ extension RemoteConfigStoreTest {
                 key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0"
         )
@@ -192,7 +86,7 @@ extension RemoteConfigStoreTest {
                 key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0"
         )
@@ -219,7 +113,7 @@ extension RemoteConfigStoreTest {
                 key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0"
         )
@@ -242,7 +136,7 @@ extension RemoteConfigStoreTest {
                 key == .minimumRequiredVersion ? "1.0.0" : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0",
             forceUpdateRequirement: .init(message: nil)
@@ -270,18 +164,13 @@ extension RemoteConfigStoreTest {
                     continuation.finish()
                 }
             },
-            bool: { _ in
-                Issue.record("起動中は広告表示の値を読み直さない")
-                return true
-            },
             string: { key in
                 key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
-            currentAppVersion: "1.0.0",
-            isAdsEnabled: false
+            currentAppVersion: "1.0.0"
         )
 
         // Act
@@ -291,7 +180,6 @@ extension RemoteConfigStoreTest {
         // Assert
 
         #expect(store.forceUpdateRequirement == .init(message: nil))
-        #expect(store.isAdsEnabled == false)
     }
 
 }

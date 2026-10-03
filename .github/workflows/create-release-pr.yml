@@ -15,9 +15,8 @@ permissions:
 
 jobs:
   create-release-pr:
-    runs-on: macos-26
+    runs-on: ubuntu-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
       VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v4.2.2
@@ -26,9 +25,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Select Xcode version
-        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
-
       - name: Validate version format
         run: |
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -36,11 +32,22 @@ jobs:
             exit 1
           fi
 
+      # 同名ブランチが残っていると最後のpushがnon-fast-forwardで拒否される。
+      # PRが紐づいている可能性があるためforce pushで上書きはせず、ここで止めて削除を促す。
+      - name: Ensure release branch does not exist
+        run: |
+          if git ls-remote --exit-code --heads origin "release/v${VERSION}" > /dev/null; then
+            echo "::error::release/v${VERSION} がリモートに既に存在します。不要であれば git push origin --delete release/v${VERSION} で削除してから再実行してください"
+            exit 1
+          fi
+
       - name: Create release branch
         run: git checkout -b "release/v${VERSION}"
 
+      # agvtool new-marketing-versionと同じく全ターゲットのMARKETING_VERSIONを揃える。
+      # Xcodeに依存しないのでmacOSランナーを使わずに済む。
       - name: Bump MARKETING_VERSION
-        run: xcrun agvtool new-marketing-version "$VERSION"
+        run: sed -i -E "s/MARKETING_VERSION = [^;]+;/MARKETING_VERSION = ${VERSION};/" homete.xcodeproj/project.pbxproj
 
       - name: Configure git
         run: |
@@ -52,9 +59,6 @@ jobs:
           git add homete.xcodeproj/project.pbxproj
           git commit --allow-empty -m "chore: リリースバージョンをv${VERSION}に更新"
 
-      - name: Push release branch
-        run: git push origin "release/v${VERSION}"
-
       # 前回リリースタグ以降にmainへマージされたPRを一覧化する。
       # PRタイトルにバッククォートや$等が含まれても安全なよう、ここではファイルへの
       # 書き出しのみ行い、シェルの再展開が起きるコマンド置換には使わない。
@@ -64,7 +68,7 @@ jobs:
         run: |
           LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n 1)
           if [ -n "$LAST_TAG" ]; then
-            SINCE_EPOCH=$(date -u -d "$(git log -1 --format=%cI "$LAST_TAG")" +%s)
+            SINCE_EPOCH=$(git log -1 --format=%ct "$LAST_TAG")
           else
             SINCE_EPOCH=0
           fi
@@ -98,7 +102,15 @@ jobs:
             echo "このPRへのpushの度に、Xcode Cloudの「Upload Release Candidate TestFlight」workflowが"
             echo "外部TestFlightにビルドを配信し、「Upload For AppStore」workflowがApp Store Connectへビルドを"
             echo "アップロードします。マージするとタグ作成・GitHub Release publishだけが走ります（doc/adr/0027）。"
+            echo ""
+            echo "\`fastlane/metadata/\`・\`fastlane/screenshots/\` の変更をこのブランチへpushすると、"
+            echo "Sync MetadataワークフローがApp Store Connectへメタデータを同期します（doc/adr/0032）。"
           } > pr_body.md
+
+      # PR本文の生成で失敗してもリモートにブランチだけが残らないよう、pushはPR作成の直前に行う。
+      # 残ると次回実行時にnon-fast-forwardで拒否され、手動でブランチを消すまで再実行できなくなる。
+      - name: Push release branch
+        run: git push origin "release/v${VERSION}"
 
       - name: Create pull request
         env:

@@ -4,7 +4,9 @@ name: Sync Metadata
 # （fastlane sync_metadataレーン、Fastfile参照）。ビルドのアップロードは行わない。
 # versionはASC上のバージョン作成にも使うため必須。対象バージョンがASCに無ければ新規作成し、
 # 既にあればメタデータの更新のみ行う（Fastfileのsync_metadataレーン参照）。
-# release-merged.yml からは起動しない（doc/adr/0027）。必要なときに workflow_dispatch で手動実行する。
+# release-merged.yml（PRマージ時）からは起動しない（doc/adr/0027）。
+# リリースPRのブランチ（release/*）にメタデータ・スクリーンショットの変更がpushされたときは
+# 自動で同期する（doc/adr/0032）。それ以外は workflow_dispatch で手動実行する。
 on:
   workflow_dispatch:
     inputs:
@@ -17,13 +19,26 @@ on:
         description: "同期・作成対象のバージョン番号（例: v1.1.0。先頭のvは省略可）"
         required: true
         type: string
+  push:
+    branches:
+      - "release/**"
+    paths:
+      - "fastlane/metadata/**"
+      - "fastlane/screenshots/**"
+
+# 同じリリースブランチへ連続でpushされても deliver が並走しないよう直列化する。
+# 実行中のものはキャンセルしない（ASCへの反映途中で止めないため）。
+concurrency:
+  group: sync-metadata-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   sync-metadata:
     runs-on: macos-26
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
-      VERSION: ${{ inputs.version }}
+      # pushトリガーではinputsが無いので、ブランチ名（release/v1.1.0）からバージョンを解決する
+      VERSION: ${{ inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@v4.2.2
 
@@ -32,7 +47,8 @@ jobs:
 
       - name: Normalize version
         run: |
-          NORMALIZED_VERSION="${VERSION#v}"
+          NORMALIZED_VERSION="${VERSION#release/}"
+          NORMALIZED_VERSION="${NORMALIZED_VERSION#v}"
           if ! [[ "$NORMALIZED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::version は X.Y.Z（先頭のvは省略可）形式で指定してください（入力: $VERSION）"
             exit 1
@@ -68,5 +84,6 @@ jobs:
             echo "## Sync Metadata"
             echo ""
             echo "- **Version**: \`$NORMALIZED_VERSION\`"
+            echo "- **Trigger**: ${{ github.event_name }}"
             echo "- **Result**: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"

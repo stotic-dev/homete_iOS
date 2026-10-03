@@ -1,5 +1,5 @@
 {
-  "originHash" : "4cc6213140710d4910ac2ca686a38b995985a99fe4652cd85d75437fe1a4322a",
+  "originHash" : "f8d1705c5b60951254391bcb8a599a175e8bec03f090590e1489533d43326fb9",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -65,6 +65,15 @@
       }
     },
     {
+      "identity" : "grdb.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/groue/GRDB.swift",
+      "state" : {
+        "revision" : "b83108d10f42680d78f23fe4d4d80fc88dab3212",
+        "version" : "7.11.1"
+      }
+    },
+    {
       "identity" : "grpc-binary",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/grpc-binary.git",
@@ -114,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "6986d001061e5a41e31cc1f9ea70e427c8435568",
-        "version" : "5.4.1"
+        "revision" : "9cca1d7ae05b89d8fd60776792c26e10cd61e680",
+        "version" : "5.9.0"
       }
     },
     {

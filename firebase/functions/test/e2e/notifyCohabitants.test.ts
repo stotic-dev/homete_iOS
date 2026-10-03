@@ -6,6 +6,7 @@ import {makeRecordingSender} from "../helpers/notification";
 import {
   buildMulticastMessage,
   CohabitantNotification,
+  NotCohabitantMemberError,
   isValidNotificationData,
   notifyOtherCohabitants,
 } from "../../src/models/CohabitantNotifier";
@@ -112,6 +113,23 @@ describe("CohabitantNotifier E2E Tests", () => {
 
     // Assert
     expect(actual).toBeNull();
+    expect(sent).toHaveLength(0);
+  });
+
+  it("送信者がグループのメンバーでない場合は送信せずにエラーになる", async () => {
+    // Arrange
+    const outsiderId = `notify-outsider-${testCounter}`;
+    const memberId = `notify-outsider-member-${testCounter}`;
+    const cohabitantId = `notify-outsider-cohabitant-${testCounter}`;
+    await createTestAccount(outsiderId, cohabitantId, "token-outsider");
+    await createTestAccount(memberId, cohabitantId, "token-member");
+    await createTestCohabitant(cohabitantId, [memberId]);
+    const {sender, sent} = makeRecordingSender();
+
+    // Act & Assert
+    await expect(
+      notifyOtherCohabitants(cohabitantId, outsiderId, notification, sender)
+    ).rejects.toBeInstanceOf(NotCohabitantMemberError);
     expect(sent).toHaveLength(0);
   });
 

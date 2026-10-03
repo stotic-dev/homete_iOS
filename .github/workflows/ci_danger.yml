@@ -17,9 +17,11 @@ jobs:
   danger:
     # pull_request_target はベースリポジトリのSecretを持つため、fork PRのコードを
     # そのまま実行させない（fork PRは従来の pull_request でもSecretが渡らずDangerは動かなかった）。
+    # Dependabot PR ではSecretが渡らず DANGER_GITHUB_API_TOKEN が空になるためスキップする。
     if: >-
-      github.event_name != 'pull_request_target'
-      || github.event.pull_request.head.repo.full_name == github.repository
+      github.actor != 'dependabot[bot]'
+      && (github.event_name != 'pull_request_target'
+      || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     env:
       SWIFT_VERSION: "6.2"
