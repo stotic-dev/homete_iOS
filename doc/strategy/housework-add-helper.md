@@ -25,9 +25,9 @@
 
 #### 導線
 
-1. 家事詳細（`HouseworkDetailActionContent`）の完了済み家事のアクション群に「手伝った人を追加」ボタンを追加する。タップで担当者を選ぶハーフモーダルを開く
-2. 並び順は「ありがとう」系 → **「手伝った人を追加」** → 「もう一度やった」 → 「未完了に戻す」。感謝と並ぶ positive な操作なので、取り消し系（未完了に戻す）より前に置く
-3. **追加できるメンバーがいないときはボタンを出さない**。該当するのは次のどちらか
+1. 家事詳細のアクションから「手伝った人を追加」を選ぶと、担当者を選ぶハーフモーダルを開く
+2. アクションは画面下のボタンではなく、**ナビゲーションバー右側**に出す（下記「アクションの置き場所」）。「手伝った人を追加」は「その他」のメニューに入り、並び順は「もう一度やった」「未完了に戻す」より前。感謝と並ぶ positive な操作なので取り消し系より前に置く
+3. **追加できるメンバーがいないときはメニューに出さない**。該当するのは次のどちらか
    - 同居人グループのメンバーが自分だけ（足せる相手がいない）
    - 人数の上限（`HouseworkExecutorAllocation.maxExecutorCount`）に既に達している
 4. 家事ボードのクイックアクション（長押しメニュー）・複数選択の一括操作には入れない。1件ずつ配分を決める操作なので、`redo`と同じく一括の対象外とする
@@ -169,11 +169,15 @@ case houseworkAddHelper = "housework_add_helper"
 - **保存できるのは、配分が確定できて、かつ保存済みの担当者から変わっているときだけ**にする。開いて保存しただけで書き込みと`add_helper`イベントが発生すると、「後から手伝った人を足した」件数を数えられなくなる
 - 文言は「この家事を手伝ってくれた人を選ぶと、ポイントを分け合えます。」「もともとの担当者は外せません。」をキャプションで添える
 
-### 6. 「手伝った人を追加」ボタンの表示判断
+### 6. アクションの置き場所と表示判断
 
 `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift`（修正）
 
-判断は`cohabitantStore.members`を持つ`HouseworkDetailView`側の算出プロパティに置き、`HouseworkDetailActionContent`には結果だけを渡す（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）。`HouseworkDetailActionContent`は`SubViews/`の末端コンポーネントなので、メンバー一覧から表示内容を導出させない。
+「手伝った人を追加」で4つ目になり、画面下に縦に並ぶボタンが読みづらくなったため、アクションの置き場所自体を見直した。ナビゲーションバー右側に、その状態で一番よく使う操作（未完了なら「完了にする」、完了済みならありがとう系）を単独のアイコンボタンとして出し、残りは「その他」（`ellipsis`）のメニューに入れる。ステータスを変える操作と「やらない」は誤ってタップしても取り返しがつくように単独では出さず、それまで単独のゴミ箱アイコンだった「やらない」もメニューへ移した。
+
+どのアクションを出すか・どれを単独で出すかは`Features/HouseworkFeature/Model/HouseworkDetailAction`に切り出してユニットテストで固定する。見せ方（文言・SF Symbol・`ButtonRole`）は`HouseworkQuickAction`と同じく`Components/`の拡張に置く（[ui-attributes-in-view](../../.claude/rules/ui-attributes-in-view.md)）。
+
+判断は`cohabitantStore.members`を持つ`HouseworkDetailView`側の算出プロパティに置き、`HouseworkDetailActionContent`には結果だけを渡す（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）。`HouseworkDetailActionContent`は`SubViews/`の末端コンポーネントなので、メンバー一覧から表示内容を導出させない。ハーフモーダルの提示とドメイン操作も`HouseworkDetailView`側に持たせる。
 
 ```swift
 // HouseworkDetailView
@@ -192,7 +196,12 @@ let canAddHelper: Bool
 | 修正Analytics | `HometeDomain/AnalyticsLog/HouseworkAnalyticsAction.swift` | `addHelper`ケースを追加 |
 | 修正Analytics | `HometeDomain/AnalyticsLog/AppScreen.swift` | `houseworkAddHelper`ケースを追加 |
 | 新規View | `Features/HouseworkFeature/HouseworkAddHelper/HouseworkAddHelperSheet.swift` | 手伝った人を追加するハーフモーダル |
-| 修正View | `Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift` | ボタンと表示判断、シートの提示 |
+| 修正View | `Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionContent.swift` | 画面下のボタン群をナビゲーションバーのアイコンボタンと「その他」メニューに置き換え |
+| 新規View | `Features/HouseworkFeature/HouseworkDetailView/SubViews/HouseworkDetailActionMenuContent.swift` | 「その他」メニューの中身 |
+| 新規Model | `Features/HouseworkFeature/Model/HouseworkDetailAction.swift` | 詳細で行えるアクションと出し分け |
+| 新規View | `Features/HouseworkFeature/Components/HouseworkDetailAction+Presentation.swift` | アクションの文言・アイコン・ロール |
+| 修正View | `Features/HouseworkFeature/HouseworkDetailView/HouseworkDetailView.swift` | アクションの算出、ツールバー、シートの提示とドメイン操作 |
+| 修正共通UI | `HometeUI/Components/Navigation/` | メニューを開くアイコンボタンと、画面固有アイコンを渡せるラベル |
 | 修正ドキュメント | `doc/analytics_events.md` | `housework`の`action`と`screen_view`の表を更新 |
 | 新規テスト | `LocalPackage/Tests/HometeDomainTests/Housework/...` | 配分・ドメイン更新・Store・貢献度集計 |
 
@@ -214,6 +223,7 @@ let canAddHelper: Bool
 - [x] `HouseworkAnalyticsAction.addHelper`・`AppScreen.houseworkAddHelper`を追加
 - [x] `HouseworkAddHelperSheet` / `HouseworkAddHelperView`を新規作成（`#Preview`付き）
 - [x] `HouseworkDetailActionContent`にボタン・表示判断・シートの提示を追加（`#Preview`を追加）
+- [x] アクションをナビゲーションバー右側（単独のアイコンボタン＋「その他」メニュー）にまとめ直す
 - [x] `doc/analytics_events.md`を更新
 
 ### Phase 3: 検証
@@ -226,6 +236,7 @@ let canAddHelper: Bool
       `TodayMemberContributionTest`の同等のケース）が既に固定している
 - [x] `make build-local-package` / SwiftLint / `make test-packages`（`swift-code-verification`スキル）
 - [x] `make check-previews`
+- [x] 家事詳細のアクションの出し分けのユニットテスト
 - [x] `ios-code-reviewer`によるレビューと指摘対応
 - [ ] シミュレータでの簡易E2E確認 → **未実施**。この機能は同居人グループに2人以上いることが前提で、
       E2E用シミュレータのアカウントがグループ未所属のため通せない
