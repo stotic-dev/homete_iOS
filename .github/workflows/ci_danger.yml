@@ -4,9 +4,15 @@ name: danger
 # pull_request イベントではこのワークフローも一緒に止まってしまう。
 # GitHub のスキップ指示は push / pull_request にしか効かないので、
 # pull_request_target に切り替えてスキップ対象から外す。
+#
+# pull_request_target はベースブランチ（main）のスコープでキャッシュを読み書きするが、PRからの実行では
+# mainへの保存が通らない（`Unable to reserve cache`）。mainへのpushでも走らせて、Swiftツールチェーンと
+# ツールのキャッシュをmainに保存し、PRからはそれを読む。pushと手動実行ではDangerそのものは実行しない。
 on:
   pull_request_target:
     branches: ["**"]
+  push:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -56,23 +62,28 @@ jobs:
         run: swift --version
 
       - name: Setup Node.js
+        if: github.event_name == 'pull_request_target'
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Danger
+        if: github.event_name == 'pull_request_target'
         run: npm install -g danger
 
-      - name: Cache ProjectTools build
+      # Dangerfile.swift が ProjectTools から使うのは SwiftLint の Linux 版バイナリだけなので、
+      # ビルドせずバイナリ依存（artifacts）だけを取得してキャッシュする。
+      # .build 全体は SwiftFormat のリポジトリを含み600MBを超えるが、artifacts だけなら約120MB
+      - name: Cache ProjectTools artifacts
+        id: cache-project-tools
         uses: actions/cache@v4
         with:
-          path: ProjectTools/.build
-          key: project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('ProjectTools/Package.resolved') }}
-          restore-keys: |
-            project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+          path: ProjectTools/.build/artifacts
+          key: project-tools-artifacts-${{ runner.os }}-${{ hashFiles('ProjectTools/Package.resolved') }}
 
-      - name: Build ProjectTools
-        run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
+      - name: Fetch SwiftLint binary
+        if: steps.cache-project-tools.outputs.cache-hit != 'true'
+        run: swift package resolve --package-path ProjectTools --scratch-path ProjectTools/.build
 
       - name: Cache DangerTools build
         uses: actions/cache@v4
@@ -86,6 +97,7 @@ jobs:
         run: swift build --package-path DangerTools --scratch-path DangerTools/.build
 
       - name: Run Danger
+        if: github.event_name == 'pull_request_target'
         working-directory: DangerTools
         run: swift run danger-swift ci --dangerfile Dangerfile.swift --cwd .. --id "danger"
         env:
