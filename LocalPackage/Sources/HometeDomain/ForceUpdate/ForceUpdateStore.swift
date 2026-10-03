@@ -12,9 +12,9 @@ import Observation
 @Observable
 public final class ForceUpdateStore {
 
-    /// 強制アップデートが必要な状態。不要なら`nil`
+    /// 強制アップデートが必要かどうか
     /// - Note: 古いバージョンを早く止められるよう、新しい値を反映するたびに判定し直す
-    public private(set) var forceUpdateRequirement: ForceUpdateRequirement?
+    public private(set) var isForceUpdateRequired: Bool
 
     private let remoteConfigClient: RemoteConfigClient
     /// 実行中のアプリのバージョン（`CFBundleShortVersionString`）
@@ -23,11 +23,11 @@ public final class ForceUpdateStore {
     public init(
         remoteConfigClient: RemoteConfigClient = .previewValue,
         currentAppVersion: String = "",
-        forceUpdateRequirement: ForceUpdateRequirement? = nil
+        isForceUpdateRequired: Bool = false
     ) {
         self.remoteConfigClient = remoteConfigClient
         self.currentAppVersion = currentAppVersion
-        self.forceUpdateRequirement = forceUpdateRequirement
+        self.isForceUpdateRequired = isForceUpdateRequired
     }
 
     /// 反映済みの最低バージョンで強制アップデートを判定し直す
@@ -37,10 +37,9 @@ public final class ForceUpdateStore {
             // ブロックしない側に倒すため、設定ミスに気づける手がかりだけ残す
             print("[ForceUpdateStore] invalid minimum_required_version: \(minimumRequiredVersion)")
         }
-        forceUpdateRequirement = .make(
+        isForceUpdateRequired = ForceUpdatePolicy.isRequired(
             currentVersion: currentAppVersion,
-            minimumRequiredVersion: minimumRequiredVersion,
-            message: remoteConfigClient.string(.forceUpdateMessage)
+            minimumRequiredVersion: minimumRequiredVersion
         )
     }
 

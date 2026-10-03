@@ -25,12 +25,7 @@ struct RemoteConfigSyncUseCaseTest {
                 isActivated.value ? true : key.defaultValue
             },
             string: { key in
-                switch key {
-                case .minimumRequiredVersion:
-                    isActivated.value ? "2.0.0" : key.defaultValue
-                case .forceUpdateMessage:
-                    isActivated.value ? "案内" : key.defaultValue
-                }
+                isActivated.value ? "2.0.0" : key.defaultValue
             }
         )
         let advertisementStore = AdvertisementStore(remoteConfigClient: remoteConfigClient)
@@ -51,7 +46,7 @@ struct RemoteConfigSyncUseCaseTest {
         // Assert
 
         #expect(advertisementStore.isAdsEnabled == true)
-        #expect(forceUpdateStore.forceUpdateRequirement == .init(message: "案内"))
+        #expect(forceUpdateStore.isForceUpdateRequired == true)
     }
 
     @Test("起動時は取得の完了を待たずに、前回反映済みの最低バージョンで強制アップデートを判定する")
@@ -59,15 +54,13 @@ struct RemoteConfigSyncUseCaseTest {
         // Arrange
 
         let storeBox = TestBox<ForceUpdateStore?>(value: nil)
-        let requirementDuringFetch = TestBox<ForceUpdateRequirement?>(value: nil)
+        let requirementDuringFetch = TestBox<Bool?>(value: nil)
         let remoteConfigClient = RemoteConfigClient(
             fetchAndActivate: {
-                requirementDuringFetch.value = await storeBox.value?.forceUpdateRequirement
+                requirementDuringFetch.value = await storeBox.value?.isForceUpdateRequired
             },
-            string: { key in
-                // 前回の起動で反映済みの値
-                key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
-            }
+            // 前回の起動で反映済みの値
+            string: { _ in "2.0.0" }
         )
         let forceUpdateStore = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
@@ -86,7 +79,7 @@ struct RemoteConfigSyncUseCaseTest {
 
         // Assert
 
-        #expect(requirementDuringFetch.value == .init(message: nil))
+        #expect(requirementDuringFetch.value == true)
     }
 
     @Test("起動時の取得に失敗した場合は、前回反映済みの値で広告表示の有無を確定し強制アップデートを判定する")
@@ -99,9 +92,7 @@ struct RemoteConfigSyncUseCaseTest {
             },
             // 前回の起動で反映済みの値
             bool: { _ in true },
-            string: { key in
-                key == .minimumRequiredVersion ? "2.0.0" : key.defaultValue
-            }
+            string: { _ in "2.0.0" }
         )
         let advertisementStore = AdvertisementStore(remoteConfigClient: remoteConfigClient)
         let forceUpdateStore = ForceUpdateStore(
@@ -121,7 +112,7 @@ struct RemoteConfigSyncUseCaseTest {
         // Assert
 
         #expect(advertisementStore.isAdsEnabled == true)
-        #expect(forceUpdateStore.forceUpdateRequirement == .init(message: nil))
+        #expect(forceUpdateStore.isForceUpdateRequired == true)
     }
 
     @Test("フォアグラウンド復帰時は、起動中の広告表示の有無を変えずに強制アップデートを判定し直す")
@@ -138,7 +129,7 @@ struct RemoteConfigSyncUseCaseTest {
                 return true
             },
             string: { key in
-                key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
+                isActivated.value ? "2.0.0" : key.defaultValue
             }
         )
         let advertisementStore = AdvertisementStore(
@@ -162,7 +153,7 @@ struct RemoteConfigSyncUseCaseTest {
         // Assert
 
         #expect(advertisementStore.isAdsEnabled == false)
-        #expect(forceUpdateStore.forceUpdateRequirement == .init(message: nil))
+        #expect(forceUpdateStore.isForceUpdateRequired == true)
     }
 
 }

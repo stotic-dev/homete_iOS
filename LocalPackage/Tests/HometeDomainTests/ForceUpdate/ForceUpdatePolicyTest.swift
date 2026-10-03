@@ -1,41 +1,25 @@
 //
-//  ForceUpdateRequirementTest.swift
+//  ForceUpdatePolicyTest.swift
 //  LocalPackage
 //
 
 @testable import HometeDomain
 import Testing
 
-struct ForceUpdateRequirementTest {
+struct ForceUpdatePolicyTest {
 
     @Test("現在のバージョンが最低バージョンを下回る場合、強制アップデートが必要になる")
     func olderThanMinimumRequiresUpdate() {
         // Act
 
-        let requirement = ForceUpdateRequirement.make(
+        let isRequired = ForceUpdatePolicy.isRequired(
             currentVersion: "1.9.0",
-            minimumRequiredVersion: "1.10.0",
-            message: ""
+            minimumRequiredVersion: "1.10.0"
         )
 
         // Assert
 
-        #expect(requirement == .init(message: nil))
-    }
-
-    @Test("案内文言が設定されている場合は、前後の空白を除いて持つ")
-    func messageIsTrimmed() {
-        // Act
-
-        let requirement = ForceUpdateRequirement.make(
-            currentVersion: "1.0.0",
-            minimumRequiredVersion: "2.0.0",
-            message: "  不具合を修正しました\n"
-        )
-
-        // Assert
-
-        #expect(requirement == .init(message: "不具合を修正しました"))
+        #expect(isRequired == true)
     }
 
     @Test(
@@ -49,15 +33,14 @@ struct ForceUpdateRequirementTest {
     func notOlderThanMinimumDoesNotRequireUpdate(current: String, minimum: String) {
         // Act
 
-        let requirement = ForceUpdateRequirement.make(
+        let isRequired = ForceUpdatePolicy.isRequired(
             currentVersion: current,
-            minimumRequiredVersion: minimum,
-            message: "案内"
+            minimumRequiredVersion: minimum
         )
 
         // Assert
 
-        #expect(requirement == nil)
+        #expect(isRequired == false)
     }
 
     @Test(
@@ -72,15 +55,14 @@ struct ForceUpdateRequirementTest {
     func invalidVersionDoesNotRequireUpdate(current: String, minimum: String) {
         // Act
 
-        let requirement = ForceUpdateRequirement.make(
+        let isRequired = ForceUpdatePolicy.isRequired(
             currentVersion: current,
-            minimumRequiredVersion: minimum,
-            message: "案内"
+            minimumRequiredVersion: minimum
         )
 
         // Assert
 
-        #expect(requirement == nil)
+        #expect(isRequired == false)
     }
 
 }

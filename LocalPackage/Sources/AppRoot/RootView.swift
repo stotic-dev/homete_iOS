@@ -27,10 +27,10 @@ public struct RootView: View {
 
     public var body: some View {
         ZStack {
-            if let forceUpdateRequirement = forceUpdateStore.forceUpdateRequirement {
+            if forceUpdateStore.isForceUpdateRequired {
                 // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
                 // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
-                ForceUpdateView(message: forceUpdateRequirement.message)
+                ForceUpdateView()
             } else {
                 switch launchStateStore.launchState {
                 case .launching:

@@ -14,14 +14,7 @@ struct ForceUpdateStoreTest {
         // Arrange
 
         let remoteConfigClient = RemoteConfigClient(
-            string: { key in
-                switch key {
-                case .minimumRequiredVersion:
-                    "2.0.0"
-                case .forceUpdateMessage:
-                    "案内"
-                }
-            }
+            string: { _ in "2.0.0" }
         )
         let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
@@ -34,7 +27,7 @@ struct ForceUpdateStoreTest {
 
         // Assert
 
-        #expect(store.forceUpdateRequirement == .init(message: "案内"))
+        #expect(store.isForceUpdateRequired == true)
     }
 
     @Test("反映済みの最低バージョンが引き下げられていれば、強制アップデートを解除する")
@@ -42,14 +35,12 @@ struct ForceUpdateStoreTest {
         // Arrange
 
         let remoteConfigClient = RemoteConfigClient(
-            string: { key in
-                key == .minimumRequiredVersion ? "1.0.0" : key.defaultValue
-            }
+            string: { _ in "1.0.0" }
         )
         let store = ForceUpdateStore(
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0",
-            forceUpdateRequirement: .init(message: nil)
+            isForceUpdateRequired: true
         )
 
         // Act
@@ -58,7 +49,7 @@ struct ForceUpdateStoreTest {
 
         // Assert
 
-        #expect(store.forceUpdateRequirement == nil)
+        #expect(store.isForceUpdateRequired == false)
     }
 
     @Test("コンソールで公開された最低バージョンの変更を受け取ると、強制アップデートを判定し直す")
@@ -75,7 +66,7 @@ struct ForceUpdateStoreTest {
                 }
             },
             string: { key in
-                key == .minimumRequiredVersion && isActivated.value ? "2.0.0" : key.defaultValue
+                isActivated.value ? "2.0.0" : key.defaultValue
             }
         )
         let store = ForceUpdateStore(
@@ -89,7 +80,7 @@ struct ForceUpdateStoreTest {
 
         // Assert
 
-        #expect(store.forceUpdateRequirement == .init(message: nil))
+        #expect(store.isForceUpdateRequired == true)
     }
 
 }

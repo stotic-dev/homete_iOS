@@ -8,8 +8,6 @@ public enum RemoteConfigStringKey: String, CaseIterable, Sendable {
 
     /// これより古いバージョンは利用できなくする最低バージョン（例: `1.4.0`）
     case minimumRequiredVersion = "minimum_required_version"
-    /// 強制アップデート画面の案内文言
-    case forceUpdateMessage = "force_update_message"
 
     /// アプリ内デフォルト値
     /// - Note: 一度もactivateできていない（初回起動でオフラインなど）ときに使われる
@@ -17,9 +15,6 @@ public enum RemoteConfigStringKey: String, CaseIterable, Sendable {
         switch self {
         case .minimumRequiredVersion:
             // 取得できないときはブロックしない安全側に倒す
-            ""
-        case .forceUpdateMessage:
-            // 未設定ならアプリ内の文言を使う
             ""
         }
     }
