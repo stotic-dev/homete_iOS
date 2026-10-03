@@ -52,7 +52,7 @@ extension HouseworkClient {
     } removeListenerHandler: { id in
         await FirestoreService.shared.removeSnapshotListener(id: id)
     } fetchItemsHandler: { cohabitantId, from, to in
-        try await FirestoreService.shared.fetch {
+        try await FirestoreService.shared.fetchSkippingUndecodable {
             $0.houseworkListRef(id: cohabitantId)
                 .whereField("indexedDate.value", isGreaterThanOrEqualTo: from)
                 .whereField("indexedDate.value", isLessThanOrEqualTo: to)

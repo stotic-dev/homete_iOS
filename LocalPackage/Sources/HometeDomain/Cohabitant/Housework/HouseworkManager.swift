@@ -89,6 +89,7 @@ public final actor HouseworkManager {
             notifyObservers()
         } catch {
             guard generation == observeGeneration else { return }
+            print("failed to fetch housework items: \(error)")
             notifyFailure(error)
         }
 
@@ -112,6 +113,7 @@ public final actor HouseworkManager {
                     notifyObservers()
                 }
             } catch {
+                print("failed to listen housework items: \(error)")
                 notifyFailure(error)
             }
         }
@@ -165,9 +167,15 @@ private extension HouseworkManager {
     /// 追加フェッチした期間を allItems と fetchedRange に反映する
     func appendItems(cohabitantId: String, from: Date, to: Date) async {
         let generation = observeGeneration
-        guard let fetchedItems = try? await houseworkClient.fetchItems(cohabitantId, from, to),
-              // 追加フェッチ中にサインアウト・再セットアップが走った場合は反映しない
-              generation == observeGeneration,
+        let fetchedItems: [HouseworkItem]
+        do {
+            fetchedItems = try await houseworkClient.fetchItems(cohabitantId, from, to)
+        } catch {
+            print("failed to fetch additional housework items: \(error)")
+            return
+        }
+        // 追加フェッチ中にサインアウト・再セットアップが走った場合は反映しない
+        guard generation == observeGeneration,
               let currentRange = fetchedRange else { return }
 
         upsert(fetchedItems)
