@@ -10,6 +10,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
 
     /// 起動中のスプラッシュ
     case launch
+    /// 最低バージョンを下回ったときの強制アップデート画面
+    case forceUpdate = "force_update"
     /// Sign in with Appleのログイン画面
     case login
     /// アカウント登録画面
