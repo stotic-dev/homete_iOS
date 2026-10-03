@@ -181,7 +181,8 @@ private extension HouseworkBoardView {
                 #if os(iOS)
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 #endif
-                Spacer()
+                // 一覧をタブバーの裏まで伸ばし、スクロールした中身がタブバー越しに透けて見えるようにする
+                .ignoresSafeArea(edges: .bottom)
             }
             .padding(.horizontal, .space16)
         }
