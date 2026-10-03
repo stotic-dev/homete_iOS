@@ -155,24 +155,8 @@ struct HouseworkMemoEditView: View {
 
 private extension HouseworkMemoEditView {
 
-    /// セクションの見出しと、中身をひとまとまりに見せるカード（家事の登録シートと揃える）
-    /// - Note: 見出しの字下げは、カードの中の文字の位置に揃える
-    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text(title)
-                .font(with: .boldCaption)
-                .foregroundStyle(.onSurfaceVariant)
-                .padding(.horizontal, .space16)
-            VStack(alignment: .leading, spacing: .space16) {
-                content()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .sectionCardStyle { endEditing() }
-        }
-    }
-
     func textSection() -> some View {
-        section("テキスト") {
+        SectionCard("テキスト", onTapBackground: { endEditing() }) {
             TextField("買う物や手順などを書いておけます", text: $draft.text, axis: .vertical)
                 .font(with: .body)
                 .lineLimit(3 ... 10)
@@ -182,7 +166,7 @@ private extension HouseworkMemoEditView {
     }
 
     func checklistSection() -> some View {
-        section("チェックリスト") {
+        SectionCard("チェックリスト", onTapBackground: { endEditing() }) {
             ForEach(draft.checklist) { item in
                 checklistItemRow(item)
                 Divider()
