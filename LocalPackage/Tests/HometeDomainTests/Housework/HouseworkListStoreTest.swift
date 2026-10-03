@@ -701,6 +701,42 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test("リスナーの一覧に最新の家事が無くても、手元の家事を未完了に戻して保存する")
+    func returnToIncomplete_itemNotInList_savesWithLocalItem() async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "dummyExecutor",
+            executedAt: .distantPast
+        )
+        let expectedItem = inputHouseworkItem.updateIncomplete()
+
+        try await confirmation { confirmation in
+            let store = HouseworkListStore(
+                houseworkClient: .init(
+                    insertOrUpdateItemHandler: { item, _ in
+                        // Assert
+
+                        #expect(item == expectedItem)
+                        confirmation()
+                    }
+                ),
+                cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+                items: []
+            )
+
+            // Act
+
+            try await store.returnToIncomplete(
+                target: inputHouseworkItem,
+                cohabitantId: inputCohabitantId,
+                step: .detail
+            )
+        }
+    }
+
     @Test("家事削除時は家事を削除するAPIを実行する")
     func remove() async throws {
         // Arrange

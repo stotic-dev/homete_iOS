@@ -440,16 +440,17 @@ private extension HouseworkListStore {
         }
     }
 
+    /// 最新の家事に変更を当てて保存する
+    ///
+    /// 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録に当てる。
+    /// 一覧に見つからないとき（同居人が消した・保持期限で一覧から外れた・リスナーがまだ届いていない）は
+    /// 手元の家事に当てる。操作のたびにクラッシュさせるよりは書き込みを試みる方がよく、`saveMemo`と同じ方針。
     func updateAndSave(
         target: HouseworkItem,
         cohabitantId: String,
         transform: (HouseworkItem) -> HouseworkItem
     ) async throws {
-        guard let targetItem = items.item(target) else {
-            preconditionFailure("Not found target item(\(target))")
-        }
-
-        let updatedItem = transform(targetItem)
+        let updatedItem = transform(items.item(target) ?? target)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
     }
 
