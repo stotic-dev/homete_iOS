@@ -39,7 +39,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let createdAt: Date?
     /// メモ
     ///
-    /// 一度もメモを書いていない家事は`nil`。書いたメモを消した家事は空のメモを持つ（ADR-0033）。
+    /// 一度もメモを書いていない家事は`nil`。書いたメモを消した家事は空のメモを持つ（ADR-0034）。
     public let memo: HouseworkMemo?
 
     public init(
@@ -298,7 +298,7 @@ public extension HouseworkItem {
     /// `effort`が無いドキュメントも同じ理由で起こり得るため、「ふつう」として読む（ADR-0024）。
     /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む（ADR-0025）。
     /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
-    /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0033）。
+    /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0034）。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)

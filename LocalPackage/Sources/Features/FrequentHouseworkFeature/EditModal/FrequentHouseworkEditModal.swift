@@ -60,7 +60,7 @@ struct FrequentHouseworkEditModal: View {
         }
         .presentationDetents([.medium, .large])
         .sheet(isPresented: $isPresentedMemoEditSheet) {
-            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0033）
+            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
             HouseworkMemoEditScreen(memo: input.memo) { memo in
                 input.memo = memo
             }

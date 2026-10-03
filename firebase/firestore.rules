@@ -44,7 +44,7 @@ service cloud.firestore {
         && request.auth.uid in cohabitantMembers(cohabitantId);
     }
 
-    // 家事メモ（家事・毎月のテンプレート・いつもの家事が持つ`memo`）の検査（ADR-0033）
+    // 家事メモ（家事・毎月のテンプレート・いつもの家事が持つ`memo`）の検査（ADR-0034）
     //
     // プランごとの文字数上限（無料200文字など）はクライアントで判定し、ここでは見ない。
     // テンプレートやいつもの家事は、書いた人とそこから家事を作る人のプランが違いうるため、
@@ -151,7 +151,7 @@ service cloud.firestore {
 
         // NOTE: 毎週の家事は1ドキュメントに家事を配列で持ち、配列を走査できないため
         // メモの安全上限・消失の拒否を検査していない。旧バージョンのアプリが保存し直すと
-        // その曜日の家事のメモが消える残存リスクは、強制アップデートで塞ぐ（ADR-0033）。
+        // その曜日の家事のメモが消える残存リスクは、強制アップデートで塞ぐ（ADR-0034）。
         match /Days/{dayOfWeek} {
           allow read, write: if isCohabitantMember(cohabitantId);
         }

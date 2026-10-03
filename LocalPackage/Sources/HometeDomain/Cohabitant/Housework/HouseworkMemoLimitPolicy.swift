@@ -5,7 +5,7 @@
 
 /// プランごとの家事メモの文字数・項目数の上限
 /// - Note: 判定には操作している本人のプランを使う。上限はクライアントでだけ判定し、
-///         Firestoreのセキュリティルールではプランに依存しない安全上限だけを検査する（ADR-0033）
+///         Firestoreのセキュリティルールではプランに依存しない安全上限だけを検査する（ADR-0034）
 public enum HouseworkMemoLimitPolicy: Equatable, Sendable {
 
     /// 無料プラン

@@ -12,7 +12,7 @@ public struct HouseworkMemo: Codable, Sendable, Equatable, Hashable {
     public let checklist: [HouseworkMemoChecklistItem]
 
     /// 書いたメモをすべて消したもの
-    /// - Note: 旧バージョンのアプリによる上書きを防ぐため、一度メモを書いた家事は消しても`memo`を残す（ADR-0033）
+    /// - Note: 旧バージョンのアプリによる上書きを防ぐため、一度メモを書いた家事は消しても`memo`を残す（ADR-0034）
     public static let empty = HouseworkMemo(text: "", checklist: [])
 
     public init(text: String, checklist: [HouseworkMemoChecklistItem]) {

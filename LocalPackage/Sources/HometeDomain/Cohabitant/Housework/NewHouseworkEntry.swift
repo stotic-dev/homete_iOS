@@ -17,7 +17,7 @@ public struct NewHouseworkEntry: Equatable, Sendable {
 
     /// 入力したメモが上限を超えていないか検査する
     /// - Note: いつもの家事から選んだ家事のメモは、いつもの家事に保存したときに検査済みで、書いた人のプランで
-    ///         上限が決まっているため検査しない（ADR-0033）
+    ///         上限が決まっているため検査しない（ADR-0034）
     /// - Throws: 上限を超えている場合は`HouseworkMemoError.limitExceeded`
     public func validateMemo(limitPolicy: HouseworkMemoLimitPolicy) throws {
         guard source == .manual else { return }
