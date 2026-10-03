@@ -26,7 +26,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
@@ -105,6 +105,7 @@ let package = Package(
                 .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
                 .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS])),
                 .product(
                     name: "GoogleUserMessagingPlatform",

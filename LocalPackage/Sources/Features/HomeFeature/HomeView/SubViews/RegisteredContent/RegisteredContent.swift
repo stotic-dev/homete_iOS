@@ -19,6 +19,7 @@ struct RegisteredContent: View {
     @Environment(ContributionStore.self) var contributionStore
     @Environment(HouseworkListStore.self) var houseworkListstore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.isAdsEnabled) var isAdsEnabled
     @Environment(\.routeResolver) var router
     @Environment(\.registeredContentNavigationPath) var navigationPath
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
@@ -42,7 +43,10 @@ struct RegisteredContent: View {
                     VStack(spacing: .space24) {
                         TodayHouseworkSummaryComponent.make()
                             .sectionCardStyle()
-                        if AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium) {
+                        if AdDisplayPolicy.shouldShowAds(
+                            isPremium: subscriptionStore.isPremium,
+                            isEnabled: isAdsEnabled
+                        ) {
                             VStack(spacing: .space8) {
                                 adComponentResolver.resolve(.banner(.dashboardTop))
                                     .frame(height: 150)

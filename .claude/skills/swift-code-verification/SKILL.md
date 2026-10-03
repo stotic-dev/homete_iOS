@@ -86,6 +86,20 @@ clangのモジュールキャッシュ（`/var/folders/<user-hash>/C/clang/Modul
 
 他のコマンド（swiftlint 単体実行など）はサンドボックス内でそのまま動く。`dangerouslyDisableSandbox: true` は最後の手段であり、まず「サンドボックス内で動かすには何を許可すればよいか」を考えること。
 
+#### 依存の再取得が絡むエラーの切り分け
+
+新規worktreeに限らず、**依存の更新（Dependabotのマージ後など）で SwiftPM が依存を取り直すたびに**起きる。
+
+| エラー | 原因 | 対処 |
+|---|---|---|
+| `'<pkg>': You don't have permission to save the file "config" in the folder ".git"` | サンドボックスは**プロジェクト配下の `.git/config`・`.git/hooks` への書き込みを必ず拒否する**（gitフック注入対策の必須deny）。`.build/checkouts/<pkg>/.git/config` も対象。パス不足ではないので `allowWrite` では開けない | `make resolve-packages` を**1回だけ**流し、元のコマンドをサンドボックス内で再実行する。`.claude/settings.json` の `sandbox.excludedCommands` に登録してあるので、`dangerouslyDisableSandbox` を付けなくてもサンドボックス外で動く |
+| `The signature of "xxx.xcframework" cannot be verified` / `ProcessXCFramework ... failed` | `codesign` が証明書チェーンの検証に使う `com.apple.trustd.agent` への mach-lookup がサンドボックスで拒否される（`gh` の `x509: OSStatus -26276` も同じ原因） | `.claude/settings.json` の `sandbox.enableWeakerNetworkIsolation: true`。セッション開始時にしか読まれない |
+| `file '...FIRFieldValue.h' has been modified since the module file '...SwiftExplicitPrecompiledModules/*.pcm' was built` | 依存の取得・ビルドが途中で中断され、ヘッダだけ新しくなってモジュールキャッシュが古いまま残った | `rm -rf LocalPackage/.build/out/ModuleCache.noindex LocalPackage/.build/out/Intermediates.noindex/SwiftExplicitPrecompiledModules` してから再ビルド（サンドボックス内で可） |
+
+`.build` ごと消すと次のビルドで必ず1行目を踏むので、キャッシュ破損の対処で `.build` 全体を消さないこと。
+
+`.git/config` の拒否はサンドボックスの外側（`$TMPDIR`・`~/Library/Caches/org.swift.swiftpm` など）では起きない。プロジェクトディレクトリ配下だけが対象。
+
 #### プロセス一覧（`ps` / `pgrep`）は使えない
 
 サンドボックス下ではプロセス一覧の取得手段が**すべて**塞がれている。

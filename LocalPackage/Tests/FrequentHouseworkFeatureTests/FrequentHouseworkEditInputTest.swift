@@ -37,6 +37,32 @@ extension FrequentHouseworkEditInputTest.InitCase {
         #expect(actual == expected)
     }
 
+    @Test("メモを持つ家事から作ると、メモも入力値にし、書き込む内容にも含める")
+    func initFromItemKeepsMemo() {
+        // Arrange
+
+        let memo = HouseworkMemo(text: "", checklist: [.init(id: "1", title: "洗剤", isChecked: false)])
+        let item = FrequentHouseworkItem(
+            id: "1",
+            title: "洗濯",
+            point: 10,
+            categoryId: nil,
+            sortOrder: 0,
+            createdAt: .previewDate(year: 2026, month: 9, day: 1),
+            updatedAt: .previewDate(year: 2026, month: 9, day: 1),
+            memo: memo
+        )
+        let expected = FrequentHouseworkInput(title: "洗濯", point: 10, categoryId: nil, memo: memo)
+
+        // Act
+
+        let actual = FrequentHouseworkEditInput(item: item, context: .init(items: [item])).domainInput
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
     @Test("削除済みのカテゴリを指している家事から作ると、カテゴリは「その他（未設定）」にする")
     func initFromItemWithDeletedCategoryIsUncategorized() {
         // Arrange

@@ -14,6 +14,7 @@ public struct ContributionAnalyticsScreen: View {
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(ContributionStore.self) var contributionStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.isAdsEnabled) var isAdsEnabled
     @Environment(\.cohabitantMembers) var members
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
@@ -38,7 +39,10 @@ public struct ContributionAnalyticsScreen: View {
             analytics: analytics,
             myUserId: loginContext.account.id,
             latestAchievedDate: contributionStore.contiribution.latestAchievedDate,
-            isShowAd: AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium),
+            isShowAd: AdDisplayPolicy.shouldShowAds(
+                isPremium: subscriptionStore.isPremium,
+                isEnabled: isAdsEnabled
+            ),
             onUpgradeTapped: { tappedUpgradeButton() },
             onTapRemoveAdsLink: { tappedRemoveAdsLink() }
         )
