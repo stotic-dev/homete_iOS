@@ -80,6 +80,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `screen_name` | 実装View |
 |---|---|
 | `launch` | `LaunchScreenView` |
+| `force_update` | `ForceUpdateView`（最低バージョンを下回ったときの強制アップデート画面） |
 | `login` | `LoginView` |
 | `registration_account` | `RegistrationAccountView` |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
@@ -96,6 +97,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
+| `housework_add_helper` | `HouseworkAddHelperView`（完了した家事に手伝った人を追加するハーフモーダル） |
 | `housework_thanks` | `HouseworkThanksView`（ありがとうを伝えるハーフモーダル） |
 | `housework_memo_edit` | `HouseworkMemoEditView`（家事メモの編集シート。家事の追加・家事詳細・テンプレートの編集・いつもの家事の編集から開く） |
 | `housework_template` | `HouseworkTemplateView` |
@@ -174,7 +176,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `housework`
 
-家事の登録・完了・もう一度やった・ありがとう・未完了に戻す・削除・メモの編集における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・もう一度やった・手伝った人の追加・ありがとう・未完了に戻す・削除・メモの編集における行動。すべて`HouseworkListStore`に送信箇所を集約する。
 
 | 項目 | 内容 |
 |---|---|
@@ -182,7 +184,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
@@ -196,6 +198,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
 | `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
+| `add_helper` | `board` / `detail` | 完了した家事に手伝った人を追加した（家事ボードのクイックアクション、または家事詳細の「手伝った人を追加」から開くハーフモーダル）。家事の合計ポイントは変えず、追加後の担当者で配分し直す。1件ずつ配分を決める操作なので複数選択の一括操作にはない |
 | `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなし、`thanks`はありがとうを伝える画面からメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
 | `edit_thanks` | `thanks` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
@@ -211,6 +214,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 `complete`のうち`executor_type`が`others` / `shared`の割合で、代わりに記録する・手分けする使い方がどれだけあるかが分かる。
 `complete`のうち`effort`が`hard` / `very_hard`の割合で、頑張り度がどれだけ使われているかが分かる（一括完了は頑張り度を選べず常に`normal`になるため、実際の利用率より低く出る点に注意）。
 `complete`に対する`redo`の比率で、1日に同じ家事を繰り返す運用がどれだけあるかが分かる。
+`complete`に対する`add_helper`の比率で、完了時に担当者を選びきれず後から足す運用がどれだけあるかが分かる（比率が高い場合は、完了時の担当者選択が使いにくいか、手分けが後から判明しやすいと読める）。
 
 ### `housework_template`
 

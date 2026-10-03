@@ -10,6 +10,7 @@ import SwiftUI
 public struct RootView: View {
 
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
+    let remoteConfigSyncUseCase: RemoteConfigSyncUseCase
 
     @State var theme = Theme()
     @State var hasEnteredBackground = false
@@ -22,24 +23,31 @@ public struct RootView: View {
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(LaunchStateStore.self) var launchStateStore
     @Environment(AdvertisementStore.self) var advertisementStore
+    @Environment(ForceUpdateStore.self) var forceUpdateStore
 
     public var body: some View {
         ZStack {
-            switch launchStateStore.launchState {
-            case .launching:
-                LaunchScreenView()
-            case let .preLoggedIn(auth):
-                OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
-                    .transition(.asymmetric(
-                        insertion: .push(from: .leading),
-                        removal: .opacity
-                    ))
-            case let .loggedIn(context):
-                AppTabView()
-                    .environment(\.loginContext, context)
-                    .transition(.scale)
-            case .notLoggedIn:
-                LoginView()
+            if forceUpdateStore.isForceUpdateRequired {
+                // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
+                // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
+                ForceUpdateView()
+            } else {
+                switch launchStateStore.launchState {
+                case .launching:
+                    LaunchScreenView()
+                case let .preLoggedIn(auth):
+                    OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
+                        .transition(.asymmetric(
+                            insertion: .push(from: .leading),
+                            removal: .opacity
+                        ))
+                case let .loggedIn(context):
+                    AppTabView()
+                        .environment(\.loginContext, context)
+                        .transition(.scale)
+                case .notLoggedIn:
+                    LoginView()
+                }
             }
         }
         .animation(.spring, value: launchStateStore.launchState)
@@ -100,29 +108,46 @@ public extension RootView {
                 analyticsClient: $0.analyticsClient
             )
             let advertisementStore = AdvertisementStore(remoteConfigClient: $0.remoteConfigClient)
+            let forceUpdateStore = ForceUpdateStore(
+                remoteConfigClient: $0.remoteConfigClient,
+                currentAppVersion: Bundle.main
+                    .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+            )
+            let remoteConfigSyncUseCase = RemoteConfigSyncUseCase(
+                remoteConfigClient: $0.remoteConfigClient,
+                advertisementStore: advertisementStore,
+                forceUpdateStore: forceUpdateStore
+            )
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
                 analyticsClient: $0.analyticsClient
             )
 
-            RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
-                .environment(accountStore)
-                .environment(accountAuthStore)
-                .environment(cohabitantStore)
-                .environment(subscriptionStore)
-                .environment(pendingInvitationStore)
-                .environment(launchStateStore)
-                .environment(advertisementStore)
-                .task {
-                    await subscriptionStore.observeEntitlementUpdates()
-                }
-                .task {
-                    // 起動処理とは並行に走らせ、完了を待たない
-                    await advertisementStore.setupOnLaunch()
-                }
-                .routeResolverInjection()
-                .adComponentResolverInjection()
+            RootView(
+                authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
+                remoteConfigSyncUseCase: remoteConfigSyncUseCase
+            )
+            .environment(accountStore)
+            .environment(accountAuthStore)
+            .environment(cohabitantStore)
+            .environment(subscriptionStore)
+            .environment(pendingInvitationStore)
+            .environment(launchStateStore)
+            .environment(advertisementStore)
+            .environment(forceUpdateStore)
+            .task {
+                await subscriptionStore.observeEntitlementUpdates()
+            }
+            .task {
+                // 起動処理とは並行に走らせ、完了を待たない
+                await remoteConfigSyncUseCase.setupOnLaunch()
+            }
+            .task {
+                await forceUpdateStore.observeConfigUpdates()
+            }
+            .routeResolverInjection()
+            .adComponentResolverInjection()
         }
         .environment(\.appDependencies, dependencies)
     }
@@ -153,7 +178,7 @@ private extension RootView {
         case .active where hasEnteredBackground:
             hasEnteredBackground = false
             Task {
-                await advertisementStore.refresh()
+                await remoteConfigSyncUseCase.refresh()
             }
         default:
             break

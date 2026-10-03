@@ -25,11 +25,13 @@ public enum RemoteConfigConfigurator {
         settings.fetchTimeout = fetchTimeout
         remoteConfig.configSettings = settings
 
-        remoteConfig.setDefaults(
-            Dictionary(uniqueKeysWithValues: RemoteConfigBoolKey.allCases.map {
-                ($0.rawValue, NSNumber(value: $0.defaultValue))
-            })
-        )
+        let boolDefaults: [(String, NSObject)] = RemoteConfigBoolKey.allCases.map {
+            ($0.rawValue, NSNumber(value: $0.defaultValue))
+        }
+        let stringDefaults: [(String, NSObject)] = RemoteConfigStringKey.allCases.map {
+            ($0.rawValue, $0.defaultValue as NSString)
+        }
+        remoteConfig.setDefaults(Dictionary(uniqueKeysWithValues: boolDefaults + stringDefaults))
     }
 
 }

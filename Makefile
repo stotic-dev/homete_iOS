@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format
 
 .DEFAULT_GOAL := setup-project
 
@@ -16,6 +16,9 @@ emulator: ## エミュレーターを起動
 
 test-e2e: ## E2Eテストを実行
 	cd firebase/functions && npm run test:e2e && cd ../..
+
+resolve-packages: ## SwiftPM依存を取得（Claude Codeのサンドボックスでは.git/configに書けないため、サンドボックス外で流す）
+	scripts/resolve-swift-packages.sh
 
 build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \

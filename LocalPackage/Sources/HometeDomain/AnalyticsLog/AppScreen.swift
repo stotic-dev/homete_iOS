@@ -10,6 +10,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
 
     /// 起動中のスプラッシュ
     case launch
+    /// 最低バージョンを下回ったときの強制アップデート画面
+    case forceUpdate = "force_update"
     /// Sign in with Appleのログイン画面
     case login
     /// アカウント登録画面
@@ -42,6 +44,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case houseworkRegister = "housework_register"
     /// 家事を完了にする画面（担当者とコメントを入力するハーフモーダル）
     case houseworkComplete = "housework_complete"
+    /// 完了した家事に手伝った人を追加する画面（担当者とポイントの配分を入力するハーフモーダル）
+    case houseworkAddHelper = "housework_add_helper"
     /// 完了した家事にありがとうを伝える画面
     case houseworkThanks = "housework_thanks"
     /// 家事メモの編集

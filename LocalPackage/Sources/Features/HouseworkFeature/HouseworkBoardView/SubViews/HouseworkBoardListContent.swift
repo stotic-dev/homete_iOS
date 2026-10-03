@@ -18,7 +18,7 @@ struct HouseworkBoardListContent: View {
     var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
-    /// 完了した家事の担当者名を引くための同居人一覧
+    /// 完了した家事の担当者名を引き、手伝った人を足せるかを判定するための同居人一覧
     let memberList: CohabitantMemberList
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
@@ -31,6 +31,8 @@ struct HouseworkBoardListContent: View {
     let onSelectComplete: (HouseworkBoardItem) -> Void
     /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
     let onSelectThanks: (HouseworkBoardItem) -> Void
+    /// クイックアクションで「手伝った人を追加」が選ばれた。ハーフモーダルは親が出す
+    let onSelectAddHelper: (HouseworkBoardItem) -> Void
 
     @CommonError var commonError
 
@@ -53,8 +55,10 @@ struct HouseworkBoardListContent: View {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .board,
+                                canAddHelper: item.canAddHelper(members: memberList),
                                 onSelectComplete: { onSelectComplete(item) },
                                 onSelectThanks: { onSelectThanks(item) },
+                                onSelectAddHelper: { onSelectAddHelper(item) },
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -178,7 +182,8 @@ private extension HouseworkBoardListContent {
         selectedIDs: .constant([]),
         onCreateTapped: {},
         onSelectComplete: { _ in },
-        onSelectThanks: { _ in }
+        onSelectThanks: { _ in },
+        onSelectAddHelper: { _ in }
     )
     .setupLoginContextForPreview()
 }
@@ -230,7 +235,8 @@ private extension HouseworkBoardListContent {
         selectedIDs: .constant(["1"]),
         onCreateTapped: {},
         onSelectComplete: { _ in },
-        onSelectThanks: { _ in }
+        onSelectThanks: { _ in },
+        onSelectAddHelper: { _ in }
     )
     .setupLoginContextForPreview()
 }

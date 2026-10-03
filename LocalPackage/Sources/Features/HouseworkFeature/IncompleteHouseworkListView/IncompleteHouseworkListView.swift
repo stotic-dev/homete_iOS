@@ -21,8 +21,11 @@ public struct IncompleteHouseworkListView: View {
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
 
-    public static func make() -> some View {
-        IncompleteHouseworkListView()
+    /// 行をタップしたときの処理。家事詳細への遷移は、ナビゲーションを持つ呼び出し元に任せる
+    let onSelectItem: (HouseworkBoardItem) -> Void
+
+    public static func make(onSelectItem: @escaping (HouseworkBoardItem) -> Void) -> some View {
+        IncompleteHouseworkListView(onSelectItem: onSelectItem)
     }
 
     public var body: some View {
@@ -57,15 +60,17 @@ private extension IncompleteHouseworkListView {
         } else {
             List {
                 ForEach(summary.incompleteItems) { item in
-                    HouseBoardListRow(houseworkItem: item.originalItem)
+                    houseworkItemRow(item)
                         .padding(.vertical, .space8)
                         .contextMenu {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .dashboard,
+                                // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
+                                canAddHelper: false,
                                 onSelectComplete: { completingItem = item },
-                                // 未完了の家事だけを並べるため、ありがとうは選ばれない
                                 onSelectThanks: {},
+                                onSelectAddHelper: {},
                                 onError: { commonError = .init(error: $0) }
                             )
                         }
@@ -80,13 +85,21 @@ private extension IncompleteHouseworkListView {
         }
     }
 
+    func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
+        Button {
+            onSelectItem(item)
+        } label: {
+            HouseBoardListRow(houseworkItem: item.originalItem)
+        }
+    }
+
 }
 
 #if DEBUG
 #Preview("IncompleteHouseworkListView_未完了あり") {
     let today = Date.previewDate(year: 2026, month: 5, day: 18)
     NavigationStack {
-        IncompleteHouseworkListView()
+        IncompleteHouseworkListView.make { _ in }
     }
     .environment(\.now, today)
     .environment(
@@ -117,7 +130,7 @@ private extension IncompleteHouseworkListView {
 #Preview("IncompleteHouseworkListView_未完了なし") {
     let today = Date.previewDate(year: 2026, month: 5, day: 18)
     NavigationStack {
-        IncompleteHouseworkListView()
+        IncompleteHouseworkListView.make { _ in }
     }
     .environment(\.now, today)
     .environment(HouseworkListStore())
