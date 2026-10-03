@@ -71,16 +71,19 @@ jobs:
         if: github.event_name == 'pull_request_target'
         run: npm install -g danger
 
-      - name: Cache ProjectTools build
+      # Dangerfile.swift が ProjectTools から使うのは SwiftLint の Linux 版バイナリだけなので、
+      # ビルドせずバイナリ依存（artifacts）だけを取得してキャッシュする。
+      # .build 全体は SwiftFormat のリポジトリを含み600MBを超えるが、artifacts だけなら約120MB
+      - name: Cache ProjectTools artifacts
+        id: cache-project-tools
         uses: actions/cache@v4
         with:
-          path: ProjectTools/.build
-          key: project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-${{ hashFiles('ProjectTools/Package.resolved') }}
-          restore-keys: |
-            project-tools-${{ runner.os }}-${{ env.SWIFT_VERSION }}-
+          path: ProjectTools/.build/artifacts
+          key: project-tools-artifacts-${{ runner.os }}-${{ hashFiles('ProjectTools/Package.resolved') }}
 
-      - name: Build ProjectTools
-        run: swift build --package-path ProjectTools --scratch-path ProjectTools/.build
+      - name: Fetch SwiftLint binary
+        if: steps.cache-project-tools.outputs.cache-hit != 'true'
+        run: swift package resolve --package-path ProjectTools --scratch-path ProjectTools/.build
 
       - name: Cache DangerTools build
         uses: actions/cache@v4
