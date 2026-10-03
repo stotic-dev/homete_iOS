@@ -1,5 +1,5 @@
 //
-//  RemoteConfigStoreTest.swift
+//  AdvertisementStoreTest.swift
 //  LocalPackage
 //
 
@@ -7,7 +7,7 @@
 import Testing
 
 @MainActor
-struct RemoteConfigStoreTest {
+struct AdvertisementStoreTest {
 
     private struct FetchError: Error {}
 
@@ -19,7 +19,7 @@ struct RemoteConfigStoreTest {
 
         // Act
 
-        let store = RemoteConfigStore(remoteConfigClient: remoteConfigClient)
+        let store = AdvertisementStore(remoteConfigClient: remoteConfigClient)
 
         // Assert
 
@@ -44,7 +44,7 @@ struct RemoteConfigStoreTest {
                 return isActivated.value ? remoteValue : key.defaultValue
             }
         )
-        let store = RemoteConfigStore(
+        let store = AdvertisementStore(
             remoteConfigClient: remoteConfigClient,
             isAdsEnabled: !remoteValue
         )
@@ -71,7 +71,7 @@ struct RemoteConfigStoreTest {
                 true
             }
         )
-        let store = RemoteConfigStore(remoteConfigClient: remoteConfigClient)
+        let store = AdvertisementStore(remoteConfigClient: remoteConfigClient)
 
         // Act
 
@@ -96,7 +96,7 @@ struct RemoteConfigStoreTest {
                     return true
                 }
             )
-            let store = RemoteConfigStore(
+            let store = AdvertisementStore(
                 remoteConfigClient: remoteConfigClient,
                 isAdsEnabled: false
             )

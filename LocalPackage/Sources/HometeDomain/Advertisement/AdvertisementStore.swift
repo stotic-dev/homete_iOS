@@ -1,17 +1,16 @@
 //
-//  RemoteConfigStore.swift
+//  AdvertisementStore.swift
 //  LocalPackage
 //
 
 import Observation
 
-/// Remote Configの値を画面へ届ける
+/// アプリ全体で広告を表示するかどうかを管理する
 ///
-/// fetch・activateは全キーまとめて行い、値をいつ画面へ反映するかはキーごとにこのStoreで決める。
-/// 経緯は ADR-0031 を参照。
+/// 広告表示の有無はRemote Configの`ads_enabled`で配信する。経緯は ADR-0031 を参照。
 @MainActor
 @Observable
-public final class RemoteConfigStore {
+public final class AdvertisementStore {
 
     /// 広告表示を有効にするかどうか
     /// - Note: 表示中に広告が出たり消えたりするとレイアウトが崩れるため、起動時に1回だけ確定させ、
@@ -28,7 +27,7 @@ public final class RemoteConfigStore {
         self.isAdsEnabled = isAdsEnabled
     }
 
-    /// 起動時に最新の値を取得し、起動中に固定する値を確定させる
+    /// 起動時に最新の値を取得し、起動中の広告表示の有無を確定させる
     /// - Note: 起動処理とは並行に走らせ、完了を待たない。取得に失敗・タイムアウトした場合は
     ///         前回反映済みの値（それも無ければアプリ内デフォルト値）で確定させる
     public func setupOnLaunch() async {
@@ -36,21 +35,21 @@ public final class RemoteConfigStore {
         isAdsEnabled = remoteConfigClient.bool(.adsEnabled)
     }
 
-    /// フォアグラウンド復帰時に最新の値を取得する
-    /// - Note: 起動中に固定する値（`isAdsEnabled`）は更新しない
+    /// フォアグラウンド復帰時に最新の値を取得し、次回起動時に使えるようにする
+    /// - Note: 起動中の広告表示の有無（`isAdsEnabled`）は変えない
     public func refresh() async {
         await fetchAndActivate()
     }
 
 }
 
-private extension RemoteConfigStore {
+private extension AdvertisementStore {
 
     func fetchAndActivate() async {
         do {
             try await remoteConfigClient.fetchAndActivate()
         } catch {
-            print("[RemoteConfigStore] failed to fetch and activate: \(error)")
+            print("[AdvertisementStore] failed to fetch and activate: \(error)")
         }
     }
 

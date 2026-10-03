@@ -21,7 +21,7 @@ public struct RootView: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(LaunchStateStore.self) var launchStateStore
-    @Environment(RemoteConfigStore.self) var remoteConfigStore
+    @Environment(AdvertisementStore.self) var advertisementStore
 
     public var body: some View {
         ZStack {
@@ -65,7 +65,7 @@ public struct RootView: View {
         }
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init { launchStateStore.update($0) })
-        .environment(\.isAdsEnabled, remoteConfigStore.isAdsEnabled)
+        .environment(\.isAdsEnabled, advertisementStore.isAdsEnabled)
     }
 
 }
@@ -99,7 +99,7 @@ public extension RootView {
                 houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient
             )
-            let remoteConfigStore = RemoteConfigStore(remoteConfigClient: $0.remoteConfigClient)
+            let advertisementStore = AdvertisementStore(remoteConfigClient: $0.remoteConfigClient)
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
@@ -113,13 +113,13 @@ public extension RootView {
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
                 .environment(launchStateStore)
-                .environment(remoteConfigStore)
+                .environment(advertisementStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
                 }
                 .task {
                     // 起動処理とは並行に走らせ、完了を待たない
-                    await remoteConfigStore.setupOnLaunch()
+                    await advertisementStore.setupOnLaunch()
                 }
                 .routeResolverInjection()
                 .adComponentResolverInjection()
@@ -153,7 +153,7 @@ private extension RootView {
         case .active where hasEnteredBackground:
             hasEnteredBackground = false
             Task {
-                await remoteConfigStore.refresh()
+                await advertisementStore.refresh()
             }
         default:
             break
