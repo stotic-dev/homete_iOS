@@ -1218,7 +1218,7 @@
 			repositoryURL = "https://github.com/BarredEwe/Prefire.git";
 			requirement = {
 				kind = exactVersion;
-				version = 5.4.1;
+				version = 5.9.0;
 			};
 		};
 		BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
