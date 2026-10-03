@@ -149,7 +149,7 @@ View → Store（AppDependenciesを受け取る）
   - アプリ側の導線はDEBUGビルドのデバッグメニュー（設定 → デバッグメニュー → ログイン情報の失効）
 
 **Remote Config**（詳細は [doc/remote_config.md](doc/remote_config.md)、[ADR-0033](doc/adr/0033-remote-config-fetch-and-per-key-apply-timing.md)、[ADR-0034](doc/adr/0034-force-update-with-realtime-remote-config.md)）:
-- 起動時とバックグラウンド復帰時に`fetchAndActivate()`する（起動は待たせない）。値をいつ画面へ反映するかは、そのキーを使う領域のStore（例: `AdvertisementStore`、`ForceUpdateStore`）で決める。Remote Config単位のStoreは作らない
+- 起動時とバックグラウンド復帰時に`RemoteConfigSyncUseCase`が`fetchAndActivate()`する（起動は待たせない）。値をいつ画面へ反映するかは、そのキーを使う領域のStore（例: `AdvertisementStore`、`ForceUpdateStore`）で決める。Remote Config単位のStoreは作らない
 - `ads_enabled`は起動時に確定させ、起動中は変えない。キーを足したら`RemoteConfigBoolKey`/`RemoteConfigStringKey`・コンソール（stg/prod）・`doc/remote_config.md`をそろえる
 - 強制アップデート（`minimum_required_version`）はリアルタイム更新も購読して判定し直し、`RootView`で画面ごと`ForceUpdateView`に差し替える。判定できない値ならブロックしない
 - App Checkの保護対象外

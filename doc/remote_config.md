@@ -9,7 +9,6 @@
 |---|---|---|---|---|
 | `ads_enabled` | Boolean | `false` | 広告表示を有効にするかどうか。プレミアム加入者には値によらず広告を出さない | 起動時のfetch完了時に確定し、起動中は変えない |
 | `minimum_required_version` | String | `""`（ブロックしない） | これより古いバージョンは強制アップデート画面で利用を止める（例: `1.4.0`）。空・不正な値ならブロックしない | 値を反映するたびに判定し直す（起動中も即時） |
-| `force_update_message` | String | `""`（アプリ内の文言） | 強制アップデート画面の本文。空ならアプリ内の文言を表示する | `minimum_required_version`と同じ |
 
 アプリ内デフォルト値は `RemoteConfigBoolKey.defaultValue` / `RemoteConfigStringKey.defaultValue`（`LocalPackage/Sources/HometeDomain/RemoteConfig/`）で定義している。キーを足すときは、コンソールへの登録とこの表の更新も併せて行う。
 
@@ -20,6 +19,8 @@
 | 起動時 | `fetchAndActivate()`（起動処理とは並行。完了を待たない） |
 | バックグラウンドからの復帰時 | `fetchAndActivate()` |
 | コンソールで変更を公開したとき（フォアグラウンド中のみ） | リアルタイム更新を受け取ってactivateする（`minimumFetchInterval`に関係なく届く） |
+
+起動時・復帰時の取得は`RemoteConfigSyncUseCase`が1回だけ行い、値を使う領域のStore（`AdvertisementStore` / `ForceUpdateStore`）へ反映させる。リアルタイム更新は強制アップデートだけが使うため、`ForceUpdateStore`が購読する。
 
 - fetchのタイムアウトは3秒（リクエスト単位。初回はトークン取得が先に挟まるため、さらに遅れ得る）。失敗・タイムアウト時は前回activate済みの値、それも無ければアプリ内デフォルト値を使う
 - `minimumFetchInterval` はReleaseが12時間、Debug/Stgが0秒。Releaseでは、コンソールで切り替えてから全ユーザーに届くまで最大12時間程度かかる
@@ -34,7 +35,6 @@ stg（`homete-ios-dev-e3ef7`）→ prod（`homete-ios-dev`）の順に行う。�
 2. **パラメータを追加**（既存なら該当パラメータの編集）で次を設定する
    - `ads_enabled`: データ型 Boolean、デフォルト値 `false`（prodの初期値は現状維持の`false`）
    - `minimum_required_version`: データ型 String、デフォルト値は空文字（「空の文字列」を選ぶ）
-   - `force_update_message`: データ型 String、デフォルト値は空文字
 3. **変更を公開** を押す。公開するまでアプリには配信されない
 4. 動作確認
    - stg: TestFlightまたはXcodeから実行したビルドを再起動し、非プレミアムのアカウントで広告の表示・非表示が切り替わることを確認する
@@ -44,8 +44,7 @@ stg（`homete-ios-dev-e3ef7`）→ prod（`homete-ios-dev`）の順に行う。�
 
 1. 対象のバージョンより新しいバージョンがApp Storeで配信済みであることを確認する（未配信のまま公開すると、アップデート先が無いまま全員が締め出される）
 2. `minimum_required_version` に、利用を許す最も古いバージョン（例: `1.4.0`）を入れて公開する。比較は桁ごとの数値で行う（`1.10.0`は`1.9.0`より新しい）
-3. 必要なら `force_update_message` に本文を入れる。空ならアプリ内の文言（「引き続きhomeauをご利用いただくには、App Storeからアップデートをお願いします。」）が出る
-4. 起動中の端末にはリアルタイム更新で届く。バックグラウンドにある端末は、次に復帰したときに届く
+3. 起動中の端末にはリアルタイム更新で届く。バックグラウンドにある端末は、次に復帰したときに届く
 
 初期値は空文字（ブロックしない）で作成しておく。誤って引き上げた場合は、値を戻して公開すれば起動中の端末でも案内画面が解除される。
 
