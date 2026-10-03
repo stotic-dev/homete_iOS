@@ -312,12 +312,12 @@ private extension HouseworkMemoEditView {
 }
 
 #Preview("HouseworkMemoEditView_無料プランで上限超過") {
-    NavigationStack {
+    // 編集前のメモより増えていなければ上限を超えていても保存できるため、新しく書いた状態にする
+    var draft = HouseworkMemoDraft(original: nil)
+    draft.text = String(repeating: "買い物メモ", count: 41)
+    return NavigationStack {
         HouseworkMemoEditView(
-            draft: .constant(.init(original: .init(
-                text: String(repeating: "買い物メモ", count: 41),
-                checklist: []
-            ))),
+            draft: .constant(draft),
             limitPolicy: .free,
             onTapClose: {},
             onTapSave: {},
