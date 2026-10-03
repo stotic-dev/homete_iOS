@@ -3,7 +3,7 @@
 * **ステータス: 承認済**
 * 意思決定者: stotic-dev, Claude Code
 * 日付: 2026-10-03
-* 関連: [ADR-0035](0035-local-package-test-without-coverage-and-ci-test-only.md)
+* 関連: [ADR-0037](0037-local-package-test-without-coverage-and-ci-test-only.md)
 
 ## 文脈、背景や問題点の説明
 
