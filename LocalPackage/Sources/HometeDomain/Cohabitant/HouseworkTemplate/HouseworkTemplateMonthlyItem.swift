@@ -37,6 +37,7 @@ extension HouseworkTemplateMonthlyItem: Codable {
         case title
         case point
         case updatedAt
+        case memo
         case rule
 
     }
@@ -47,7 +48,8 @@ extension HouseworkTemplateMonthlyItem: Codable {
             id: .init(id: container.decode(String.self, forKey: .id)),
             title: container.decode(String.self, forKey: .title),
             point: container.decode(Int.self, forKey: .point),
-            updatedAt: container.decode(Date.self, forKey: .updatedAt)
+            updatedAt: container.decode(Date.self, forKey: .updatedAt),
+            memo: container.decodeIfPresent(HouseworkMemo.self, forKey: .memo)
         )
         rule = try container.decode(MonthlyRecurrenceRule.self, forKey: .rule)
     }
@@ -58,6 +60,7 @@ extension HouseworkTemplateMonthlyItem: Codable {
         try container.encode(item.title, forKey: .title)
         try container.encode(item.point, forKey: .point)
         try container.encode(item.updatedAt, forKey: .updatedAt)
+        try container.encodeIfPresent(item.memo, forKey: .memo)
         try container.encode(rule, forKey: .rule)
     }
 

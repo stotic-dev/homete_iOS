@@ -157,16 +157,19 @@ public extension FrequentHouseworkStore {
 
     /// いつもの家事を追加する
     /// - Note: 各カテゴリの末尾に、入力の順で追加する
-    /// - Throws: 名前が空・重複（入力同士の重複を含む）の場合、上限を超える場合は`FrequentHouseworkError`
+    /// - Throws: 名前が空・重複（入力同士の重複を含む）の場合、上限を超える場合は`FrequentHouseworkError`。
+    ///           メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`
     func add(
         _ inputs: [FrequentHouseworkInput],
         limitPolicy: FrequentHouseworkLimitPolicy,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
         step: FrequentHouseworkAnalyticsStep,
         cohabitantId: String
     ) async throws {
         let newItems = try context.makeAddedItems(
             from: inputs,
             limitPolicy: limitPolicy,
+            memoLimitPolicy: memoLimitPolicy,
             timestamp: now(),
             idGenerator: idGenerator
         )
@@ -193,6 +196,8 @@ public extension FrequentHouseworkStore {
         let newItems = try context.makeAddedItems(
             from: inputs,
             limitPolicy: limitPolicy,
+            // 取り込む家事はメモを持たないため、メモの上限はどちらのプランでも当たらない
+            memoLimitPolicy: .init(isPremium: limitPolicy == .premium),
             timestamp: now(),
             idGenerator: idGenerator
         )
@@ -208,15 +213,17 @@ public extension FrequentHouseworkStore {
     /// いつもの家事を編集する
     /// - Note: カテゴリを変えた場合は、移動先のカテゴリの末尾に並べる。
     ///         編集中に同居人が削除していた場合は、復活させないよう何もしない
-    /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`
+    /// - Throws: 名前が空・重複の場合は`FrequentHouseworkError`。メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`
     func update(
         itemId: String,
         input: FrequentHouseworkInput,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
         cohabitantId: String
     ) async throws {
         guard let updatedItem = try context.makeUpdatedItem(
             itemId: itemId,
             input: input,
+            memoLimitPolicy: memoLimitPolicy,
             timestamp: now()
         ) else { return }
         do {

@@ -64,6 +64,10 @@ private extension AppDelegate {
         #else
         FirebaseApp.configure()
         #endif
+
+        // プレビュー・ユニットテストではFirebaseを初期化しないため、Remote Configも設定しない
+        guard FirebaseApp.app() != nil else { return }
+        RemoteConfigConfigurator.configure(minimumFetchInterval: remoteConfigMinimumFetchInterval)
     }
 
     /// Xcodeから実行するローカルビルドかどうか。
@@ -76,6 +80,18 @@ private extension AppDelegate {
         true
         #else
         false
+        #endif
+    }
+
+    /// Remote Configでサーバーへ問い合わせる最小間隔。
+    ///
+    /// Debug/Stgはコンソールでの切り替えをすぐ確認できるよう0秒にする。Stg構成もDEBUGを定義しているので、
+    /// App Checkと違ってSTGでの除外は不要。Releaseは既定の12時間。
+    var remoteConfigMinimumFetchInterval: TimeInterval {
+        #if DEBUG
+        0
+        #else
+        12 * 60 * 60
         #endif
     }
 

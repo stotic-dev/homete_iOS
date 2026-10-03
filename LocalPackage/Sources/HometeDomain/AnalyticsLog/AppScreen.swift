@@ -44,6 +44,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case houseworkComplete = "housework_complete"
     /// 完了した家事にありがとうを伝える画面
     case houseworkThanks = "housework_thanks"
+    /// 家事メモの編集
+    case houseworkMemoEdit = "housework_memo_edit"
     /// 家事テンプレートの一覧
     case houseworkTemplate = "housework_template"
     /// 家事テンプレートの詳細

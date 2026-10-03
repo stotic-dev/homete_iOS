@@ -1,6 +1,7 @@
 import * as logger from "firebase-functions/logger";
 import {onCall, HttpsError} from "firebase-functions/v2/https";
 import {
+  NotCohabitantMemberError,
   isValidNotificationData,
   notifyOtherCohabitants,
 } from "./models/CohabitantNotifier";
@@ -80,6 +81,16 @@ export const notifyothercohabitants = onCall(
         message: `Notifications sent to ${result.successCount} devices.`,
       };
     } catch (error) {
+      if (error instanceof NotCohabitantMemberError) {
+        logger.error("Permission denied: sender is not a group member.", {
+          cohabitantId,
+          senderId,
+        });
+        throw new HttpsError(
+          "permission-denied",
+          "The caller does not belong to the cohabitant group."
+        );
+      }
       logger.error("An unexpected error occurred:", {error});
       throw new HttpsError(
         "internal",

@@ -14,6 +14,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import {
@@ -513,6 +514,160 @@ describe("FrequentHouseworkCategories", () => {
       )
     );
   });
+});
+
+describe("家事メモ", () => {
+  const houseworkDoc = `${houseworksPath(GROUP_ID)}/housework-1`;
+  const monthlyItemDoc =
+    `${houseworkTemplateMonthlyItemsPath(GROUP_ID, TEMPLATE_ID)}/item-1`;
+  const frequentDoc = `${frequentHouseworksPath(GROUP_ID)}/item-1`;
+
+  const memo = (textLength: number, checklistCount: number) => ({
+    text: "あ".repeat(textLength),
+    checklist: Array.from({length: checklistCount}, (_, index) => ({
+      id: `${index}`,
+      title: "牛乳",
+      isChecked: false,
+    })),
+  });
+  const monthlyItem = {
+    id: "item-1",
+    title: "家賃の振込",
+    point: 10,
+    updatedAt: new Date(),
+    rule: {type: "dayOfMonth", day: 25},
+  };
+  const frequentHousework = {
+    id: "item-1",
+    title: "買い出し",
+    point: 20,
+    sortOrder: 0,
+    createdAt: new Date("2026-09-26"),
+    updatedAt: new Date("2026-09-26"),
+  };
+
+  /** メモ付きのドキュメントを用意する（旧アプリからの上書きの検証用） */
+  const seedWithMemo = async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(
+        doc(db, houseworkDoc),
+        {...housework("housework-1"), memo: memo(10, 1)}
+      );
+      await setDoc(
+        doc(db, monthlyItemDoc),
+        {...monthlyItem, memo: memo(10, 1)}
+      );
+      await setDoc(
+        doc(db, frequentDoc),
+        {...frequentHousework, memo: memo(10, 1)}
+      );
+    });
+  };
+
+  it("安全上限ちょうどのメモを持つ家事は作成できる", async () => {
+    await assertSucceeds(
+      setDoc(
+        doc(aliceDb(), `${houseworksPath(GROUP_ID)}/housework-2`),
+        {...housework("housework-2"), memo: memo(20000, 100)}
+      )
+    );
+  });
+
+  it("テキストが安全上限を超えるメモを持つ家事は作成できない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), `${houseworksPath(GROUP_ID)}/housework-2`),
+        {...housework("housework-2"), memo: memo(20001, 0)}
+      )
+    );
+  });
+
+  it("チェックリストが100項目を超えるメモを持つ家事は作成できない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), `${houseworksPath(GROUP_ID)}/housework-2`),
+        {...housework("housework-2"), memo: memo(0, 101)}
+      )
+    );
+  });
+
+  it("形の違うメモを持つ家事は作成できない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), `${houseworksPath(GROUP_ID)}/housework-2`),
+        {...housework("housework-2"), memo: "牛乳を買う"}
+      )
+    );
+  });
+
+  it("メモの無い家事は、これまでどおりメモなしで上書きできる", async () => {
+    await assertSucceeds(
+      setDoc(doc(aliceDb(), houseworkDoc), {
+        ...housework("housework-1"),
+        state: "completed",
+      })
+    );
+  });
+
+  it("メモのフィールドだけを更新できる", async () => {
+    await assertSucceeds(
+      updateDoc(doc(aliceDb(), houseworkDoc), {memo: memo(10, 2)})
+    );
+  });
+
+  it("メモ付きの家事を、空のメモにして上書きできる", async () => {
+    await seedWithMemo();
+    await assertSucceeds(
+      setDoc(
+        doc(aliceDb(), houseworkDoc),
+        {...housework("housework-1"), memo: memo(0, 0)}
+      )
+    );
+  });
+
+  it("メモ付きの家事を、メモの無いドキュメントで上書きできない（旧アプリ対策）",
+    async () => {
+      await seedWithMemo();
+      await assertFails(
+        setDoc(doc(aliceDb(), houseworkDoc), {
+          ...housework("housework-1"),
+          state: "completed",
+        })
+      );
+    });
+
+  it("メモ付きの毎月の家事を、メモの無いドキュメントで上書きできない",
+    async () => {
+      await seedWithMemo();
+      await assertFails(setDoc(doc(aliceDb(), monthlyItemDoc), monthlyItem));
+    });
+
+  it("テキストが安全上限を超えるメモを持つ毎月の家事は作成できない",
+    async () => {
+      await assertFails(
+        setDoc(
+          doc(aliceDb(), monthlyItemDoc),
+          {...monthlyItem, memo: memo(20001, 0)}
+        )
+      );
+    });
+
+  it("メモ付きのいつもの家事を、メモの無いドキュメントで上書きできない",
+    async () => {
+      await seedWithMemo();
+      await assertFails(setDoc(doc(aliceDb(), frequentDoc), frequentHousework));
+    });
+
+  it("テキストが安全上限を超えるメモを持ついつもの家事は作成できない",
+    async () => {
+      await assertFails(
+        setDoc(
+          doc(aliceDb(), frequentDoc),
+          {...frequentHousework, memo: memo(20001, 0)}
+        )
+      );
+    });
 });
 
 describe("Invitation", () => {

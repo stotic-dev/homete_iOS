@@ -23,6 +23,7 @@ struct ManualHouseworkForm: View {
     let onTapHistory: (HouseworkEntryHistoryItem) -> Void
     /// 上限に達している状態で「いつもの家事に保存する」を押したとき
     let onTapSaveAsFrequentWhenLimitReached: () -> Void
+    let onTapMemo: () -> Void
 
     @FocusState var isShowingKeyboard: Bool
 
@@ -71,6 +72,10 @@ private extension ManualHouseworkForm {
             if canSetRecurrence {
                 Divider()
                 inputRecurrence()
+            }
+            Divider()
+            HouseworkMemoRow(hasContent: entry.memo.hasContent, titleFont: .body) {
+                onTapMemo()
             }
         }
     }
@@ -217,7 +222,8 @@ private extension ManualHouseworkForm {
             .init(title: "掃除", point: 10),
         ],
         onTapHistory: { _ in },
-        onTapSaveAsFrequentWhenLimitReached: {}
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {}
     )
 }
 
@@ -236,7 +242,8 @@ private extension ManualHouseworkForm {
         canSetRecurrence: true,
         history: [],
         onTapHistory: { _ in },
-        onTapSaveAsFrequentWhenLimitReached: {}
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {}
     )
 }
 
@@ -255,7 +262,8 @@ private extension ManualHouseworkForm {
         canSetRecurrence: true,
         history: [],
         onTapHistory: { _ in },
-        onTapSaveAsFrequentWhenLimitReached: {}
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {}
     )
 }
 
@@ -274,7 +282,8 @@ private extension ManualHouseworkForm {
         canSetRecurrence: true,
         history: [],
         onTapHistory: { _ in },
-        onTapSaveAsFrequentWhenLimitReached: {}
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {}
     )
 }
 
@@ -293,7 +302,8 @@ private extension ManualHouseworkForm {
         canSetRecurrence: false,
         history: [],
         onTapHistory: { _ in },
-        onTapSaveAsFrequentWhenLimitReached: {}
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {}
     )
 }
 #endif

@@ -96,4 +96,40 @@ struct HouseworkTemplateDayTest {
         #expect(actual == expected)
     }
 
+    @Test("テンプレートから作る家事は、テンプレートの家事のメモを引き継ぐ")
+    func applyTemplate_copiesMemo() throws {
+        // Arrange
+        let memo = HouseworkMemo(text: "スーパーで", checklist: [.init(id: "1", title: "牛乳", isChecked: false)])
+        let updatedAt = Date.previewDate(year: 2026, month: 1, day: 1)
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [.init(id: .init(id: "id1"), title: "買い出し", point: 10, updatedAt: updatedAt, memo: memo)]
+        )
+        let selectedDate = Date.previewDate(year: 2026, month: 1, day: 5)
+
+        // Act
+        let actual = template.applyTemplate(
+            registeredItems: [],
+            selectedDate: selectedDate,
+            calendar: .japanese,
+            storagePolicy: .free,
+            idGenerator: { _ in "generated" }
+        )
+
+        // Assert
+        let expectedExpired = try #require(Calendar.japanese.date(byAdding: .year, value: 1, to: selectedDate))
+        let expected: [HouseworkItem] = [
+            .makeForTest(
+                id: "generated",
+                indexedDate: selectedDate,
+                title: "買い出し",
+                point: 10,
+                expiredAt: expectedExpired,
+                templateHouseworkItemId: .init(id: "id1"),
+                memo: memo
+            ),
+        ]
+        #expect(actual == expected)
+    }
+
 }

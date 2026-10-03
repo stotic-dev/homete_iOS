@@ -209,6 +209,14 @@ struct AnalyticsEventTest {
                 ["action": "edit_thanks", "step": "thanks", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.editMemo(step: .detail, isSuccess: true),
+                ["action": "edit_memo", "step": "detail", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.editMemo(step: .detail, isSuccess: false),
+                ["action": "edit_memo", "step": "detail", "result": "failure"]
+            ),
+            (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),
                 ["action": "return_incomplete", "step": "detail", "result": "success"]
             ),

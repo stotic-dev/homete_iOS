@@ -402,6 +402,7 @@ extension FrequentHouseworkStoreTest.AddCase {
             try await store.add(
                 [.init(title: "風呂掃除", point: 20, categoryId: "preset.cleaning")],
                 limitPolicy: .premium,
+                memoLimitPolicy: .premium,
                 step: .management,
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
             )
@@ -430,6 +431,7 @@ extension FrequentHouseworkStoreTest.AddCase {
                 .init(title: "窓拭き", point: 10, categoryId: nil),
             ],
             limitPolicy: .premium,
+            memoLimitPolicy: .premium,
             step: .register,
             cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
         )
@@ -459,6 +461,7 @@ extension FrequentHouseworkStoreTest.AddCase {
             try await store.add(
                 [.init(title: "風呂掃除", point: 10, categoryId: nil)],
                 limitPolicy: .premium,
+                memoLimitPolicy: .premium,
                 step: .template,
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
             )
@@ -489,6 +492,7 @@ extension FrequentHouseworkStoreTest.AddCase {
                     .init(title: "窓拭き", point: 10, categoryId: nil),
                 ],
                 limitPolicy: .free,
+                memoLimitPolicy: .premium,
                 step: .management,
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
             )
@@ -614,6 +618,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
             try await store.update(
                 itemId: "1",
                 input: .init(title: "風呂掃除", point: 20, categoryId: "preset.cleaning"),
+                memoLimitPolicy: .premium,
                 cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
             )
         }
@@ -634,6 +639,7 @@ extension FrequentHouseworkStoreTest.UpdateCase {
         try await store.update(
             itemId: "deleted",
             input: .init(title: "風呂", point: 10, categoryId: nil),
+            memoLimitPolicy: .premium,
             cohabitantId: FrequentHouseworkStoreTest.inputCohabitantId
         )
     }

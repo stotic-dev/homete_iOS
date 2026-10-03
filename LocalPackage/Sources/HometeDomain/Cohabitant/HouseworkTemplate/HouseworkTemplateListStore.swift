@@ -156,13 +156,16 @@ public final class HouseworkTemplateListStore {
     /// - Parameters:
     ///   - days: 書き込む曜日定義。成功時には `selectedDays` をローカル更新する（既存の dayOfWeek は置換、未登録は追加）
     ///   - monthlyItems: 保存後の毎月の家事の全件。現在の `monthlyItems` との差分だけを書き込み、成功時には置き換える
+    ///   - memoLimitPolicy: メモの上限の判定に使う、操作している本人のプラン
     /// - Note: 書き込む内容がない場合は no-op。
+    /// - Throws: メモが上限を超えている家事がある場合は`HouseworkMemoError.limitExceeded`（何も書き込まない）
     public func saveTemplate(
         days: [HouseworkTemplateDay],
         monthlyItems: [HouseworkTemplateMonthlyItem],
         templateId: String,
         cohabitantId: String,
-        currentVersion: Int
+        currentVersion: Int,
+        memoLimitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
         let afterMonthlyIds = Set(monthlyItems.map(\.id))
         let update = HouseworkTemplateUpdate(
@@ -172,11 +175,11 @@ public final class HouseworkTemplateListStore {
         )
         guard !update.isEmpty else { return }
 
-        let changes = Self.itemChanges(
-            from: .init(days: selectedDays, monthlyItems: self.monthlyItems),
-            to: .init(days: days, monthlyItems: monthlyItems)
-        )
+        let before = TemplateSnapshot(days: selectedDays, monthlyItems: self.monthlyItems)
+        let after = TemplateSnapshot(days: days, monthlyItems: monthlyItems)
+        let changes = Self.itemChanges(from: before, to: after)
         do {
+            try Self.validateMemos(from: before, to: after, limitPolicy: memoLimitPolicy)
             try await houseworkTemplateClient.updateTemplate(
                 update,
                 templateId,
@@ -203,16 +206,20 @@ public final class HouseworkTemplateListStore {
     /// - Parameter newTemplateId: テンプレートを新規作成する場合に使うID
     /// - Note: 新規作成したテンプレートは、追加した家事がすぐ家事一覧に表示されるよう、その場で選択して監視を始める
     /// - Throws: 読み込みが終わっていない場合は `HouseworkTemplateError.notLoaded`。
-    ///           `selectedTemplateId` が `nil` でも「テンプレートが無い」とは限らず、重複して作成してしまうため
+    ///           `selectedTemplateId` が `nil` でも「テンプレートが無い」とは限らず、重複して作成してしまうため。
+    ///           メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（テンプレートも作らない）
     public func appendItemCreatingTemplateIfNeeded(
         _ item: HouseworkTemplateItem,
         recurrence: HouseworkRecurrence,
         cohabitantId: String,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
         newTemplateId: @autoclosure () -> String
     ) async throws {
         guard loadState == .loaded else {
             throw HouseworkTemplateError.notLoaded
         }
+        // テンプレートを作ってから失敗しないよう、先に検査する
+        try item.validateMemo(comparedTo: nil, limitPolicy: memoLimitPolicy)
 
         let templateId: String
         if let selectedTemplateId {
@@ -223,18 +230,27 @@ public final class HouseworkTemplateListStore {
             selectedTemplateId = templateId
             await startObservingItems(templateId: templateId, cohabitantId: cohabitantId)
         }
-        try await appendItem(item, recurrence: recurrence, templateId: templateId, cohabitantId: cohabitantId)
+        try await appendItem(
+            item,
+            recurrence: recurrence,
+            templateId: templateId,
+            cohabitantId: cohabitantId,
+            memoLimitPolicy: memoLimitPolicy
+        )
     }
 
     /// テンプレートに家事を1件追加する（家事登録画面用）
     /// - Note: 画面の表示にはSnapshotListener経由で反映される
+    /// - Throws: メモが上限を超えている場合は`HouseworkMemoError.limitExceeded`
     public func appendItem(
         _ item: HouseworkTemplateItem,
         recurrence: HouseworkRecurrence,
         templateId: String,
-        cohabitantId: String
+        cohabitantId: String,
+        memoLimitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
         do {
+            try item.validateMemo(comparedTo: nil, limitPolicy: memoLimitPolicy)
             try await houseworkTemplateClient.appendItem(item, recurrence, templateId, cohabitantId)
         } catch {
             analyticsClient.log(.houseworkTemplate(.create(isSuccess: false, step: .register, recurrence: recurrence)))
@@ -282,6 +298,18 @@ private extension HouseworkTemplateListStore {
             result[monthlyItem.id] = (monthlyItem.item, .monthly(monthlyItem.rule))
         }
         return result
+    }
+
+    /// 保存後の家事のメモが上限を超えていないか、保存前の同じ家事と比べて検査する
+    static func validateMemos(
+        from before: TemplateSnapshot,
+        to after: TemplateSnapshot,
+        limitPolicy: HouseworkMemoLimitPolicy
+    ) throws {
+        let beforeItems = itemRecurrenceById(before)
+        for (id, afterItem) in itemRecurrenceById(after) {
+            try afterItem.item.validateMemo(comparedTo: beforeItems[id]?.item, limitPolicy: limitPolicy)
+        }
     }
 
     /// 保存前後の状態を比較し、何が追加・編集・削除されたかを判定する

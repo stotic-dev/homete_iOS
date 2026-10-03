@@ -126,15 +126,32 @@ async function defaultSender(
 }
 
 /**
+ * 通知の送信者が通知先グループのメンバーではないことを表すエラー
+ */
+export class NotCohabitantMemberError extends Error {
+  /**
+   * @param {string} cohabitantId 通知先のグループID
+   * @param {string} senderId 送信者のユーザーID
+   */
+  constructor(cohabitantId: string, senderId: string) {
+    super(`User ${senderId} is not a member of cohabitant ${cohabitantId}.`);
+    this.name = "NotCohabitantMemberError";
+  }
+}
+
+/**
  * グループの本人以外のメンバー全員へ通知を送る
  *
  * FCMトークンを持たないメンバーは対象外とする。
  * グループが存在しない場合は呼び出し側で扱いを決められるようnullを返す。
+ * グループIDさえ分かれば誰でも任意の文面を送り付けられてしまうため、
+ * 送信者がグループのメンバーでない場合は送信せずにエラーにする。
  * @param {string} cohabitantId 通知先のグループID
  * @param {string} senderId 通知の起点となった本人のユーザーID（配信対象から除く）
  * @param {CohabitantNotification} notification 通知内容
  * @param {NotificationSender} send 送信処理（テスト用に差し替え可能）
  * @return {Promise<NotifyResult | null>} 配信結果。グループが無い場合はnull
+ * @throws {NotCohabitantMemberError} 送信者がグループのメンバーでない場合
  */
 export async function notifyOtherCohabitants(
   cohabitantId: string,
@@ -147,6 +164,10 @@ export async function notifyOtherCohabitants(
 
   if (!cohabitantResult) {
     return null;
+  }
+
+  if (!cohabitantResult.cohabitant.members.includes(senderId)) {
+    throw new NotCohabitantMemberError(cohabitantId, senderId);
   }
 
   const recipientIds = cohabitantResult.cohabitant.members.filter(

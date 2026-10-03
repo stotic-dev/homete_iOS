@@ -30,6 +30,26 @@ struct PendingEntry: Equatable, Identifiable {
     let savesAsFrequent: Bool
     /// いつもの家事に保存するときのカテゴリ
     let categoryId: String?
+    /// 家事に付けるメモ。いつもの家事に保存するときにも持たせる
+    let memo: HouseworkMemo?
+
+    init(
+        source: Source,
+        title: String,
+        point: Int,
+        recurrence: HouseworkRecurrence?,
+        savesAsFrequent: Bool,
+        categoryId: String?,
+        memo: HouseworkMemo? = nil
+    ) {
+        self.source = source
+        self.title = title
+        self.point = point
+        self.recurrence = recurrence
+        self.savesAsFrequent = savesAsFrequent
+        self.categoryId = categoryId
+        self.memo = memo
+    }
 
     var id: String {
         switch source {
@@ -66,7 +86,8 @@ extension PendingEntry {
             point: entry.point,
             recurrence: entry.recurrenceInput.recurrence,
             savesAsFrequent: entry.savesAsFrequent,
-            categoryId: entry.categoryId
+            categoryId: entry.categoryId,
+            memo: entry.memo
         )
     }
 
@@ -77,7 +98,8 @@ extension PendingEntry {
             point: entry.point,
             recurrence: entry.recurrenceInput.recurrence,
             savesAsFrequent: entry.savesAsFrequent,
-            categoryId: entry.categoryId
+            categoryId: entry.categoryId,
+            memo: entry.memo
         )
     }
 

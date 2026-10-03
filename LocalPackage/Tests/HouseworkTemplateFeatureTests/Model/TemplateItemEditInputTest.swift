@@ -29,6 +29,7 @@ enum TemplateItemEditInputTest {
 
     struct CanConfirmCreateModeCase {}
     struct CanConfirmEditModeCase {}
+    struct MemoCase {}
 
 }
 
@@ -104,6 +105,20 @@ extension TemplateItemEditInputTest.CanConfirmCreateModeCase {
 }
 
 extension TemplateItemEditInputTest.CanConfirmEditModeCase {
+
+    @Test("編集モードでメモだけを変えた場合もtrueを返す")
+    func returnsTrueWhenOnlyMemoChanged() {
+        // Arrange
+        let before = TestCase.makeInput()
+        var edited = TestCase.makeInput()
+        edited.memo = .init(text: "燃えるゴミ", checklist: [])
+
+        // Act
+        let actual = edited.canConfirm(.edit(before: before))
+
+        // Assert
+        #expect(actual == true)
+    }
 
     @Test("編集モードで全項目入力済み、かつ既存内容から変更がある場合にtrueを返す")
     func returnsTrueWhenChangedFromBefore() {
@@ -196,6 +211,32 @@ extension TemplateItemEditInputTest.CanConfirmEditModeCase {
 
         // Assert
         #expect(actual == false)
+    }
+
+}
+
+extension TemplateItemEditInputTest.MemoCase {
+
+    @Test("テンプレートの家事を編集して保存し直しても、メモを引き継ぐ")
+    func createTemplateKeepsMemo() {
+        // Arrange
+        let memo = HouseworkMemo(text: "燃えるゴミ", checklist: [.init(id: "1", title: "缶", isChecked: false)])
+        let now = Date(timeIntervalSince1970: 100)
+        let item = HouseworkTemplateItem(
+            id: TestCase.itemId,
+            title: "ゴミ出し",
+            point: 10,
+            updatedAt: Date(timeIntervalSince1970: 0),
+            memo: memo
+        )
+        let input = TemplateItemEditInput(item: item, recurrence: .weekly([.monday]))
+
+        // Act
+        let actual = input.createTemplate(now: now)
+
+        // Assert
+        let expected = HouseworkTemplateItem(id: TestCase.itemId, title: "ゴミ出し", point: 10, updatedAt: now, memo: memo)
+        #expect(actual == expected)
     }
 
 }

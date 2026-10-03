@@ -20,6 +20,7 @@ struct FrequentHouseworkEditModal: View {
     /// - Note: 追加直後は購読が届くまで`context`に入らないため、選択肢と名前の重複の判定に足す
     @State var addedCategories: [FrequentHouseworkCustomCategory] = []
     @State var isPresentingCategoryNameAlert = false
+    @State var isPresentedMemoEditSheet = false
     @State var newCategoryName = ""
     @FocusState var isShowingKeyboard: Bool
 
@@ -36,6 +37,9 @@ struct FrequentHouseworkEditModal: View {
                 inputTitleField()
                 inputPointPicker()
                 inputCategoryPicker()
+                HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
+                    isPresentedMemoEditSheet = true
+                }
                 Spacer()
             }
             .padding(.horizontal, .space16)
@@ -55,6 +59,12 @@ struct FrequentHouseworkEditModal: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .sheet(isPresented: $isPresentedMemoEditSheet) {
+            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
+            HouseworkMemoEditScreen(memo: input.memo) { memo in
+                input.memo = memo
+            }
+        }
         .alert("新しいカテゴリ", isPresented: $isPresentingCategoryNameAlert) {
             TextField("カテゴリの名前", text: $newCategoryName)
             Button("キャンセル", role: .cancel) {}
