@@ -21,6 +21,7 @@ struct RegisteredContent: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.isAdsEnabled) var isAdsEnabled
     @Environment(\.routeResolver) var router
+    @Environment(\.registeredContentNavigationPath) var navigationPath
     @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
 
     @State var isShowHouseworkTemplate = false
@@ -105,7 +106,9 @@ private extension RegisteredContent {
     func navigationHandler(_ route: RegisteredContentRoute) -> some View {
         switch route {
         case .incompleteHouseworkList:
-            IncompleteHouseworkListView.make()
+            IncompleteHouseworkListView.make { item in
+                navigationPath.push(.houseworkDetail(item))
+            }
 
         case let .houseworkDetail(item):
             HouseworkDetailView.make(item: item)
