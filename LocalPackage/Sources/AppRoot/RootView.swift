@@ -10,6 +10,7 @@ import SwiftUI
 public struct RootView: View {
 
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
+    let remoteConfigSyncUseCase: RemoteConfigSyncUseCase
 
     @State var theme = Theme()
     @State var hasEnteredBackground = false
@@ -112,37 +113,41 @@ public extension RootView {
                 currentAppVersion: Bundle.main
                     .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
             )
+            let remoteConfigSyncUseCase = RemoteConfigSyncUseCase(
+                remoteConfigClient: $0.remoteConfigClient,
+                advertisementStore: advertisementStore,
+                forceUpdateStore: forceUpdateStore
+            )
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
                 analyticsClient: $0.analyticsClient
             )
 
-            RootView(authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
-                .environment(accountStore)
-                .environment(accountAuthStore)
-                .environment(cohabitantStore)
-                .environment(subscriptionStore)
-                .environment(pendingInvitationStore)
-                .environment(launchStateStore)
-                .environment(advertisementStore)
-                .environment(forceUpdateStore)
-                .task {
-                    await subscriptionStore.observeEntitlementUpdates()
-                }
-                .task {
-                    // 起動処理とは並行に走らせ、完了を待たない
-                    await advertisementStore.setupOnLaunch()
-                }
-                .task {
-                    // 起動処理とは並行に走らせ、完了を待たない
-                    await forceUpdateStore.setupOnLaunch()
-                }
-                .task {
-                    await forceUpdateStore.observeConfigUpdates()
-                }
-                .routeResolverInjection()
-                .adComponentResolverInjection()
+            RootView(
+                authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
+                remoteConfigSyncUseCase: remoteConfigSyncUseCase
+            )
+            .environment(accountStore)
+            .environment(accountAuthStore)
+            .environment(cohabitantStore)
+            .environment(subscriptionStore)
+            .environment(pendingInvitationStore)
+            .environment(launchStateStore)
+            .environment(advertisementStore)
+            .environment(forceUpdateStore)
+            .task {
+                await subscriptionStore.observeEntitlementUpdates()
+            }
+            .task {
+                // 起動処理とは並行に走らせ、完了を待たない
+                await remoteConfigSyncUseCase.setupOnLaunch()
+            }
+            .task {
+                await forceUpdateStore.observeConfigUpdates()
+            }
+            .routeResolverInjection()
+            .adComponentResolverInjection()
         }
         .environment(\.appDependencies, dependencies)
     }
@@ -173,10 +178,7 @@ private extension RootView {
         case .active where hasEnteredBackground:
             hasEnteredBackground = false
             Task {
-                await advertisementStore.refresh()
-            }
-            Task {
-                await forceUpdateStore.refresh()
+                await remoteConfigSyncUseCase.refresh()
             }
         default:
             break

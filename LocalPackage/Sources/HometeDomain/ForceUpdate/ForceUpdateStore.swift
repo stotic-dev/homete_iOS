@@ -30,43 +30,8 @@ public final class ForceUpdateStore {
         self.forceUpdateRequirement = forceUpdateRequirement
     }
 
-    /// 起動時に最新の値を取得し、強制アップデートを判定する
-    /// - Note: 起動処理とは並行に走らせ、完了を待たない。取得に失敗・タイムアウトした場合は
-    ///         前回反映済みの値（それも無ければアプリ内デフォルト値）で判定する
-    public func setupOnLaunch() async {
-        // 取得を待たずに、前回の起動までに反映済みの値で先に判定しておく
-        updateForceUpdateRequirement()
-        await fetchAndActivate()
-        updateForceUpdateRequirement()
-    }
-
-    /// フォアグラウンド復帰時に最新の値を取得し、強制アップデートを判定し直す
-    public func refresh() async {
-        await fetchAndActivate()
-        updateForceUpdateRequirement()
-    }
-
-    /// コンソールで公開された変更を受け取り続ける
-    /// - Note: 呼び出し元のTaskがキャンセルされるまで終わらない
-    public func observeConfigUpdates() async {
-        for await _ in remoteConfigClient.configUpdates() {
-            updateForceUpdateRequirement()
-        }
-    }
-
-}
-
-private extension ForceUpdateStore {
-
-    func fetchAndActivate() async {
-        do {
-            try await remoteConfigClient.fetchAndActivate()
-        } catch {
-            print("[ForceUpdateStore] failed to fetch and activate: \(error)")
-        }
-    }
-
-    func updateForceUpdateRequirement() {
+    /// 反映済みの最低バージョンで強制アップデートを判定し直す
+    public func updateRequirement() {
         let minimumRequiredVersion = remoteConfigClient.string(.minimumRequiredVersion)
         if !minimumRequiredVersion.isEmpty, AppVersion(minimumRequiredVersion) == nil {
             // ブロックしない側に倒すため、設定ミスに気づける手がかりだけ残す
@@ -77,6 +42,14 @@ private extension ForceUpdateStore {
             minimumRequiredVersion: minimumRequiredVersion,
             message: remoteConfigClient.string(.forceUpdateMessage)
         )
+    }
+
+    /// コンソールで公開された変更を受け取り続ける
+    /// - Note: 呼び出し元のTaskがキャンセルされるまで終わらない
+    public func observeConfigUpdates() async {
+        for await _ in remoteConfigClient.configUpdates() {
+            updateRequirement()
+        }
     }
 
 }

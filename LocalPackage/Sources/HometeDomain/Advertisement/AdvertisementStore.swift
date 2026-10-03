@@ -27,30 +27,11 @@ public final class AdvertisementStore {
         self.isAdsEnabled = isAdsEnabled
     }
 
-    /// 起動時に最新の値を取得し、起動中の広告表示の有無を確定させる
-    /// - Note: 起動処理とは並行に走らせ、完了を待たない。取得に失敗・タイムアウトした場合は
-    ///         前回反映済みの値（それも無ければアプリ内デフォルト値）で確定させる
-    public func setupOnLaunch() async {
-        await fetchAndActivate()
+    /// 起動時の取得を終えた時点の値で、起動中の広告表示の有無を確定させる
+    /// - Note: 起動時の取得が終わった後（成功・失敗を問わない）に1回だけ呼ぶ。
+    ///         取得に失敗・タイムアウトした場合は前回反映済みの値（それも無ければアプリ内デフォルト値）で確定する
+    public func confirmAdsEnabled() {
         isAdsEnabled = remoteConfigClient.bool(.adsEnabled)
-    }
-
-    /// フォアグラウンド復帰時に最新の値を取得し、次回起動時に使えるようにする
-    /// - Note: 起動中の広告表示の有無（`isAdsEnabled`）は変えない
-    public func refresh() async {
-        await fetchAndActivate()
-    }
-
-}
-
-private extension AdvertisementStore {
-
-    func fetchAndActivate() async {
-        do {
-            try await remoteConfigClient.fetchAndActivate()
-        } catch {
-            print("[AdvertisementStore] failed to fetch and activate: \(error)")
-        }
     }
 
 }
