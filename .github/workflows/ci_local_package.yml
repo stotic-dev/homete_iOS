@@ -64,8 +64,10 @@ jobs:
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         run: npm install -g danger
 
+      # PRのキャッシュは他のPRから読めないため、mainへのpushでもビルドしてmainにキャッシュを残す。
+      # これが無いと、どのPRも初回は必ずキャッシュが無い状態でビルドすることになる
       - name: Cache DangerTools build
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]'
         uses: actions/cache@v4
         with:
           path: DangerTools/.build
@@ -74,7 +76,7 @@ jobs:
             danger-tools-${{ runner.os }}-
 
       - name: Build DangerTools
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]'
         run: swift build --package-path DangerTools --scratch-path DangerTools/.build
 
       - name: Run Danger (Coverage)
