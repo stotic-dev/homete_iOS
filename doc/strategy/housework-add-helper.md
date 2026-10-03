@@ -25,43 +25,47 @@
 
 #### 導線
 
-1. 家事詳細のアクションから「手伝った人を追加」を選ぶと、担当者を選ぶハーフモーダルを開く
+1. 家事詳細のアクション、または家事ボードのクイックアクションから「手伝った人を追加」を選ぶと、担当者を選ぶハーフモーダルを開く
 2. アクションは画面下のボタンではなく、**ナビゲーションバー右側**に出す（下記「アクションの置き場所」）。「手伝った人を追加」は「その他」のメニューに入り、並び順は「もう一度やった」「未完了に戻す」より前。感謝と並ぶ positive な操作なので取り消し系より前に置く
 3. **追加できるメンバーがいないときはメニューに出さない**。該当するのは次のどちらか
    - 同居人グループのメンバーが自分だけ（足せる相手がいない）
    - 人数の上限（`HouseworkExecutorAllocation.maxExecutorCount`）に既に達している
-4. 家事ボードのクイックアクション（長押しメニュー）・複数選択の一括操作には入れない。1件ずつ配分を決める操作なので、`redo`と同じく一括の対象外とする
+4. 家事ボードのクイックアクション（長押しメニュー）にも同じアクションを出す。並び順は詳細と同じく「ありがとう」の次で、「もう一度やった」「未完了に戻す」より前。出す条件も詳細と同じ（3のとおり足せる相手がいるときだけ）
+   - 当初は詳細だけの導線にしていたが、家事ボードから詳細へ入らずに足せるほうが短い。ハーフモーダルで配分を決める点は変わらず、誤操作のリスクも増えない
+   - ホームの今日のサマリー・未完了の家事一覧のクイックアクションは未完了の家事だけを並べるため、この導線は出ない
+5. **複数選択の一括操作には入れない**。1件ずつ配分を決める操作なので、`redo`と同じく一括の対象外とする
+   - 手伝った人を足せるかは家事ごとに変わるが、これを選択可否の判定（`HouseworkSelection`）に混ぜない。足せる家事と足せない家事を一緒に選べなくなってしまうため
 
 #### 担当者の選択と配分
 
-5. ハーフモーダルの中身は「担当者」のチェックリストと「配分を調整する」だけ。頑張り度は変えないので出さない
-6. **既存の担当者は選択済みで、外せない**。チェックを無効にして、未選択のメンバーを足すことだけできる
+6. ハーフモーダルの中身は「担当者」のチェックリストと「配分を調整する」だけ。頑張り度は変えないので出さない
+7. **既存の担当者は選択済みで、外せない**。チェックを無効にして、未選択のメンバーを足すことだけできる
    - 誤って完了者を消すと完了記録の意味が変わるため。外したい場合は「未完了に戻す」で選び直す
-7. **シートを開いた時点の割合は、保存済みの%をそのまま表示する**。開いただけ・保存しただけで配分が変わらないようにする
-8. 人を足した時点で、完了時と同じく全員を**均等割りにし直す**。既存の%は保持しない（追加者の割合の決め方が一意でないため）
-9. 「配分を調整する」は完了時と同じ挙動（2人のときは連動、3人以上は合計100%になるまで確定できない、0ptの担当者は許さない）
-10. **家事の合計ポイント（`earnedPoint`）は変えない**。追加後の担当者でその合計を配り直す
-11. 頑張り度・完了日時・ありがとう・コメント・作成日時は変えない
+8. **シートを開いた時点の割合は、保存済みの%をそのまま表示する**。開いただけ・保存しただけで配分が変わらないようにする
+9. 人を足した時点で、完了時と同じく全員を**均等割りにし直す**。既存の%は保持しない（追加者の割合の決め方が一意でないため）
+10. 「配分を調整する」は完了時と同じ挙動（2人のときは連動、3人以上は合計100%になるまで確定できない、0ptの担当者は許さない）
+11. **家事の合計ポイント（`earnedPoint`）は変えない**。追加後の担当者でその合計を配り直す
+12. 頑張り度・完了日時・ありがとう・コメント・作成日時は変えない
 
 #### 権限
 
-12. 同居人グループの全メンバーが操作できる。完了時の「代わりに記録」と同じ考え方
+13. 同居人グループの全メンバーが操作できる。完了時の「代わりに記録」と同じ考え方
 
 #### 保存と集計
 
-13. `executors`を更新して保存する。`executorId`（旧アプリ向けの1人目）は既存のエンコード仕様どおり1人目の担当者が書かれる
-14. 貢献度（`HouseworkContribution`）とホームの今日のサマリー（`TodayHouseworkSummary`）は`executors[].point`を集計しているため、追加後の配分がそのまま反映される。集計コードの変更は不要（テストで確認する）
-15. 「ありがとう」は`isThankable`が「担当者に自分以外がいるか」で判定しているため、追加によって送れる対象が増える。既存のありがとうの記録はそのまま維持する
+14. `executors`を更新して保存する。`executorId`（旧アプリ向けの1人目）は既存のエンコード仕様どおり1人目の担当者が書かれる
+15. 貢献度（`HouseworkContribution`）とホームの今日のサマリー（`TodayHouseworkSummary`）は`executors[].point`を集計しているため、追加後の配分がそのまま反映される。集計コードの変更は不要（テストで確認する）
+16. 「ありがとう」は`isThankable`が「担当者に自分以外がいるか」で判定しているため、追加によって送れる対象が増える。既存のありがとうの記録はそのまま維持する
 
 #### 通知
 
-16. この操作では同居人へプッシュ通知を送らない。家事のステータスに関わる通知はふりかえり通知だけに絞る方針（ADR-0021）と、追加のたびに通知すると煽りになりやすいため
-17. 追加された人が気付ける手段が必要になったら、追加された人にだけ送る通知を別Issueで検討する
+17. この操作では同居人へプッシュ通知を送らない。家事のステータスに関わる通知はふりかえり通知だけに絞る方針（ADR-0021）と、追加のたびに通知すると煽りになりやすいため
+18. 追加された人が気付ける手段が必要になったら、追加された人にだけ送る通知を別Issueで検討する
 
 #### Analytics
 
-18. `housework`イベントの`action`に`add_helper`を追加する（ADR-0009のとおり、イベント名を増やさずパラメータで区別する）
-19. ハーフモーダルは独立した画面として`screen_view`を送る（`housework_add_helper`）
+19. `housework`イベントの`action`に`add_helper`を追加する（ADR-0009のとおり、イベント名を増やさずパラメータで区別する）。`step`で導線（`detail` / `board`）を区別する
+20. ハーフモーダルは独立した画面として`screen_view`を送る（`housework_add_helper`）
 
 ### 非機能要件 / 制約
 
@@ -135,7 +139,7 @@ public func addHelpers(
 ) async throws
 ```
 
-`updateAndSave`でリスナーが受け取った最新の家事に`updateExecutors`を適用して保存し、成否をAnalyticsに送る。通知は送らない（要件16）。
+`updateAndSave`でリスナーが受け取った最新の家事に`updateExecutors`を適用して保存し、成否をAnalyticsに送る。通知は送らない（要件17）。
 
 ### 4. Analytics
 
@@ -146,7 +150,7 @@ public func addHelpers(
 case addHelper(step: HouseworkAnalyticsStep, isSuccess: Bool)
 ```
 
-`action`は`add_helper`。`step`は`detail`のみ（導線が家事詳細だけのため）。`executor_type`・`effort`・`source`は付けない。
+`action`は`add_helper`。`step`は`detail`（家事詳細）と`board`（家事ボードのクイックアクション）。`executor_type`・`effort`・`source`は付けない。
 
 `LocalPackage/Sources/HometeDomain/AnalyticsLog/AppScreen.swift`（修正）
 
@@ -186,6 +190,24 @@ var canAddHelper: Bool  // 完了済みで、HouseworkExecutorAllocation.canAddE
 let canAddHelper: Bool
 ```
 
+### 7. 家事ボードのクイックアクションからの導線
+
+`HouseworkQuickAction`に`addHelper`を足し、完了済みの家事のメニューに「ありがとう」の次として出す。
+`isAvailableInBulk`は`redo`と同じく`false`にして、一括操作バーには並べない。
+
+足せるかどうかの判定（`HouseworkExecutorAllocation.forAddingExecutors(...).canAddExecutor`）は
+家事詳細と共通なので、`HouseworkBoardItem.canAddHelper(members:)`に切り出して両方から使う。
+
+判定に必要な同居人一覧は`HouseworkBoardListContent`が既に`memberList`として受け取っているため、
+そこで`canAddHelper`を組み立てて`HouseworkQuickActionMenuContent`へ渡す
+（[presentation-logic-placement](../../.claude/rules/presentation-logic-placement.md)）。
+ハーフモーダルは`.contextMenu`の中から出せないので、「完了にする」「ありがとう」と同じく
+`onSelectAddHelper`で家事ボードへ伝え、`HouseworkBoardView`が`.sheet(item:)`で出す。
+
+複数選択の判定（`HouseworkSelection`）では`canAddHelper: false`でアクションを引く。
+手伝った人を足せるかは家事ごとに変わるため、判定に含めると足せる家事と足せない家事を
+一緒に選べなくなってしまう（一括操作には出さないので、含める必要もない）。
+
 ### ファイル配置
 
 | 種別 | パス | 役割 |
@@ -202,6 +224,12 @@ let canAddHelper: Bool
 | 新規View | `Features/HouseworkFeature/Components/HouseworkDetailAction+Presentation.swift` | アクションの文言・アイコン・ロール |
 | 修正View | `Features/HouseworkFeature/HouseworkDetailView/HouseworkDetailView.swift` | アクションの算出、ツールバー、シートの提示とドメイン操作 |
 | 修正共通UI | `HometeUI/Components/Navigation/` | メニューを開くアイコンボタンと、画面固有アイコンを渡せるラベル |
+| 修正Model | `Features/HouseworkFeature/Model/HouseworkBoardItem.swift` | `canAddHelper(members:)`を追加（詳細とクイックアクションで共通利用） |
+| 修正Model | `Features/HouseworkFeature/Model/HouseworkQuickAction.swift` | `addHelper`ケースと出し分けを追加 |
+| 修正Model | `Features/HouseworkFeature/Model/HouseworkSelection.swift` | 選択の判定では手伝った人の追加を見ない |
+| 修正View | `Features/HouseworkFeature/Components/HouseworkQuickAction+Presentation.swift` | 文言・アイコンを追加 |
+| 修正View | `Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | メニューに追加し、選択を呼び出し元へ伝える |
+| 修正View | `Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardView.swift` | ハーフモーダルの提示 |
 | 修正ドキュメント | `doc/analytics_events.md` | `housework`の`action`と`screen_view`の表を更新 |
 | 新規テスト | `LocalPackage/Tests/HometeDomainTests/Housework/...` | 配分・ドメイン更新・Store・貢献度集計 |
 
@@ -225,6 +253,7 @@ let canAddHelper: Bool
 - [x] `HouseworkDetailActionContent`にボタン・表示判断・シートの提示を追加（`#Preview`を追加）
 - [x] アクションをナビゲーションバー右側（単独のアイコンボタン＋「その他」メニュー）にまとめ直す
 - [x] `doc/analytics_events.md`を更新
+- [x] 家事ボードのクイックアクションにも「手伝った人を追加」を出す（`HouseworkBoardItem.canAddHelper(members:)`へ判定を集約）
 
 ### Phase 3: 検証
 
@@ -237,6 +266,7 @@ let canAddHelper: Bool
 - [x] `make build-local-package` / SwiftLint / `make test-packages`（`swift-code-verification`スキル）
 - [x] `make check-previews`
 - [x] 家事詳細のアクションの出し分けのユニットテスト
+- [x] クイックアクションの出し分け・一括操作の対象外・`canAddHelper`判定のユニットテスト
 - [x] `ios-code-reviewer`によるレビューと指摘対応
 - [ ] シミュレータでの簡易E2E確認 → **未実施**。この機能は同居人グループに2人以上いることが前提で、
       E2E用シミュレータのアカウントがグループ未所属のため通せない
