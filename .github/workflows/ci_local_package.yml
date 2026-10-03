@@ -30,15 +30,21 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
+      # workspace-state.json が無いと、SwiftPMは復元したcheckoutsを使わず依存の解決とチェックアウトをやり直す。
+      # xcframeworkなどのバイナリ依存は artifacts に置かれるので、これもキャッシュしないと毎回ダウンロードされる。
+      # workspace-state.json は絶対パスを含むが、ランナーのチェックアウト先は毎回同じなので問題ない。
+      # キャッシュの中身を変えたらキーの v<N> を上げる（同じキーにヒットすると新しい中身が保存されないため）
       - name: Cache LocalPackage
         uses: actions/cache@v4
         with:
           path: |
             LocalPackage/.build/checkouts
             LocalPackage/.build/repositories
-          key: local-package-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.resolved') }}
+            LocalPackage/.build/artifacts
+            LocalPackage/.build/workspace-state.json
+          key: local-package-v2-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.resolved') }}
           restore-keys: |
-            local-package-${{ runner.os }}-
+            local-package-v2-${{ runner.os }}-
 
       # Prefireの生成コードはここではビルドされないため、#Preview のアクセス修飾子ミスは
       # Xcode Cloud の VRT まで検出できない。静的検査で先に落とす。
