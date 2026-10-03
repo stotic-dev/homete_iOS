@@ -14,7 +14,8 @@ public struct ForceUpdateView: View {
     public init() {}
 
     public var body: some View {
-        // この画面は閉じられないため、大きな文字でも本文はスクロールさせ、ボタンは常に押せるよう下端に固定する
+        // この画面は閉じられないため、大きな文字で画面に収まらなくてもボタンまでたどり着けるよう、
+        // ボタンも本文と同じ並びに置いて丸ごとスクロールさせる
         ScrollView {
             VStack(spacing: .space16) {
                 Image(systemName: "arrow.down.app.fill")
@@ -29,24 +30,22 @@ public struct ForceUpdateView: View {
                     .font(with: .body)
                     .foregroundStyle(.onSurfaceVariant)
                     .multilineTextAlignment(.center)
+                Button {
+                    onTapUpdateButton()
+                } label: {
+                    Text("アップデートする")
+                        .padding(.vertical, .space8)
+                        .frame(maxWidth: .infinity)
+                }
+                .subPrimaryButtonStyle()
+                .padding(.top, .space16)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, .space16)
             .padding(.top, .space48)
             .padding(.bottom, .space24)
         }
-        .safeAreaInset(edge: .bottom) {
-            Button {
-                onTapUpdateButton()
-            } label: {
-                Text("アップデートする")
-                    .padding(.vertical, .space8)
-                    .frame(maxWidth: .infinity)
-            }
-            .subPrimaryButtonStyle()
-            .padding(.horizontal, .space16)
-            .padding(.bottom, .space24)
-        }
+        .scrollBounceBehavior(.basedOnSize)
         .trackScreenView(.forceUpdate)
     }
 
