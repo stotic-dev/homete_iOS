@@ -107,7 +107,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
 
     /// 完了済みの家事の担当者を入れ替える（手伝った人の追加）
     ///
-    /// 完了日時・頑張り度・ありがとう・作成日時は変えず、担当者とポイントの配分だけを更新する。
+    /// 完了日時・頑張り度・ありがとう・作成日時・メモは変えず、担当者とポイントの配分だけを更新する。
+    /// メモを引き継がないと、`setData(merge: false)`の上書きでメモが消える更新になり、
+    /// それを拒否するFirestoreルール（`keepsMemo`）に弾かれて保存自体ができない（ADR-0034）。
     /// 完了していない家事は担当者を持たないため、そのまま返す。画面を開いている間に同居人が
     /// 未完了へ戻した場合に、担当者だけが付いた未完了の家事を作らないようにする。
     /// - Parameter executors: 入れ替える担当者。ポイントの合計は入れ替える前の`earnedPoint`と一致させる
@@ -132,7 +134,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
-            createdAt: createdAt
+            createdAt: createdAt,
+            memo: memo
         )
     }
 
