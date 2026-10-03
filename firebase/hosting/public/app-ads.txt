@@ -1,4 +1,1 @@
-# AdMobの広告在庫を認証済みとして扱ってもらうための宣言ファイル。
-# 内容はAdMobコンソール（アプリ → app-ads.txt）に表示される行をそのままコピーする。
-# 設置・更新・反映の手順は doc/app_ads_txt.md を参照。
 google.com, pub-4563879740532985, DIRECT, f08c47fec0942fa0
