@@ -15,6 +15,9 @@ struct HouseworkDetailMemoContent: View {
     let memo: HouseworkMemo?
     /// メモを編集できるか（未完了の家事だけ）
     let isEditable: Bool
+    /// チェックの保存中か。保存中は編集ボタンを押せなくする
+    /// - Note: チェックは見た目を変えないよう非活性にせず、保存中のタップは呼び出し側で無視する
+    var isUpdating = false
     let onTapEdit: () -> Void
     let onToggle: (HouseworkMemoChecklistItem.ID) -> Void
 
@@ -48,6 +51,7 @@ private extension HouseworkDetailMemoContent {
             }
         }
         .font(with: .body)
+        .disabled(isUpdating)
     }
 
 }

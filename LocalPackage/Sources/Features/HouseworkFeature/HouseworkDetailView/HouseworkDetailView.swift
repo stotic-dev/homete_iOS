@@ -75,7 +75,8 @@ private extension HouseworkDetailView {
                 if isMemoVisible {
                     HouseworkDetailMemoContent(
                         memo: item.originalItem.memo.hasContent ? item.originalItem.memo : nil,
-                        isEditable: item.originalItem.canEditMemo && !isSavingMemoCheck,
+                        isEditable: item.originalItem.canEditMemo,
+                        isUpdating: isSavingMemoCheck,
                         onTapEdit: { isPresentedMemoEditSheet = true },
                         onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
                     )
