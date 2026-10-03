@@ -45,9 +45,6 @@ jobs:
       - name: Check Prefire previews
         run: make check-previews
 
-      - name: Build LocalPackage for iOS Simulator
-        run: make build-local-package
-
       - name: Run tests with coverage
         run: make test-packages
 
