@@ -126,7 +126,8 @@ struct HouseworkTemplateDraft: Equatable {
             id: sourceItem.id,
             title: sourceItem.title,
             point: sourceItem.point,
-            updatedAt: now
+            updatedAt: now,
+            memo: sourceItem.memo
         )
         days[destination, default: []].append(added)
     }

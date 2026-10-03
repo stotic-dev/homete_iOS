@@ -27,6 +27,8 @@ public enum PaywallAnalyticsStep: String, Equatable, Sendable {
     case subscriptionManagement = "subscription_management"
     /// いつもの家事の件数上限の案内（上限到達時のアラート・管理画面の「上限を増やす」）
     case frequentHouseworkLimit = "frequent_housework_limit"
+    /// 家事メモの文字数上限の案内（メモの編集画面の「プレミアムプランを見る」）
+    case houseworkMemoLimit = "housework_memo_limit"
 
 }
 

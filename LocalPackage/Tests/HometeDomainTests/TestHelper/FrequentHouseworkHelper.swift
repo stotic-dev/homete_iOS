@@ -15,7 +15,8 @@ extension FrequentHouseworkItem {
         categoryId: String? = nil,
         sortOrder: Int = 0,
         createdAt: Date = .previewDate(year: 2026, month: 9, day: 1),
-        updatedAt: Date = .previewDate(year: 2026, month: 9, day: 1)
+        updatedAt: Date = .previewDate(year: 2026, month: 9, day: 1),
+        memo: HouseworkMemo? = nil
     ) -> Self {
         .init(
             id: id,
@@ -24,7 +25,8 @@ extension FrequentHouseworkItem {
             categoryId: categoryId,
             sortOrder: sortOrder,
             createdAt: createdAt,
-            updatedAt: updatedAt
+            updatedAt: updatedAt,
+            memo: memo
         )
     }
 

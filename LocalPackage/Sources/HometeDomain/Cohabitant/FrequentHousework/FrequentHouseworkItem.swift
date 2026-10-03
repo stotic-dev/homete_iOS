@@ -21,6 +21,8 @@ public struct FrequentHouseworkItem: Identifiable, Codable, Sendable, Equatable,
     public let sortOrder: Int
     public let createdAt: Date
     public let updatedAt: Date
+    /// 家事を追加するときに引き継ぐメモ
+    public let memo: HouseworkMemo?
 
     public init(
         id: String,
@@ -29,7 +31,8 @@ public struct FrequentHouseworkItem: Identifiable, Codable, Sendable, Equatable,
         categoryId: String?,
         sortOrder: Int,
         createdAt: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        memo: HouseworkMemo? = nil
     ) {
         self.id = id
         self.title = title
@@ -38,6 +41,7 @@ public struct FrequentHouseworkItem: Identifiable, Codable, Sendable, Equatable,
         self.sortOrder = sortOrder
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.memo = memo
     }
 
 }

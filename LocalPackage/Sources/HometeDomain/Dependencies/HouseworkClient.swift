@@ -21,6 +21,12 @@ public struct HouseworkClient: Sendable {
         _ thanks: HouseworkThanks,
         _ cohabitantId: String
     ) async throws -> Void
+    /// 家事のメモだけを書き換える（完了など、同時に起きたほかの変更を巻き戻さないため）
+    public let updateMemo: @Sendable (
+        _ houseworkId: String,
+        _ memo: HouseworkMemo,
+        _ cohabitantId: String
+    ) async throws -> Void
     public let snapshotListener: @Sendable (
         _ id: String,
         _ cohabitantId: String,
@@ -59,6 +65,11 @@ public extension HouseworkClient {
             _ thanks: HouseworkThanks,
             _ cohabitantId: String
         ) async throws -> Void = { _, _, _, _ in },
+        updateMemoHandler: @escaping @Sendable (
+            _ houseworkId: String,
+            _ memo: HouseworkMemo,
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _, _ in },
         snapshotListenerHandler: @escaping @Sendable (
             _ id: String,
             _ cohabitantId: String,
@@ -77,6 +88,7 @@ public extension HouseworkClient {
         insertItems = insertItemsHandler
         removeItem = removeItemHandler
         upsertThanks = upsertThanksHandler
+        updateMemo = updateMemoHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler
         fetchItems = fetchItemsHandler
