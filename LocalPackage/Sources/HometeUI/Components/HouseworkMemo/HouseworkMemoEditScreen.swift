@@ -88,6 +88,8 @@ struct HouseworkMemoEditView: View {
 
     @Binding var draft: HouseworkMemoDraft
     @FocusState var focusedField: Field?
+    /// スクロール領域の高さ。中身が短くても、余白のタップで入力を終えられるよう画面いっぱいに広げるのに使う
+    @State var viewportHeight: CGFloat = .zero
 
     let limitPolicy: HouseworkMemoLimitPolicy
     let onTapClose: () -> Void
@@ -111,6 +113,18 @@ struct HouseworkMemoEditView: View {
             }
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
+            .frame(maxWidth: .infinity, minHeight: viewportHeight, alignment: .top)
+            // 入力欄やボタンの外側（余白）をタップしたら入力を終える
+            .background {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { endEditing() }
+            }
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { height in
+            viewportHeight = height
         }
         .scrollDismissesKeyboard(.interactively)
         .navigationTitle("メモ")
@@ -141,38 +155,43 @@ struct HouseworkMemoEditView: View {
 
 private extension HouseworkMemoEditView {
 
-    func textSection() -> some View {
+    /// セクションの見出しと、中身をひとまとまりに見せるカード（家事の登録シートと揃える）
+    /// - Note: 見出しの字下げは、カードの中の文字の位置に揃える
+    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("テキスト")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+            Text(title)
+                .font(with: .boldCaption)
+                .foregroundStyle(.onSurfaceVariant)
+                .padding(.horizontal, .space16)
+            VStack(alignment: .leading, spacing: .space16) {
+                content()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .sectionCardStyle { endEditing() }
+        }
+    }
+
+    func textSection() -> some View {
+        section("テキスト") {
             TextField("買う物や手順などを書いておけます", text: $draft.text, axis: .vertical)
                 .font(with: .body)
                 .lineLimit(3 ... 10)
                 .focused($focusedField, equals: .text)
-                .padding(.space16)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
-                .background {
-                    RoundedRectangle(radius: .radius8)
-                        .fill(.subSurface)
-                }
         }
     }
 
     func checklistSection() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("チェックリスト")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+        section("チェックリスト") {
             ForEach(draft.checklist) { item in
                 checklistItemRow(item)
+                Divider()
             }
             Button {
                 onTapAddItem()
             } label: {
                 Label("項目を追加", systemImage: "plus")
                     .font(with: .body)
-                    .padding(.vertical, .space8)
             }
             .disabled(!draft.canAddItem)
         }
@@ -190,19 +209,15 @@ private extension HouseworkMemoEditView {
                 .onSubmit {
                     onTapAddItem()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             Button {
                 draft.removeItem(id: item.id)
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.onSurfaceVariant)
             }
+            .buttonStyle(.borderless)
             .accessibilityLabel(deleteAccessibilityLabel(item))
-        }
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space8)
-        .background {
-            RoundedRectangle(radius: .radius8)
-                .fill(.subSurface)
         }
     }
 
@@ -246,6 +261,10 @@ private extension HouseworkMemoEditView {
     func deleteAccessibilityLabel(_ item: HouseworkMemoDraft.Item) -> String {
         let title = item.title.trimmingCharacters(in: .whitespaces)
         return title.isEmpty ? "項目を削除" : "「\(title)」を削除"
+    }
+
+    func endEditing() {
+        focusedField = nil
     }
 
     func titleBinding(of id: HouseworkMemoDraft.Item.ID) -> Binding<String> {
