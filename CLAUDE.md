@@ -17,7 +17,8 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 
 ```bash
 # LocalPackageのユニットテスト（最も使う。xcodebuildは使わない）
-make test-packages
+# FILTER=<テストターゲット/Suite名>で絞れる。カバレッジ付きの make test-packages はCI用
+make test-packages-fast
 
 # LocalPackageをiOSシミュレーター向けにビルド
 make build-local-package
@@ -211,7 +212,7 @@ launching → notLoggedIn → Sign In with Apple
 
 **ユニットテスト** (`LocalPackage/Tests/`):
 - テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`
-- 実行: `make test-packages`（`swift test`。xcodebuildは使わない）
+- 実行: `make test-packages-fast`（`swift test`。xcodebuildは使わない）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
 - Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記4ターゲットを含む）
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
 

@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages check-previews setup-project install-hooks format
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format
 
 .DEFAULT_GOAL := setup-project
 
@@ -27,6 +27,10 @@ build-local-package: ## LocalPackageをiOSシミュレーター向けにビル�
 test-packages: ## LocalPackageのテストを実行（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
+
+test-packages-fast: ## カバレッジなしでLocalPackageのテストを実行。FILTER=<テストターゲット/Suite名>で絞り込める（例: make test-packages-fast FILTER=HouseworkFeatureTests）
+	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
+		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox $(if $(FILTER),--filter '$(FILTER)')
 
 check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
 	python3 scripts/check-prefire-previews.py
