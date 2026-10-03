@@ -14,6 +14,7 @@ enum HouseworkBoardItemTest {
 
     struct CanSendThanksCase {}
     struct CanEditThanksCase {}
+    struct CanAddHelperCase {}
     struct PointCase {}
 
 }
@@ -202,6 +203,107 @@ extension HouseworkBoardItemTest.PointCase {
 
         // Assert
         #expect(result == 15)
+    }
+
+}
+
+// MARK: - CanAddHelperCase
+
+extension HouseworkBoardItemTest.CanAddHelperCase {
+
+    /// 2人の同居人グループ
+    static let members = CohabitantMemberList(
+        value: [
+            .init(id: "ownUserId", userName: "たろう"),
+            .init(id: "otherUserId", userName: "はなこ"),
+        ],
+        ownId: "ownUserId"
+    )
+
+    @Test("完了済みで、まだ担当者になっていないメンバーがいれば、手伝った人を足せる")
+    func canAddHelper_completedWithUnselectedMember_returnsTrue() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 10,
+            state: .completed,
+            executorId: "ownUserId"
+        )
+
+        // Act
+        let result = item.canAddHelper(members: Self.members)
+
+        // Assert
+        #expect(result == true)
+    }
+
+    @Test(
+        "完了していない家事には、手伝った人を足せない",
+        arguments: [HouseworkState.incomplete, .notTodo]
+    )
+    func canAddHelper_notCompletedState_returnsFalse(state: HouseworkState) {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(id: "1", point: 10, state: state)
+
+        // Act
+        let result = item.canAddHelper(members: Self.members)
+
+        // Assert
+        #expect(result == false)
+    }
+
+    @Test("メンバー全員がすでに担当者なら、手伝った人を足せない")
+    func canAddHelper_allMembersAreExecutors_returnsFalse() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 10,
+            state: .completed,
+            executors: [
+                .init(userId: "ownUserId", percentage: 50, point: 5),
+                .init(userId: "otherUserId", percentage: 50, point: 5),
+            ]
+        )
+
+        // Act
+        let result = item.canAddHelper(members: Self.members)
+
+        // Assert
+        #expect(result == false)
+    }
+
+    @Test("家事のポイントが1ptで人数の上限に達している場合、手伝った人を足せない")
+    func canAddHelper_reachedMaxExecutorCount_returnsFalse() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 1,
+            state: .completed,
+            executorId: "ownUserId"
+        )
+
+        // Act
+        let result = item.canAddHelper(members: Self.members)
+
+        // Assert
+        #expect(result == false)
+    }
+
+    @Test("メンバー一覧に居ない担当者（アカウントを削除した同居人）がいる家事には、手伝った人を足せない")
+    func canAddHelper_executorIsNotMember_returnsFalse() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            point: 10,
+            state: .completed,
+            executorId: "deletedUserId"
+        )
+
+        // Act
+        let result = item.canAddHelper(members: Self.members)
+
+        // Assert
+        #expect(result == false)
     }
 
 }

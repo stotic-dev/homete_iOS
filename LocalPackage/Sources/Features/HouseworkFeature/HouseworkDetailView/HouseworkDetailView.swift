@@ -98,18 +98,8 @@ private extension HouseworkDetailView {
     }
 
     /// 手伝った人を足せるかどうか
-    ///
-    /// 完了済みで、まだ担当者になっていないメンバーがいて、人数の上限にも達していないときだけ足せる。
-    /// 足せないときは「手伝った人を追加」の導線を出さない。
     var canAddHelper: Bool {
-        guard item.state == .completed else { return false }
-
-        return HouseworkExecutorAllocation.forAddingExecutors(
-            memberIds: cohabitantStore.members.value.map(\.id),
-            executors: item.executors,
-            earnedPoint: item.earnedPoint
-        )
-        .canAddExecutor
+        item.canAddHelper(members: cohabitantStore.members)
     }
 
     func tappedAction(_ action: HouseworkDetailAction) {
