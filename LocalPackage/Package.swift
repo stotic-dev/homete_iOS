@@ -26,7 +26,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.4.1"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
@@ -34,6 +34,7 @@ let package = Package(
             from: "3.0.0"
         ),
         .package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", from: "5.81.2"),
+        .package(url: "https://github.com/groue/GRDB.swift", from: "7.0.0"),
     ],
     targets: [
 
@@ -112,7 +113,8 @@ let package = Package(
                     condition: .when(platforms: [.iOS])
                 ),
                 .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
-                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS]))
+                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
+                .product(name: "GRDB", package: "GRDB.swift")
             ],
             plugins: [swiftLintPlugin()]
         ),
