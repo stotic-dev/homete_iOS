@@ -68,6 +68,7 @@ private extension HouseworkTemplateItemEditModalScreen {
 struct HouseworkTemplateItemEditModal: View {
 
     @Environment(\.dismiss) var dismiss
+    @State var isPresentedMemoEditSheet = false
 
     @Binding var input: TemplateItemEditInput
     @FocusState var isShowingKeyboard: Bool
@@ -80,6 +81,9 @@ struct HouseworkTemplateItemEditModal: View {
             inputTitleField()
             inputPointPicker()
             inputRecurrenceSelector()
+            HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
+                isPresentedMemoEditSheet = true
+            }
             Spacer()
         }
         .padding(.horizontal, .space16)
@@ -93,6 +97,12 @@ struct HouseworkTemplateItemEditModal: View {
         }
         .trailingToolbarItem {
             trailingNavigationItem()
+        }
+        .sheet(isPresented: $isPresentedMemoEditSheet) {
+            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
+            HouseworkMemoEditScreen(memo: input.memo) { memo in
+                input.memo = memo
+            }
         }
         .trackScreenView(.houseworkTemplateEdit)
     }

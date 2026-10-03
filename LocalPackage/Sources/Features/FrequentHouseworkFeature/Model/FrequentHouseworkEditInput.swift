@@ -12,14 +12,17 @@ struct FrequentHouseworkEditInput: Equatable {
     var point: Int
     /// カテゴリID。「その他（未設定）」は`nil`
     var categoryId: String?
+    /// 家事を追加するときに引き継ぐメモ。書いていなければ`nil`
+    var memo: HouseworkMemo?
 
     /// 新規追加時の初期値（家事登録シートと同じく10ポイント）
     static let initial = FrequentHouseworkEditInput(title: "", point: 10, categoryId: nil)
 
-    init(title: String, point: Int, categoryId: String?) {
+    init(title: String, point: Int, categoryId: String?, memo: HouseworkMemo? = nil) {
         self.title = title
         self.point = point
         self.categoryId = categoryId
+        self.memo = memo
     }
 
     /// 編集する家事の内容から作る
@@ -28,7 +31,8 @@ struct FrequentHouseworkEditInput: Equatable {
         self.init(
             title: item.title,
             point: item.point,
-            categoryId: context.category(of: item).categoryId
+            categoryId: context.category(of: item).categoryId,
+            memo: item.memo
         )
     }
 
@@ -44,7 +48,7 @@ struct FrequentHouseworkEditInput: Equatable {
     }
 
     var domainInput: FrequentHouseworkInput {
-        .init(title: title, point: point, categoryId: categoryId)
+        .init(title: title, point: point, categoryId: categoryId, memo: memo)
     }
 
 }

@@ -158,7 +158,8 @@ struct HouseworkTemplateListStoreTest {
                 monthlyItems: [],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
-                currentVersion: inputCurrentVersion
+                currentVersion: inputCurrentVersion,
+                memoLimitPolicy: .free
             )
 
             // Assert
@@ -192,7 +193,8 @@ struct HouseworkTemplateListStoreTest {
             monthlyItems: [],
             templateId: Self.inputTemplateId,
             cohabitantId: Self.inputCohabitantId,
-            currentVersion: 0
+            currentVersion: 0,
+            memoLimitPolicy: .free
         )
 
         // Assert
@@ -233,7 +235,8 @@ struct HouseworkTemplateListStoreTest {
                 monthlyItems: [],
                 templateId: Self.inputTemplateId,
                 cohabitantId: Self.inputCohabitantId,
-                currentVersion: 0
+                currentVersion: 0,
+                memoLimitPolicy: .free
             )
         }
         #expect(store.selectedDays == initialDays)

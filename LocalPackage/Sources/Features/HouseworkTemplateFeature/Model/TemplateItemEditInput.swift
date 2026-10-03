@@ -16,6 +16,8 @@ struct TemplateItemEditInput: Equatable {
     /// `nil`はポイント未選択を表す。
     var point: Int?
     var recurrence: HouseworkRecurrenceInput
+    /// テンプレートから作る家事に引き継ぐメモ。書いていなければ`nil`
+    var memo: HouseworkMemo?
 
     static func initial(_ id: UUID) -> Self {
         TemplateItemEditInput(
@@ -49,7 +51,8 @@ struct TemplateItemEditInput: Equatable {
             id: itemId,
             title: title,
             point: point ?? 0,
-            updatedAt: now
+            updatedAt: now,
+            memo: memo
         )
     }
 
@@ -63,6 +66,7 @@ private extension TemplateItemEditInput {
         title != before.title
             || point != before.point
             || recurrence.recurrence != before.recurrence.recurrence
+            || memo != before.memo
     }
 
 }
@@ -74,7 +78,8 @@ extension TemplateItemEditInput {
             itemId: item.id,
             title: item.title,
             point: item.point,
-            recurrence: .init(recurrence: recurrence)
+            recurrence: .init(recurrence: recurrence),
+            memo: item.memo
         )
     }
 

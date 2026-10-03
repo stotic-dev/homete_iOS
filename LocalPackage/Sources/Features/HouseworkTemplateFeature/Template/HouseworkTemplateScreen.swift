@@ -46,6 +46,7 @@ public struct HouseworkTemplateScreen: View {
                     isPremium: subscriptionStore.isPremium,
                     isEnabled: isAdsEnabled
                 ),
+                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
                 loadFailure: loadFailure,
                 onTapRemoveAdsLink: { tappedRemoveAdsLink() },
                 onRetry: { await retry() }

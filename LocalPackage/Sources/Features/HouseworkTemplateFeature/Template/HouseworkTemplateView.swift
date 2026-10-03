@@ -36,6 +36,8 @@ struct HouseworkTemplateView: View {
     @Binding var editorContext: TemplateEditorContext
 
     let isShowAd: Bool
+    /// メモの上限の判定に使う、操作している本人のプラン
+    let memoLimitPolicy: HouseworkMemoLimitPolicy
     /// テンプレートの取得・購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
     let onTapRemoveAdsLink: () -> Void
@@ -427,7 +429,8 @@ private extension HouseworkTemplateView {
                 monthlyItems: draft.monthlyItems,
                 templateId: templateId,
                 cohabitantId: cohabitantId,
-                currentVersion: editorContext.currentTemplateVersion
+                currentVersion: editorContext.currentTemplateVersion,
+                memoLimitPolicy: memoLimitPolicy
             )
             // 保存が完了したら比較元のテンプレート情報を更新後の値に変更する(コンフリクト検知に引っかからないため)
             editorContext = editorContext.applyEditors(editorContext.currentTemplateVersion + 1)
@@ -556,6 +559,7 @@ private extension HouseworkTemplateView {
         draft: .constant(.init(days: templateData, monthlyItems: monthlyItems)),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
         isShowAd: true,
+        memoLimitPolicy: .free,
         loadFailure: nil,
         onTapRemoveAdsLink: {},
         onRetry: {}
@@ -596,6 +600,7 @@ private extension HouseworkTemplateView {
             currentTemplateVersion: .zero
         )),
         isShowAd: true,
+        memoLimitPolicy: .free,
         loadFailure: nil,
         onTapRemoveAdsLink: {},
         onRetry: {}
@@ -620,6 +625,7 @@ private extension HouseworkTemplateView {
         draft: .constant(.init()),
         editorContext: .constant(.init(currentActiveEditors: [], currentTemplateVersion: .zero)),
         isShowAd: true,
+        memoLimitPolicy: .free,
         loadFailure: .noNetwork,
         onTapRemoveAdsLink: {},
         onRetry: {}

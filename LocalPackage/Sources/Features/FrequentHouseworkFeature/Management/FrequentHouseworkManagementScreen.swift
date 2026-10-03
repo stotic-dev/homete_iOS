@@ -107,6 +107,10 @@ private extension FrequentHouseworkManagementScreen {
         .init(isPremium: subscriptionStore.isPremium)
     }
 
+    var memoLimitPolicy: HouseworkMemoLimitPolicy {
+        .init(isPremium: subscriptionStore.isPremium)
+    }
+
     var limitStatus: FrequentHouseworkLimitStatus? {
         .init(policy: limitPolicy, count: context.items.count)
     }
@@ -143,6 +147,7 @@ private extension FrequentHouseworkManagementScreen {
                     try await store.add(
                         [input.domainInput],
                         limitPolicy: limitPolicy,
+                        memoLimitPolicy: memoLimitPolicy,
                         step: .management,
                         cohabitantId: cohabitantId
                     )
@@ -151,6 +156,7 @@ private extension FrequentHouseworkManagementScreen {
                     try await store.update(
                         itemId: item.id,
                         input: input.domainInput,
+                        memoLimitPolicy: memoLimitPolicy,
                         cohabitantId: cohabitantId
                     )
                 }
