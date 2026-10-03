@@ -49,9 +49,15 @@ public final actor HouseworkManager {
     ///
     /// - Note: Firestoreリスナーのエラーで購読が止まっても再購読（`setupObserver`の再呼び出し）で
     ///         復帰できるよう、失敗時もストリームは`finish`せず`Result.failure`を流すだけに留める。
+    /// - Note: Storeは初期化時の`Task`から購読するため、`setupObserver`の初回フェッチ通知より後に
+    ///         購読が届くことがある。取りこぼして画面が空のままにならないよう、初回フェッチ済みなら
+    ///         その時点の`allItems`を購読直後に流す。
     public func createObserver(_ key: String) -> AsyncStream<Result<[HouseworkItem], DomainError>> {
         let (stream, continuation) = AsyncStream<Result<[HouseworkItem], DomainError>>.makeStream()
         streamContinuationDic.updateValue(continuation, forKey: key)
+        if fetchedRange != nil {
+            continuation.yield(.success(allItems))
+        }
         return stream
     }
 

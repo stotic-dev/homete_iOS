@@ -70,6 +70,44 @@ struct HouseworkManagerTest {
         #expect(receivedItems.contains(where: { $0.id == fetchedItem.id }))
     }
 
+    @Test("初回フェッチ後に購読したオブザーバーには、その時点のallItemsが通知される")
+    func createObserverAfterSetup_receivesCurrentItems() async {
+        // Arrange
+
+        let now = Date()
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [fetchedItem] }
+            )
+        )
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        let observerStream = await manager.createObserver("testKey")
+
+        // Assert
+
+        var receivedItems: [HouseworkItem] = []
+        for await result in observerStream {
+            if case let .success(items) = result {
+                receivedItems = items
+            }
+            break
+        }
+
+        #expect(receivedItems == [fetchedItem])
+    }
+
     @Test("リアルタイムリスナーの更新がallItemsにupsertマージされオブザーバーに通知される")
     func streamUpdateIsUpserted() async {
         // Arrange
