@@ -80,24 +80,28 @@ EOF
 - `mentenance` - メンテナンスリクエスト
 
 **追加ラベル:**
-- **対象領域**: `UI`, `backend`, `test`
-- **優先度**: `P0`（高）, `P1`（中）, `P2`（低）
+- **対象領域**: `UI`, `backend`（未作成）, `test`（未作成）
+- **優先度**: `P0`（高・未作成）, `P1`（中・未作成）, `P2`（低）
 
 **複数ラベルの指定:**
 ```bash
 --label "enhancement,UI,P1"
 ```
 
+**未作成ラベルに注意:** `gh issue create` はリポジトリに存在しないラベルを渡すと `'xxx' not found` で失敗し、Issueが作られない。上で「未作成」と書いたものを使う場合は、先にラベルを作るか、そのラベルを外して起票すること。現在のラベル一覧は `gh label list` で確認できる。
+
 ### 5. GitHub Projectへの追加
 
-Issue作成後、必ずGitHub Project（stotic-dev/projects/2）にTodoとして追加する：
+Issue作成後、必ずGitHub Project #4「homeau」（stotic-dev/projects/4）に `Backlog` として追加する。
+
+> Project #2「hometeのv1.0.0開発」はクローズ済み。クローズしたProjectに入れてもボードに出てこないため、追加先を間違えないこと。
 
 ```bash
 # 1. IssueをProjectに追加
-gh project item-add 2 --owner stotic-dev --url https://github.com/stotic-dev/homete_iOS/issues/XX
+gh project item-add 4 --owner stotic-dev --url https://github.com/stotic-dev/homete_iOS/issues/XX
 
 # 2. 追加されたアイテムのIDを取得
-ITEM_ID=$(gh project item-list 2 --owner stotic-dev --format json | python3 -c "
+ITEM_ID=$(gh project item-list 4 --owner stotic-dev --format json | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 for item in data.get('items', []):
@@ -106,29 +110,31 @@ for item in data.get('items', []):
         break
 ")
 
-# 3. ProjectのIDを取得
-PROJECT_ID=$(gh project list --owner stotic-dev --format json | python3 -c "
-import json, sys
-[print(p['id']) for p in json.load(sys.stdin)['projects'] if p['number']==2]
-")
-
-# 4. ステータスをTodoに設定
-gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
-  --field-id "PVTSSF_lAHOBvNiZc4A3Tsrzgsd3-I" \
+# 3. ステータスをBacklogに設定
+gh project item-edit --project-id "PVT_kwHOBvNiZc4BkuWe" --id "$ITEM_ID" \
+  --field-id "PVTSSF_lAHOBvNiZc4BkuWezhjd7_s" \
   --single-select-option-id "f75ad846"
+
+# 4. 優先度を設定（例: P2）
+gh project item-edit --project-id "PVT_kwHOBvNiZc4BkuWe" --id "$ITEM_ID" \
+  --field-id "PVTSSF_lAHOBvNiZc4BkuWezhjd8LU" \
+  --single-select-option-id "da944a9c"
 ```
 
-**Project フィールドID参照:**
-- Status field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd3-I`
-  - Todo: `f75ad846`
-  - In Progress: `47fc9ee4`
+**Project フィールドID参照**（Project #4「homeau」 / Project ID: `PVT_kwHOBvNiZc4BkuWe`）:
+- Status field: `PVTSSF_lAHOBvNiZc4BkuWezhjd7_s`
+  - Backlog: `f75ad846`
+  - Ready: `61e4505c`
+  - In progress: `47fc9ee4`
   - Done: `98236657`
-- Priority field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd4Io`
-  - P0: `dd8406d5`
-  - P1: `9214bf1b`
-  - P2: `29f5b4c6`
-- Size field: `PVTSSF_lAHOBvNiZc4A3Tsrzgsd4Is`
-  - XS: `17bc645d`, S: `e9152bb0`, M: `1df61cad`, L: `6cec2fd3`, XL: `ae9ee069`
+- Priority field: `PVTSSF_lAHOBvNiZc4BkuWezhjd8LU`
+  - P0: `79628723`
+  - P1: `0a877460`
+  - P2: `da944a9c`
+- Size field: `PVTSSF_lAHOBvNiZc4BkuWezhjd8LY`
+  - XS: `6c6483d2`, S: `f784b110`, M: `7515a9f1`, L: `817d0097`, XL: `db339eb2`
+
+ProjectやフィールドのIDは作り直すと変わる。`item-add` / `item-edit` が `not found` 系のエラーで落ちたら、IDを再取得してこの節を更新すること。
 
 ### 6. オプション設定
 
@@ -149,7 +155,7 @@ Issue #XXを作成しました！
 タイトル: [タイトル]
 URL: https://github.com/stotic-dev/homete_iOS/issues/XX
 ラベル: [ラベル一覧]
-Project: Todo として追加済み
+Project: #4「homeau」に Backlog として追加済み
 
 このIssueの実装を開始する場合は、/issue-start XX コマンドを実行してください。
 ```
