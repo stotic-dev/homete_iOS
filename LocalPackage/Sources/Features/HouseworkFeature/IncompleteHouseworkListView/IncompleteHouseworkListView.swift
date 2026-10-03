@@ -63,9 +63,11 @@ private extension IncompleteHouseworkListView {
                             HouseworkQuickActionMenuContent(
                                 item: item,
                                 step: .dashboard,
+                                // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
+                                canAddHelper: false,
                                 onSelectComplete: { completingItem = item },
-                                // 未完了の家事だけを並べるため、ありがとうは選ばれない
                                 onSelectThanks: {},
+                                onSelectAddHelper: {},
                                 onError: { commonError = .init(error: $0) }
                             )
                         }

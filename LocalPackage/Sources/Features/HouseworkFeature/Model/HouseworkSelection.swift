@@ -74,8 +74,12 @@ struct HouseworkSelection: Equatable {
 
 private extension HouseworkSelection {
 
+    /// 選択の判定に使うアクション
+    ///
+    /// 手伝った人の追加は家事ごとに足せるかどうかが変わるが、1件ずつ行う操作で一括操作には出さないため、
+    /// 判定には含めない（含めると、足せる家事と足せない家事を一緒に選べなくなってしまう）。
     func actions(for item: HouseworkBoardItem) -> [HouseworkQuickAction] {
-        HouseworkQuickAction.actions(for: item, ownUserId: ownUserId)
+        HouseworkQuickAction.actions(for: item, ownUserId: ownUserId, canAddHelper: false)
     }
 
 }

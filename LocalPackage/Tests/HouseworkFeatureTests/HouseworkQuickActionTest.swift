@@ -12,6 +12,7 @@ enum HouseworkQuickActionTest {
 
     struct ActionsForItemCase {}
     struct ActionsForStateCase {}
+    struct IsAvailableInBulkCase {}
 
 }
 
@@ -25,7 +26,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Act
 
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: false)
 
         // Assert
 
@@ -44,7 +45,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Act
 
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: false)
 
         // Assert
 
@@ -64,7 +65,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Act
 
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: false)
 
         // Assert
 
@@ -83,11 +84,64 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Act
 
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: false)
 
         // Assert
 
         #expect(actual == [.redo, .returnToIncomplete])
+    }
+
+    @Test("完了済みで手伝った人を足せる家事は、ありがとうの次に手伝った人を追加を出す")
+    func actions_completedAndCanAddHelper_returnsAddHelperAfterSendThanks() {
+        // Arrange
+
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            state: .completed,
+            executorId: "otherUserId"
+        )
+
+        // Act
+
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: true)
+
+        // Assert
+
+        #expect(actual == [.sendThanks, .addHelper, .redo, .returnToIncomplete])
+    }
+
+    @Test("完了済みで自分が実施した家事でも、手伝った人を足せるなら手伝った人を追加を出す")
+    func actions_completedByOwnUserAndCanAddHelper_returnsAddHelper() {
+        // Arrange
+
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            state: .completed,
+            executorId: "ownUserId"
+        )
+
+        // Act
+
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: true)
+
+        // Assert
+
+        #expect(actual == [.addHelper, .redo, .returnToIncomplete])
+    }
+
+    @Test("未完了の家事には、手伝った人を足せる状態でも手伝った人を追加を出さない")
+    func actions_incompleteAndCanAddHelper_hasNoAddHelper() {
+        // Arrange
+
+        let item = HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete)
+
+        // Act
+
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: true)
+
+        // Assert
+
+        #expect(actual == [.complete, .remove])
     }
 
     @Test("やらない扱いの家事はクイックアクションを行えない")
@@ -98,7 +152,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 
         // Act
 
-        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId")
+        let actual = HouseworkQuickAction.actions(for: item, ownUserId: "ownUserId", canAddHelper: false)
 
         // Assert
 
@@ -121,6 +175,31 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
         // Act
 
         let actual = HouseworkQuickAction.actions(for: state)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+}
+
+extension HouseworkQuickActionTest.IsAvailableInBulkCase {
+
+    @Test(
+        "1件ずつ入力を決めるアクションは、複数選択の一括操作で行えない",
+        arguments: [
+            (HouseworkQuickAction.complete, true),
+            (.remove, true),
+            (.sendThanks, true),
+            (.addHelper, false),
+            (.redo, false),
+            (.returnToIncomplete, true),
+        ]
+    )
+    func isAvailableInBulk(action: HouseworkQuickAction, expected: Bool) {
+        // Act
+
+        let actual = action.isAvailableInBulk
 
         // Assert
 

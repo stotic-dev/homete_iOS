@@ -20,6 +20,8 @@ extension HouseworkQuickAction {
             "やらない"
         case .sendThanks:
             "ありがとう"
+        case .addHelper:
+            "手伝った人を追加"
         case .redo:
             "もう一度やった"
         case .returnToIncomplete:
@@ -36,6 +38,8 @@ extension HouseworkQuickAction {
             "trash"
         case .sendThanks:
             "heart"
+        case .addHelper:
+            "person.badge.plus"
         case .redo:
             "arrow.clockwise"
         case .returnToIncomplete:
@@ -47,7 +51,7 @@ extension HouseworkQuickAction {
         switch self {
         case .remove:
             .destructive
-        case .complete, .sendThanks, .redo, .returnToIncomplete:
+        case .complete, .sendThanks, .addHelper, .redo, .returnToIncomplete:
             nil
         }
     }
