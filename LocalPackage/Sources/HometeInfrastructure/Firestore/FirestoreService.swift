@@ -3,6 +3,7 @@
 //
 
 import FirebaseFirestore
+import HometeDomain
 
 public final actor FirestoreService {
 
@@ -15,6 +16,23 @@ public final actor FirestoreService {
             .getDocuments()
             .documents
             .map { try $0.data(as: T.self) }
+    }
+
+    /// クエリに一致するドキュメントを1件ずつデコードし、デコードできないものは飛ばして返す
+    ///
+    /// `fetch`は1件でもデコードに失敗すると全体が失敗する。別バージョンのアプリが書いた形式の違うドキュメントや
+    /// 壊れたドキュメントが混ざっても、ほかのドキュメントまで読めなくならないようにしたいときに使う。
+    /// SnapshotListener（`addSnapshotListener`）と同じ扱いにそろえる。
+    public func fetchSkippingUndecodable<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
+        try await predicate(firestore)
+            .getDocuments()
+            .documents
+            .compactMapSkippingFailures(
+                transform: { try $0.data(as: T.self) },
+                onFailure: { document, error in
+                    print("skipped undecodable document(path: \(document.reference.path)): \(error)")
+                }
+            )
     }
 
     public func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
