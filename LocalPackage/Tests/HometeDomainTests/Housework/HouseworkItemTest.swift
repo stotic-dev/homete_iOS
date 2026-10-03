@@ -13,6 +13,7 @@ import Testing
 enum HouseworkItemTest {
 
     struct UpdateStateCase {}
+    struct UpdateExecutorsCase {}
     struct ThanksCase {}
     struct CodableCase {}
     struct MemoCase {}
@@ -620,6 +621,81 @@ extension HouseworkItemTest.CodableCase {
             createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
         #expect(actual == expected)
+    }
+
+}
+
+// MARK: - UpdateExecutorsCase
+
+extension HouseworkItemTest.UpdateExecutorsCase {
+
+    @Test("完了済みの家事の担当者を入れ替えても、完了日時・頑張り度・ありがとうは変わらない")
+    func updateExecutors_completedItem_keepsCompletionRecord() {
+        // Arrange
+        let indexedDate = Date()
+        let expiredAt = Date().addingTimeInterval(3600)
+        let executedAt = Date()
+        let thanks = ["userB": HouseworkThanks(comment: "ありがとう", sentAt: Date())]
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: indexedDate,
+            title: "洗濯",
+            point: 100,
+            state: .completed,
+            executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 120)],
+            effort: .hard,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            thanks: thanks,
+            createdAt: executedAt
+        )
+        let executors = [
+            HouseworkExecutor(userId: "userA", percentage: 50, point: 60),
+            HouseworkExecutor(userId: "userB", percentage: 50, point: 60),
+        ]
+
+        // Act
+        let result = item.updateExecutors(executors)
+
+        // Assert
+        let expected = HouseworkItem(
+            id: "id1",
+            indexedDate: .init(value: indexedDate),
+            title: "洗濯",
+            point: 100,
+            state: .completed,
+            executors: [
+                HouseworkExecutor(userId: "userA", percentage: 50, point: 60),
+                HouseworkExecutor(userId: "userB", percentage: 50, point: 60),
+            ],
+            effort: .hard,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: nil,
+            thanks: thanks,
+            createdAt: executedAt
+        )
+        #expect(result == expected)
+    }
+
+    @Test(
+        "完了していない家事の担当者は入れ替えない",
+        arguments: [HouseworkState.incomplete, .notTodo]
+    )
+    func updateExecutors_notCompletedItem_returnsSelf(state: HouseworkState) {
+        // Arrange
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            title: "洗濯",
+            point: 100,
+            state: state
+        )
+
+        // Act
+        let result = item.updateExecutors([.solo(userId: "userA", point: 100)])
+
+        // Assert
+        #expect(result == item)
     }
 
 }

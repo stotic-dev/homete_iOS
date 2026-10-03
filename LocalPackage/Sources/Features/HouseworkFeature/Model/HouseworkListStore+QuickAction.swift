@@ -74,6 +74,11 @@ extension HouseworkListStore {
                 cohabitantId: cohabitantId,
                 step: step
             )
+
+        case .addHelper:
+            // 担当者とポイントの配分をハーフモーダルで決めてから`addHelpers`を呼ぶアクションなので、
+            // 入力なしで実行できるこの経路では何もしない（一括操作の対象にもしていない）
+            break
         }
     }
 

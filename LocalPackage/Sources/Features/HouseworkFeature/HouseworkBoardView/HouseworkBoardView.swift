@@ -37,6 +37,8 @@ struct HouseworkBoardView: View {
     @State var completingItem: HouseworkBoardItem?
     /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
     @State var thankingItem: HouseworkBoardItem?
+    /// クイックアクションの「手伝った人を追加」で、担当者を選ぶハーフモーダルを出している家事
+    @State var addingHelperItem: HouseworkBoardItem?
 
     @LoadingState var loadingState
     @CommonError var commonError
@@ -101,6 +103,9 @@ struct HouseworkBoardView: View {
         }
         .sheet(item: $thankingItem) { item in
             HouseworkThanksView(item: item)
+        }
+        .sheet(item: $addingHelperItem) { item in
+            HouseworkAddHelperSheet(item: item, step: .board)
         }
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
@@ -167,7 +172,8 @@ private extension HouseworkBoardView {
                             selectedIDs: $selectedHouseworkIDs,
                             onCreateTapped: { isPresentingAddHouseworkView = true },
                             onSelectComplete: { completingItem = $0 },
-                            onSelectThanks: { thankingItem = $0 }
+                            onSelectThanks: { thankingItem = $0 },
+                            onSelectAddHelper: { addingHelperItem = $0 }
                         )
                         .tag(state)
                     }

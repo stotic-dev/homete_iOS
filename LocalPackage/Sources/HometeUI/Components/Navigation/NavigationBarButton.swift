@@ -25,6 +25,7 @@ public struct NavigationBarButton: View {
                 .padding(.space8)
                 .foregroundStyle(.onSurface)
         }
+        .accessibilityLabel(label.accessibilityLabel)
     }
 
 }
