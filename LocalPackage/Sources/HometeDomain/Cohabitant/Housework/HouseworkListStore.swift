@@ -214,13 +214,16 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep
     ) async throws {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する。
+        // 書き込みにも同じ記録を使い、判断と書き込みの間に一覧が入れ替わっても食い違わないようにする
+        let current = items.item(target) ?? target
         // 画面を開いている間に未完了へ戻された家事は担当者を持たない仕様なので、何もしない
-        guard (items.item(target) ?? target).state == .completed else { return }
+        guard current.state == .completed else { return }
+        // 配分は画面を開いた時点の合計ポイントで組み立てているため、その間に同居人が完了をやり直して
+        // 合計が変わっていたら書き込まない。合わない配分で上書きすると家事の合計ポイントが増減する
+        guard executors.reduce(0) { $0 + $1.point } == current.earnedPoint else { return }
 
         do {
-            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                $0.updateExecutors(executors)
-            }
+            try await houseworkClient.insertOrUpdateItem(current.updateExecutors(executors), cohabitantId)
         } catch {
             analyticsClient.log(.housework(.addHelper(step: step, isSuccess: false)))
             throw error
