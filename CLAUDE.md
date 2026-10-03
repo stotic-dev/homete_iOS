@@ -238,8 +238,9 @@ launching → notLoggedIn → Sign In with Apple
 
 **GitHub Actionsワークフロー:**
 
-1. **`ci_danger.yml`** - PR作成時に実行
-   - Danger実行（SwiftLint、カバレッジレポート）
+1. **`ci_danger.yml`** - PR作成時に実行（`pull_request_target`）
+   - Danger実行（SwiftLint）
+   - mainへのpushでも走るが、Dangerは実行せずツールのキャッシュをmainに保存するだけ。`pull_request_target`からはmainへのキャッシュ保存が通らないため
 
 2. **`ci_local_package.yml`** - LocalPackageのユニットテスト
    - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
