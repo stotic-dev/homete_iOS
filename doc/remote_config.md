@@ -1,6 +1,6 @@
 # Remote Config
 
-> fetch・activateのタイミングと、キーごとの反映方針を決めた経緯は [ADR-0031](adr/0031-remote-config-fetch-and-per-key-apply-timing.md) を参照。
+> fetch・activateのタイミングと、キーごとの反映方針を決めた経緯は [ADR-0033](adr/0033-remote-config-fetch-and-per-key-apply-timing.md) を参照。
 
 ## パラメータ一覧
 

@@ -7,7 +7,7 @@ import Observation
 
 /// アプリ全体で広告を表示するかどうかを管理する
 ///
-/// 広告表示の有無はRemote Configの`ads_enabled`で配信する。経緯は ADR-0031 を参照。
+/// 広告表示の有無はRemote Configの`ads_enabled`で配信する。経緯は ADR-0033 を参照。
 @MainActor
 @Observable
 public final class AdvertisementStore {
