@@ -12,13 +12,16 @@ public struct RootView: View {
     let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
 
     @State var theme = Theme()
+    @State var hasEnteredBackground = false
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.scenePhase) var scenePhase
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(LaunchStateStore.self) var launchStateStore
+    @Environment(AdvertisementStore.self) var advertisementStore
 
     public var body: some View {
         ZStack {
@@ -57,8 +60,12 @@ public struct RootView: View {
         .onOpenURL { url in
             onOpenURL(url)
         }
+        .onChange(of: scenePhase) {
+            onChangeScenePhase()
+        }
         .apply(theme: theme)
         .environment(\.launchStateProxy, .init { launchStateStore.update($0) })
+        .environment(\.isAdsEnabled, advertisementStore.isAdsEnabled)
     }
 
 }
@@ -92,6 +99,7 @@ public extension RootView {
                 houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient
             )
+            let advertisementStore = AdvertisementStore(remoteConfigClient: $0.remoteConfigClient)
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
@@ -105,8 +113,13 @@ public extension RootView {
                 .environment(subscriptionStore)
                 .environment(pendingInvitationStore)
                 .environment(launchStateStore)
+                .environment(advertisementStore)
                 .task {
                     await subscriptionStore.observeEntitlementUpdates()
+                }
+                .task {
+                    // 起動処理とは並行に走らせ、完了を待たない
+                    await advertisementStore.setupOnLaunch()
                 }
                 .routeResolverInjection()
                 .adComponentResolverInjection()
@@ -128,6 +141,23 @@ private extension RootView {
 
         pendingInvitationStore.store(link.token)
         analyticsClient.log(.cohabitantInvitation(.linkOpened(source: link.source)))
+    }
+
+    /// バックグラウンドから復帰したときに、Remote Configの最新の値を取得する
+    /// - Note: 起動直後のinactive → activeで`setupOnLaunch`と二重に取得しないよう、一度backgroundに入った後の復帰に限る。
+    ///         復帰はbackground → inactive → activeと遷移するため、直前のフェーズではなくフラグで判定する
+    func onChangeScenePhase() {
+        switch scenePhase {
+        case .background:
+            hasEnteredBackground = true
+        case .active where hasEnteredBackground:
+            hasEnteredBackground = false
+            Task {
+                await advertisementStore.refresh()
+            }
+        default:
+            break
+        }
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {

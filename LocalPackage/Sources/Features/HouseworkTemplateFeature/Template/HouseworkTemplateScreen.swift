@@ -16,6 +16,7 @@ public struct HouseworkTemplateScreen: View {
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.isAdsEnabled) var isAdsEnabled
     @Environment(\.cohabitantMembers) var members
     @Environment(\.routeResolver) var router
 
@@ -41,7 +42,10 @@ public struct HouseworkTemplateScreen: View {
                 initialDraft: $initialDraft,
                 draft: $editingDraft,
                 editorContext: $editorContext,
-                isShowAd: AdDisplayPolicy.shouldShowAds(isPremium: subscriptionStore.isPremium),
+                isShowAd: AdDisplayPolicy.shouldShowAds(
+                    isPremium: subscriptionStore.isPremium,
+                    isEnabled: isAdsEnabled
+                ),
                 loadFailure: loadFailure,
                 onTapRemoveAdsLink: { tappedRemoveAdsLink() },
                 onRetry: { await retry() }
