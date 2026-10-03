@@ -12,7 +12,7 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 ### 影響範囲による要否の判断（実行前に必ず見極める）
 
-検証は1回が高コスト（初回ビルドは10分以上、`make test-packages` は5ターゲット）。変更がSwiftのビルド結果に影響しないのにフル検証を流すと、待ち時間が丸ごと無駄になる。**流す前に「この変更でビルド・テストの結果が変わりうるか」を考え、必要な手順だけを選ぶ。**
+検証は1回が高コスト（初回ビルドは10分以上、`make test-packages-fast` は6ターゲット）。変更がSwiftのビルド結果に影響しないのにフル検証を流すと、待ち時間が丸ごと無駄になる。**流す前に「この変更でビルド・テストの結果が変わりうるか」を考え、必要な手順だけを選ぶ。**
 
 | 変更内容 | 必要な検証 |
 |---|---|
@@ -56,7 +56,7 @@ swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
 swift test  --package-path "$(pwd)/LocalPackage" --disable-sandbox ...
 ```
 
-`make build-local-package` / `make test-packages` / `make format` には既に `--disable-sandbox` が入っているので、これらを使う場合は何も足さなくてよい。
+`make build-local-package` / `make test-packages-fast` / `make format` には既に `--disable-sandbox` が入っているので、これらを使う場合は何も足さなくてよい。
 
 ビルドツールが書き込む先は `settings.local.json` の `sandbox.filesystem.allowWrite` で許可済み:
 
@@ -131,7 +131,7 @@ LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.bui
 
 ## 出力の絞り方（再実行しないために）
 
-検証コマンドは1回が高コスト（ビルド約80秒、`make test-packages` は5つのテストターゲットを順に実行）。
+検証コマンドは1回が高コスト（ビルド約80秒、`make test-packages-fast` は6つのテストターゲットを順に実行）。
 **絞り方を誤って結果が読めず「もう一度流す」のは、待ち時間が丸ごと無駄になる。** 実行する前にフィルタを決め、
 どう転んでも1回で合否を判定できる形にする。
 
@@ -142,14 +142,14 @@ LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.bui
 
 ```bash
 LOG="$TMPDIR/verify-test.log"
-make test-packages 2>&1 | tee "$LOG" | grep -E "Test run with|✘|error:|failed"
+make test-packages-fast 2>&1 | tee "$LOG" | grep -E "Test run with|✘|error:|failed"
 # 情報が足りなければ、再実行せず保存済みログを読む
 grep -n -B5 -A20 "✘" "$LOG"
 ```
 
 ### `tail` を合否判定に使わない
 
-`make test-packages` はテストターゲットごとに `Test run with N tests in M suites passed` を出す。
+`make test-packages-fast` はテストターゲットごとに `Test run with N tests in M suites passed` を出す。
 `tail -25` だと最後のターゲットの出力しか映らず、**残りが通ったのか落ちたのか分からない**。
 `tail` が妥当なのは、末尾にだけ結論が出るコマンド（`swift build` の `Build complete!` など）に限る。
 
@@ -157,10 +157,10 @@ grep -n -B5 -A20 "✘" "$LOG"
 
 - `swift build` / `make build-local-package`
   → `grep -E "error:|Build complete"`。`Build complete!` が出ていれば OK
-- `make test-packages` / `swift test`
+- `make test-packages-fast` / `swift test`
   → `grep -E "Test run with|✘|error:"`。`Test run with ... passed` がテストターゲットの数だけ並べば OK
   （現在は HometeDomainTests / HouseworkFeatureTests / HouseworkTemplateFeatureTests / SettingFeatureTests /
-  ContributionFeatureTests の5行。1行でも欠けていたらログ本体を確認する）
+  ContributionFeatureTests / FrequentHouseworkFeatureTests の6行。1行でも欠けていたらログ本体を確認する）
 - `swiftlint lint`
   → 元々短いので絞らなくてよい。絞るなら `grep -E "warning:|error:"` で、自分が触ったファイルの行が無いことを見る
 - `xcodebuild ... -quiet`
@@ -179,7 +179,7 @@ grep はマッチ0件で終了コード1を返すため、コマンド全体が�
 
 **worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
 
-**`make test-packages` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。
+**`make test-packages-fast` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages-fast`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。
 
 make 経由なら、他プロセスがビルドロックを握っている場合に実行前へ次の警告が出る。**これが出たら待ち時間はハングではなくロック待ちなので、タイムアウトまで放置せず PID を kill する。**
 
@@ -234,10 +234,12 @@ ProjectTools/.build/artifacts/projecttools/SwiftLintPluginBinary/SwiftLintBinary
 ### 3. ユニットテスト実行（省略不可）
 
 ```bash
-swift test --package-path "$(pwd)/LocalPackage" --disable-sandbox --enable-code-coverage
+make test-packages-fast
 ```
 
-特定のテストだけ流したいときは `--filter "TestSuite名"` を追加する。
+特定のテストだけ流したいときは `FILTER=<テストターゲット名またはSuite名>` を付ける（例: `make test-packages-fast FILTER=HouseworkFeatureTests`）。
+
+ローカルではカバレッジ付きの `make test-packages` を使わない。カバレッジの有無でビルド成果物が別物になり、切り替えるたびにLocalPackage全体のビルドがやり直しになる（差分ビルド約20秒が約4分になる）。カバレッジはCI（Dangerのレポート）だけで取る。
 
 ### 4. UIデグレ確認（VRT / スナップショットテスト）
 

@@ -14,7 +14,7 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 **流す前に影響範囲で要否を見極める。** テストコードのみの変更なら手順を絞れるし、Swiftのビルドに影響しない変更（ツール設定・ドキュメント・Functionsなど）ではビルド・テスト自体が不要。その場合は変更したもの自体の動作だけを最小限で確かめる。判断表はスキル参照。
 
-**同じ検証コマンドを2回流さない。** 検証は1回が高コスト（ビルド約80秒、`make test-packages` は5テストターゲット）
+**同じ検証コマンドを2回流さない。** 検証は1回が高コスト（ビルド約80秒、`make test-packages-fast` は6テストターゲット）
 なので、出力は `tee` でログに残してからフィルタし、絞り方が足りなければ再実行ではなく保存済みログを読み直す。
 `tail` はテスト結果の判定には使わない（最後のターゲットしか映らず他が見えない）。フィルタの具体例はスキル参照。
 
@@ -23,7 +23,7 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 許可ツール（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
 - **サンドボックスは有効**（`sandbox.enabled: true`）。SwiftPM系コマンドには **`--disable-sandbox` フラグ**を付けて、Claudeのサンドボックス**内**で実行すること。`dangerouslyDisableSandbox: true` は原則使わない（allowルールを迂回して必ず許可プロンプトが出るため、自律実行が止まる）。理由と許可済みキャッシュパス、および Build Tool Plugin が `.build` に書けない既知症状の切り分け・例外条件はスキル参照
-- `make build-local-package` / `make test-packages` / `make format` には `--disable-sandbox` が既に入っている
+- `make build-local-package` / `make test-packages-fast` / `make format` には `--disable-sandbox` が既に入っている
 
 ## 自動検証（Stopフック）
 
