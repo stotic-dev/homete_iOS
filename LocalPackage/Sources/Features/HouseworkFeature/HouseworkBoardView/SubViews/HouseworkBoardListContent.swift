@@ -20,6 +20,10 @@ struct HouseworkBoardListContent: View {
     let list: HouseworkBoardList
     /// 完了した家事の担当者名を引き、手伝った人を足せるかを判定するための同居人一覧
     let memberList: CohabitantMemberList
+    /// 一覧がタブバーの裏まで伸びている分の高さ
+    ///
+    /// 終端までスクロールしたときに最後の行がタブバーに隠れないよう、この分を余白として足す
+    let bottomContentInset: CGFloat
     @Binding var selectedHouseworkState: HouseworkState
     @Binding var isSelecting: Bool
     /// 選択中の家事のID
@@ -70,10 +74,18 @@ struct HouseworkBoardListContent: View {
                 #endif
             }
             .listStyle(.plain)
+            // 終端までスクロールしたときに、最後の行が浮いている追加ボタンやタブバーに隠れないようにする。
+            // 高さをリテラルで持つとボタンのデザイン変更に追従できないため、同じボタンを隠して置いて実寸を使う
+            .safeAreaInset(edge: .bottom) {
+                AddHouseworkButton {}
+                    .padding(.bottom, .space24)
+                    .padding(.bottom, bottomContentInset)
+                    .hidden()
+            }
             #if os(iOS)
-                .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+            .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
             #endif
-                .commonError(content: $commonError)
+            .commonError(content: $commonError)
         }
     }
 
@@ -177,6 +189,7 @@ private extension HouseworkBoardListContent {
             ),
         ]),
         memberList: .init(value: [], ownId: ""),
+        bottomContentInset: .zero,
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         selectedIDs: .constant([]),
@@ -230,6 +243,7 @@ private extension HouseworkBoardListContent {
             ],
             ownId: "ownUserId"
         ),
+        bottomContentInset: .zero,
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         selectedIDs: .constant(["1"]),
