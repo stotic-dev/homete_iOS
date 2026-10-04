@@ -13,7 +13,7 @@ import SwiftUI
 public struct ContentFittingSheetScrollView<Content: View>: View {
 
     @State var contentHeight: CGFloat?
-    @State var initialSafeAreaInsets: EdgeInsets?
+    @State var safeAreaHeight: CGFloat = .zero
 
     let content: Content
 
@@ -35,18 +35,20 @@ public struct ContentFittingSheetScrollView<Content: View>: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background {
-            // キーボードの分のセーフエリアまで足すと、キーボードを出すたびにシートが伸びてしまうため除く
+            // ナビゲーションバーと下端のセーフエリアの分を足さないと、シートが中身より低くなって見切れる。
+            // セーフエリアの値は無視しているViewだけが受け取れる（無視していないViewでは0になる）ため、
+            // ここで無視して測る。キーボードの分まで足すとキーボードを出すたびにシートが伸びてしまうので、
+            // .keyboardは無視せず.containerだけを無視する
             Color.clear
-                .ignoresSafeArea(.keyboard)
-                .onGeometryChange(for: EdgeInsets.self) { proxy in
-                    proxy.safeAreaInsets
-                } action: { insets in
-                    // セーフエリアはシートの位置で変わる（キーボードで押し上げられ上端がステータスバーに
-                    // かかると上側が増える）。それを高さの指定に反映すると、高さとセーフエリアが互いに
-                    // 影響し合って永遠に揺れ続けるため、最初に測った値だけを使う
-                    guard initialSafeAreaInsets == nil else { return }
-
-                    initialSafeAreaInsets = insets
+                .ignoresSafeArea(.container)
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
+                } action: { height in
+                    // 最初の計測ではまだ0（ナビゲーションバーが決まる前）なので、一番大きい値を使う。
+                    // セーフエリアはシートの位置でも変わる（キーボードで押し上げられ上端がステータスバーに
+                    // かかると上側が増える）が、縮む方向にも追従すると高さとセーフエリアが互いに影響し合って
+                    // 永遠に揺れ続けるため、伸びる方向にだけ追従する
+                    safeAreaHeight = max(safeAreaHeight, height)
                 }
         }
         .presentationDetents(detents)
@@ -58,9 +60,9 @@ private extension ContentFittingSheetScrollView {
 
     /// 中身の高さを測るまでは、いつものハーフモーダルの高さで出しておく
     var detents: Set<PresentationDetent> {
-        guard let contentHeight, let initialSafeAreaInsets else { return [.medium] }
+        guard let contentHeight else { return [.medium] }
 
-        return [.height(contentHeight + initialSafeAreaInsets.top + initialSafeAreaInsets.bottom)]
+        return [.height(contentHeight + safeAreaHeight)]
     }
 
 }
