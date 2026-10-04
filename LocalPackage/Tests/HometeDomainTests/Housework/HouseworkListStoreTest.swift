@@ -1319,14 +1319,18 @@ extension HouseworkListStoreTest.UpdateStatusCase {
     func sendThanks_notFirstThanks_returnsFalse(input: NotFirstThanksInput) async throws {
         // Arrange
 
+        // 手元の家事とリスナーで受け取った家事を同じ家事として突き合わせるため、日付を揃える
+        let inputIndexedDate = Date(timeIntervalSince1970: 0)
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
+            indexedDate: inputIndexedDate,
             state: .completed,
             executorId: "executorId",
             executedAt: .distantPast
         )
         let currentHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
+            indexedDate: inputIndexedDate,
             state: input.currentState,
             executorId: "executorId",
             executedAt: .distantPast,
