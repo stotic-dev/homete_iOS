@@ -19,6 +19,7 @@
   * 前回リリースは「今回のバージョンより小さいタグのうち最大のもの」とする
   * 差分のない画像はartifactから除き、`-F` でJSONからレポートを作り直す（全画像を含めると100MBを超えるため）
   * コメントはpushの度に新規投稿せず、目印付きの1件を上書きする
+  * artifactも1リリースPRにつき1つにする。名前をバージョン単位にし、アップロード後に同名の古いartifactをAPIで削除する（`upload-artifact` の `overwrite` は同じ実行内でしか効かないため）
   * 比較は画像ファイルの差分だけで完結するので、macOSランナーやXcodeを使わず `ubuntu-latest` で走らせる
 * GITHUB_TOKENで作られたPRではPRイベントが発火しないため、`create-release-pr.yml` がPR作成直後に `workflow_dispatch` で1回目を起動する
 * 差分の判定（意図どおりか）は自動化せず、開発者が `release-snapshot-review` スキルでレポートを取得し、
