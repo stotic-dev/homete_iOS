@@ -104,15 +104,6 @@ service cloud.firestore {
         return isSignedIn() && request.auth.uid in resource.data.members;
       }
 
-      // 書き込み後もドキュメントIDと`id`が一致し、自分がmembersに残ること。
-      // Cloud Functions が `where("id", "==", ...)` で引くため、`id`のズレは
-      // そのままFunctions側の不具合になる。
-      function isValidWrite() {
-        return request.resource.data.id == cohabitantId
-          && request.resource.data.members is list
-          && request.auth.uid in request.resource.data.members;
-      }
-
       allow get: if isCurrentMember();
 
       // `list`はクエリ内容だけで判定され、ルールから`resource.data.members`を
@@ -120,12 +111,12 @@ service cloud.firestore {
       // 前提でドキュメント購読するため、一覧は塞ぐ。
       allow list: if false;
 
-      // P2P登録のリーダーが、自分と同意済みフォロワーを含む新規グループを作る
-      // （CohabitantRegistrationProcessingLeader.onReadyRegistration）
-      allow create: if isSignedIn() && isValidWrite();
-
-      // メンバーの増減は既存メンバーだけが行える
-      allow update: if isCurrentMember() && isValidWrite();
+      // グループの作成・メンバーの増減は Functions が Admin SDK で行う。
+      // クライアントに開くと、本人の同意なしに他人のuidを`members`へ入れられる
+      // （プレミアムの借用・通知の送り付け・グループの乗っ取りにつながる）。
+      // - 作成・参加: joincohabitant（P2P登録・招待リンクのどちらもここを通る）
+      // - 退会: deleteuserdata
+      allow create, update: if false;
 
       // グループ削除は deleteuserdata が Admin SDK で行う
       allow delete: if false;
