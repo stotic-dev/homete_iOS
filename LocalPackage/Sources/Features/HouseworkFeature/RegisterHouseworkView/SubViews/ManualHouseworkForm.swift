@@ -9,7 +9,7 @@ import SwiftUI
 
 /// 家事の登録シートの「新しく入力」タブ
 /// - Note: 画面の背景はシート既定のままにして「いつもの家事」タブと揃え、
-///         セクションのカードとの境目は`sectionCardStyle()`の影で見せる
+///         セクションのカードとの境目は`SectionCard`の影で見せる
 struct ManualHouseworkForm: View {
 
     @Binding var entry: RegisterHouseworkDraft.ManualEntry
@@ -49,23 +49,8 @@ struct ManualHouseworkForm: View {
 
 private extension ManualHouseworkForm {
 
-    /// セクションの見出しと、中身をひとまとまりに見せるカード
-    /// - Note: 見出しの字下げは、カードの中の文字の位置に揃える
-    func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text(title)
-                .font(with: .boldCaption)
-                .foregroundStyle(.onSurfaceVariant)
-                .padding(.horizontal, .space16)
-            VStack(spacing: .space16) {
-                content()
-            }
-            .sectionCardStyle()
-        }
-    }
-
     func houseworkSection() -> some View {
-        section("登録する家事") {
+        SectionCard("登録する家事") {
             inputTitleField()
             Divider()
             inputPointPicker()
@@ -107,7 +92,7 @@ private extension ManualHouseworkForm {
 
     /// - Note: 家事自体はカテゴリを持たないため、カテゴリはいつもの家事に保存するときだけ意味を持つ
     func saveAsFrequentSection() -> some View {
-        section("いつもの家事") {
+        SectionCard("いつもの家事") {
             saveAsFrequentControl()
             Divider()
             categoryPicker()
@@ -179,7 +164,7 @@ private extension ManualHouseworkForm {
 
     /// - Note: 前回登録したときの完了ポイントも一緒に戻すため、名前の横にポイントを添えて何が入るかを示す
     func entryHistorySection() -> some View {
-        section("入力履歴") {
+        SectionCard("入力履歴") {
             ForEach(Array(history.enumerated()), id: \.element) { index, item in
                 if index > 0 {
                     Divider()
