@@ -18,11 +18,10 @@ enum CohabitantRegistrationStateMachineTests {
     static let me = PeerID(displayName: "A_me")
     static let peerB = PeerID(displayName: "B_peer")
     static let peerC = PeerID(displayName: "C_peer")
-    static let myAccountId = "my-account"
-    static let cohabitantId = "cohabitant-id"
+    static let invitationToken = "invitation-token"
 
     static func makeSUT(myPeerID: PeerID = me) -> CohabitantRegistrationStateMachine {
-        .init(myPeerID: myPeerID, myAccountId: myAccountId, makeCohabitantId: { cohabitantId })
+        .init(myPeerID: myPeerID)
     }
 
     struct ScanningCase {}
@@ -311,7 +310,7 @@ extension CohabitantRegistrationStateMachineTests.ScanningCase {
         "メンバー確定以外のメッセージは無視する",
         arguments: [
             CohabitantRegistrationMessage.CommunicateType.preRegistration(role: .lead),
-            .shareCohabitantId(id: "id"),
+            .shareInvitation(token: "token"),
             .complete
         ]
     )
@@ -370,7 +369,7 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(effects == [.send(.init(type: .preRegistration(role: .lead)), to: [Tests.peerB])])
     }
 
-    @Test("役割が揃っていなければ、定期送信のタイミングで自分のアカウントIDを添えたフォロワーの役割を全員へ送る")
+    @Test("役割が揃っていなければ、定期送信のタイミングでフォロワーの役割を全員へ送る")
     func tick_follower_notAllConfirmed() {
         // Arrange
         var state = Tests.State(
@@ -386,7 +385,7 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(state == expectedState)
         #expect(
             effects == [
-                .send(.init(type: .preRegistration(role: .follower(accountId: Tests.myAccountId))), to: [Tests.peerB]),
+                .send(.init(type: .preRegistration(role: .follower)), to: [Tests.peerB]),
             ]
         )
     }
@@ -408,7 +407,7 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(effects == [])
     }
 
-    @Test("フォロワーはリーダーの役割を受け取っていても、同居人IDが届くまでは自分の役割を送り続ける")
+    @Test("フォロワーはリーダーの役割を受け取っていても、グループへの参加が済むまでは自分の役割を送り続ける")
     func tick_follower_leadRoleReceivedButNotRegistered() {
         // Arrange
         var state = Tests.State(
@@ -426,18 +425,18 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(state == expectedState)
         #expect(
             effects == [
-                .send(.init(type: .preRegistration(role: .follower(accountId: Tests.myAccountId))), to: [Tests.peerB]),
+                .send(.init(type: .preRegistration(role: .follower)), to: [Tests.peerB]),
             ]
         )
     }
 
-    @Test("フォロワーは同居人IDの保存まで済んでいれば、定期送信のタイミングでも何も送らない")
+    @Test("フォロワーはグループへの参加まで済んでいれば、定期送信のタイミングでも何も送らない")
     func tick_follower_registered() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .follower(.init(leadPeer: Tests.peerB, registeredCohabitantId: Tests.cohabitantId)),
+                    role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -509,8 +508,8 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(effects == [])
     }
 
-    @Test("同居人IDの保存に失敗したら、登録失敗のアラートを出して失敗イベントを送る")
-    func cohabitantIdSaveFailed() {
+    @Test("グループへの参加に失敗したら、登録失敗のアラートを出して失敗イベントを送る")
+    func cohabitantJoinFailed() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .follower(.init(leadPeer: Tests.peerB)), confirmedRolePeers: [Tests.peerB])),
@@ -523,7 +522,7 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         )
 
         // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantIdSaveFailed)
+        let effects = Tests.makeSUT().reduce(&state, .cohabitantJoinFailed)
 
         // Assert
         #expect(state == expectedState)
@@ -560,45 +559,30 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
 
     typealias Tests = CohabitantRegistrationStateMachineTests
 
-    @Test("全フォロワーの役割が揃ったら、同居人IDを採番して自分と全フォロワーのアカウントIDで同居人レコードを作成する")
+    @Test("全フォロワーの役割が揃ったら、招待トークンを発行する")
     func receivedFollowerRole_allConfirmed() {
         // Arrange
         var state = Tests.State(
-            phase: .processing(
-                .init(role: .lead(.init(followerAccountIds: ["b-account"])), confirmedRolePeers: [Tests.peerB])
-            ),
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
             connectedPeers: [Tests.peerB, Tests.peerC]
         )
         let expectedState = Tests.State(
-            phase: .processing(
-                .init(
-                    role: .lead(
-                        .init(followerAccountIds: ["b-account", "c-account"], cohabitantId: Tests.cohabitantId)
-                    ),
-                    confirmedRolePeers: [Tests.peerB, Tests.peerC]
-                )
-            ),
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB, Tests.peerC])),
             connectedPeers: [Tests.peerB, Tests.peerC]
         )
 
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .preRegistration(role: .follower(accountId: "c-account"))), from: Tests.peerC)
+            .received(.init(type: .preRegistration(role: .follower)), from: Tests.peerC)
         )
 
         // Assert
         #expect(state == expectedState)
-        #expect(
-            effects == [
-                .registerCohabitant(
-                    .init(id: Tests.cohabitantId, members: [Tests.myAccountId, "b-account", "c-account"])
-                ),
-            ]
-        )
+        #expect(effects == [.issueInvitation])
     }
 
-    @Test("フォロワーの役割が一部しか届いていなければ、アカウントIDを覚えるだけでレコードは作成しない")
+    @Test("フォロワーの役割が一部しか届いていなければ、届いたメンバーを覚えるだけで招待トークンは発行しない")
     func receivedFollowerRole_notAllConfirmed() {
         // Arrange
         var state = Tests.State(
@@ -606,16 +590,14 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
             connectedPeers: [Tests.peerB, Tests.peerC]
         )
         let expectedState = Tests.State(
-            phase: .processing(
-                .init(role: .lead(.init(followerAccountIds: ["b-account"])), confirmedRolePeers: [Tests.peerB])
-            ),
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
             connectedPeers: [Tests.peerB, Tests.peerC]
         )
 
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .preRegistration(role: .follower(accountId: "b-account"))), from: Tests.peerB)
+            .received(.init(type: .preRegistration(role: .follower)), from: Tests.peerB)
         )
 
         // Assert
@@ -623,13 +605,13 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         #expect(effects == [])
     }
 
-    @Test("同じフォロワーの役割が再度届いても、レコードを二重に作成しない")
+    @Test("同じフォロワーの役割が再度届いても、招待トークンを二重に発行しない")
     func receivedFollowerRole_duplicated() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(followerAccountIds: ["b-account"], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -640,7 +622,7 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .preRegistration(role: .follower(accountId: "b-account"))), from: Tests.peerB)
+            .received(.init(type: .preRegistration(role: .follower)), from: Tests.peerB)
         )
 
         // Assert
@@ -672,57 +654,56 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         #expect(effects == [])
     }
 
-    @Test("同居人レコードの作成が完了したら、同居人IDを全員へ共有する")
-    func cohabitantRegistered() {
+    @Test("招待トークンの発行が完了したら、トークンを覚えて全員へ共有する")
+    func invitationIssued() {
         // Arrange
         var state = Tests.State(
-            phase: .processing(
-                .init(role: .lead(.init(cohabitantId: Tests.cohabitantId)), confirmedRolePeers: [Tests.peerB])
-            ),
-            connectedPeers: [Tests.peerB]
-        )
-        let expectedState = state
-
-        // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantRegistered)
-
-        // Assert
-        #expect(state == expectedState)
-        #expect(effects == [.send(.init(type: .shareCohabitantId(id: Tests.cohabitantId)), to: [Tests.peerB])])
-    }
-
-    @Test("同居人レコードの作成に失敗したら、登録失敗のアラートを出して失敗イベントを送る")
-    func cohabitantRegistrationFailed() {
-        // Arrange
-        var state = Tests.State(
-            phase: .processing(
-                .init(role: .lead(.init(cohabitantId: Tests.cohabitantId)), confirmedRolePeers: [Tests.peerB])
-            ),
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
             connectedPeers: [Tests.peerB]
         )
         let expectedState = Tests.State(
             phase: .processing(
-                .init(role: .lead(.init(cohabitantId: Tests.cohabitantId)), confirmedRolePeers: [Tests.peerB])
+                .init(role: .lead(.init(invitationToken: Tests.invitationToken)), confirmedRolePeers: [Tests.peerB])
             ),
+            connectedPeers: [Tests.peerB]
+        )
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .invitationIssued(token: Tests.invitationToken))
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [.send(.init(type: .shareInvitation(token: Tests.invitationToken)), to: [Tests.peerB])])
+    }
+
+    @Test("招待トークンの発行に失敗したら、登録失敗のアラートを出して失敗イベントを送る")
+    func invitationIssueFailed() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = Tests.State(
+            phase: .processing(.init(role: .lead(.init()), confirmedRolePeers: [Tests.peerB])),
             connectedPeers: [Tests.peerB],
             alert: .registrationFailed
         )
 
         // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantRegistrationFailed)
+        let effects = Tests.makeSUT().reduce(&state, .invitationIssueFailed)
 
         // Assert
         #expect(state == expectedState)
         #expect(effects == [.log(.completed(method: .p2p, isSuccess: false))])
     }
 
-    @Test("全フォロワーの完了通知が届いたら、自分のアカウントに同居人IDを保存する")
+    @Test("全フォロワーの完了通知が届いたら、サーバー側でグループIDが書き込まれた自分のアカウントを取り直す")
     func receivedComplete_allCompleted() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(completedPeers: [Tests.peerB], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(completedPeers: [Tests.peerB], invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB, Tests.peerC]
                 )
             ),
@@ -731,7 +712,9 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         let expectedState = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(completedPeers: [Tests.peerB, Tests.peerC], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(
+                        .init(completedPeers: [Tests.peerB, Tests.peerC], invitationToken: Tests.invitationToken)
+                    ),
                     confirmedRolePeers: [Tests.peerB, Tests.peerC]
                 )
             ),
@@ -743,16 +726,16 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
 
         // Assert
         #expect(state == expectedState)
-        #expect(effects == [.saveCohabitantId(Tests.cohabitantId)])
+        #expect(effects == [.reloadAccount])
     }
 
-    @Test("完了通知が一部しか届いていなければ、完了したメンバーを覚えるだけで保存はしない")
+    @Test("完了通知が一部しか届いていなければ、完了したメンバーを覚えるだけでアカウントは取り直さない")
     func receivedComplete_notAllCompleted() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB, Tests.peerC]
                 )
             ),
@@ -761,7 +744,7 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         let expectedState = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(completedPeers: [Tests.peerB], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(completedPeers: [Tests.peerB], invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB, Tests.peerC]
                 )
             ),
@@ -776,13 +759,13 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         #expect(effects == [])
     }
 
-    @Test("同じフォロワーから完了通知が再度届いても、二重に保存しない")
+    @Test("同じフォロワーから完了通知が再度届いても、アカウントを二重に取り直さない")
     func receivedComplete_duplicated() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(completedPeers: [Tests.peerB], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(completedPeers: [Tests.peerB], invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -798,13 +781,13 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         #expect(effects == [])
     }
 
-    @Test("自分のアカウントへの保存が済んだら、完了イベントを送ってから全員へ完了を通知し、登録完了にする")
-    func cohabitantIdSaved() {
+    @Test("自分のアカウントにグループIDが反映されたら、完了イベントを送ってから全員へ完了を通知し、登録完了にする")
+    func cohabitantJoined() {
         // Arrange
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .lead(.init(completedPeers: [Tests.peerB], cohabitantId: Tests.cohabitantId)),
+                    role: .lead(.init(completedPeers: [Tests.peerB], invitationToken: Tests.invitationToken)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -813,7 +796,7 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         let expectedState = Tests.State(phase: .completed, connectedPeers: [Tests.peerB])
 
         // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantIdSaved(Tests.cohabitantId))
+        let effects = Tests.makeSUT().reduce(&state, .cohabitantJoined)
 
         // Assert
         #expect(state == expectedState)
@@ -868,7 +851,7 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .preRegistration(role: .follower(accountId: "c-account"))), from: Tests.peerC)
+            .received(.init(type: .preRegistration(role: .follower)), from: Tests.peerC)
         )
 
         // Assert
@@ -876,8 +859,8 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         #expect(effects == [])
     }
 
-    @Test("同居人IDが届いたら、自分のアカウントに保存する")
-    func receivedCohabitantId() {
+    @Test("招待トークンが届いたら、そのトークンでグループに参加する")
+    func receivedInvitationToken() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .follower(.init(leadPeer: Tests.peerB)), confirmedRolePeers: [Tests.peerB])),
@@ -888,16 +871,16 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .shareCohabitantId(id: Tests.cohabitantId)), from: Tests.peerB)
+            .received(.init(type: .shareInvitation(token: Tests.invitationToken)), from: Tests.peerB)
         )
 
         // Assert
         #expect(state == expectedState)
-        #expect(effects == [.saveCohabitantId(Tests.cohabitantId)])
+        #expect(effects == [.joinCohabitant(invitationToken: Tests.invitationToken)])
     }
 
-    @Test("リーダーの役割が届く前に同居人IDが届いたら、送信元をリーダーとして扱った上で保存する")
-    func receivedCohabitantId_beforeLeadRole() {
+    @Test("リーダーの役割が届く前に招待トークンが届いたら、送信元をリーダーとして扱った上で参加する")
+    func receivedInvitationToken_beforeLeadRole() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .follower(.init()))),
@@ -911,16 +894,16 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         // Act
         let effects = Tests.makeSUT().reduce(
             &state,
-            .received(.init(type: .shareCohabitantId(id: Tests.cohabitantId)), from: Tests.peerB)
+            .received(.init(type: .shareInvitation(token: Tests.invitationToken)), from: Tests.peerB)
         )
 
         // Assert
         #expect(state == expectedState)
-        #expect(effects == [.saveCohabitantId(Tests.cohabitantId)])
+        #expect(effects == [.joinCohabitant(invitationToken: Tests.invitationToken)])
     }
 
-    @Test("自分のアカウントへの保存が済んだら、完了イベントを送ってからリーダーへ完了を通知する")
-    func cohabitantIdSaved_leadKnown() {
+    @Test("グループへの参加が済んだら、完了イベントを送ってからリーダーへ完了を通知する")
+    func cohabitantJoined_leadKnown() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .follower(.init(leadPeer: Tests.peerB)), confirmedRolePeers: [Tests.peerB])),
@@ -929,7 +912,7 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         let expectedState = Tests.State(
             phase: .processing(
                 .init(
-                    role: .follower(.init(leadPeer: Tests.peerB, registeredCohabitantId: Tests.cohabitantId)),
+                    role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -937,7 +920,7 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         )
 
         // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantIdSaved(Tests.cohabitantId))
+        let effects = Tests.makeSUT().reduce(&state, .cohabitantJoined)
 
         // Assert
         #expect(state == expectedState)
@@ -949,37 +932,37 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         )
     }
 
-    @Test("リーダーが分からないまま保存が済んだら、完了イベントだけ送って完了の通知は保留する")
-    func cohabitantIdSaved_leadUnknown() {
+    @Test("リーダーが分からないまま参加が済んだら、完了イベントだけ送って完了の通知は保留する")
+    func cohabitantJoined_leadUnknown() {
         // Arrange
         var state = Tests.State(
             phase: .processing(.init(role: .follower(.init()))),
             connectedPeers: [Tests.peerB]
         )
         let expectedState = Tests.State(
-            phase: .processing(.init(role: .follower(.init(registeredCohabitantId: Tests.cohabitantId)))),
+            phase: .processing(.init(role: .follower(.init(hasJoined: true)))),
             connectedPeers: [Tests.peerB]
         )
 
         // Act
-        let effects = Tests.makeSUT().reduce(&state, .cohabitantIdSaved(Tests.cohabitantId))
+        let effects = Tests.makeSUT().reduce(&state, .cohabitantJoined)
 
         // Assert
         #expect(state == expectedState)
         #expect(effects == [.log(.completed(method: .p2p, isSuccess: true))])
     }
 
-    @Test("保存済みの状態でリーダーの役割が届いたら、保留していた完了をリーダーへ通知する")
-    func receivedLeadRole_afterSaved() {
+    @Test("参加済みの状態でリーダーの役割が届いたら、保留していた完了をリーダーへ通知する")
+    func receivedLeadRole_afterJoined() {
         // Arrange
         var state = Tests.State(
-            phase: .processing(.init(role: .follower(.init(registeredCohabitantId: Tests.cohabitantId)))),
+            phase: .processing(.init(role: .follower(.init(hasJoined: true)))),
             connectedPeers: [Tests.peerB]
         )
         let expectedState = Tests.State(
             phase: .processing(
                 .init(
-                    role: .follower(.init(leadPeer: Tests.peerB, registeredCohabitantId: Tests.cohabitantId)),
+                    role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),
@@ -1003,7 +986,7 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         var state = Tests.State(
             phase: .processing(
                 .init(
-                    role: .follower(.init(leadPeer: Tests.peerB, registeredCohabitantId: Tests.cohabitantId)),
+                    role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)),
                     confirmedRolePeers: [Tests.peerB]
                 )
             ),

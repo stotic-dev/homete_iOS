@@ -28,8 +28,8 @@ struct CohabitantRegistrationMessageTests {
         arguments: [
             CohabitantRegistrationMessage.CommunicateType.complete,
             .preRegistration(role: .lead),
-            .preRegistration(role: .follower(accountId: "id")),
-            .shareCohabitantId(id: "id")
+            .preRegistration(role: .follower),
+            .shareInvitation(token: "token")
         ]
     )
     func isFixedMember_typeIsNotFixedMember(
@@ -46,7 +46,7 @@ struct CohabitantRegistrationMessageTests {
         "登録処理開始前のメッセージの場合、送信者の役割を取得できる",
         arguments: [
             CohabitantRegistrationRole.lead,
-            .follower(accountId: "id")
+            .follower
         ]
     )
     func memberRole_typeIsPreRegistration(inputRole: CohabitantRegistrationRole) {
@@ -62,7 +62,7 @@ struct CohabitantRegistrationMessageTests {
         arguments: [
             CohabitantRegistrationMessage.CommunicateType.complete,
             .fixedMember(isOK: true),
-            .shareCohabitantId(id: "id")
+            .shareInvitation(token: "token")
         ]
     )
     func memberRole_typeIsNotPreRegistration(
@@ -75,31 +75,31 @@ struct CohabitantRegistrationMessageTests {
         #expect(actual == nil)
     }
 
-    @Test("同居人ID共有メッセージの場合、共有された同居人IDを取得できる")
-    func cohabitantId_typeIsShareCohabitantId() {
-        let inputId = "test_id"
-        let message = CohabitantRegistrationMessage(type: .shareCohabitantId(id: inputId))
+    @Test("招待トークン共有メッセージの場合、共有された招待トークンを取得できる")
+    func invitationToken_typeIsShareInvitation() {
+        let inputToken = "test_token"
+        let message = CohabitantRegistrationMessage(type: .shareInvitation(token: inputToken))
 
-        let actual = message.cohabitantId
+        let actual = message.invitationToken
 
-        #expect(actual == inputId)
+        #expect(actual == inputToken)
     }
 
     @Test(
-        "同居人ID共有メッセージ以外の場合、nilを返す",
+        "招待トークン共有メッセージ以外の場合、nilを返す",
         arguments: [
             CohabitantRegistrationMessage.CommunicateType.complete,
             .preRegistration(role: .lead),
-            .preRegistration(role: .follower(accountId: "id")),
+            .preRegistration(role: .follower),
             .fixedMember(isOK: true)
         ]
     )
-    func cohabitantId_typeIsNotShareCohabitantId(
+    func invitationToken_typeIsNotShareInvitation(
         inputMessageType: CohabitantRegistrationMessage.CommunicateType
     ) {
         let message = CohabitantRegistrationMessage(type: inputMessageType)
 
-        let actual = message.cohabitantId
+        let actual = message.invitationToken
 
         #expect(actual == nil)
     }
@@ -117,9 +117,9 @@ struct CohabitantRegistrationMessageTests {
         "登録処理完了メッセージ以外の場合、nilを返す",
         arguments: [
             CohabitantRegistrationMessage.CommunicateType.preRegistration(role: .lead),
-            .preRegistration(role: .follower(accountId: "id")),
+            .preRegistration(role: .follower),
             .fixedMember(isOK: true),
-            .shareCohabitantId(id: "id")
+            .shareInvitation(token: "token")
         ]
     )
     func isComplete_typeIsNotComplete_returnsNil(
@@ -139,8 +139,8 @@ struct CohabitantRegistrationMessageTests {
             .fixedMember(isOK: true),
             .fixedMember(isOK: false),
             .preRegistration(role: .lead),
-            .preRegistration(role: .follower(accountId: "id")),
-            .shareCohabitantId(id: "id")
+            .preRegistration(role: .follower),
+            .shareInvitation(token: "token")
         ]
     )
     func encodeDecode(type: CohabitantRegistrationMessage.CommunicateType) throws {
@@ -159,8 +159,8 @@ struct CohabitantRegistrationMessageTests {
             .fixedMember(isOK: true),
             .fixedMember(isOK: false),
             .preRegistration(role: .lead),
-            .preRegistration(role: .follower(accountId: "id")),
-            .shareCohabitantId(id: "id"),
+            .preRegistration(role: .follower),
+            .shareInvitation(token: "token"),
         ]
     )
     func init_withValidData(type: CohabitantRegistrationMessage.CommunicateType) throws {

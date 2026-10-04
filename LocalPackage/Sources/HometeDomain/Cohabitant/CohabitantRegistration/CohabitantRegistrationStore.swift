@@ -3,13 +3,12 @@
 //  LocalPackage
 //
 
-import Foundation
 import Observation
 
 /// P2Pでの同居人登録のディスパッチャ
 ///
 /// 画面・セッションから受け取ったイベントを`CohabitantRegistrationStateMachine`に流し、
-/// 返ってきた外部I/O（送信・Firestore・Analytics）を実行して結果をイベントとして戻す。
+/// 返ってきた外部I/O（送信・Cloud Functions・Firestore・Analytics）を実行して結果をイベントとして戻す。
 /// 状態遷移の判断はすべて状態機械側にあり、このクラスはI/Oの実行だけを担う
 @MainActor
 @Observable
@@ -22,28 +21,22 @@ public final class CohabitantRegistrationStore {
     // MARK: Dependencies
 
     private let messageSender: any CohabitantRegistrationMessageSender
-    private let cohabitantClient: CohabitantClient
+    private let cohabitantInvitationClient: CohabitantInvitationClient
     private let analyticsClient: AnalyticsClient
     private let accountStore: AccountStore
 
     public init(
         myPeerID: CohabitantRegistrationPeerID,
-        myAccountId: String,
         messageSender: any CohabitantRegistrationMessageSender,
-        cohabitantClient: CohabitantClient = .previewValue,
+        cohabitantInvitationClient: CohabitantInvitationClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
         accountStore: AccountStore = .init(),
-        makeCohabitantId: @escaping @Sendable () -> String = { UUID().uuidString },
         initialState: CohabitantRegistrationState = .init()
     ) {
-        stateMachine = .init(
-            myPeerID: myPeerID,
-            myAccountId: myAccountId,
-            makeCohabitantId: makeCohabitantId
-        )
+        stateMachine = .init(myPeerID: myPeerID)
         state = initialState
         self.messageSender = messageSender
-        self.cohabitantClient = cohabitantClient
+        self.cohabitantInvitationClient = cohabitantInvitationClient
         self.analyticsClient = analyticsClient
         self.accountStore = accountStore
     }
@@ -69,23 +62,41 @@ private extension CohabitantRegistrationStore {
                 send(.sendFailed)
             }
 
-        case let .registerCohabitant(cohabitant):
+        case .issueInvitation:
             Task {
                 do {
-                    try await cohabitantClient.register(cohabitant)
-                    send(.cohabitantRegistered)
+                    let invitation = try await cohabitantInvitationClient.issue()
+                    send(.invitationIssued(token: invitation.token))
                 } catch {
-                    send(.cohabitantRegistrationFailed)
+                    send(.invitationIssueFailed)
                 }
             }
 
-        case let .saveCohabitantId(cohabitantId):
+        case let .joinCohabitant(invitationToken):
             Task {
                 do {
-                    try await accountStore.registerCohabitantId(cohabitantId)
-                    send(.cohabitantIdSaved(cohabitantId))
+                    let result = try await cohabitantInvitationClient.join(invitationToken)
+                    // サーバ側でアカウントの更新まで済んでいるため、オンメモリの状態だけ揃える
+                    accountStore.applyCohabitantId(result.cohabitantId)
+                    send(.cohabitantJoined)
                 } catch {
-                    send(.cohabitantIdSaveFailed)
+                    send(.cohabitantJoinFailed)
+                }
+            }
+
+        case .reloadAccount:
+            Task {
+                do {
+                    // フォロワーの参加でサーバ側がグループIDを書き込んでいる。
+                    // 購読による反映を待たず、完了を表示する前に確実に取り込む
+                    try await accountStore.reload()
+                    guard accountStore.account?.cohabitantId != nil else {
+                        send(.cohabitantJoinFailed)
+                        return
+                    }
+                    send(.cohabitantJoined)
+                } catch {
+                    send(.cohabitantJoinFailed)
                 }
             }
 

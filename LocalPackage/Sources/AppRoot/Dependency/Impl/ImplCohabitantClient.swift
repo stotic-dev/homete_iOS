@@ -8,11 +8,7 @@ import HometeInfrastructure
 
 extension CohabitantClient {
 
-    static let liveValue: CohabitantClient = .init { data in
-        try await FirestoreService.shared.insertOrUpdate(data: data) {
-            $0.cohabitantRef(id: data.id)
-        }
-    } addSnapshotListener: { listenerId, cohabitantId in
+    static let liveValue: CohabitantClient = .init { listenerId, cohabitantId in
         await FirestoreService.shared.addSnapshotListener(id: listenerId) {
             $0.cohabitantRef(id: cohabitantId)
         }

@@ -15,10 +15,10 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
         /// 登録を行うメンバーが確定したかどうかの確認
         case fixedMember(isOK: Bool)
-        /// アカウントIDの共有
+        /// 役割の共有
         case preRegistration(role: CohabitantRegistrationRole)
-        /// 同居人IDの共有
-        case shareCohabitantId(id: String)
+        /// 招待トークンの共有
+        case shareInvitation(token: String)
         /// 登録完了したかどうかの確認
         case complete
 
@@ -40,12 +40,12 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         return role
     }
 
-    /// 同居人ID
-    public var cohabitantId: String? {
-        guard case let .shareCohabitantId(id) = type else {
+    /// 招待トークン
+    public var invitationToken: String? {
+        guard case let .shareInvitation(token) = type else {
             return nil
         }
-        return id
+        return token
     }
 
     /// 登録処理が完了したかどうか
