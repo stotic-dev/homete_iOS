@@ -49,6 +49,14 @@ struct HouseworkBoardView: View {
     let onRetry: () async -> Void
 
     var body: some View {
+        // 一覧をタブバーの裏まで伸ばすと、一覧側からは下端のセーフエリアが見えなくなる。
+        // 伸ばす前のここで測っておき、一覧の終端の余白として足し直す
+        GeometryReader { proxy in
+            boardBody(bottomSafeAreaInset: proxy.safeAreaInsets.bottom)
+        }
+    }
+
+    func boardBody(bottomSafeAreaInset: CGFloat) -> some View {
         NavigationStack(path: $navigationPath.path) {
             ZStack {
                 if let loadFailure {
@@ -58,11 +66,16 @@ struct HouseworkBoardView: View {
                         }
                     }
                 } else {
-                    boardContent()
-                    addHouseworkButton {
+                    boardContent(bottomSafeAreaInset: bottomSafeAreaInset)
+                }
+            }
+            // 一覧の下に追加ボタンの分の余白を作り、終端までスクロールしても最後の家事行と重ならないようにする。
+            // `overlay`で浮かせると一覧の上に乗るだけで余白ができず、行の右側（ポイント）が隠れてしまう
+            .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                if loadFailure == nil {
+                    AddHouseworkButton {
                         isPresentingAddHouseworkView = true
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(.trailing, .space24)
                     .padding(.bottom, .space24)
                 }
@@ -153,7 +166,7 @@ private extension HouseworkBoardView {
         )
     }
 
-    func boardContent() -> some View {
+    func boardContent(bottomSafeAreaInset: CGFloat) -> some View {
         VStack(spacing: .space16) {
             HouseworkDateHeaderContent(dateList: $dateList) {
                 tappedStorageLimitCell()
@@ -167,6 +180,7 @@ private extension HouseworkBoardView {
                             state: state,
                             list: houseworkBoardList,
                             memberList: members,
+                            bottomContentInset: bottomSafeAreaInset,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
                             selectedIDs: $selectedHouseworkIDs,
@@ -249,16 +263,6 @@ private extension HouseworkBoardView {
         } catch {
             commonError = .init(error: error)
         }
-    }
-
-    func addHouseworkButton(action: @escaping () -> Void) -> some View {
-        Button {
-            action()
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 24))
-        }
-        .floatingButtonStyle()
     }
 
     @ViewBuilder
@@ -345,6 +349,33 @@ private extension HouseworkBoardView {
     )
     .apply(theme: .init())
     .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
+    .environment(HouseworkListStore())
+    .environment(SubscriptionStore())
+}
+
+#Preview("HouseworkBoardView_家事が多い") {
+    let list = HouseworkBoardList(items: (1 ... 10).map { index in
+        HouseworkBoardItem.makeForPreview(
+            id: "\(index)",
+            title: "家事\(index)",
+            point: index * 10
+        )
+    })
+    HouseworkBoardView(
+        houseworkBoardList: .constant(list),
+        dateList: .constant(.init(
+            anchorDate: .distantPast,
+            selectedDate: .distantPast,
+            calendar: .japanese
+        )),
+        loadFailure: nil,
+        onUpdateHouseboardList: {},
+        onRetry: {}
+    )
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
     .environment(SubscriptionStore())
