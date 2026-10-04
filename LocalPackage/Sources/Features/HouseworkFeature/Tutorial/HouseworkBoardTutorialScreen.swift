@@ -19,14 +19,10 @@ public struct HouseworkBoardTutorialScreen: View {
     @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     let page: HouseworkState
-    let members: CohabitantMemberList
 
-    /// - Parameters:
-    ///   - page: 表示する一覧（未完了・完了）
-    ///   - members: サンプルの家事の担当者として出すメンバー
-    public init(page: HouseworkState, members: CohabitantMemberList) {
+    /// - Parameter page: 表示する一覧（未完了・完了）
+    public init(page: HouseworkState) {
         self.page = page
-        self.members = members
     }
 
     public var body: some View {
@@ -42,8 +38,8 @@ public struct HouseworkBoardTutorialScreen: View {
                 isSelecting: .constant(false),
                 selectedHouseworkIDs: .constant([]),
                 houseworkBoardList: houseworkBoardList,
-                members: members,
-                ownUserId: members.ownId,
+                members: HouseworkTutorialSample.members,
+                ownUserId: HouseworkTutorialSample.members.ownId,
                 loadFailure: nil,
                 onTapRetry: {},
                 onTapAdd: {},
@@ -62,7 +58,7 @@ public struct HouseworkBoardTutorialScreen: View {
 private extension HouseworkBoardTutorialScreen {
 
     var houseworkBoardList: HouseworkBoardList {
-        let items = HouseworkTutorialSample.items(today: calendar.startOfDay(for: now), members: members)
+        let items = HouseworkTutorialSample.items(today: calendar.startOfDay(for: now))
         return .init(items: items.map { .init(originalItem: $0, isRegistered: true) })
     }
 
@@ -70,26 +66,16 @@ private extension HouseworkBoardTutorialScreen {
 
 #if DEBUG
 #Preview("HouseworkBoardTutorialScreen_未完了") {
-    HouseworkBoardTutorialScreen(
-        page: .incomplete,
-        members: HouseworkTutorialSample.members(ownId: "ownUserId", ownUserName: "たろう", others: [
-            .init(id: "otherUserId", userName: "はなこ"),
-        ])
-    )
-    .apply(theme: .init())
-    .setupEnvironmentForPreview()
-    .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
+    HouseworkBoardTutorialScreen(page: .incomplete)
+        .apply(theme: .init())
+        .setupEnvironmentForPreview()
+        .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
 }
 
 #Preview("HouseworkBoardTutorialScreen_完了") {
-    HouseworkBoardTutorialScreen(
-        page: .completed,
-        members: HouseworkTutorialSample.members(ownId: "ownUserId", ownUserName: "たろう", others: [
-            .init(id: "otherUserId", userName: "はなこ"),
-        ])
-    )
-    .apply(theme: .init())
-    .setupEnvironmentForPreview()
-    .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
+    HouseworkBoardTutorialScreen(page: .completed)
+        .apply(theme: .init())
+        .setupEnvironmentForPreview()
+        .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
 }
 #endif

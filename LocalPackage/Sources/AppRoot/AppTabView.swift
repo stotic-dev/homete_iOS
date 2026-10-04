@@ -184,7 +184,7 @@ private extension AppTabView {
         .excludedFromTutorialSpotlight()
         .overlay {
             if registrationTutorialStore.currentStep == .dashboard {
-                DashboardTutorialScreen(members: tutorialMembers)
+                DashboardTutorialScreen()
                     .background(.background)
             }
         }
@@ -198,19 +198,10 @@ private extension AppTabView {
         .excludedFromTutorialSpotlight()
         .overlay {
             if let page = registrationTutorialStore.currentStep.flatMap(tutorialHouseworkPage) {
-                HouseworkBoardTutorialScreen(page: page, members: tutorialMembers)
+                HouseworkBoardTutorialScreen(page: page)
                     .background(.background)
             }
         }
-    }
-
-    /// チュートリアルのサンプルの家事に、担当者として出すメンバー
-    var tutorialMembers: CohabitantMemberList {
-        HouseworkTutorialSample.members(
-            ownId: loginContext.account.id,
-            ownUserName: loginContext.account.userName,
-            others: cohabitantStore.members.others
-        )
     }
 
 }

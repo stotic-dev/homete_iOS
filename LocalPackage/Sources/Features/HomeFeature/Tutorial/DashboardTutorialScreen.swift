@@ -19,12 +19,7 @@ public struct DashboardTutorialScreen: View {
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
-    let members: CohabitantMemberList
-
-    /// - Parameter members: サンプルの家事の担当者として出すメンバー
-    public init(members: CohabitantMemberList) {
-        self.members = members
-    }
+    public init() {}
 
     public var body: some View {
         NavigationStack {
@@ -40,7 +35,7 @@ public struct DashboardTutorialScreen: View {
                 todaySummary: {
                     TodayHouseworkSummaryContent(
                         summary: todaySummary,
-                        members: members,
+                        members: HouseworkTutorialSample.members,
                         onTapRegister: {},
                         onTapItem: { _ in },
                         onTapShowMore: {},
@@ -51,7 +46,7 @@ public struct DashboardTutorialScreen: View {
                     EmptyView()
                 },
                 contributionSummary: {
-                    ContributionSummaryTutorialContent(members: members)
+                    ContributionSummaryTutorialContent(members: HouseworkTutorialSample.members)
                 }
             )
             .homeNavigationBar(onTapSetting: {})
@@ -65,7 +60,7 @@ private extension DashboardTutorialScreen {
     var todaySummary: TodayHouseworkSummary {
         let today = calendar.startOfDay(for: now)
         return .make(
-            storedAllItems: .init(value: [HouseworkTutorialSample.dailyList(today: today, members: members)]),
+            storedAllItems: .init(value: [HouseworkTutorialSample.dailyList(today: today)]),
             template: nil,
             now: now,
             calendar: calendar,
@@ -78,13 +73,9 @@ private extension DashboardTutorialScreen {
 
 #if DEBUG
 #Preview("DashboardTutorialScreen") {
-    DashboardTutorialScreen(
-        members: HouseworkTutorialSample.members(ownId: "ownUserId", ownUserName: "たろう", others: [
-            .init(id: "otherUserId", userName: "はなこ"),
-        ])
-    )
-    .apply(theme: .init())
-    .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
-    .setupEnvironmentForPreview()
+    DashboardTutorialScreen()
+        .apply(theme: .init())
+        .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
+        .setupEnvironmentForPreview()
 }
 #endif

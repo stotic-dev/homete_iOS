@@ -12,17 +12,23 @@ import HometeDomain
 /// 本番と同じUIにこのサンプルを渡して表示する。保存はしない。
 public enum HouseworkTutorialSample {
 
-    /// パートナーの名前がまだ読み込めていないときに使うユーザーID
-    static let placeholderPartnerId = "tutorial_partner"
+    /// サンプルの家事の担当者として出すメンバー
+    ///
+    /// 実際のメンバー名を出すと本物の記録と見分けにくいため、架空の名前にする。
+    public static let members = CohabitantMemberList(
+        value: [
+            .init(id: ownId, userName: "たろう"),
+            .init(id: partnerId, userName: "はなこ"),
+        ],
+        ownId: ownId
+    )
 
     /// 今日の家事のサンプル
     ///
     /// 未完了の家事と、パートナーと自分がそれぞれ完了した家事を含める。
     /// パートナーが完了した家事にはまだありがとうを伝えていない状態にし、ハートを押せる見た目にする。
-    public static func items(today: Date, members: CohabitantMemberList) -> [HouseworkItem] {
-        let ownId = members.ownId
-        let partnerId = members.others.first?.id ?? placeholderPartnerId
-        return [
+    public static func items(today: Date) -> [HouseworkItem] {
+        [
             item(id: "1", title: "ゴミ出し", point: 10, today: today, executorId: partnerId),
             item(id: "2", title: "食器洗い", point: 20, today: today, executorId: ownId),
             item(id: "3", title: "洗濯", point: 20, today: today),
@@ -31,21 +37,10 @@ public enum HouseworkTutorialSample {
         ]
     }
 
-    /// サンプルに出すメンバー
-    ///
-    /// パートナーの名前がまだ読み込めていなければ、仮の名前で出す。
-    public static func members(ownId: String, ownUserName: String, others: [CohabitantMember]) -> CohabitantMemberList {
-        let partner = others.first ?? .init(id: placeholderPartnerId, userName: "パートナー")
-        return .init(
-            value: [.init(id: ownId, userName: ownUserName), partner],
-            ownId: ownId
-        )
-    }
-
     /// サンプルの家事を、指定日の家事一覧として返す
-    public static func dailyList(today: Date, members: CohabitantMemberList) -> DailyHouseworkList {
+    public static func dailyList(today: Date) -> DailyHouseworkList {
         .init(
-            items: items(today: today, members: members),
+            items: items(today: today),
             metaData: .init(indexedDate: .init(value: today), expiredAt: .distantFuture)
         )
     }
@@ -53,6 +48,9 @@ public enum HouseworkTutorialSample {
 }
 
 private extension HouseworkTutorialSample {
+
+    static let ownId = "tutorial_own"
+    static let partnerId = "tutorial_partner"
 
     /// - Parameter executorId: 完了した人。`nil`なら未完了の家事にする
     static func item(id: String, title: String, point: Int, today: Date, executorId: String? = nil) -> HouseworkItem {

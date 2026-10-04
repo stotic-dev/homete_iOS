@@ -10,61 +10,45 @@ import Testing
 
 struct HouseworkTutorialSampleTest {
 
-    @Test("パートナーが読み込めている場合は、自分とパートナーをメンバーにする")
-    func members_hasPartner_returnsOwnAndPartner() {
-        // Act
-        let result = HouseworkTutorialSample.members(
-            ownId: "ownUserId",
-            ownUserName: "たろう",
-            others: [.init(id: "partnerId", userName: "はなこ")]
-        )
-
-        // Assert
-        let expected = CohabitantMemberList(
-            value: [
-                .init(id: "ownUserId", userName: "たろう"),
-                .init(id: "partnerId", userName: "はなこ"),
-            ],
-            ownId: "ownUserId"
-        )
-        #expect(result == expected)
-    }
-
-    @Test("パートナーがまだ読み込めていない場合は、仮のパートナーをメンバーにする")
-    func members_noPartner_returnsPlaceholderPartner() {
-        // Act
-        let result = HouseworkTutorialSample.members(ownId: "ownUserId", ownUserName: "たろう", others: [])
-
-        // Assert
-        let expected = CohabitantMemberList(
-            value: [
-                .init(id: "ownUserId", userName: "たろう"),
-                .init(id: "tutorial_partner", userName: "パートナー"),
-            ],
-            ownId: "ownUserId"
-        )
-        #expect(result == expected)
-    }
-
-    @Test("サンプルの家事のうち、パートナーが完了した家事だけがありがとうを伝えられる状態になる")
-    func items_thanksStatus_onlyPartnerItemIsNotSent() {
+    @Test("指定日の家事一覧として、未完了の家事と、パートナーと自分が完了した家事を返す")
+    func dailyList_returnsIncompleteAndCompletedItemsOfDay() {
         // Arrange
-        let members = CohabitantMemberList(
-            value: [
-                .init(id: "ownUserId", userName: "たろう"),
-                .init(id: "partnerId", userName: "はなこ"),
-            ],
-            ownId: "ownUserId"
-        )
+        let today = Date.previewDate(year: 2026, month: 5, day: 18)
 
         // Act
-        let items = HouseworkTutorialSample.items(today: .distantPast, members: members)
+        let result = HouseworkTutorialSample.dailyList(today: today)
 
         // Assert
-        let statuses = items.map {
-            HouseworkThanksStatus.make(item: .init(originalItem: $0, isRegistered: true), ownUserId: "ownUserId")
-        }
-        #expect(statuses == [.notSent, nil, nil, nil, nil])
+        let expected = DailyHouseworkList(
+            items: [
+                makeItem(id: "tutorial_1", title: "ゴミ出し", point: 10, today: today, executorId: "tutorial_partner"),
+                makeItem(id: "tutorial_2", title: "食器洗い", point: 20, today: today, executorId: "tutorial_own"),
+                makeItem(id: "tutorial_3", title: "洗濯", point: 20, today: today),
+                makeItem(id: "tutorial_4", title: "お風呂掃除", point: 30, today: today),
+                makeItem(id: "tutorial_5", title: "夕食の準備", point: 40, today: today),
+            ],
+            metaData: .init(indexedDate: .init(value: today), expiredAt: .distantFuture)
+        )
+        #expect(result == expected)
+    }
+
+}
+
+private extension HouseworkTutorialSampleTest {
+
+    func makeItem(id: String, title: String, point: Int, today: Date, executorId: String? = nil) -> HouseworkItem {
+        .init(
+            id: id,
+            indexedDate: .init(value: today),
+            title: title,
+            point: point,
+            state: executorId == nil ? .incomplete : .completed,
+            executors: executorId.map { [.init(userId: $0, percentage: 100, point: point)] } ?? [],
+            effort: .normal,
+            executedAt: executorId == nil ? nil : today,
+            expiredAt: .distantFuture,
+            templateHouseworkItemId: nil
+        )
     }
 
 }
