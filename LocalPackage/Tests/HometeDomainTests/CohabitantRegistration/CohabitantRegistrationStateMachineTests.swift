@@ -246,6 +246,51 @@ extension CohabitantRegistrationStateMachineTests.ScanningCase {
         #expect(effects == [])
     }
 
+    @Test(
+        "旧バージョンのアプリから宣言が届いたら、宣言をやり直しにして取り消しを全員へ送り、アップデートを促すアラートを出す",
+        arguments: [true, false]
+    )
+    func receivedFixedMember_fromOutdatedPeer(isOK: Bool) {
+        // Arrange
+        var state = Tests.State(
+            phase: .scanning(.init(isConfirmed: true, confirmedPeers: [Tests.peerC])),
+            connectedPeers: [Tests.peerB, Tests.peerC]
+        )
+        let expectedState = Tests.State(
+            phase: .scanning(.init()),
+            connectedPeers: [Tests.peerB, Tests.peerC],
+            alert: .outdatedPeer
+        )
+
+        // Act
+        let effects = Tests.makeSUT().reduce(
+            &state,
+            .received(.init(type: .fixedMember(isOK: isOK), protocolVersion: nil), from: Tests.peerB)
+        )
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [.send(.init(type: .fixedMember(isOK: false)), to: [Tests.peerB, Tests.peerC])])
+    }
+
+    @Test("アップデートを促すアラートを閉じても、選び直しの状態のまま変えない")
+    func userDismissedAlert_outdatedPeer() {
+        // Arrange
+        var state = Tests.State(
+            phase: .scanning(.init()),
+            connectedPeers: [Tests.peerB],
+            alert: .outdatedPeer
+        )
+        let expectedState = Tests.State(phase: .scanning(.init()), connectedPeers: [Tests.peerB])
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .userDismissedAlert)
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
+    }
+
     @Test("キャンセルのアラートを閉じたら、自分の宣言もやり直しにする")
     func userDismissedAlert_rejectedByPeer() {
         // Arrange

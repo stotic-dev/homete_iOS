@@ -126,6 +126,8 @@ public extension CohabitantRegistrationState {
         case rejectedByPeer
         /// メンバー確定の通知を送れなかった
         case sendFailed
+        /// 相手のアプリが古いバージョンで、登録方式が違う。メンバーの選び直しの状態に戻っている
+        case outdatedPeer
         /// 登録処理中に接続状態が変わった（リーダーの重複も含む）。閉じるとメンバーの選び直しに戻る
         case connectionError
         /// 同居人の登録に失敗した。閉じると登録画面を終了する

@@ -114,6 +114,9 @@ private extension CohabitantRegistrationState.Alert {
 
         case .registrationFailed:
             "登録に失敗しました"
+
+        case .outdatedPeer:
+            "相手のアプリのアップデートが必要です"
         }
     }
 
@@ -127,6 +130,9 @@ private extension CohabitantRegistrationState.Alert {
 
         case .registrationFailed:
             "お手数ですが、通信状況をご確認の上、再度接続からお試しください。"
+
+        case .outdatedPeer:
+            "相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。"
         }
     }
 

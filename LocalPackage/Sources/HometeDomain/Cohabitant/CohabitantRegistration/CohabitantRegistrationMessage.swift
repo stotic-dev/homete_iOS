@@ -9,7 +9,16 @@ import Foundation
 
 public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
+    /// 現在の登録方式のバージョン
+    /// - Note: 1（フィールド無し）はリーダーがクライアントから同居人グループを作る旧方式。
+    ///         2は招待トークンでフォロワー自身が参加する方式（ADR-0040）。方式が違う端末どうしでは登録を進められない
+    public static let currentProtocolVersion = 2
+
     public let type: CommunicateType
+    /// 送信元の登録方式のバージョン
+    /// - Note: 旧バージョンのアプリは送ってこないためnilになる。旧バージョンのアプリは知らないキーを読み飛ばすので、
+    ///         このフィールドを足しても相手の解読は失敗しない
+    public let protocolVersion: Int?
 
     public enum CommunicateType: Codable, Equatable, Sendable {
 
@@ -63,8 +72,14 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         return encodedData
     }
 
-    public init(type: CommunicateType) {
+    /// 登録方式が自分より古い端末からのメッセージかどうか
+    public var isFromOutdatedPeer: Bool {
+        (protocolVersion ?? 1) < Self.currentProtocolVersion
+    }
+
+    public init(type: CommunicateType, protocolVersion: Int? = Self.currentProtocolVersion) {
         self.type = type
+        self.protocolVersion = protocolVersion
     }
 
 }

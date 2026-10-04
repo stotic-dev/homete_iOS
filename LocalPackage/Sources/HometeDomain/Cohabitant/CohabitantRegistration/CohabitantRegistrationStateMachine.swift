@@ -122,6 +122,13 @@ private extension CohabitantRegistrationStateMachine {
         switch state.phase {
         case var .scanning(scanning):
             guard let isFixedMember = message.isFixedMember else { return [] }
+            guard !message.isFromOutdatedPeer else {
+                // 旧バージョンのアプリはリーダーがグループを作る方式のままで、招待トークンを解読できずに落ちる。
+                // 登録処理に進む前に止め、相手にも宣言の取り消しを伝えて選び直しの状態に戻してもらう
+                state.phase = .scanning(.init())
+                state.alert = .outdatedPeer
+                return [.send(.init(type: .fixedMember(isOK: false)), to: state.connectedPeers)]
+            }
             if isFixedMember {
                 scanning.confirmedPeers.insert(sender)
             } else {
@@ -249,7 +256,7 @@ private extension CohabitantRegistrationStateMachine {
         case .registrationFailed:
             state.isDismissRequested = true
 
-        case .sendFailed, nil:
+        case .sendFailed, .outdatedPeer, nil:
             break
         }
         return []

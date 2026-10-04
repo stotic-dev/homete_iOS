@@ -146,10 +146,11 @@ struct CohabitantRegistrationMessageTests {
     func encodeDecode(type: CohabitantRegistrationMessage.CommunicateType) throws {
         let message = CohabitantRegistrationMessage(type: type)
 
-        let actual = message.encodedData()
+        let encodedData = message.encodedData()
 
-        let expected = try JSONEncoder().encode(message)
-        #expect(actual == expected)
+        // JSONのキーの並びは保証されないため、バイト列ではなく解読した結果で比べる
+        let actual = try JSONDecoder().decode(CohabitantRegistrationMessage.self, from: encodedData)
+        #expect(actual == message)
     }
 
     @Test(
@@ -170,6 +171,32 @@ struct CohabitantRegistrationMessageTests {
         let actual = CohabitantRegistrationMessage(encodedData)
 
         #expect(actual == message)
+    }
+
+    @Test("旧バージョンのアプリが送るバージョン無しのメッセージは、バージョン無しとして解読できる")
+    func init_withLegacyData() {
+        let data = Data(#"{"type":{"fixedMember":{"isOK":true}}}"#.utf8)
+        let expected = CohabitantRegistrationMessage(type: .fixedMember(isOK: true), protocolVersion: nil)
+
+        let actual = CohabitantRegistrationMessage(data)
+
+        #expect(actual == expected)
+    }
+
+    @Test(
+        "登録方式のバージョンが現在より古いか、無い場合は古い端末からのメッセージと判定する",
+        arguments: [
+            (Int?.none, true),
+            (1, true),
+            (CohabitantRegistrationMessage.currentProtocolVersion, false),
+        ]
+    )
+    func isFromOutdatedPeer(protocolVersion: Int?, expected: Bool) {
+        let message = CohabitantRegistrationMessage(type: .complete, protocolVersion: protocolVersion)
+
+        let actual = message.isFromOutdatedPeer
+
+        #expect(actual == expected)
     }
 
     @Test("解読できないデータの場合、nilを返す")
