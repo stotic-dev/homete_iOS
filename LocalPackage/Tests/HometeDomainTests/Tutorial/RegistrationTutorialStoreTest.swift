@@ -101,9 +101,9 @@ struct RegistrationTutorialStoreTest {
     @Test(
         "未所属からの所属でなければ、チュートリアルを始めない",
         arguments: [
-            (String?.some ("old"), String?.some ("new")),
-            (String?.some ("old"), String?.none),
-            (String?.none, String?.none),
+            ("old" as String?, "new" as String?),
+            ("old" as String?, nil as String?),
+            (nil as String?, nil as String?),
         ]
     )
     func didChangeCohabitant_otherTransition_doesNotStart(oldValue: String?, newValue: String?) async {
