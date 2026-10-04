@@ -124,10 +124,12 @@ private extension CohabitantRegistrationStateMachine {
             guard let isFixedMember = message.isFixedMember else { return [] }
             guard !message.isFromOutdatedPeer else {
                 // 旧バージョンのアプリはリーダーがグループを作る方式のままで、招待トークンを解読できずに落ちる。
-                // 登録処理に進む前に止め、相手にも宣言の取り消しを伝えて選び直しの状態に戻してもらう
+                // 登録処理に進む前に止め、相手にも宣言の取り消しを伝えて選び直しの状態に戻してもらう。
+                // 取り消しを他の新しい端末にまで送ると、相手のアップデートの案内がキャンセルのアラートで上書きされる。
+                // 他の新しい端末も旧端末の宣言を受けて自分で選び直しに戻るため、旧端末にだけ送る
                 state.phase = .scanning(.init())
                 state.alert = .outdatedPeer
-                return [.send(.init(type: .fixedMember(isOK: false)), to: state.connectedPeers)]
+                return [.send(.init(type: .fixedMember(isOK: false)), to: [sender])]
             }
             if isFixedMember {
                 scanning.confirmedPeers.insert(sender)

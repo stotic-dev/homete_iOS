@@ -247,7 +247,7 @@ extension CohabitantRegistrationStateMachineTests.ScanningCase {
     }
 
     @Test(
-        "旧バージョンのアプリから宣言が届いたら、宣言をやり直しにして取り消しを全員へ送り、アップデートを促すアラートを出す",
+        "旧バージョンのアプリから宣言が届いたら、宣言をやり直しにして取り消しを旧端末へ送り、アップデートを促すアラートを出す",
         arguments: [true, false]
     )
     func receivedFixedMember_fromOutdatedPeer(isOK: Bool) {
@@ -270,7 +270,7 @@ extension CohabitantRegistrationStateMachineTests.ScanningCase {
 
         // Assert
         #expect(state == expectedState)
-        #expect(effects == [.send(.init(type: .fixedMember(isOK: false)), to: [Tests.peerB, Tests.peerC])])
+        #expect(effects == [.send(.init(type: .fixedMember(isOK: false)), to: [Tests.peerB])])
     }
 
     @Test("アップデートを促すアラートを閉じても、選び直しの状態のまま変えない")
