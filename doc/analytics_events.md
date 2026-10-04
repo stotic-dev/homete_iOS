@@ -93,7 +93,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `cohabitant_completion` | `CohabitantCompletionView` |
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
 | `contribution_analytics` | `ContributionAnalyticsView` |
-| `housework_board` | `HouseworkBoardView` |
+| `housework_board` | `HouseworkBoardScreen` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
@@ -341,6 +341,10 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 ### `registration_tutorial`
 
 同居人グループの登録直後に一度だけ出す、導線を案内するチュートリアルでの行動。表示はタブの画面に重ねるオーバーレイで、独立した画面ではないため`screen_view`は送らない。
+
+> **注意:** チュートリアルは説明に合わせてダッシュボードと家事のタブを切り替えるため、裏にある本番の画面の`screen_view`（`dashboard`・`housework_board`）が送られる。登録直後のユーザーはこの分だけ表示回数が多く出る。
+
+グループを抜けたときや、グループに未所属のアカウントでログインし直したときは、ユーザーの操作によらずに表示をやめるため、イベントは送らない。
 
 | 項目 | 内容 |
 |---|---|
