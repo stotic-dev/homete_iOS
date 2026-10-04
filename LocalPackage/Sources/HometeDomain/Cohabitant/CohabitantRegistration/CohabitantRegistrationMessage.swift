@@ -77,7 +77,12 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         (protocolVersion ?? 1) < Self.currentProtocolVersion
     }
 
-    public init(type: CommunicateType, protocolVersion: Int? = Self.currentProtocolVersion) {
+    public init(type: CommunicateType) {
+        self.init(type: type, protocolVersion: Self.currentProtocolVersion)
+    }
+
+    /// - Note: 旧バージョンのアプリから届くメッセージをテストで作るためのもの。送信するメッセージには常に現在のバージョンを載せる
+    init(type: CommunicateType, protocolVersion: Int?) {
         self.type = type
         self.protocolVersion = protocolVersion
     }
