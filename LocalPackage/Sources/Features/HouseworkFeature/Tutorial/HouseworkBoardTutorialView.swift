@@ -1,5 +1,5 @@
 //
-//  HouseworkBoardTutorialScreen.swift
+//  HouseworkBoardTutorialView.swift
 //  LocalPackage
 //
 
@@ -12,17 +12,19 @@ import SwiftUI
 /// 本番と同じ`HouseworkBoardView`にサンプルの家事を渡して表示する。
 /// 家事ボードの見た目を変えると、チュートリアルにもそのまま反映される。
 /// 操作はスポットライト側で受け止めるため、タップには何も割り当てない。
-public struct HouseworkBoardTutorialScreen: View {
+public struct HouseworkBoardTutorialView: View {
 
-    @Environment(\.now) var now
     @Environment(\.calendar) var calendar
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     let page: HouseworkState
+    let now: Date
 
-    /// - Parameter page: 表示する一覧（未完了・完了）
-    public init(page: HouseworkState) {
+    /// - Parameters:
+    ///   - page: 表示する一覧（未完了・完了）
+    ///   - now: 現在日時。この日の家事としてサンプルを並べる
+    public init(page: HouseworkState, now: Date) {
         self.page = page
+        self.now = now
     }
 
     public var body: some View {
@@ -32,7 +34,8 @@ public struct HouseworkBoardTutorialScreen: View {
                     anchorDate: now,
                     selectedDate: now,
                     calendar: calendar,
-                    storagePolicy: storagePolicy
+                    // 保存期間の案内は説明の対象ではないため出さない
+                    storagePolicy: .premium
                 )),
                 selectedHouseworkState: .constant(page),
                 isSelecting: .constant(false),
@@ -55,7 +58,7 @@ public struct HouseworkBoardTutorialScreen: View {
 
 }
 
-private extension HouseworkBoardTutorialScreen {
+private extension HouseworkBoardTutorialView {
 
     var houseworkBoardList: HouseworkBoardList {
         let items = HouseworkTutorialSample.items(today: calendar.startOfDay(for: now))
@@ -65,17 +68,17 @@ private extension HouseworkBoardTutorialScreen {
 }
 
 #if DEBUG
-#Preview("HouseworkBoardTutorialScreen_未完了") {
-    HouseworkBoardTutorialScreen(page: .incomplete)
+#Preview("HouseworkBoardTutorialView_未完了") {
+    HouseworkBoardTutorialView(page: .incomplete, now: .previewDate(year: 2026, month: 5, day: 18))
         .apply(theme: .init())
         .setupEnvironmentForPreview()
-        .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
+        .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
 }
 
-#Preview("HouseworkBoardTutorialScreen_完了") {
-    HouseworkBoardTutorialScreen(page: .completed)
+#Preview("HouseworkBoardTutorialView_完了") {
+    HouseworkBoardTutorialView(page: .completed, now: .previewDate(year: 2026, month: 5, day: 18))
         .apply(theme: .init())
         .setupEnvironmentForPreview()
-        .setupStorageEnvironmentForPreview(now: .previewDate(year: 2026, month: 5, day: 18))
+        .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
 }
 #endif

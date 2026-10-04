@@ -1,5 +1,5 @@
 //
-//  DashboardTutorialScreen.swift
+//  DashboardTutorialView.swift
 //  LocalPackage
 //
 
@@ -14,12 +14,16 @@ import SwiftUI
 /// 本番と同じ`DashboardContent`と各セクションのUIにサンプルの家事を渡して表示する。
 /// ダッシュボードの見た目を変えると、チュートリアルにもそのまま反映される。
 /// 操作はスポットライト側で受け止めるため、タップには何も割り当てない。
-public struct DashboardTutorialScreen: View {
+public struct DashboardTutorialView: View {
 
-    @Environment(\.now) var now
     @Environment(\.calendar) var calendar
 
-    public init() {}
+    let now: Date
+
+    /// - Parameter now: 現在日時。この日の家事としてサンプルを並べる
+    public init(now: Date) {
+        self.now = now
+    }
 
     public var body: some View {
         NavigationStack {
@@ -55,7 +59,7 @@ public struct DashboardTutorialScreen: View {
 
 }
 
-private extension DashboardTutorialScreen {
+private extension DashboardTutorialView {
 
     var todaySummary: TodayHouseworkSummary {
         let today = calendar.startOfDay(for: now)
@@ -72,10 +76,10 @@ private extension DashboardTutorialScreen {
 }
 
 #if DEBUG
-#Preview("DashboardTutorialScreen") {
-    DashboardTutorialScreen()
+#Preview("DashboardTutorialView") {
+    DashboardTutorialView(now: .previewDate(year: 2026, month: 5, day: 18))
         .apply(theme: .init())
-        .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
         .setupEnvironmentForPreview()
+        .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
 }
 #endif

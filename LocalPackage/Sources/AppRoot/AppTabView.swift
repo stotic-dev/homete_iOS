@@ -15,6 +15,7 @@ struct AppTabView: View {
     @Environment(\.appDependencies) var appDependencies
     @Environment(\.loginContext) var loginContext
     @Environment(\.calendar) var calendar
+    @Environment(\.now) var now
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(CohabitantStore.self) var cohabitantStore
@@ -184,7 +185,7 @@ private extension AppTabView {
         .excludedFromTutorialSpotlight()
         .overlay {
             if registrationTutorialStore.currentStep == .dashboard {
-                DashboardTutorialScreen()
+                DashboardTutorialView(now: now)
                     // カードをタブバーに重ねないよう、タブの中の範囲に置く
                     .tutorialSpotlightCardArea()
                     .background(.background)
@@ -200,7 +201,7 @@ private extension AppTabView {
         .excludedFromTutorialSpotlight()
         .overlay {
             if let page = registrationTutorialStore.currentStep.flatMap(tutorialHouseworkPage) {
-                HouseworkBoardTutorialScreen(page: page)
+                HouseworkBoardTutorialView(page: page, now: now)
                     // カードをタブバーに重ねないよう、タブの中の範囲に置く
                     .tutorialSpotlightCardArea()
                     .background(.background)
