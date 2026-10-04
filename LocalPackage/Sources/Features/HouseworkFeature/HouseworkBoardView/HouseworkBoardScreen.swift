@@ -94,6 +94,53 @@ public struct HouseworkBoardScreen: View {
 private extension HouseworkBoardScreen {
 
     func board(houseworkListStore: HouseworkListStore) -> some View {
+        boardNavigation(houseworkListStore: houseworkListStore)
+            .sheet(isPresented: $isPresentingAddHouseworkView) {
+                RegisterHouseworkView(
+                    dailyHouseworkList: .makeInitialValue(
+                        selectedDate: dateList.selectedDate,
+                        items: [],
+                        calendar: calendar,
+                        storagePolicy: storagePolicy
+                    ),
+                    step: .board
+                )
+            }
+            // TabViewのページの中や、空表示と切り替わる一覧に置くと、完了にした家事が一覧から消えたときに
+            // シートを出しているビューごと作り直され、閉じたシートがもう一度出てしまうため、ボード全体に置く
+            .sheet(item: $completingItem) { item in
+                HouseworkCompleteSheet(item: item, step: .board)
+            }
+            .sheet(item: $thankingItem) { item in
+                HouseworkThanksView(item: item)
+            }
+            .sheet(item: $addingHelperItem) { item in
+                HouseworkAddHelperSheet(item: item, step: .board)
+            }
+            .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+                router.resolve(.houseworkTemplate)
+            }
+            .fullScreenCoverOnIOS(
+                isPresented: $isShowPaywall,
+                onDismiss: { dismissedPaywall() },
+                content: { router.resolve(.paywall) }
+            )
+            .onChange(of: houseworkListStore.items) {
+                withAnimation {
+                    updateHouseboardList(with: houseworkListStore)
+                }
+            }
+            .onChange(of: dateList.selectedDate) {
+                withAnimation {
+                    updateHouseboardList(with: houseworkListStore)
+                }
+            }
+            .commonError(content: $commonError)
+            .fullScreenLoadingIndicator(loadingState)
+            .trackScreenView(.houseworkBoard)
+    }
+
+    func boardNavigation(houseworkListStore: HouseworkListStore) -> some View {
         NavigationStack(path: $navigationPath.path) {
             HouseworkBoardView(
                 dateList: $dateList,
@@ -140,49 +187,6 @@ private extension HouseworkBoardScreen {
             }
             .environment(\.houseworkBoardNavigationPath, navigationPath)
         }
-        .sheet(isPresented: $isPresentingAddHouseworkView) {
-            RegisterHouseworkView(
-                dailyHouseworkList: .makeInitialValue(
-                    selectedDate: dateList.selectedDate,
-                    items: [],
-                    calendar: calendar,
-                    storagePolicy: storagePolicy
-                ),
-                step: .board
-            )
-        }
-        // TabViewのページの中や、空表示と切り替わる一覧に置くと、完了にした家事が一覧から消えたときに
-        // シートを出しているビューごと作り直され、閉じたシートがもう一度出てしまうため、ボード全体に置く
-        .sheet(item: $completingItem) { item in
-            HouseworkCompleteSheet(item: item, step: .board)
-        }
-        .sheet(item: $thankingItem) { item in
-            HouseworkThanksView(item: item)
-        }
-        .sheet(item: $addingHelperItem) { item in
-            HouseworkAddHelperSheet(item: item, step: .board)
-        }
-        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
-            router.resolve(.houseworkTemplate)
-        }
-        .fullScreenCoverOnIOS(
-            isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
-        )
-        .onChange(of: houseworkListStore.items) {
-            withAnimation {
-                updateHouseboardList(with: houseworkListStore)
-            }
-        }
-        .onChange(of: dateList.selectedDate) {
-            withAnimation {
-                updateHouseboardList(with: houseworkListStore)
-            }
-        }
-        .commonError(content: $commonError)
-        .fullScreenLoadingIndicator(loadingState)
-        .trackScreenView(.houseworkBoard)
     }
 
     @ViewBuilder
