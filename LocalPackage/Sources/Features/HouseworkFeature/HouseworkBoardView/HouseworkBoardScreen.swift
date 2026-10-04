@@ -9,17 +9,41 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
+/// 家事ボードの画面
+///
+/// Storeの購読・家事の操作・シートの表示・画面遷移を受け持ち、見た目は`HouseworkBoardView`に任せる。
 public struct HouseworkBoardScreen: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
+    @Environment(\.routeResolver) var router
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
-    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.loginContext) var loginContext
+    @Environment(\.cohabitantMembers) var members
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
+    @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
+    @State var selectedHouseworkState = HouseworkState.incomplete
+    @State var isPresentingAddHouseworkView = false
+    @State var isShowHouseworkTemplate = false
+    @State var isShowPaywall = false
+    @State var isSelecting = false
+    /// 複数選択モードで選択中の家事のID
+    @State var selectedHouseworkIDs: Set<String> = []
+    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
+    @State var completingItem: HouseworkBoardItem?
+    /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
+    @State var thankingItem: HouseworkBoardItem?
+    /// クイックアクションの「手伝った人を追加」で、担当者を選ぶハーフモーダルを出している家事
+    @State var addingHelperItem: HouseworkBoardItem?
+
+    @LoadingState var loadingState
+    @CommonError var commonError
 
     let houseworkListStore: HouseworkListStore?
     let houseworkTemplateListStore: HouseworkTemplateListStore?
@@ -36,40 +60,136 @@ public struct HouseworkBoardScreen: View {
 
     public var body: some View {
         if let houseworkListStore {
-            HouseworkBoardView(
-                houseworkBoardList: $houseworkBoardList,
-                dateList: $dateList,
-                loadFailure: loadFailure(of: houseworkListStore),
-                onUpdateHouseboardList: {
-                    updateHouseboardList(with: houseworkListStore)
-                },
-                onRetry: {
-                    await retry()
+            board(houseworkListStore: houseworkListStore)
+                .environment(houseworkListStore)
+                .environment(houseworkTemplateListStore)
+                .onAppear {
+                    withAnimation {
+                        onAppeare(with: houseworkListStore)
+                    }
                 }
-            )
-            .environment(houseworkListStore)
-            .environment(houseworkTemplateListStore)
-            .onAppear {
-                withAnimation {
-                    onAppeare(with: houseworkListStore)
+                // 繰り返しを設定した登録やテンプレートの編集は家事の購読には現れないため、テンプレートの変化でも組み直す
+                .onChange(of: templateContext) {
+                    withAnimation {
+                        updateHouseboardList(with: houseworkListStore)
+                    }
                 }
-            }
-            // 繰り返しを設定した登録やテンプレートの編集は家事の購読には現れないため、テンプレートの変化でも組み直す
-            .onChange(of: templateContext) {
-                withAnimation {
-                    updateHouseboardList(with: houseworkListStore)
+                // プランが確定・変化したタイミングで日付リストの選択可能範囲を組み直す
+                .task(id: storagePolicy) {
+                    rebuildDateList()
                 }
-            }
-            // プランが確定・変化したタイミングで日付リストの選択可能範囲を組み直す
-            .task(id: storagePolicy) {
-                rebuildDateList()
-            }
         } else {
             // TODO: グループ登録前は利用できない旨の空表示を出す
             ContentUnavailableView(
                 "グループの登録または参加を行うと、家事の管理ができるようになります。",
                 systemImage: ""
             )
+        }
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension HouseworkBoardScreen {
+
+    func board(houseworkListStore: HouseworkListStore) -> some View {
+        NavigationStack(path: $navigationPath.path) {
+            HouseworkBoardView(
+                dateList: $dateList,
+                selectedHouseworkState: $selectedHouseworkState,
+                isSelecting: $isSelecting,
+                selectedHouseworkIDs: $selectedHouseworkIDs,
+                houseworkBoardList: houseworkBoardList,
+                members: members,
+                ownUserId: loginContext.account.id,
+                loadFailure: loadFailure(of: houseworkListStore),
+                onTapRetry: {
+                    loadingState.task {
+                        await retry()
+                    }
+                },
+                onTapAdd: { isPresentingAddHouseworkView = true },
+                onTapItem: { navigationPath.push(.houseworkDetail($0)) },
+                onTapThanks: { item in
+                    Task {
+                        await sendThanks(to: item, store: houseworkListStore)
+                    }
+                },
+                onTapStorageLimit: { tappedStorageLimitCell() },
+                onTapHouseworkTemplate: { isShowHouseworkTemplate = true },
+                onTapBulkAction: { action in
+                    Task {
+                        await performBulk(action, store: houseworkListStore)
+                    }
+                },
+                rowMenu: { item in
+                    HouseworkQuickActionMenuContent(
+                        item: item,
+                        step: .board,
+                        canAddHelper: item.canAddHelper(members: members),
+                        onSelectComplete: { completingItem = item },
+                        onSelectThanks: { thankingItem = item },
+                        onSelectAddHelper: { addingHelperItem = item },
+                        onError: { commonError = .init(error: $0) }
+                    )
+                }
+            )
+            .navigationDestination(for: HouseworkBoardRoute.self) { route in
+                navigationHandler(route)
+            }
+            .environment(\.houseworkBoardNavigationPath, navigationPath)
+        }
+        .sheet(isPresented: $isPresentingAddHouseworkView) {
+            RegisterHouseworkView(
+                dailyHouseworkList: .makeInitialValue(
+                    selectedDate: dateList.selectedDate,
+                    items: [],
+                    calendar: calendar,
+                    storagePolicy: storagePolicy
+                ),
+                step: .board
+            )
+        }
+        // TabViewのページの中や、空表示と切り替わる一覧に置くと、完了にした家事が一覧から消えたときに
+        // シートを出しているビューごと作り直され、閉じたシートがもう一度出てしまうため、ボード全体に置く
+        .sheet(item: $completingItem) { item in
+            HouseworkCompleteSheet(item: item, step: .board)
+        }
+        .sheet(item: $thankingItem) { item in
+            HouseworkThanksView(item: item)
+        }
+        .sheet(item: $addingHelperItem) { item in
+            HouseworkAddHelperSheet(item: item, step: .board)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            onDismiss: { dismissedPaywall() },
+            content: { router.resolve(.paywall) }
+        )
+        .onChange(of: houseworkListStore.items) {
+            withAnimation {
+                updateHouseboardList(with: houseworkListStore)
+            }
+        }
+        .onChange(of: dateList.selectedDate) {
+            withAnimation {
+                updateHouseboardList(with: houseworkListStore)
+            }
+        }
+        .commonError(content: $commonError)
+        .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.houseworkBoard)
+    }
+
+    @ViewBuilder
+    func navigationHandler(_ route: HouseworkBoardRoute) -> some View {
+        switch route {
+        case let .houseworkDetail(item):
+            HouseworkDetailView(item: item)
         }
     }
 
@@ -93,7 +213,7 @@ private extension HouseworkBoardScreen {
     /// - Note: `HouseworkManager`のリスナーは失敗時に購読が止まるため、リスナーを張り直す
     ///         `setupObserver`の再実行で復帰させる。
     func retry() async {
-        guard let cohabitantId else { return }
+        guard let cohabitantId = loginContext.cohabitantId else { return }
         await houseworkManager.setupObserver(
             currentTime: now,
             cohabitantId: cohabitantId,
@@ -121,6 +241,57 @@ private extension HouseworkBoardScreen {
             storagePolicy: storagePolicy,
             uuidGenerator: { UUID() }
         )
+    }
+
+    /// ハートのタップでは、メッセージを書かずにありがとうだけを伝える（コメントがないので通知は送らない）
+    func sendThanks(to item: HouseworkBoardItem, store: HouseworkListStore) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        do {
+            try await store.perform(
+                .sendThanks,
+                on: item,
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId,
+                step: .board
+            )
+        } catch {
+            commonError = .init(error: error)
+        }
+    }
+
+    func performBulk(_ action: HouseworkQuickAction, store: HouseworkListStore) async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+
+        let selection = HouseworkSelection(
+            items: houseworkBoardList.items(matching: selectedHouseworkState),
+            state: selectedHouseworkState,
+            selectedIDs: selectedHouseworkIDs,
+            ownUserId: loginContext.account.id
+        )
+        do {
+            try await store.performBulk(
+                action,
+                on: selection.targets(for: action),
+                now: now,
+                account: loginContext.account,
+                cohabitantId: cohabitantId,
+                step: .board
+            )
+            selectedHouseworkIDs = []
+        } catch {
+            commonError = .init(error: error)
+        }
+    }
+
+    func tappedStorageLimitCell() {
+        analyticsClient.log(.paywall(.shown(step: .boardStorageLimit)))
+        isShowPaywall = true
+    }
+
+    func dismissedPaywall() {
+        analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
     }
 
 }

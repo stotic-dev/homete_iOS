@@ -9,17 +9,17 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HouseworkBoardListContent: View {
+/// 家事ボードの1ページ（未完了・完了のどちらか）の一覧
+///
+/// 渡された家事を並べてタップを伝えるだけのUIで、家事の操作や遷移は呼び出し側が行う。
+struct HouseworkBoardListContent<RowMenu: View>: View {
 
-    @Environment(\.houseworkBoardNavigationPath) var navigationPath
-    @Environment(\.loginContext) var loginContext
-    @Environment(\.now) var now
-
-    var houseworkListStore: HouseworkListStore
     let state: HouseworkState
     let list: HouseworkBoardList
-    /// 完了した家事の担当者名を引き、手伝った人を足せるかを判定するための同居人一覧
+    /// 完了した家事の担当者名を引くための同居人一覧
     let memberList: CohabitantMemberList
+    /// ログイン中のユーザーのID。ありがとうの状況と、選択できる家事の判定に使う
+    let ownUserId: String
     /// 一覧がタブバーの裏まで伸びている分の高さ
     ///
     /// 終端までスクロールしたときに最後の行がタブバーに隠れないよう、この分を余白として足す
@@ -31,14 +31,11 @@ struct HouseworkBoardListContent: View {
     /// 一括操作のボタンはナビゲーションバー側に置いているため、選択の保持は親のViewが行う
     @Binding var selectedIDs: Set<String>
     let onCreateTapped: () -> Void
-    /// クイックアクションで「完了にする」が選ばれた。ハーフモーダルは親が出す
-    let onSelectComplete: (HouseworkBoardItem) -> Void
-    /// クイックアクションで「ありがとう」が選ばれた。ハーフモーダルは親が出す
-    let onSelectThanks: (HouseworkBoardItem) -> Void
-    /// クイックアクションで「手伝った人を追加」が選ばれた。ハーフモーダルは親が出す
-    let onSelectAddHelper: (HouseworkBoardItem) -> Void
-
-    @CommonError var commonError
+    let onTapItem: (HouseworkBoardItem) -> Void
+    /// ハートのタップで、メッセージを書かずにありがとうだけを伝える
+    let onTapThanks: (HouseworkBoardItem) -> Void
+    /// 家事のセルを長押ししたときのメニューの中身
+    @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
     var body: some View {
         if let emptyReason = HouseworkBoardEmptyReason(list: list, state: state) {
@@ -56,15 +53,7 @@ struct HouseworkBoardListContent: View {
                         .opacity(isSelectionDisabled ? 0.4 : 1)
                         .selectionDisabled(isSelectionDisabled)
                         .contextMenu {
-                            HouseworkQuickActionMenuContent(
-                                item: item,
-                                step: .board,
-                                canAddHelper: item.canAddHelper(members: memberList),
-                                onSelectComplete: { onSelectComplete(item) },
-                                onSelectThanks: { onSelectThanks(item) },
-                                onSelectAddHelper: { onSelectAddHelper(item) },
-                                onError: { commonError = .init(error: $0) }
-                            )
+                            rowMenu(item)
                         }
                 }
                 .listRowBackground(Color.clear)
@@ -85,7 +74,6 @@ struct HouseworkBoardListContent: View {
             #if os(iOS)
             .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
             #endif
-            .commonError(content: $commonError)
         }
     }
 
@@ -98,13 +86,13 @@ private extension HouseworkBoardListContent {
             items: list.items(matching: state),
             state: state,
             selectedIDs: selectedIDs,
-            ownUserId: loginContext.account.id
+            ownUserId: ownUserId
         )
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
         Button {
-            navigationPath.push(.houseworkDetail(item))
+            onTapItem(item)
         } label: {
             let completionInfo = completionInfo(of: item)
             HouseBoardListRow(
@@ -119,29 +107,7 @@ private extension HouseworkBoardListContent {
     func thanksAction(of item: HouseworkBoardItem, status: HouseworkThanksStatus?) -> (() -> Void)? {
         guard status == .notSent, !isSelecting else { return nil }
 
-        return {
-            Task {
-                await sendThanks(to: item)
-            }
-        }
-    }
-
-    /// ハートのタップでは、メッセージを書かずにありがとうだけを伝える（コメントがないので通知は送らない）
-    func sendThanks(to item: HouseworkBoardItem) async {
-        guard let cohabitantId = loginContext.cohabitantId else { return }
-
-        do {
-            try await houseworkListStore.perform(
-                .sendThanks,
-                on: item,
-                now: now,
-                account: loginContext.account,
-                cohabitantId: cohabitantId,
-                step: .board
-            )
-        } catch {
-            commonError = .init(error: error)
-        }
+        return { onTapThanks(item) }
     }
 
     /// 完了リストの家事セルに出す、担当者とありがとうの状況
@@ -152,7 +118,7 @@ private extension HouseworkBoardListContent {
 
         return .init(
             executorNames: item.executors.compactMap { memberList.userName($0.userId) },
-            thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: loginContext.account.id)
+            thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: ownUserId)
         )
     }
 
@@ -163,10 +129,6 @@ private extension HouseworkBoardListContent {
     @Previewable @State var selectedState = HouseworkState.incomplete
     @Previewable @State var isSelecting = false
     HouseworkBoardListContent(
-        houseworkListStore: .init(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ),
         state: .incomplete,
         list: .init(items: [
             .makeForPreview(
@@ -189,26 +151,22 @@ private extension HouseworkBoardListContent {
             ),
         ]),
         memberList: .init(value: [], ownId: ""),
+        ownUserId: "ownUserId",
         bottomContentInset: .zero,
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         selectedIDs: .constant([]),
         onCreateTapped: {},
-        onSelectComplete: { _ in },
-        onSelectThanks: { _ in },
-        onSelectAddHelper: { _ in }
+        onTapItem: { _ in },
+        onTapThanks: { _ in },
+        rowMenu: { _ in EmptyView() }
     )
-    .setupLoginContextForPreview()
 }
 
 #Preview("HouseworkBoardListContent_選択モード") {
     @Previewable @State var selectedState = HouseworkState.completed
     @Previewable @State var isSelecting = true
     HouseworkBoardListContent(
-        houseworkListStore: .init(
-            houseworkClient: .previewValue,
-            cohabitantPushNotificationClient: .previewValue
-        ),
         state: .completed,
         list: .init(items: [
             .makeForPreview(
@@ -243,15 +201,15 @@ private extension HouseworkBoardListContent {
             ],
             ownId: "ownUserId"
         ),
+        ownUserId: "ownUserId",
         bottomContentInset: .zero,
         selectedHouseworkState: $selectedState,
         isSelecting: $isSelecting,
         selectedIDs: .constant(["1"]),
         onCreateTapped: {},
-        onSelectComplete: { _ in },
-        onSelectThanks: { _ in },
-        onSelectAddHelper: { _ in }
+        onTapItem: { _ in },
+        onTapThanks: { _ in },
+        rowMenu: { _ in EmptyView() }
     )
-    .setupLoginContextForPreview()
 }
 #endif
