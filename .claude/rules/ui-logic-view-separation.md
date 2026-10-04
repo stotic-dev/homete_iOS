@@ -72,7 +72,7 @@ public struct HouseworkBoardScreen: View {
 ## なぜこうするのか
 
 - **同じUIを別の値で使い回せる。** グループ登録直後のチュートリアルは、家事がまだ1件もない画面の代わりに、
-  UIのみのViewへサンプルの家事を渡して表示している（`HouseworkBoardTutorialScreen`・`DashboardTutorialScreen`）。
+  UIのみのViewへサンプルの家事を渡して表示している（`HouseworkBoardTutorialView`・`DashboardTutorialView`）。
   UIを変えればチュートリアルにもそのまま反映され、チュートリアル用の画面を別に保守しなくて済む
 - **Previewで表示のバリエーションを網羅できる。** Environmentへの依存が無ければ、引数を変えるだけで状態を
   作り分けられ、VRTの対象を増やせる（[prefire-preview.md](prefire-preview.md)の7）
