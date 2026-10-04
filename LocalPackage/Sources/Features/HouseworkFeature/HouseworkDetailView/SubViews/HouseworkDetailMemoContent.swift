@@ -22,14 +22,15 @@ struct HouseworkDetailMemoContent: View {
     let onToggle: (HouseworkMemoChecklistItem.ID) -> Void
 
     var body: some View {
-        HouseworkDetailItemRow(title: "メモ") {
-            VStack(alignment: .leading, spacing: .space16) {
-                if let memo {
-                    HouseworkMemoContent(memo: memo, isEditable: isEditable, onToggle: onToggle)
-                }
+        SectionCard("メモ") {
+            if let memo {
+                HouseworkMemoContent(memo: memo, isEditable: isEditable, onToggle: onToggle)
                 if isEditable {
-                    editButton()
+                    Divider()
                 }
+            }
+            if isEditable {
+                editButton()
             }
         }
     }
