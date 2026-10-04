@@ -31,4 +31,10 @@ public extension RegistrationTutorialStep {
         return Self.allCases.indices.contains(nextIndex) ? Self.allCases[nextIndex] : nil
     }
 
+    /// 前のステップ。最初のステップならnil
+    var previous: Self? {
+        let previousIndex = index - 1
+        return Self.allCases.indices.contains(previousIndex) ? Self.allCases[previousIndex] : nil
+    }
+
 }

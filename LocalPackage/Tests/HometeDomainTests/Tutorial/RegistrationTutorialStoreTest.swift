@@ -201,6 +201,66 @@ struct RegistrationTutorialStoreTest {
         #expect(sut.currentStep == .thanks)
     }
 
+    // MARK: back
+
+    @Test(
+        "最初以外のステップでは、前のステップへ戻す",
+        arguments: [
+            (RegistrationTutorialStep.housework, RegistrationTutorialStep.dashboard),
+            (.thanks, .housework),
+            (.houseworkTemplate, .thanks),
+        ]
+    )
+    func back_notFirstStep_movesToPreviousStep(
+        currentStep: RegistrationTutorialStep,
+        expected: RegistrationTutorialStep
+    ) {
+        // Arrange
+        let sut = RegistrationTutorialStore(
+            currentStep: currentStep,
+            stateClient: .init(saveIsPending: { _ in Issue.record() }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        sut.back(from: currentStep)
+
+        // Assert
+        #expect(sut.currentStep == expected)
+    }
+
+    @Test("最初のステップでは、戻さない")
+    func back_firstStep_keepsCurrentStep() {
+        // Arrange
+        let sut = RegistrationTutorialStore(
+            currentStep: .dashboard,
+            stateClient: .init(saveIsPending: { _ in Issue.record() }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        sut.back(from: .dashboard)
+
+        // Assert
+        #expect(sut.currentStep == .dashboard)
+    }
+
+    @Test("表示中のステップと違うステップから戻そうとしたら、何もしない")
+    func back_fromStaleStep_doesNothing() {
+        // Arrange
+        let sut = RegistrationTutorialStore(
+            currentStep: .housework,
+            stateClient: .init(saveIsPending: { _ in Issue.record() }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        sut.back(from: .thanks)
+
+        // Assert
+        #expect(sut.currentStep == .housework)
+    }
+
     // MARK: close
 
     @Test("途中で閉じると、チュートリアルを終えて見終わったことを記録し、閉じたステップを付けてイベントを送る")

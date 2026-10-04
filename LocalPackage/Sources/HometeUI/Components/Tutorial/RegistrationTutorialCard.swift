@@ -15,15 +15,18 @@ public struct RegistrationTutorialCard: View {
 
     let step: RegistrationTutorialStep
     let onTapNext: () -> Void
+    let onTapBack: () -> Void
     let onTapClose: () -> Void
 
     public init(
         step: RegistrationTutorialStep,
         onTapNext: @escaping () -> Void,
+        onTapBack: @escaping () -> Void,
         onTapClose: @escaping () -> Void
     ) {
         self.step = step
         self.onTapNext = onTapNext
+        self.onTapBack = onTapBack
         self.onTapClose = onTapClose
     }
 
@@ -47,8 +50,7 @@ public struct RegistrationTutorialCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Button(isLastStep ? "はじめる" : "次へ", action: onTapNext)
-                .primaryButtonStyle()
+            footer
         }
         .sectionCardStyle()
         .id(step)
@@ -76,6 +78,19 @@ private extension RegistrationTutorialCard {
         }
     }
 
+    /// 「次へ」はステップによらず同じ位置に置き、続けて押せるようにする
+    var footer: some View {
+        HStack(spacing: .space8) {
+            if !isFirstStep {
+                Button("前へ", action: onTapBack)
+                    .subPrimaryButtonStyle()
+            }
+            Spacer()
+            Button(isLastStep ? "はじめる" : "次へ", action: onTapNext)
+                .primaryButtonStyle()
+        }
+    }
+
     var icon: some View {
         Image(systemName: systemImage)
             .font(.title2)
@@ -93,6 +108,10 @@ private extension RegistrationTutorialCard {
 // MARK: 表示の属性
 
 private extension RegistrationTutorialCard {
+
+    var isFirstStep: Bool {
+        step.previous == nil
+    }
 
     var isLastStep: Bool {
         step.next == nil
@@ -175,21 +194,21 @@ private extension RegistrationTutorialCard {
 }
 
 #Preview("RegistrationTutorialCard_ダッシュボード", traits: .sizeThatFitsLayout) {
-    RegistrationTutorialCard(step: .dashboard, onTapNext: {}, onTapClose: {})
+    RegistrationTutorialCard(step: .dashboard, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
 }
 
 #Preview("RegistrationTutorialCard_家事", traits: .sizeThatFitsLayout) {
-    RegistrationTutorialCard(step: .housework, onTapNext: {}, onTapClose: {})
+    RegistrationTutorialCard(step: .housework, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
 }
 
 #Preview("RegistrationTutorialCard_ありがとう", traits: .sizeThatFitsLayout) {
-    RegistrationTutorialCard(step: .thanks, onTapNext: {}, onTapClose: {})
+    RegistrationTutorialCard(step: .thanks, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
 }
 
 #Preview("RegistrationTutorialCard_家事テンプレート", traits: .sizeThatFitsLayout) {
-    RegistrationTutorialCard(step: .houseworkTemplate, onTapNext: {}, onTapClose: {})
+    RegistrationTutorialCard(step: .houseworkTemplate, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
 }

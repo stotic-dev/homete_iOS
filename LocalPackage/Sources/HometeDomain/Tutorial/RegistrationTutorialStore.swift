@@ -80,6 +80,16 @@ public final class RegistrationTutorialStore {
         analyticsClient.log(.registrationTutorial(.completed))
     }
 
+    /// 前のステップへ戻す。最初のステップなら何もしない
+    /// - Parameter step: 「前へ」を押したときに表示していたステップ。表示中のステップと違えば何もしない
+    ///   （ボタンを素早く2回押したときに、ステップを飛ばさないようにする）
+    public func back(from step: RegistrationTutorialStep) {
+        guard currentStep == step,
+              let previousStep = step.previous else { return }
+
+        currentStep = previousStep
+    }
+
     /// 途中で閉じる
     public func close() async {
         guard let currentStep else { return }

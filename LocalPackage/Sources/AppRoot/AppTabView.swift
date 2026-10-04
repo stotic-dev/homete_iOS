@@ -164,6 +164,9 @@ private extension AppTabView {
                         await registrationTutorialStore.next(from: step)
                     }
                 },
+                onTapBack: {
+                    registrationTutorialStore.back(from: step)
+                },
                 onTapClose: {
                     Task {
                         await registrationTutorialStore.close()
