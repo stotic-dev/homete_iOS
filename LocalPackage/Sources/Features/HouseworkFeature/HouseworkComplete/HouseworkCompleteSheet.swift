@@ -130,48 +130,12 @@ private extension HouseworkCompleteView {
     }
 
     func executorSection() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("担当者")
-                .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
-            HouseworkExecutorSelectionContent(rows: executorRows) { userId in
-                allocation.toggle(userId)
-            }
-            if let executorLimitMessage {
-                Text(executorLimitMessage)
-                    .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
-            }
-            if allocation.canAdjustPercentage {
-                DisclosureGroup(isExpanded: $isExpandedAllocation) {
-                    HouseworkExecutorAllocationContent(
-                        entries: allocationEntries,
-                        percentageRange: HouseworkExecutorAllocation.percentageRange
-                    ) { userId, percentage in
-                        allocation.updatePercentage(percentage, for: userId)
-                    }
-                    .padding(.top, .space8)
-                } label: {
-                    HStack(spacing: .space4) {
-                        Text("配分を調整する")
-                        DescriptionPopoverButton(
-                            title: "配分の調整とは？",
-                            message: """
-                            手分けした家事のポイントを、それぞれがやった割合に合わせて分けられます。
-                            割合の合計が100%になるように調整してください。
-                            """
-                        )
-                    }
-                }
-                .font(with: .body)
-                .tint(.onSurface)
-            }
-            if let validationMessage {
-                Text(validationMessage)
-                    .font(with: .caption)
-                    .foregroundStyle(.alert)
-            }
-        }
+        HouseworkExecutorSectionContent(
+            selectableMembers: selectableMembers,
+            caption: nil,
+            allocation: $allocation,
+            isExpandedAllocation: $isExpandedAllocation
+        )
     }
 
     func completeButton() -> some View {
@@ -189,59 +153,6 @@ private extension HouseworkCompleteView {
 // MARK: - プレゼンテーションロジック
 
 extension HouseworkCompleteView {
-
-    var executorRows: [HouseworkExecutorSelectionContent.Row] {
-        let points = allocation.points
-        return selectableMembers.map { member in
-            let entryIndex = allocation.entries.firstIndex { $0.userId == member.id }
-            let allocationValue = entryIndex.flatMap { index -> HouseworkExecutorSelectionContent.Allocation? in
-                guard points.indices.contains(index) else { return nil }
-                return .init(percentage: allocation.entries[index].percentage, point: points[index])
-            }
-            return .init(
-                userId: member.id,
-                userName: member.userName,
-                isSelected: entryIndex != nil,
-                isEnabled: allocation.canToggle(member.id),
-                isLocked: false,
-                allocation: allocationValue
-            )
-        }
-    }
-
-    var allocationEntries: [HouseworkExecutorAllocationContent.Entry] {
-        allocation.entries.map { entry in
-            .init(
-                userId: entry.userId,
-                userName: userName(entry.userId),
-                percentage: entry.percentage
-            )
-        }
-    }
-
-    /// 家事のポイントより多い人数は選べないことを伝える文言
-    var executorLimitMessage: String? {
-        let maxCount = HouseworkExecutorAllocation.maxExecutorCount(basePoint: item.originalItem.point)
-        guard selectableMembers.count > maxCount else { return nil }
-
-        return "この家事は\(item.originalItem.point)ptなので、担当者は\(maxCount)人まで選べます"
-    }
-
-    var validationMessage: String? {
-        switch allocation.validationError {
-        case .noExecutor:
-            "担当者を1人以上選んでください"
-
-        case let .percentageNotHundred(total):
-            "割合の合計が100%になるように調整してください（いまは\(total)%です）"
-
-        case .zeroPoint:
-            "全員が1pt以上になるように配分してください"
-
-        case nil:
-            nil
-        }
-    }
 
     func userName(_ userId: String) -> String {
         selectableMembers.first { $0.id == userId }?.userName ?? ""
