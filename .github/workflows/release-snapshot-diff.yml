@@ -20,6 +20,8 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  # 前回までの実行のartifactを削除するため
+  actions: write
 
 concurrency:
   group: release-snapshot-diff-${{ github.head_ref || inputs.release_branch }}
@@ -123,6 +125,21 @@ jobs:
           name: release-snapshot-diff-v${{ env.VERSION }}
           path: ${{ env.OUT }}
           retention-days: 30
+
+      # artifactは実行ごとに別物として残り、upload-artifactの overwrite も同じ実行内でしか効かない。
+      # pushの度に増えないよう、同じ名前（= 同じリリースPR）の古いartifactを消して1つだけ残す。
+      # アップロードが成功した後に消すので、途中で失敗しても前回のレポートは残る
+      - name: Delete previous reports
+        env:
+          ARTIFACT_NAME: release-snapshot-diff-v${{ env.VERSION }}
+          CURRENT_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/actions/artifacts?name=${ARTIFACT_NAME}&per_page=100" \
+            --jq ".artifacts[] | select(.id != ${CURRENT_ARTIFACT_ID}) | .id" \
+            | while read -r id; do
+                gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/${id}"
+                echo "Deleted artifact ${id}"
+              done
 
       - name: Build comment
         env:
