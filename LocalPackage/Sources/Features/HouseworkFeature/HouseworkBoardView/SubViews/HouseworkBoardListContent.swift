@@ -56,15 +56,7 @@ struct HouseworkBoardListContent: View {
                         .opacity(isSelectionDisabled ? 0.4 : 1)
                         .selectionDisabled(isSelectionDisabled)
                         .contextMenu {
-                            HouseworkQuickActionMenuContent(
-                                item: item,
-                                step: .board,
-                                canAddHelper: item.canAddHelper(members: memberList),
-                                onSelectComplete: { onSelectComplete(item) },
-                                onSelectThanks: { onSelectThanks(item) },
-                                onSelectAddHelper: { onSelectAddHelper(item) },
-                                onError: { commonError = .init(error: $0) }
-                            )
+                            quickActionMenu(item)
                         }
                 }
                 .listRowBackground(Color.clear)
@@ -103,16 +95,43 @@ private extension HouseworkBoardListContent {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        Button {
-            navigationPath.push(.houseworkDetail(item))
-        } label: {
-            let completionInfo = completionInfo(of: item)
-            HouseBoardListRow(
-                houseworkItem: item.originalItem,
-                completionInfo: completionInfo,
-                onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
-            )
-        }
+        let completionInfo = completionInfo(of: item)
+        // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
+        return HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            completionInfo: completionInfo,
+            showsCompleteButton: !isSelecting && item.state == .incomplete,
+            showsMoreButton: !isSelecting && !quickActions(of: item).isEmpty,
+            onTapRow: { navigationPath.push(.houseworkDetail(item)) },
+            onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus),
+            onTapComplete: { onSelectComplete(item) },
+            menuContent: { quickActionMenu(item) }
+        )
+    }
+
+    /// 長押しのメニューと、その他ボタンのメニューで同じ中身を出す
+    func quickActionMenu(_ item: HouseworkBoardItem) -> some View {
+        HouseworkQuickActionMenuContent(
+            item: item,
+            step: .board,
+            canAddHelper: item.canAddHelper(members: memberList),
+            onSelectComplete: { onSelectComplete(item) },
+            onSelectThanks: { onSelectThanks(item) },
+            onSelectAddHelper: { onSelectAddHelper(item) },
+            onError: { commonError = .init(error: $0) }
+        )
+    }
+
+    /// メニューに出せるクイックアクション
+    ///
+    /// その他ボタンを出すかどうかは、メニューの中身と同じ判断に揃えて、押しても何も並ばない
+    /// メニューが開く食い違いを防ぐ。
+    func quickActions(of item: HouseworkBoardItem) -> [HouseworkQuickAction] {
+        HouseworkQuickAction.actions(
+            for: item,
+            ownUserId: loginContext.account.id,
+            canAddHelper: item.canAddHelper(members: memberList)
+        )
     }
 
     /// ハートのタップで伝えられるのは、まだ伝えていない家事だけ。選択中はセルの選択を優先する
@@ -147,7 +166,7 @@ private extension HouseworkBoardListContent {
     /// 完了リストの家事セルに出す、担当者とありがとうの状況
     ///
     /// 未完了リストには担当者もありがとうもないため出さない。
-    func completionInfo(of item: HouseworkBoardItem) -> HouseBoardListRow.CompletionInfo? {
+    func completionInfo(of item: HouseworkBoardItem) -> HouseworkRowCompletionInfo? {
         guard state == .completed else { return nil }
 
         return .init(
