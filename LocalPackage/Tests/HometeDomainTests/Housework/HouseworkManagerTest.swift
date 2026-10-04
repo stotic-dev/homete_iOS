@@ -28,7 +28,7 @@ struct HouseworkManagerTest {
         let manager = HouseworkManager(
             houseworkClient: .init(
                 snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-                    #expect(id == "houseworkObserveKey")
+                    #expect(id == "houseworkObserveKey-1")
                     #expect(cohabitantId == inputCohabitantId)
                     #expect(anchorDate == now)
                     #expect(offset == 3)
@@ -728,6 +728,103 @@ extension HouseworkManagerTest {
                 storagePolicy: .free
             )
         }
+    }
+
+}
+
+// MARK: リスナーの付け外し
+
+extension HouseworkManagerTest {
+
+    @Test("条件が変わってsetupObserverを呼び直すと、前の世代で張ったリスナーを外す")
+    func setupObserverRemovesPreviousListener() async {
+        // Arrange
+
+        let recorder = RemovedListenerRecorder()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                removeListenerHandler: { id in await recorder.record(id) },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 11),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .free
+        )
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 12),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let removedIds = await recorder.ids
+        #expect(removedIds == ["houseworkObserveKey-1"])
+    }
+
+    @Test("リスナーを張っている最中に条件が変わった場合、古い世代は自分のリスナーだけを外し、新しい世代のリスナーは残す")
+    func staleSetupRemovesOnlyItsOwnListener() async {
+        // Arrange
+
+        let gate = TestGate()
+        let recorder = RemovedListenerRecorder()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { id, _, _, _ in
+                    if id == "houseworkObserveKey-1" {
+                        await gate.wait()
+                    }
+                    return .makeStream().stream
+                },
+                removeListenerHandler: { id in await recorder.record(id) },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        let staleTask = Task {
+            await manager.setupObserver(
+                currentTime: .previewDate(year: 2026, month: 8, day: 11),
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+        await gate.waitUntilArrived()
+        // 古い世代がリスナーを張っている間に、プランが変わって新しい世代が張り終える
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 11),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        gate.open()
+        await staleTask.value
+
+        // Assert
+
+        let removedIds = await recorder.ids
+        #expect(removedIds == ["houseworkObserveKey-1"])
+    }
+
+}
+
+/// 外されたリスナーのIDを記録する
+private actor RemovedListenerRecorder {
+
+    private(set) var ids: [String] = []
+
+    func record(_ id: String) {
+        ids.append(id)
     }
 
 }

@@ -23,6 +23,10 @@ public final actor HouseworkManager {
     private var observeGeneration = 0
     /// 購読中（準備中を含む）の条件。初回フェッチかリスナーが失敗したら`nil`に戻し、次の呼び出しでやり直させる
     private var activeCondition: ObserveCondition?
+    /// 張っているリアルタイムリスナーのID
+    /// - Note: IDは世代ごとに変える。共通のIDで外すと、再開した古い世代が新しい世代のリスナーまで外してしまい、
+    ///         `activeCondition`が残ったまま購読が止まって、張り直す機会もなくなるため
+    private var listenerId: String?
 
     // MARK: Dependencies
 
@@ -92,7 +96,7 @@ public final actor HouseworkManager {
         observeTask?.cancel()
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
-        await houseworkClient.removeListener(houseworkObserveKey)
+        await removeListener()
         guard generation == observeGeneration else { return }
 
         // 1. プランに応じた期間をワンショットフェッチして allItems を初期化
@@ -111,16 +115,19 @@ public final actor HouseworkManager {
         }
 
         // 2. ±N日のリアルタイムリスナー起動
+        let newListenerId = "\(houseworkObserveKey)-\(generation)"
         let houseworkListStream = await houseworkClient.snapshotListener(
-            houseworkObserveKey,
+            newListenerId,
             cohabitantId,
             currentTime,
             Self.listenerOffset
         )
         guard generation == observeGeneration else {
-            await houseworkClient.removeListener(houseworkObserveKey)
+            // 自分の世代で張ったリスナーだけを外す
+            await houseworkClient.removeListener(newListenerId)
             return
         }
+        listenerId = newListenerId
 
         // 3. 更新を allItems に upsert マージして通知
         observeTask = Task {
@@ -139,7 +146,7 @@ public final actor HouseworkManager {
         observeTask = nil
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
-        await houseworkClient.removeListener(houseworkObserveKey)
+        await removeListener()
         allItems = []
         fetchedRange = nil
         notifyObservers()
@@ -173,6 +180,14 @@ public final actor HouseworkManager {
 // MARK: private
 
 private extension HouseworkManager {
+
+    /// 張っているリアルタイムリスナーを外す
+    func removeListener() async {
+        guard let listenerId else { return }
+        // 外し終わるのを待つ間に再入されても、同じリスナーを二重に外さないよう先に手放す
+        self.listenerId = nil
+        await houseworkClient.removeListener(listenerId)
+    }
 
     /// リアルタイムリスナーの更新を allItems に upsert マージして通知する
     func listen(_ stream: AsyncThrowingStream<[HouseworkItem], Error>, generation: Int) async {

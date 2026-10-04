@@ -261,10 +261,19 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
                     })
                 )
                 let houseworkManager = HouseworkManager(
-                    houseworkClient: .init(removeListenerHandler: { _ in
-                        removedHouseworkListener()
-                    }),
-                    allItems: [.makeForTest(id: 1)]
+                    houseworkClient: .init(
+                        removeListenerHandler: { _ in
+                            removedHouseworkListener()
+                        },
+                        fetchItemsHandler: { _, _, _ in [.makeForTest(id: 1)] }
+                    )
+                )
+                // 外す対象のリスナーを張っておく
+                await houseworkManager.setupObserver(
+                    currentTime: .previewDate(year: 2026, month: 8, day: 11),
+                    cohabitantId: "cohabitantId",
+                    calendar: .japanese,
+                    storagePolicy: .free
                 )
                 let useCase = AuthSubscriptionSyncUseCase(
                     accountStore: AccountStore(),
