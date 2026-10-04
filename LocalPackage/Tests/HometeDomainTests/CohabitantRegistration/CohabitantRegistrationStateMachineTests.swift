@@ -574,6 +574,28 @@ extension CohabitantRegistrationStateMachineTests.ProcessingCommonCase {
         #expect(effects == [.log(.completed(method: .p2p, isSuccess: false))])
     }
 
+    @Test(
+        "選び直した後に前の試行の結果が届いても無視する",
+        arguments: [
+            CohabitantRegistrationEvent.invitationIssued(token: "token"),
+            .invitationIssueFailed,
+            .cohabitantJoined,
+            .cohabitantJoinFailed,
+        ]
+    )
+    func registrationResult_whileScanning_ignored(event: CohabitantRegistrationEvent) {
+        // Arrange
+        var state = Tests.State(phase: .scanning(.init()), connectedPeers: [Tests.peerB])
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, event)
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
+    }
+
     @Test("登録失敗のアラートを閉じたら、画面を閉じる要求を立てる")
     func userDismissedAlert_registrationFailed() {
         // Arrange
@@ -719,6 +741,25 @@ extension CohabitantRegistrationStateMachineTests.LeadCase {
         // Assert
         #expect(state == expectedState)
         #expect(effects == [.send(.init(type: .shareInvitation(token: Tests.invitationToken)), to: [Tests.peerB])])
+    }
+
+    @Test("招待トークンを発行済みの状態で発行の結果が再度届いても、トークンを上書きせず共有もしない")
+    func invitationIssued_duplicated() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(
+                .init(role: .lead(.init(invitationToken: Tests.invitationToken)), confirmedRolePeers: [Tests.peerB])
+            ),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .invitationIssued(token: "another-token"))
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
     }
 
     @Test("招待トークンの発行に失敗したら、登録失敗のアラートを出して失敗イベントを送る")
@@ -945,6 +986,47 @@ extension CohabitantRegistrationStateMachineTests.FollowerCase {
         // Assert
         #expect(state == expectedState)
         #expect(effects == [.joinCohabitant(invitationToken: Tests.invitationToken)])
+    }
+
+    @Test("参加済みの状態で招待トークンが再度届いても、二重に参加しない")
+    func receivedInvitationToken_afterJoined() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(
+                .init(role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)), confirmedRolePeers: [Tests.peerB])
+            ),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(
+            &state,
+            .received(.init(type: .shareInvitation(token: Tests.invitationToken)), from: Tests.peerB)
+        )
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
+    }
+
+    @Test("参加済みの状態で参加の結果が再度届いても、完了イベントや完了の通知を重ねて送らない")
+    func cohabitantJoined_afterJoined() {
+        // Arrange
+        var state = Tests.State(
+            phase: .processing(
+                .init(role: .follower(.init(leadPeer: Tests.peerB, hasJoined: true)), confirmedRolePeers: [Tests.peerB])
+            ),
+            connectedPeers: [Tests.peerB]
+        )
+        let expectedState = state
+
+        // Act
+        let effects = Tests.makeSUT().reduce(&state, .cohabitantJoined)
+
+        // Assert
+        #expect(state == expectedState)
+        #expect(effects == [])
     }
 
     @Test("グループへの参加が済んだら、完了イベントを送ってからリーダーへ完了を通知する")

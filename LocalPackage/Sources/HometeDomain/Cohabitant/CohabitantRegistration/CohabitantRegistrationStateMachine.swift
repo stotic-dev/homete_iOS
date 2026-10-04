@@ -70,11 +70,16 @@ public struct CohabitantRegistrationStateMachine: Sendable {
 private extension CohabitantRegistrationStateMachine {
 
     /// 招待トークンの発行・グループへの参加の結果に対する遷移
+    /// - Note: 結果は非同期で届くため、接続エラーで選び直した後に前の試行の結果が届くことがある。
+    ///         登録処理中でなければ捨て、同じ結果が重なっても二重に進めない
     func reduceRegistrationResult(_ state: inout State, _ event: Event) -> [Effect] {
+        guard case .processing = state.phase else { return [] }
+
         switch event {
         case let .invitationIssued(token):
             guard case var .processing(processing) = state.phase,
-                  case var .lead(lead) = processing.role else { return [] }
+                  case var .lead(lead) = processing.role,
+                  lead.invitationToken == nil else { return [] }
             lead.invitationToken = token
             processing.role = .lead(lead)
             state.phase = .processing(processing)
@@ -222,6 +227,7 @@ private extension CohabitantRegistrationStateMachine {
                 follower.leadPeer = sender
                 processing.confirmedRolePeers.insert(sender)
             }
+            guard !follower.hasJoined else { return [] }
             return [.joinCohabitant(invitationToken: invitationToken)]
         }
 
@@ -275,6 +281,7 @@ private extension CohabitantRegistrationStateMachine {
             return [completedLog, .send(.init(type: .complete), to: state.connectedPeers)]
 
         case var .follower(follower):
+            guard !follower.hasJoined else { return [] }
             follower.hasJoined = true
             processing.role = .follower(follower)
             state.phase = .processing(processing)
