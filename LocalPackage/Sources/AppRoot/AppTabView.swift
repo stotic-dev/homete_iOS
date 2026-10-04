@@ -62,8 +62,7 @@ struct AppTabView: View {
             // 出ている間は隠れ、閉じられてから見えるようになる
             .tutorialSpotlight(
                 isPresented: registrationTutorialStore.currentStep != nil,
-                targets: registrationTutorialStore.currentStep.map(spotlightTargets) ?? [],
-                cardAlignment: registrationTutorialStore.currentStep.map(cardAlignment) ?? .bottom
+                targets: registrationTutorialStore.currentStep.map(spotlightTargets) ?? []
             ) {
                 registrationTutorialCard()
             }
@@ -186,6 +185,8 @@ private extension AppTabView {
         .overlay {
             if registrationTutorialStore.currentStep == .dashboard {
                 DashboardTutorialScreen()
+                    // カードをタブバーに重ねないよう、タブの中の範囲に置く
+                    .tutorialSpotlightCardArea()
                     .background(.background)
             }
         }
@@ -200,6 +201,8 @@ private extension AppTabView {
         .overlay {
             if let page = registrationTutorialStore.currentStep.flatMap(tutorialHouseworkPage) {
                 HouseworkBoardTutorialScreen(page: page)
+                    // カードをタブバーに重ねないよう、タブの中の範囲に置く
+                    .tutorialSpotlightCardArea()
                     .background(.background)
             }
         }
@@ -226,18 +229,6 @@ private extension AppTabView {
 
         case .houseworkTemplate:
             [.houseworkTemplateButton]
-        }
-    }
-
-    /// 切り抜いたUIと重ならない位置にカードを置く
-    func cardAlignment(_ step: RegistrationTutorialStep) -> Alignment {
-        switch step {
-        case .housework:
-            // 追加ボタンが右下にあるため上に置く
-            .top
-
-        case .dashboard, .thanks, .houseworkTemplate:
-            .bottom
         }
     }
 
