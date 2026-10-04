@@ -37,6 +37,8 @@ struct HouseworkBoardListContent: View {
     let onSelectThanks: (HouseworkBoardItem) -> Void
     /// クイックアクションで「手伝った人を追加」が選ばれた。ハーフモーダルは親が出す
     let onSelectAddHelper: (HouseworkBoardItem) -> Void
+    /// ハートのタップで初めてありがとうを伝えられた。演出は親が出す
+    let onSentFirstThanks: () -> Void
 
     @CommonError var commonError
 
@@ -131,7 +133,7 @@ private extension HouseworkBoardListContent {
         guard let cohabitantId = loginContext.cohabitantId else { return }
 
         do {
-            try await houseworkListStore.perform(
+            let isFirstThanks = try await houseworkListStore.perform(
                 .sendThanks,
                 on: item,
                 now: now,
@@ -139,6 +141,9 @@ private extension HouseworkBoardListContent {
                 cohabitantId: cohabitantId,
                 step: .board
             )
+            if isFirstThanks {
+                onSentFirstThanks()
+            }
         } catch {
             commonError = .init(error: error)
         }
@@ -196,7 +201,8 @@ private extension HouseworkBoardListContent {
         onCreateTapped: {},
         onSelectComplete: { _ in },
         onSelectThanks: { _ in },
-        onSelectAddHelper: { _ in }
+        onSelectAddHelper: { _ in },
+        onSentFirstThanks: {}
     )
     .setupLoginContextForPreview()
 }
@@ -250,7 +256,8 @@ private extension HouseworkBoardListContent {
         onCreateTapped: {},
         onSelectComplete: { _ in },
         onSelectThanks: { _ in },
-        onSelectAddHelper: { _ in }
+        onSelectAddHelper: { _ in },
+        onSentFirstThanks: {}
     )
     .setupLoginContextForPreview()
 }
