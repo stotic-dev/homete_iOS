@@ -1,17 +1,17 @@
 //
-//  RegistrationTutorialOverlay.swift
+//  RegistrationTutorialCard.swift
 //  LocalPackage
 //
 
 import HometeDomain
 import SwiftUI
 
-/// グループ登録の直後に、タブの上に重ねて導線を案内するチュートリアル
+/// グループ登録の直後のチュートリアルで、ステップごとに「どこで何ができるか」を説明するカード
 ///
-/// 操作はさせず、ステップごとに「どこで何ができるか」を説明するだけにとどめる。
-/// タブバーの項目の位置はシステムが決めて取得できないため、吹き出しで指す代わりに、
+/// 説明の対象のUIは`tutorialSpotlight`で切り抜いて見せ、このカードはその上に重ねる。
+/// 操作はさせず、説明だけにとどめる。タブバーの項目は位置を取得できず切り抜けないため、
 /// タブと同じアイコンと「どこから開けるか」の一文で場所を伝える。
-public struct RegistrationTutorialOverlay: View {
+public struct RegistrationTutorialCard: View {
 
     let step: RegistrationTutorialStep
     let onTapNext: () -> Void
@@ -28,27 +28,6 @@ public struct RegistrationTutorialOverlay: View {
     }
 
     public var body: some View {
-        ZStack(alignment: .bottom) {
-            // 後ろの画面を触らせないよう、タップを受け止めるだけにする
-            Color.black.opacity(0.45)
-                .ignoresSafeArea()
-                .contentShape(.rect)
-                .onTapGesture {}
-                .accessibilityHidden(true)
-            card
-                .padding(.horizontal, .space16)
-                // タブバーの上に置き、どのタブの話かを見比べられるようにする
-                .padding(.bottom, .space64)
-        }
-    }
-
-}
-
-// MARK: UI定義
-
-private extension RegistrationTutorialOverlay {
-
-    var card: some View {
         VStack(alignment: .leading, spacing: .space16) {
             header
             HStack(alignment: .top, spacing: .space16) {
@@ -77,6 +56,12 @@ private extension RegistrationTutorialOverlay {
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
     }
+
+}
+
+// MARK: UI定義
+
+private extension RegistrationTutorialCard {
 
     var header: some View {
         HStack {
@@ -107,7 +92,7 @@ private extension RegistrationTutorialOverlay {
 
 // MARK: 表示の属性
 
-private extension RegistrationTutorialOverlay {
+private extension RegistrationTutorialCard {
 
     var isLastStep: Bool {
         step.next == nil
@@ -117,10 +102,13 @@ private extension RegistrationTutorialOverlay {
         switch step {
         case .dashboard:
             "list.bullet.clipboard.fill"
+
         case .housework:
             "person.2.arrow.trianglehead.counterclockwise"
+
         case .thanks:
             "heart.fill"
+
         case .houseworkTemplate:
             "list.bullet.rectangle"
         }
@@ -130,6 +118,7 @@ private extension RegistrationTutorialOverlay {
         switch step {
         case .thanks:
             .thanksHeart
+
         case .dashboard, .housework, .houseworkTemplate:
             .primary3
         }
@@ -139,10 +128,13 @@ private extension RegistrationTutorialOverlay {
         switch step {
         case .dashboard:
             "ダッシュボード"
+
         case .housework:
             "家事"
+
         case .thanks:
             "ありがとうを伝えましょう"
+
         case .houseworkTemplate:
             "家事テンプレート"
         }
@@ -152,10 +144,13 @@ private extension RegistrationTutorialOverlay {
         switch step {
         case .dashboard:
             "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。"
+
         case .housework:
-            "やる家事を登録しておき、終わったら完了にできます。誰がどの家事をしたかが記録されます。"
+            "＋ボタンからやる家事を登録しておき、終わったら完了にできます。誰がどの家事をしたかが記録されます。"
+
         case .thanks:
             "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。"
+
         case .houseworkTemplate:
             "毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。"
         }
@@ -165,10 +160,13 @@ private extension RegistrationTutorialOverlay {
         switch step {
         case .dashboard:
             "画面下の「ダッシュボード」タブから開けます"
+
         case .housework:
             "画面下の「家事」タブから開けます"
+
         case .thanks:
             "家事タブの「完了」に並んだ家事のハートから送れます"
+
         case .houseworkTemplate:
             "家事タブの右上のボタンから設定できます"
         }
@@ -176,18 +174,22 @@ private extension RegistrationTutorialOverlay {
 
 }
 
-#Preview("RegistrationTutorialOverlay_ダッシュボード") {
-    RegistrationTutorialOverlay(step: .dashboard, onTapNext: {}, onTapClose: {})
+#Preview("RegistrationTutorialCard_ダッシュボード", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .dashboard, onTapNext: {}, onTapClose: {})
+        .padding(.space16)
 }
 
-#Preview("RegistrationTutorialOverlay_家事") {
-    RegistrationTutorialOverlay(step: .housework, onTapNext: {}, onTapClose: {})
+#Preview("RegistrationTutorialCard_家事", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .housework, onTapNext: {}, onTapClose: {})
+        .padding(.space16)
 }
 
-#Preview("RegistrationTutorialOverlay_ありがとう") {
-    RegistrationTutorialOverlay(step: .thanks, onTapNext: {}, onTapClose: {})
+#Preview("RegistrationTutorialCard_ありがとう", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .thanks, onTapNext: {}, onTapClose: {})
+        .padding(.space16)
 }
 
-#Preview("RegistrationTutorialOverlay_家事テンプレート") {
-    RegistrationTutorialOverlay(step: .houseworkTemplate, onTapNext: {}, onTapClose: {})
+#Preview("RegistrationTutorialCard_家事テンプレート", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .houseworkTemplate, onTapNext: {}, onTapClose: {})
+        .padding(.space16)
 }

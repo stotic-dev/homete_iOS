@@ -60,10 +60,17 @@ struct AppTabView: View {
         tabView()
             // シートやフルスクリーンカバーより奥に描かれるため、登録完了の画面や招待リンクの参加画面が
             // 出ている間は隠れ、閉じられてから見えるようになる
-            .overlay {
-                registrationTutorialOverlay()
+            .tutorialSpotlight(
+                isPresented: registrationTutorialStore.currentStep != nil,
+                targets: registrationTutorialStore.currentStep.map(spotlightTargets) ?? [],
+                cardAlignment: registrationTutorialStore.currentStep.map(cardAlignment) ?? .bottom
+            ) {
+                registrationTutorialCard()
             }
             .animation(.default, value: registrationTutorialStore.currentStep)
+            .onChange(of: registrationTutorialStore.currentStep) {
+                switchTabForTutorial(to: registrationTutorialStore.currentStep)
+            }
             .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
                 if let token = pendingInvitationStore.pendingToken {
                     router.resolve(.cohabitantJoin(token: token))
@@ -147,9 +154,9 @@ private extension AppTabView {
     }
 
     @ViewBuilder
-    func registrationTutorialOverlay() -> some View {
+    func registrationTutorialCard() -> some View {
         if let step = registrationTutorialStore.currentStep {
-            RegistrationTutorialOverlay(
+            RegistrationTutorialCard(
                 step: step,
                 onTapNext: {
                     Task {
@@ -165,12 +172,22 @@ private extension AppTabView {
         }
     }
 
+    // チュートリアルの間は、サンプルの家事を渡した同じUIを本番の画面に重ねて出す。
+    // 本番の画面は作り直さずに残し、チュートリアルを終えたらそのまま戻れるようにする
+
     var homeScreen: some View {
         HomeView.make(
             contributionStore: contributionStore,
             houseworkTemplateListStore: houseworkTemplateListStore,
             houseworkListStore: houseworkListStore
         )
+        .excludedFromTutorialSpotlight()
+        .overlay {
+            if registrationTutorialStore.currentStep == .dashboard {
+                DashboardTutorialScreen(members: tutorialMembers)
+                    .background(.background)
+            }
+        }
     }
 
     var houseworkBoardScreen: some View {
@@ -178,6 +195,73 @@ private extension AppTabView {
             houseworkListStore: houseworkListStore,
             houseworkTemplateListStore: houseworkTemplateListStore
         )
+        .excludedFromTutorialSpotlight()
+        .overlay {
+            if let page = registrationTutorialStore.currentStep.flatMap(tutorialHouseworkPage) {
+                HouseworkBoardTutorialScreen(page: page, members: tutorialMembers)
+                    .background(.background)
+            }
+        }
+    }
+
+    /// チュートリアルのサンプルの家事に、担当者として出すメンバー
+    var tutorialMembers: CohabitantMemberList {
+        HouseworkTutorialSample.members(
+            ownId: loginContext.account.id,
+            ownUserName: loginContext.account.userName,
+            others: cohabitantStore.members.others
+        )
+    }
+
+}
+
+// MARK: チュートリアルの見せ方
+
+private extension AppTabView {
+
+    /// ステップごとに切り抜くUI
+    /// - Note: タブバーの項目は位置を取得できず切り抜けないため、カードの文言で場所を伝える
+    func spotlightTargets(_ step: RegistrationTutorialStep) -> [TutorialSpotlightID] {
+        switch step {
+        case .dashboard:
+            [.dashboardTodayProgress, .dashboardTodayContribution]
+
+        case .housework:
+            [.houseworkAddButton]
+
+        case .thanks:
+            [.houseworkThanksButton]
+
+        case .houseworkTemplate:
+            [.houseworkTemplateButton]
+        }
+    }
+
+    /// 切り抜いたUIと重ならない位置にカードを置く
+    func cardAlignment(_ step: RegistrationTutorialStep) -> Alignment {
+        switch step {
+        case .housework:
+            // 追加ボタンが右下にあるため上に置く
+            .top
+
+        case .dashboard, .thanks, .houseworkTemplate:
+            .bottom
+        }
+    }
+
+    /// 家事ボードで説明するステップで、表示する一覧
+    func tutorialHouseworkPage(_ step: RegistrationTutorialStep) -> HouseworkState? {
+        switch step {
+        case .dashboard:
+            nil
+
+        case .housework:
+            .incomplete
+
+        case .thanks, .houseworkTemplate:
+            // ありがとうのハートは完了の一覧にある。テンプレートの説明ではそのまま一覧を動かさない
+            .completed
+        }
     }
 
 }
@@ -185,6 +269,15 @@ private extension AppTabView {
 // MARK: プレゼンテーションロジック
 
 private extension AppTabView {
+
+    /// チュートリアルの説明に合わせてタブを切り替え、終わったらダッシュボードに戻す
+    func switchTabForTutorial(to newStep: RegistrationTutorialStep?) {
+        guard let newStep else {
+            type = .dashboard
+            return
+        }
+        type = tutorialHouseworkPage(newStep) == nil ? .dashboard : .homework
+    }
 
     /// 所属グループが決まった/変わったときに、そのグループ用のストアを組み直す
     func onChangeCohabitant() async {

@@ -97,6 +97,7 @@ private extension HouseworkBoardView {
         .safeAreaInset(edge: .bottom, alignment: .trailing) {
             if loadFailure == nil {
                 AddHouseworkButton(action: onTapAdd)
+                    .tutorialSpotlightTarget(.houseworkAddButton)
                     .padding(.trailing, .space24)
                     .padding(.bottom, .space24)
             }
@@ -146,6 +147,7 @@ private extension HouseworkBoardView {
                 }
             }
             NavigationBarButton(label: .houseworkTemplate, action: onTapHouseworkTemplate)
+                .tutorialSpotlightTarget(.houseworkTemplateButton)
         }
     }
 
