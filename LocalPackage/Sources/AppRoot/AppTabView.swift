@@ -68,7 +68,8 @@ struct AppTabView: View {
                 registrationTutorialCard()
             }
             .animation(.default, value: registrationTutorialStore.currentStep)
-            .onChange(of: registrationTutorialStore.currentStep) {
+            // ログアウトをまたいでこの画面が作り直されたときも、表示中のステップにタブを合わせる
+            .onChange(of: registrationTutorialStore.currentStep, initial: true) {
                 switchTabForTutorial(to: registrationTutorialStore.currentStep)
             }
             .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
@@ -160,7 +161,7 @@ private extension AppTabView {
                 step: step,
                 onTapNext: {
                     Task {
-                        await registrationTutorialStore.next()
+                        await registrationTutorialStore.next(from: step)
                     }
                 },
                 onTapClose: {

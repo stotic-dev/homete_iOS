@@ -32,10 +32,14 @@ public final class RegistrationTutorialStore {
     }
 
     /// 前回見終わらないまま終了していた場合に、チュートリアルを出し直す
-    /// - Parameter hasCohabitant: グループに所属しているかどうか。登録後に脱退していれば出さない
+    /// - Parameter hasCohabitant: グループに所属しているかどうか。所属していなければ出さず、
+    ///   表示中でも閉じる（ログアウトして、グループに未所属のアカウントでログインし直した場合など）
     public func restoreIfNeeded(hasCohabitant: Bool) async {
-        guard hasCohabitant,
-              currentStep == nil,
+        guard hasCohabitant else {
+            await dismiss()
+            return
+        }
+        guard currentStep == nil,
               await stateClient.loadIsPending() else { return }
 
         currentStep = RegistrationTutorialStep.allCases.first
@@ -43,9 +47,14 @@ public final class RegistrationTutorialStore {
 
     /// 所属グループが変わったときに、グループ登録の直後であればチュートリアルを始める
     /// - Note: 未所属から所属に変わったときだけを登録の直後とみなす。
-    ///         起動時にすでに所属している既存のユーザーには出さない
+    ///         起動時にすでに所属している既存のユーザーには出さない。
+    ///         グループを抜けたときは、説明する画面が使えなくなるため表示中でも閉じる
     public func didChangeCohabitant(from oldCohabitantId: String?, to newCohabitantId: String?) async {
-        guard oldCohabitantId == nil, newCohabitantId != nil else { return }
+        guard newCohabitantId != nil else {
+            await dismiss()
+            return
+        }
+        guard oldCohabitantId == nil else { return }
 
         await start()
     }
@@ -58,11 +67,13 @@ public final class RegistrationTutorialStore {
     }
 
     /// 次のステップへ進める。最後のステップなら終える
-    public func next() async {
-        guard let currentStep else { return }
+    /// - Parameter step: 「次へ」を押したときに表示していたステップ。表示中のステップと違えば何もしない
+    ///   （ボタンを素早く2回押したときに、ステップを飛ばさないようにする）
+    public func next(from step: RegistrationTutorialStep) async {
+        guard currentStep == step else { return }
 
-        if let nextStep = currentStep.next {
-            self.currentStep = nextStep
+        if let nextStep = step.next {
+            currentStep = nextStep
             return
         }
         await finish()
@@ -84,6 +95,13 @@ private extension RegistrationTutorialStore {
     func finish() async {
         currentStep = nil
         await stateClient.saveIsPending(false)
+    }
+
+    /// ユーザーの操作によらずに表示をやめる。見終わったわけではないため、イベントは送らない
+    func dismiss() async {
+        guard currentStep != nil else { return }
+
+        await finish()
     }
 
 }

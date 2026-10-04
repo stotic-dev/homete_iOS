@@ -35,6 +35,24 @@ struct RegistrationTutorialStoreTest {
         #expect(sut.currentStep == nil)
     }
 
+    @Test("表示中でも、グループに所属していなければ閉じて、見終わっていないことの記録を消す。イベントは送らない")
+    func restoreIfNeeded_presentingAndNoCohabitant_dismisses() async {
+        // Arrange
+        let savedValues = TestLockedArray<Bool>()
+        let sut = RegistrationTutorialStore(
+            currentStep: .housework,
+            stateClient: .init(saveIsPending: { await savedValues.append($0) }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        await sut.restoreIfNeeded(hasCohabitant: false)
+
+        // Assert
+        #expect(sut.currentStep == nil)
+        #expect(await savedValues.values == [false])
+    }
+
     @Test("見終わっていないチュートリアルが無ければ出さない")
     func restoreIfNeeded_notPending_doesNotStart() async {
         // Arrange
@@ -101,6 +119,24 @@ struct RegistrationTutorialStoreTest {
         #expect(sut.currentStep == nil)
     }
 
+    @Test("表示中にグループを抜けたら閉じて、見終わっていないことの記録を消す。イベントは送らない")
+    func didChangeCohabitant_fromIdToNilWhilePresenting_dismisses() async {
+        // Arrange
+        let savedValues = TestLockedArray<Bool>()
+        let sut = RegistrationTutorialStore(
+            currentStep: .thanks,
+            stateClient: .init(saveIsPending: { await savedValues.append($0) }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        await sut.didChangeCohabitant(from: "cohabitantId", to: nil)
+
+        // Assert
+        #expect(sut.currentStep == nil)
+        #expect(await savedValues.values == [false])
+    }
+
     // MARK: next
 
     @Test(
@@ -123,7 +159,7 @@ struct RegistrationTutorialStoreTest {
         )
 
         // Act
-        await sut.next()
+        await sut.next(from: currentStep)
 
         // Assert
         #expect(sut.currentStep == expected)
@@ -141,12 +177,28 @@ struct RegistrationTutorialStoreTest {
         )
 
         // Act
-        await sut.next()
+        await sut.next(from: .houseworkTemplate)
 
         // Assert
         #expect(sut.currentStep == nil)
         #expect(await savedValues.values == [false])
         #expect(loggedEvents.value == [.registrationTutorial(.completed)])
+    }
+
+    @Test("表示中のステップと違うステップから進めようとしたら、何もしない")
+    func next_fromStaleStep_doesNothing() async {
+        // Arrange
+        let sut = RegistrationTutorialStore(
+            currentStep: .thanks,
+            stateClient: .init(saveIsPending: { _ in Issue.record() }),
+            analyticsClient: .init(log: { _ in Issue.record() })
+        )
+
+        // Act
+        await sut.next(from: .housework)
+
+        // Assert
+        #expect(sut.currentStep == .thanks)
     }
 
     // MARK: close
