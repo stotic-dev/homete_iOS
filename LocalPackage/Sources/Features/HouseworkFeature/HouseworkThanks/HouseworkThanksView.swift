@@ -77,7 +77,7 @@ private extension HouseworkThanksView {
 
     /// ハーフモーダルの高さ。3行の入力欄と文字数が収まる高さ
     var sheetHeight: CGFloat {
-        350
+        250
     }
 
     func commentLengthLabel() -> some View {
