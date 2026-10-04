@@ -18,11 +18,13 @@ public struct SectionCard<Content: View>: View {
 
     /// - Parameters:
     ///   - title: セクションの見出し
+    ///   - content: カードの中身
     ///   - onTapBackground: カードの中の何もない所をタップしたときの処理。入力欄の外をタップしたら入力を終える、といった用途に使う
+    /// - Note: `onTapBackground`は中身より後ろに置き、`SectionCard("見出し") { ... } onTapBackground: { ... }`と書けるようにする
     public init(
         _ title: LocalizedStringKey,
-        onTapBackground: (() -> Void)? = nil,
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: () -> Content,
+        onTapBackground: (() -> Void)? = nil
     ) {
         self.title = title
         self.onTapBackground = onTapBackground

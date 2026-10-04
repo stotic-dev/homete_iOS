@@ -156,17 +156,19 @@ struct HouseworkMemoEditView: View {
 private extension HouseworkMemoEditView {
 
     func textSection() -> some View {
-        SectionCard("テキスト", onTapBackground: { endEditing() }) {
+        SectionCard("テキスト") {
             TextField("買う物や手順などを書いておけます", text: $draft.text, axis: .vertical)
                 .font(with: .body)
                 .lineLimit(3 ... 10)
                 .focused($focusedField, equals: .text)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
+        } onTapBackground: {
+            endEditing()
         }
     }
 
     func checklistSection() -> some View {
-        SectionCard("チェックリスト", onTapBackground: { endEditing() }) {
+        SectionCard("チェックリスト") {
             ForEach(draft.checklist) { item in
                 checklistItemRow(item)
                 Divider()
@@ -178,6 +180,8 @@ private extension HouseworkMemoEditView {
                     .font(with: .body)
             }
             .disabled(!draft.canAddItem)
+        } onTapBackground: {
+            endEditing()
         }
     }
 
