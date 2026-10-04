@@ -19,7 +19,7 @@
 
 * 画面は`XxxScreen`（ロジック）と`XxxView`（UIのみ）、画面の一部は`XxxComponent`（ロジック）と`XxxContent`（UIのみ）に分ける
 * UIのみのViewは値・`Binding`・クロージャだけを受け取る。Storeを使う中身（長押しメニューなど）は`@ViewBuilder`の引数で差し込む
-* チュートリアルは、UIのみのViewにサンプルの家事を渡した画面（`HouseworkBoardTutorialScreen`・`DashboardTutorialScreen`）を本番の画面に重ねて表示する
+* チュートリアルは、UIのみのViewにサンプルの家事を渡した画面（`HouseworkBoardTutorialView`・`DashboardTutorialView`）を本番の画面に重ねて表示する
 * ハイライトは`HometeUI`の`tutorialSpotlight`で行う。対象のUIには`.tutorialSpotlightTarget(_:)`を付け、スポットライトを出している間だけ画面全体の座標で位置を伝える。ナビゲーションバーや`TabView`の中のUIも同じ仕組みで切り抜ける
 * 今後のUI実装もこの分け方で統一する（`.claude/rules/ui-logic-view-separation.md`）
 
