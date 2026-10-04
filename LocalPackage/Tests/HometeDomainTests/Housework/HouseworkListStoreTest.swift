@@ -1275,24 +1275,48 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         #expect(actual == true)
     }
 
+    /// 初めてのありがとうにはならない送り方
+    struct NotFirstThanksInput: CustomTestStringConvertible {
+
+        let testDescription: String
+        /// 送る時点の家事の状態
+        let currentState: HouseworkState
+        /// 送る時点ですでに送っていたありがとう
+        let sentThanks: HouseworkThanks?
+        let comment: String?
+
+    }
+
     @Test(
         "すでに伝えた家事へのコメントの書き足し・編集や、記録しなかった場合は、初めて記録したとして返さない",
         arguments: [
-            // コメントなしで送ったありがとうにコメントを書き足す
-            (HouseworkState.completed, HouseworkThanks(comment: nil, sentAt: .distantPast), "お疲れ様でした！"),
-            // 送ったコメントを直す
-            (HouseworkState.completed, HouseworkThanks(comment: "ありがとう", sentAt: .distantPast), "いつもありがとう"),
-            // 送信済みの家事にコメントなしで送る（記録しない）
-            (HouseworkState.completed, HouseworkThanks(comment: "ありがとう", sentAt: .distantPast), nil),
-            // 未完了に戻された家事に送る（記録しない）
-            (HouseworkState.incomplete, nil, "お疲れ様でした！"),
-        ] as [(HouseworkState, HouseworkThanks?, String?)]
+            NotFirstThanksInput(
+                testDescription: "コメントなしで送ったありがとうにコメントを書き足す",
+                currentState: .completed,
+                sentThanks: .init(comment: nil, sentAt: .distantPast),
+                comment: "お疲れ様でした！"
+            ),
+            NotFirstThanksInput(
+                testDescription: "送ったコメントを直す",
+                currentState: .completed,
+                sentThanks: .init(comment: "ありがとう", sentAt: .distantPast),
+                comment: "いつもありがとう"
+            ),
+            NotFirstThanksInput(
+                testDescription: "送信済みの家事にコメントなしで送る",
+                currentState: .completed,
+                sentThanks: .init(comment: "ありがとう", sentAt: .distantPast),
+                comment: nil
+            ),
+            NotFirstThanksInput(
+                testDescription: "未完了に戻された家事に送る",
+                currentState: .incomplete,
+                sentThanks: nil,
+                comment: "お疲れ様でした！"
+            ),
+        ]
     )
-    func sendThanks_notFirstThanks_returnsFalse(
-        currentState: HouseworkState,
-        sentThanks: HouseworkThanks?,
-        comment: String?
-    ) async throws {
+    func sendThanks_notFirstThanks_returnsFalse(input: NotFirstThanksInput) async throws {
         // Arrange
 
         let inputHouseworkItem = HouseworkItem.makeForTest(
@@ -1303,10 +1327,10 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         )
         let currentHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
-            state: currentState,
+            state: input.currentState,
             executorId: "executorId",
             executedAt: .distantPast,
-            thanks: sentThanks.map { ["senderId": $0] } ?? [:]
+            thanks: input.sentThanks.map { ["senderId": $0] } ?? [:]
         )
         let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
         let store = HouseworkListStore(
@@ -1320,7 +1344,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let actual = try await store.sendThanks(
             target: inputHouseworkItem,
             sender: inputSender,
-            comment: comment,
+            comment: input.comment,
             now: Date(timeIntervalSince1970: 1000),
             cohabitantId: inputCohabitantId,
             step: .thanks
