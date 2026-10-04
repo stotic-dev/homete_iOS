@@ -118,6 +118,10 @@ public extension RootView {
                 advertisementStore: advertisementStore,
                 forceUpdateStore: forceUpdateStore
             )
+            let registrationTutorialStore = RegistrationTutorialStore(
+                stateClient: $0.registrationTutorialStateClient,
+                analyticsClient: $0.analyticsClient
+            )
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
@@ -136,6 +140,7 @@ public extension RootView {
             .environment(launchStateStore)
             .environment(advertisementStore)
             .environment(forceUpdateStore)
+            .environment(registrationTutorialStore)
             .task {
                 await subscriptionStore.observeEntitlementUpdates()
             }

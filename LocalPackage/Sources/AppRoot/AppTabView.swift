@@ -18,6 +18,7 @@ struct AppTabView: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(RegistrationTutorialStore.self) var registrationTutorialStore
     @Environment(\.routeResolver) var router
 
     @State var contributionStore: ContributionStore?
@@ -57,6 +58,12 @@ struct AppTabView: View {
 
     var body: some View {
         tabView()
+            // シートやフルスクリーンカバーより奥に描かれるため、登録完了の画面や招待リンクの参加画面が
+            // 出ている間は隠れ、閉じられてから見えるようになる
+            .overlay {
+                registrationTutorialOverlay()
+            }
+            .animation(.default, value: registrationTutorialStore.currentStep)
             .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
                 if let token = pendingInvitationStore.pendingToken {
                     router.resolve(.cohabitantJoin(token: token))
@@ -66,6 +73,14 @@ struct AppTabView: View {
             // （onChangeで分けると、参加直後にテンプレートの購読開始が漏れる）
             .task(id: loginContext.cohabitantId) {
                 await onChangeCohabitant()
+            }
+            .task {
+                await registrationTutorialStore.restoreIfNeeded(hasCohabitant: loginContext.hasCohabitant)
+            }
+            .onChange(of: loginContext.cohabitantId) { oldValue, newValue in
+                Task {
+                    await registrationTutorialStore.didChangeCohabitant(from: oldValue, to: newValue)
+                }
             }
             .environment(\.cohabitantMembers, cohabitantStore.members)
             .environment(
@@ -128,6 +143,25 @@ private extension AppTabView {
                         }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    func registrationTutorialOverlay() -> some View {
+        if let step = registrationTutorialStore.currentStep {
+            RegistrationTutorialOverlay(
+                step: step,
+                onTapNext: {
+                    Task {
+                        await registrationTutorialStore.next()
+                    }
+                },
+                onTapClose: {
+                    Task {
+                        await registrationTutorialStore.close()
+                    }
+                }
+            )
         }
     }
 
@@ -220,6 +254,7 @@ private extension AppTabView {
         .environment(AccountAuthStore())
         .environment(CohabitantStore())
         .environment(PendingInvitationStore())
+        .environment(RegistrationTutorialStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif
