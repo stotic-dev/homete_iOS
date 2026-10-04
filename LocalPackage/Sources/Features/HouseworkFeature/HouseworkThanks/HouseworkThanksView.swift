@@ -20,6 +20,7 @@ public struct HouseworkThanksView: View {
     @LoadingState var loadingState
 
     @State var inputMessage: String
+    @FocusState var isShowingKeyboard: Bool
 
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
@@ -36,33 +37,48 @@ public struct HouseworkThanksView: View {
 
     public var body: some View {
         NavigationStack {
-            ContentFittingSheetScrollView {
+            ScrollView {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
                         title: "メッセージ",
                         placeholder: "感謝を伝えましょう！",
-                        text: $inputMessage
+                        text: $inputMessage,
+                        focus: $isShowingKeyboard
                     )
                     commentLengthLabel()
                 }
                 .padding(.horizontal, .space16)
-                .padding(.vertical, .space24)
+                .padding(.top, .space24)
+                .padding(.bottom, .space8)
             }
+            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 sendThanksButton()
             }
         }
+        // 中身の高さに合わせると、キーボードを出したときにシートが持ち上がりすぎてハーフモーダルに
+        // ならないため、高さを決め打ちする
+        .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)
         .trackScreenView(.houseworkThanks)
+        .onAppear {
+            // メッセージを書いてもらうだけの画面なので、開いた直後からキーボードを出しておく
+            isShowingKeyboard = true
+        }
     }
 
 }
 
 private extension HouseworkThanksView {
+
+    /// ハーフモーダルの高さ。3行の入力欄と文字数が収まる高さ
+    var sheetHeight: CGFloat {
+        250
+    }
 
     func commentLengthLabel() -> some View {
         Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
