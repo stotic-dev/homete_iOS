@@ -71,9 +71,12 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
 public extension CohabitantRegistrationMessage {
 
-    init(_ data: Data) {
+    /// 受信したデータをメッセージに復元する
+    /// - Note: 相手のアプリのバージョンが違うと、知らない種類のメッセージが届くことがある。
+    ///         相手の端末から届くデータで落ちないよう、解読できない場合はnilを返して呼び出し側で捨てる
+    init?(_ data: Data) {
         guard let message = try? JSONDecoder().decode(CohabitantRegistrationMessage.self, from: data) else {
-            preconditionFailure("Invalid data(\(data)).")
+            return nil
         }
         self = message
     }

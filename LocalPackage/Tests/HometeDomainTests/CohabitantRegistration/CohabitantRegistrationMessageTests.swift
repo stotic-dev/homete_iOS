@@ -172,4 +172,14 @@ struct CohabitantRegistrationMessageTests {
         #expect(actual == message)
     }
 
+    @Test("解読できないデータの場合、nilを返す")
+    func init_withInvalidData() {
+        // 相手のアプリのバージョンが新しく、知らない種類のメッセージが届いたケース
+        let data = Data(#"{"type":{"unknownType":{}}}"#.utf8)
+
+        let actual = CohabitantRegistrationMessage(data)
+
+        #expect(actual == nil)
+    }
+
 }

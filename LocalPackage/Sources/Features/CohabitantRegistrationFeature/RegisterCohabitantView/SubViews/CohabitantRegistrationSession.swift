@@ -61,13 +61,9 @@ struct CohabitantRegistrationSession: View {
             store.send(.peersChanged(Set(newValue.map { CohabitantRegistrationPeerID(displayName: $0.displayName) })))
         }
         .onChange(of: receiveData) { _, newValue in
-            guard let newValue else { return }
-            store.send(
-                .received(
-                    CohabitantRegistrationMessage(newValue.body),
-                    from: .init(displayName: newValue.sender.displayName)
-                )
-            )
+            guard let newValue,
+                  let message = CohabitantRegistrationMessage(newValue.body) else { return }
+            store.send(.received(message, from: .init(displayName: newValue.sender.displayName)))
         }
         .onReceive(roleNotificationTimer) { _ in
             store.send(.tick)
