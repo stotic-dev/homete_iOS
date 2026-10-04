@@ -261,7 +261,9 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
                     })
                 )
                 let houseworkManager = HouseworkManager(
+                    // Xcode 26系では、initのデフォルト引数のasyncクロージャが並列実行中にクラッシュするため明示的に渡す
                     houseworkClient: .init(
+                        snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
                         removeListenerHandler: { _ in
                             removedHouseworkListener()
                         },
