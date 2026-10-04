@@ -24,7 +24,9 @@ struct HouseworkCommentInputContent: View {
             TextField(placeholder, text: $text, axis: .vertical)
                 .focused(focus)
                 .font(with: .body)
-                .lineLimit(3 ... 6)
+                // 入力した行数で高さが変わると、それに合わせてシートの高さも動いてしまうため、3行で固定する
+                // （3行を超えた分は入力欄の中でスクロールする）
+                .lineLimit(3, reservesSpace: true)
                 .padding(.space16)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .background {
