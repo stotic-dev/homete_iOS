@@ -233,6 +233,54 @@ private extension HouseworkBoardListContent {
     .setupLoginContextForPreview()
 }
 
+#Preview("HouseworkBoardListContent_完了") {
+    @Previewable @State var selectedState = HouseworkState.completed
+    @Previewable @State var isSelecting = false
+    HouseworkBoardListContent(
+        houseworkListStore: .init(
+            houseworkClient: .previewValue,
+            cohabitantPushNotificationClient: .previewValue
+        ),
+        state: .completed,
+        list: .init(items: [
+            // 同居人が終えた家事。ありがとうのハートとその他ボタンが並ぶ
+            .makeForPreview(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+            // 自分が終えた家事。ありがとうは出ないが、その他ボタンは出る
+            .makeForPreview(
+                id: "2",
+                title: "料理",
+                point: 1,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .completed,
+                executorId: "ownUserId"
+            ),
+        ]),
+        memberList: .init(
+            value: [
+                .init(id: "ownUserId", userName: "たろう"),
+                .init(id: "otherUserId", userName: "はなこ"),
+            ],
+            ownId: "ownUserId"
+        ),
+        bottomContentInset: .zero,
+        selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
+        selectedIDs: .constant([]),
+        onCreateTapped: {},
+        onSelectComplete: { _ in },
+        onSelectThanks: { _ in },
+        onSelectAddHelper: { _ in }
+    )
+    .setupLoginContextForPreview()
+}
+
 #Preview("HouseworkBoardListContent_選択モード") {
     @Previewable @State var selectedState = HouseworkState.completed
     @Previewable @State var isSelecting = true
