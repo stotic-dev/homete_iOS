@@ -37,7 +37,7 @@ public struct HouseworkThanksView: View {
 
     public var body: some View {
         NavigationStack {
-            ContentFittingSheetScrollView {
+            ScrollView {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
                         title: "メッセージ",
@@ -48,14 +48,19 @@ public struct HouseworkThanksView: View {
                     commentLengthLabel()
                 }
                 .padding(.horizontal, .space16)
-                .padding(.vertical, .space24)
+                .padding(.top, .space24)
+                .padding(.bottom, .space8)
             }
+            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 sendThanksButton()
             }
         }
+        // 中身の高さに合わせると、キーボードを出したときにシートが持ち上がりすぎてハーフモーダルに
+        // ならないため、高さを決め打ちする
+        .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)
@@ -69,6 +74,11 @@ public struct HouseworkThanksView: View {
 }
 
 private extension HouseworkThanksView {
+
+    /// ハーフモーダルの高さ。3行の入力欄と文字数が収まる高さ
+    var sheetHeight: CGFloat {
+        350
+    }
 
     func commentLengthLabel() -> some View {
         Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
