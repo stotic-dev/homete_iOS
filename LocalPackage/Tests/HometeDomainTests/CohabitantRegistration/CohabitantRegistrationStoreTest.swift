@@ -198,7 +198,7 @@ struct CohabitantRegistrationStoreTest {
         #expect(store.value?.state == expectedState)
     }
 
-    @Test("アカウントの取り直しが要求されたら取り直し、グループIDが入っていれば全員へ完了を送信して登録完了にする")
+    @Test("アカウントの取り直しが要求されたら取り直し、全員へ完了を送信して登録完了にする")
     func send_effectReloadAccount() async {
         // Arrange
         let account = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: nil)
@@ -238,31 +238,24 @@ struct CohabitantRegistrationStoreTest {
         #expect(accountStore.account == joinedAccount)
     }
 
-    @Test("取り直したアカウントにグループIDが入っていなければ、失敗イベントとして状態機械へ戻し登録失敗のアラートを出す")
-    func send_effectReloadAccount_notJoined() async {
+    @Test("アカウントの取り直しに失敗しても、全員へ完了を送信して登録完了にする")
+    func send_effectReloadAccount_failed() async {
         // Arrange
         let account = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: nil)
-        let expectedState = State(
-            phase: .processing(
-                .init(
-                    role: .lead(.init(completedPeers: [peerB], invitationToken: invitationToken)),
-                    confirmedRolePeers: [peerB]
-                )
-            ),
-            connectedPeers: [peerB],
-            alert: .registrationFailed
-        )
+        let expectedMessage = CohabitantRegistrationMessage(type: .complete)
+        let expectedState = State(phase: .completed, connectedPeers: [peerB])
         let store = TestBox<CohabitantRegistrationStore?>(value: nil)
 
         let _: Void = await withCheckedContinuation { continuation in
             store.value = CohabitantRegistrationStore(
                 myPeerID: me,
-                messageSender: MessageSenderMock { _, _ in Issue.record() },
-                analyticsClient: .init(log: { event in
-                    #expect(event == .cohabitantRegistration(.completed(method: .p2p, isSuccess: false)))
+                messageSender: MessageSenderMock { message, peers in
+                    // Assert
+                    #expect(message == expectedMessage)
+                    #expect(peers == [peerB])
                     continuation.resume()
-                }),
-                accountStore: .init(accountInfoClient: .init(fetch: { _ in account }), account: account),
+                },
+                accountStore: .init(accountInfoClient: .init(fetch: { _ in throw ClientError() }), account: account),
                 initialState: .init(
                     phase: .processing(
                         .init(role: .lead(.init(invitationToken: invitationToken)), confirmedRolePeers: [peerB])

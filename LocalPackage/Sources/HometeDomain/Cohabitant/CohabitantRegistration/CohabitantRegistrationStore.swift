@@ -86,18 +86,12 @@ private extension CohabitantRegistrationStore {
 
         case .reloadAccount:
             Task {
-                do {
-                    // フォロワーの参加でサーバ側がグループIDを書き込んでいる。
-                    // 購読による反映を待たず、完了を表示する前に確実に取り込む
-                    try await accountStore.reload()
-                    guard accountStore.account?.cohabitantId != nil else {
-                        send(.cohabitantJoinFailed)
-                        return
-                    }
-                    send(.cohabitantJoined)
-                } catch {
-                    send(.cohabitantJoinFailed)
-                }
+                // フォロワーの参加でサーバ側がグループIDを書き込んでいるので、完了を表示する前に取り込んでおく。
+                // 全フォロワーから完了が届いた時点でグループは確定しているため、取り直しに失敗しても
+                // 失敗扱いにはしない（失敗にするとフォロワーは完了を待ったまま取り残される）。
+                // 取り込めなかった分は自分のアカウントの購読（AccountStore.startObservingIfNeeded）で反映される
+                try? await accountStore.reload()
+                send(.cohabitantJoined)
             }
 
         case let .log(action):
