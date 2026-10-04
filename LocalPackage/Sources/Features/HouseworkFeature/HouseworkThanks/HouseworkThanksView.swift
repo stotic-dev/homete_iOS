@@ -24,10 +24,13 @@ public struct HouseworkThanksView: View {
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
     let sentThanks: HouseworkThanks?
+    /// 初めてありがとうを伝えられた。閉じた後の画面で演出を出すために、開いた側へ伝える
+    let onSentFirstThanks: () -> Void
 
-    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil) {
+    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil, onSentFirstThanks: @escaping () -> Void) {
         self.item = item
         self.sentThanks = sentThanks
+        self.onSentFirstThanks = onSentFirstThanks
         _inputMessage = State(initialValue: sentThanks?.comment ?? "")
     }
 
@@ -133,7 +136,7 @@ private extension HouseworkThanksView {
         guard let cohabitantId = account.cohabitantId else { return }
 
         do {
-            try await houseworkListStore.sendThanks(
+            let isFirstThanks = try await houseworkListStore.sendThanks(
                 target: item.originalItem,
                 sender: account,
                 comment: trimmedMessage,
@@ -141,6 +144,9 @@ private extension HouseworkThanksView {
                 cohabitantId: cohabitantId,
                 step: .thanks
             )
+            if isFirstThanks {
+                onSentFirstThanks()
+            }
             dismiss()
         } catch {
             commonError = .init(error: error)
@@ -158,9 +164,9 @@ private extension HouseworkThanksView {
         state: .completed,
         executorId: "test",
         executedAt: .distantFuture
-    ))
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    )) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkThanksView_メッセージを添える") {
@@ -174,9 +180,9 @@ private extension HouseworkThanksView {
             executedAt: .distantFuture
         ),
         sentThanks: .init(comment: nil, sentAt: .distantFuture)
-    )
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    ) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkThanksView_編集") {
@@ -190,8 +196,8 @@ private extension HouseworkThanksView {
             executedAt: .distantFuture
         ),
         sentThanks: .init(comment: "いつもありがとう！", sentAt: .distantFuture)
-    )
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    ) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 #endif

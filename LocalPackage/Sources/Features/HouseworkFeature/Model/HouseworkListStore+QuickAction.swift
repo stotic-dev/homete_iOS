@@ -13,6 +13,8 @@ extension HouseworkListStore {
     /// - Parameter notify: 完了の通知を送るかどうか。複数選択の一括操作では、
     ///   家事ごとの個別通知の代わりに件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
     ///   ありがとうはコメントなしで記録するため、この値に関わらず通知しない。
+    /// - Returns: このアクションで初めてありがとうを記録したかどうか。ありがとう以外のアクションでは常に`false`
+    @discardableResult
     // swiftlint:disable:next function_parameter_count
     func perform(
         _ action: HouseworkQuickAction,
@@ -22,7 +24,7 @@ extension HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep,
         notify: Bool = true
-    ) async throws {
+    ) async throws -> Bool {
         switch action {
         // 担当者やコメントを選ばずに完了にする経路（一括完了）では、自分だけを担当者にする
         case .complete:
@@ -59,7 +61,7 @@ extension HouseworkListStore {
             )
 
         case .sendThanks:
-            try await sendThanks(
+            return try await sendThanks(
                 target: item.originalItem,
                 sender: account,
                 comment: nil,
@@ -80,6 +82,7 @@ extension HouseworkListStore {
             // 入力なしで実行できるこの経路では何もしない（一括操作の対象にもしていない）
             break
         }
+        return false
     }
 
 }
@@ -91,6 +94,8 @@ extension HouseworkListStore {
     /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制する。
     /// 完了だけは、ふりかえり通知の予約を兼ねて件数をまとめた1件の通知を今日の家事で1日1回だけ送る。
     /// ほかのアクション（やらない・ありがとう・未完了に戻す）では何も送らない。
+    /// - Returns: 1件でも初めてありがとうを記録したかどうか。ありがとう以外のアクションでは常に`false`
+    @discardableResult
     // swiftlint:disable:next function_parameter_count
     func performBulk(
         _ action: HouseworkQuickAction,
@@ -99,11 +104,12 @@ extension HouseworkListStore {
         account: Account,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
-    ) async throws {
-        guard let firstItem = items.first else { return }
+    ) async throws -> Bool {
+        guard let firstItem = items.first else { return false }
 
+        var hasSentFirstThanks = false
         for item in items {
-            try await perform(
+            let isFirstThanks = try await perform(
                 action,
                 on: item,
                 now: now,
@@ -112,6 +118,7 @@ extension HouseworkListStore {
                 step: step,
                 notify: false
             )
+            hasSentFirstThanks = hasSentFirstThanks || isFirstThanks
         }
 
         if action == .complete {
@@ -124,6 +131,7 @@ extension HouseworkListStore {
                 .completedBulkMessage(executorName: account.userName, count: items.count, data: $0)
             }
         }
+        return hasSentFirstThanks
     }
 
 }
