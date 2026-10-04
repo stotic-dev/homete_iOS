@@ -408,6 +408,127 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
         }
     }
 
+    @Test("一括でありがとうを伝えたうち1件でもまだ伝えていない家事があれば、初めて記録したとして返す")
+    func performBulk_sendThanks_includesFirstThanks_returnsTrue() async throws {
+        // Arrange
+
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId",
+                thanks: [inputAccount.id: .init(comment: "ありがとう", sentAt: .distantPast)]
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+        ]
+        let store = HouseworkListStore(
+            houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in }),
+            cohabitantPushNotificationClient: .previewValue,
+            items: [.makeForTest(items: inputItems)]
+        )
+
+        // Act
+
+        let actual = try await store.performBulk(
+            .sendThanks,
+            on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+            now: Date(),
+            account: inputAccount,
+            cohabitantId: "cohabitantId",
+            step: .board
+        )
+
+        // Assert
+
+        #expect(actual == true)
+    }
+
+    @Test("一括でありがとうを伝えた家事がすべて伝え済みなら、初めて記録したとして返さない")
+    func performBulk_sendThanks_allAlreadySent_returnsFalse() async throws {
+        // Arrange
+
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId",
+                thanks: [inputAccount.id: .init(comment: nil, sentAt: .distantPast)]
+            ),
+            HouseworkItem.makeForTest(
+                id: 2,
+                indexedDate: indexedDate,
+                state: .completed,
+                executorId: "otherUserId",
+                thanks: [inputAccount.id: .init(comment: "ありがとう", sentAt: .distantPast)]
+            ),
+        ]
+        let store = HouseworkListStore(
+            houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in
+                Issue.record()
+            }),
+            cohabitantPushNotificationClient: .previewValue,
+            items: [.makeForTest(items: inputItems)]
+        )
+
+        // Act
+
+        let actual = try await store.performBulk(
+            .sendThanks,
+            on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+            now: Date(),
+            account: inputAccount,
+            cohabitantId: "cohabitantId",
+            step: .board
+        )
+
+        // Assert
+
+        #expect(actual == false)
+    }
+
+    @Test("ありがとう以外のアクションを一括適用しても、初めてありがとうを記録したとして返さない")
+    func performBulk_otherThanThanks_returnsFalse() async throws {
+        // Arrange
+
+        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let indexedDate = Date()
+        let inputItems = [
+            HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: .completed),
+            HouseworkItem.makeForTest(id: 2, indexedDate: indexedDate, state: .completed),
+        ]
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in }),
+            cohabitantPushNotificationClient: .previewValue,
+            items: [.makeForTest(items: inputItems)]
+        )
+
+        // Act
+
+        let actual = try await store.performBulk(
+            .returnToIncomplete,
+            on: inputItems.map { .init(originalItem: $0, isRegistered: true) },
+            now: Date(),
+            account: inputAccount,
+            cohabitantId: "cohabitantId",
+            step: .board
+        )
+
+        // Assert
+
+        #expect(actual == false)
+    }
+
     @Test("相手に通知しないアクションを一括適用しても、まとめ通知は送られない")
     func performBulk_returnToIncomplete_doesNotSendNotification() async throws {
         // Arrange

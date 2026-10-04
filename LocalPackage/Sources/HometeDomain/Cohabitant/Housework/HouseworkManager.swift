@@ -21,6 +21,12 @@ public final actor HouseworkManager {
     private var pendingFetchTask: Task<Void, Never>?
     /// 監視の世代。actorの再入により、中断中の準備処理が後から状態を書き戻すのを防ぐために使う
     private var observeGeneration = 0
+    /// 購読中（準備中を含む）の条件。初回フェッチかリスナーが失敗したら`nil`に戻し、次の呼び出しでやり直させる
+    private var activeCondition: ObserveCondition?
+    /// 張っているリアルタイムリスナーのID
+    /// - Note: IDは世代ごとに変える。共通のIDで外すと、再開した古い世代が新しい世代のリスナーまで外してしまい、
+    ///         `activeCondition`が残ったまま購読が止まって、張り直す機会もなくなるため
+    private var listenerId: String?
 
     // MARK: Dependencies
 
@@ -61,12 +67,26 @@ public final actor HouseworkManager {
         return stream
     }
 
+    /// 家事のワンショットフェッチとリアルタイムリスナーを準備する
+    ///
+    /// - Note: 画面の表示（タブの切り替えや戻る操作）のたびに呼ばれるが、ワンショットフェッチはプランに応じた
+    ///         数ヶ月分の家事をサーバーから読むため、そのたびに読み取りが課金される。
+    ///         同じグループ・同じ日・同じプランで購読中（準備中を含む）なら何もしない。
+    ///         そのため、リスナーの期間（±N日）より前の家事を同居人が変えても、条件が変わるまでは反映されない。
     public func setupObserver(
         currentTime: Date,
         cohabitantId: String,
         calendar: Calendar,
         storagePolicy: HouseworkStoragePolicy
     ) async {
+        let condition = ObserveCondition(
+            cohabitantId: cohabitantId,
+            day: calendar.startOfDay(for: currentTime),
+            storagePolicy: storagePolicy
+        )
+        guard condition != activeCondition else { return }
+        activeCondition = condition
+
         // このactorはawaitのたびに再入するため、以降の各ステップでは自分の世代が最新かを確認する。
         // 確認を省くと、サインアウト（`clearOnSignedOut`）や再セットアップが割り込んだあとに
         // このメソッドが再開して、権限を失ったグループのデータとリスナーを復活させてしまう
@@ -76,7 +96,7 @@ public final actor HouseworkManager {
         observeTask?.cancel()
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
-        await houseworkClient.removeListener(houseworkObserveKey)
+        await removeListener()
         guard generation == observeGeneration else { return }
 
         // 1. プランに応じた期間をワンショットフェッチして allItems を初期化
@@ -90,32 +110,28 @@ public final actor HouseworkManager {
         } catch {
             guard generation == observeGeneration else { return }
             print("failed to fetch housework items: \(error)")
+            activeCondition = nil
             notifyFailure(error)
         }
 
         // 2. ±N日のリアルタイムリスナー起動
+        let newListenerId = "\(houseworkObserveKey)-\(generation)"
         let houseworkListStream = await houseworkClient.snapshotListener(
-            houseworkObserveKey,
+            newListenerId,
             cohabitantId,
             currentTime,
             Self.listenerOffset
         )
         guard generation == observeGeneration else {
-            await houseworkClient.removeListener(houseworkObserveKey)
+            // 自分の世代で張ったリスナーだけを外す
+            await houseworkClient.removeListener(newListenerId)
             return
         }
+        listenerId = newListenerId
 
+        // 3. 更新を allItems に upsert マージして通知
         observeTask = Task {
-            do {
-                for try await currentItems in houseworkListStream {
-                    // 3. allItems に upsert マージして通知
-                    upsert(currentItems)
-                    notifyObservers()
-                }
-            } catch {
-                print("failed to listen housework items: \(error)")
-                notifyFailure(error)
-            }
+            await listen(houseworkListStream, generation: generation)
         }
     }
 
@@ -125,11 +141,12 @@ public final actor HouseworkManager {
     public func clearOnSignedOut() async {
         // 準備中の`setupObserver`が再開しても状態を書き戻さないよう、先に世代を進める
         observeGeneration += 1
+        activeCondition = nil
         observeTask?.cancel()
         observeTask = nil
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
-        await houseworkClient.removeListener(houseworkObserveKey)
+        await removeListener()
         allItems = []
         fetchedRange = nil
         notifyObservers()
@@ -163,6 +180,30 @@ public final actor HouseworkManager {
 // MARK: private
 
 private extension HouseworkManager {
+
+    /// 張っているリアルタイムリスナーを外す
+    func removeListener() async {
+        guard let listenerId else { return }
+        // 外し終わるのを待つ間に再入されても、同じリスナーを二重に外さないよう先に手放す
+        self.listenerId = nil
+        await houseworkClient.removeListener(listenerId)
+    }
+
+    /// リアルタイムリスナーの更新を allItems に upsert マージして通知する
+    func listen(_ stream: AsyncThrowingStream<[HouseworkItem], Error>, generation: Int) async {
+        do {
+            for try await currentItems in stream {
+                upsert(currentItems)
+                notifyObservers()
+            }
+        } catch {
+            // 張り替えた後に古いリスナーのエラーが届いても、新しい購読の状態を失敗にしない
+            guard generation == observeGeneration else { return }
+            print("failed to listen housework items: \(error)")
+            activeCondition = nil
+            notifyFailure(error)
+        }
+    }
 
     /// 追加フェッチした期間を allItems と fetchedRange に反映する
     func appendItems(cohabitantId: String, from: Date, to: Date) async {
@@ -206,5 +247,16 @@ private extension HouseworkManager {
             continuation.yield(.failure(domainError))
         }
     }
+
+}
+
+/// 家事の購読の条件。これが変わったときだけワンショットフェッチとリスナーをやり直す
+private struct ObserveCondition: Equatable {
+
+    let cohabitantId: String
+    /// リスナーの対象期間（±N日）とフェッチ期間の起点になる日
+    let day: Date
+    /// フェッチ期間を決めるプラン
+    let storagePolicy: HouseworkStoragePolicy
 
 }
