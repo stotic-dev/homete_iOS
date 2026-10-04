@@ -1239,6 +1239,98 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         }
     }
 
+    @Test(
+        "まだありがとうを伝えていない家事に伝えると、初めて記録したとして返す",
+        arguments: [nil, "お疲れ様でした！"]
+    )
+    func sendThanks_firstThanks_returnsTrue(comment: String?) async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast
+        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let store = HouseworkListStore(
+            houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in }),
+            cohabitantPushNotificationClient: .previewValue,
+            items: [.makeForTest(items: [inputHouseworkItem])]
+        )
+
+        // Act
+
+        let actual = try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: comment,
+            now: Date(timeIntervalSince1970: 1000),
+            cohabitantId: inputCohabitantId,
+            step: .thanks
+        )
+
+        // Assert
+
+        #expect(actual == true)
+    }
+
+    @Test(
+        "すでに伝えた家事へのコメントの書き足し・編集や、記録しなかった場合は、初めて記録したとして返さない",
+        arguments: [
+            // コメントなしで送ったありがとうにコメントを書き足す
+            (HouseworkState.completed, HouseworkThanks(comment: nil, sentAt: .distantPast), "お疲れ様でした！"),
+            // 送ったコメントを直す
+            (HouseworkState.completed, HouseworkThanks(comment: "ありがとう", sentAt: .distantPast), "いつもありがとう"),
+            // 送信済みの家事にコメントなしで送る（記録しない）
+            (HouseworkState.completed, HouseworkThanks(comment: "ありがとう", sentAt: .distantPast), nil),
+            // 未完了に戻された家事に送る（記録しない）
+            (HouseworkState.incomplete, nil, "お疲れ様でした！"),
+        ] as [(HouseworkState, HouseworkThanks?, String?)]
+    )
+    func sendThanks_notFirstThanks_returnsFalse(
+        currentState: HouseworkState,
+        sentThanks: HouseworkThanks?,
+        comment: String?
+    ) async throws {
+        // Arrange
+
+        let inputHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: .completed,
+            executorId: "executorId",
+            executedAt: .distantPast
+        )
+        let currentHouseworkItem = HouseworkItem.makeForTest(
+            id: 1,
+            state: currentState,
+            executorId: "executorId",
+            executedAt: .distantPast,
+            thanks: sentThanks.map { ["senderId": $0] } ?? [:]
+        )
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let store = HouseworkListStore(
+            houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in }),
+            cohabitantPushNotificationClient: .previewValue,
+            items: [.makeForTest(items: [currentHouseworkItem])]
+        )
+
+        // Act
+
+        let actual = try await store.sendThanks(
+            target: inputHouseworkItem,
+            sender: inputSender,
+            comment: comment,
+            now: Date(timeIntervalSince1970: 1000),
+            cohabitantId: inputCohabitantId,
+            step: .thanks
+        )
+
+        // Assert
+
+        #expect(actual == false)
+    }
+
     @Test("家事のリスナーがエラーで終了すると、ロード状態が失敗になる")
     func startObserving_updatesLoadStateToFailed() async {
         // Arrange

@@ -237,6 +237,9 @@ public final class HouseworkListStore {
     /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。
     /// 呼び出し元に返すのは記録の失敗だけで、通知の送信は待たない。
     /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
+    /// - Returns: この家事に初めてありがとうを記録したかどうか。コメントの書き足し・編集だった場合や、
+    ///   未完了に戻されていたなどで何も記録しなかった場合は`false`
+    @discardableResult
     // swiftlint:disable:next function_parameter_count
     public func sendThanks(
         target: HouseworkItem,
@@ -245,14 +248,14 @@ public final class HouseworkListStore {
         now: Date,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
-    ) async throws {
+    ) async throws -> Bool {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する
         let current = items.item(target) ?? target
         // 画面を開いている間に未完了へ戻された家事は、ありがとうを消す仕様なので記録しない
-        guard current.state == .completed else { return }
+        guard current.state == .completed else { return false }
         let currentThanks = current.thanks[sender.id]
         // 画面の表示がリスナーに追いつく前の一括操作で、書いたコメントをコメントなしで消さないよう何もしない
-        if comment == nil, currentThanks != nil { return }
+        if comment == nil, currentThanks != nil { return false }
         let isEditing = currentThanks != nil
         let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
 
@@ -264,12 +267,13 @@ public final class HouseworkListStore {
         }
         analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
 
-        guard let comment, currentThanks?.comment == nil else { return }
-
-        notifyThanks(
-            cohabitantId: cohabitantId,
-            content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
-        )
+        if let comment, currentThanks?.comment == nil {
+            notifyThanks(
+                cohabitantId: cohabitantId,
+                content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+            )
+        }
+        return !isEditing
     }
 
     public func returnToIncomplete(
