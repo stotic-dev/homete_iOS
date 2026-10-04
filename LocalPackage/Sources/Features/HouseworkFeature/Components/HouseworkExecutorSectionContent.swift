@@ -149,16 +149,20 @@ extension HouseworkExecutorSectionContent {
 }
 
 #if DEBUG
-#Preview("HouseworkExecutorSectionContent_人数の上限と入力エラー", traits: .sizeThatFitsLayout) {
-    // 2ptの家事に3人のメンバー。保存済みの割合の合計が100%にならない状態
-    @Previewable @State var allocation = HouseworkExecutorAllocation.forAddingExecutors(
-        memberIds: ["own", "child", "partner"],
-        executors: [
-            .init(userId: "own", percentage: 30, point: 1),
-            .init(userId: "partner", percentage: 30, point: 1),
-        ],
-        earnedPoint: 2
-    )
+#Preview("HouseworkExecutorSectionContent_人数の上限と0ptの担当者", traits: .sizeThatFitsLayout) {
+    // 2ptの家事に3人のメンバー。99%と1%に配分して、片方が0ptになった状態
+    @Previewable @State var allocation: HouseworkExecutorAllocation = {
+        var allocation = HouseworkExecutorAllocation.forAddingExecutors(
+            memberIds: ["own", "child", "partner"],
+            executors: [
+                .init(userId: "own", percentage: 50, point: 1),
+                .init(userId: "partner", percentage: 50, point: 1),
+            ],
+            earnedPoint: 2
+        )
+        allocation.updatePercentage(99, for: "own")
+        return allocation
+    }()
     @Previewable @State var isExpandedAllocation = true
     HouseworkExecutorSectionContent(
         selectableMembers: [
