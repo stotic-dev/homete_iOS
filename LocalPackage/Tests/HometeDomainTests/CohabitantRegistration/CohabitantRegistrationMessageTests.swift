@@ -226,29 +226,25 @@ struct CohabitantRegistrationMessageTests {
 
 }
 
-private extension CohabitantRegistrationMessageTests {
+/// 旧バージョン（v1.0.x）のアプリが持つメッセージの形式
+private struct LegacyMessage: Decodable, Equatable {
 
-    /// 旧バージョン（v1.0.x）のアプリが持つメッセージの形式
-    struct LegacyMessage: Decodable, Equatable {
+    let type: LegacyCommunicateType
 
-        let type: CommunicateType
+}
 
-        enum CommunicateType: Decodable, Equatable {
+private enum LegacyCommunicateType: Decodable, Equatable {
 
-            case fixedMember(isOK: Bool)
-            case preRegistration(role: Role)
-            case shareCohabitantId(id: String)
-            case complete
+    case fixedMember(isOK: Bool)
+    case preRegistration(role: LegacyRole)
+    case shareCohabitantId(id: String)
+    case complete
 
-        }
+}
 
-        enum Role: Decodable, Equatable {
+private enum LegacyRole: Decodable, Equatable {
 
-            case follower(accountId: String)
-            case lead
-
-        }
-
-    }
+    case follower(accountId: String)
+    case lead
 
 }
