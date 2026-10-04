@@ -13,7 +13,7 @@ import SwiftUI
 public struct ContentFittingSheetScrollView<Content: View>: View {
 
     @State var contentHeight: CGFloat?
-    @State var safeAreaInsets = EdgeInsets()
+    @State var initialSafeAreaInsets: EdgeInsets?
 
     let content: Content
 
@@ -38,7 +38,12 @@ public struct ContentFittingSheetScrollView<Content: View>: View {
                 .onGeometryChange(for: EdgeInsets.self) { proxy in
                     proxy.safeAreaInsets
                 } action: { insets in
-                    safeAreaInsets = insets
+                    // セーフエリアはシートの位置で変わる（キーボードで押し上げられ上端がステータスバーに
+                    // かかると上側が増える）。それを高さの指定に反映すると、高さとセーフエリアが互いに
+                    // 影響し合って永遠に揺れ続けるため、最初に測った値だけを使う
+                    guard initialSafeAreaInsets == nil else { return }
+
+                    initialSafeAreaInsets = insets
                 }
         }
         .presentationDetents(detents)
@@ -50,9 +55,9 @@ private extension ContentFittingSheetScrollView {
 
     /// 中身の高さを測るまでは、いつものハーフモーダルの高さで出しておく
     var detents: Set<PresentationDetent> {
-        guard let contentHeight else { return [.medium] }
+        guard let contentHeight, let initialSafeAreaInsets else { return [.medium] }
 
-        return [.height(contentHeight + safeAreaInsets.top + safeAreaInsets.bottom)]
+        return [.height(contentHeight + initialSafeAreaInsets.top + initialSafeAreaInsets.bottom)]
     }
 
 }
