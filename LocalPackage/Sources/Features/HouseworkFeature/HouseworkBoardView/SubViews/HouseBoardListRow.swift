@@ -327,4 +327,17 @@ private extension HouseBoardListRow {
     )
 }
 
+// 選択モード中は、行のタップで選ぶことを優先してボタンを出さない
+#Preview("HouseBoardListRow_未完了_ボタンなし", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(title: "洗濯", point: 20),
+        completionInfo: nil,
+        showsCompleteButton: false,
+        showsMoreButton: false,
+        onTapRow: {},
+        onTapThanks: nil,
+        onTapComplete: {},
+        menuContent: { EmptyView() }
+    )
+}
 #endif
