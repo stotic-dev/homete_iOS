@@ -12,6 +12,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # release-snapshot-diff.yml をworkflow_dispatchで起動するため
+  actions: write
 
 jobs:
   create-release-pr:
@@ -121,3 +123,13 @@ jobs:
             --head "release/v${VERSION}" \
             --title "Release v${VERSION}" \
             --body-file pr_body.md
+
+      # GITHUB_TOKENで作ったPRでは pull_request イベントが発火しないため、
+      # 前バージョンとのスナップショット比較（doc/adr/0039）の1回目はここから起動する
+      - name: Trigger snapshot diff
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run release-snapshot-diff.yml \
+            --ref "release/v${VERSION}" \
+            -f release_branch="release/v${VERSION}"
