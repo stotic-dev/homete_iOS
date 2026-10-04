@@ -95,28 +95,15 @@ private extension HouseworkBoardListContent {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        HStack(spacing: .space8) {
-            Button {
-                navigationPath.push(.houseworkDetail(item))
-            } label: {
-                let completionInfo = completionInfo(of: item)
-                HouseBoardListRow(
-                    houseworkItem: item.originalItem,
-                    completionInfo: completionInfo,
-                    onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
-                )
-            }
-            // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
-            if !isSelecting {
-                actionButtons(item)
-            }
-        }
-    }
-
-    func actionButtons(_ item: HouseworkBoardItem) -> some View {
-        HouseworkRowActionButtons(
-            showsCompleteButton: item.state == .incomplete,
-            showsMoreButton: !quickActions(of: item).isEmpty,
+        let completionInfo = completionInfo(of: item)
+        // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
+        return HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            completionInfo: completionInfo,
+            showsCompleteButton: !isSelecting && item.state == .incomplete,
+            showsMoreButton: !isSelecting && !quickActions(of: item).isEmpty,
+            onTapRow: { navigationPath.push(.houseworkDetail(item)) },
+            onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus),
             onTapComplete: { onSelectComplete(item) },
             menuContent: { quickActionMenu(item) }
         )
@@ -179,7 +166,7 @@ private extension HouseworkBoardListContent {
     /// 完了リストの家事セルに出す、担当者とありがとうの状況
     ///
     /// 未完了リストには担当者もありがとうもないため出さない。
-    func completionInfo(of item: HouseworkBoardItem) -> HouseBoardListRow.CompletionInfo? {
+    func completionInfo(of item: HouseworkBoardItem) -> HouseworkRowCompletionInfo? {
         guard state == .completed else { return nil }
 
         return .init(

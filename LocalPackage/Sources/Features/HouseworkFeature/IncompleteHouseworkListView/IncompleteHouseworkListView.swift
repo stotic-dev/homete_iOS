@@ -77,21 +77,15 @@ private extension IncompleteHouseworkListView {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        HStack(spacing: .space8) {
-            Button {
-                onSelectItem(item)
-            } label: {
-                HouseBoardListRow(houseworkItem: item.originalItem)
-            }
-            actionButtons(item)
-        }
-    }
-
-    func actionButtons(_ item: HouseworkBoardItem) -> some View {
-        HouseworkRowActionButtons(
+        HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            // 未完了の家事には担当者もありがとうも無いので、完了リスト向けの表示は渡さない
+            completionInfo: nil,
             showsCompleteButton: item.state == .incomplete,
             // 未完了の家事だけを並べる画面なので、出せるアクションは状態だけで決まる
             showsMoreButton: !HouseworkQuickAction.actions(for: item.state).isEmpty,
+            onTapRow: { onSelectItem(item) },
+            onTapThanks: nil,
             onTapComplete: { completingItem = item },
             menuContent: { quickActionMenu(item) }
         )

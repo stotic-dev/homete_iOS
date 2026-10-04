@@ -9,11 +9,11 @@ import SwiftUI
 /// 家事の行の右端に並べる、完了とクイックアクションのボタン
 ///
 /// 長押ししないとクイックアクションに気づけなかったため、同じ操作をタップでも開けるようにしたもの。
-/// 行全体のタップ（詳細への遷移）とタップが競合しないよう、行の`Button`の**中ではなく隣**に並べて使う。
+/// `HouseBoardListRow`が行のタップと競合しない位置に並べる。
 ///
 /// 完了は入力用のハーフモーダルを出すため、その場では実行せず`onTapComplete`で呼び出し元に伝える
 /// （`Menu`の中からはシートを出せない。`.contextMenu`と同じ制約）。
-public struct HouseworkRowActionButtons<MenuContent: View>: View {
+struct HouseworkRowActionButtons<MenuContent: View>: View {
 
     /// 完了ボタンを出すかどうか（未完了の家事だけ）
     let showsCompleteButton: Bool
@@ -21,21 +21,9 @@ public struct HouseworkRowActionButtons<MenuContent: View>: View {
     let showsMoreButton: Bool
     let onTapComplete: () -> Void
     /// その他ボタンのメニューの中身。`HouseworkQuickActionMenuContent`を渡す
-    let menuContent: () -> MenuContent
+    @ViewBuilder let menuContent: () -> MenuContent
 
-    public init(
-        showsCompleteButton: Bool,
-        showsMoreButton: Bool,
-        onTapComplete: @escaping () -> Void,
-        @ViewBuilder menuContent: @escaping () -> MenuContent
-    ) {
-        self.showsCompleteButton = showsCompleteButton
-        self.showsMoreButton = showsMoreButton
-        self.onTapComplete = onTapComplete
-        self.menuContent = menuContent
-    }
-
-    public var body: some View {
+    var body: some View {
         HStack(spacing: .zero) {
             // 一番よく使う操作なので、メニューを開かずワンタップで完了のモーダルへ入れるようにする
             if showsCompleteButton {
