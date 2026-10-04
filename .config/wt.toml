@@ -7,14 +7,15 @@
 # 一度通っていれば、以降のビルド・テストはサンドボックス内でも通る。
 
 # LocalPackageの初回ビルドは10分以上かかるため、worktree作成をブロックしない post-start で実行する。
-# xcframeworkの署名検証はiOSシミュレータ向け（build-local-package）とmacOS向け（test-packages）で
+# xcframeworkの署名検証はiOSシミュレータ向け（build-local-package）とmacOS向け（test-packages-fast）で
 # 別スライスを処理するので、両方を一度ずつビルドしておく。
 # 同じ .build を使うため、リスト（パイプライン）で順に実行する。
 # ログは `wt config state logs` で確認できる。
 post-start = [
   { build-local-package = "make build-local-package" },
-  # make test-packages と同じフラグでテストターゲットまでビルドする（テスト自体は流さない）
-  { build-package-tests = "scripts/with-local-package-lock.sh {{ worktree_path }}/LocalPackage -- swift build --package-path {{ worktree_path }}/LocalPackage --disable-sandbox --build-tests --enable-code-coverage" },
+  # make test-packages-fast と同じフラグでテストターゲットまでビルドする（テスト自体は流さない）。
+  # カバレッジの有無でビルド成果物が別物になり全体を作り直すため、ローカルで使うカバレッジなしに揃える
+  { build-package-tests = "scripts/with-local-package-lock.sh {{ worktree_path }}/LocalPackage -- swift build --package-path {{ worktree_path }}/LocalPackage --disable-sandbox --build-tests" },
 ]
 
 # pre-startのテーブルは上から順に直列で実行される。

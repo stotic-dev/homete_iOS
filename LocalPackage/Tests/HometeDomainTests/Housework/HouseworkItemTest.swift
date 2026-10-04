@@ -732,6 +732,42 @@ extension HouseworkItemTest.MemoCase {
         #expect(actual == expected)
     }
 
+    @Test("手伝った人を足しても、メモは引き継がれる")
+    func updateExecutors_keepsMemo() {
+        // Arrange
+        let date = Date(timeIntervalSinceReferenceDate: .zero)
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            point: 10,
+            state: .completed,
+            executorId: "userA",
+            executedAt: date,
+            expiredAt: date,
+            memo: Self.memo
+        )
+        let executors = [
+            HouseworkExecutor(userId: "userA", percentage: 50, point: 5),
+            HouseworkExecutor(userId: "userB", percentage: 50, point: 5),
+        ]
+
+        // Act
+        let actual = item.updateExecutors(executors)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: date,
+            point: 10,
+            state: .completed,
+            executors: executors,
+            executedAt: date,
+            expiredAt: date,
+            memo: Self.memo
+        )
+        #expect(actual == expected)
+    }
+
     @Test("もう一度やった家事は、元の家事のメモをチェック状態ごと引き継ぐ")
     func makeRedone_keepsMemo() {
         // Arrange

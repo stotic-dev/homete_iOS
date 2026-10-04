@@ -28,7 +28,7 @@ struct HouseworkManagerTest {
         let manager = HouseworkManager(
             houseworkClient: .init(
                 snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
-                    #expect(id == "houseworkObserveKey")
+                    #expect(id == "houseworkObserveKey-1")
                     #expect(cohabitantId == inputCohabitantId)
                     #expect(anchorDate == now)
                     #expect(offset == 3)
@@ -68,6 +68,44 @@ struct HouseworkManagerTest {
         #expect(allItems.count == 1)
         #expect(allItems.contains(where: { $0.id == fetchedItem.id }))
         #expect(receivedItems.contains(where: { $0.id == fetchedItem.id }))
+    }
+
+    @Test("初回フェッチ後に購読したオブザーバーには、その時点のallItemsが通知される")
+    func createObserverAfterSetup_receivesCurrentItems() async {
+        // Arrange
+
+        let now = Date()
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in [fetchedItem] }
+            )
+        )
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        let observerStream = await manager.createObserver("testKey")
+
+        // Assert
+
+        var receivedItems: [HouseworkItem] = []
+        for await result in observerStream {
+            if case let .success(items) = result {
+                receivedItems = items
+            }
+            break
+        }
+
+        #expect(receivedItems == [fetchedItem])
     }
 
     @Test("リアルタイムリスナーの更新がallItemsにupsertマージされオブザーバーに通知される")
@@ -420,6 +458,373 @@ struct HouseworkManagerTest {
         let fetchedRange = await manager.fetchedRange
         #expect(allItems == [])
         #expect(fetchedRange == nil)
+    }
+
+}
+
+// MARK: setupObserverの重複実行
+
+extension HouseworkManagerTest {
+
+    @Test("同じグループ・同じ日・同じプランでsetupObserverを呼び直しても、フェッチもリスナーもやり直さない")
+    func setupObserverSkipsSameCondition() async {
+        // Arrange
+
+        let firstTime = Date.previewDate(year: 2026, month: 8, day: 11)
+        let secondTime = Date.previewDate(year: 2026, month: 8, day: 11, hour: 23)
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, _, _, _ in
+                        confirmation()
+                        return .makeStream().stream
+                    },
+                    fetchItemsHandler: { _, _, _ in
+                        confirmation()
+                        return []
+                    }
+                )
+            )
+            await manager.setupObserver(
+                currentTime: firstTime,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: secondTime,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+    @Test("日付が変わってからsetupObserverを呼び直すと、フェッチとリスナーをやり直す")
+    func setupObserverRedoesOnDayChanged() async {
+        // Arrange
+
+        let firstTime = Date.previewDate(year: 2026, month: 8, day: 11)
+        let secondTime = Date.previewDate(year: 2026, month: 8, day: 12)
+
+        await confirmation(expectedCount: 4) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, _, _, _ in
+                        confirmation()
+                        return .makeStream().stream
+                    },
+                    fetchItemsHandler: { _, _, _ in
+                        confirmation()
+                        return []
+                    }
+                )
+            )
+            await manager.setupObserver(
+                currentTime: firstTime,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: secondTime,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+    @Test("プランが変わってからsetupObserverを呼び直すと、新しいプランの期間でフェッチし直す")
+    func setupObserverRedoesOnStoragePolicyChanged() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let premiumFrom = Date.previewDate(year: 2025, month: 8, day: 11)
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .free
+        )
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: now,
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Assert
+
+        let fetchedRange = await manager.fetchedRange
+        #expect(fetchedRange == premiumFrom ... now)
+    }
+
+    @Test("グループが変わってからsetupObserverを呼び直すと、新しいグループでフェッチとリスナーをやり直す")
+    func setupObserverRedoesOnCohabitantChanged() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+        let newCohabitantId = "newCohabitantId"
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, cohabitantId, _, _ in
+                        if cohabitantId == newCohabitantId {
+                            confirmation()
+                        }
+                        return .makeStream().stream
+                    },
+                    fetchItemsHandler: { cohabitantId, _, _ in
+                        if cohabitantId == newCohabitantId {
+                            confirmation()
+                        }
+                        return []
+                    }
+                )
+            )
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: newCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+    @Test("初回フェッチに失敗したあとは、同じ条件でsetupObserverを呼び直してもフェッチをやり直す")
+    func setupObserverRedoesAfterFetchFailure() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                    fetchItemsHandler: { _, _, _ in
+                        confirmation()
+                        throw DomainError.noNetwork
+                    }
+                )
+            )
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+    @Test("リスナーがエラーで終了したあとは、同じ条件でsetupObserverを呼び直すとリスナーを張り直す")
+    func setupObserverRedoesAfterListenerFailure() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, _, _, _ in
+                        confirmation()
+                        let (stream, continuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+                        continuation.finish(throwing: DomainError.noNetwork)
+                        return stream
+                    },
+                    fetchItemsHandler: { _, _, _ in [] }
+                )
+            )
+            let observerStream = await manager.createObserver("testKey")
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+            // 初回フェッチの成功通知とリスナーの失敗通知を消費
+            var consumedCount = 0
+            for await _ in observerStream {
+                consumedCount += 1
+                if consumedCount == 2 { break }
+            }
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+    @Test("サインアウトしたあとは、同じ条件でsetupObserverを呼び直してもフェッチをやり直す")
+    func setupObserverRedoesAfterSignedOut() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 8, day: 11)
+
+        await confirmation(expectedCount: 2) { confirmation in
+            let manager = HouseworkManager(
+                houseworkClient: .init(
+                    snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                    fetchItemsHandler: { _, _, _ in
+                        confirmation()
+                        return []
+                    }
+                )
+            )
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+            await manager.clearOnSignedOut()
+
+            // Act
+
+            await manager.setupObserver(
+                currentTime: now,
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+    }
+
+}
+
+// MARK: リスナーの付け外し
+
+extension HouseworkManagerTest {
+
+    @Test("条件が変わってsetupObserverを呼び直すと、前の世代で張ったリスナーを外す")
+    func setupObserverRemovesPreviousListener() async {
+        // Arrange
+
+        let recorder = RemovedListenerRecorder()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in .makeStream().stream },
+                removeListenerHandler: { id in await recorder.record(id) },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 11),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .free
+        )
+
+        // Act
+
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 12),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .free
+        )
+
+        // Assert
+
+        let removedIds = await recorder.ids
+        #expect(removedIds == ["houseworkObserveKey-1"])
+    }
+
+    @Test("リスナーを張っている最中に条件が変わった場合、古い世代は自分のリスナーだけを外し、新しい世代のリスナーは残す")
+    func staleSetupRemovesOnlyItsOwnListener() async {
+        // Arrange
+
+        let gate = TestGate()
+        let recorder = RemovedListenerRecorder()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { id, _, _, _ in
+                    if id == "houseworkObserveKey-1" {
+                        await gate.wait()
+                    }
+                    return .makeStream().stream
+                },
+                removeListenerHandler: { id in await recorder.record(id) },
+                fetchItemsHandler: { _, _, _ in [] }
+            )
+        )
+        let staleTask = Task {
+            await manager.setupObserver(
+                currentTime: .previewDate(year: 2026, month: 8, day: 11),
+                cohabitantId: inputCohabitantId,
+                calendar: .japanese,
+                storagePolicy: .free
+            )
+        }
+        await gate.waitUntilArrived()
+        // 古い世代がリスナーを張っている間に、プランが変わって新しい世代が張り終える
+        await manager.setupObserver(
+            currentTime: .previewDate(year: 2026, month: 8, day: 11),
+            cohabitantId: inputCohabitantId,
+            calendar: .japanese,
+            storagePolicy: .premium
+        )
+
+        // Act
+
+        gate.open()
+        await staleTask.value
+
+        // Assert
+
+        let removedIds = await recorder.ids
+        #expect(removedIds == ["houseworkObserveKey-1"])
+    }
+
+}
+
+/// 外されたリスナーのIDを記録する
+private actor RemovedListenerRecorder {
+
+    private(set) var ids: [String] = []
+
+    func record(_ id: String) {
+        ids.append(id)
     }
 
 }

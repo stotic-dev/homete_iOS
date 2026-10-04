@@ -214,13 +214,16 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep
     ) async throws {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する。
+        // 書き込みにも同じ記録を使い、判断と書き込みの間に一覧が入れ替わっても食い違わないようにする
+        let current = items.item(target) ?? target
         // 画面を開いている間に未完了へ戻された家事は担当者を持たない仕様なので、何もしない
-        guard (items.item(target) ?? target).state == .completed else { return }
+        guard current.state == .completed else { return }
+        // 配分は画面を開いた時点の合計ポイントで組み立てているため、その間に同居人が完了をやり直して
+        // 合計が変わっていたら書き込まない。合わない配分で上書きすると家事の合計ポイントが増減する
+        guard executors.reduce(0) { $0 + $1.point } == current.earnedPoint else { return }
 
         do {
-            try await updateAndSave(target: target, cohabitantId: cohabitantId) {
-                $0.updateExecutors(executors)
-            }
+            try await houseworkClient.insertOrUpdateItem(current.updateExecutors(executors), cohabitantId)
         } catch {
             analyticsClient.log(.housework(.addHelper(step: step, isSuccess: false)))
             throw error
@@ -234,6 +237,9 @@ public final class HouseworkListStore {
     /// 通知はコメント付きで送ったときと、コメントなしで送った後に書き足したときだけ送る。
     /// 呼び出し元に返すのは記録の失敗だけで、通知の送信は待たない。
     /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
+    /// - Returns: この家事に初めてありがとうを記録したかどうか。コメントの書き足し・編集だった場合や、
+    ///   未完了に戻されていたなどで何も記録しなかった場合は`false`
+    @discardableResult
     // swiftlint:disable:next function_parameter_count
     public func sendThanks(
         target: HouseworkItem,
@@ -242,14 +248,14 @@ public final class HouseworkListStore {
         now: Date,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
-    ) async throws {
+    ) async throws -> Bool {
         // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する
         let current = items.item(target) ?? target
         // 画面を開いている間に未完了へ戻された家事は、ありがとうを消す仕様なので記録しない
-        guard current.state == .completed else { return }
+        guard current.state == .completed else { return false }
         let currentThanks = current.thanks[sender.id]
         // 画面の表示がリスナーに追いつく前の一括操作で、書いたコメントをコメントなしで消さないよう何もしない
-        if comment == nil, currentThanks != nil { return }
+        if comment == nil, currentThanks != nil { return false }
         let isEditing = currentThanks != nil
         let thanks = HouseworkThanks(comment: comment, sentAt: currentThanks?.sentAt ?? now)
 
@@ -261,12 +267,13 @@ public final class HouseworkListStore {
         }
         analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
 
-        guard let comment, currentThanks?.comment == nil else { return }
-
-        notifyThanks(
-            cohabitantId: cohabitantId,
-            content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
-        )
+        if let comment, currentThanks?.comment == nil {
+            notifyThanks(
+                cohabitantId: cohabitantId,
+                content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+            )
+        }
+        return !isEditing
     }
 
     public func returnToIncomplete(
@@ -440,16 +447,17 @@ private extension HouseworkListStore {
         }
     }
 
+    /// 最新の家事に変更を当てて保存する
+    ///
+    /// 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録に当てる。
+    /// 一覧に見つからないとき（同居人が消した・保持期限で一覧から外れた・リスナーがまだ届いていない）は
+    /// 手元の家事に当てる。操作のたびにクラッシュさせるよりは書き込みを試みる方がよく、`saveMemo`と同じ方針。
     func updateAndSave(
         target: HouseworkItem,
         cohabitantId: String,
         transform: (HouseworkItem) -> HouseworkItem
     ) async throws {
-        guard let targetItem = items.item(target) else {
-            preconditionFailure("Not found target item(\(target))")
-        }
-
-        let updatedItem = transform(targetItem)
+        let updatedItem = transform(items.item(target) ?? target)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
     }
 

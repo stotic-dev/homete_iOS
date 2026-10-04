@@ -7,7 +7,7 @@ paths:
 
 `#Preview` は Prefire によって `hometeSnapshotTests/PreviewTests.generated.swift` へ**中身がそのまま展開**され、対象モジュールを `@testable import` した上でビルドされる（生成の設定は `.prefire.yml`）。
 
-そのため `#Preview` は、実装ファイルの中に書かれていても**別モジュール・別ファイルからコンパイルされる**前提で書く必要がある。ここを外すと、ローカルの `make test-packages` は通るのに Xcode Cloud の `VRT` ワークフローだけがビルドエラーで落ちる（LocalPackage単体のビルドでは生成コードがビルド対象に入らないため、手元では再現しない）。
+そのため `#Preview` は、実装ファイルの中に書かれていても**別モジュール・別ファイルからコンパイルされる**前提で書く必要がある。ここを外すと、ローカルの `make test-packages-fast` は通るのに Xcode Cloud の `VRT` ワークフローだけがビルドエラーで落ちる（LocalPackage単体のビルドでは生成コードがビルド対象に入らないため、手元では再現しない）。
 
 ## 必須事項
 
@@ -25,7 +25,7 @@ paths:
 
 ### 2. `Prefire` の import は `#if canImport(Prefire)` で囲む
 
-`LocalPackage/Package.swift` で `Prefire` プロダクトは `condition: .when(platforms: [.iOS])` としてiOS限定でリンクされている。`swift test --package-path LocalPackage`（`make test-packages`）が実行するホストmacOS向けビルドには `Prefire` モジュールが存在しないため、無条件の `import Prefire` は `error: no such module 'Prefire'` で失敗する。
+`LocalPackage/Package.swift` で `Prefire` プロダクトは `condition: .when(platforms: [.iOS])` としてiOS限定でリンクされている。`swift test --package-path LocalPackage`（`make test-packages-fast`）が実行するホストmacOS向けビルドには `Prefire` モジュールが存在しないため、無条件の `import Prefire` は `error: no such module 'Prefire'` で失敗する。
 
 ```swift
 import HometeUI

@@ -3,6 +3,7 @@
 //
 
 import FirebaseFirestore
+import HometeDomain
 
 public final actor FirestoreService {
 
@@ -15,6 +16,23 @@ public final actor FirestoreService {
             .getDocuments()
             .documents
             .map { try $0.data(as: T.self) }
+    }
+
+    /// クエリに一致するドキュメントを1件ずつデコードし、デコードできないものは飛ばして返す
+    ///
+    /// `fetch`は1件でもデコードに失敗すると全体が失敗する。別バージョンのアプリが書いた形式の違うドキュメントや
+    /// 壊れたドキュメントが混ざっても、ほかのドキュメントまで読めなくならないようにしたいときに使う。
+    /// SnapshotListener（`addSnapshotListener`）と同じ扱いにそろえる。
+    public func fetchSkippingUndecodable<T: Decodable>(predicate: (Firestore) -> Query) async throws -> [T] {
+        try await predicate(firestore)
+            .getDocuments()
+            .documents
+            .compactMapSkippingFailures(
+                transform: { try $0.data(as: T.self) },
+                onFailure: { document, error in
+                    print("skipped undecodable document(path: \(document.reference.path)): \(error)")
+                }
+            )
     }
 
     public func fetch<T: Decodable & Sendable>(predicate: (Firestore) -> DocumentReference) async throws -> T {
@@ -81,7 +99,12 @@ public final actor FirestoreService {
                 }
 
                 guard let snapshots else { return }
-                let convertedValues = snapshots.documents.compactMap { try? $0.data(as: Output.self) }
+                let convertedValues = snapshots.documents.compactMapSkippingFailures(
+                    transform: { try $0.data(as: Output.self) },
+                    onFailure: { document, error in
+                        print("skipped undecodable document(path: \(document.reference.path)): \(error)")
+                    }
+                )
                 continuation.yield(convertedValues)
             }
 
@@ -117,8 +140,8 @@ public final actor FirestoreService {
     }
 
     public func removeSnapshotListener(id: String) {
-        let listener = listeners[id]
-        listener?.remove()
+        // 外したリスナーを残すと、IDを使い回さない呼び出し元（世代ごとにIDを変える家事の購読など）で溜まり続ける
+        listeners.removeValue(forKey: id)?.remove()
     }
 
     /// クエリに一致するドキュメントをバッチ削除する

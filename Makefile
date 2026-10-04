@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages check-previews setup-project install-hooks format
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format copy-xcode-cloud-secret
 
 .DEFAULT_GOAL := setup-project
 
@@ -28,8 +28,15 @@ test-packages: ## LocalPackageのテストを実行（自worktree内の多重実
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
 
+test-packages-fast: ## カバレッジなしでLocalPackageのテストを実行。FILTER=<テストターゲット/Suite名>で絞り込める（例: make test-packages-fast FILTER=HouseworkFeatureTests）
+	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
+		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox $(if $(FILTER),--filter '$(FILTER)')
+
 check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
 	python3 scripts/check-prefire-previews.py
+
+copy-xcode-cloud-secret: ## Xcode Cloudに貼るSECRET_XCCONFIGをクリップボードへコピー。ENV=devでSECRET_XCCONFIG_DEV（例: make copy-xcode-cloud-secret ENV=dev）
+	scripts/copy-xcode-cloud-secret.sh $(or $(ENV),prod)
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks
