@@ -140,8 +140,8 @@ public final actor FirestoreService {
     }
 
     public func removeSnapshotListener(id: String) {
-        let listener = listeners[id]
-        listener?.remove()
+        // 外したリスナーを残すと、IDを使い回さない呼び出し元（世代ごとにIDを変える家事の購読など）で溜まり続ける
+        listeners.removeValue(forKey: id)?.remove()
     }
 
     /// クエリに一致するドキュメントをバッチ削除する
