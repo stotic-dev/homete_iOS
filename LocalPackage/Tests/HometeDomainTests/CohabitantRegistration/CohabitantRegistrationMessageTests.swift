@@ -199,6 +199,21 @@ struct CohabitantRegistrationMessageTests {
         #expect(actual == expected)
     }
 
+    @Test(
+        "メンバー確認のメッセージは、旧バージョンのアプリの形式でも解読できる",
+        arguments: [true, false]
+    )
+    func encodedFixedMember_decodableByLegacyApp(isOK: Bool) throws {
+        // 旧バージョンのアプリは、メンバー確認の段階で相手のバージョンを判定するために受け取る。
+        // ここで解読に失敗すると、旧バージョンのアプリはpreconditionFailureで落ちる
+        let message = CohabitantRegistrationMessage(type: .fixedMember(isOK: isOK))
+        let expected = LegacyMessage(type: .fixedMember(isOK: isOK))
+
+        let actual = try JSONDecoder().decode(LegacyMessage.self, from: message.encodedData())
+
+        #expect(actual == expected)
+    }
+
     @Test("解読できないデータの場合、nilを返す")
     func init_withInvalidData() {
         // 相手のアプリのバージョンが新しく、知らない種類のメッセージが届いたケース
@@ -207,6 +222,33 @@ struct CohabitantRegistrationMessageTests {
         let actual = CohabitantRegistrationMessage(data)
 
         #expect(actual == nil)
+    }
+
+}
+
+private extension CohabitantRegistrationMessageTests {
+
+    /// 旧バージョン（v1.0.x）のアプリが持つメッセージの形式
+    struct LegacyMessage: Decodable, Equatable {
+
+        let type: CommunicateType
+
+        enum CommunicateType: Decodable, Equatable {
+
+            case fixedMember(isOK: Bool)
+            case preRegistration(role: Role)
+            case shareCohabitantId(id: String)
+            case complete
+
+        }
+
+        enum Role: Decodable, Equatable {
+
+            case follower(accountId: String)
+            case lead
+
+        }
+
     }
 
 }
