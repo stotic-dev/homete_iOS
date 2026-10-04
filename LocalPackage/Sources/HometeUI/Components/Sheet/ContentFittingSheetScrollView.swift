@@ -24,6 +24,9 @@ public struct ContentFittingSheetScrollView<Content: View>: View {
     public var body: some View {
         ScrollView {
             content
+                // 提案された高さをそのまま使うと、シートの高さが中身の高さに跳ね返って永遠に揺れ続けるため、
+                // 中身は固有の高さで測る（キーボードの開閉でシートの高さが変わっても計測値を動かさない）
+                .fixedSize(horizontal: false, vertical: true)
                 .onGeometryChange(for: CGFloat.self) { proxy in
                     proxy.size.height
                 } action: { height in
