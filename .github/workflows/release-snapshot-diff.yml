@@ -1,0 +1,199 @@
+name: Release Snapshot Diff
+
+# doc/adr/0039: リリースPR（release/* → main）へのpushの度に、前回リリースタグ時点のVRT参照
+# スナップショットと現在のスナップショットをreg-cliで比較し、レポートをartifactとして残して
+# PRへコメントする。差分の確認は開発者がローカルで release-snapshot-review スキルを使って行う。
+#
+# create-release-pr.yml がGITHUB_TOKENで作ったPRでは pull_request イベントが発火しないため、
+# PR作成直後の1回目は create-release-pr.yml から workflow_dispatch で起動する。
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: "比較するリリースブランチ（例: release/v1.1.0）"
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  # 前回までの実行のartifactを削除するため
+  actions: write
+
+concurrency:
+  group: release-snapshot-diff-${{ github.head_ref || inputs.release_branch }}
+  cancel-in-progress: true
+
+env:
+  SNAPSHOT_DIR: hometeSnapshotTests/__Snapshots__/PreviewTests.generated
+  REG_CLI_VERSION: 0.18.16
+  # PRコメントを探して上書きするための目印
+  COMMENT_MARKER: "<!-- release-snapshot-diff -->"
+
+jobs:
+  snapshot-diff:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_BRANCH: ${{ github.head_ref || inputs.release_branch }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      # スナップショットの履歴は重いので、比較に使う2点だけを浅く取得する
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || inputs.release_branch }}
+          fetch-depth: 1
+
+      - name: Resolve versions
+        run: |
+          VERSION="${RELEASE_BRANCH#release/v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::ブランチ名からバージョンを解決できませんでした（RELEASE_BRANCH=$RELEASE_BRANCH）"
+            exit 1
+          fi
+
+          # 今回のバージョンより小さいタグのうち最大のものを前回リリースとする。
+          # マージ後の再実行で今回のタグが既に存在しても、それ自身と比較しないようにするため
+          BASE_TAG=$(
+            { git ls-remote --tags --refs origin 'v*' | sed -E 's#.*refs/tags/##'; echo "v${VERSION}"; } \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -uV \
+              | grep -B1 -x "v${VERSION}" | head -n 1
+          )
+          if [ -z "$BASE_TAG" ] || [ "$BASE_TAG" = "v${VERSION}" ]; then
+            echo "::error::v${VERSION} より前のリリースタグが見つかりませんでした"
+            exit 1
+          fi
+
+          git fetch --depth=1 origin "refs/tags/${BASE_TAG}:refs/tags/${BASE_TAG}"
+          {
+            echo "VERSION=$VERSION"
+            echo "BASE_TAG=$BASE_TAG"
+            echo "HEAD_SHA=$(git rev-parse HEAD)"
+          } >> "$GITHUB_ENV"
+
+      - name: Resolve pull request
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list --head "$RELEASE_BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          fi
+          if [ -z "$PR_NUMBER" ]; then
+            echo "::warning::$RELEASE_BRANCH のオープンなPRが見つからないため、コメントは投稿しません"
+          fi
+          echo "PR_NUMBER=$PR_NUMBER" >> "$GITHUB_ENV"
+
+      # reg-cliのレポートは report/index.html から ../expected 等を相対参照するので、この配置のままartifactにする
+      - name: Extract snapshots
+        run: |
+          OUT="$RUNNER_TEMP/snapshot-diff"
+          mkdir -p "$OUT/expected" "$OUT/actual" "$OUT/diff" "$OUT/report"
+          # パスは hometeSnapshotTests/__Snapshots__/PreviewTests.generated/<file> の3階層
+          if git cat-file -e "${BASE_TAG}:${SNAPSHOT_DIR}" 2> /dev/null; then
+            git archive "$BASE_TAG" "$SNAPSHOT_DIR" | tar -x -C "$OUT/expected" --strip-components=3
+          fi
+          git archive HEAD "$SNAPSHOT_DIR" | tar -x -C "$OUT/actual" --strip-components=3
+          echo "OUT=$OUT" >> "$GITHUB_ENV"
+
+      - name: Compare snapshots with reg-cli
+        working-directory: ${{ env.OUT }}
+        run: |
+          # 差分があっても失敗扱いにしない（-I）。確認は人が行う
+          npx --yes "reg-cli@${REG_CLI_VERSION}" actual expected diff \
+            -R report/index.html -J report/reg.json -I -C 4
+
+      # 差分のない画像まで含めると100MBを超えるため、変更・追加・削除された画像だけを残して
+      # レポートを作り直す（-F でJSONからレポートだけを生成できる）
+      - name: Trim passed images
+        working-directory: ${{ env.OUT }}
+        run: |
+          jq -r '.passedItems[]' report/reg.json | while IFS= read -r f; do
+            rm -f "actual/$f" "expected/$f"
+          done
+          jq --arg base "$BASE_TAG" --arg head "$HEAD_SHA" \
+            '. + {passedCount: (.passedItems | length), baseTag: $base, headSha: $head} | .passedItems = []' \
+            report/reg.json > report/reg.trimmed.json
+          mv report/reg.trimmed.json report/reg.json
+          npx --yes "reg-cli@${REG_CLI_VERSION}" -F report/reg.json -R report/index.html
+
+      - name: Upload report
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-snapshot-diff-v${{ env.VERSION }}
+          path: ${{ env.OUT }}
+          retention-days: 30
+
+      # artifactは実行ごとに別物として残り、upload-artifactの overwrite も同じ実行内でしか効かない。
+      # pushの度に増えないよう、同じ名前（= 同じリリースPR）の古いartifactを消して1つだけ残す。
+      # アップロードが成功した後に消すので、途中で失敗しても前回のレポートは残る
+      - name: Delete previous reports
+        env:
+          ARTIFACT_NAME: release-snapshot-diff-v${{ env.VERSION }}
+          CURRENT_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/actions/artifacts?name=${ARTIFACT_NAME}&per_page=100" \
+            --jq ".artifacts[] | select(.id != ${CURRENT_ARTIFACT_ID}) | .id" \
+            | while read -r id; do
+                gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/${id}"
+                echo "Deleted artifact ${id}"
+              done
+
+      - name: Build comment
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          REG="$OUT/report/reg.json"
+          # 1プレビューにつき端末×外観の4枚が出るので、プレビュー名でまとめて件数を添える
+          group() {
+            jq -r --arg key "$1" '
+              .[$key] | map(sub("-iPhone-.*$"; "")) | group_by(.) | map("- `\(.[0])`（\(length)枚）") | .[]
+            ' "$REG"
+          }
+          section() {
+            local title="$1" key="$2" count
+            count=$(jq --arg key "$key" '.[$key] | length' "$REG")
+            [ "$count" -eq 0 ] && return
+            echo "<details><summary>${title}（${count}枚）</summary>"
+            echo ""
+            group "$key"
+            echo ""
+            echo "</details>"
+            echo ""
+          }
+          {
+            echo "$COMMENT_MARKER"
+            echo "## 📸 前バージョンとのスナップショット比較"
+            echo ""
+            echo "\`${BASE_TAG}\` → \`${HEAD_SHA:0:8}\`（\`${RELEASE_BRANCH}\`）"
+            echo ""
+            echo "| 変更 | 追加 | 削除 | 差分なし |"
+            echo "|---|---|---|---|"
+            jq -r '"| \(.failedItems | length) | \(.newItems | length) | \(.deletedItems | length) | \(.passedCount) |"' "$REG"
+            echo ""
+            section "変更" failedItems
+            section "追加" newItems
+            section "削除" deletedItems
+            echo "📦 [reg-cliのレポート（artifact）](${ARTIFACT_URL}) — zipを展開して \`report/index.html\` を開く（[実行ログ](${RUN_URL})）"
+            echo ""
+            echo "意図しない差分がないかは、Claude Codeで \`/release-snapshot-review ${PR_NUMBER}\` を実行して確認できます。"
+          } > "$RUNNER_TEMP/comment.md"
+          cat "$RUNNER_TEMP/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      # pushの度にコメントが積み重ならないよう、前回のコメントがあれば上書きする
+      - name: Post comment
+        if: env.PR_NUMBER != ''
+        run: |
+          COMMENT_ID=$(
+            gh api --paginate "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+              --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"${COMMENT_MARKER}\"))) | .id" \
+              | tail -n 1
+          )
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/${COMMENT_ID}" -F body=@"$RUNNER_TEMP/comment.md" > /dev/null
+          else
+            gh pr comment "$PR_NUMBER" --body-file "$RUNNER_TEMP/comment.md"
+          fi
