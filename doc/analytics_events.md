@@ -338,6 +338,29 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 **分析での使い方:** `step`で分けて`permission_requested(granted)`の比率を比べると、オンボーディングと設定画面の
 どちらの案内がオプトイン率が高いかが分かる。
 
+### `registration_tutorial`
+
+同居人グループの登録直後に一度だけ出す、導線を案内するチュートリアルでの行動。表示はタブの画面に重ねるオーバーレイで、独立した画面ではないため`screen_view`は送らない。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `RegistrationTutorialAnalyticsAction`、`RegistrationTutorialStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `completed` / `skipped` | 最後まで見たか、途中で閉じたか |
+| `step` | — | `dashboard` / `housework` / `thanks` / `housework_template` | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `completed` | — | 最後のステップで「はじめる」をタップした |
+| `skipped` | 表示中のステップ | 途中のステップで「閉じる」をタップした |
+
+**分析での使い方:** `completed`と`skipped`の比率で、案内が最後まで読まれているかが分かる。`skipped`を`step`で分けると、
+どのステップで離脱しているかが分かり、ステップの数や順番を見直す材料になる。
+
 ### `cohabitant_invitation`
 
 招待リンク（Universal Link / カスタムURLスキーム / クリップボード）による同居人グループの招待・参加における行動。
