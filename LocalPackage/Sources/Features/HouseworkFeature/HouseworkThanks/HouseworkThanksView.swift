@@ -20,6 +20,7 @@ public struct HouseworkThanksView: View {
     @LoadingState var loadingState
 
     @State var inputMessage: String
+    @FocusState var isShowingKeyboard: Bool
 
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
@@ -41,7 +42,8 @@ public struct HouseworkThanksView: View {
                     HouseworkCommentInputContent(
                         title: "メッセージ",
                         placeholder: "感謝を伝えましょう！",
-                        text: $inputMessage
+                        text: $inputMessage,
+                        focus: $isShowingKeyboard
                     )
                     commentLengthLabel()
                 }
@@ -58,6 +60,10 @@ public struct HouseworkThanksView: View {
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)
         .trackScreenView(.houseworkThanks)
+        .onAppear {
+            // メッセージを書いてもらうだけの画面なので、開いた直後からキーボードを出しておく
+            isShowingKeyboard = true
+        }
     }
 
 }
