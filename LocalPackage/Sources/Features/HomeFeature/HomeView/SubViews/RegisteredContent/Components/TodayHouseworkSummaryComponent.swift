@@ -157,16 +157,7 @@ private extension TodayHouseworkSummaryComponent {
             ForEach(summary.displayIncompleteItems) { item in
                 houseworkItemRow(item)
                     .contextMenu {
-                        HouseworkQuickActionMenuContent(
-                            item: item,
-                            step: .dashboard,
-                            // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
-                            canAddHelper: false,
-                            onSelectComplete: { completingItem = item },
-                            onSelectThanks: {},
-                            onSelectAddHelper: {},
-                            onError: { commonError = .init(error: $0) }
-                        )
+                        quickActionMenu(item)
                     }
             }
             if summary.hasMoreIncomplete {
@@ -179,13 +170,32 @@ private extension TodayHouseworkSummaryComponent {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        Button {
-            navigationPath.push(.houseworkDetail(item))
-        } label: {
-            HouseBoardListRow(houseworkItem: item.originalItem)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            // 未完了の家事には担当者もありがとうも無いので、完了リスト向けの表示は渡さない
+            completionInfo: nil,
+            showsCompleteButton: item.state == .incomplete,
+            // 未完了の家事だけを並べる画面で、未完了には必ず「完了にする」「やらない」が出る
+            showsMoreButton: true,
+            onTapRow: { navigationPath.push(.houseworkDetail(item)) },
+            onTapThanks: nil,
+            onTapComplete: { completingItem = item },
+            menuContent: { quickActionMenu(item) }
+        )
+    }
+
+    /// 長押しのメニューと、その他ボタンのメニューで同じ中身を出す
+    func quickActionMenu(_ item: HouseworkBoardItem) -> some View {
+        HouseworkQuickActionMenuContent(
+            item: item,
+            step: .dashboard,
+            // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
+            canAddHelper: false,
+            onSelectComplete: { completingItem = item },
+            onSelectThanks: {},
+            onSelectAddHelper: {},
+            onError: { commonError = .init(error: $0) }
+        )
     }
 
 }

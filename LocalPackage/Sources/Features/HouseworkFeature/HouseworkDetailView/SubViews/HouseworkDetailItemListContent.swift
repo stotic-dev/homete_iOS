@@ -21,43 +21,44 @@ struct HouseworkDetailItemListContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
-            HouseworkDetailItemRow(title: "実施予定日付") {
-                Text(item.formattedIndexedDate(calendar: calendar))
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
-            }
-            HouseworkDetailItemRow(title: "ステータス") {
-                Text(item.state.segmentTitle)
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
-            }
-            HouseworkDetailItemRow(title: "ポイント") {
-                PointLabel(point: item.earnedPoint)
-            }
-            if let effortLabel {
-                HouseworkDetailItemRow(title: "頑張り度") {
-                    Text(effortLabel)
+            SectionCard("家事の情報") {
+                HouseworkDetailItemRow(title: "実施予定日付") {
+                    valueText(item.formattedIndexedDate(calendar: calendar))
+                }
+                Divider()
+                HouseworkDetailItemRow(title: "ステータス") {
+                    Text(item.state.segmentTitle)
                         .font(with: .body)
                         .foregroundStyle(.onSurfaceVariant)
                 }
+                Divider()
+                HouseworkDetailItemRow(title: "ポイント") {
+                    PointLabel(point: item.earnedPoint)
+                }
+                if let effortLabel {
+                    Divider()
+                    HouseworkDetailItemRow(title: "頑張り度") {
+                        valueText(effortLabel)
+                    }
+                }
             }
             if !executors.isEmpty {
-                HouseworkDetailItemRow(title: "担当者") {
-                    VStack(alignment: .leading, spacing: .space8) {
-                        ForEach(executors, id: \.userId) { executor in
-                            Text(executorLabel(executor))
-                                .font(with: .body)
-                                .foregroundStyle(.onSurfaceVariant)
+                SectionCard("担当者") {
+                    ForEach(Array(executors.enumerated()), id: \.element.userId) { index, executor in
+                        if index > 0 {
+                            Divider()
                         }
+                        executorRow(executor)
                     }
                 }
             }
             if !thanksMessages.isEmpty {
-                HouseworkDetailItemRow(title: "ありがとう") {
-                    VStack(alignment: .leading, spacing: .space16) {
-                        ForEach(thanksMessages.indices, id: \.self) { index in
-                            thanksMessageRow(thanksMessages[index])
+                SectionCard("ありがとう") {
+                    ForEach(thanksMessages.indices, id: \.self) { index in
+                        if index > 0 {
+                            Divider()
                         }
+                        thanksMessageRow(thanksMessages[index])
                     }
                 }
             }
@@ -83,12 +84,30 @@ private extension HouseworkDetailItemListContent {
         return "\(item.effort.title)（\(pointBreakdown)）"
     }
 
-    /// 複数人で担当した家事は、名前に割合とポイントを添える
-    func executorLabel(_ executor: HouseworkExecutor) -> String {
-        let userName = cohabitantMemberList.userName(executor.userId) ?? ""
-        guard item.executors.count > 1 else { return userName }
+    /// 複数人で担当した家事は、名前の横に割合とポイントを添える（例: `60%（6pt）`）
+    func executorShareLabel(_ executor: HouseworkExecutor) -> String? {
+        guard item.executors.count > 1 else { return nil }
 
-        return "\(userName) \(executor.percentage)%（\(executor.point)pt）"
+        return "\(executor.percentage)%（\(executor.point)pt）"
+    }
+
+    func valueText(_ value: String) -> some View {
+        Text(value)
+            .font(with: .body)
+            .foregroundStyle(.onSurfaceVariant)
+    }
+
+    func executorRow(_ executor: HouseworkExecutor) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: .space16) {
+            Text(cohabitantMemberList.userName(executor.userId) ?? "")
+                .font(with: .body)
+                .foregroundStyle(.onSurface)
+            Spacer(minLength: .zero)
+            if let shareLabel = executorShareLabel(executor) {
+                valueText(shareLabel)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     func thanksMessageRow(_ thanksMessage: HouseworkThanksMessage) -> some View {
@@ -120,6 +139,7 @@ private extension HouseworkDetailItemListContent {
             point: 10
         )
     )
+    .padding()
     .setupEnvironmentForPreview()
 }
 
@@ -137,6 +157,7 @@ private extension HouseworkDetailItemListContent {
             executedAt: .distantPast
         )
     )
+    .padding()
     .setupEnvironmentForPreview()
 }
 
@@ -157,6 +178,7 @@ private extension HouseworkDetailItemListContent {
             executedAt: .distantPast
         )
     )
+    .padding()
     .setupEnvironmentForPreview()
 }
 
@@ -178,6 +200,7 @@ private extension HouseworkDetailItemListContent {
             .init(senderName: "じろう", comment: nil),
         ]
     )
+    .padding()
     .setupEnvironmentForPreview()
 }
 
@@ -196,6 +219,7 @@ private extension HouseworkDetailItemListContent {
             executedAt: .distantPast
         )
     )
+    .padding()
     .setupEnvironmentForPreview()
 }
 #endif
