@@ -637,6 +637,62 @@ describe("家事メモ", () => {
       );
     });
 
+  it("空のメモを持つ家事は、メモの無いドキュメントで上書きできる（旧アプリ対策）",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), houseworkDoc),
+          {...housework("housework-1"), memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(
+        setDoc(doc(aliceDb(), houseworkDoc), {
+          ...housework("housework-1"),
+          state: "notTodo",
+        })
+      );
+    });
+
+  it("チェックリストだけのメモを持つ家事は、メモの無いドキュメントで上書きできない",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), houseworkDoc),
+          {...housework("housework-1"), memo: memo(0, 1)}
+        );
+      });
+      await assertFails(
+        setDoc(doc(aliceDb(), houseworkDoc), {
+          ...housework("housework-1"),
+          state: "notTodo",
+        })
+      );
+    });
+
+  it("空のメモを持つ毎月の家事は、メモの無いドキュメントで上書きできる",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), monthlyItemDoc),
+          {...monthlyItem, memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(setDoc(doc(aliceDb(), monthlyItemDoc), monthlyItem));
+    });
+
+  it("空のメモを持ついつもの家事は、メモの無いドキュメントで上書きできる",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), frequentDoc),
+          {...frequentHousework, memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(
+        setDoc(doc(aliceDb(), frequentDoc), frequentHousework)
+      );
+    });
+
   it("メモ付きの毎月の家事を、メモの無いドキュメントで上書きできない",
     async () => {
       await seedWithMemo();

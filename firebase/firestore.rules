@@ -68,8 +68,16 @@ service cloud.firestore {
 
     // 旧バージョンのアプリは`memo`を知らずにドキュメント全体を上書きするため、メモが消える更新を拒否する。
     // 新しいアプリはメモを消したときも空の`memo`を残すので、この条件に掛からない。
+    // 空のメモは消えても失うものがないため拒否しない。空のメモはいつもの家事・テンプレートから
+    // 作った家事に引き継がれ、画面上はメモが無いのに旧アプリから操作できなくなるのを避ける。
     function keepsMemo() {
-      return !('memo' in resource.data) || 'memo' in request.resource.data;
+      return !('memo' in resource.data)
+        || 'memo' in request.resource.data
+        || isEmptyMemo(resource.data.memo);
+    }
+
+    function isEmptyMemo(memo) {
+      return memo.text == '' && memo.checklist.size() == 0;
     }
 
     // ドキュメントIDはFirebase Authのuid。`id`フィールドにも同じ値を持つ
