@@ -6,8 +6,19 @@
 @testable import HometeDomain
 import Testing
 
-@MainActor
-struct PendingNotificationRouteStoreTest {
+enum PendingNotificationRouteStoreTest {
+
+    @MainActor
+    struct StoreCase {}
+
+    @MainActor
+    struct TakeHouseworkDetailItemCase {}
+
+}
+
+// MARK: - store / clear
+
+extension PendingNotificationRouteStoreTest.StoreCase {
 
     @Test("通知から開く画面を保持する")
     func store() {
@@ -43,7 +54,7 @@ struct PendingNotificationRouteStoreTest {
 
 // MARK: - takeHouseworkDetailItem
 
-extension PendingNotificationRouteStoreTest {
+extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
 
     @Test("開く家事が見つかったら、その家事を返して保持している画面を破棄する")
     func takeHouseworkDetailItem_found_returnsItemAndClears() {
