@@ -26,7 +26,8 @@ public extension View {
     ///
     /// スポットライトを出していない間は伝えない。出す前から表示されていたUIも、出した時点で
     /// 最後の位置を伝える。本番の画面と共有しているUIに付けておいてよい。
-    func tutorialSpotlightTarget(_ id: TutorialSpotlightID) -> some View {
+    /// - Parameter id: `nil`なら位置を伝えない。一覧の中の特定の行だけを対象にするときに使う
+    func tutorialSpotlightTarget(_ id: TutorialSpotlightID?) -> some View {
         modifier(TutorialSpotlightTargetModifier(id: id))
     }
 
@@ -117,7 +118,8 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
     /// 最後に測った位置
     @State private var frame: CGRect?
 
-    let id: TutorialSpotlightID
+    /// `nil`なら位置を伝えない
+    let id: TutorialSpotlightID?
 
     func body(content: Content) -> some View {
         content
@@ -125,16 +127,22 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
                 proxy.frame(in: .global)
             } action: { newFrame in
                 frame = newFrame
-                reporter?.store.update(id, frame: newFrame)
+                report(newFrame)
             }
             // スポットライトを出す前から表示されていたUIは、位置が変わらず上の`action`が呼ばれないため、
             // 出した時点で最後に測った位置を伝える
             .onChange(of: reporter?.identity) {
-                reporter?.store.update(id, frame: frame)
+                report(frame)
             }
             .onDisappear {
-                reporter?.store.update(id, frame: nil)
+                report(nil)
             }
+    }
+
+    private func report(_ frame: CGRect?) {
+        guard let id else { return }
+
+        reporter?.store.update(id, frame: frame)
     }
 
 }
