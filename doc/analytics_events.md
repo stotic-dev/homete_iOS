@@ -353,7 +353,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `completed` / `skipped` | 最後まで見たか、途中で閉じたか |
-| `step` | — | `dashboard` / `housework` / `thanks` / `housework_template` | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
+| `step` | — | `dashboard` / `housework` / `housework_complete` / `thanks` / `bulk_action` / `housework_template` | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
 
 送信されるパターンと、その送信タイミング:
 
