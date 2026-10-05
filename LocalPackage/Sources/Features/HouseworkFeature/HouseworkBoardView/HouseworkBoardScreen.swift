@@ -16,7 +16,8 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
-    @Environment(\.loginContext.account.cohabitantId) var cohabitantId
+    @Environment(\.loginContext.account) var account
+    @Environment(CohabitantStore.self) var cohabitantStore
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -54,6 +55,10 @@ public struct HouseworkBoardScreen: View {
                     onAppeare(with: houseworkListStore)
                 }
             }
+            // 通知から開くと、ダッシュボードを表示しないまま家事タブに着地するため、こちらでも購読を始める
+            .task {
+                await startObserving()
+            }
             // 繰り返しを設定した登録やテンプレートの編集は家事の購読には現れないため、テンプレートの変化でも組み直す
             .onChange(of: templateContext) {
                 withAnimation {
@@ -89,11 +94,25 @@ private extension HouseworkBoardScreen {
         return error
     }
 
+    /// 家事とメンバーの購読を始める
+    /// - Note: ダッシュボードの表示時にも同じ購読を始めている。どちらも購読中なら何もしないため、
+    ///         両方のタブを表示しても購読は重複しない
+    func startObserving() async {
+        guard let cohabitantId = account.cohabitantId else { return }
+        await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId, ownId: account.id)
+        await houseworkManager.setupObserver(
+            currentTime: now,
+            cohabitantId: cohabitantId,
+            calendar: calendar,
+            storagePolicy: storagePolicy
+        )
+    }
+
     /// 家事の購読をやり直す
     /// - Note: `HouseworkManager`のリスナーは失敗時に購読が止まるため、リスナーを張り直す
     ///         `setupObserver`の再実行で復帰させる。
     func retry() async {
-        guard let cohabitantId else { return }
+        guard let cohabitantId = account.cohabitantId else { return }
         await houseworkManager.setupObserver(
             currentTime: now,
             cohabitantId: cohabitantId,
