@@ -16,6 +16,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
+    /// タップされた通知から開く画面
+    /// - Note: アプリが終了している状態で通知をタップすると、画面を組み立てる前に通知のタップが届くため、
+    ///         画面側ではなくここで受け取って保持する
+    let pendingNotificationRouteStore = PendingNotificationRouteStore()
 
     func application(
         _: UIApplication,
@@ -125,6 +129,15 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         [.banner, .list, .sound]
     }
 
+    nonisolated func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        guard let route = NotificationRoute(userInfo: response.notification.request.content.userInfo) else { return }
+
+        await pendingNotificationRouteStore.store(route)
+    }
+
 }
 
 @main
@@ -139,7 +152,10 @@ struct HometeApp: App {
             if delegate.isUnitTestMode {
                 EmptyView()
             } else {
-                RootView.make(dependencies: .liveValue)
+                RootView.make(
+                    dependencies: .liveValue,
+                    pendingNotificationRouteStore: delegate.pendingNotificationRouteStore
+                )
             }
         }
     }

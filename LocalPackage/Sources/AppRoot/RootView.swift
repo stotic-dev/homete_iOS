@@ -80,7 +80,11 @@ public struct RootView: View {
 
 public extension RootView {
 
-    static func make(dependencies: AppDependencies) -> some View {
+    /// - Parameter pendingNotificationRouteStore: タップされた通知から開く画面。通知のタップを受け取る`AppDelegate`と共有する
+    static func make(
+        dependencies: AppDependencies,
+        pendingNotificationRouteStore: PendingNotificationRouteStore
+    ) -> some View {
         DependenciesInjectLayer {
             let accountAuthStore = AccountAuthStore(
                 accountAuthClient: $0.accountAuthClient,
@@ -133,6 +137,7 @@ public extension RootView {
             .environment(cohabitantStore)
             .environment(subscriptionStore)
             .environment(pendingInvitationStore)
+            .environment(pendingNotificationRouteStore)
             .environment(launchStateStore)
             .environment(advertisementStore)
             .environment(forceUpdateStore)
