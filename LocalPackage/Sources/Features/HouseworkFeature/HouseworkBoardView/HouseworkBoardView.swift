@@ -146,6 +146,7 @@ private extension HouseworkBoardView {
                     isSelecting = true
                 }
             }
+            .tutorialSpotlightTarget(.houseworkSelectButton)
             NavigationBarButton(label: .houseworkTemplate, action: onTapHouseworkTemplate)
                 .tutorialSpotlightTarget(.houseworkTemplateButton)
         }

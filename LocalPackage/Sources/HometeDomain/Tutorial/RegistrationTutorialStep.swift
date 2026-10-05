@@ -9,10 +9,14 @@ public enum RegistrationTutorialStep: String, CaseIterable, Equatable, Sendable 
 
     /// ダッシュボードタブ。今日の家事の進み具合と貢献度
     case dashboard
-    /// 家事タブ。家事の登録と完了
+    /// 家事タブ。家事の登録
     case housework
+    /// 家事を完了にする方法（詳細画面と長押しのメニュー）
+    case houseworkComplete = "housework_complete"
     /// 完了した家事へのありがとう。送ると相手に通知が届く
     case thanks
+    /// 複数の家事を選んで、まとめて完了やありがとうをする
+    case bulkAction = "bulk_action"
     /// 家事テンプレートの入口
     case houseworkTemplate = "housework_template"
 

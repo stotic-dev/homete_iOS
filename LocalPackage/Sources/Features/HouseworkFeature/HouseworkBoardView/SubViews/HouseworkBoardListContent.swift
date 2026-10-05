@@ -55,6 +55,9 @@ struct HouseworkBoardListContent<RowMenu: View>: View {
                         .contextMenu {
                             rowMenu(item)
                         }
+                        .tutorialSpotlightTarget(
+                            isTutorialTargetRow(item) ? .houseworkIncompleteRow : nil
+                        )
                 }
                 .listRowBackground(Color.clear)
                 #if os(iOS)
@@ -101,6 +104,13 @@ private extension HouseworkBoardListContent {
                 onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
             )
         }
+    }
+
+    /// チュートリアルで完了のしかたを説明するときに切り抜く、未完了の一覧の先頭の家事か
+    ///
+    /// 完了の一覧も同じ`TabView`の中に並んでいるため、未完了の一覧に限って同じ識別子を伝えないようにする。
+    func isTutorialTargetRow(_ item: HouseworkBoardItem) -> Bool {
+        state == .incomplete && item.id == selection.items.first?.id
     }
 
     /// ハートのタップで伝えられるのは、まだ伝えていない家事だけ。選択中はセルの選択を優先する

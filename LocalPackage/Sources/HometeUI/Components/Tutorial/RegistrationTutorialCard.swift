@@ -125,8 +125,14 @@ private extension RegistrationTutorialCard {
         case .housework:
             "person.2.arrow.trianglehead.counterclockwise"
 
+        case .houseworkComplete:
+            "checkmark.circle.fill"
+
         case .thanks:
             "heart.fill"
+
+        case .bulkAction:
+            "checklist"
 
         case .houseworkTemplate:
             "list.bullet.rectangle"
@@ -138,7 +144,7 @@ private extension RegistrationTutorialCard {
         case .thanks:
             .thanksHeart
 
-        case .dashboard, .housework, .houseworkTemplate:
+        case .dashboard, .housework, .houseworkComplete, .bulkAction, .houseworkTemplate:
             .primary3
         }
     }
@@ -151,8 +157,14 @@ private extension RegistrationTutorialCard {
         case .housework:
             "家事"
 
+        case .houseworkComplete:
+            "家事を完了にする"
+
         case .thanks:
             "ありがとうを伝えましょう"
+
+        case .bulkAction:
+            "まとめて操作する"
 
         case .houseworkTemplate:
             "家事テンプレート"
@@ -165,10 +177,16 @@ private extension RegistrationTutorialCard {
             "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。"
 
         case .housework:
-            "＋ボタンからやる家事を登録しておき、終わったら完了にできます。誰がどの家事をしたかが記録されます。"
+            "＋ボタンから、やる家事を登録しておけます。"
+
+        case .houseworkComplete:
+            "終わった家事は、タップして開いた詳細か、長押しで出るメニューの「完了にする」から完了にできます。誰がどの家事をしたかが記録されます。"
 
         case .thanks:
             "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。"
+
+        case .bulkAction:
+            "「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。"
 
         case .houseworkTemplate:
             "毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。"
@@ -183,8 +201,14 @@ private extension RegistrationTutorialCard {
         case .housework:
             "画面下の「家事」タブから開けます"
 
+        case .houseworkComplete:
+            "家事タブの「未完了」に並んだ家事から操作できます"
+
         case .thanks:
             "家事タブの「完了」に並んだ家事のハートから送れます"
+
+        case .bulkAction:
+            "家事タブの右上の「選択」から使えます"
 
         case .houseworkTemplate:
             "家事タブの右上のボタンから設定できます"
@@ -203,8 +227,18 @@ private extension RegistrationTutorialCard {
         .padding(.space16)
 }
 
+#Preview("RegistrationTutorialCard_家事の完了", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .houseworkComplete, onTapNext: {}, onTapBack: {}, onTapClose: {})
+        .padding(.space16)
+}
+
 #Preview("RegistrationTutorialCard_ありがとう", traits: .sizeThatFitsLayout) {
     RegistrationTutorialCard(step: .thanks, onTapNext: {}, onTapBack: {}, onTapClose: {})
+        .padding(.space16)
+}
+
+#Preview("RegistrationTutorialCard_まとめて操作", traits: .sizeThatFitsLayout) {
+    RegistrationTutorialCard(step: .bulkAction, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
 }
 

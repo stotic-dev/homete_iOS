@@ -143,8 +143,10 @@ struct RegistrationTutorialStoreTest {
         "最後以外のステップでは、次のステップへ進める",
         arguments: [
             (RegistrationTutorialStep.dashboard, RegistrationTutorialStep.housework),
-            (.housework, .thanks),
-            (.thanks, .houseworkTemplate),
+            (.housework, .houseworkComplete),
+            (.houseworkComplete, .thanks),
+            (.thanks, .bulkAction),
+            (.bulkAction, .houseworkTemplate),
         ]
     )
     func next_notLastStep_movesToNextStep(
@@ -207,8 +209,10 @@ struct RegistrationTutorialStoreTest {
         "最初以外のステップでは、前のステップへ戻す",
         arguments: [
             (RegistrationTutorialStep.housework, RegistrationTutorialStep.dashboard),
-            (.thanks, .housework),
-            (.houseworkTemplate, .thanks),
+            (.houseworkComplete, .housework),
+            (.thanks, .houseworkComplete),
+            (.bulkAction, .thanks),
+            (.houseworkTemplate, .bulkAction),
         ]
     )
     func back_notFirstStep_movesToPreviousStep(

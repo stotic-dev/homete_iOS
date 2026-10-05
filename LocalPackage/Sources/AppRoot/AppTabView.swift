@@ -228,8 +228,14 @@ private extension AppTabView {
         case .housework:
             [.houseworkAddButton]
 
+        case .houseworkComplete:
+            [.houseworkIncompleteRow]
+
         case .thanks:
             [.houseworkThanksButton]
+
+        case .bulkAction:
+            [.houseworkSelectButton]
 
         case .houseworkTemplate:
             [.houseworkTemplateButton]
@@ -242,11 +248,11 @@ private extension AppTabView {
         case .dashboard:
             nil
 
-        case .housework:
+        case .housework, .houseworkComplete:
             .incomplete
 
-        case .thanks, .houseworkTemplate:
-            // ありがとうのハートは完了の一覧にある。テンプレートの説明ではそのまま一覧を動かさない
+        case .thanks, .bulkAction, .houseworkTemplate:
+            // ありがとうのハートは完了の一覧にある。それ以降の説明ではそのまま一覧を動かさない
             .completed
         }
     }
