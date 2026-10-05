@@ -221,7 +221,10 @@ private extension HouseworkBoardView {
     }
 
     /// 通知から開く家事が見つかったら、その家事の詳細画面を開く
-    /// - Note: 別の画面を開いていても、通知の家事の詳細だけが積まれた状態にする
+    /// - Note: 別の画面を開いていても、通知の家事の詳細だけが積まれた状態にする。
+    ///         詳細から戻ったときにその家事が見えるよう、ボードもその家事の日付と状態に切り替える。
+    ///         シートやフルスクリーンカバーは閉じず、その裏に詳細画面を積む。購入中のペイウォールや入力中の
+    ///         シートを通知で勝手に閉じないためで、ダッシュボード側のシートなどはそもそもここから閉じられない
     func openPendingHouseworkDetail() {
         guard let item = pendingNotificationRouteStore.takeHouseworkDetailItem(
             in: houseworkListStore.items,
@@ -229,6 +232,10 @@ private extension HouseworkBoardView {
         ) else { return }
 
         isSelecting = false
+        dateList.selectDate(item.indexedDate.value, calendar: calendar)
+        if HouseworkState.pageableCases.contains(item.state) {
+            selectedHouseworkState = item.state
+        }
         navigationPath.path = [.houseworkDetail(.init(originalItem: item, isRegistered: true))]
     }
 
