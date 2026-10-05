@@ -75,10 +75,18 @@ public extension PushNotificationContent {
         )
     }
 
-    static func thanksMessage(senderName: String, houseworkTitle: String, comment: String) -> Self {
+    /// 完了した家事に届いたありがとうの通知
+    /// - Parameter houseworkId: ありがとうが届いた家事のID。通知をタップしたときに、この家事の詳細画面を開く
+    static func thanksMessage(
+        senderName: String,
+        houseworkTitle: String,
+        houseworkId: String,
+        comment: String
+    ) -> Self {
         .init(
             title: "\(senderName)さんから「\(houseworkTitle)」にありがとうが届きました",
-            message: comment
+            message: comment,
+            data: HouseworkThanksNotificationData(houseworkId: houseworkId).payload
         )
     }
 

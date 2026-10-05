@@ -270,7 +270,12 @@ public final class HouseworkListStore {
         if let comment, currentThanks?.comment == nil {
             notifyThanks(
                 cohabitantId: cohabitantId,
-                content: .thanksMessage(senderName: sender.userName, houseworkTitle: target.title, comment: comment)
+                content: .thanksMessage(
+                    senderName: sender.userName,
+                    houseworkTitle: target.title,
+                    houseworkId: target.id,
+                    comment: comment
+                )
             )
         }
         return !isEditing
