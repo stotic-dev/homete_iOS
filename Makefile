@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews setup-project install-hooks format copy-xcode-cloud-secret
 
 .DEFAULT_GOAL := setup-project
 
@@ -34,6 +34,9 @@ test-packages-fast: ## カバレッジなしでLocalPackageのテストを実行
 
 check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
 	python3 scripts/check-prefire-previews.py
+
+copy-xcode-cloud-secret: ## Xcode Cloudに貼るSECRET_XCCONFIGをクリップボードへコピー。ENV=devでSECRET_XCCONFIG_DEV（例: make copy-xcode-cloud-secret ENV=dev）
+	scripts/copy-xcode-cloud-secret.sh $(or $(ENV),prod)
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks

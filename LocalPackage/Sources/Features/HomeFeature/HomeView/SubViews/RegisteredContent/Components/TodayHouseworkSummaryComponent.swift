@@ -46,6 +46,7 @@ struct TodayHouseworkSummaryComponent: View {
             members: members,
             onTapRegister: { isPresentingRegister = true },
             onTapItem: { navigationPath.push(.houseworkDetail($0)) },
+            onTapComplete: { completingItem = $0 },
             onTapShowMore: { navigationPath.push(.incompleteHouseworkList) },
             rowMenu: { item in
                 HouseworkQuickActionMenuContent(

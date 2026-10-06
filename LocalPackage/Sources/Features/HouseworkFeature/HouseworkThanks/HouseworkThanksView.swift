@@ -20,46 +20,65 @@ public struct HouseworkThanksView: View {
     @LoadingState var loadingState
 
     @State var inputMessage: String
+    @FocusState var isShowingKeyboard: Bool
 
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
     let sentThanks: HouseworkThanks?
+    /// 初めてありがとうを伝えられた。閉じた後の画面で演出を出すために、開いた側へ伝える
+    let onSentFirstThanks: () -> Void
 
-    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil) {
+    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil, onSentFirstThanks: @escaping () -> Void) {
         self.item = item
         self.sentThanks = sentThanks
+        self.onSentFirstThanks = onSentFirstThanks
         _inputMessage = State(initialValue: sentThanks?.comment ?? "")
     }
 
     public var body: some View {
         NavigationStack {
-            ContentFittingSheetScrollView {
+            ScrollView {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
                         title: "メッセージ",
                         placeholder: "感謝を伝えましょう！",
-                        text: $inputMessage
+                        text: $inputMessage,
+                        focus: $isShowingKeyboard
                     )
                     commentLengthLabel()
                 }
                 .padding(.horizontal, .space16)
-                .padding(.vertical, .space24)
+                .padding(.top, .space24)
+                .padding(.bottom, .space8)
             }
+            .scrollBounceBehavior(.basedOnSize)
             .navigationTitle(navigationTitle)
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 sendThanksButton()
             }
         }
+        // 中身の高さに合わせると、キーボードを出したときにシートが持ち上がりすぎてハーフモーダルに
+        // ならないため、高さを決め打ちする
+        .presentationDetents([.height(sheetHeight)])
         .presentationDragIndicator(.visible)
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonError)
         .trackScreenView(.houseworkThanks)
+        .onAppear {
+            // メッセージを書いてもらうだけの画面なので、開いた直後からキーボードを出しておく
+            isShowingKeyboard = true
+        }
     }
 
 }
 
 private extension HouseworkThanksView {
+
+    /// ハーフモーダルの高さ。3行の入力欄と文字数が収まる高さ
+    var sheetHeight: CGFloat {
+        250
+    }
 
     func commentLengthLabel() -> some View {
         Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
@@ -133,7 +152,7 @@ private extension HouseworkThanksView {
         guard let cohabitantId = account.cohabitantId else { return }
 
         do {
-            try await houseworkListStore.sendThanks(
+            let isFirstThanks = try await houseworkListStore.sendThanks(
                 target: item.originalItem,
                 sender: account,
                 comment: trimmedMessage,
@@ -141,6 +160,9 @@ private extension HouseworkThanksView {
                 cohabitantId: cohabitantId,
                 step: .thanks
             )
+            if isFirstThanks {
+                onSentFirstThanks()
+            }
             dismiss()
         } catch {
             commonError = .init(error: error)
@@ -158,9 +180,9 @@ private extension HouseworkThanksView {
         state: .completed,
         executorId: "test",
         executedAt: .distantFuture
-    ))
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    )) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkThanksView_メッセージを添える") {
@@ -174,9 +196,9 @@ private extension HouseworkThanksView {
             executedAt: .distantFuture
         ),
         sentThanks: .init(comment: nil, sentAt: .distantFuture)
-    )
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    ) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 
 #Preview("HouseworkThanksView_編集") {
@@ -190,8 +212,8 @@ private extension HouseworkThanksView {
             executedAt: .distantFuture
         ),
         sentThanks: .init(comment: "いつもありがとう！", sentAt: .distantFuture)
-    )
-    .setupEnvironmentForPreview()
-    .environment(HouseworkListStore())
+    ) {}
+        .setupEnvironmentForPreview()
+        .environment(HouseworkListStore())
 }
 #endif

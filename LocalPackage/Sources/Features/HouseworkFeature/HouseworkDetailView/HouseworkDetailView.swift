@@ -28,6 +28,10 @@ public struct HouseworkDetailView: View {
     /// チェックの保存中か
     /// - Note: 保存がリスナーに反映される前に次のチェックを保存すると、古いメモを元に書いて先のチェックを消すため、1つずつ保存する
     @State var isSavingMemoCheck = false
+    /// 初めてありがとうを伝えた回数。増えるたびにありがとうの演出を出す
+    @State var thanksFeedbackCount = 0
+    /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
+    @State var hasPendingThanksFeedback = false
 
     @CommonError var commonErrorContent
 
@@ -51,8 +55,11 @@ public struct HouseworkDetailView: View {
             .sheet(isPresented: $isPresentedCompleteSheet) {
                 HouseworkCompleteSheet(item: item, step: .detail)
             }
-            .sheet(isPresented: $isPresentedThanksView) {
-                HouseworkThanksView(item: item, sentThanks: item.sentThanks(ownUserId: account.id))
+            // モーダルの上ではなく、閉じた後の詳細画面に演出を出す。モーダルを閉じるのを演出で待たせないため
+            .sheet(isPresented: $isPresentedThanksView, onDismiss: dismissedThanksView) {
+                HouseworkThanksView(item: item, sentThanks: item.sentThanks(ownUserId: account.id)) {
+                    hasPendingThanksFeedback = true
+                }
             }
             .sheet(isPresented: $isPresentedAddHelperSheet) {
                 HouseworkAddHelperSheet(item: item, step: .detail)
@@ -71,6 +78,7 @@ public struct HouseworkDetailView: View {
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()
             }
+            .thanksFeedback(trigger: thanksFeedbackCount)
             .trackScreenView(.houseworkDetail)
     }
 
@@ -201,6 +209,12 @@ private extension HouseworkDetailView {
         } catch {
             commonErrorContent = .init(error: error)
         }
+    }
+
+    func dismissedThanksView() {
+        guard hasPendingThanksFeedback else { return }
+        hasPendingThanksFeedback = false
+        thanksFeedbackCount += 1
     }
 
     func savedMemo(_ memo: HouseworkMemo) {

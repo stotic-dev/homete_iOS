@@ -42,6 +42,7 @@ public struct DashboardTutorialView: View {
                         members: HouseworkTutorialSample.members,
                         onTapRegister: {},
                         onTapItem: { _ in },
+                        onTapComplete: { _ in },
                         onTapShowMore: {},
                         rowMenu: { _ in EmptyView() }
                     )

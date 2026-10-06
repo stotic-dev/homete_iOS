@@ -41,6 +41,10 @@ public struct HouseworkBoardScreen: View {
     @State var thankingItem: HouseworkBoardItem?
     /// クイックアクションの「手伝った人を追加」で、担当者を選ぶハーフモーダルを出している家事
     @State var addingHelperItem: HouseworkBoardItem?
+    /// 初めてありがとうを伝えた回数。増えるたびにありがとうの演出を出す
+    @State var thanksFeedbackCount = 0
+    /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
+    @State var hasPendingThanksFeedback = false
 
     @LoadingState var loadingState
     @CommonError var commonError
@@ -111,8 +115,11 @@ private extension HouseworkBoardScreen {
             .sheet(item: $completingItem) { item in
                 HouseworkCompleteSheet(item: item, step: .board)
             }
-            .sheet(item: $thankingItem) { item in
-                HouseworkThanksView(item: item)
+            // モーダルの上ではなく、閉じた後のボードに演出を出す。モーダルを閉じるのを演出で待たせないため
+            .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
+                HouseworkThanksView(item: item) {
+                    hasPendingThanksFeedback = true
+                }
             }
             .sheet(item: $addingHelperItem) { item in
                 HouseworkAddHelperSheet(item: item, step: .board)
@@ -135,6 +142,7 @@ private extension HouseworkBoardScreen {
                     updateHouseboardList(with: houseworkListStore)
                 }
             }
+            .thanksFeedback(trigger: thanksFeedbackCount)
             .commonError(content: $commonError)
             .fullScreenLoadingIndicator(loadingState)
             .trackScreenView(.houseworkBoard)
@@ -158,6 +166,7 @@ private extension HouseworkBoardScreen {
                 },
                 onTapAdd: { isPresentingAddHouseworkView = true },
                 onTapItem: { navigationPath.push(.houseworkDetail($0)) },
+                onTapComplete: { completingItem = $0 },
                 onTapThanks: { item in
                     Task {
                         await sendThanks(to: item, store: houseworkListStore)
@@ -252,7 +261,7 @@ private extension HouseworkBoardScreen {
         guard let cohabitantId = loginContext.cohabitantId else { return }
 
         do {
-            try await store.perform(
+            let isFirstThanks = try await store.perform(
                 .sendThanks,
                 on: item,
                 now: now,
@@ -260,6 +269,9 @@ private extension HouseworkBoardScreen {
                 cohabitantId: cohabitantId,
                 step: .board
             )
+            if isFirstThanks {
+                thanksFeedbackCount += 1
+            }
         } catch {
             commonError = .init(error: error)
         }
@@ -275,7 +287,7 @@ private extension HouseworkBoardScreen {
             ownUserId: loginContext.account.id
         )
         do {
-            try await store.performBulk(
+            let hasSentFirstThanks = try await store.performBulk(
                 action,
                 on: selection.targets(for: action),
                 now: now,
@@ -284,9 +296,19 @@ private extension HouseworkBoardScreen {
                 step: .board
             )
             selectedHouseworkIDs = []
+            // 何件伝えても演出は1回だけにする
+            if hasSentFirstThanks {
+                thanksFeedbackCount += 1
+            }
         } catch {
             commonError = .init(error: error)
         }
+    }
+
+    func dismissedThanksView() {
+        guard hasPendingThanksFeedback else { return }
+        hasPendingThanksFeedback = false
+        thanksFeedbackCount += 1
     }
 
     func tappedStorageLimitCell() {

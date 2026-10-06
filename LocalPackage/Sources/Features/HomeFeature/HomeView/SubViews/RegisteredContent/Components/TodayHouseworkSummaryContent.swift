@@ -19,8 +19,10 @@ struct TodayHouseworkSummaryContent<RowMenu: View>: View {
     let members: CohabitantMemberList
     let onTapRegister: () -> Void
     let onTapItem: (HouseworkBoardItem) -> Void
+    /// 行の完了ボタンのタップ。完了のハーフモーダルは呼び出し側が出す
+    let onTapComplete: (HouseworkBoardItem) -> Void
     let onTapShowMore: () -> Void
-    /// 未完了の家事を長押ししたときのメニューの中身
+    /// 未完了の家事を長押ししたときと、その他ボタンのメニューの中身
     @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
     var body: some View {
@@ -138,13 +140,18 @@ private extension TodayHouseworkSummaryContent {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        Button {
-            onTapItem(item)
-        } label: {
-            HouseBoardListRow(houseworkItem: item.originalItem)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
+        HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            // 未完了の家事には担当者もありがとうも無いので、完了リスト向けの表示は渡さない
+            completionInfo: nil,
+            showsCompleteButton: item.state == .incomplete,
+            // 未完了の家事だけを並べる画面で、未完了には必ず「完了にする」「やらない」が出る
+            showsMoreButton: true,
+            onTapRow: { onTapItem(item) },
+            onTapThanks: nil,
+            onTapComplete: { onTapComplete(item) },
+            menuContent: { rowMenu(item) }
+        )
     }
 
 }
@@ -164,6 +171,7 @@ private extension TodayHouseworkSummaryContent {
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapShowMore: {},
             rowMenu: { _ in EmptyView() }
         )
@@ -209,6 +217,7 @@ private extension TodayHouseworkSummaryContent {
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapShowMore: {},
             rowMenu: { _ in EmptyView() }
         )
@@ -268,6 +277,7 @@ private extension TodayHouseworkSummaryContent {
             ),
             onTapRegister: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapShowMore: {},
             rowMenu: { _ in EmptyView() }
         )
@@ -341,6 +351,7 @@ private extension TodayHouseworkSummaryContent {
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapShowMore: {},
             rowMenu: { _ in EmptyView() }
         )

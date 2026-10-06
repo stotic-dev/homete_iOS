@@ -262,6 +262,11 @@ launching → notLoggedIn → Sign In with Apple
 
 6. **`create-release-note.yaml`** - リリースノート生成
 
+7. **`release-snapshot-diff.yml`** - リリースPRで前バージョンとのスナップショット比較
+   - `release/*` → `main` のPRへのpushで、前回リリースタグと現在の参照スナップショットをreg-cliで比較（ubuntu）。レポートをartifactにし、PRのコメントを上書き更新する
+   - PR作成直後の1回目は`create-release-pr.yml`が`workflow_dispatch`で起動する。`[ci skip]`付きのbotコミットでは走らないので、必要なら手動実行する
+   - 意図しない差分の確認は`release-snapshot-review`スキルで行う。経緯は[ADR-0039](doc/adr/0039-release-snapshot-diff-with-reg-cli.md)
+
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 
 | エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |

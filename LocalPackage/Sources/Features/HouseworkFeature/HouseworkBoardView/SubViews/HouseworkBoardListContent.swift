@@ -32,9 +32,11 @@ struct HouseworkBoardListContent<RowMenu: View>: View {
     @Binding var selectedIDs: Set<String>
     let onCreateTapped: () -> Void
     let onTapItem: (HouseworkBoardItem) -> Void
+    /// 行の完了ボタンのタップ。完了のハーフモーダルは呼び出し側が出す
+    let onTapComplete: (HouseworkBoardItem) -> Void
     /// ハートのタップで、メッセージを書かずにありがとうだけを伝える
     let onTapThanks: (HouseworkBoardItem) -> Void
-    /// 家事のセルを長押ししたときのメニューの中身
+    /// 家事のセルを長押ししたときと、その他ボタンのメニューの中身
     @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
     var body: some View {
@@ -94,16 +96,30 @@ private extension HouseworkBoardListContent {
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        Button {
-            onTapItem(item)
-        } label: {
-            let completionInfo = completionInfo(of: item)
-            HouseBoardListRow(
-                houseworkItem: item.originalItem,
-                completionInfo: completionInfo,
-                onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus)
-            )
-        }
+        let completionInfo = completionInfo(of: item)
+        // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
+        return HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            completionInfo: completionInfo,
+            showsCompleteButton: !isSelecting && item.state == .incomplete,
+            showsMoreButton: !isSelecting && !quickActions(of: item).isEmpty,
+            onTapRow: { onTapItem(item) },
+            onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus),
+            onTapComplete: { onTapComplete(item) },
+            menuContent: { rowMenu(item) }
+        )
+    }
+
+    /// メニューに出せるクイックアクション
+    ///
+    /// その他ボタンを出すかどうかは、メニューの中身と同じ判断に揃えて、押しても何も並ばない
+    /// メニューが開く食い違いを防ぐ。
+    func quickActions(of item: HouseworkBoardItem) -> [HouseworkQuickAction] {
+        HouseworkQuickAction.actions(
+            for: item,
+            ownUserId: ownUserId,
+            canAddHelper: item.canAddHelper(members: memberList)
+        )
     }
 
     /// チュートリアルで完了のしかたを説明するときに切り抜く、未完了の一覧の先頭の家事か
@@ -123,7 +139,7 @@ private extension HouseworkBoardListContent {
     /// 完了リストの家事セルに出す、担当者とありがとうの状況
     ///
     /// 未完了リストには担当者もありがとうもないため出さない。
-    func completionInfo(of item: HouseworkBoardItem) -> HouseBoardListRow.CompletionInfo? {
+    func completionInfo(of item: HouseworkBoardItem) -> HouseworkRowCompletionInfo? {
         guard state == .completed else { return nil }
 
         return .init(
@@ -168,6 +184,7 @@ private extension HouseworkBoardListContent {
         selectedIDs: .constant([]),
         onCreateTapped: {},
         onTapItem: { _ in },
+        onTapComplete: { _ in },
         onTapThanks: { _ in },
         rowMenu: { _ in EmptyView() }
     )
@@ -218,6 +235,7 @@ private extension HouseworkBoardListContent {
         selectedIDs: .constant(["1"]),
         onCreateTapped: {},
         onTapItem: { _ in },
+        onTapComplete: { _ in },
         onTapThanks: { _ in },
         rowMenu: { _ in EmptyView() }
     )

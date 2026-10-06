@@ -31,11 +31,12 @@ struct HouseworkBoardView<RowMenu: View>: View {
     let onTapRetry: () -> Void
     let onTapAdd: () -> Void
     let onTapItem: (HouseworkBoardItem) -> Void
+    let onTapComplete: (HouseworkBoardItem) -> Void
     let onTapThanks: (HouseworkBoardItem) -> Void
     let onTapStorageLimit: () -> Void
     let onTapHouseworkTemplate: () -> Void
     let onTapBulkAction: (HouseworkQuickAction) -> Void
-    /// 家事のセルを長押ししたときのメニューの中身
+    /// 家事のセルを長押ししたときと、その他ボタンのメニューの中身
     @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
     var body: some View {
@@ -122,6 +123,7 @@ private extension HouseworkBoardView {
                             selectedIDs: $selectedHouseworkIDs,
                             onCreateTapped: onTapAdd,
                             onTapItem: onTapItem,
+                            onTapComplete: onTapComplete,
                             onTapThanks: onTapThanks,
                             rowMenu: rowMenu
                         )
@@ -197,6 +199,7 @@ private extension HouseworkBoardView {
             onTapRetry: {},
             onTapAdd: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapThanks: { _ in },
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
@@ -239,6 +242,7 @@ private extension HouseworkBoardView {
             onTapRetry: {},
             onTapAdd: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapThanks: { _ in },
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
@@ -291,6 +295,7 @@ private extension HouseworkBoardView {
             onTapRetry: {},
             onTapAdd: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapThanks: { _ in },
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
@@ -321,6 +326,7 @@ private extension HouseworkBoardView {
             onTapRetry: {},
             onTapAdd: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapThanks: { _ in },
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
@@ -358,6 +364,7 @@ private extension HouseworkBoardView {
             onTapRetry: {},
             onTapAdd: {},
             onTapItem: { _ in },
+            onTapComplete: { _ in },
             onTapThanks: { _ in },
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
