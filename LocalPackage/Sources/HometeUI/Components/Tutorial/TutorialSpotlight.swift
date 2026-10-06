@@ -20,6 +20,18 @@ public struct TutorialSpotlightID: Hashable, Sendable {
 
 }
 
+/// スポットライトの説明のカードを置く場所
+public enum TutorialSpotlightCardPlacement: Sendable {
+
+    /// 切り抜いたUIの上下のうち、空いている方に置く
+    case automatic
+    /// 切り抜いたUIの上下の空きに関わらず、上に置く
+    case top
+    /// 切り抜いたUIの上下の空きに関わらず、下に置く
+    case bottom
+
+}
+
 public extension View {
 
     /// チュートリアルでハイライトできるUIとして、位置をスポットライトに伝える
@@ -55,14 +67,17 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: スポットライトを出すかどうか
     ///   - targets: 切り抜くUI。まだ表示されていないUIは切り抜かない
+    ///   - cardPlacement: カードを置く場所。切り抜いたUIが大きく、見せたい部分がカードに隠れるときに指定する
     func tutorialSpotlight(
         isPresented: Bool,
         targets: [TutorialSpotlightID],
+        cardPlacement: TutorialSpotlightCardPlacement = .automatic,
         @ViewBuilder card: () -> some View
     ) -> some View {
         modifier(TutorialSpotlightModifier(
             isPresented: isPresented,
             targets: targets,
+            cardPlacement: cardPlacement,
             card: card()
         ))
     }
@@ -193,6 +208,7 @@ struct TutorialSpotlightModifier<Card: View>: ViewModifier {
 
     let isPresented: Bool
     let targets: [TutorialSpotlightID]
+    let cardPlacement: TutorialSpotlightCardPlacement
     let card: Card
 
     func body(content: Content) -> some View {
@@ -204,6 +220,7 @@ struct TutorialSpotlightModifier<Card: View>: ViewModifier {
                     TutorialSpotlightOverlay(
                         highlightedFrames: targets.compactMap { frameStore.frames[$0] },
                         cardArea: frameStore.frames[.cardArea],
+                        cardPlacement: cardPlacement,
                         card: card
                     )
                     .transition(.opacity)
@@ -219,6 +236,7 @@ struct TutorialSpotlightOverlay<Card: View>: View {
     let highlightedFrames: [CGRect]
     /// カードを置いてよい範囲（画面全体の座標）。`nil`ならこのViewのセーフエリアの中に置く
     let cardArea: CGRect?
+    var cardPlacement: TutorialSpotlightCardPlacement = .automatic
     let card: Card
 
     /// 切り抜きを対象のUIより一回り大きくして、UIの縁が暗がりに埋もれないようにする
@@ -288,10 +306,20 @@ private extension TutorialSpotlightOverlay {
         }
     }
 
-    /// 切り抜いたUIの下の方が空いていれば、カードを下に置く
+    /// カードを下に置くかどうか。置き場所の指定が無ければ、切り抜いたUIの下の方が空いているときに下に置く
     ///
     /// どちらにも収まらない小さい画面では重なるが、空きの広い方に置いて隠れる範囲を減らす。
     func placesCardBelow(in area: CGRect) -> Bool {
+        switch cardPlacement {
+        case .top:
+            return false
+
+        case .bottom:
+            return true
+
+        case .automatic:
+            break
+        }
         let highlighted = highlightedFrames.reduce(CGRect.null) { $0.union($1) }
         guard !highlighted.isNull else { return true }
 

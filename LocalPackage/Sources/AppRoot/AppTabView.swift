@@ -63,7 +63,8 @@ struct AppTabView: View {
             // 出ている間は隠れ、閉じられてから見えるようになる
             .tutorialSpotlight(
                 isPresented: registrationTutorialStore.currentStep != nil,
-                targets: registrationTutorialStore.currentStep.map(spotlightTargets) ?? []
+                targets: registrationTutorialStore.currentStep.map(spotlightTargets) ?? [],
+                cardPlacement: registrationTutorialStore.currentStep.map(cardPlacement) ?? .automatic
             ) {
                 registrationTutorialCard()
             }
@@ -239,6 +240,18 @@ private extension AppTabView {
 
         case .houseworkTemplate:
             [.houseworkTemplateButton]
+        }
+    }
+
+    /// ステップごとの説明のカードの置き場所
+    func cardPlacement(_ step: RegistrationTutorialStep) -> TutorialSpotlightCardPlacement {
+        switch step {
+        case .dashboard:
+            // 今日の家事サマリーは縦に長く、空きの広い上に置くと説明している達成率に重なるため、下に置く
+            .bottom
+
+        case .housework, .houseworkComplete, .thanks, .bulkAction, .houseworkTemplate:
+            .automatic
         }
     }
 
