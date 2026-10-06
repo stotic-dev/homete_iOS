@@ -181,7 +181,10 @@ private extension EncouragementCommentStore {
             if let validated = EncouragementToneValidator.validated(text) {
                 return .init(text: validated, kind: .selfPraise, source: .generated)
             }
+            // 生成文には同居人の名前や家事名が入るため、リリースビルドではログに残さない
+            #if DEBUG
             print("encouragement comment was rejected by tone validator: \(text)")
+            #endif
         } catch {
             print("failed to generate encouragement comment: \(error)")
         }
