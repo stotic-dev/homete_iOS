@@ -129,8 +129,10 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
 
     @Environment(\.tutorialSpotlightFrameReporter) var reporter
 
-    /// 最後に測った位置
+    /// 最後に測った位置（画面全体の座標）
     @State private var frame: CGRect?
+    /// SwiftUIの上での位置。変わったら、画面全体の座標で測り直すきっかけにする
+    @State private var layoutFrame: CGRect?
     /// 位置を伝えるときに、どのUIからの知らせかを見分けるための値
     @State private var owner = UUID()
 
@@ -142,17 +144,37 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
             .onGeometryChange(for: CGRect.self) { proxy in
                 proxy.frame(in: .global)
             } action: { newFrame in
-                frame = newFrame
-                report(newFrame)
+                layoutFrame = newFrame
+                #if !os(iOS)
+                update(newFrame)
+                #endif
             }
+        #if os(iOS)
+            // ナビゲーションバーの項目は、タブが選ばれる前などウィンドウに載る前に測られることがあり、
+            // そのあと位置が変わらないと測り直されない。ウィンドウに載ったときにもUIKitで測り直す
+            .background {
+                TutorialSpotlightWindowFrameReader(trigger: layoutFrame) { newFrame in
+                    update(newFrame)
+                }
+            }
+        #endif
             // スポットライトを出す前から表示されていたUIは、位置が変わらず上の`action`が呼ばれないため、
             // 出した時点で最後に測った位置を伝える
             .onChange(of: reporter?.identity) {
                 report(frame)
             }
             .onDisappear {
+                // 表示し直したときに、同じ位置でも伝え直すようにする
+                frame = nil
                 report(nil)
             }
+    }
+
+    private func update(_ newFrame: CGRect) {
+        guard newFrame != frame else { return }
+
+        frame = newFrame
+        report(newFrame)
     }
 
     private func report(_ frame: CGRect?) {
