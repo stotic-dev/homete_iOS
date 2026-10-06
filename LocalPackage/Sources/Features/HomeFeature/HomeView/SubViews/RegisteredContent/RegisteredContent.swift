@@ -41,6 +41,8 @@ struct RegisteredContent: View {
             } else {
                 ScrollView {
                     VStack(spacing: .space24) {
+                        EncouragementCommentComponent.make()
+                            .sectionCardStyle()
                         TodayHouseworkSummaryComponent.make()
                             .sectionCardStyle()
                         if AdDisplayPolicy.shouldShowAds(
@@ -112,6 +114,9 @@ private extension RegisteredContent {
 
         case let .houseworkDetail(item):
             HouseworkDetailView.make(item: item)
+
+        case .thanksTargetList:
+            ThanksTargetListView.make()
         }
     }
 
@@ -173,6 +178,11 @@ private extension RegisteredContent {
         .environment(CohabitantStore())
         .environment(HouseworkListStore())
         .environment(SubscriptionStore())
+        .environment(EncouragementCommentStore(comment: .init(
+            text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
+            kind: .neutral,
+            source: .fixed
+        )))
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
 }
@@ -187,6 +197,11 @@ private extension RegisteredContent {
             productIdentifier: "premium_monthly",
             expirationDate: nil,
             willRenew: true
+        )))
+        .environment(EncouragementCommentStore(comment: .init(
+            text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
+            kind: .neutral,
+            source: .fixed
         )))
         .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
         .setupEnvironmentForPreview()
