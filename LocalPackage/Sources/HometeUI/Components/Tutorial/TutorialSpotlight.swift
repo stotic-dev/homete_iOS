@@ -84,9 +84,23 @@ extension TutorialSpotlightID {
 final class TutorialSpotlightFrameStore {
 
     private(set) var frames: [TutorialSpotlightID: CGRect] = [:]
+    /// 最後に位置を伝えてきたUI
+    @ObservationIgnored private var owners: [TutorialSpotlightID: UUID] = [:]
 
-    func update(_ id: TutorialSpotlightID, frame: CGRect?) {
-        frames[id] = frame
+    /// - Parameters:
+    ///   - frame: `nil`なら、そのUIが消えたものとして位置を消す
+    ///   - owner: 位置を伝えてきたUI。同じ識別子のUIが作り直されたときに、
+    ///     古いUIが消えた知らせで新しいUIの位置を消さないようにする
+    func update(_ id: TutorialSpotlightID, frame: CGRect?, owner: UUID) {
+        if let frame {
+            frames[id] = frame
+            owners[id] = owner
+            return
+        }
+        guard owners[id] == owner else { return }
+
+        frames[id] = nil
+        owners[id] = nil
     }
 
 }
@@ -117,6 +131,8 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
 
     /// 最後に測った位置
     @State private var frame: CGRect?
+    /// 位置を伝えるときに、どのUIからの知らせかを見分けるための値
+    @State private var owner = UUID()
 
     /// `nil`なら位置を伝えない
     let id: TutorialSpotlightID?
@@ -142,7 +158,7 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
     private func report(_ frame: CGRect?) {
         guard let id else { return }
 
-        reporter?.store.update(id, frame: frame)
+        reporter?.store.update(id, frame: frame, owner: owner)
     }
 
 }
