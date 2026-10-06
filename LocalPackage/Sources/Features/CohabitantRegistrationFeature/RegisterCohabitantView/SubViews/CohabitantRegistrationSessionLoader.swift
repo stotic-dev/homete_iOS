@@ -49,7 +49,7 @@ private extension CohabitantRegistrationSessionLoader {
 
 /// `CohabitantRegistrationStore`の生成方法
 /// - Note: ピアIDとセッションが決まるまで生成できないため、依存を束ねた生成手順だけを上位から渡す。
-///         デバッグ画面はここを差し替えてFirestoreへの書き込みを止める
+///         デバッグ画面はここを差し替えてグループへの参加を止める
 struct CohabitantRegistrationStoreFactory {
 
     let make: @MainActor (
@@ -62,7 +62,7 @@ struct CohabitantRegistrationStoreFactory {
 extension EnvironmentValues {
 
     @Entry var cohabitantRegistrationStoreFactory = CohabitantRegistrationStoreFactory { myPeerID, messageSender in
-        CohabitantRegistrationStore(myPeerID: myPeerID, myAccountId: "", messageSender: messageSender)
+        CohabitantRegistrationStore(myPeerID: myPeerID, messageSender: messageSender)
     }
 
 }

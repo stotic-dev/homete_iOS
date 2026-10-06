@@ -432,7 +432,7 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             )
             // グループ未参加の状態では同期先が無いためスキップされる
             await useCase.syncHouseworkRetentionIfNeeded()
-            try? await accountStore.registerCohabitantId(inputCohabitantId)
+            accountStore.applyCohabitantId(inputCohabitantId)
 
             await useCase.syncHouseworkRetentionIfNeeded()
         }

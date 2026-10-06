@@ -164,40 +164,6 @@ struct AccountStoreTest {
         #expect(store.account == nil)
     }
 
-    @Test("パートナーの登録で保持しているアカウントにパートナーグループIDの情報を更新する")
-    func registerCohabitantId() async throws {
-        try await confirmation(expectedCount: 1) { confirmation in
-            // Arrange
-            let inputCohabitantId = "testCohabitantId"
-            let initialAccount = Account(
-                id: "testId",
-                userName: "testUser",
-                fcmToken: nil,
-                cohabitantId: nil
-            )
-            let expectedAccount = Account(
-                id: initialAccount.id,
-                userName: initialAccount.userName,
-                fcmToken: nil,
-                cohabitantId: inputCohabitantId
-            )
-            let accountInfoClient = AccountInfoClient(insertOrUpdate: {
-                confirmation()
-                #expect($0 == expectedAccount)
-            })
-            let store = AccountStore(
-                accountInfoClient: accountInfoClient,
-                account: initialAccount
-            )
-
-            // Act
-            try await store.registerCohabitantId(inputCohabitantId)
-
-            // Assert
-            #expect(store.account == expectedAccount)
-        }
-    }
-
     @Test("アカウントの購読を開始すると、サーバー側で更新された内容がオンメモリに反映される")
     func startObservingIfNeededAppliesServerUpdate() async {
         // Arrange

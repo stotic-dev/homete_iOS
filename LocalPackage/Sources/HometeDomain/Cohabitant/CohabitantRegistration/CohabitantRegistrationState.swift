@@ -82,30 +82,26 @@ public extension CohabitantRegistrationState {
 
     enum Role: Equatable, Sendable {
 
-        /// 同居人レコードを作成し、同居人IDを配る側
+        /// 招待トークンを発行して配る側
         case lead(Lead)
-        /// 同居人IDを受け取って自分のアカウントに保存する側
+        /// 招待トークンを受け取って自分でグループに参加する側
         case follower(Follower)
 
     }
 
     struct Lead: Equatable, Sendable {
 
-        /// フォロワーから受け取ったアカウントID
-        public var followerAccountIds: Set<String>
         /// 登録完了の通知が届いているメンバー
         public var completedPeers: Set<PeerID>
-        /// 採番した同居人ID
-        public var cohabitantId: String?
+        /// 発行した招待トークン
+        public var invitationToken: String?
 
         public init(
-            followerAccountIds: Set<String> = [],
             completedPeers: Set<PeerID> = [],
-            cohabitantId: String? = nil
+            invitationToken: String? = nil
         ) {
-            self.followerAccountIds = followerAccountIds
             self.completedPeers = completedPeers
-            self.cohabitantId = cohabitantId
+            self.invitationToken = invitationToken
         }
 
     }
@@ -114,12 +110,12 @@ public extension CohabitantRegistrationState {
 
         /// リーダーのメンバー
         public var leadPeer: PeerID?
-        /// 自分のアカウントへの保存まで済んだ同居人ID
-        public var registeredCohabitantId: String?
+        /// グループへの参加まで済んだかどうか
+        public var hasJoined: Bool
 
-        public init(leadPeer: PeerID? = nil, registeredCohabitantId: String? = nil) {
+        public init(leadPeer: PeerID? = nil, hasJoined: Bool = false) {
             self.leadPeer = leadPeer
-            self.registeredCohabitantId = registeredCohabitantId
+            self.hasJoined = hasJoined
         }
 
     }
@@ -130,6 +126,8 @@ public extension CohabitantRegistrationState {
         case rejectedByPeer
         /// メンバー確定の通知を送れなかった
         case sendFailed
+        /// 相手のアプリが古いバージョンで、登録方式が違う。メンバーの選び直しの状態に戻っている
+        case outdatedPeer
         /// 登録処理中に接続状態が変わった（リーダーの重複も含む）。閉じるとメンバーの選び直しに戻る
         case connectionError
         /// 同居人の登録に失敗した。閉じると登録画面を終了する
