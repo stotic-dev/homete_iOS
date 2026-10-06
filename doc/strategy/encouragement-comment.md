@@ -8,9 +8,9 @@
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 設計確定
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -251,27 +251,27 @@ public struct ThanksPromptSummary: Equatable, Sendable {
 - [x] 生成の入力: 自分の実績 + 今日の家事サマリー + 今月のメンバー別貢献度
 - [x] 生成のタイミング: 節目（取りかかり中・全部完了）ごとに1回、1日最大2回
 - [x] 感謝の促し: 件数入りの固定テンプレート + 「ありがとうを伝える」ボタン → ありがとうを伝えられる家事の一覧画面
-- [ ] 本ドキュメントのレビュー（集計期間・キャッシュ・一覧画面の振る舞い）
+- [x] 本ドキュメントのレビュー（集計期間・キャッシュ・一覧画面の振る舞い）
 
 ### Phase 2: 実装
 
-- [ ] ADR-0040の作成
-- [ ] `EncouragementToneValidator`と固定文言
-- [ ] `EncouragementContext`の集計（自分・今日のサマリー・今月のメンバー別貢献度）
-- [ ] `EncouragementCommentClient` / `EncouragementCommentCacheClient`の定義とlive実装
-- [ ] `EncouragementCommentStore`
-- [ ] `ThanksPromptSummary`
-- [ ] `ThanksTargetListView`と`HouseworkThanksView`の`step`引数
-- [ ] `EncouragementCommentCard`とダッシュボードへの配置
-- [ ] Analytics（`encouragement_comment`、`comment_prompt`、`thanks_target_list`）
-- [ ] `doc/analytics_events.md`の更新
-- [ ] Preview（VRT）の追加
+- [x] ADR-0040の作成
+- [x] `EncouragementToneValidator`と固定文言
+- [x] `EncouragementContext`の集計（自分・今日のサマリー・今月のメンバー別貢献度）
+- [x] `EncouragementCommentClient` / `EncouragementCommentCacheClient`の定義とlive実装
+- [x] `EncouragementCommentStore`
+- [x] `ThanksPromptSummary`
+- [x] `ThanksTargetListView`と`HouseworkThanksView`の`step`引数
+- [x] `EncouragementCommentCard`とダッシュボードへの配置
+- [x] Analytics（`encouragement_comment`、`comment_prompt`、`thanks_target_list`）
+- [x] `doc/analytics_events.md`の更新
+- [x] Preview（VRT）の追加
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト（Validator・固定文言、`EncouragementContext`の集計、Storeの節目判定・フォールバック・キャッシュ、`ThanksPromptSummary`の出し分け、Analyticsのパラメータ）
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト（Validator・固定文言、`EncouragementContext`の集計、Storeの節目判定・フォールバック・キャッシュ、`ThanksPromptSummary`の出し分け、Analyticsのパラメータ）
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
 - [ ] 実機/シミュレータで動作確認（Apple Intelligence対応端末で実際に生成されること）
 
