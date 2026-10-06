@@ -98,7 +98,7 @@
 
 ### 1. 生成Client（`EncouragementCommentClient`）
 
-`HometeDomain/Dependencies/EncouragementCommentClient.swift`にClientを定義し、`liveValue`を`HometeInfrastructure/FoundationModels/`に実装する。
+`HometeDomain/Dependencies/EncouragementCommentClient.swift`にClientを定義し、`liveValue`を既存のClientと同じく`AppRoot/Dependency/Impl/ImplEncouragementCommentClient.swift`に実装する。instructionsとプロンプトの組み立ては`HometeDomain/Encouragement/EncouragementPrompt.swift`に置き、live実装はモデルを呼ぶだけにする。
 
 ```swift
 public struct EncouragementCommentClient: Sendable {
@@ -227,7 +227,7 @@ public struct ThanksPromptSummary: Equatable, Sendable {
 | 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/EncouragementCommentClient.swift` | 生成Clientの定義と`previewValue` |
 | 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/EncouragementCommentCacheClient.swift` | 当日のコメントのキャッシュ |
 | 修正 | `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` | 2つのClientを追加 |
-| 新規live | `LocalPackage/Sources/HometeInfrastructure/FoundationModels/` | Foundation Modelsでの生成、instructions |
+| 新規live | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplEncouragementCommentClient.swift` | Foundation Modelsでの生成（可否判定・タイムアウト） |
 | 新規live | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplEncouragementCommentCacheClient.swift` | `UserDefaults`での保存 |
 | 修正 | `LocalPackage/Sources/AppRoot/Dependency/AppDependencies+liveValue.swift` | `liveValue`の注入 |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Encouragement/` | `EncouragementContext`、`EncouragementComment`、固定文言、`EncouragementToneValidator`、`EncouragementCommentStore` |
