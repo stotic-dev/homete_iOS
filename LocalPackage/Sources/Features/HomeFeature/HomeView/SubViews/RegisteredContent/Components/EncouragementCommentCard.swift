@@ -48,6 +48,8 @@ private extension EncouragementCommentCard {
                 .foregroundStyle(.onSurface)
                 .fixedSize(horizontal: false, vertical: true)
                 .redacted(reason: comment == nil ? .placeholder : [])
+                // 枠だけを出している間に、仮の文をVoiceOverで読み上げないようにする
+                .accessibilityLabel(comment?.text ?? "コメントを準備しています")
         }
     }
 
