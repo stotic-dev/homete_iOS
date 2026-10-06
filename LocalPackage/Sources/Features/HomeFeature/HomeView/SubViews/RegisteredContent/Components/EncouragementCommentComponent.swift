@@ -51,8 +51,12 @@ struct EncouragementCommentComponent: View {
                 calendar: calendar
             )
         }
-        // ダッシュボードを表示するたびと、出すコメントの種類が変わったときに送る
+        // ダッシュボードを表示するたびと、出すコメントの種類が変わったときに送る。
+        // ねぎらいの生成を待つ間に感謝の促しだけ先に送ると、生成後にもう一度送って二重に数えてしまうため、
+        // ねぎらいが決まってからまとめて送る
         .task(id: shownKinds(thanksPrompt: thanksPrompt)) {
+            guard encouragementCommentStore.comment != nil else { return }
+
             for kind in shownKinds(thanksPrompt: thanksPrompt) {
                 analyticsClient.log(.encouragementComment(.shown(kind: kind, step: .dashboard)))
             }
@@ -100,7 +104,7 @@ private extension EncouragementCommentComponent {
         .count
     }
 
-    /// カードに出しているコメントの種類。生成を待っている間のねぎらいは数えない
+    /// カードに出しているコメントの種類
     func shownKinds(thanksPrompt: ThanksPromptSummary) -> [EncouragementCommentAnalyticsKind] {
         var kinds: [EncouragementCommentAnalyticsKind] = []
         switch encouragementCommentStore.comment?.kind {
