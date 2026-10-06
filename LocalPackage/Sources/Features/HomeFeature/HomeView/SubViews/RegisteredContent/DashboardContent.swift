@@ -37,6 +37,8 @@ struct DashboardContent<TodaySummary: View, Advertisement: View, ContributionSum
                     VStack(spacing: .space24) {
                         todaySummary()
                             .sectionCardStyle()
+                            // カードの背景ごと切り抜くため、見た目を付けた後に付ける
+                            .tutorialSpotlightTarget(.dashboardTodaySummary)
                         if showsAdvertisement {
                             VStack(spacing: .space8) {
                                 advertisement()

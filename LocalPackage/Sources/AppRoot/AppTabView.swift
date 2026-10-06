@@ -223,7 +223,7 @@ private extension AppTabView {
     func spotlightTargets(_ step: RegistrationTutorialStep) -> [TutorialSpotlightID] {
         switch step {
         case .dashboard:
-            [.dashboardTodayProgress, .dashboardTodayContribution]
+            [.dashboardTodaySummary]
 
         case .housework:
             [.houseworkAddButton]

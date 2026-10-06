@@ -44,16 +44,12 @@ private extension TodayHouseworkSummaryContent {
 
             case .allCompleted:
                 progressContent(progress: summary.progress)
-                    .tutorialSpotlightTarget(.dashboardTodayProgress)
                 contributionChartContent
-                    .tutorialSpotlightTarget(.dashboardTodayContribution)
                 allCompletedContent()
 
             case .hasIncomplete:
                 progressContent(progress: summary.progress)
-                    .tutorialSpotlightTarget(.dashboardTodayProgress)
                 contributionChartContent
-                    .tutorialSpotlightTarget(.dashboardTodayContribution)
                 incompleteListContent
             }
         }
