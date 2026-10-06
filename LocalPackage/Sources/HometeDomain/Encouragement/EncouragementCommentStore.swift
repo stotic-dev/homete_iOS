@@ -154,7 +154,13 @@ private extension EncouragementCommentStore {
 
         let task = Task {
             let comment = await makeComment(context: context, milestone: key.milestone, now: now, calendar: calendar)
-            await cacheClient.save(.init(userId: key.userId, day: key.day, milestone: key.milestone, comment: comment))
+            // 生成中に節目が変わって次の生成が始まっていたら保存しない。保存は1件だけなので、
+            // 後から終わった古い節目のコメントで、新しい節目のコメントを上書きしてしまうため
+            if generation?.key == key {
+                await cacheClient.save(
+                    .init(userId: key.userId, day: key.day, milestone: key.milestone, comment: comment)
+                )
+            }
             return comment
         }
         generation = .init(key: key, task: task)

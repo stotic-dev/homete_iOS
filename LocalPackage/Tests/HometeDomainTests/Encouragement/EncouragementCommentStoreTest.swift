@@ -202,6 +202,43 @@ struct EncouragementCommentStoreTest {
         #expect(store.comment == nil)
     }
 
+    @Test("生成中に節目が変わったら、新しい節目のコメントを出し、後から終わった古い節目のコメントは保存しない")
+    func update_milestoneChangedDuringGeneration_keepsNewMilestone() async {
+        // Arrange
+        let gate = TestGate()
+        let counter = TestCounter()
+        let saved = TestLockedArray<EncouragementCommentCache>()
+        let store = makeStore(
+            allItems: [ownCompletedItem()],
+            generate: { _ in
+                await counter.increment()
+                // 1回目（取りかかり中）の生成だけ止めておき、その間に節目を変える
+                guard await counter.value == 1 else { return "今日の家事、おつかれさまでした" }
+
+                await gate.wait()
+                return "洗濯、おつかれさまです"
+            },
+            save: { await saved.append($0) }
+        )
+        let inProgressUpdate = Task {
+            await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        }
+        await gate.waitUntilArrived()
+
+        // Act
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 1, now: now, calendar: calendar)
+        gate.open()
+        await inProgressUpdate.value
+
+        // Assert
+        let expectedComment = EncouragementComment(text: "今日の家事、おつかれさまでした", kind: .selfPraise, source: .generated)
+        #expect(store.comment == expectedComment)
+        let expectedCaches = [
+            EncouragementCommentCache(userId: "own", day: today, milestone: .allCompleted, comment: expectedComment),
+        ]
+        #expect(await saved.values == expectedCaches)
+    }
+
     @Test("同じ節目の更新が重なっても、生成は1回だけ行う")
     func update_concurrentUpdates_generatesOnce() async {
         // Arrange
