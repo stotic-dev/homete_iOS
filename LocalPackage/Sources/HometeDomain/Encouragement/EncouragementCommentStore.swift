@@ -57,19 +57,33 @@ public final class EncouragementCommentStore {
     /// 最新の家事の実施状況で、表示するコメントを決め直す
     ///
     /// 家事やメンバーが変わるたびに呼ばれる想定。節目が変わらなければ保存済みのコメントを出すだけで、生成はしない。
-    /// - Parameter todayTotalCount: 今日の家事の件数。テンプレートの未登録分を含めて数えたもの
-    public func update(members: CohabitantMemberList, todayTotalCount: Int, now: Date, calendar: Calendar) async {
+    /// 家事の初回取得とメンバーの読み込みが終わるまでは何もしない。そろう前に判定すると、実績がある日でも
+    /// 一瞬「実績なし」のコメントを出したり、メンバー別の貢献度が欠けたまま生成して保存したりしてしまうため。
+    /// - Parameters:
+    ///   - ownUserId: 見ている本人。ログイン情報から渡す
+    ///   - todayTotalCount: 今日の家事の件数。テンプレートの未登録分を含めて数えたもの
+    public func update(
+        ownUserId: String,
+        members: CohabitantMemberList,
+        todayTotalCount: Int,
+        now: Date,
+        calendar: Calendar
+    ) async {
+        guard await houseworkManager.fetchedRange != nil,
+              members.value.contains(where: { $0.id == ownUserId }) else { return }
+
         updateCount += 1
         let updateId = updateCount
         let context = await EncouragementContext.make(
             allItems: houseworkManager.allItems,
             members: members,
+            ownUserId: ownUserId,
             todayTotalCount: todayTotalCount,
             now: now,
             calendar: calendar
         )
         let key = EncouragementGenerationKey(
-            userId: members.ownId,
+            userId: ownUserId,
             day: calendar.startOfDay(for: now),
             milestone: EncouragementMilestone(context: context)
         )

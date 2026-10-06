@@ -27,7 +27,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
 
         // Assert
         let expected = EncouragementComment(
@@ -49,7 +49,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
 
         // Assert
         let expectedComment = EncouragementComment(text: "洗濯、おつかれさまです", kind: .selfPraise, source: .generated)
@@ -77,7 +77,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
 
         // Assert
         #expect(store.comment == cachedComment)
@@ -106,7 +106,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 1, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 1, now: now, calendar: calendar)
 
         // Assert
         let expected = EncouragementComment(text: "今日もおつかれさまでした", kind: .selfPraise, source: .generated)
@@ -124,7 +124,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
 
         // Assert
         let expectedComment = EncouragementComment(
@@ -148,7 +148,7 @@ struct EncouragementCommentStoreTest {
         )
 
         // Act
-        await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
 
         // Assert
         let expected = EncouragementComment(
@@ -157,6 +157,49 @@ struct EncouragementCommentStoreTest {
             source: .fixed
         )
         #expect(store.comment == expected)
+    }
+
+    @Test("家事の初回取得が終わるまでは、コメントを決めずに枠だけの表示のままにする")
+    func update_beforeFetched_keepsPlaceholder() async {
+        // Arrange
+        let store = makeStore(
+            allItems: [],
+            isFetched: false,
+            generate: { _ in
+                Issue.record("生成してはいけない")
+                return ""
+            }
+        )
+
+        // Act
+        await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
+
+        // Assert
+        #expect(store.comment == nil)
+    }
+
+    @Test("メンバーの読み込みが終わるまでは、コメントを決めずに枠だけの表示のままにする")
+    func update_beforeMembersLoaded_keepsPlaceholder() async {
+        // Arrange
+        let store = makeStore(
+            allItems: [ownCompletedItem()],
+            generate: { _ in
+                Issue.record("生成してはいけない")
+                return ""
+            }
+        )
+
+        // Act
+        await store.update(
+            ownUserId: "own",
+            members: .init(value: [], ownId: "own"),
+            todayTotalCount: 2,
+            now: now,
+            calendar: calendar
+        )
+
+        // Assert
+        #expect(store.comment == nil)
     }
 
     @Test("同じ節目の更新が重なっても、生成は1回だけ行う")
@@ -173,13 +216,13 @@ struct EncouragementCommentStoreTest {
             }
         )
         let firstUpdate = Task {
-            await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+            await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
         }
         await gate.waitUntilArrived()
 
         // Act
         let secondUpdate = Task {
-            await store.update(members: members, todayTotalCount: 2, now: now, calendar: calendar)
+            await store.update(ownUserId: "own", members: members, todayTotalCount: 2, now: now, calendar: calendar)
         }
         gate.open()
         await firstUpdate.value
@@ -195,13 +238,18 @@ private extension EncouragementCommentStoreTest {
 
     func makeStore(
         allItems: [HouseworkItem],
+        isFetched: Bool = true,
         generate: @escaping @Sendable (EncouragementContext) async throws -> String,
         // デフォルト引数にasyncクロージャを書くと、Xcode 26でビルドしたテストの並列実行で落ちるため`nil`にする
         load: (@Sendable () async -> EncouragementCommentCache?)? = nil,
         save: (@Sendable (EncouragementCommentCache) async -> Void)? = nil
     ) -> EncouragementCommentStore {
         .init(
-            houseworkManager: .init(houseworkClient: .previewValue, allItems: allItems),
+            houseworkManager: .init(
+                houseworkClient: .previewValue,
+                allItems: allItems,
+                fetchedRange: isFetched ? .distantPast ... now : nil
+            ),
             encouragementCommentClient: .init(generate: generate),
             cacheClient: .init(load: load, save: save)
         )

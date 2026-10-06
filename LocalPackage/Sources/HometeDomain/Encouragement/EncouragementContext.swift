@@ -117,10 +117,12 @@ public extension EncouragementContext {
     /// 複数人で担当した家事は、担当者それぞれに1件と数える（貢献度の集計と同じ考え方）。
     /// - Parameters:
     ///   - allItems: 取得済みの家事（直近7日・今月の集計に使うため、リスナーの±N日より広い範囲を渡す）
+    ///   - ownUserId: 見ている本人。メンバー一覧の`ownId`ではなく、ログイン情報から渡す
     ///   - todayTotalCount: 今日の家事の件数。テンプレートの未登録分を含めるため、呼び出し側で数えて渡す
-    static func make(
+    static func make( // swiftlint:disable:this function_parameter_count
         allItems: [HouseworkItem],
         members: CohabitantMemberList,
+        ownUserId: String,
         todayTotalCount: Int,
         now: Date,
         calendar: Calendar
@@ -130,7 +132,7 @@ public extension EncouragementContext {
         return .init(
             own: makeOwnActivity(
                 completedItems: completedItems,
-                ownId: members.ownId,
+                ownId: ownUserId,
                 today: today,
                 calendar: calendar
             ),
@@ -141,6 +143,7 @@ public extension EncouragementContext {
             monthlyMembers: makeMonthlyMembers(
                 completedItems: completedItems,
                 members: members,
+                ownUserId: ownUserId,
                 today: today,
                 calendar: calendar
             )
@@ -197,6 +200,7 @@ private extension EncouragementContext {
     static func makeMonthlyMembers(
         completedItems: [HouseworkItem],
         members: CohabitantMemberList,
+        ownUserId: String,
         today: Date,
         calendar: Calendar
     ) -> [MonthlyMemberContribution] {
@@ -210,7 +214,7 @@ private extension EncouragementContext {
             }
             return .init(
                 userName: member.userName,
-                isOwn: member.id == members.ownId,
+                isOwn: member.id == ownUserId,
                 completedCount: records.count,
                 point: records.reduce(0) { $0 + $1.point },
                 frequentTitles: frequentTitles(records.map(\.title))

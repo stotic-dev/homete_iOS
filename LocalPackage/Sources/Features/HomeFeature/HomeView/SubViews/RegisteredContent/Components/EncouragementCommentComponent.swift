@@ -44,6 +44,7 @@ struct EncouragementCommentComponent: View {
         )
         .task(id: updateTrigger) {
             await encouragementCommentStore.update(
+                ownUserId: ownUserId,
                 members: members,
                 todayTotalCount: todayTotalCount,
                 now: now,
@@ -67,6 +68,8 @@ private extension EncouragementCommentComponent {
     /// コメントを決め直すきっかけになる値
     struct UpdateTrigger: Equatable {
 
+        /// 家事が1件もないグループでは、初回の取得が終わっても`items`が空のまま変わらないため、読み込み状態も見る
+        let loadState: ListenerLoadState
         let items: StoredAllHouseworkList
         let members: CohabitantMemberList
         let todayTotalCount: Int
@@ -76,6 +79,7 @@ private extension EncouragementCommentComponent {
 
     var updateTrigger: UpdateTrigger {
         .init(
+            loadState: houseworkListStore.loadState,
             items: houseworkListStore.items,
             members: members,
             todayTotalCount: todayTotalCount,

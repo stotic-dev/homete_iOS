@@ -25,6 +25,7 @@ struct EncouragementContextTest {
         let actual = EncouragementContext.make(
             allItems: [],
             members: members,
+            ownUserId: "own",
             todayTotalCount: 0,
             now: now,
             calendar: calendar
@@ -78,6 +79,7 @@ struct EncouragementContextTest {
         let actual = EncouragementContext.make(
             allItems: items,
             members: members,
+            ownUserId: "own",
             todayTotalCount: 4,
             now: now,
             calendar: calendar
@@ -114,6 +116,7 @@ struct EncouragementContextTest {
         let actual = EncouragementContext.make(
             allItems: items,
             members: members,
+            ownUserId: "own",
             todayTotalCount: 5,
             now: now,
             calendar: calendar
@@ -141,6 +144,7 @@ struct EncouragementContextTest {
         let actual = EncouragementContext.make(
             allItems: items,
             members: members,
+            ownUserId: "own",
             todayTotalCount: 1,
             now: now,
             calendar: calendar
@@ -201,6 +205,7 @@ struct EncouragementContextTest {
         let actual = EncouragementContext.make(
             allItems: items,
             members: members,
+            ownUserId: "own",
             todayTotalCount: 0,
             now: now,
             calendar: calendar
