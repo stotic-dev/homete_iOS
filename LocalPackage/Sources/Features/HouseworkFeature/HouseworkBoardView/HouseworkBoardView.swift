@@ -177,7 +177,6 @@ private extension HouseworkBoardView {
     var selection: HouseworkSelection {
         .init(
             items: houseworkBoardList.items(matching: selectedHouseworkState),
-            state: selectedHouseworkState,
             selectedIDs: selectedHouseworkIDs,
             ownUserId: loginContext.account.id
         )
@@ -281,7 +280,6 @@ private extension HouseworkBoardView {
     func bulkActionContent() -> some View {
         HouseworkBulkActionToolbarContent(
             actions: selection.availableActions,
-            isEnabled: !selection.isEmpty,
             onTap: { action in
                 Task {
                     await performBulk(action)

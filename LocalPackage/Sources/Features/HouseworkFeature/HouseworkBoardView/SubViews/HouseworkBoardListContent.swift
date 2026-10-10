@@ -96,7 +96,6 @@ private extension HouseworkBoardListContent {
     var selection: HouseworkSelection {
         .init(
             items: list.items(matching: state),
-            state: state,
             selectedIDs: selectedIDs,
             ownUserId: loginContext.account.id
         )
