@@ -19,7 +19,7 @@ struct ContributionPieChart: View {
             HStack(spacing: .zero) {
                 Text("家事達成割合", bundle: #bundle)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 DescriptionPopoverButton(
                     title: .localized("家事達成割合とは？"),

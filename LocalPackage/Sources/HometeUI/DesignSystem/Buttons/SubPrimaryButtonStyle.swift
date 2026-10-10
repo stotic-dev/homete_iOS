@@ -13,8 +13,8 @@ struct SubPrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration
-            .commonStyle()
-            .background(.primary1)
+            .commonStyle(.textOnAccent)
+            .background(.fillAccent)
             .cornerRadius(.radius16)
             .opacity(isEnabled ? 1 : 0.5)
     }

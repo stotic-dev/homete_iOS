@@ -58,7 +58,7 @@ private extension FrequentHouseworkImportView {
         VStack(spacing: .space16) {
             Image(systemName: "tray")
                 .font(.system(size: 48))
-                .foregroundStyle(.decorativeIcon)
+                .foregroundStyle(.iconDecorative)
             Text("テンプレートに家事がありません", bundle: #bundle)
                 .font(with: .headLineS)
             Text("テンプレートに家事を登録すると、ここからまとめて取り込めます。", bundle: #bundle)
@@ -89,15 +89,15 @@ private extension FrequentHouseworkImportView {
         } label: {
             HStack(spacing: .space8) {
                 Image(systemName: checkedTitles.contains(candidate.title) ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(checkedTitles.contains(candidate.title) ? Color.accent : Color.onSurfaceVariant)
+                    .foregroundStyle(checkedTitles.contains(candidate.title) ? Color.fillAccent : Color.textSecondary)
                 VStack(alignment: .leading, spacing: .space4) {
                     Text(candidate.title)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     if candidate.isAlreadyRegistered {
                         Text("登録済み", bundle: #bundle)
                             .font(with: .caption)
-                            .foregroundStyle(.onSurfaceVariant)
+                            .foregroundStyle(.textSecondary)
                     }
                 }
                 Spacer()

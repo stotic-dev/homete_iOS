@@ -29,7 +29,7 @@ struct CohabitantRegistrationInitialStateView: View {
                     .font(with: .body)
                 Text("お互いのiPhoneでWi-Fiをオンにしておいてください。同じWi-Fiにつながっていなくても登録できます。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
             }
             Spacer()
                 .frame(height: .space24)

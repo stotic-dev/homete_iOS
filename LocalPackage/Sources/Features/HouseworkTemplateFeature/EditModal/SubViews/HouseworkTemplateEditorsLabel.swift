@@ -20,10 +20,10 @@ struct HouseworkTemplateEditorsLabel: View {
             VStack(spacing: .space8) {
                 HStack(spacing: .space8) {
                     Image(systemName: "person.fill")
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                     Text("編集中: \(activeEditors.map(\.userName).joined(separator: ", "))", bundle: #bundle)
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer(minLength: .zero)
                 }
                 if !bannerDismissedInSession {

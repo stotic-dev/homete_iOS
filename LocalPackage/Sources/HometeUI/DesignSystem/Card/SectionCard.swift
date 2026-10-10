@@ -35,7 +35,7 @@ public struct SectionCard<Content: View>: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(title)
                 .font(with: .boldCaption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .padding(.horizontal, .space16)
                 .accessibilityAddTraits(.isHeader)
             card()

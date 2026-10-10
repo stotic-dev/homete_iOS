@@ -17,7 +17,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .background {
                 GeometryReader { proxy in
                     RoundedRectangle(cornerRadius: proxy.size.height / 2)
-                        .fill(.primary3)
+                        .fill(.fillAccentSubtle)
                 }
             }
             .opacity(isEnabled ? 1 : 0.5)

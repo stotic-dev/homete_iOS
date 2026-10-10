@@ -220,7 +220,7 @@ private extension RegisterHouseworkView {
         } label: {
             Image(systemName: "list.bullet")
         }
-        .foregroundStyle(.onSurface)
+        .foregroundStyle(.textPrimary)
         .accessibilityLabel(.localized("いつもの家事を管理"))
     }
 

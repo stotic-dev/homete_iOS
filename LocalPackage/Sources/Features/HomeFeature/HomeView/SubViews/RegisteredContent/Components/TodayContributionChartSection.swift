@@ -57,7 +57,7 @@ private extension TodayContributionChartSection {
         VStack(alignment: .leading, spacing: .space8) {
             Text(title)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Chart(contributions) { item in
                 let (amount, amountText) = value(item)
                 SectorMark(

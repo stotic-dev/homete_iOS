@@ -22,13 +22,13 @@ public struct LoadErrorView: View {
             VStack(spacing: .space16) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(.decorativeIcon)
+                    .foregroundStyle(.iconDecorative)
                 Text("うまく読み込めませんでした", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
                 Text(message)
                     .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.center)
             }
             Button {

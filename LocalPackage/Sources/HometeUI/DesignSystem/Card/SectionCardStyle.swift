@@ -16,7 +16,7 @@ public extension View {
         padding(.space16)
             .background {
                 RoundedRectangle(radius: .radius16)
-                    .fill(.subSurface)
+                    .fill(.backgroundCard)
                     .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
             }
     }
@@ -29,7 +29,7 @@ public extension View {
         padding(.space16)
             .background {
                 RoundedRectangle(radius: .radius16)
-                    .fill(.subSurface)
+                    .fill(.backgroundCard)
                     .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
                     .onTapGesture(perform: onTapBackground)
             }

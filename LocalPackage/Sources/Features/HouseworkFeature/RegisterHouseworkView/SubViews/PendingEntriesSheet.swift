@@ -42,11 +42,11 @@ private extension PendingEntriesSheet {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(entry.title)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 if let recurrence = entry.recurrence {
                     Text("テンプレートに登録（\(recurrence.scheduleLabel)）", bundle: #bundle)
                         .font(with: .caption)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                 }
             }
             Spacer()
@@ -55,7 +55,7 @@ private extension PendingEntriesSheet {
                 onTapRemove(entry)
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(.localized("\(entry.title)を取り消す"))

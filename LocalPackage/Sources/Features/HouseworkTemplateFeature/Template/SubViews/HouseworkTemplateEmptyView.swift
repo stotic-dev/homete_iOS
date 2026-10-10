@@ -19,13 +19,13 @@ struct HouseworkTemplateEmptyView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
-                .foregroundStyle(.decorativeIcon)
+                .foregroundStyle(.iconDecorative)
             VStack(spacing: .space8) {
                 Text("テンプレートが未登録です", bundle: #bundle)
                     .font(with: .headLineM)
                 Text("週単位で繰り返す家事を登録できます", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .multilineTextAlignment(.center)
             }
             Button(.localized("テンプレートを作成する")) {

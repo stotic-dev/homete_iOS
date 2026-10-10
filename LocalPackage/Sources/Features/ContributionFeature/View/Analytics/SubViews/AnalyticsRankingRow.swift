@@ -22,7 +22,7 @@ struct AnalyticsRankingRow: View {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(item.userName)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 if item.isMe {
                     Text("あなた", bundle: #bundle)
                         .font(with: .caption)
@@ -33,7 +33,7 @@ struct AnalyticsRankingRow: View {
             VStack(alignment: .trailing, spacing: .space4) {
                 Text(totalText)
                     .font(with: .headLineM)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Text(averageText)
                     .font(with: .caption)
                     .foregroundStyle(.secondary)

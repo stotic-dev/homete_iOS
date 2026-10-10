@@ -17,7 +17,7 @@ struct SummaryPointBarChart: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("月間ポイント比較", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .padding(.top, .space16)
                 .padding(.leading, .space16)
             Chart(summaries.items) { item in
@@ -25,7 +25,7 @@ struct SummaryPointBarChart: View {
                     x: .value(.localized("ユーザー"), item.userName),
                     y: .value(.localized("ポイント"), item.monthlyPoint.value)
                 )
-                .foregroundStyle(item.isMe ? Color.accent : Color.secondary)
+                .foregroundStyle(item.isMe ? Color.fillAccent : Color.secondary)
                 .annotation(position: .top) {
                     Text("\(item.monthlyPoint.value)pt")
                         .font(with: .caption)

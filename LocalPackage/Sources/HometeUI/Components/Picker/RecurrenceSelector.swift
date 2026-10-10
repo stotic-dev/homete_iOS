@@ -40,7 +40,7 @@ public struct RecurrenceSelector: View {
             HStack(spacing: .space8) {
                 Text("くり返し", bundle: #bundle)
                     .font(with: titleFont)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 Picker(.localized("くり返し"), selection: $input.kind) {
                     ForEach(kinds, id: \.self) { kind in
@@ -55,7 +55,7 @@ public struct RecurrenceSelector: View {
             }
         }
         // メニューを、パッケージ内のPreviewでもアプリと同じアクセントカラーで表示する
-        .tint(.accent)
+        .tint(.textAccent)
     }
 
 }
@@ -83,7 +83,7 @@ private extension RecurrenceSelector {
             HStack(spacing: .space4) {
                 Text("毎月", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Picker(.localized("日付"), selection: $input.dayOfMonth) {
                     ForEach(1 ... 31, id: \.self) { day in
                         Text("\(day)日", bundle: #bundle)
@@ -95,7 +95,7 @@ private extension RecurrenceSelector {
             if input.dayOfMonth >= 29 {
                 Text("\(input.dayOfMonth)日がない月は、月末に表示されます", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
             }
         }
     }

@@ -46,12 +46,12 @@ private extension EncouragementCommentCard {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "sparkles")
                 .font(.system(size: 20))
-                .foregroundStyle(.accent)
+                .foregroundStyle(.fillAccent)
                 .accessibilityHidden(true)
             // 生成を待つ間は、同じくらいの長さの文で枠だけを出し、カードの高さが変わらないようにする
             Text(comment?.text ?? "今日もおうちのこと、おつかれさまです。ゆっくり休んでくださいね")
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .redacted(reason: comment == nil ? .placeholder : [])
                 // 枠だけを出している間に、仮の文をVoiceOverで読み上げないようにする
@@ -74,12 +74,12 @@ private extension EncouragementCommentCard {
                 Image(systemName: "info.circle")
                     .font(with: .caption)
             }
-            .foregroundStyle(.accent)
+            .foregroundStyle(.textAccent)
             .padding(.horizontal, .space8)
             .padding(.vertical, .space4)
             .overlay {
                 Capsule()
-                    .stroke(.accent)
+                    .stroke(.fillAccent)
             }
         }
         .accessibilityLabel("AIが作成したコメントについて")
@@ -97,11 +97,11 @@ private extension EncouragementCommentCard {
             HStack(alignment: .top, spacing: .space8) {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 20))
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(.fillAccent)
                     .accessibilityHidden(true)
                 Text(thanksPromptMessage(thanksPrompt))
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Button("ありがとうを伝える") {
@@ -136,17 +136,17 @@ struct EncouragementAICommentPopover: View {
             VStack(alignment: .leading, spacing: .space8) {
                 Text("AIが作成したコメントです")
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Text("家事の記録をもとに、端末内のAIが作成しました。記録が端末の外へ送られることはありません。")
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Divider()
             if isRated {
                 Text("ご意見ありがとうございます。今後のコメントづくりの参考にします")
                     .font(with: .caption)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 ratingContent()
@@ -164,7 +164,7 @@ private extension EncouragementAICommentPopover {
         VStack(alignment: .leading, spacing: .space8) {
             Text("このコメントはいかがでしたか？")
                 .font(with: .caption)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             HStack(spacing: .space8) {
                 Button {
                     onRate(.good)
@@ -180,7 +180,7 @@ private extension EncouragementAICommentPopover {
                 }
             }
             .buttonStyle(.bordered)
-            .tint(.accent)
+            .tint(.fillAccent)
             .font(with: .caption)
         }
     }

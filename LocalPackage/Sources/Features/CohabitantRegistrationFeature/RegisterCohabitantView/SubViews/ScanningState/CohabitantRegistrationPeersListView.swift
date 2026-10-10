@@ -37,8 +37,8 @@ struct CohabitantRegistrationPeersListView: View {
                             Image(systemName: "iphone")
                                 .frame(width: 24, height: 24)
                                 .padding(.space8)
-                                .foregroundStyle(.onSurface)
-                                .background(.primary3)
+                                .foregroundStyle(.textPrimary)
+                                .background(.fillAccentSubtle)
                                 .cornerRadius(.radius8)
                             VStack(alignment: .leading, spacing: .space4) {
                                 Text(row.displayName)
@@ -47,7 +47,7 @@ struct CohabitantRegistrationPeersListView: View {
                                     // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
                                     Label(.localized("登録を開始して、あなたを待っています"), systemImage: "checkmark.circle.fill")
                                         .font(with: .caption)
-                                        .foregroundStyle(.accent)
+                                        .foregroundStyle(.textAccent)
                                 }
                             }
                             Spacer()
@@ -59,7 +59,7 @@ struct CohabitantRegistrationPeersListView: View {
             if isConfirmed {
                 Label(.localized("他のメンバーが登録を開始するのを待っています"), systemImage: "hourglass")
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
             }
             Button {
                 isPresentingConfirmReadyRegistrationAlert = true

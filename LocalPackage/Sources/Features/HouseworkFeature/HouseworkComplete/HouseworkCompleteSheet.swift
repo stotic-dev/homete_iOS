@@ -111,7 +111,7 @@ private extension HouseworkCompleteView {
             HStack(spacing: .space4) {
                 Text("頑張り度", bundle: #bundle)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 DescriptionPopoverButton(
                     title: .localized("頑張り度とは？"),
                     message: .localized("""
@@ -144,7 +144,7 @@ private extension HouseworkCompleteView {
                 await tappedCompleteButton()
             }
         }
-        .foregroundStyle(.onPrimary1)
+        .foregroundStyle(.textOnAccent)
         .disabled(allocation.validationError != nil)
     }
 

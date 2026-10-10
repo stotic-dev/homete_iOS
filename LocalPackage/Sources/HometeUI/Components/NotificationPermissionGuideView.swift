@@ -32,13 +32,13 @@ public struct NotificationPermissionGuideView: View {
             VStack(spacing: .space16) {
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(.decorativeIcon)
+                    .foregroundStyle(.iconDecorative)
                 Text("通知を受け取りませんか？", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
                 Text("パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.center)
             }
             Spacer(minLength: .space24)
@@ -55,7 +55,7 @@ public struct NotificationPermissionGuideView: View {
                     onTapSkipButton()
                 }
                 .font(with: .body)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
             }
             Spacer()
                 .frame(height: .space24)

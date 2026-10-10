@@ -131,14 +131,14 @@ private extension HouseBoardListRow {
     func memoIndicator() -> some View {
         Image(systemName: "note.text")
             .font(with: .caption)
-            .foregroundStyle(.onSurfaceVariant)
+            .foregroundStyle(.textSecondary)
             .accessibilityLabel(.localized("メモあり"))
     }
 
     func executorLabel(_ label: String) -> some View {
         Label(label, systemImage: "person.fill")
             .font(with: .boldCaption)
-            .foregroundStyle(.onSubSurface)
+            .foregroundStyle(.textPrimary)
     }
 
     func thanksStatusLabel(_ status: HouseworkThanksStatus) -> some View {
@@ -168,9 +168,9 @@ private extension HouseBoardListRow {
     func thanksForegroundStyle(_ status: HouseworkThanksStatus) -> Color {
         switch status {
         case .notSent, .received:
-            .accent
+            .fillAccent
         case .sent:
-            .thanksHeart
+            .fillThanks
         }
     }
 

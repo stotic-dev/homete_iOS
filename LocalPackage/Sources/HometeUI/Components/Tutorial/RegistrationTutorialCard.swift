@@ -38,14 +38,14 @@ public struct RegistrationTutorialCard: View {
                 VStack(alignment: .leading, spacing: .space8) {
                     Text(title)
                         .font(with: .headLineS)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Text(message)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                     Label(location, systemImage: "hand.point.up.left")
                         .font(with: .caption)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -69,7 +69,7 @@ private extension RegistrationTutorialCard {
         HStack {
             Text(verbatim: "\(step.index + 1) / \(RegistrationTutorialStep.allCases.count)")
                 .font(with: .boldCaption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .accessibilityLabel(
                     .localized(
                         "\(RegistrationTutorialStep.allCases.count)つ中\(step.index + 1)つ目",
@@ -79,7 +79,7 @@ private extension RegistrationTutorialCard {
             Spacer()
             Button(.localized("閉じる"), action: onTapClose)
                 .font(with: .caption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
         }
     }
 
@@ -103,7 +103,7 @@ private extension RegistrationTutorialCard {
             .frame(width: .space48, height: .space48)
             .background {
                 Circle()
-                    .fill(.surface)
+                    .fill(.backgroundScreen)
             }
             .accessibilityHidden(true)
     }
@@ -147,10 +147,10 @@ private extension RegistrationTutorialCard {
     var iconForegroundStyle: Color {
         switch step {
         case .thanks:
-            .thanksHeart
+            .fillThanks
 
         case .dashboard, .housework, .houseworkComplete, .bulkAction, .houseworkTemplate:
-            .primary3
+            .textAccent
         }
     }
 

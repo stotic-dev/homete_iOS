@@ -18,7 +18,7 @@ struct FrequentHouseworkEmptyView: View {
         VStack(spacing: .space24) {
             Image(systemName: "star.square.on.square")
                 .font(.system(size: 48))
-                .foregroundStyle(.decorativeIcon)
+                .foregroundStyle(.iconDecorative)
             VStack(spacing: .space8) {
                 Text("いつもの家事を登録しませんか？", bundle: #bundle)
                     .font(with: .headLineS)

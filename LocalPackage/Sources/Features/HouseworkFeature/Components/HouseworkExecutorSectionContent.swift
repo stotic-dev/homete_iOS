@@ -29,11 +29,11 @@ struct HouseworkExecutorSectionContent: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("担当者", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             if let caption {
                 Text(caption)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             HouseworkExecutorSelectionContent(rows: executorRows) { userId in
                 allocation.toggle(userId)
@@ -41,7 +41,7 @@ struct HouseworkExecutorSectionContent: View {
             if let executorLimitMessage {
                 Text(executorLimitMessage)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             if allocation.canAdjustPercentage {
                 allocationDisclosure()
@@ -49,7 +49,7 @@ struct HouseworkExecutorSectionContent: View {
             if let validationMessage {
                 Text(validationMessage)
                     .font(with: .caption)
-                    .foregroundStyle(.alert)
+                    .foregroundStyle(.textDestructive)
             }
         }
     }
@@ -82,7 +82,7 @@ private extension HouseworkExecutorSectionContent {
             }
         }
         .font(with: .body)
-        .tint(.onSurface)
+        .tint(.textPrimary)
     }
 
 }

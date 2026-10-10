@@ -138,7 +138,7 @@ struct HouseworkMemoEditView: View {
             NavigationBarPrimaryActionButton(systemImage: "checkmark") {
                 onTapSave()
             }
-            .foregroundStyle(.onPrimary1)
+            .foregroundStyle(.textOnAccent)
             .disabled(!draft.canSave(limitPolicy))
         }
         .onChange(of: draft.checklist.count) { oldCount, newCount in
@@ -190,7 +190,7 @@ private extension HouseworkMemoEditView {
     func checklistItemRow(_ item: HouseworkMemoDraft.Item) -> some View {
         HStack(spacing: .space8) {
             Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .accessibilityHidden(true)
             TextField(text: titleBinding(of: item.id)) {
                 Text("項目を入力", bundle: #bundle)
@@ -206,7 +206,7 @@ private extension HouseworkMemoEditView {
                 draft.removeItem(id: item.id)
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             .buttonStyle(.borderless)
             .accessibilityLabel(deleteAccessibilityLabel(item))
@@ -217,7 +217,7 @@ private extension HouseworkMemoEditView {
         VStack(alignment: .trailing, spacing: .space8) {
             Text("\(draft.memo.characterCount) / \(limitPolicy.maxCharacterCount.formatted())文字", bundle: #bundle)
                 .font(with: .caption)
-                .foregroundStyle(draft.isOverLimit(limitPolicy) ? .alert : .onSurfaceVariant)
+                .foregroundStyle(draft.isOverLimit(limitPolicy) ? .textDestructive : .textSecondary)
                 .monospacedDigit()
             if draft.isOverLimit(limitPolicy), limitPolicy == .free {
                 upgradeGuide()
@@ -230,13 +230,13 @@ private extension HouseworkMemoEditView {
         VStack(alignment: .leading, spacing: .space8) {
             Text("無料プランでは、メモを\(HouseworkMemoLimitPolicy.freeMaxCharacterCount)文字まで書けます", bundle: #bundle)
                 .font(with: .boldCaption)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Text(
                 "プレミアムプランなら、\(HouseworkMemoLimitPolicy.premiumMaxCharacterCount.formatted())文字まで書けます。",
                 bundle: #bundle
             )
             .font(with: .caption)
-            .foregroundStyle(.onSurfaceVariant)
+            .foregroundStyle(.textSecondary)
             Button(.localized("プレミアムプランを見る")) {
                 onTapUpgrade()
             }
@@ -246,7 +246,7 @@ private extension HouseworkMemoEditView {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             RoundedRectangle(radius: .radius8)
-                .fill(.subSurface)
+                .fill(.backgroundCard)
         }
     }
 

@@ -14,7 +14,7 @@ struct LoadingIndicator: View {
 
     var body: some View {
         ZStack {
-            Color.loadingBg
+            Color.overlayLoading
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea()
             Indicator()

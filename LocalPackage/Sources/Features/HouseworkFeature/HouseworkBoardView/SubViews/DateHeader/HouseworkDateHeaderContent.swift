@@ -38,7 +38,7 @@ struct HouseworkDateHeaderContent: View {
         VStack(alignment: .leading, spacing: .space4) {
             Text(yearMonthText)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, .space8)
             ScrollView(.horizontal, showsIndicators: false) {
                 // 保存期間に応じて日付セルが数十〜数百件になるためLazyHStackで遅延生成する

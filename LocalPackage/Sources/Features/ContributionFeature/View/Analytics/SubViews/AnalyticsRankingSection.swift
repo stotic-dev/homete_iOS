@@ -24,7 +24,7 @@ struct AnalyticsRankingSection: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text("メンバー別ランキング", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .padding(.horizontal, .space16)
 
             Picker(.localized("ランキング種別"), selection: $selectedCriterion) {

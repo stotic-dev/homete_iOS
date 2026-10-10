@@ -15,26 +15,26 @@ struct HouseworkTemplateConflictBanner: View {
     var body: some View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(.alert)
+                .foregroundStyle(.fillDestructive)
             Text("他のユーザーがテンプレートを編集中です。保存時にコンフリクトすると編集内容が消える場合があります。", bundle: #bundle)
                 .font(with: .caption)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             Button {
                 onClose()
             } label: {
                 Image(systemName: "xmark")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
             }
             .buttonStyle(.plain)
         }
         .padding(.space16)
         .background {
             RoundedRectangle(radius: .radius8)
-                .fill(.subSurface)
+                .fill(.backgroundCard)
                 .overlay {
                     RoundedRectangle(radius: .radius8)
-                        .stroke(.alert, lineWidth: 1)
+                        .stroke(.fillDestructive, lineWidth: 1)
                 }
         }
     }

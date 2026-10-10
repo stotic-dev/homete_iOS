@@ -32,7 +32,7 @@ struct HouseworkExecutorAllocationContent: View {
                 HStack {
                     Text(entry.userName)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer()
                     PercentageWheelPickerField(
                         percentage: percentageBinding(entry),

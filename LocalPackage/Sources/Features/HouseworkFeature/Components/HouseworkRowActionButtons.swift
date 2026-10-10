@@ -44,7 +44,7 @@ private extension HouseworkRowActionButtons {
         Button(action: onTapComplete) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 22))
-                .foregroundStyle(.accent)
+                .foregroundStyle(.fillAccent)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
@@ -58,7 +58,7 @@ private extension HouseworkRowActionButtons {
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 22))
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }

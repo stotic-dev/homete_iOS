@@ -94,12 +94,12 @@ private extension FrequentHouseworkPicker {
         } label: {
             Text(name)
                 .font(with: .caption)
-                .foregroundStyle(isSelected ? .onPrimary1 : .onSurface)
+                .foregroundStyle(isSelected ? .textOnAccent : .textPrimary)
                 .padding(.horizontal, .space16)
                 .frame(minHeight: 32)
                 .background {
                     RoundedRectangle(radius: .radius8)
-                        .fill(isSelected ? Color.primary1 : Color.primary3)
+                        .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
                 }
         }
         .buttonStyle(.plain)
