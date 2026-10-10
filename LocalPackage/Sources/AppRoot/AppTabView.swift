@@ -85,6 +85,7 @@ struct AppTabView: View {
                 frequentHouseworkStore?.context ?? .init()
             )
             .environment(frequentHouseworkStore)
+            .appReviewRequest(houseworkItems: houseworkListStore?.items)
     }
 
 }
