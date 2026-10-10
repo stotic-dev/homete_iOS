@@ -10,13 +10,21 @@ import Foundation
 public struct HouseworkClient: Sendable {
 
     public let insertOrUpdateItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
-    /// 家事をまとめて登録する
+    /// 家事をまとめて作成または上書きする
     /// - Note: `WriteBatch`で一括書き込みし、全件成功か全件失敗かのどちらかにする
-    public let insertItems: @Sendable (_ items: [HouseworkItem], _ cohabitantId: String) async throws -> Void
+    public let insertOrUpdateItems: @Sendable (_ items: [HouseworkItem], _ cohabitantId: String) async throws -> Void
     public let removeItem: @Sendable (_ item: HouseworkItem, _ cohabitantId: String) async throws -> Void
     /// 家事に送ったありがとうを記録する（送った人の分だけを書き換え、ほかの人の記録には触れない）
     public let upsertThanks: @Sendable (
         _ houseworkId: String,
+        _ senderId: String,
+        _ thanks: HouseworkThanks,
+        _ cohabitantId: String
+    ) async throws -> Void
+    /// 複数の家事に、同じありがとうをまとめて記録する（送った人の分だけを書き換え、ほかの人の記録には触れない）
+    /// - Note: `WriteBatch`で一括書き込みし、全件成功か全件失敗かのどちらかにする
+    public let upsertThanksBatch: @Sendable (
+        _ houseworkIds: [String],
         _ senderId: String,
         _ thanks: HouseworkThanks,
         _ cohabitantId: String
@@ -51,7 +59,7 @@ public extension HouseworkClient {
             _ item: HouseworkItem,
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
-        insertItemsHandler: @escaping @Sendable (
+        insertOrUpdateItemsHandler: @escaping @Sendable (
             _ items: [HouseworkItem],
             _ cohabitantId: String
         ) async throws -> Void = { _, _ in },
@@ -61,6 +69,12 @@ public extension HouseworkClient {
         ) async throws -> Void = { _, _ in },
         upsertThanksHandler: @escaping @Sendable (
             _ houseworkId: String,
+            _ senderId: String,
+            _ thanks: HouseworkThanks,
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _, _, _ in },
+        upsertThanksBatchHandler: @escaping @Sendable (
+            _ houseworkIds: [String],
             _ senderId: String,
             _ thanks: HouseworkThanks,
             _ cohabitantId: String
@@ -85,9 +99,10 @@ public extension HouseworkClient {
         syncRetentionHandler: @escaping @Sendable (_ cohabitantId: String) async throws -> Void = { _ in }
     ) {
         insertOrUpdateItem = insertOrUpdateItemHandler
-        insertItems = insertItemsHandler
+        insertOrUpdateItems = insertOrUpdateItemsHandler
         removeItem = removeItemHandler
         upsertThanks = upsertThanksHandler
+        upsertThanksBatch = upsertThanksBatchHandler
         updateMemo = updateMemoHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler

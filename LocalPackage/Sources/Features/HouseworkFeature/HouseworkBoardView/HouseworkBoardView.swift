@@ -52,10 +52,11 @@ struct HouseworkBoardView<RowMenu: View>: View {
             }
         }
         .trailingToolbarItem {
-            if isSelecting {
-                bulkActionContent()
-            } else {
+            if !isSelecting {
                 defaultToolbarContent()
+            } else if !selection.availableActions.isEmpty {
+                // 中身が空でもツールバーの項目を置くと背景だけが残るため、押せるボタンがないあいだは何も置かない
+                bulkActionContent()
             }
         }
         .onChange(of: selectedHouseworkState) {
@@ -79,7 +80,6 @@ private extension HouseworkBoardView {
     var selection: HouseworkSelection {
         .init(
             items: houseworkBoardList.items(matching: selectedHouseworkState),
-            state: selectedHouseworkState,
             selectedIDs: selectedHouseworkIDs,
             ownUserId: ownUserId
         )
@@ -120,7 +120,8 @@ private extension HouseworkBoardView {
                             bottomContentInset: bottomSafeAreaInset,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
-                            selectedIDs: $selectedHouseworkIDs,
+                            // 選択に合わせて一括操作のボタンや選べない行の表示が切り替わるので、急に変わらないようにする
+                            selectedIDs: $selectedHouseworkIDs.animation(),
                             onCreateTapped: onTapAdd,
                             onTapItem: onTapItem,
                             onTapComplete: onTapComplete,
@@ -167,7 +168,6 @@ private extension HouseworkBoardView {
     func bulkActionContent() -> some View {
         HouseworkBulkActionToolbarContent(
             actions: selection.availableActions,
-            isEnabled: !selection.isEmpty,
             onTap: onTapBulkAction
         )
     }

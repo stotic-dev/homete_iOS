@@ -78,7 +78,7 @@ extension HouseworkQuickAction {
 
     /// 状態のみに応じたクイックアクションを返す
     ///
-    /// 一括操作バーで、まだ何も選択されていないときに表示する既定のボタンを決めるために使う。
+    /// 未完了の家事だけを並べる一覧のように、状態だけで出せるアクションが決まる画面で使う。
     static func actions(for state: HouseworkState) -> [Self] {
         switch state {
         case .incomplete:

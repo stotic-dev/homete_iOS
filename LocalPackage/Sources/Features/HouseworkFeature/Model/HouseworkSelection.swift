@@ -18,8 +18,6 @@ struct HouseworkSelection: Equatable {
 
     /// 選択対象となるリストの全項目
     let items: [HouseworkBoardItem]
-    /// リストが表示している家事のステータス（タブ1つにつき1ステータス）
-    let state: HouseworkState
     /// 選択中の家事のID
     let selectedIDs: Set<String>
     /// ログイン中のユーザーID
@@ -30,22 +28,13 @@ struct HouseworkSelection: Equatable {
         items.filter { selectedIDs.contains($0.id) }
     }
 
-    /// 何も選択されていないかどうか
-    var isEmpty: Bool {
-        selectedItems.isEmpty
-    }
-
     /// 一括操作バーに並べるアクション
     ///
     /// 同じステータスでも実施者によって行えるアクションは変わる（完了済みでも自分が終えた家事には
     /// ありがとうを送れない）。ボタンをタブのステータスから決め打ちすると、選択内容によっては
     /// 実行できないボタンだけが非活性で並ぶため、選択中の家事から実際に行えるアクションを集める。
-    /// まだ何も選択されていないうちは、タブのステータスから決まる既定のボタンを返す。
+    /// まだ何も選択されていないうちは押せるボタンが無いので、非活性で並べることもせず空にする。
     var availableActions: [HouseworkQuickAction] {
-        guard !isEmpty else {
-            return HouseworkQuickAction.actions(for: state)
-        }
-
         let available = Set(selectedItems.flatMap(actions(for:)))
         return HouseworkQuickAction.allCases.filter { available.contains($0) && $0.isAvailableInBulk }
     }

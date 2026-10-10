@@ -121,6 +121,9 @@
         }
       }
     },
+    "グループ登録直後のチュートリアルを表示" : {
+      "shouldTranslate" : false
+    },
     "サブスクリプションを管理" : {
       "localizations" : {
         "en" : {
@@ -145,6 +148,9 @@
       "shouldTranslate" : false
     },
     "ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。" : {
+      "shouldTranslate" : false
+    },
+    "チュートリアル" : {
       "shouldTranslate" : false
     },
     "デバッグメニュー" : {
@@ -447,6 +453,9 @@
           }
         }
       }
+    },
+    "設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。" : {
+      "shouldTranslate" : false
     },
     "課金" : {
       "shouldTranslate" : false

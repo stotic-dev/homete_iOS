@@ -27,6 +27,7 @@ struct AppTabView: View {
     @State var houseworkListStore: HouseworkListStore?
     @State var houseworkTemplateListStore: HouseworkTemplateListStore?
     @State var frequentHouseworkStore: FrequentHouseworkStore?
+    @State var encouragementCommentStore: EncouragementCommentStore?
     @State var type: TabType = .dashboard
 
     var handler: Binding<TabType> {
@@ -192,7 +193,8 @@ private extension AppTabView {
         HomeView.make(
             contributionStore: contributionStore,
             houseworkTemplateListStore: houseworkTemplateListStore,
-            houseworkListStore: houseworkListStore
+            houseworkListStore: houseworkListStore,
+            encouragementCommentStore: encouragementCommentStore
         )
         .excludedFromTutorialSpotlight()
         .overlay {
@@ -331,6 +333,7 @@ private extension AppTabView {
         guard loginContext.hasCohabitant else {
             contributionStore = nil
             frequentHouseworkStore = nil
+            encouragementCommentStore = nil
             return
         }
         contributionStore = .init(
@@ -352,6 +355,11 @@ private extension AppTabView {
         frequentHouseworkStore = .init(
             frequentHouseworkClient: appDependencies.frequentHouseworkClient,
             analyticsClient: appDependencies.analyticsClient
+        )
+        encouragementCommentStore = .init(
+            houseworkManager: appDependencies.houseworkManager,
+            encouragementCommentClient: appDependencies.encouragementCommentClient,
+            cacheClient: appDependencies.encouragementCommentCacheClient
         )
     }
 

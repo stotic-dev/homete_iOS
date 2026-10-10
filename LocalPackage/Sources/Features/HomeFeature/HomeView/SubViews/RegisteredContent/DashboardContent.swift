@@ -12,7 +12,12 @@ import SwiftUI
 /// セクションの並びと見た目だけを持ち、各セクションの中身は呼び出し側から受け取る。
 /// 本番ではStoreにつながったセクションを、チュートリアルではサンプルを渡したセクションを並べることで、
 /// レイアウトの変更がチュートリアルにもそのまま反映されるようにする。
-struct DashboardContent<TodaySummary: View, Advertisement: View, ContributionSummary: View>: View {
+struct DashboardContent<
+    EncouragementComment: View,
+    TodaySummary: View,
+    Advertisement: View,
+    ContributionSummary: View
+>: View {
 
     /// 購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
@@ -24,6 +29,8 @@ struct DashboardContent<TodaySummary: View, Advertisement: View, ContributionSum
     let onTapRetry: () -> Void
     let onTapRemoveAdsPromotion: () -> Void
     let onTapTemplateBanner: () -> Void
+    /// ねぎらいのコメントと感謝の促しのカード。出さない場合は`EmptyView`を渡す
+    @ViewBuilder let encouragementComment: () -> EncouragementComment
     @ViewBuilder let todaySummary: () -> TodaySummary
     @ViewBuilder let advertisement: () -> Advertisement
     @ViewBuilder let contributionSummary: () -> ContributionSummary
@@ -35,14 +42,17 @@ struct DashboardContent<TodaySummary: View, Advertisement: View, ContributionSum
             } else {
                 ScrollView {
                     VStack(spacing: .space24) {
+                        encouragementComment()
+                            .sectionCardStyle()
                         todaySummary()
                             .sectionCardStyle()
                             // カードの背景ごと切り抜くため、見た目を付けた後に付ける
                             .tutorialSpotlightTarget(.dashboardTodaySummary)
                         if showsAdvertisement {
-                            VStack(spacing: .space8) {
+                            // AdMobのガイドラインに沿って、誤タップを防ぐためにタップできるリンクを広告から離す
+                            VStack(spacing: .space16) {
+                                // 高さは届いた広告のサイズから決まる（インライン型アダプティブバナー）
                                 advertisement()
-                                    .frame(height: 150)
                                 RemoveAdsPromotionLink(action: onTapRemoveAdsPromotion)
                             }
                         }
