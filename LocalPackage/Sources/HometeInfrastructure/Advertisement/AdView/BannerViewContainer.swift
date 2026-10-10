@@ -47,9 +47,13 @@ public struct BannerViewContainer: View {
                             loadedInlineHeight = height
                         }
                     }
+                    // 高さ0の枠では広告を読み込めない（Invalid ad width or height）ので、広告ビュー自体には
+                    // 要求したサイズの枠を渡し、見せる範囲だけを確保した高さに切り詰める
+                    .frame(width: width, height: bannerViewHeight(width: width))
                     // 確保した枠からはみ出して、周りのボタンやコンテンツに広告が重ならないようにする
-                    .frame(width: width, height: height)
+                    .frame(height: height, alignment: .top)
                     .clipped()
+                    .allowsHitTesting(height > 0)
                     // 回転などで幅が変わったら、新しい幅に合うサイズで広告を読み込み直す
                     .id(width)
                 }
@@ -60,6 +64,7 @@ public struct BannerViewContainer: View {
 
 private extension BannerViewContainer {
 
+    /// 画面上に確保する高さ
     var height: CGFloat {
         guard let width, width > 0 else { return 0 }
         switch type.layout {
@@ -76,6 +81,23 @@ private extension BannerViewContainer {
             // 広告が届くまで高さは決まらないので、届くまでは場所を取らない
             return loadedInlineHeight
         }
+    }
+
+    /// 広告ビュー自体に渡す高さ
+    func bannerViewHeight(width: CGFloat) -> CGFloat {
+        #if canImport(GoogleMobileAds)
+        let requestedHeight = type.adSize(width: width).size.height
+        switch type.layout {
+        case .anchored:
+            return requestedHeight
+
+        case .inline:
+            // 届くまでは上限の高さで読み込み、届いたら実際の広告の高さに合わせる
+            return loadedInlineHeight > 0 ? loadedInlineHeight : requestedHeight
+        }
+        #else
+        return 0
+        #endif
     }
 
 }
