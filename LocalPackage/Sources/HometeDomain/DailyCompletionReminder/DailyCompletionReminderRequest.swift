@@ -13,14 +13,25 @@ public struct DailyCompletionReminderRequest: Equatable, Sendable {
     public let identifier: String
     /// 通知を出す日時（年月日時分）
     public let fireDateComponents: DateComponents
-    public let title: String
-    public let body: String
+    /// 本文の末尾に載せる、予約したきっかけと時刻（動作確認用）。通常は`nil`
+    public let debugNote: String?
 
-    public init(identifier: String, fireDateComponents: DateComponents, title: String, body: String) {
+    public init(identifier: String, fireDateComponents: DateComponents, debugNote: String? = nil) {
         self.identifier = identifier
         self.fireDateComponents = fireDateComponents
-        self.title = title
-        self.body = body
+        self.debugNote = debugNote
+    }
+
+    /// 通知のタイトル
+    public static let title: LocalizedStringResource = .localized("今日もおつかれさまでした")
+    /// 通知の本文（`debugNote`を除く）
+    public static let body: LocalizedStringResource = .localized("今日完了した家事があります。ふりかえって、感謝を伝え合いましょう")
+
+    /// 通知の本文
+    /// - Parameter locale: 文面の言語。`nil`ならアプリが表示している言語
+    public func body(locale: Locale? = nil) -> String {
+        let body = Self.body.resolved(locale: locale)
+        return debugNote.map { body + "\n" + $0 } ?? body
     }
 
 }
@@ -71,14 +82,12 @@ public extension DailyCompletionReminderRequest {
               fireDate > now else { return nil }
 
         let dayIdentifier = identifier(for: day, calendar: calendar)
-        let body = "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
         return .init(
             identifier: allowsMultiplePerDay
                 ? "\(dayIdentifier)\(multiplePerDaySeparator)\(Int(now.timeIntervalSince1970))"
                 : dayIdentifier,
             fireDateComponents: components,
-            title: "今日もおつかれさまでした",
-            body: debugTrigger.map { body + "\n" + debugNote(trigger: $0, now: now, calendar: calendar) } ?? body
+            debugNote: debugTrigger.map { debugNote(trigger: $0, now: now, calendar: calendar) }
         )
     }
 
@@ -90,6 +99,7 @@ private extension DailyCompletionReminderRequest {
     static let multiplePerDaySeparator = "#"
 
     /// 予約したきっかけと時刻を表す一文（例: `[DEBUG] 通知拡張 / 14:03予約`）
+    /// - Note: 開発者が動作確認に使うだけなので翻訳しない
     static func debugNote(trigger: DailyCompletionReminderTrigger, now: Date, calendar: Calendar) -> String {
         let components = calendar.dateComponents([.hour, .minute], from: now)
         let time = String(format: "%02d:%02d", components.hour ?? .zero, components.minute ?? .zero)

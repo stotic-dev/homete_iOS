@@ -1430,9 +1430,7 @@ extension HouseworkListStoreTest.DailyCompletionReminderCase {
         ]
         let expected = DailyCompletionReminderRequest(
             identifier: "dailyCompletionReminder-2026-9-25",
-            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0),
-            title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0)
         )
         // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
         let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
