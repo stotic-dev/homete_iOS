@@ -28,7 +28,7 @@ ADR-0019で前景と面を分けたが、`primary2`が`PointLabel`の地と`Hous
   * アイコンを作り直さずに済み、キャラ自体が「ごほうび」なので、完了やポイントの演出と意味がつながる
 * イラストはClaudeが制作する（外部に依頼しない）。素材は`doc/design/renewal/character/`に置き、`generate_homette.py`から生成する
   * 表情・ポーズは9種（`homette_normal` / `praise` / `thanks` / `rest` / `cheer` / `puzzled` / `wave` / `holdHeart` / `point`）
-  * アプリには`pdf/`のベクターPDFを`Image.xcassets`に入れて使う（Preserve Vector Data、Single Scale）
+  * アプリには`heic/`のHEICを@2x / @3xで`Image.xcassets`に入れる（Preserve Vector Data無効、Individual Scales、Compressionは既定）。ほめっとは決まった大きさで表示して拡大しないため、ベクターで入れてもビルド時にビットマップが生成されて大きくなるだけになる（理由の詳細は素材のREADME）
 * イラストの色はセマンティックトークンに含めず、素材に焼き込む。ライト・ダークで同じ色を使う（値は素材のREADME）
 * 出す場所と出さない場所を分ける
   * 出す: 空状態、家事の完了、ありがとうの受信・送信、ログイン、オンボーディング、パートナー登録の完了、ローンチ画面
@@ -135,6 +135,10 @@ ADR-0019で前景と面を分けたが、`primary2`が`PointLabel`の地と`Hous
   * 「種類＋役割」のセマンティックな名前（採用）
   * 既存の名前（`primary1`など）を残して値だけ変える: 中身が同じなのに名前が違うトークンが残る。番号だけでは役割が読み取れない
   * 色の名前（`milk` / `leaf` / `honey`など）: 色を変えると名前が嘘になり、呼び出し側の書き換えが再び必要になる。役割から選べず、使い分けの注意書きが要る
+* キャラクター素材の形式
+  * HEIC（@2x / @3x、Individual Scales）（採用）
+  * PDF・SVG（Preserve Vector Data、Single Scale）: ビルド時に1x〜3xのビットマップが生成されてAssets.carに入るため、元ファイルが小さくてもアプリは大きくなる。拡大しない絵ではベクターの利点もない
+  * PNG（@2x / @3x）: HEICよりApp Thinning後のサイズが大きい
 * フォント
   * OS標準のまま（採用）
   * 日本語の丸ゴシック（Zen Maru Gothic）を同梱する: アプリサイズが増え、Dynamic Typeや字形の調整を自前で持つことになる
@@ -159,5 +163,6 @@ ADR-0019で前景と面を分けたが、`primary2`が`PointLabel`の地と`Hous
 ## 参考
 
 * 素材と提案書: `doc/design/renewal/`（`proposal.html`のトークン名は色名で命名していた時点のもの。名前は本ADRが正）
-* 素材の生成手順: [`doc/design/renewal/character/README.md`](../design/renewal/character/README.md)
+* 素材の生成手順とアプリに入れる形式: [`doc/design/renewal/character/README.md`](../design/renewal/character/README.md)
+* 上ちょ「今どきの画像アセット入稿：たった1枚の画像でアプリサイズが50MB増えた失敗から学ぶ最適化方法」（iOSDC Japan 2026 パンフレット）
 * WCAG 2.2 — 1.4.3 Contrast (Minimum) / 1.4.11 Non-text Contrast
