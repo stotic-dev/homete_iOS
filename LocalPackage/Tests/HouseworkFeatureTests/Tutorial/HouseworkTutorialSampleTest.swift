@@ -16,7 +16,7 @@ struct HouseworkTutorialSampleTest {
         let today = Date.previewDate(year: 2026, month: 5, day: 18)
 
         // Act
-        let result = HouseworkTutorialSample.dailyList(today: today)
+        let result = HouseworkTutorialSample.dailyList(today: today, locale: Locale(identifier: "ja"))
 
         // Assert
         let expected = DailyHouseworkList(

@@ -30,6 +30,8 @@ public struct AppDependencies: Sendable {
     public let pasteboardClient: PasteboardClient
     public let dailyCompletionReminderClient: DailyCompletionReminderClient
     public let remoteConfigClient: RemoteConfigClient
+    public let encouragementCommentClient: EncouragementCommentClient
+    public let encouragementCommentCacheClient: EncouragementCommentCacheClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
@@ -62,6 +64,8 @@ public struct AppDependencies: Sendable {
         pasteboardClient: PasteboardClient = .previewValue,
         dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
         remoteConfigClient: RemoteConfigClient = .previewValue,
+        encouragementCommentClient: EncouragementCommentClient = .previewValue,
+        encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -85,6 +89,8 @@ public struct AppDependencies: Sendable {
         self.pasteboardClient = pasteboardClient
         self.dailyCompletionReminderClient = dailyCompletionReminderClient
         self.remoteConfigClient = remoteConfigClient
+        self.encouragementCommentClient = encouragementCommentClient
+        self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
