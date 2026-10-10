@@ -24,6 +24,8 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var members
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -77,6 +79,10 @@ public struct HouseworkBoardScreen: View {
                     withAnimation {
                         updateHouseboardList(with: houseworkListStore)
                     }
+                }
+                // 通知から開くと、ダッシュボードを表示しないまま家事タブに着地するため、こちらでも購読を始める
+                .task {
+                    await startObserving()
                 }
                 // プランが確定・変化したタイミングで日付リストの選択可能範囲を組み直す
                 .task(id: storagePolicy) {
@@ -136,6 +142,14 @@ private extension HouseworkBoardScreen {
                 withAnimation {
                     updateHouseboardList(with: houseworkListStore)
                 }
+                openPendingHouseworkDetail(store: houseworkListStore)
+            }
+            // 通知から開く家事は、起動直後だとまだ読み込まれていないため、家事が届くたびに探し直す
+            .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
+                openPendingHouseworkDetail(store: houseworkListStore)
+            }
+            .onChange(of: houseworkListStore.loadState) {
+                openPendingHouseworkDetail(store: houseworkListStore)
             }
             .onChange(of: dateList.selectedDate) {
                 withAnimation {
@@ -222,6 +236,20 @@ private extension HouseworkBoardScreen {
         return error
     }
 
+    /// 家事とメンバーの購読を始める
+    /// - Note: ダッシュボードの表示時にも同じ購読を始めている。どちらも購読中なら何もしないため、
+    ///         両方のタブを表示しても購読は重複しない
+    func startObserving() async {
+        guard let cohabitantId = loginContext.cohabitantId else { return }
+        await cohabitantStore.addSnapshotListenerIfNeeded(cohabitantId, ownId: loginContext.account.id)
+        await houseworkManager.setupObserver(
+            currentTime: now,
+            cohabitantId: cohabitantId,
+            calendar: calendar,
+            storagePolicy: storagePolicy
+        )
+    }
+
     /// 家事の購読をやり直す
     /// - Note: `HouseworkManager`のリスナーは失敗時に購読が止まるため、リスナーを張り直す
     ///         `setupObserver`の再実行で復帰させる。
@@ -303,6 +331,25 @@ private extension HouseworkBoardScreen {
         } catch {
             commonError = .init(error: error)
         }
+    }
+
+    /// 通知から開く家事が見つかったら、その家事の詳細画面を開く
+    /// - Note: 別の画面を開いていても、通知の家事の詳細だけが積まれた状態にする。
+    ///         詳細から戻ったときにその家事が見えるよう、ボードもその家事の日付と状態に切り替える。
+    ///         シートやフルスクリーンカバーは閉じず、その裏に詳細画面を積む。購入中のペイウォールや入力中の
+    ///         シートを通知で勝手に閉じないためで、ダッシュボード側のシートなどはそもそもここから閉じられない
+    func openPendingHouseworkDetail(store: HouseworkListStore) {
+        guard let item = pendingNotificationRouteStore.takeHouseworkDetailItem(
+            in: store.items,
+            loadState: store.loadState
+        ) else { return }
+
+        isSelecting = false
+        dateList.selectDate(item.indexedDate.value, calendar: calendar)
+        if HouseworkState.pageableCases.contains(item.state) {
+            selectedHouseworkState = item.state
+        }
+        navigationPath.path = [.houseworkDetail(.init(originalItem: item, isRegistered: true))]
     }
 
     func dismissedThanksView() {

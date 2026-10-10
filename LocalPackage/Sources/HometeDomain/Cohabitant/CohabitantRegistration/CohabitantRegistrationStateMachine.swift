@@ -10,10 +10,14 @@
 ///
 /// 1. scanning: 接続中の全メンバーが「登録を開始する」を宣言したら、`displayName`が最小のメンバーをリーダーにして処理へ進む
 /// 2. processing: 相手からの返答が返ってくるまで自分の役割を定期送信する。
-///    - リーダー: フォロワーのアカウントIDが揃ったら同居人レコードを作成して同居人IDを配り、
-///      全フォロワーの保存完了を待ってから自分のアカウントに保存し、完了を通知する
-///    - フォロワー: 同居人IDを受け取ったら自分のアカウントに保存し、リーダーへ完了を通知する
+///    - リーダー: 全フォロワーの役割が揃ったら招待トークンを発行して配り、全フォロワーの参加完了を待ってから
+///      サーバー側でグループIDが書き込まれた自分のアカウントを取り直し、完了を通知する
+///    - フォロワー: 招待トークンを受け取ったら自分でグループに参加し、リーダーへ完了を通知する
 /// 3. completed
+///
+/// グループの作成・メンバーの追加はCloud Functions（`joincohabitant`）が行い、クライアントが他人のIDを
+/// `Cohabitant.members`へ書くことはない。リーダーが未所属で発行した招待では、最初のフォロワーが参加した時点で
+/// リーダーとの2人のグループが作られ、2人目以降のフォロワーも同じグループへ入る（ADR-0017、ADR-0040）
 public struct CohabitantRegistrationStateMachine: Sendable {
 
     public typealias State = CohabitantRegistrationState
@@ -22,19 +26,9 @@ public struct CohabitantRegistrationStateMachine: Sendable {
     public typealias PeerID = CohabitantRegistrationPeerID
 
     let myPeerID: PeerID
-    let myAccountId: String
-    /// 同居人IDの採番
-    /// - Note: テストで遷移結果を決定的にするため差し替えられるようにしている
-    let makeCohabitantId: @Sendable () -> String
 
-    public init(
-        myPeerID: PeerID,
-        myAccountId: String,
-        makeCohabitantId: @escaping @Sendable () -> String
-    ) {
+    public init(myPeerID: PeerID) {
         self.myPeerID = myPeerID
-        self.myAccountId = myAccountId
-        self.makeCohabitantId = makeCohabitantId
     }
 
     /// 状態を進め、実行すべき外部I/Oを返す
@@ -64,7 +58,7 @@ public struct CohabitantRegistrationStateMachine: Sendable {
                   needsRoleNotification(processing, connectedPeers: state.connectedPeers) else { return [] }
             return [.send(.init(type: .preRegistration(role: role(of: processing))), to: state.connectedPeers)]
 
-        case .cohabitantRegistered, .cohabitantRegistrationFailed, .cohabitantIdSaved, .cohabitantIdSaveFailed:
+        case .invitationIssued, .invitationIssueFailed, .cohabitantJoined, .cohabitantJoinFailed:
             return reduceRegistrationResult(&state, event)
         }
     }
@@ -75,21 +69,28 @@ public struct CohabitantRegistrationStateMachine: Sendable {
 
 private extension CohabitantRegistrationStateMachine {
 
-    /// 同居人レコードの作成・同居人IDの保存の結果に対する遷移
+    /// 招待トークンの発行・グループへの参加の結果に対する遷移
+    /// - Note: 結果は非同期で届くため、接続エラーで選び直した後に前の試行の結果が届くことがある。
+    ///         登録処理中でなければ捨て、同じ結果が重なっても二重に進めない
     func reduceRegistrationResult(_ state: inout State, _ event: Event) -> [Effect] {
-        switch event {
-        case .cohabitantRegistered:
-            guard case let .processing(processing) = state.phase,
-                  case let .lead(lead) = processing.role,
-                  let cohabitantId = lead.cohabitantId else { return [] }
-            return [.send(.init(type: .shareCohabitantId(id: cohabitantId)), to: state.connectedPeers)]
+        guard case .processing = state.phase else { return [] }
 
-        case .cohabitantRegistrationFailed, .cohabitantIdSaveFailed:
+        switch event {
+        case let .invitationIssued(token):
+            guard case var .processing(processing) = state.phase,
+                  case var .lead(lead) = processing.role,
+                  lead.invitationToken == nil else { return [] }
+            lead.invitationToken = token
+            processing.role = .lead(lead)
+            state.phase = .processing(processing)
+            return [.send(.init(type: .shareInvitation(token: token)), to: state.connectedPeers)]
+
+        case .invitationIssueFailed, .cohabitantJoinFailed:
             state.alert = .registrationFailed
             return [.log(.completed(method: .p2p, isSuccess: false))]
 
-        case let .cohabitantIdSaved(cohabitantId):
-            return reduceCohabitantIdSaved(&state, cohabitantId: cohabitantId)
+        case .cohabitantJoined:
+            return reduceCohabitantJoined(&state)
 
         default:
             return []
@@ -126,6 +127,15 @@ private extension CohabitantRegistrationStateMachine {
         switch state.phase {
         case var .scanning(scanning):
             guard let isFixedMember = message.isFixedMember else { return [] }
+            guard !message.isFromOutdatedPeer else {
+                // 旧バージョンのアプリはリーダーがグループを作る方式のままで、招待トークンを解読できずに落ちる。
+                // 登録処理に進む前に止め、相手にも宣言の取り消しを伝えて選び直しの状態に戻してもらう。
+                // 取り消しを他の新しい端末にまで送ると、相手のアップデートの案内がキャンセルのアラートで上書きされる。
+                // 他の新しい端末も旧端末の宣言を受けて自分で選び直しに戻るため、旧端末にだけ送る
+                state.phase = .scanning(.init())
+                state.alert = .outdatedPeer
+                return [.send(.init(type: .fixedMember(isOK: false)), to: [sender])]
+            }
             if isFixedMember {
                 scanning.confirmedPeers.insert(sender)
             } else {
@@ -167,31 +177,28 @@ private extension CohabitantRegistrationStateMachine {
         sender: PeerID
     ) -> [Effect] {
         if let role = message.memberRole {
-            guard let accountId = role.accountId else {
+            guard !role.isLeader else {
                 // 相手もリーダーを名乗っている＝各デバイスの接続状況が食い違い、リーダーが2人選ばれた状態。
                 // このまま待っても役割が揃わないため、接続エラーとしてメンバーの選び直しに戻す
                 state.alert = .connectionError
                 return []
             }
-            lead.followerAccountIds.insert(accountId)
             let (inserted, _) = processing.confirmedRolePeers.insert(sender)
-            // 全員の役割が分かった時点で、同居人のレコードを作成する
+            // 全員の役割が分かった時点で、招待トークンを発行する。
+            // 役割の通知は届くたびに同じメンバーで重複するため、最後の1人が揃った1回だけ発行する
             guard inserted,
                   processing.confirmedRolePeers == state.connectedPeers,
-                  lead.cohabitantId == nil else { return [] }
-            let cohabitantId = makeCohabitantId()
-            lead.cohabitantId = cohabitantId
-            let members = [myAccountId] + lead.followerAccountIds.sorted()
-            return [.registerCohabitant(.init(id: cohabitantId, members: members))]
+                  lead.invitationToken == nil else { return [] }
+            return [.issueInvitation]
         }
 
         if message.isComplete ?? false {
             let (inserted, _) = lead.completedPeers.insert(sender)
-            // 他のデバイス全てから登録完了通知が来たら、自分のアカウントへ保存する
+            // 他のデバイス全てから参加完了の通知が来たら、サーバー側で書き込まれた自分のアカウントを取り直す
             guard inserted,
                   lead.completedPeers == state.connectedPeers,
-                  let cohabitantId = lead.cohabitantId else { return [] }
-            return [.saveCohabitantId(cohabitantId)]
+                  lead.invitationToken != nil else { return [] }
+            return [.reloadAccount]
         }
 
         return []
@@ -207,20 +214,21 @@ private extension CohabitantRegistrationStateMachine {
         if message.memberRole?.isLeader ?? false {
             follower.leadPeer = sender
             processing.confirmedRolePeers.insert(sender)
-            // すでに同居人IDの保存まで済んでいたら、完了メッセージを送信する
-            guard follower.registeredCohabitantId != nil else { return [] }
+            // すでにグループへの参加まで済んでいたら、完了メッセージを送信する
+            guard follower.hasJoined else { return [] }
             return [.send(.init(type: .complete), to: [sender])]
         }
 
-        if let cohabitantId = message.cohabitantId {
-            // 同居人IDを共有してくるのはリーダーだけなので、送信元をリーダーとして扱う。
+        if let invitationToken = message.invitationToken {
+            // 招待トークンを共有してくるのはリーダーだけなので、送信元をリーダーとして扱う。
             // リーダーは全員の役割が揃った時点で役割の通知をやめるため、こちらの役割通知が
-            // 相手の最初の通知より先に届くと、役割の通知だけが一度も来ないまま同居人IDが届くことがある
+            // 相手の最初の通知より先に届くと、役割の通知だけが一度も来ないまま招待トークンが届くことがある
             if follower.leadPeer == nil {
                 follower.leadPeer = sender
                 processing.confirmedRolePeers.insert(sender)
             }
-            return [.saveCohabitantId(cohabitantId)]
+            guard !follower.hasJoined else { return [] }
+            return [.joinCohabitant(invitationToken: invitationToken)]
         }
 
         if message.isComplete ?? false {
@@ -256,24 +264,25 @@ private extension CohabitantRegistrationStateMachine {
         case .registrationFailed:
             state.isDismissRequested = true
 
-        case .sendFailed, nil:
+        case .sendFailed, .outdatedPeer, nil:
             break
         }
         return []
     }
 
-    func reduceCohabitantIdSaved(_ state: inout State, cohabitantId: String) -> [Effect] {
+    func reduceCohabitantJoined(_ state: inout State) -> [Effect] {
         guard case var .processing(processing) = state.phase else { return [] }
         let completedLog: Effect = .log(.completed(method: .p2p, isSuccess: true))
 
         switch processing.role {
         case .lead:
-            // 自分のアカウントへの保存が済んでから、他デバイスに完了を伝える
+            // 自分のアカウントにグループIDが反映されてから、他デバイスに完了を伝える
             state.phase = .completed
             return [completedLog, .send(.init(type: .complete), to: state.connectedPeers)]
 
         case var .follower(follower):
-            follower.registeredCohabitantId = cohabitantId
+            guard !follower.hasJoined else { return [] }
+            follower.hasJoined = true
             processing.role = .follower(follower)
             state.phase = .processing(processing)
             // リーダーがまだ分からない場合は、役割の通知が届いた時点で完了を送る
@@ -304,15 +313,15 @@ private extension CohabitantRegistrationStateMachine {
     ///
     /// 相手の役割が届いたことは、自分の役割が相手に届いたことを意味しない。
     /// 相手が登録処理に入る前に送った役割は捨てられるため、停止の条件は「相手からの返答が来たか」で判断する。
-    /// - リーダー: フォロワーの役割（＝アカウントID）が全員分揃えば、あとは同居人IDを配るだけなので止めてよい
-    /// - フォロワー: 同居人IDの共有はリーダーが自分の役割を受け取った証拠なので、それが済むまで送り続ける
+    /// - リーダー: フォロワーの役割が全員分揃えば、あとは招待トークンを配るだけなので止めてよい
+    /// - フォロワー: 招待トークンの共有はリーダーが自分の役割を受け取った証拠なので、参加が済むまで送り続ける
     func needsRoleNotification(_ processing: State.Processing, connectedPeers: Set<PeerID>) -> Bool {
         switch processing.role {
         case .lead:
             processing.confirmedRolePeers != connectedPeers
 
         case let .follower(follower):
-            follower.registeredCohabitantId == nil
+            !follower.hasJoined
         }
     }
 
@@ -323,7 +332,7 @@ private extension CohabitantRegistrationStateMachine {
             .lead
 
         case .follower:
-            .follower(accountId: myAccountId)
+            .follower
         }
     }
 

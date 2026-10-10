@@ -18,6 +18,7 @@ struct AppTabView: View {
     @Environment(\.now) var now
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(RegistrationTutorialStore.self) var registrationTutorialStore
     @Environment(\.routeResolver) var router
@@ -90,6 +91,9 @@ struct AppTabView: View {
                 Task {
                     await registrationTutorialStore.didChangeCohabitant(from: oldValue, to: newValue)
                 }
+            }
+            .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
+                onChangePendingNotificationRoute()
             }
             .environment(\.cohabitantMembers, cohabitantStore.members)
             .environment(
@@ -294,6 +298,23 @@ private extension AppTabView {
         await startObserveTemplateIfNeeded()
     }
 
+    /// 通知から開く画面があれば、その画面を持つタブに切り替える
+    /// - Note: 画面を開くのは切り替えた先のタブが行う。家事の読み込みを待ってから開く必要があるため
+    func onChangePendingNotificationRoute() {
+        switch pendingNotificationRouteStore.pendingRoute {
+        case .houseworkDetail:
+            // グループに所属していないと家事を開けないため、後から急に画面が開かないよう破棄する
+            guard loginContext.hasCohabitant else {
+                pendingNotificationRouteStore.clear()
+                return
+            }
+            type = .homework
+
+        case nil:
+            break
+        }
+    }
+
 }
 
 private extension AppTabView {
@@ -354,6 +375,7 @@ private extension AppTabView {
         .environment(CohabitantStore())
         .environment(PendingInvitationStore())
         .environment(RegistrationTutorialStore())
+        .environment(PendingNotificationRouteStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif

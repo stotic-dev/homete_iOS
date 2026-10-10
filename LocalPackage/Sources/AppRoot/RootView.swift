@@ -21,6 +21,7 @@ public struct RootView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
     @Environment(LaunchStateStore.self) var launchStateStore
     @Environment(AdvertisementStore.self) var advertisementStore
     @Environment(ForceUpdateStore.self) var forceUpdateStore
@@ -57,6 +58,9 @@ public struct RootView: View {
         .onChange(of: accountStore.account) {
             launchStateStore.syncAccountChange(accountStore.account)
         }
+        .onChange(of: launchStateStore.launchState) {
+            onChangeLaunchState()
+        }
         .onChange(of: subscriptionStore.isPremium) {
             Task {
                 await authSubscriptionSyncUseCase.syncPremiumStateIfNeeded()
@@ -80,7 +84,11 @@ public struct RootView: View {
 
 public extension RootView {
 
-    static func make(dependencies: AppDependencies) -> some View {
+    /// - Parameter pendingNotificationRouteStore: タップされた通知から開く画面。通知のタップを受け取る`AppDelegate`と共有する
+    static func make(
+        dependencies: AppDependencies,
+        pendingNotificationRouteStore: PendingNotificationRouteStore
+    ) -> some View {
         DependenciesInjectLayer {
             let accountAuthStore = AccountAuthStore(
                 accountAuthClient: $0.accountAuthClient,
@@ -137,6 +145,7 @@ public extension RootView {
             .environment(cohabitantStore)
             .environment(subscriptionStore)
             .environment(pendingInvitationStore)
+            .environment(pendingNotificationRouteStore)
             .environment(launchStateStore)
             .environment(advertisementStore)
             .environment(forceUpdateStore)
@@ -188,6 +197,13 @@ private extension RootView {
         default:
             break
         }
+    }
+
+    /// ログアウトしたら、前のアカウントで受け取った通知から画面を開かないよう破棄する
+    /// - Note: 起動時はログイン済みなら`launching`から直接`loggedIn`になるため、起動のきっかけになった通知は消さない
+    func onChangeLaunchState() {
+        guard case .notLoggedIn = launchStateStore.launchState else { return }
+        pendingNotificationRouteStore.clear()
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
