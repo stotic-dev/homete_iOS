@@ -40,9 +40,10 @@ struct DashboardContent<TodaySummary: View, Advertisement: View, ContributionSum
                             // カードの背景ごと切り抜くため、見た目を付けた後に付ける
                             .tutorialSpotlightTarget(.dashboardTodaySummary)
                         if showsAdvertisement {
-                            VStack(spacing: .space8) {
+                            // AdMobのガイドラインに沿って、誤タップを防ぐためにタップできるリンクを広告から離す
+                            VStack(spacing: .space16) {
+                                // 高さは届いた広告のサイズから決まる（インライン型アダプティブバナー）
                                 advertisement()
-                                    .frame(height: 150)
                                 RemoveAdsPromotionLink(action: onTapRemoveAdsPromotion)
                             }
                         }
