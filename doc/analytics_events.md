@@ -187,7 +187,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
-| `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
+| `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`はすごくがんばった |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
 | `result` | — | `success` / `failure` | 行動の結果 |
 

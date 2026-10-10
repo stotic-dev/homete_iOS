@@ -85,7 +85,7 @@ xcrun xcstringstool sync LocalPackage/Sources/HometeUI/Localizable.xcstrings \
 | 家事テンプレート | Chore Templates |
 | 同居人 / パートナー / グループ | housemate / partner / group |
 | ありがとう（を伝える） | Thanks（Say Thanks） |
-| 頑張り度（ふつう / がんばった / 超頑張った） | Effort（Normal / Worked Hard / Went All Out） |
+| がんばり（ふつう / がんばった / すごくがんばった） | Effort（Normal / Worked Hard / Went All Out） |
 | 完了 / 未完了 / やらない | Done / To Do / Won't Do |
 | メモ | Note |
 | ポイント（数値の後） | Points（`%lldpt`） |
