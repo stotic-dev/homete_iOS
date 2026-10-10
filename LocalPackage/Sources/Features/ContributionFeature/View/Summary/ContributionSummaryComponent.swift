@@ -96,7 +96,11 @@ struct ContributionSummaryContent: View {
                 }
             } else {
                 ContentUnavailableView {
-                    Label(.localized("今月の記録はまだありません。家事をひとつ終えると、ここに表示されます"), systemImage: "house.circle")
+                    Label {
+                        Text("今月の記録はまだありません。家事をひとつ終えると、ここに表示されます", bundle: #bundle)
+                    } icon: {
+                        HometteView(.cheer)
+                    }
                 } description: {
                     Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
                 } actions: {
