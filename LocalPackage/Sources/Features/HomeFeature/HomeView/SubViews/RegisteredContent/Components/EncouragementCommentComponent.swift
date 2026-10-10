@@ -40,7 +40,8 @@ struct EncouragementCommentComponent: View {
         EncouragementCommentCard(
             comment: encouragementCommentStore.comment,
             thanksPrompt: thanksPrompt.shouldPrompt ? thanksPrompt : nil,
-            onTapThanks: tappedThanksButton
+            onTapThanks: tappedThanksButton,
+            onRate: ratedComment
         )
         .task(id: updateTrigger) {
             await encouragementCommentStore.update(
@@ -107,20 +108,31 @@ private extension EncouragementCommentComponent {
     /// カードに出しているコメントの種類
     func shownKinds(thanksPrompt: ThanksPromptSummary) -> [EncouragementCommentAnalyticsKind] {
         var kinds: [EncouragementCommentAnalyticsKind] = []
-        switch encouragementCommentStore.comment?.kind {
-        case .selfPraise:
-            kinds.append(.selfPraise)
-
-        case .neutral:
-            kinds.append(.neutral)
-
-        case nil:
-            break
+        if let comment = encouragementCommentStore.comment {
+            kinds.append(analyticsKind(of: comment))
         }
         if thanksPrompt.shouldPrompt {
             kinds.append(.thanksPrompt)
         }
         return kinds
+    }
+
+    func analyticsKind(of comment: EncouragementComment) -> EncouragementCommentAnalyticsKind {
+        switch comment.kind {
+        case .selfPraise:
+            .selfPraise
+
+        case .neutral:
+            .neutral
+        }
+    }
+
+    func ratedComment(_ rating: EncouragementCommentAnalyticsRating) {
+        guard let comment = encouragementCommentStore.comment else { return }
+
+        analyticsClient.log(
+            .encouragementComment(.rated(kind: analyticsKind(of: comment), rating: rating, step: .dashboard))
+        )
     }
 
     func tappedThanksButton() {

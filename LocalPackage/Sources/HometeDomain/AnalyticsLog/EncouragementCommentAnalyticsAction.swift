@@ -23,6 +23,14 @@ public enum EncouragementCommentAnalyticsKind: String, Equatable, Sendable {
 
 }
 
+/// AIが作成したコメントへの評価
+public enum EncouragementCommentAnalyticsRating: String, Equatable, Sendable {
+
+    case good
+    case bad
+
+}
+
 /// ねぎらいのコメントに関する行動
 /// - Note: GA4はプロパティごとに定義できるイベント名の数に上限があるため、行動ごとにイベント名を増やさず
 ///         `encouragement_comment`イベント1つにまとめ、この型が生成するパラメータで区別する
@@ -33,6 +41,12 @@ public enum EncouragementCommentAnalyticsAction: Equatable, Sendable {
     case shown(kind: EncouragementCommentAnalyticsKind, step: EncouragementCommentAnalyticsStep)
     /// 感謝の促しの「ありがとうを伝える」をタップした
     case tapped(kind: EncouragementCommentAnalyticsKind, step: EncouragementCommentAnalyticsStep)
+    /// AIが作成したコメントを、ポップアップのgood/badで評価した
+    case rated(
+        kind: EncouragementCommentAnalyticsKind,
+        rating: EncouragementCommentAnalyticsRating,
+        step: EncouragementCommentAnalyticsStep
+    )
 
 }
 
@@ -46,6 +60,9 @@ extension EncouragementCommentAnalyticsAction {
 
         case let .tapped(kind, step):
             ["action": "tapped", "kind": kind.rawValue, "step": step.rawValue]
+
+        case let .rated(kind, rating, step):
+            ["action": "rated", "kind": kind.rawValue, "result": rating.rawValue, "step": step.rawValue]
         }
     }
 

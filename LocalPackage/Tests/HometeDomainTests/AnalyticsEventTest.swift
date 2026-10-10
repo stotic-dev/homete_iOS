@@ -547,7 +547,7 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "ねぎらいのコメントの表示・タップを、action/kind/stepのパラメータを持つencouragement_commentイベントに変換する",
+        "ねぎらいのコメントの表示・タップ・評価を、action/kind/step（評価はresultも）のパラメータを持つencouragement_commentイベントに変換する",
         arguments: [
             (
                 EncouragementCommentAnalyticsAction.shown(kind: .selfPraise, step: .dashboard),
@@ -564,6 +564,14 @@ struct AnalyticsEventTest {
             (
                 EncouragementCommentAnalyticsAction.tapped(kind: .thanksPrompt, step: .dashboard),
                 ["action": "tapped", "kind": "thanks_prompt", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.rated(kind: .selfPraise, rating: .good, step: .dashboard),
+                ["action": "rated", "kind": "self_praise", "result": "good", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.rated(kind: .selfPraise, rating: .bad, step: .dashboard),
+                ["action": "rated", "kind": "self_praise", "result": "bad", "step": "dashboard"]
             ),
         ]
     )

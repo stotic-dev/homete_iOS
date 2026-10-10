@@ -18,6 +18,12 @@ struct EncouragementCommentCard: View {
     /// 感謝の促し。ありがとうを伝えられる家事がなければ`nil`
     let thanksPrompt: ThanksPromptSummary?
     let onTapThanks: () -> Void
+    /// AIが作成したコメントを評価した
+    let onRate: (EncouragementCommentAnalyticsRating) -> Void
+
+    @State var isShowAIInfo = false
+    /// 評価済みのコメント。コメントが作り直されたら、また評価できるようにする
+    @State var ratedComment: EncouragementComment?
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
@@ -50,6 +56,39 @@ private extension EncouragementCommentCard {
                 .redacted(reason: comment == nil ? .placeholder : [])
                 // 枠だけを出している間に、仮の文をVoiceOverで読み上げないようにする
                 .accessibilityLabel(comment?.text ?? "コメントを準備しています")
+            if let comment, comment.source == .generated {
+                Spacer(minLength: .zero)
+                aiBadge(comment)
+            }
+        }
+    }
+
+    /// AIが作成したことを示すバッジ。タップすると説明と評価のポップアップを出す
+    func aiBadge(_ comment: EncouragementComment) -> some View {
+        Button {
+            isShowAIInfo = true
+        } label: {
+            HStack(spacing: .space4) {
+                Text("AI")
+                    .font(with: .boldCaption)
+                Image(systemName: "info.circle")
+                    .font(with: .caption)
+            }
+            .foregroundStyle(.accent)
+            .padding(.horizontal, .space8)
+            .padding(.vertical, .space4)
+            .overlay {
+                Capsule()
+                    .stroke(.accent)
+            }
+        }
+        .accessibilityLabel("AIが作成したコメントについて")
+        .popover(isPresented: $isShowAIInfo) {
+            EncouragementAICommentPopover(isRated: ratedComment == comment) { rating in
+                ratedComment = comment
+                onRate(rating)
+            }
+            .presentationCompactAdaptation(.popover)
         }
     }
 
@@ -85,6 +124,69 @@ private extension EncouragementCommentCard {
 
 }
 
+/// AIが作成したコメントの説明と、good/badの評価を出すポップアップ
+struct EncouragementAICommentPopover: View {
+
+    /// このコメントを評価済みか
+    let isRated: Bool
+    let onRate: (EncouragementCommentAnalyticsRating) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: .space16) {
+            VStack(alignment: .leading, spacing: .space8) {
+                Text("AIが作成したコメントです")
+                    .font(with: .headLineS)
+                    .foregroundStyle(.onSurface)
+                Text("家事の記録をもとに、端末内のAIが作成しました。記録が端末の外へ送られることはありません。")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSubSurface)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Divider()
+            if isRated {
+                Text("ご意見ありがとうございます。今後のコメントづくりの参考にします")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurface)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                ratingContent()
+            }
+        }
+        .padding(.space16)
+        .frame(width: 260)
+    }
+
+}
+
+private extension EncouragementAICommentPopover {
+
+    func ratingContent() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("このコメントはいかがでしたか？")
+                .font(with: .caption)
+                .foregroundStyle(.onSurface)
+            HStack(spacing: .space8) {
+                Button {
+                    onRate(.good)
+                } label: {
+                    Label("よかった", systemImage: "hand.thumbsup")
+                        .frame(maxWidth: .infinity)
+                }
+                Button {
+                    onRate(.bad)
+                } label: {
+                    Label("いまいち", systemImage: "hand.thumbsdown")
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.bordered)
+            .tint(.accent)
+            .font(with: .caption)
+        }
+    }
+
+}
+
 #if DEBUG
 #Preview("EncouragementCommentCard_ねぎらいと感謝の促し", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
@@ -94,7 +196,8 @@ private extension EncouragementCommentCard {
             source: .generated
         ),
         thanksPrompt: .init(thankableItems: [], notSentCount: 3, executorNames: ["はなこ"]),
-        onTapThanks: {}
+        onTapThanks: {},
+        onRate: { _ in }
     )
     .padding(.space16)
 }
@@ -107,7 +210,8 @@ private extension EncouragementCommentCard {
             source: .fixed
         ),
         thanksPrompt: .init(thankableItems: [], notSentCount: 5, executorNames: ["はなこ", "じろう"]),
-        onTapThanks: {}
+        onTapThanks: {},
+        onRate: { _ in }
     )
     .padding(.space16)
 }
@@ -120,13 +224,22 @@ private extension EncouragementCommentCard {
             source: .fixed
         ),
         thanksPrompt: nil,
-        onTapThanks: {}
+        onTapThanks: {},
+        onRate: { _ in }
     )
     .padding(.space16)
 }
 
 #Preview("EncouragementCommentCard_生成中", traits: .sizeThatFitsLayout) {
-    EncouragementCommentCard(comment: nil, thanksPrompt: nil, onTapThanks: {})
+    EncouragementCommentCard(comment: nil, thanksPrompt: nil, onTapThanks: {}, onRate: { _ in })
         .padding(.space16)
+}
+
+#Preview("EncouragementAICommentPopover_評価前", traits: .sizeThatFitsLayout) {
+    EncouragementAICommentPopover(isRated: false, onRate: { _ in })
+}
+
+#Preview("EncouragementAICommentPopover_評価後", traits: .sizeThatFitsLayout) {
+    EncouragementAICommentPopover(isRated: true, onRate: { _ in })
 }
 #endif
