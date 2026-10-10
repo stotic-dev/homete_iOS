@@ -93,7 +93,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `cohabitant_completion` | `CohabitantCompletionView` |
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
 | `contribution_analytics` | `ContributionAnalyticsView` |
-| `housework_board` | `HouseworkBoardView` |
+| `housework_board` | `HouseworkBoardScreen` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
@@ -337,6 +337,33 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 **分析での使い方:** `step`で分けて`permission_requested(granted)`の比率を比べると、オンボーディングと設定画面の
 どちらの案内がオプトイン率が高いかが分かる。
+
+### `registration_tutorial`
+
+同居人グループの登録直後に一度だけ出す、導線を案内するチュートリアルでの行動。表示はタブの画面に重ねるオーバーレイで、独立した画面ではないため`screen_view`は送らない。
+
+> **注意:** チュートリアルは説明に合わせてダッシュボードと家事のタブを切り替えるため、裏にある本番の画面の`screen_view`（`dashboard`・`housework_board`）が送られる。登録直後のユーザーはこの分だけ表示回数が多く出る。
+
+グループを抜けたときや、グループに未所属のアカウントでログインし直したときは、ユーザーの操作によらずに表示をやめるため、イベントは送らない。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `RegistrationTutorialAnalyticsAction`、`RegistrationTutorialStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `completed` / `skipped` | 最後まで見たか、途中で閉じたか |
+| `step` | — | `dashboard` / `housework` / `housework_complete` / `thanks` / `bulk_action` / `housework_template` | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `completed` | — | 最後のステップで「はじめる」をタップした |
+| `skipped` | 表示中のステップ | 途中のステップで「閉じる」をタップした |
+
+**分析での使い方:** `completed`と`skipped`の比率で、案内が最後まで読まれているかが分かる。`skipped`を`step`で分けると、
+どのステップで離脱しているかが分かり、ステップの数や順番を見直す材料になる。
 
 ### `cohabitant_invitation`
 

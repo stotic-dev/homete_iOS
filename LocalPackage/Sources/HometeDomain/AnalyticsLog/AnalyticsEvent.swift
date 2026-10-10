@@ -110,6 +110,16 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// グループ登録の直後に出すチュートリアルに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `step` パラメータで区別する。
+    ///         意図は`RegistrationTutorialAnalyticsAction`を参照
+    static func registrationTutorial(_ action: RegistrationTutorialAnalyticsAction) -> Self {
+        .init(
+            name: "registration_tutorial",
+            parameters: action.parameters
+        )
+    }
+
     /// プッシュ通知の権限リクエストに関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
     ///         意図は`NotificationPermissionAnalyticsAction`を参照

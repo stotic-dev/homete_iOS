@@ -11,6 +11,10 @@ import HometeUI
 import HouseworkFeature
 import SwiftUI
 
+/// ダッシュボードの「今日の家事サマリー」
+///
+/// Storeから今日のサマリーを組み立て、登録・完了のシートと画面遷移を受け持つ。
+/// 見た目は`TodayHouseworkSummaryContent`に任せる。
 struct TodayHouseworkSummaryComponent: View {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -31,13 +35,32 @@ struct TodayHouseworkSummaryComponent: View {
     }
 
     var body: some View {
-        contentView(summary: TodayHouseworkSummary.make(
-            storedAllItems: houseworkListStore.items,
-            template: templateContext.templateOfDay(by: now, calendar: calendar),
-            now: now,
-            calendar: calendar,
-            storagePolicy: storagePolicy
-        ))
+        TodayHouseworkSummaryContent(
+            summary: TodayHouseworkSummary.make(
+                storedAllItems: houseworkListStore.items,
+                template: templateContext.templateOfDay(by: now, calendar: calendar),
+                now: now,
+                calendar: calendar,
+                storagePolicy: storagePolicy
+            ),
+            members: members,
+            onTapRegister: { isPresentingRegister = true },
+            onTapItem: { navigationPath.push(.houseworkDetail($0)) },
+            onTapComplete: { completingItem = $0 },
+            onTapShowMore: { navigationPath.push(.incompleteHouseworkList) },
+            rowMenu: { item in
+                HouseworkQuickActionMenuContent(
+                    item: item,
+                    step: .dashboard,
+                    // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
+                    canAddHelper: false,
+                    onSelectComplete: { completingItem = item },
+                    onSelectThanks: {},
+                    onSelectAddHelper: {},
+                    onError: { commonError = .init(error: $0) }
+                )
+            }
+        )
         .sheet(isPresented: $isPresentingRegister) {
             RegisterHouseworkView.make(
                 dailyHouseworkList: .makeInitialValue(
@@ -56,314 +79,3 @@ struct TodayHouseworkSummaryComponent: View {
     }
 
 }
-
-// MARK: - UI定義
-
-private extension TodayHouseworkSummaryComponent {
-
-    func contentView(summary: TodayHouseworkSummary) -> some View {
-        VStack(spacing: .space24) {
-            Text("今日の家事サマリー")
-                .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            switch summary.displayState {
-            case .empty:
-                emptyContent()
-
-            case .allCompleted:
-                progressContent(progress: summary.progress)
-                contributionChartContent(summary: summary)
-                allCompletedContent()
-
-            case .hasIncomplete:
-                progressContent(progress: summary.progress)
-                contributionChartContent(summary: summary)
-                incompleteListContent(summary: summary)
-            }
-        }
-    }
-
-    func progressContent(progress: Double) -> some View {
-        VStack(spacing: .space8) {
-            HStack {
-                Text("達成率")
-                    .font(with: .body)
-                Spacer()
-                Text(progress.formatted(.percent.precision(.fractionLength(0))))
-                    .font(with: .headLineS)
-            }
-            ProgressView(value: progress)
-                .tint(.accent)
-        }
-    }
-
-    /// 誰も家事を完了していない間は、割合グラフを表示しない
-    @ViewBuilder
-    func contributionChartContent(summary: TodayHouseworkSummary) -> some View {
-        let contributions = summary.memberContributions(members: members)
-        if contributions.contains(where: { $0.completedCount > 0 }) {
-            TodayContributionChartSection(contributions: contributions)
-        }
-    }
-
-    func emptyContent() -> some View {
-        VStack(spacing: .zero) {
-            Text("今日の家事がありません")
-                .font(with: .headLineS)
-            Spacer()
-                .frame(height: .space8)
-            Text("今日の家事を確認して、家事リストを設定しましょう！")
-                .font(with: .body)
-                .multilineTextAlignment(.center)
-            Spacer()
-                .frame(height: .space24)
-            Button("家事を設定する") {
-                isPresentingRegister = true
-            }
-            .primaryButtonStyle()
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, .space56)
-        .overlay {
-            RoundedRectangle(radius: .radius8)
-                .stroke(style: .init(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.accent)
-        }
-    }
-
-    func allCompletedContent() -> some View {
-        VStack(spacing: .space8) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(.accent)
-            Text("今日の家事は全て完了しました")
-                .font(with: .headLineS)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, .space24)
-    }
-
-    func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
-        VStack(spacing: .space16) {
-            HStack {
-                Text("未完了の家事")
-                    .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
-                Spacer()
-                Text("\(summary.incompleteItems.count)件")
-                    .font(with: .body)
-                    .foregroundStyle(.onSubSurface)
-            }
-            ForEach(summary.displayIncompleteItems) { item in
-                houseworkItemRow(item)
-                    .contextMenu {
-                        quickActionMenu(item)
-                    }
-            }
-            if summary.hasMoreIncomplete {
-                Button("もっと表示する") {
-                    navigationPath.push(.incompleteHouseworkList)
-                }
-                .primaryButtonStyle()
-            }
-        }
-    }
-
-    func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
-        HouseBoardListRow(
-            houseworkItem: item.originalItem,
-            // 未完了の家事には担当者もありがとうも無いので、完了リスト向けの表示は渡さない
-            completionInfo: nil,
-            showsCompleteButton: item.state == .incomplete,
-            // 未完了の家事だけを並べる画面で、未完了には必ず「完了にする」「やらない」が出る
-            showsMoreButton: true,
-            onTapRow: { navigationPath.push(.houseworkDetail(item)) },
-            onTapThanks: nil,
-            onTapComplete: { completingItem = item },
-            menuContent: { quickActionMenu(item) }
-        )
-    }
-
-    /// 長押しのメニューと、その他ボタンのメニューで同じ中身を出す
-    func quickActionMenu(_ item: HouseworkBoardItem) -> some View {
-        HouseworkQuickActionMenuContent(
-            item: item,
-            step: .dashboard,
-            // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
-            canAddHelper: false,
-            onSelectComplete: { completingItem = item },
-            onSelectThanks: {},
-            onSelectAddHelper: {},
-            onError: { commonError = .init(error: $0) }
-        )
-    }
-
-}
-
-#if DEBUG
-#Preview("TodayHouseworkSummaryComponent_家事なし") {
-    let today = Date.previewDate(year: 2026, month: 5, day: 18)
-    ScrollView {
-        TodayHouseworkSummaryComponent()
-            .padding(.horizontal, .space16)
-    }
-    .environment(\.now, today)
-    .environment(HouseworkListStore())
-    .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
-}
-
-#Preview("TodayHouseworkSummaryComponent_全て完了") {
-    let today = Date.previewDate(year: 2026, month: 5, day: 18)
-    ScrollView {
-        TodayHouseworkSummaryComponent()
-            .padding(.horizontal, .space16)
-    }
-    .environment(\.now, today)
-    .environment(
-        HouseworkListStore(items: [
-            .init(
-                items: [
-                    .makeForTest(
-                        id: 1,
-                        indexedDate: today,
-                        title: "洗濯",
-                        point: 20,
-                        state: .completed
-                    ),
-                    .makeForTest(
-                        id: 2,
-                        indexedDate: today,
-                        title: "掃除",
-                        point: 30,
-                        state: .completed
-                    ),
-                ],
-                metaData: .init(
-                    indexedDate: .init(value: today),
-                    expiredAt: .distantFuture
-                )
-            ),
-        ])
-    )
-    .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
-}
-
-#Preview("TodayHouseworkSummaryComponent_未完了4件以下") {
-    let today = Date.previewDate(year: 2026, month: 5, day: 18)
-    ScrollView {
-        TodayHouseworkSummaryComponent()
-            .padding(.horizontal, .space16)
-    }
-    .environment(\.now, today)
-    .environment(
-        HouseworkListStore(items: [
-            .init(
-                items: [
-                    .makeForTest(
-                        id: 1,
-                        indexedDate: today,
-                        title: "洗濯",
-                        point: 20,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 2,
-                        indexedDate: today,
-                        title: "掃除",
-                        point: 30,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 3,
-                        indexedDate: today,
-                        title: "掃除",
-                        point: 30,
-                        state: .completed,
-                        executorId: "ownUserId"
-                    ),
-                ],
-                metaData: .init(
-                    indexedDate: .init(value: today),
-                    expiredAt: .distantFuture
-                )
-            ),
-        ])
-    )
-    .environment(\.cohabitantMembers, .init(
-        value: [
-            .init(id: "ownUserId", userName: "自分"),
-            .init(id: "otherUserId", userName: "同居人"),
-        ],
-        ownId: "ownUserId"
-    ))
-    .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
-}
-
-#Preview("TodayHouseworkSummaryComponent_未完了5件以上") {
-    let today = Date.previewDate(year: 2026, month: 5, day: 18)
-    ScrollView {
-        TodayHouseworkSummaryComponent()
-            .padding(.horizontal, .space16)
-    }
-    .environment(\.now, today)
-    .environment(
-        HouseworkListStore(items: [
-            .init(
-                items: [
-                    .makeForTest(
-                        id: 1,
-                        indexedDate: today,
-                        title: "洗濯",
-                        point: 20,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 2,
-                        indexedDate: today,
-                        title: "掃除",
-                        point: 30,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 3,
-                        indexedDate: today,
-                        title: "掃除",
-                        point: 30,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 4,
-                        indexedDate: today,
-                        title: "ゴミ出し",
-                        point: 20,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 5,
-                        indexedDate: today,
-                        title: "買い物",
-                        point: 30,
-                        state: .incomplete
-                    ),
-                    .makeForTest(
-                        id: 6,
-                        indexedDate: today,
-                        title: "アイロン",
-                        point: 30,
-                        state: .incomplete
-                    ),
-                ],
-                metaData: .init(
-                    indexedDate: .init(value: today),
-                    expiredAt: .distantFuture
-                )
-            ),
-        ])
-    )
-    .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
-}
-#endif

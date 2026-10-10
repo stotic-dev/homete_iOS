@@ -16,6 +16,8 @@ struct DebugMenuView: View {
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
+    /// 設定画面はタブの画面から開くため、通常は必ず注入されている
+    @Environment(RegistrationTutorialStore.self) var registrationTutorialStore: RegistrationTutorialStore?
 
     @State var isShowOnboarding = false
     @State var isShowPaywall = false
@@ -39,6 +41,16 @@ struct DebugMenuView: View {
                     isShowCohabitantRegistration = true
                 }
                 Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。")
+                    .font(with: .caption)
+                    .foregroundStyle(.onSurfaceVariant)
+            }
+            Section("チュートリアル") {
+                Button("グループ登録直後のチュートリアルを表示") {
+                    Task {
+                        await registrationTutorialStore?.start()
+                    }
+                }
+                Text("設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。")
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }

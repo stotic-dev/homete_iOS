@@ -33,43 +33,29 @@ struct RegisteredContent: View {
     let onRetry: () async -> Void
 
     var body: some View {
-        ZStack {
-            if let loadFailure {
-                LoadErrorView(error: loadFailure) {
-                    Task { await retry() }
-                }
-            } else {
-                ScrollView {
-                    VStack(spacing: .space24) {
-                        TodayHouseworkSummaryComponent.make()
-                            .sectionCardStyle()
-                        if AdDisplayPolicy.shouldShowAds(
-                            isPremium: subscriptionStore.isPremium,
-                            isEnabled: isAdsEnabled
-                        ) {
-                            VStack(spacing: .space8) {
-                                adComponentResolver.resolve(.banner(.dashboardTop))
-                                    .frame(height: 150)
-                                RemoveAdsPromotionLink {
-                                    tappedRemoveAdsPromotionLink()
-                                }
-                            }
-                        }
-                        ContributionSummaryComponent.make()
-                            .redacted(reason: loadingState.isLoading ? .placeholder : [])
-                            .sectionCardStyle()
-                        if !hasTemplate {
-                            PromoteHouseworkTemplateBanner {
-                                isShowHouseworkTemplate = true
-                            }
-                            .sectionCardStyle()
-                        }
-                    }
-                    .padding(.horizontal, .space16)
-                    .padding(.vertical, .space16)
-                }
+        DashboardContent(
+            loadFailure: loadFailure,
+            showsAdvertisement: AdDisplayPolicy.shouldShowAds(
+                isPremium: subscriptionStore.isPremium,
+                isEnabled: isAdsEnabled
+            ),
+            isLoading: loadingState.isLoading,
+            showsTemplateBanner: !hasTemplate,
+            onTapRetry: {
+                Task { await retry() }
+            },
+            onTapRemoveAdsPromotion: { tappedRemoveAdsPromotionLink() },
+            onTapTemplateBanner: { isShowHouseworkTemplate = true },
+            todaySummary: {
+                TodayHouseworkSummaryComponent.make()
+            },
+            advertisement: {
+                adComponentResolver.resolve(.banner(.dashboardTop))
+            },
+            contributionSummary: {
+                ContributionSummaryComponent.make()
             }
-        }
+        )
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
             router.resolve(.houseworkTemplate)
         }
