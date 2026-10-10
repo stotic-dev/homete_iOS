@@ -58,7 +58,8 @@ struct HouseworkTemplateView: View {
                     addItemButton()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         .padding(.trailing, .space24)
-                        .padding(.bottom, .space8)
+                        // 直下に広告バナーが来るため、誤タップを防ぐ余白を取る
+                        .padding(.bottom, .space24)
                 }
                 #if os(iOS)
                 .toolbar {
@@ -166,7 +167,8 @@ private extension HouseworkTemplateView {
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space32)
-            .padding(.bottom, .space64)
+            // 最後の項目が追加ボタンに隠れないよう、ボタンの高さと下の余白ぶん空ける
+            .padding(.bottom, .space64 + .space24)
         }
     }
 
