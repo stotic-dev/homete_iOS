@@ -26,7 +26,7 @@ struct CohabitantJoinAlreadyMemberView: View {
                 Text("閉じる", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
-            .subPrimaryButtonStyle()
+            .primaryButtonStyle()
         }
     }
 

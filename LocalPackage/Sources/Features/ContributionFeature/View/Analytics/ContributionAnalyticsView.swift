@@ -101,7 +101,7 @@ private extension ContributionAnalyticsView {
             Button(.localized("直近のデータがある期間を表示")) {
                 tappedLatestAchievedPeriodShowButton()
             }
-            .subPrimaryButtonStyle()
+            .primaryButtonStyle()
         }
     }
 

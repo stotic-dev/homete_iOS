@@ -134,7 +134,7 @@ private extension TodayHouseworkSummaryContent {
             }
             if summary.hasMoreIncomplete {
                 Button("もっと表示する", action: onTapShowMore)
-                    .primaryButtonStyle()
+                    .subPrimaryButtonStyle()
             }
         }
     }

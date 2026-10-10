@@ -37,7 +37,7 @@ public struct ForceUpdateView: View {
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
                 .padding(.top, .space16)
             }
             .frame(maxWidth: .infinity)

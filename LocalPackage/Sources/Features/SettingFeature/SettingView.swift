@@ -108,7 +108,7 @@ struct SettingView: View {
                         Text("ログアウト", bundle: #bundle)
                             .frame(maxWidth: .infinity)
                     }
-                    .primaryButtonStyle()
+                    .subPrimaryButtonStyle()
                     Button {
                         tappedAccountDeletionRowButton()
                     } label: {

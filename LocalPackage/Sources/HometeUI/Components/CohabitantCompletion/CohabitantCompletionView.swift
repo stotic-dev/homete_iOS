@@ -42,7 +42,7 @@ public struct CohabitantCompletionView: View {
                     Text("始める", bundle: #bundle)
                         .frame(maxWidth: .infinity)
                 }
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
             }
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)

@@ -38,7 +38,7 @@ public struct LoadErrorView: View {
                     .padding(.vertical, .space8)
                     .frame(maxWidth: .infinity)
             }
-            .subPrimaryButtonStyle()
+            .primaryButtonStyle()
         }
         .padding(.horizontal, .space16)
     }

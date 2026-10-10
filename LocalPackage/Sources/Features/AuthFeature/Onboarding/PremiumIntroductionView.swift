@@ -53,7 +53,7 @@ struct PremiumIntroductionView: View {
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
                 Button(.localized("あとで決める")) {
                     tappedSkipButton()
                 }

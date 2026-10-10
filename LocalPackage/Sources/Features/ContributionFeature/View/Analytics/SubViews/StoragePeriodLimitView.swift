@@ -19,7 +19,7 @@ struct StoragePeriodLimitView: View {
             Text("プレミアムプランに登録すると、全期間の家事データを振り返れます", bundle: #bundle)
         } actions: {
             Button(.localized("プレミアムプランを見る"), action: onUpgradeTapped)
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
         }
     }
 
