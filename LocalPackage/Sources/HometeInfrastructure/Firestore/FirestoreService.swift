@@ -79,6 +79,25 @@ public final actor FirestoreService {
         try await batch.commit()
     }
 
+    /// 複数の既存ドキュメントの同じフィールドを、同じ値でまとめて更新する（全件成功か全件失敗のどちらかになる）
+    ///
+    /// `update(fieldPath:value:predicate:)`と同じく、ドキュメントの別のフィールドには触れない。
+    /// - Parameter fieldPath: ドット区切りで入れ子のフィールドも指定できる（例: `thanks.<userId>`）
+    public func batchUpdate(
+        fieldPath: String,
+        value: some Encodable & Sendable,
+        references: (Firestore) -> [DocumentReference]
+    ) async throws {
+        let targets = references(firestore)
+        guard !targets.isEmpty else { return }
+        let encoded = try Firestore.Encoder().encode(value)
+        let batch = firestore.batch()
+        for reference in targets {
+            batch.updateData([fieldPath: encoded], forDocument: reference)
+        }
+        try await batch.commit()
+    }
+
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {
         try await predicate(firestore).delete()
     }

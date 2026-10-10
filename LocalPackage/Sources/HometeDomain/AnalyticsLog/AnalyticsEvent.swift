@@ -9,10 +9,16 @@ public struct AnalyticsEvent: Equatable {
 
     public let name: String
     public let parameters: [String: String]
+    /// 数値で送るパラメータ
+    ///
+    /// GA4のカスタム指標として平均・合計を集計したい値（件数など）は、文字列ではなく数値で送る。
+    /// 文字列で送るとカスタムディメンションとしてしか扱えず、集計できないため。
+    public let numericParameters: [String: Int]
 
-    public init(name: String, parameters: [String: String]) {
+    public init(name: String, parameters: [String: String], numericParameters: [String: Int] = [:]) {
         self.name = name
         self.parameters = parameters
+        self.numericParameters = numericParameters
     }
 
 }
@@ -73,10 +79,12 @@ public extension AnalyticsEvent {
     /// 家事に関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`action` / `step` / `result` パラメータで区別する。
     ///         意図は`HouseworkAnalyticsAction`を参照
-    static func housework(_ action: HouseworkAnalyticsAction) -> Self {
+    /// - Parameter itemCount: 複数選択の一括操作でまとめて書き込んだ家事の件数。1件ずつの操作では渡さない
+    static func housework(_ action: HouseworkAnalyticsAction, itemCount: Int? = nil) -> Self {
         .init(
             name: "housework",
-            parameters: action.parameters
+            parameters: action.parameters,
+            numericParameters: itemCount.map { ["item_count": $0] } ?? [:]
         )
     }
 
