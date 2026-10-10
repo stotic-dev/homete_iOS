@@ -15,11 +15,7 @@ struct HouseworkTemplateEmptyView: View {
 
     var body: some View {
         VStack(spacing: .space24) {
-            Image(systemName: "list.bullet.rectangle")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.iconDecorative)
+            HometteView(.point)
             VStack(spacing: .space8) {
                 Text("テンプレートはまだありません", bundle: #bundle)
                     .font(with: .headLineM)
