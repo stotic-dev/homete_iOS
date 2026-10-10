@@ -219,6 +219,44 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
         #expect(sut.state == expected)
     }
 
+    @Test("目印が進んだ場合、前の目印と同じ日時で覚えていたありがとうは捨て、新しい目印の分だけを覚える")
+    func receiveThanks_markerAdvanced_replacesKeysAtMarker() {
+        // Arrange
+
+        var sut = AppReviewPolicy(
+            savedState: AppReviewPolicyTest.state(
+                thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 1),
+                thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner1")],
+                receivedThanksCount: 1
+            ),
+            now: AppReviewPolicyTest.baseDate
+        )
+        let items = AppReviewPolicyTest.houseworkList([
+            AppReviewPolicyTest.completedItem(
+                id: 2,
+                executorId: AppReviewPolicyTest.accountId,
+                thanks: ["partner2": AppReviewPolicyTest.thanks(afterDays: 2)]
+            ),
+        ])
+        let expected = AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 2),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id2", senderId: "partner2")],
+            receivedThanksCount: 2
+        )
+
+        // Act
+
+        _ = sut.receiveThanks(
+            in: items,
+            accountId: AppReviewPolicyTest.accountId,
+            now: AppReviewPolicyTest.date(afterDays: 2)
+        )
+
+        // Assert
+
+        #expect(sut.state == expected)
+    }
+
     @Test("数え済みのありがとう・自分が担当していない家事のありがとう・自分が送ったありがとうは数えない")
     func receiveThanks_notTargetThanks_doesNotCount() {
         // Arrange
@@ -314,7 +352,7 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
     }
 
     @Test(
-        "受け取ったありがとうの合計が10回になった場合、合計をきっかけにする",
+        "受け取ったありがとうの合計が10回に達したかで、合計をきっかけにするかが変わる",
         arguments: [
             (savedCount: 8, expected: nil),
             (savedCount: 9, expected: .thanksCount),
