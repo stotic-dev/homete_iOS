@@ -32,20 +32,28 @@ public struct BannerViewContainer: View {
             .frame(maxWidth: .infinity)
             .frame(height: height)
             .onGeometryChange(for: CGFloat.self) { proxy in
-                proxy.size.width
+                // 小数の揺れで広告を読み込み直さないよう、整数に丸めてから比較する
+                proxy.size.width.rounded(.down)
             } action: { newWidth in
                 width = newWidth
+                // 読み込み直す広告は高さが変わりうるので、届くまでは前の広告の高さを残さない
+                loadedInlineHeight = 0
             }
             .overlay {
                 if let width, width > 0 {
                     BannerViewRepresentable(type: type, width: width) { height in
-                        loadedInlineHeight = height
+                        // 後ろのコンテンツも一緒に動くよう、トランザクションごとアニメーションさせる
+                        withAnimation {
+                            loadedInlineHeight = height
+                        }
                     }
+                    // 確保した枠からはみ出して、周りのボタンやコンテンツに広告が重ならないようにする
+                    .frame(width: width, height: height)
+                    .clipped()
                     // 回転などで幅が変わったら、新しい幅に合うサイズで広告を読み込み直す
                     .id(width)
                 }
             }
-            .animation(.default, value: loadedInlineHeight)
     }
 
 }
@@ -57,6 +65,7 @@ private extension BannerViewContainer {
         switch type.layout {
         case .anchored:
             // 読み込み前から広告の高さぶんの場所を確保し、読み込み後にレイアウトがずれないようにする
+            // 広告が届かなかった場合も空けたままにする（AdMobの推奨する固定スペースの確保）
             #if canImport(GoogleMobileAds)
             return type.adSize(width: width).size.height
             #else
@@ -75,7 +84,7 @@ private struct BannerViewRepresentable: UIViewRepresentable {
 
     let type: BannerType
     let width: CGFloat
-    let onReceiveAd: (CGFloat) -> Void
+    let onReceiveAd: @MainActor (CGFloat) -> Void
 
     func makeUIView(context: Context) -> UIView {
         #if canImport(GoogleMobileAds)
@@ -97,11 +106,12 @@ private struct BannerViewRepresentable: UIViewRepresentable {
         Coordinator(onReceiveAd: onReceiveAd)
     }
 
+    @MainActor
     final class Coordinator: NSObject {
 
-        var onReceiveAd: (CGFloat) -> Void
+        var onReceiveAd: @MainActor (CGFloat) -> Void
 
-        init(onReceiveAd: @escaping (CGFloat) -> Void) {
+        init(onReceiveAd: @escaping @MainActor (CGFloat) -> Void) {
             self.onReceiveAd = onReceiveAd
         }
 
