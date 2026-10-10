@@ -39,7 +39,7 @@ public struct HometteSpeechView: View {
 
 private extension HometteSpeechView {
 
-    /// 吹き出しのしっぽは、ほめっとの側（左下）に付ける
+    /// 吹き出しのしっぽは、ほめっとの側（左）に付ける
     var bubble: some View {
         Text(message)
             .font(with: .body)
@@ -52,11 +52,12 @@ private extension HometteSpeechView {
                     .fill(.backgroundCard)
                     .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
             }
-            .background(alignment: .bottomLeading) {
+            // 1行の吹き出しは両端が半円になるため、角丸に隠れない左辺の中央に付ける
+            .background(alignment: .leading) {
                 SpeechBubbleTail()
                     .fill(.backgroundCard)
-                    .frame(width: .space16, height: .space16)
-                    .offset(x: -.space8, y: -.space8)
+                    .frame(width: 12, height: .space16)
+                    .offset(x: -10)
             }
             .padding(.leading, .space8)
             .padding(.bottom, size.height / 4)
@@ -64,14 +65,14 @@ private extension HometteSpeechView {
 
 }
 
-/// 吹き出しのしっぽ。右上から左下へ細くなる三角形
+/// 吹き出しのしっぽ。右辺を吹き出しに重ね、左下の先端でほめっとを指す三角形
 struct SpeechBubbleTail: Shape {
 
     func path(in rect: CGRect) -> Path {
         Path { path in
             path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
             path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
             path.closeSubpath()
         }
     }
