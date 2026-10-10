@@ -67,12 +67,17 @@ private extension RegistrationTutorialCard {
 
     var header: some View {
         HStack {
-            Text("\(step.index + 1) / \(RegistrationTutorialStep.allCases.count)")
+            Text(verbatim: "\(step.index + 1) / \(RegistrationTutorialStep.allCases.count)")
                 .font(with: .boldCaption)
                 .foregroundStyle(.onSurfaceVariant)
-                .accessibilityLabel("\(RegistrationTutorialStep.allCases.count)つ中\(step.index + 1)つ目")
+                .accessibilityLabel(
+                    .localized(
+                        "\(RegistrationTutorialStep.allCases.count)つ中\(step.index + 1)つ目",
+                        comment: "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ"
+                    )
+                )
             Spacer()
-            Button("閉じる", action: onTapClose)
+            Button(.localized("閉じる"), action: onTapClose)
                 .font(with: .caption)
                 .foregroundStyle(.onSurfaceVariant)
         }
@@ -82,11 +87,11 @@ private extension RegistrationTutorialCard {
     var footer: some View {
         HStack(spacing: .space8) {
             if !isFirstStep {
-                Button("前へ", action: onTapBack)
+                Button(.localized("前へ"), action: onTapBack)
                     .subPrimaryButtonStyle()
             }
             Spacer()
-            Button(isLastStep ? "はじめる" : "次へ", action: onTapNext)
+            Button(isLastStep ? .localized("はじめる") : .localized("次へ"), action: onTapNext)
                 .primaryButtonStyle()
         }
     }
@@ -149,69 +154,69 @@ private extension RegistrationTutorialCard {
         }
     }
 
-    var title: LocalizedStringKey {
+    var title: LocalizedStringResource {
         switch step {
         case .dashboard:
-            "ダッシュボード"
+            .localized("ダッシュボード")
 
         case .housework:
-            "家事"
+            .localized("家事")
 
         case .houseworkComplete:
-            "家事を完了にする"
+            .localized("家事を完了にする")
 
         case .thanks:
-            "ありがとうを伝えましょう"
+            .localized("ありがとうを伝えましょう")
 
         case .bulkAction:
-            "まとめて操作する"
+            .localized("まとめて操作する")
 
         case .houseworkTemplate:
-            "家事テンプレート"
+            .localized("家事テンプレート")
         }
     }
 
-    var message: LocalizedStringKey {
+    var message: LocalizedStringResource {
         switch step {
         case .dashboard:
-            "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。"
+            .localized("今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。")
 
         case .housework:
-            "＋ボタンから、やる家事を登録しておけます。"
+            .localized("＋ボタンから、やる家事を登録しておけます。")
 
         case .houseworkComplete:
-            "終わった家事は、行の右にある✓ボタンから完了にできます。誰がどの家事をしたかが記録されます。「…」ボタンからは、やらないにするなどほかの操作もできます。"
+            .localized("終わった家事は、行の右にある✓ボタンから完了にできます。誰がどの家事をしたかが記録されます。「…」ボタンからは、やらないにするなどほかの操作もできます。")
 
         case .thanks:
-            "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。"
+            .localized("パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。")
 
         case .bulkAction:
-            "「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。"
+            .localized("「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。")
 
         case .houseworkTemplate:
-            "毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。"
+            .localized("毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。")
         }
     }
 
-    var location: LocalizedStringKey {
+    var location: LocalizedStringResource {
         switch step {
         case .dashboard:
-            "画面下の「ダッシュボード」タブから開けます"
+            .localized("画面下の「ダッシュボード」タブから開けます")
 
         case .housework:
-            "画面下の「家事」タブから開けます"
+            .localized("画面下の「家事」タブから開けます")
 
         case .houseworkComplete:
-            "家事タブの「未完了」に並んだ家事から操作できます"
+            .localized("家事タブの「未完了」に並んだ家事から操作できます")
 
         case .thanks:
-            "家事タブの「完了」に並んだ家事のハートから送れます"
+            .localized("家事タブの「完了」に並んだ家事のハートから送れます")
 
         case .bulkAction:
-            "家事タブの右上の「選択」から使えます"
+            .localized("家事タブの右上の「選択」から使えます")
 
         case .houseworkTemplate:
-            "家事タブの右上のボタンから設定できます"
+            .localized("家事タブの右上のボタンから設定できます")
         }
     }
 
