@@ -54,11 +54,17 @@ struct HouseworkBoardListContent: View {
                 ForEach(selection.items) { item in
                     let isSelectionDisabled = isSelecting && !selection.isSelectable(item)
                     houseworkItemRow(item)
+                        // 選択モード中は行のどこをタップしても選択の切り替えにする。行の中の詳細へ遷移するボタンが
+                        // 先にタップを受け取ると、`List`の選択に届かず詳細画面へ遷移してしまうため
+                        .allowsHitTesting(!isSelecting)
                         .padding(.vertical, .space8)
                         .opacity(isSelectionDisabled ? 0.4 : 1)
                         .selectionDisabled(isSelectionDisabled)
                         .contextMenu {
-                            quickActionMenu(item)
+                            // 選択モード中は1件ずつの操作をさせず、一括操作に寄せる
+                            if !isSelecting {
+                                quickActionMenu(item)
+                            }
                         }
                 }
                 .listRowBackground(Color.clear)
@@ -99,6 +105,7 @@ private extension HouseworkBoardListContent {
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
         let completionInfo = completionInfo(of: item)
         // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
+        // （行のタップ自体も`List`の選択に任せるため、`onTapRow`は呼ばれない）
         return HouseBoardListRow(
             houseworkItem: item.originalItem,
             completionInfo: completionInfo,
