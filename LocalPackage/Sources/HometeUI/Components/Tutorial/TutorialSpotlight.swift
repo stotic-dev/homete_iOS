@@ -245,7 +245,7 @@ struct TutorialSpotlightOverlay<Card: View>: View {
     }
 
     private static var highlightCornerRadius: CGFloat {
-        DesignSystem.Corner.radius16.rawValue
+        DesignSystem.Corner.radius20.rawValue
     }
 
     var body: some View {

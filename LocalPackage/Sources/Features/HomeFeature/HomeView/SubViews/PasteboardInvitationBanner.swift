@@ -60,7 +60,7 @@ private extension PasteboardInvitationBanner {
         }
         .padding(.space16)
         .background {
-            RoundedRectangle(radius: .radius16)
+            RoundedRectangle(radius: .radius20)
                 .fill(.backgroundCard)
         }
     }
@@ -76,7 +76,7 @@ private extension PasteboardInvitationBanner {
         }
         .padding(.space16)
         .background {
-            RoundedRectangle(radius: .radius16)
+            RoundedRectangle(radius: .radius20)
                 .fill(.backgroundCard)
         }
     }

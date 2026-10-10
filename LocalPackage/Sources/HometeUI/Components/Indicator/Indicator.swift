@@ -16,7 +16,7 @@ public struct Indicator: View {
             .padding(.space16)
             .tint(.textPrimary)
             .background(.fillAccentSubtle)
-            .cornerRadius(.radius8)
+            .cornerRadius(.radius12)
     }
 
 }

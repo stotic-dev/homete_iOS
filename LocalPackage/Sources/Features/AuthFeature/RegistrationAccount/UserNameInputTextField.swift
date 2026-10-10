@@ -31,7 +31,7 @@ struct UserNameInputTextField: View {
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
             .background {
-                RoundedRectangle(radius: .radius16)
+                RoundedRectangle(radius: .radius20)
                     .fill(.backgroundCard)
             }
             ZStack {

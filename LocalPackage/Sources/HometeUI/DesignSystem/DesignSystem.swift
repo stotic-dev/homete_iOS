@@ -67,8 +67,8 @@ public extension DesignSystem {
 
     enum Corner: CGFloat {
 
-        case radius8 = 8
-        case radius16 = 16
+        case radius12 = 12
+        case radius20 = 20
 
     }
 

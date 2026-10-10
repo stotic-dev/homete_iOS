@@ -27,7 +27,7 @@ struct NotRegisteredContent: View {
                     .resizable()
                     .frame(maxWidth: .infinity)
                     .aspectRatio(contentMode: .fit)
-                    .cornerRadius(.radius16)
+                    .cornerRadius(.radius20)
                 VStack(spacing: .space8) {
                     Text("まだパートナーが登録されていません", bundle: #bundle)
                         .font(with: .headLineS)

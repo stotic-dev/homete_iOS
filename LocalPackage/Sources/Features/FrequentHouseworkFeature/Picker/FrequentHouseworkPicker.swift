@@ -98,7 +98,7 @@ private extension FrequentHouseworkPicker {
                 .padding(.horizontal, .space16)
                 .frame(minHeight: 32)
                 .background {
-                    RoundedRectangle(radius: .radius8)
+                    RoundedRectangle(radius: .radius12)
                         .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
                 }
         }

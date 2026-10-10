@@ -34,7 +34,7 @@ struct HouseworkTemplateItemRow: View {
         .padding(.vertical, .space8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.backgroundScreen)
         }
     }

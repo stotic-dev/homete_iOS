@@ -27,7 +27,7 @@ struct SettingMenuItemButton: View {
                     .padding(.space8)
                     .foregroundStyle(.textPrimary)
                     .background(.fillAccentSubtle)
-                    .cornerRadius(.radius8)
+                    .cornerRadius(.radius12)
                 Text(item.title(plan: plan))
                     .font(with: .body)
                 Spacer()

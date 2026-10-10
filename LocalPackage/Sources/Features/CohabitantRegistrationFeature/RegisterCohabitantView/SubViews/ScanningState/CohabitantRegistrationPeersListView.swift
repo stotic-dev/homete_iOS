@@ -39,7 +39,7 @@ struct CohabitantRegistrationPeersListView: View {
                                 .padding(.space8)
                                 .foregroundStyle(.textPrimary)
                                 .background(.fillAccentSubtle)
-                                .cornerRadius(.radius8)
+                                .cornerRadius(.radius12)
                             VStack(alignment: .leading, spacing: .space4) {
                                 Text(row.displayName)
                                     .font(with: .body)

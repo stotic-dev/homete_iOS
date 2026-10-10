@@ -81,7 +81,7 @@ private extension SubscriptionManagementView {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space24)
                 .background(.backgroundCard)
-                .cornerRadius(.radius16)
+                .cornerRadius(.radius20)
 
         case let .subscription(period, nextRenewalDate, willRenew):
             VStack(spacing: .space8) {
@@ -105,7 +105,7 @@ private extension SubscriptionManagementView {
             }
             .padding(.space16)
             .background(.backgroundCard)
-            .cornerRadius(.radius16)
+            .cornerRadius(.radius20)
         }
     }
 

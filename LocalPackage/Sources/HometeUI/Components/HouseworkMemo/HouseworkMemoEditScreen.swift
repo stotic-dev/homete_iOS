@@ -245,7 +245,7 @@ private extension HouseworkMemoEditView {
         .padding(.space16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.backgroundCard)
         }
     }

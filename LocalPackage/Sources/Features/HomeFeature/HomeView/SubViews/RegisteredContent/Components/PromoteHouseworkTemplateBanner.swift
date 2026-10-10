@@ -20,7 +20,7 @@ struct PromoteHouseworkTemplateBanner: View {
                 .resizable()
                 .frame(maxWidth: .infinity)
                 .aspectRatio(contentMode: .fit)
-                .cornerRadius(.radius8)
+                .cornerRadius(.radius12)
             VStack(spacing: .space8) {
                 Text("家事のテンプレートが設定されていません", bundle: #bundle)
                     .font(with: .headLineS)

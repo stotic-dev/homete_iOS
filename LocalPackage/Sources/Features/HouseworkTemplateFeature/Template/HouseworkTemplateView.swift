@@ -189,7 +189,7 @@ private extension HouseworkTemplateView {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.space8)
                 .background {
-                    RoundedRectangle(radius: .radius8)
+                    RoundedRectangle(radius: .radius12)
                         .fill(.backgroundCard)
                 }
                 .dropDestination(for: String.self) { ids, _ in
@@ -283,7 +283,7 @@ private extension HouseworkTemplateView {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space8)
             .background {
-                RoundedRectangle(radius: .radius8)
+                RoundedRectangle(radius: .radius12)
                     .fill(.backgroundCard)
             }
         }

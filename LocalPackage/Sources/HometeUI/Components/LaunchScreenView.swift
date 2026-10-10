@@ -20,7 +20,7 @@ public struct LaunchScreenView: View {
                 .resizable()
                 .frame(maxWidth: .infinity)
                 .aspectRatio(contentMode: .fit)
-                .cornerRadius(.radius8)
+                .cornerRadius(.radius12)
             Spacer()
         }
         .padding(.horizontal, .space16)

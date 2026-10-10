@@ -26,7 +26,7 @@ struct CohabitantRegistrationProcessingView: View {
                     .resizable()
                     .frame(maxWidth: .infinity)
                     .aspectRatio(contentMode: .fit)
-                    .cornerRadius(.radius8)
+                    .cornerRadius(.radius12)
                 Text("しばらくお待ちください", bundle: #bundle)
                     .font(with: .caption)
             }

@@ -25,7 +25,7 @@ public struct GroupMemberRow: View {
                 .padding(.space8)
                 .foregroundStyle(.textPrimary)
                 .background(.fillAccentSubtle)
-                .cornerRadius(.radius8)
+                .cornerRadius(.radius12)
             Text(member.userName)
                 .font(with: .body)
             Spacer()

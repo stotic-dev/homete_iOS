@@ -30,10 +30,10 @@ struct HouseworkTemplateConflictBanner: View {
         }
         .padding(.space16)
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.backgroundCard)
                 .overlay {
-                    RoundedRectangle(radius: .radius8)
+                    RoundedRectangle(radius: .radius12)
                         .stroke(.fillDestructive, lineWidth: 1)
                 }
         }
