@@ -13,10 +13,8 @@ import SwiftUI
 /// このコンポーネントは渡されたアクションを描画してタップを伝えるだけに留める。
 struct HouseworkBulkActionToolbarContent: View {
 
-    /// 並べるアクション
+    /// 並べるアクション。何も選択されていない間は空で、ボタンを1つも出さない
     let actions: [HouseworkQuickAction]
-    /// アクションを実行できるかどうか（何も選択されていない間は非活性で見せる）
-    let isEnabled: Bool
     let onTap: (HouseworkQuickAction) -> Void
 
     var body: some View {
@@ -39,7 +37,6 @@ private extension HouseworkBulkActionToolbarContent {
                 .padding(.space8)
                 .foregroundStyle(foregroundStyle(action))
         }
-        .disabled(!isEnabled)
         // アイコンだけでは何をするボタンか読み上げられないため、メニューと同じ文言を添える
         .accessibilityLabel(action.label)
     }
@@ -52,18 +49,9 @@ private extension HouseworkBulkActionToolbarContent {
 }
 
 #if DEBUG
-#Preview("HouseworkBulkActionToolbarContent_未完了_未選択", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkBulkActionToolbarContent_未完了", traits: .sizeThatFitsLayout) {
     HouseworkBulkActionToolbarContent(
         actions: [.complete, .remove],
-        isEnabled: false,
-        onTap: { _ in }
-    )
-}
-
-#Preview("HouseworkBulkActionToolbarContent_未完了_選択あり", traits: .sizeThatFitsLayout) {
-    HouseworkBulkActionToolbarContent(
-        actions: [.complete, .remove],
-        isEnabled: true,
         onTap: { _ in }
     )
 }
@@ -71,7 +59,6 @@ private extension HouseworkBulkActionToolbarContent {
 #Preview("HouseworkBulkActionToolbarContent_完了_実施者以外", traits: .sizeThatFitsLayout) {
     HouseworkBulkActionToolbarContent(
         actions: [.sendThanks, .returnToIncomplete],
-        isEnabled: true,
         onTap: { _ in }
     )
 }
@@ -79,7 +66,6 @@ private extension HouseworkBulkActionToolbarContent {
 #Preview("HouseworkBulkActionToolbarContent_完了_実施者本人", traits: .sizeThatFitsLayout) {
     HouseworkBulkActionToolbarContent(
         actions: [.returnToIncomplete],
-        isEnabled: true,
         onTap: { _ in }
     )
 }

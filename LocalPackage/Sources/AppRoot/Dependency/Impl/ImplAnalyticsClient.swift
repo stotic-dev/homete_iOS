@@ -17,7 +17,9 @@ extension AnalyticsClient {
     } setUserProperty: { property in
         Analytics.setUserProperty(property.value, forName: property.name)
     } log: { event in
-        Analytics.logEvent(event.name, parameters: event.parameters)
+        var parameters: [String: Any] = event.parameters
+        parameters.merge(event.numericParameters) { current, _ in current }
+        Analytics.logEvent(event.name, parameters: parameters)
     }
 
 }

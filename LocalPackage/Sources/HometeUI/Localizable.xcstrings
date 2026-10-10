@@ -100,7 +100,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap “Select” and choose several chores to mark them as done or say thanks all at once."
+            "value" : "Tap “Select” to choose several chores, then mark them all as done or say thanks at once."
           }
         }
       }
@@ -226,7 +226,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Do Several at Once"
+            "value" : "Select Multiple Chores"
           }
         }
       }
@@ -388,6 +388,7 @@
       }
     },
     "全%lldステップ中%lldステップ目" : {
+      "comment" : "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -486,7 +487,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send it with the heart on chores listed under “Done” on the Chores tab"
+            "value" : "Tap the heart on a chore under Done in the Chores tab"
           }
         }
       }
@@ -496,7 +497,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the chores listed under “To Do” on the Chores tab"
+            "value" : "Available on chores under To Do in the Chores tab"
           }
         }
       }
@@ -506,7 +507,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use “Select” at the top right of the Chores tab"
+            "value" : "Tap Select at the top right of the Chores tab"
           }
         }
       }
@@ -702,7 +703,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add your weekly chores by day of the week, and they'll appear on the chore board automatically."
+            "value" : "Register your weekly chores by day of the week, and they'll show up on your chore list automatically."
           }
         }
       }
@@ -744,7 +745,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open it from the “Dashboard” tab at the bottom of the screen"
+            "value" : "Open it from the Dashboard tab at the bottom of the screen"
           }
         }
       }
@@ -754,7 +755,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open it from the “Chores” tab at the bottom of the screen"
+            "value" : "Open it from the Chores tab at the bottom of the screen"
           }
         }
       }
@@ -774,7 +775,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mark a finished chore as done with the ✓ button on the right of its row. Who did which chore is recorded. The “…” button has more options, like marking it as “Won't Do.”"
+            "value" : "Mark a finished chore as done with the ✓ button on the right of its row, and it records who did it. The “…” button has other actions, such as Won't Do."
           }
         }
       }
@@ -908,7 +909,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use the + button to add the chores you plan to do."
+            "value" : "Add the chores you plan to do with the + button."
           }
         }
       }

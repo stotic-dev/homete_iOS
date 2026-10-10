@@ -263,6 +263,17 @@
         }
       }
     },
+    "お風呂掃除" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean Bathroom"
+          }
+        }
+      }
+    },
     "がんばった" : {
       "localizations" : {
         "en" : {
@@ -359,6 +370,17 @@
         }
       }
     },
+    "たろう" : {
+      "comment" : "チュートリアルの見本で、自分として出す架空の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alex"
+          }
+        }
+      }
+    },
     "どれくらいがんばったか" : {
       "localizations" : {
         "en" : {
@@ -375,6 +397,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How hard did you work?"
+          }
+        }
+      }
+    },
+    "はなこ" : {
+      "comment" : "チュートリアルの見本で、パートナーとして出す架空の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sam"
           }
         }
       }
@@ -485,6 +518,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comment (Optional)"
+          }
+        }
+      }
+    },
+    "ゴミ出し" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Out Trash"
           }
         }
       }
@@ -750,6 +794,17 @@
         }
       }
     },
+    "夕食の準備" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make Dinner"
+          }
+        }
+      }
+    },
     "完了" : {
       "localizations" : {
         "en" : {
@@ -950,6 +1005,17 @@
         }
       }
     },
+    "洗濯" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laundry"
+          }
+        }
+      }
+    },
     "無料プランでは、いつもの家事を%lld件まで登録できます" : {
       "localizations" : {
         "en" : {
@@ -1098,6 +1164,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "食器洗い" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wash Dishes"
           }
         }
       }

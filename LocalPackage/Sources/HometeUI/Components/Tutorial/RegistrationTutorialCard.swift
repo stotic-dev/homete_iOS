@@ -75,7 +75,10 @@ private extension RegistrationTutorialCard {
                 .font(with: .boldCaption)
                 .foregroundStyle(.textSecondary)
                 .accessibilityLabel(
-                    .localized("全\(RegistrationTutorialStep.allCases.count)ステップ中\(step.index + 1)ステップ目")
+                    .localized(
+                        "全\(RegistrationTutorialStep.allCases.count)ステップ中\(step.index + 1)ステップ目",
+                        comment: "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ"
+                    )
                 )
             Spacer()
             Button(.localized("閉じる"), action: onTapClose)

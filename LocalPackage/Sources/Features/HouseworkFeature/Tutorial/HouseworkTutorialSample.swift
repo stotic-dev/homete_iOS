@@ -15,32 +15,56 @@ public enum HouseworkTutorialSample {
     /// サンプルの家事の担当者として出すメンバー
     ///
     /// 実際のメンバー名を出すと本物の記録と見分けにくいため、架空の名前にする。
-    public static let members = CohabitantMemberList(
-        value: [
-            .init(id: ownId, userName: "たろう"),
-            .init(id: partnerId, userName: "はなこ"),
-        ],
-        ownId: ownId
-    )
+    public static var members: CohabitantMemberList {
+        .init(
+            value: [
+                .init(
+                    id: ownId,
+                    userName: LocalizedStringResource.localized("たろう", comment: "チュートリアルの見本で、自分として出す架空の名前").resolved()
+                ),
+                .init(
+                    id: partnerId,
+                    userName: LocalizedStringResource.localized("はなこ", comment: "チュートリアルの見本で、パートナーとして出す架空の名前")
+                        .resolved()
+                ),
+            ],
+            ownId: ownId
+        )
+    }
 
     /// 今日の家事のサンプル
     ///
     /// 未完了の家事と、パートナーと自分がそれぞれ完了した家事を含める。
     /// パートナーが完了した家事にはまだありがとうを伝えていない状態にし、ハートを押せる見た目にする。
-    public static func items(today: Date) -> [HouseworkItem] {
-        [
-            item(id: "1", title: "ゴミ出し", point: 10, today: today, executorId: partnerId),
-            item(id: "2", title: "食器洗い", point: 20, today: today, executorId: ownId),
-            item(id: "3", title: "洗濯", point: 20, today: today),
-            item(id: "4", title: "お風呂掃除", point: 30, today: today),
-            item(id: "5", title: "夕食の準備", point: 40, today: today),
+    /// - Parameter locale: 家事の名前の言語。`nil`ならアプリが表示している言語
+    public static func items(today: Date, locale: Locale? = nil) -> [HouseworkItem] {
+        let title = { (resource: LocalizedStringResource) in resource.resolved(locale: locale) }
+        return [
+            item(
+                id: "1",
+                title: title(.localized("ゴミ出し", comment: "チュートリアルの見本で出す家事の名前")),
+                point: 10,
+                today: today,
+                executorId: partnerId
+            ),
+            item(
+                id: "2",
+                title: title(.localized("食器洗い", comment: "チュートリアルの見本で出す家事の名前")),
+                point: 20,
+                today: today,
+                executorId: ownId
+            ),
+            item(id: "3", title: title(.localized("洗濯", comment: "チュートリアルの見本で出す家事の名前")), point: 20, today: today),
+            item(id: "4", title: title(.localized("お風呂掃除", comment: "チュートリアルの見本で出す家事の名前")), point: 30, today: today),
+            item(id: "5", title: title(.localized("夕食の準備", comment: "チュートリアルの見本で出す家事の名前")), point: 40, today: today),
         ]
     }
 
     /// サンプルの家事を、指定日の家事一覧として返す
-    public static func dailyList(today: Date) -> DailyHouseworkList {
+    /// - Parameter locale: 家事の名前の言語。`nil`ならアプリが表示している言語
+    public static func dailyList(today: Date, locale: Locale? = nil) -> DailyHouseworkList {
         .init(
-            items: items(today: today),
+            items: items(today: today, locale: locale),
             metaData: .init(indexedDate: .init(value: today), expiredAt: .distantFuture)
         )
     }

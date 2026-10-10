@@ -219,7 +219,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your partner needs to update the app"
+            "value" : "The other device needs an app update"
           }
         }
       }
@@ -229,7 +229,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ask them to update the app to the latest version on their device, then try again."
+            "value" : "Update the app to the latest version on the other device, then try again."
           }
         }
       }
