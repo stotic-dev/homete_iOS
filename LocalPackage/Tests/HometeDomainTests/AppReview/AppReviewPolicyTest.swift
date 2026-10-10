@@ -313,12 +313,18 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
         #expect(sut.state == expected)
     }
 
-    @Test("受け取ったありがとうの合計が10回になった場合、合計をきっかけにする")
-    func receiveThanks_reachesThreshold_returnsThanksCount() {
+    @Test(
+        "受け取ったありがとうの合計が10回になった場合、合計をきっかけにする",
+        arguments: [
+            (savedCount: 8, expected: nil),
+            (savedCount: 9, expected: .thanksCount),
+        ] as [(savedCount: Int, expected: AppReviewTrigger?)]
+    )
+    func receiveThanks_thanksCountThreshold(savedCount: Int, expected: AppReviewTrigger?) {
         // Arrange
 
         var sut = AppReviewPolicy(
-            savedState: AppReviewPolicyTest.state(receivedThanksCount: 9),
+            savedState: AppReviewPolicyTest.state(receivedThanksCount: savedCount),
             now: AppReviewPolicyTest.baseDate
         )
 
@@ -332,7 +338,59 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
 
         // Assert
 
-        #expect(actual == .thanksCount)
+        #expect(actual == expected)
+    }
+
+    @Test("別の日の家事や手伝いで担当した家事のありがとうも数え、同居人どうしのありがとうは数えない")
+    func receiveThanks_acrossDaysAndHelpers_countsOnlyOwnHousework() {
+        // Arrange
+
+        var sut = AppReviewPolicy(savedState: nil, now: AppReviewPolicyTest.baseDate)
+        let items = StoredAllHouseworkList(value: [
+            .makeForTest(items: [
+                AppReviewPolicyTest.completedItem(
+                    id: 1,
+                    executorId: AppReviewPolicyTest.accountId,
+                    thanks: ["partner": AppReviewPolicyTest.thanks(afterDays: 1)]
+                ),
+            ]),
+            .makeForTest(items: [
+                .makeForTest(
+                    id: 2,
+                    indexedDate: AppReviewPolicyTest.date(afterDays: 1),
+                    state: .completed,
+                    executors: [
+                        .init(userId: "partner1", percentage: 50, point: 50),
+                        .init(userId: AppReviewPolicyTest.accountId, percentage: 50, point: 50),
+                    ],
+                    thanks: ["partner2": AppReviewPolicyTest.thanks(afterDays: 2)]
+                ),
+                .makeForTest(
+                    id: 3,
+                    indexedDate: AppReviewPolicyTest.date(afterDays: 1),
+                    state: .completed,
+                    executorId: "partner1",
+                    thanks: ["partner2": AppReviewPolicyTest.thanks(afterDays: 3)]
+                ),
+            ]),
+        ])
+        let expected = AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 2),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id2", senderId: "partner2")],
+            receivedThanksCount: 2
+        )
+
+        // Act
+
+        _ = sut.receiveThanks(
+            in: items,
+            accountId: AppReviewPolicyTest.accountId,
+            now: AppReviewPolicyTest.date(afterDays: 3)
+        )
+
+        // Assert
+
+        #expect(sut.state == expected)
     }
 
     @Test(
