@@ -26,6 +26,8 @@ Text("家事を追加")
 Button("閉じる") { … }
 ```
 
+- `LocalizedStringResource`を受け取るSwiftUIの初期化には、iOS 26以降にしか無いものがある（`TextField`・`Tab`）。デプロイメントターゲットはiOS 17なので、
+  これらはラベルを`Text("…", bundle: #bundle)`で渡す。`make build-local-package`はiOS 26.2向けにビルドするため、この誤りを検出できない
 - 文言を受け取る共通コンポーネントの引数・文言を返すプロパティは`String`や`LocalizedStringKey`ではなく`LocalizedStringResource`にする
 - 文の断片をつなげて1文にしない（語順が言語で変わる）。条件ごとに1文ずつの文言にする
 - 1〜2文字の文言など意味を取り違えやすいものには`comment:`を付ける（Generate Translationの精度が上がる）
