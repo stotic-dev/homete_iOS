@@ -61,8 +61,8 @@ private extension AnalyticsRankingSection {
             ForEach(items) { item in
                 AnalyticsRankingRow(
                     item: item,
-                    totalUnit: criterion.totalUnit.resolved(),
-                    averageDenominatorUnit: averageDenominatorUnit.resolved()
+                    criterion: criterion,
+                    averageDenominator: averageDenominator
                 )
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space16)
@@ -78,10 +78,10 @@ private extension AnalyticsRankingSection {
         return CGFloat(rowCount) * (Self.rowHeight + 1)
     }
 
-    var averageDenominatorUnit: LocalizedStringResource {
+    var averageDenominator: AnalyticsRankingRow.AverageDenominator {
         switch selectedPriodType {
-        case .week, .month: .localized("日", comment: "1日あたりの平均の単位（例: 17.1pt / 日）")
-        case .year: .localized("月", comment: "1か月あたりの平均の単位（例: 17.1pt / 月）")
+        case .week, .month: .day
+        case .year: .month
         }
     }
 

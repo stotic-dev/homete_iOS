@@ -72,6 +72,7 @@ private extension ContributionSummaryComponent {
 struct ContributionSummaryContent: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.locale) var locale
     @Environment(\.now) var now
 
     @Binding var isShowAnalytics: Bool
@@ -151,8 +152,11 @@ private extension ContributionSummaryContent {
     }
 
     var monthTitle: LocalizedStringResource {
-        let month = calendar.component(.month, from: now)
-        return .localized("\(month)月の家事貢献度サマリー")
+        // 月の表し方（10月 / October）は言語で変わるため、数字ではなく月の名前を差し込む
+        let month = now.formatted(
+            Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month(.wide)
+        )
+        return .localized("\(month)の家事貢献度サマリー", comment: "月の名前が入る（例: 10月の家事貢献度サマリー）")
     }
 
 }

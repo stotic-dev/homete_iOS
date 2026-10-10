@@ -26,11 +26,4 @@ enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable {
         }
     }
 
-    var totalUnit: LocalizedStringResource {
-        switch self {
-        case .point: "pt"
-        case .achievement: .localized("件", comment: "家事を達成した数の単位。数値の直後に空白なしで付く（例: 24件）")
-        }
-    }
-
 }
