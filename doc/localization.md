@@ -21,7 +21,8 @@ bundleを引き、ビルドは通るのに訳が使われない（日本語の�
 | 使う場所 | 書き方 |
 |---|---|
 | `Text` | `Text("家事を追加", bundle: #bundle)` |
-| `bundle`を受け取れないAPI（`Button`・`Label`・`TextField`・`Toggle`・`Picker`・`Section`・`Tab`・`navigationTitle`・`alert`・`accessibilityLabel`・Chartsの`.value`など） | `Button(.localized("閉じる")) { … }` |
+| `bundle`を受け取れないAPI（`Button`・`Label`・`Toggle`・`Picker`・`Section`・`navigationTitle`・`alert`・`accessibilityLabel`・Chartsの`.value`など） | `Button(.localized("閉じる")) { … }` |
+| `TextField`・`Tab`（`LocalizedStringResource`を受け取る初期化がiOS 26以降にしか無い） | ラベルを`Text`で渡す。`TextField(text: $name) { Text("カテゴリの名前", bundle: #bundle) }` |
 | 共通コンポーネント（`SectionCard`・`DescriptionPopoverButton`など）の引数 | `SectionCard(.localized("担当者")) { … }` |
 | 文言を返すプロパティ・関数 | 戻り値を`LocalizedStringResource`にして`.localized("…")`を返す |
 | 画面の外で文字列が必要な箇所（通知の文面・共有する文など） | `LocalizedStringResource.localized("…").resolved()` |
