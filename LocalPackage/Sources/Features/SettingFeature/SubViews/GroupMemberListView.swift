@@ -59,7 +59,7 @@ private extension GroupMemberListView {
         .padding(.horizontal, .space16)
         .padding(.vertical, .space8)
         .background(.backgroundCard)
-        .cornerRadius(.radius16)
+        .cornerRadius(.radius20)
     }
 
     var emptyContent: some View {
@@ -70,7 +70,7 @@ private extension GroupMemberListView {
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
             .background(.backgroundCard)
-            .cornerRadius(.radius16)
+            .cornerRadius(.radius20)
     }
 
 }

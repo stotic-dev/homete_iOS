@@ -25,7 +25,7 @@ public struct WeekdayLabel: View {
             .frame(maxWidth: .infinity, minHeight: 40)
             .foregroundStyle(isSelected ? .textOnAccent : .textPrimary)
             .background {
-                RoundedRectangle(radius: .radius8)
+                RoundedRectangle(radius: .radius12)
                     .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
             }
     }

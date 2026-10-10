@@ -39,7 +39,7 @@ public struct ClearableTextField: View {
             .padding()
             .font(with: .body)
             .background {
-                RoundedRectangle(radius: .radius8)
+                RoundedRectangle(radius: .radius12)
                     .foregroundStyle(.fillAccentSubtle)
             }
             Button {

@@ -36,7 +36,7 @@ struct FrequentHouseworkChip: View {
             .padding(.horizontal, .space8)
             .frame(maxWidth: .infinity, minHeight: 44)
             .background {
-                RoundedRectangle(radius: .radius8)
+                RoundedRectangle(radius: .radius12)
                     .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
             }
             .opacity(isUsable ? 1 : 0.5)

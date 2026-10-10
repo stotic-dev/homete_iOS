@@ -15,7 +15,7 @@ struct DestructiveButtonStyle: ButtonStyle {
         configuration
             .commonStyle(.textOnDestructive)
             .background(.fillDestructive)
-            .cornerRadius(.radius16)
+            .cornerRadius(.radius20)
             .opacity(isEnabled ? 1 : 0.5)
     }
 

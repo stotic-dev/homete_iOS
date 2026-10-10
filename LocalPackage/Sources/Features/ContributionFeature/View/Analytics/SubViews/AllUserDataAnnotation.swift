@@ -35,7 +35,7 @@ struct AllUserDataAnnotation: View {
         .padding(.horizontal, .space8)
         .padding(.vertical, .space4)
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.background)
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
         }

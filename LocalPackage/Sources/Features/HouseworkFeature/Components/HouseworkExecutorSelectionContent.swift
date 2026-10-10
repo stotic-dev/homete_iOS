@@ -50,7 +50,7 @@ struct HouseworkExecutorSelectionContent: View {
             }
         }
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.backgroundCard)
         }
     }

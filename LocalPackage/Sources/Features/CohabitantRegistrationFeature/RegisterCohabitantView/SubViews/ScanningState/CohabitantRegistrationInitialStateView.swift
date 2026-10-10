@@ -37,7 +37,7 @@ struct CohabitantRegistrationInitialStateView: View {
                 .resizable()
                 .frame(maxWidth: .infinity)
                 .aspectRatio(contentMode: .fit)
-                .cornerRadius(.radius8)
+                .cornerRadius(.radius12)
             Spacer()
                 .frame(height: .space16)
             if let onTapInvite {

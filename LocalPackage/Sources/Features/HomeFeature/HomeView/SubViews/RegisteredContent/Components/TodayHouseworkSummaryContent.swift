@@ -97,7 +97,7 @@ private extension TodayHouseworkSummaryContent {
         .frame(maxWidth: .infinity)
         .padding(.vertical, .space56)
         .overlay {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .stroke(style: .init(lineWidth: 2, dash: [8]))
                 .foregroundStyle(.fillAccent)
         }

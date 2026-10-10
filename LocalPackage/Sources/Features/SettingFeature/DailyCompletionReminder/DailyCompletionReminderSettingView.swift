@@ -128,7 +128,7 @@ private extension DailyCompletionReminderSettingView {
         }
         .padding(.space16)
         .background(.backgroundCard)
-        .cornerRadius(.radius16)
+        .cornerRadius(.radius20)
     }
 
     var enabledBinding: Binding<Bool> {
