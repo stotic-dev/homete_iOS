@@ -31,13 +31,13 @@ public enum CohabitantRegistrationEvent: Equatable, Sendable {
 
     // MARK: 非同期処理の結果
 
-    /// 同居人レコードの作成が完了した
-    case cohabitantRegistered
-    /// 同居人レコードの作成に失敗した
-    case cohabitantRegistrationFailed
-    /// 自分のアカウントへの同居人IDの保存が完了した
-    case cohabitantIdSaved(String)
-    /// 自分のアカウントへの同居人IDの保存に失敗した
-    case cohabitantIdSaveFailed
+    /// 招待トークンの発行が完了した
+    case invitationIssued(token: String)
+    /// 招待トークンの発行に失敗した
+    case invitationIssueFailed
+    /// 同居人グループへの参加が自分のアカウントに反映された
+    case cohabitantJoined
+    /// 同居人グループへの参加、または参加結果の反映に失敗した
+    case cohabitantJoinFailed
 
 }

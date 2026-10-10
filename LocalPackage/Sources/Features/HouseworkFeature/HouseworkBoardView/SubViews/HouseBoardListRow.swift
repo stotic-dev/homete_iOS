@@ -194,6 +194,7 @@ private extension HouseBoardListRow {
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(.localized("ありがとうを伝える"))
+        .tutorialSpotlightTarget(.houseworkThanksButton)
     }
 
 }

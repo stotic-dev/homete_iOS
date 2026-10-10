@@ -9,16 +9,25 @@ import Foundation
 
 public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
 
+    /// 現在の登録方式のバージョン
+    /// - Note: 1（フィールド無し）はリーダーがクライアントから同居人グループを作る旧方式。
+    ///         2は招待トークンでフォロワー自身が参加する方式（ADR-0040）。方式が違う端末どうしでは登録を進められない
+    public static let currentProtocolVersion = 2
+
     public let type: CommunicateType
+    /// 送信元の登録方式のバージョン
+    /// - Note: 旧バージョンのアプリは送ってこないためnilになる。旧バージョンのアプリは知らないキーを読み飛ばすので、
+    ///         このフィールドを足しても相手の解読は失敗しない
+    public let protocolVersion: Int?
 
     public enum CommunicateType: Codable, Equatable, Sendable {
 
         /// 登録を行うメンバーが確定したかどうかの確認
         case fixedMember(isOK: Bool)
-        /// アカウントIDの共有
+        /// 役割の共有
         case preRegistration(role: CohabitantRegistrationRole)
-        /// 同居人IDの共有
-        case shareCohabitantId(id: String)
+        /// 招待トークンの共有
+        case shareInvitation(token: String)
         /// 登録完了したかどうかの確認
         case complete
 
@@ -40,12 +49,12 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         return role
     }
 
-    /// 同居人ID
-    public var cohabitantId: String? {
-        guard case let .shareCohabitantId(id) = type else {
+    /// 招待トークン
+    public var invitationToken: String? {
+        guard case let .shareInvitation(token) = type else {
             return nil
         }
-        return id
+        return token
     }
 
     /// 登録処理が完了したかどうか
@@ -63,17 +72,31 @@ public struct CohabitantRegistrationMessage: Codable, Equatable, Sendable {
         return encodedData
     }
 
+    /// 登録方式が自分より古い端末からのメッセージかどうか
+    public var isFromOutdatedPeer: Bool {
+        (protocolVersion ?? 1) < Self.currentProtocolVersion
+    }
+
     public init(type: CommunicateType) {
+        self.init(type: type, protocolVersion: Self.currentProtocolVersion)
+    }
+
+    /// - Note: 旧バージョンのアプリから届くメッセージをテストで作るためのもの。送信するメッセージには常に現在のバージョンを載せる
+    init(type: CommunicateType, protocolVersion: Int?) {
         self.type = type
+        self.protocolVersion = protocolVersion
     }
 
 }
 
 public extension CohabitantRegistrationMessage {
 
-    init(_ data: Data) {
+    /// 受信したデータをメッセージに復元する
+    /// - Note: 相手のアプリのバージョンが違うと、知らない種類のメッセージが届くことがある。
+    ///         相手の端末から届くデータで落ちないよう、解読できない場合はnilを返して呼び出し側で捨てる
+    init?(_ data: Data) {
         guard let message = try? JSONDecoder().decode(CohabitantRegistrationMessage.self, from: data) else {
-            preconditionFailure("Invalid data(\(data)).")
+            return nil
         }
         self = message
     }

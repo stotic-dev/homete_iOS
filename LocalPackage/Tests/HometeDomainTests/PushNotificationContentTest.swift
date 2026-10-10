@@ -96,7 +96,12 @@ struct PushNotificationContentTest {
     func thanksMessage_returnsTitleAndBody() {
         // Arrange
 
-        let sut = PushNotificationContent.thanksMessage(senderName: "はなこ", houseworkTitle: "洗濯", comment: "ありがとう！")
+        let sut = PushNotificationContent.thanksMessage(
+            senderName: "はなこ",
+            houseworkTitle: "洗濯",
+            houseworkId: "houseworkId",
+            comment: "ありがとう！"
+        )
 
         // Act
 
@@ -128,7 +133,7 @@ struct PushNotificationContentTest {
                 count: 2,
                 data: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
             ),
-            .thanksMessage(senderName: "はなこ", houseworkTitle: "洗濯", comment: "ありがとう！"),
+            .thanksMessage(senderName: "はなこ", houseworkTitle: "洗濯", houseworkId: "houseworkId", comment: "ありがとう！"),
         ]
     )
     func initUserInfo_payload_restoresContent(content: PushNotificationContent) {

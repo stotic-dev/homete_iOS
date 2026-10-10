@@ -16,10 +16,17 @@ public struct PushNotificationContent: Equatable, Sendable {
     public let message: Message
     /// ふりかえり通知の予約用データ。付けないときは`nil`
     public let completedData: HouseworkCompletedNotificationData?
+    /// 通知をタップしたときに、ありがとうが届いた家事の詳細画面を開くためのデータ。ありがとうの通知以外は`nil`
+    public let thanksData: HouseworkThanksNotificationData?
 
-    public init(message: Message, completedData: HouseworkCompletedNotificationData? = nil) {
+    public init(
+        message: Message,
+        completedData: HouseworkCompletedNotificationData? = nil,
+        thanksData: HouseworkThanksNotificationData? = nil
+    ) {
         self.message = message
         self.completedData = completedData
+        self.thanksData = thanksData
     }
 
 }
@@ -93,7 +100,7 @@ public extension PushNotificationContent {
 
     /// 通知のdataとして送る文字列の辞書
     var payload: [String: String] {
-        var payload = completedData?.payload ?? [:]
+        var payload = (completedData?.payload ?? [:]).merging(thanksData?.payload ?? [:]) { current, _ in current }
         if let encoded = try? JSONEncoder().encode(message),
            let messageJSON = String(data: encoded, encoding: .utf8) {
             payload[Self.messageKey] = messageJSON
@@ -107,7 +114,11 @@ public extension PushNotificationContent {
         guard let messageJSON = userInfo[Self.messageKey] as? String,
               let message = try? JSONDecoder().decode(Message.self, from: Data(messageJSON.utf8)) else { return nil }
 
-        self.init(message: message, completedData: HouseworkCompletedNotificationData(userInfo: userInfo))
+        self.init(
+            message: message,
+            completedData: HouseworkCompletedNotificationData(userInfo: userInfo),
+            thanksData: HouseworkThanksNotificationData(userInfo: userInfo)
+        )
     }
 
     /// 自分で終えた家事の完了通知
@@ -158,8 +169,18 @@ public extension PushNotificationContent {
         .init(message: .completedBulk(executorName: executorName, count: count), completedData: data)
     }
 
-    static func thanksMessage(senderName: String, houseworkTitle: String, comment: String) -> Self {
-        .init(message: .thanks(senderName: senderName, houseworkTitle: houseworkTitle, comment: comment))
+    /// 完了した家事に届いたありがとうの通知
+    /// - Parameter houseworkId: ありがとうが届いた家事のID。通知をタップしたときに、この家事の詳細画面を開く
+    static func thanksMessage(
+        senderName: String,
+        houseworkTitle: String,
+        houseworkId: String,
+        comment: String
+    ) -> Self {
+        .init(
+            message: .thanks(senderName: senderName, houseworkTitle: houseworkTitle, comment: comment),
+            thanksData: .init(houseworkId: houseworkId)
+        )
     }
 
 }

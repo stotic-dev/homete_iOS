@@ -61,13 +61,9 @@ struct CohabitantRegistrationSession: View {
             store.send(.peersChanged(Set(newValue.map { CohabitantRegistrationPeerID(displayName: $0.displayName) })))
         }
         .onChange(of: receiveData) { _, newValue in
-            guard let newValue else { return }
-            store.send(
-                .received(
-                    CohabitantRegistrationMessage(newValue.body),
-                    from: .init(displayName: newValue.sender.displayName)
-                )
-            )
+            guard let newValue,
+                  let message = CohabitantRegistrationMessage(newValue.body) else { return }
+            store.send(.received(message, from: .init(displayName: newValue.sender.displayName)))
         }
         .onReceive(roleNotificationTimer) { _ in
             store.send(.tick)
@@ -118,6 +114,9 @@ private extension CohabitantRegistrationState.Alert {
 
         case .registrationFailed:
             .localized("登録に失敗しました")
+
+        case .outdatedPeer:
+            .localized("相手のアプリのアップデートが必要です")
         }
     }
 
@@ -131,6 +130,9 @@ private extension CohabitantRegistrationState.Alert {
 
         case .registrationFailed:
             .localized("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
+
+        case .outdatedPeer:
+            .localized("相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。")
         }
     }
 

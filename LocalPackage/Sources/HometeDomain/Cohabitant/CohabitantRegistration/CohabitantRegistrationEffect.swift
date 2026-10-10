@@ -11,10 +11,12 @@ public enum CohabitantRegistrationEffect: Equatable, Sendable {
 
     /// メッセージを送信する
     case send(CohabitantRegistrationMessage, to: Set<PeerID>)
-    /// 同居人レコードを作成する
-    case registerCohabitant(CohabitantData)
-    /// 自分のアカウントに同居人IDを保存する
-    case saveCohabitantId(String)
+    /// 招待トークンを発行する（リーダー）
+    case issueInvitation
+    /// 招待トークンを使って同居人グループに参加する（フォロワー）
+    case joinCohabitant(invitationToken: String)
+    /// サーバー側でグループIDが書き込まれた自分のアカウントを取り直す（リーダー）
+    case reloadAccount
     /// Analyticsイベントを送る
     case log(CohabitantRegistrationAnalyticsAction)
 

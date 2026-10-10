@@ -8,28 +8,19 @@ import Testing
 
 struct CohabitantRegistrationRoleTests {
 
-    @Test("フォロワーの場合、アカウントIDが取得できること")
-    func accountId_follower() {
-        // Arrange
-        let role = CohabitantRegistrationRole.follower(accountId: "id")
-
+    @Test(
+        "リーダーかどうかを判定できること",
+        arguments: [
+            (CohabitantRegistrationRole.lead, true),
+            (.follower, false),
+        ]
+    )
+    func isLeader(role: CohabitantRegistrationRole, expected: Bool) {
         // Act
-        let actual = role.accountId
+        let actual = role.isLeader
 
         // Assert
-        #expect(actual == "id")
-    }
-
-    @Test("リーダーの場合、アカウントIDはnilを返す")
-    func accountId_lead() {
-        // Arrange
-        let role = CohabitantRegistrationRole.lead
-
-        // Act
-        let actual = role.accountId
-
-        // Assert
-        #expect(actual == nil)
+        #expect(actual == expected)
     }
 
 }

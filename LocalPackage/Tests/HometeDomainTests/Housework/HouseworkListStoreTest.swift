@@ -926,7 +926,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 senderName: inputSender.userName,
                 houseworkTitle: inputHouseworkItem.title,
                 comment: inputComment
-            )
+            ),
+            thanksData: .init(houseworkId: inputHouseworkItem.id)
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -1033,7 +1034,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                 senderName: inputSender.userName,
                 houseworkTitle: inputHouseworkItem.title,
                 comment: inputComment
-            )
+            ),
+            thanksData: .init(houseworkId: inputHouseworkItem.id)
         )
 
         await confirmation(expectedCount: 2) { confirmation in

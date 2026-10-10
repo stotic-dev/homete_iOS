@@ -121,22 +121,6 @@ public final class AccountStore {
         account = nil
     }
 
-    public func registerCohabitantId(_ cohabitantId: String) async throws {
-        guard let account else {
-            preconditionFailure("Not found account.")
-        }
-
-        let updatedAccount = Account(
-            id: account.id,
-            userName: account.userName,
-            fcmToken: account.fcmToken,
-            cohabitantId: cohabitantId,
-            isPremium: account.isPremium
-        )
-        try await accountInfoClient.insertOrUpdate(updatedAccount)
-        self.account = updatedAccount
-    }
-
     /// 保持しているアカウント情報のグループIDのみを差し替える
     /// - Note: サーバ側（Cloud Functions）でアカウントを更新済みのケース用。
     ///         Firestoreへは書き込まず、オンメモリの状態だけを同期する

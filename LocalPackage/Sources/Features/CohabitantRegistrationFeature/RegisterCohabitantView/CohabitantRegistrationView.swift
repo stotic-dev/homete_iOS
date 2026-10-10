@@ -16,7 +16,7 @@ public struct CohabitantRegistrationView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(AccountStore.self) var accountStore
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
-    @Environment(\.appDependencies.cohabitantClient) var cohabitantClient
+    @Environment(\.appDependencies.cohabitantInvitationClient) var cohabitantInvitationClient
     @LoadingState var loadingState
     @CommonError var errorContent
 
@@ -63,9 +63,8 @@ public struct CohabitantRegistrationView: View {
         .environment(\.cohabitantRegistrationStoreFactory, .init { myPeerID, messageSender in
             CohabitantRegistrationStore(
                 myPeerID: myPeerID,
-                myAccountId: account.id,
                 messageSender: messageSender,
-                cohabitantClient: cohabitantClient,
+                cohabitantInvitationClient: cohabitantInvitationClient,
                 analyticsClient: analyticsClient,
                 accountStore: accountStore
             )
@@ -86,7 +85,7 @@ public struct CohabitantRegistrationView: View {
 private extension CohabitantRegistrationView {
 
     /// Firestore上にアカウントがあることを確認してからP2Pセッションを開始する
-    /// - Note: アカウントが無いままP2P登録を進めると、同居人IDの保存（`registerCohabitantId`）で
+    /// - Note: アカウントが無いままP2P登録を進めると、グループへの参加（`joincohabitant`）で
     ///         落ちるまで気づけないため、セッションを張る前にエラーとして閉じる
     func verifyAccount() async {
         loadingState.isLoading = true
