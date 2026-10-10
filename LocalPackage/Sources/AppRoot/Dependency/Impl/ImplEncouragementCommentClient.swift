@@ -10,7 +10,7 @@ import HometeDomain
 
 extension EncouragementCommentClient {
 
-    /// 端末内のFoundation Modelsで生成する（ADR-0040）
+    /// 端末内のFoundation Modelsで生成する（ADR-0042）
     ///
     /// アプリはiOS 17から動くため、iOS 26未満では使えない扱いにして固定文言へフォールバックさせる。
     static let liveValue: EncouragementCommentClient = .init { context in

@@ -227,7 +227,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `encouragement_comment`
 
-ダッシュボードのコメントカード（自分へのねぎらいと、同居人への感謝の促し）に関する行動。設計は[ADR-0040](adr/0040-encouragement-comment-with-foundation-models.md)。
+ダッシュボードのコメントカード（自分へのねぎらいと、同居人への感謝の促し）に関する行動。設計は[ADR-0042](adr/0042-encouragement-comment-with-foundation-models.md)。
 
 | 項目 | 内容 |
 |---|---|

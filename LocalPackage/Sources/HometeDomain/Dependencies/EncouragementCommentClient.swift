@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// ねぎらいのコメントをFoundation Modelsで生成するClient（ADR-0040）
+/// ねぎらいのコメントをFoundation Modelsで生成するClient（ADR-0042）
 public struct EncouragementCommentClient: Sendable {
 
     /// 実施状況から、ねぎらいのコメントを生成する

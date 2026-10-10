@@ -9,7 +9,7 @@ import Observation
 /// ダッシュボードに出す、ねぎらいのコメントの状態
 ///
 /// 節目（`EncouragementMilestone`）ごとに1回だけFoundation Modelsで生成し、端末に保存する。
-/// 生成できないとき・生成結果がトーンのガイドラインに反するときは、固定文言を出す（ADR-0040）。
+/// 生成できないとき・生成結果がトーンのガイドラインに反するときは、固定文言を出す（ADR-0042）。
 @MainActor
 @Observable
 public final class EncouragementCommentStore {

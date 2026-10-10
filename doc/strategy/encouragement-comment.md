@@ -2,7 +2,7 @@
 
 > 関連Issue: [#354 Feature: 家事の実施状況に応じたポジティブなコメントの表示](https://github.com/stotic-dev/homete_iOS/issues/354)
 > ブランチ: `feat/analytics-comment`
-> 生成方式の判断: ADR-0040（本対応で作成）
+> 生成方式の判断: ADR-0042（本対応で作成）
 > 関連Issue（後続）: [#400 Private Cloud Compute（Foundation Models）のentitlement申請と設定](https://github.com/stotic-dev/homete_iOS/issues/400)
 
 ## ステータス
@@ -238,7 +238,7 @@ public struct ThanksPromptSummary: Equatable, Sendable {
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkThanks/HouseworkThanksView.swift` | `step`引数の追加 |
 | 新規View | `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/RegisteredContent/Components/EncouragementCommentCard.swift` | コメントカード |
 | 修正View | `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/RegisteredContent/RegisteredContent.swift`、`HomeView.swift` | カードの配置、Storeの生成・注入、遷移先の追加 |
-| 新規ADR | `doc/adr/0040-encouragement-comment-with-foundation-models.md` | 生成方式の判断 |
+| 新規ADR | `doc/adr/0042-encouragement-comment-with-foundation-models.md` | 生成方式の判断 |
 | 修正Doc | `doc/analytics_events.md` | イベントの追加 |
 
 ## タスク
@@ -255,7 +255,7 @@ public struct ThanksPromptSummary: Equatable, Sendable {
 
 ### Phase 2: 実装
 
-- [x] ADR-0040の作成
+- [x] ADR-0042の作成
 - [x] `EncouragementToneValidator`と固定文言
 - [x] `EncouragementContext`の集計（自分・今日のサマリー・今月のメンバー別貢献度）
 - [x] `EncouragementCommentClient` / `EncouragementCommentCacheClient`の定義とlive実装
