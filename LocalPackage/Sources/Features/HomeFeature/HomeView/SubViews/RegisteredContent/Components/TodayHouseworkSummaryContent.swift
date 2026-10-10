@@ -95,12 +95,7 @@ private extension TodayHouseworkSummaryContent {
                 .primaryButtonStyle()
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, .space56)
-        .overlay {
-            RoundedRectangle(radius: .radius12)
-                .stroke(style: .init(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.fillAccent)
-        }
+        .padding(.vertical, .space24)
     }
 
     func allCompletedContent() -> some View {
