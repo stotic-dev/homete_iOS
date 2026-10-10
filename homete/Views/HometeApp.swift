@@ -16,6 +16,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
+    /// タップされた通知から開く画面
+    /// - Note: アプリが終了している状態で通知をタップすると、画面を組み立てる前に通知のタップが届くため、
+    ///         画面側ではなくここで受け取って保持する
+    let pendingNotificationRouteStore = PendingNotificationRouteStore()
 
     func application(
         _: UIApplication,
@@ -115,7 +119,7 @@ extension AppDelegate: MessagingDelegate {
 
 }
 
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
@@ -123,6 +127,18 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     ) async -> UNNotificationPresentationOptions {
         // アプリ起動中でも同居人の家事完了などに気づけるよう、バナーと通知センターにも表示する
         [.banner, .list, .sound]
+    }
+
+    /// 通知のタップを受け取り、開く画面を保持する
+    /// - Note: メインアクターで受け取る。`nonisolated`にすると、処理を終えたことをOSへ返す完了ハンドラが
+    ///         メインスレッド以外から呼ばれ、UIKitが`Call must be made on main thread`で落ちる
+    func userNotificationCenter(
+        _: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        guard let route = NotificationRoute(userInfo: response.notification.request.content.userInfo) else { return }
+
+        pendingNotificationRouteStore.store(route)
     }
 
 }
@@ -139,7 +155,10 @@ struct HometeApp: App {
             if delegate.isUnitTestMode {
                 EmptyView()
             } else {
-                RootView.make(dependencies: .liveValue)
+                RootView.make(
+                    dependencies: .liveValue,
+                    pendingNotificationRouteStore: delegate.pendingNotificationRouteStore
+                )
             }
         }
     }

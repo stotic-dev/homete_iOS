@@ -922,7 +922,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputNow)
         let expectedNotificationContent = PushNotificationContent(
             title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
-            message: inputComment
+            message: inputComment,
+            data: ["type": "houseworkThanks", "houseworkId": inputHouseworkItem.id]
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -1026,7 +1027,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputSentAt)
         let expectedNotificationContent = PushNotificationContent(
             title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
-            message: inputComment
+            message: inputComment,
+            data: ["type": "houseworkThanks", "houseworkId": inputHouseworkItem.id]
         )
 
         await confirmation(expectedCount: 2) { confirmation in

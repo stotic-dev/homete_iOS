@@ -18,6 +18,7 @@ struct HouseworkBoardView: View {
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(HouseworkListStore.self) var houseworkListStore
+    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.cohabitantMembers) var members
     @Environment(\.loginContext) var loginContext
@@ -139,6 +140,14 @@ struct HouseworkBoardView: View {
             withAnimation {
                 onUpdateHouseboardList()
             }
+            openPendingHouseworkDetail()
+        }
+        // 通知から開く家事は、起動直後だとまだ読み込まれていないため、家事が届くたびに探し直す
+        .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
+            openPendingHouseworkDetail()
+        }
+        .onChange(of: houseworkListStore.loadState) {
+            openPendingHouseworkDetail()
         }
         .onChange(of: dateList.selectedDate) {
             withAnimation {
@@ -209,6 +218,25 @@ private extension HouseworkBoardView {
             }
             .padding(.horizontal, .space16)
         }
+    }
+
+    /// 通知から開く家事が見つかったら、その家事の詳細画面を開く
+    /// - Note: 別の画面を開いていても、通知の家事の詳細だけが積まれた状態にする。
+    ///         詳細から戻ったときにその家事が見えるよう、ボードもその家事の日付と状態に切り替える。
+    ///         シートやフルスクリーンカバーは閉じず、その裏に詳細画面を積む。購入中のペイウォールや入力中の
+    ///         シートを通知で勝手に閉じないためで、ダッシュボード側のシートなどはそもそもここから閉じられない
+    func openPendingHouseworkDetail() {
+        guard let item = pendingNotificationRouteStore.takeHouseworkDetailItem(
+            in: houseworkListStore.items,
+            loadState: houseworkListStore.loadState
+        ) else { return }
+
+        isSelecting = false
+        dateList.selectDate(item.indexedDate.value, calendar: calendar)
+        if HouseworkState.pageableCases.contains(item.state) {
+            selectedHouseworkState = item.state
+        }
+        navigationPath.path = [.houseworkDetail(.init(originalItem: item, isRegistered: true))]
     }
 
     func dismissedThanksView() {
@@ -317,6 +345,7 @@ private extension HouseworkBoardView {
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(PendingNotificationRouteStore())
     .environment(SubscriptionStore())
 }
 
@@ -351,6 +380,7 @@ private extension HouseworkBoardView {
     .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(PendingNotificationRouteStore())
     .environment(SubscriptionStore())
 }
 
@@ -370,6 +400,7 @@ private extension HouseworkBoardView {
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(PendingNotificationRouteStore())
     .environment(SubscriptionStore())
 }
 
@@ -397,6 +428,7 @@ private extension HouseworkBoardView {
     .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
     .environment(HouseworkListStore())
+    .environment(PendingNotificationRouteStore())
     .environment(SubscriptionStore())
 }
 #endif
