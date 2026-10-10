@@ -93,19 +93,23 @@ private extension AppTabView {
         ZStack {
             if #available(iOS 18.0, *) {
                 TabView(selection: handler) {
-                    Tab(
-                        .localized("ダッシュボード"),
-                        systemImage: "list.bullet.clipboard.fill",
-                        value: .dashboard
-                    ) {
+                    Tab(value: .dashboard) {
                         homeScreen
+                    } label: {
+                        Label {
+                            Text("ダッシュボード", bundle: #bundle)
+                        } icon: {
+                            Image(systemName: "list.bullet.clipboard.fill")
+                        }
                     }
-                    Tab(
-                        .localized("家事"),
-                        systemImage: "person.2.arrow.trianglehead.counterclockwise",
-                        value: .homework
-                    ) {
+                    Tab(value: .homework) {
                         houseworkBoardScreen
+                    } label: {
+                        Label {
+                            Text("家事", bundle: #bundle)
+                        } icon: {
+                            Image(systemName: "person.2.arrow.trianglehead.counterclockwise")
+                        }
                     }
                 }
             } else {

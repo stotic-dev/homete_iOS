@@ -66,7 +66,9 @@ struct FrequentHouseworkEditModal: View {
             }
         }
         .alert(.localized("新しいカテゴリ"), isPresented: $isPresentingCategoryNameAlert) {
-            TextField(.localized("カテゴリの名前"), text: $newCategoryName)
+            TextField(text: $newCategoryName) {
+                Text("カテゴリの名前", bundle: #bundle)
+            }
             Button(.localized("キャンセル"), role: .cancel) {}
             Button(.localized("追加")) {
                 confirmedNewCategory()

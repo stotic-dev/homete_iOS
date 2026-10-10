@@ -157,11 +157,13 @@ private extension HouseworkMemoEditView {
 
     func textSection() -> some View {
         SectionCard(.localized("テキスト")) {
-            TextField(.localized("買う物や手順などを書いておけます"), text: $draft.text, axis: .vertical)
-                .font(with: .body)
-                .lineLimit(3 ... 10)
-                .focused($focusedField, equals: .text)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
+            TextField(text: $draft.text, axis: .vertical) {
+                Text("買う物や手順などを書いておけます", bundle: #bundle)
+            }
+            .font(with: .body)
+            .lineLimit(3 ... 10)
+            .focused($focusedField, equals: .text)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         } onTapBackground: {
             endEditing()
         }
@@ -190,14 +192,16 @@ private extension HouseworkMemoEditView {
             Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(.onSurfaceVariant)
                 .accessibilityHidden(true)
-            TextField(.localized("項目を入力"), text: titleBinding(of: item.id))
-                .font(with: .body)
-                .focused($focusedField, equals: .item(item.id))
-                .submitLabel(.next)
-                .onSubmit {
-                    onTapAddItem()
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            TextField(text: titleBinding(of: item.id)) {
+                Text("項目を入力", bundle: #bundle)
+            }
+            .font(with: .body)
+            .focused($focusedField, equals: .item(item.id))
+            .submitLabel(.next)
+            .onSubmit {
+                onTapAddItem()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             Button {
                 draft.removeItem(id: item.id)
             } label: {

@@ -17,8 +17,10 @@ struct UserNameInputTextField: View {
     var body: some View {
         VStack(spacing: .space16) {
             HStack(spacing: .space8) {
-                TextField(.localized("例：たろう"), text: $userName.value)
-                    .font(with: .body)
+                TextField(text: $userName.value) {
+                    Text("例：たろう", bundle: #bundle)
+                }
+                .font(with: .body)
                 Button {
                     userName.value = ""
                 } label: {

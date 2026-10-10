@@ -34,7 +34,9 @@ struct FrequentHouseworkCategoryScreen: View {
             isPresented: isPresentingEdit,
             presenting: editTarget
         ) { target in
-            TextField(.localized("カテゴリの名前"), text: $editingName)
+            TextField(text: $editingName) {
+                Text("カテゴリの名前", bundle: #bundle)
+            }
             Button(.localized("キャンセル"), role: .cancel) {}
             Button(target.confirmLabel) {
                 confirmedEdit(target)
