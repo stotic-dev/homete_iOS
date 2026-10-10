@@ -224,6 +224,26 @@
         }
       }
     },
+    "相手のアプリのアップデートが必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner needs to update the app"
+          }
+        }
+      }
+    },
+    "相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask them to update the app to the latest version on their device, then try again."
+          }
+        }
+      }
+    },
     "終了する" : {
       "localizations" : {
         "en" : {

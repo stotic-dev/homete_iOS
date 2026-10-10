@@ -95,6 +95,16 @@
         }
       }
     },
+    "「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap “Select” and choose several chores to mark them as done or say thanks all at once."
+          }
+        }
+      }
+    },
     "あとで設定する" : {
       "localizations" : {
         "en" : {
@@ -112,6 +122,19 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yes"
+          }
+        }
+      }
+    },
+    "ありがとう" : {
+      "shouldTranslate" : false
+    },
+    "ありがとうを伝えましょう" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks"
           }
         }
       }
@@ -188,6 +211,26 @@
         }
       }
     },
+    "はじめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        }
+      }
+    },
+    "まとめて操作する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do Several at Once"
+          }
+        }
+      }
+    },
     "もう一度試す" : {
       "localizations" : {
         "en" : {
@@ -234,6 +277,16 @@
     "セクションタイトル" : {
       "shouldTranslate" : false
     },
+    "ダッシュボード" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
+          }
+        }
+      }
+    },
     "チェックリスト" : {
       "localizations" : {
         "en" : {
@@ -250,6 +303,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text"
+          }
+        }
+      }
+    },
+    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Try saying a few words, even for small chores."
           }
         }
       }
@@ -314,6 +377,26 @@
         }
       }
     },
+    "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See at a glance how far today's chores have come and how much each member has contributed."
+          }
+        }
+      }
+    },
+    "全%lldステップ中%lldステップ目" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %2$lld of %1$lld"
+          }
+        }
+      }
+    },
     "別のセクション" : {
       "shouldTranslate" : false
     },
@@ -323,6 +406,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Delete"
+          }
+        }
+      }
+    },
+    "前へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
           }
         }
       }
@@ -358,12 +451,72 @@
         }
       }
     },
+    "家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores"
+          }
+        }
+      }
+    },
     "家事の名前を入力" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter a chore name"
+          }
+        }
+      }
+    },
+    "家事を完了にする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark Chores as Done"
+          }
+        }
+      }
+    },
+    "家事タブの「完了」に並んだ家事のハートから送れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send it with the heart on chores listed under “Done” on the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの「未完了」に並んだ家事から操作できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the chores listed under “To Do” on the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの右上の「選択」から使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use “Select” at the top right of the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの右上のボタンから設定できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set them up with the button at the top right of the Chores tab"
           }
         }
       }
@@ -501,6 +654,16 @@
         }
       }
     },
+    "次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
     "毎日" : {
       "comment" : "家事のくり返しの種類",
       "localizations" : {
@@ -530,6 +693,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Weekly"
+          }
+        }
+      }
+    },
+    "毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your weekly chores by day of the week, and they'll appear on the chore board automatically."
           }
         }
       }
@@ -566,12 +739,42 @@
         }
       }
     },
+    "画面下の「ダッシュボード」タブから開けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it from the “Dashboard” tab at the bottom of the screen"
+          }
+        }
+      }
+    },
+    "画面下の「家事」タブから開けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it from the “Chores” tab at the bottom of the screen"
+          }
+        }
+      }
+    },
     "登録が完了しました！" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registration complete!"
+          }
+        }
+      }
+    },
+    "終わった家事は、行の右にある✓ボタンから完了にできます。誰がどの家事をしたかが記録されます。「…」ボタンからは、やらないにするなどほかの操作もできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark a finished chore as done with the ✓ button on the right of its row. Who did which chore is recorded. The “…” button has more options, like marking it as “Won't Do.”"
           }
         }
       }
@@ -595,6 +798,9 @@
           }
         }
       }
+    },
+    "説明のカード" : {
+      "shouldTranslate" : false
     },
     "買う物や手順などを書いておけます" : {
       "localizations" : {
@@ -693,6 +899,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Item"
+          }
+        }
+      }
+    },
+    "＋ボタンから、やる家事を登録しておけます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the + button to add the chores you plan to do."
           }
         }
       }
