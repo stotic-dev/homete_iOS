@@ -1,6 +1,6 @@
 # ローカライズ
 
-> 日本語の文言をキーにしてモジュールごとにString Catalogを置く方式を採用した経緯は [ADR-0040](adr/0040-localization-with-per-module-string-catalogs.md) を参照。
+> 日本語の文言をキーにしてモジュールごとにString Catalogを置く方式を採用した経緯は [ADR-0042](adr/0042-localization-with-per-module-string-catalogs.md) を参照。
 
 ## 構成
 
