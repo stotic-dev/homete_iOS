@@ -227,8 +227,9 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `shown` / `tapped` | 何が起きたか |
+| `action` | ○ | `shown` / `tapped` / `rated` | 何が起きたか |
 | `kind` | ○ | `self_praise` / `neutral` / `thanks_prompt` | コメントの種類。`self_praise`は自分の実績へのねぎらい、`neutral`は自分の実績がまだない日の中立・励まし、`thanks_prompt`は同居人への感謝の促し |
+| `result` | `rated`のみ | `good` / `bad` | AIが作成したコメントへの評価。他のイベントと同じ`result`キーを使い、カスタムディメンションを増やさない |
 | `step` | ○ | `dashboard` | コメントを出した場所（現状はダッシュボードのみ） |
 
 送信されるパターンと、その送信タイミング:
@@ -237,12 +238,14 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|---|
 | `shown` | `self_praise` / `neutral` / `thanks_prompt` | ダッシュボードを表示したとき、および出すコメントの種類が変わったとき。ねぎらいと感謝の促しを両方出している場合はそれぞれ1イベント送る。ねぎらいの生成を待っている間は、感謝の促しも含めて送らない（生成後にもう一度送って二重に数えないため） |
 | `tapped` | `thanks_prompt` | 感謝の促しの「ありがとうを伝える」をタップした（ありがとうを伝えられる家事の一覧へ遷移する） |
+| `rated` | `self_praise` | AIが作成したコメントの「AI」バッジから開いたポップアップで、「よかった」（`good`）か「いまいち」（`bad`）をタップした（`result`に入る）。同じコメントへの評価は1回だけ送る（コメントが作り直されたら再び評価できる） |
 
-ねぎらいをFoundation Modelsで生成したか、固定文言にしたかはパラメータにしない（カスタムディメンションを増やさないため。必要になったら追加する）。
+ねぎらいをFoundation Modelsで生成したか、固定文言にしたかは`shown`のパラメータにしない（カスタムディメンションを増やさないため。必要になったら追加する）。`rated`はAIが作成したコメントでしか送られないので、生成した文の評価として扱える。生成した文そのものは送らない（家事のタイトルなど、家庭の記録が含まれるため）。
 
 **分析での使い方:** `housework`イベントの`send_thanks`のうち`step=comment_prompt`の割合が、感謝の促しを経由したありがとうの割合（主指標）になる。
 `shown`（`thanks_prompt`）に対する`tapped`の比率で、感謝の促しのタップ率が分かる。
 `shown`の`self_praise` / `neutral`の比率で、自分の実績がある日にダッシュボードを見ている割合が分かる。
+`rated`の`result`（`good` / `bad`）の比率で、AIが作成したコメントの受け止められ方が分かる（プロンプトや禁止表現の見直しの判断材料にする）。
 
 ### `housework_template`
 
