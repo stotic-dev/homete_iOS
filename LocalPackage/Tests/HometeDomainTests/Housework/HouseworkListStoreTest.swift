@@ -103,9 +103,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
-            title: "じっこうしゃさんが家事を終えました",
-            message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+            message: .completed(executorName: "じっこうしゃ", houseworkTitle: inputHouseworkItem.title, comment: ""),
+            completedData: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
         )
         let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
@@ -269,9 +268,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
-            title: "じっこうしゃさんが家事を終えました",
-            message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+            message: .completed(executorName: "じっこうしゃ", houseworkTitle: inputHouseworkItem.title, comment: ""),
+            completedData: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
         )
         let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let updatedHouseworkItem = inputHouseworkItem.updateProperties(
@@ -362,9 +360,13 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             templateHouseworkItemId: nil
         )
         let expectedContent = PushNotificationContent(
-            title: "きろくしゃさんが家事の完了を記録しました",
-            message: "「title」（担当：きろくしゃさん・パートナーさん）\n一緒に片付けました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+            message: .proxyCompleted(
+                reporterName: "きろくしゃ",
+                executorNames: ["きろくしゃ", "パートナー"],
+                houseworkTitle: "title",
+                comment: "一緒に片付けました"
+            ),
+            completedData: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -486,9 +488,8 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
-            title: "じっこうしゃさんが家事を終えました",
-            message: "「\(inputHouseworkItem.title)」が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+            message: .completed(executorName: "じっこうしゃ", houseworkTitle: inputHouseworkItem.title, comment: ""),
+            completedData: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
         )
 
         await confirmation { confirmation in
@@ -921,9 +922,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputComment = "お疲れ様でした！"
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputNow)
         let expectedNotificationContent = PushNotificationContent(
-            title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
-            message: inputComment,
-            data: ["type": "houseworkThanks", "houseworkId": inputHouseworkItem.id]
+            message: .thanks(
+                senderName: inputSender.userName,
+                houseworkTitle: inputHouseworkItem.title,
+                comment: inputComment
+            ),
+            thanksData: .init(houseworkId: inputHouseworkItem.id)
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -1026,9 +1030,12 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputComment = "お疲れ様でした！"
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputSentAt)
         let expectedNotificationContent = PushNotificationContent(
-            title: "\(inputSender.userName)さんから「\(inputHouseworkItem.title)」にありがとうが届きました",
-            message: inputComment,
-            data: ["type": "houseworkThanks", "houseworkId": inputHouseworkItem.id]
+            message: .thanks(
+                senderName: inputSender.userName,
+                houseworkTitle: inputHouseworkItem.title,
+                comment: inputComment
+            ),
+            thanksData: .init(houseworkId: inputHouseworkItem.id)
         )
 
         await confirmation(expectedCount: 2) { confirmation in
@@ -1425,9 +1432,7 @@ extension HouseworkListStoreTest.DailyCompletionReminderCase {
         ]
         let expected = DailyCompletionReminderRequest(
             identifier: "dailyCompletionReminder-2026-9-25",
-            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0),
-            title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 0)
         )
         // Storeの購読開始とフェッチの前後関係に依らず届くよう、リスナーからも同じ家事を流す
         let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()

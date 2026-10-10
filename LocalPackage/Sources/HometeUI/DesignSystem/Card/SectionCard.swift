@@ -12,7 +12,7 @@ import SwiftUI
 /// - Note: 見出しの字下げは、カードの中の文字の位置に揃える
 public struct SectionCard<Content: View>: View {
 
-    let title: LocalizedStringKey
+    let title: LocalizedStringResource
     let onTapBackground: (() -> Void)?
     let content: Content
 
@@ -22,7 +22,7 @@ public struct SectionCard<Content: View>: View {
     ///   - onTapBackground: カードの中の何もない所をタップしたときの処理。入力欄の外をタップしたら入力を終える、といった用途に使う
     /// - Note: `onTapBackground`は中身より後ろに置き、`SectionCard("見出し") { ... } onTapBackground: { ... }`と書けるようにする
     public init(
-        _ title: LocalizedStringKey,
+        _ title: LocalizedStringResource,
         @ViewBuilder content: () -> Content,
         onTapBackground: (() -> Void)? = nil
     ) {

@@ -6,6 +6,7 @@
 //
 
 import Charts
+import HometeDomain
 import HometeUI
 import SwiftUI
 #if canImport(Prefire)
@@ -29,12 +30,12 @@ struct CumulativePointsAreaChartView: View {
                     .font(with: .headLineS)
                 Spacer()
                 DescriptionPopoverButton(
-                    title: "獲得ポイントの累積からわかること",
-                    message: """
+                    title: .localized("獲得ポイントの累積からわかること"),
+                    message: .localized("""
                     期間の最初から日が経つごとに積み上がっていく合計ポイントです。
                     期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。
                     線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。
-                    """
+                    """)
                 )
             }
             graphContent(viewableData.list)
@@ -92,21 +93,21 @@ private extension CumulativePointsAreaChartView {
     func userCumulativeArea(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
             AreaMark(
-                x: .value("日付", element.date),
-                y: .value("累計ポイント", element.point.value)
+                x: .value(.localized("日付"), element.date),
+                y: .value(.localized("累計ポイント"), element.point.value)
             )
-            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
             .opacity(0.4)
             LineMark(
-                x: .value("日付", element.date),
-                y: .value("累計ポイント", element.point.value)
+                x: .value(.localized("日付"), element.date),
+                y: .value(.localized("累計ポイント"), element.point.value)
             )
-            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
         }
     }
 
     func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
-        RuleMark(x: .value("日付", selectedDate))
+        RuleMark(x: .value(.localized("日付"), selectedDate))
             .foregroundStyle(.secondary.opacity(0.3))
             .annotation(
                 position: .top,
@@ -145,13 +146,11 @@ private extension CumulativePointsAreaChartView {
         return formatStyle
     }
 
-    var graphTitle: String {
-        let unitStr = switch viewableData.displayPeriod {
-        case .year: "月ごと"
-        case .month, .week: "日ごと"
+    var graphTitle: LocalizedStringResource {
+        switch viewableData.displayPeriod {
+        case .year: .localized("月ごと獲得ポイントの累積")
+        case .month, .week: .localized("日ごと獲得ポイントの累積")
         }
-
-        return "\(unitStr)獲得ポイントの累積"
     }
 
 }

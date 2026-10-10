@@ -3,6 +3,7 @@
 //  homete
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -19,7 +20,7 @@ struct AddHouseworkButton: View {
                 .font(.system(size: 24))
         }
         .floatingButtonStyle()
-        .accessibilityLabel("家事を追加する")
+        .accessibilityLabel(.localized("家事を追加する"))
     }
 
 }

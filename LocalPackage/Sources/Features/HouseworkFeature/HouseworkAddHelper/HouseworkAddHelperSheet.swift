@@ -74,7 +74,7 @@ struct HouseworkAddHelperView: View {
                     .padding(.horizontal, .space16)
                     .padding(.vertical, .space24)
             }
-            .navigationTitle("手伝った人を追加")
+            .navigationTitle(.localized("手伝った人を追加"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
@@ -100,7 +100,7 @@ private extension HouseworkAddHelperView {
     func executorSection() -> some View {
         HouseworkExecutorSectionContent(
             selectableMembers: selectableMembers,
-            caption: "手伝ってくれた人を選ぶと、この家事のポイントを分け合えます。もともとの担当者は外せません。",
+            caption: .localized("手伝ってくれた人を選ぶと、この家事のポイントを分け合えます。もともとの担当者は外せません。"),
             allocation: $allocation,
             isExpandedAllocation: $isExpandedAllocation
         )

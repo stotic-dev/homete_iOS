@@ -70,10 +70,10 @@ public struct HouseworkDetailView: View {
                     savedMemo(memo)
                 }
             }
-            .alert("メモを保存できませんでした", isPresented: $isPresentedMemoNotEditableAlert) {
-                Button("閉じる", role: .cancel) {}
+            .alert(.localized("メモを保存できませんでした"), isPresented: $isPresentedMemoNotEditableAlert) {
+                Button(.localized("閉じる"), role: .cancel) {}
             } message: {
-                Text("この家事は完了または「やらない」になったため、メモを編集できません。")
+                Text("この家事は完了または「やらない」になったため、メモを編集できません。", bundle: #bundle)
             }
             .onChange(of: houseworkListStore.items) {
                 didChangeItems()

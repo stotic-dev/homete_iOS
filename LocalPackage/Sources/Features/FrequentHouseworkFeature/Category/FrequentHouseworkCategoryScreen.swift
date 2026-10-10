@@ -34,8 +34,10 @@ struct FrequentHouseworkCategoryScreen: View {
             isPresented: isPresentingEdit,
             presenting: editTarget
         ) { target in
-            TextField("カテゴリの名前", text: $editingName)
-            Button("キャンセル", role: .cancel) {}
+            TextField(text: $editingName) {
+                Text("カテゴリの名前", bundle: #bundle)
+            }
+            Button(.localized("キャンセル"), role: .cancel) {}
             Button(target.confirmLabel) {
                 confirmedEdit(target)
             }
@@ -44,16 +46,16 @@ struct FrequentHouseworkCategoryScreen: View {
             Text(nameValidationMessage)
         }
         .alert(
-            "このカテゴリを削除しますか？",
+            .localized("このカテゴリを削除しますか？"),
             isPresented: isPresentingDelete,
             presenting: deleteTarget
         ) { category in
-            Button("削除", role: .destructive) {
+            Button(.localized("削除"), role: .destructive) {
                 deleteCategory(category)
             }
-            Button("キャンセル", role: .cancel) {}
+            Button(.localized("キャンセル"), role: .cancel) {}
         } message: { _ in
-            Text("このカテゴリのいつもの家事は「その他」に表示されます。")
+            Text("このカテゴリのいつもの家事は「その他」に表示されます。", bundle: #bundle)
         }
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
@@ -95,13 +97,13 @@ private extension FrequentHouseworkCategoryScreen {
         context.validateCategoryName(editingName, excludingId: editTarget?.editingId)
     }
 
-    var nameValidationMessage: String {
+    var nameValidationMessage: LocalizedStringResource {
         switch nameValidation {
         case .valid, .emptyName:
-            "いつもの家事をまとめる名前を入力してください。"
+            .localized("いつもの家事をまとめる名前を入力してください。")
 
         case .duplicatedName:
-            "同じ名前のカテゴリがあります。"
+            .localized("同じ名前のカテゴリがあります。")
         }
     }
 

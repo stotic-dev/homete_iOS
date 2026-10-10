@@ -56,8 +56,8 @@ private extension CohabitantJoinContent {
         case .completed:
             // 演出を画面いっぱいに広げるため、余白はView側に持たせてナビゲーションバーも隠す
             CohabitantCompletionView(
-                title: "グループに参加しました！",
-                message: "これからは、グループのメンバーと家事を分担し、協力していくことができます。"
+                title: .localized("グループに参加しました！"),
+                message: .localized("これからは、グループのメンバーと家事を分担し、協力していくことができます。")
             ) {
                 onTapClose()
             }
@@ -80,7 +80,7 @@ private extension CohabitantJoinContent {
     func loadingContent() -> some View {
         VStack(spacing: .space16) {
             Indicator()
-            Text("招待を確認しています...")
+            Text("招待を確認しています...", bundle: #bundle)
                 .font(with: .body)
         }
     }
@@ -89,20 +89,20 @@ private extension CohabitantJoinContent {
         VStack(spacing: .space16) {
             confirmingTitle(inviterName: summary.inviterName)
                 .font(with: .headLineL)
-            Text("参加すると、招待してくれた人と家事を分担・共有できるようになります。")
+            Text("参加すると、招待してくれた人と家事を分担・共有できるようになります。", bundle: #bundle)
                 .font(with: .body)
             Spacer()
             Button {
                 onTapJoin()
             } label: {
-                Text("参加する")
+                Text("参加する", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .primaryButtonStyle()
             Button {
                 onTapClose()
             } label: {
-                Text("あとで")
+                Text("あとで", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
@@ -114,16 +114,16 @@ private extension CohabitantJoinContent {
     @ViewBuilder
     func confirmingTitle(inviterName: String?) -> some View {
         if let inviterName, !inviterName.isEmpty {
-            Text("\(inviterName)さんのグループに参加しますか？")
+            Text("\(inviterName)さんのグループに参加しますか？", bundle: #bundle)
         } else {
-            Text("グループに参加しますか？")
+            Text("グループに参加しますか？", bundle: #bundle)
         }
     }
 
     func processingContent() -> some View {
         VStack(spacing: .space16) {
             Indicator()
-            Text("グループに参加しています...")
+            Text("グループに参加しています...", bundle: #bundle)
                 .font(with: .body)
         }
     }

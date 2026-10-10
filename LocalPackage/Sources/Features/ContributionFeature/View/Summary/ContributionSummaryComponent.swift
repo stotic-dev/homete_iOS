@@ -72,6 +72,7 @@ private extension ContributionSummaryComponent {
 struct ContributionSummaryContent: View {
 
     @Environment(\.calendar) var calendar
+    @Environment(\.locale) var locale
     @Environment(\.now) var now
 
     @Binding var isShowAnalytics: Bool
@@ -95,11 +96,11 @@ struct ContributionSummaryContent: View {
                 }
             } else {
                 ContentUnavailableView {
-                    Label("今月はまだ達成された家事がありません", systemImage: "house.circle")
+                    Label(.localized("今月はまだ達成された家事がありません"), systemImage: "house.circle")
                 } description: {
-                    Text("これまでの貢献履歴なら振り返れます")
+                    Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
                 } actions: {
-                    Button("もっと詳しく見る") {
+                    Button(.localized("もっと詳しく見る")) {
                         isShowAnalytics = true
                     }
                     .primaryButtonStyle()
@@ -117,7 +118,7 @@ private extension ContributionSummaryContent {
     func graphContent(_ summaries: AllUserPointSummary) -> some View {
         VStack(spacing: .space16) {
             ContributionGraphSection(summaries: summaries)
-            Button("もっと詳しく見る") {
+            Button(.localized("もっと詳しく見る")) {
                 isShowAnalytics = true
             }
             .primaryButtonStyle()
@@ -127,7 +128,7 @@ private extension ContributionSummaryContent {
     func rankingContent(_ ranking: [ContributionRankItem]) -> some View {
         VStack(spacing: .space8) {
             HStack(spacing: .zero) {
-                Text("今月の貢献ランキング")
+                Text("今月の貢献ランキング", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
@@ -150,9 +151,12 @@ private extension ContributionSummaryContent {
         }
     }
 
-    var monthTitle: String {
-        let month = calendar.component(.month, from: now)
-        return "\(month)月の家事貢献度サマリー"
+    var monthTitle: LocalizedStringResource {
+        // 月の表し方（10月 / October）は言語で変わるため、数字ではなく月の名前を差し込む
+        let month = now.formatted(
+            Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month(.wide)
+        )
+        return .localized("\(month)の家事貢献度サマリー", comment: "月の名前が入る（例: 10月の家事貢献度サマリー）")
     }
 
 }

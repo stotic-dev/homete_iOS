@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -48,7 +49,7 @@ private extension HouseworkRowActionButtons {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel("完了にする")
+        .accessibilityLabel(.localized("完了にする"))
     }
 
     func moreButton() -> some View {
@@ -62,7 +63,7 @@ private extension HouseworkRowActionButtons {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel("その他の操作")
+        .accessibilityLabel(.localized("その他の操作"))
     }
 
 }

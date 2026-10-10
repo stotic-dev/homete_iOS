@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -18,7 +19,7 @@ struct HouseworkStorageLimitCell: View {
             VStack(spacing: .space4) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 18))
-                Text("これ以前")
+                Text("これ以前", bundle: #bundle)
                     .font(with: .caption)
             }
             .foregroundStyle(.onPrimary3)
@@ -29,7 +30,7 @@ struct HouseworkStorageLimitCell: View {
             }
             .padding(2)
         }
-        .accessibilityLabel("これ以前の家事を見るにはプレミアムプランへの登録が必要です")
+        .accessibilityLabel(.localized("これ以前の家事を見るにはプレミアムプランへの登録が必要です"))
     }
 
 }

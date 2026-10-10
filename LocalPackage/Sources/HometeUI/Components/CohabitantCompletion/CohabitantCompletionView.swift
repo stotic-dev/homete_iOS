@@ -13,16 +13,16 @@ import SwiftUI
 public struct CohabitantCompletionView: View {
 
     /// 祝いの見出し
-    let title: String
+    let title: LocalizedStringResource
     /// 見出しに続けて表示する説明
-    let message: String
+    let message: LocalizedStringResource
     /// 閉じるボタンをタップしたときの処理
     let onTapClose: () -> Void
 
     /// クラッカーが弾け終わったかどうか
     @State private var isCracked = false
 
-    public init(title: String, message: String, onTapClose: @escaping () -> Void) {
+    public init(title: LocalizedStringResource, message: LocalizedStringResource, onTapClose: @escaping () -> Void) {
         self.title = title
         self.message = message
         self.onTapClose = onTapClose
@@ -39,7 +39,7 @@ public struct CohabitantCompletionView: View {
                 Button {
                     onTapClose()
                 } label: {
-                    Text("始める")
+                    Text("始める", bundle: #bundle)
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()

@@ -23,7 +23,7 @@ struct FrequentHouseworkImportView: View {
     var body: some View {
         NavigationStack {
             content()
-                .navigationTitle("テンプレートから取り込む")
+                .navigationTitle(.localized("テンプレートから取り込む"))
                 .inlineNavigationBarTitleDisplayMode()
                 .leadingToolbarItem {
                     NavigationBarButton(label: .close) {
@@ -59,9 +59,9 @@ private extension FrequentHouseworkImportView {
             Image(systemName: "tray")
                 .font(.system(size: 48))
                 .foregroundStyle(.decorativeIcon)
-            Text("テンプレートに家事がありません")
+            Text("テンプレートに家事がありません", bundle: #bundle)
                 .font(with: .headLineS)
-            Text("テンプレートに家事を登録すると、ここからまとめて取り込めます。")
+            Text("テンプレートに家事を登録すると、ここからまとめて取り込めます。", bundle: #bundle)
                 .font(with: .body)
                 .multilineTextAlignment(.center)
         }
@@ -76,9 +76,9 @@ private extension FrequentHouseworkImportView {
                     candidateRow(candidate)
                 }
             } header: {
-                Text(importCount == 0 ? "取り込む家事を選んでください" : "\(importCount)件を取り込みます")
+                Text(importCount == 0 ? .localized("取り込む家事を選んでください") : .localized("\(importCount)件を取り込みます"))
             } footer: {
-                Text("取り込んだ家事のカテゴリは未設定になります。あとから編集して変更できます。")
+                Text("取り込んだ家事のカテゴリは未設定になります。あとから編集して変更できます。", bundle: #bundle)
             }
         }
     }
@@ -95,7 +95,7 @@ private extension FrequentHouseworkImportView {
                         .font(with: .body)
                         .foregroundStyle(.onSurface)
                     if candidate.isAlreadyRegistered {
-                        Text("登録済み")
+                        Text("登録済み", bundle: #bundle)
                             .font(with: .caption)
                             .foregroundStyle(.onSurfaceVariant)
                     }
@@ -115,7 +115,7 @@ private extension FrequentHouseworkImportView {
             onTapImport()
         }
         .disabled(importCount == 0)
-        .accessibilityLabel("\(importCount)件取り込む")
+        .accessibilityLabel(.localized("\(importCount)件取り込む"))
     }
 
 }

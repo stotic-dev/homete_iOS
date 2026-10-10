@@ -18,8 +18,8 @@ struct CohabitantRegistrationProcessingView: View {
         VStack(spacing: .zero) {
             VStack(spacing: .space16) {
                 VStack(spacing: .zero) {
-                    Text("登録はもうすぐ完了します！")
-                    Text("共に家事を頑張るパートナーへ、エールを送り合いませんか？")
+                    Text("登録はもうすぐ完了します！", bundle: #bundle)
+                    Text("共に家事を頑張るパートナーへ、エールを送り合いませんか？", bundle: #bundle)
                 }
                 .font(with: .headLineM)
                 Image(.cohabitantsHandShake)
@@ -27,7 +27,7 @@ struct CohabitantRegistrationProcessingView: View {
                     .frame(maxWidth: .infinity)
                     .aspectRatio(contentMode: .fit)
                     .cornerRadius(.radius8)
-                Text("しばらくお待ちください")
+                Text("しばらくお待ちください", bundle: #bundle)
                     .font(with: .caption)
             }
             Spacer()

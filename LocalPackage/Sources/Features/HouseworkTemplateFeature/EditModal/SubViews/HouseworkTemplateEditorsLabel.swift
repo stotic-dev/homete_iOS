@@ -21,7 +21,7 @@ struct HouseworkTemplateEditorsLabel: View {
                 HStack(spacing: .space8) {
                     Image(systemName: "person.fill")
                         .foregroundStyle(.onSubSurface)
-                    Text("編集中: \(activeEditors.map(\.userName).joined(separator: ", "))")
+                    Text("編集中: \(activeEditors.map(\.userName).joined(separator: ", "))", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.onSubSurface)
                     Spacer(minLength: .zero)

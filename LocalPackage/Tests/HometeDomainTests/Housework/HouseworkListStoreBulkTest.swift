@@ -66,9 +66,8 @@ extension HouseworkListStoreBulkTest.CompleteBulkCase {
             inputItems[1].updateProperties(state: .completed, executorId: inputAccount.id, executedAt: now),
         ]
         let expectedContent = PushNotificationContent(
-            title: "ownさんが家事を終えました",
-            message: "2件の家事が完了しました",
-            data: ["type": "houseworkCompleted", "houseworkDate": "1790262000"]
+            message: .completedBulk(executorName: "own", count: 2),
+            completedData: .init(houseworkDate: Date(timeIntervalSince1970: 1_790_262_000))
         )
 
         await confirmation(expectedCount: 2) { confirmation in

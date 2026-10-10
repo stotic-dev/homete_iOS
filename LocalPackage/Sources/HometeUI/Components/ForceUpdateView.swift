@@ -22,18 +22,18 @@ public struct ForceUpdateView: View {
                     .font(.system(size: 56))
                     .foregroundStyle(.decorativeIcon)
                     .accessibilityHidden(true)
-                Text("新しいバージョンがあります")
+                Text("新しいバージョンがあります", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
-                Text("引き続き\(Constants.appName)をご利用いただくには、App Storeからアップデートをお願いします。")
+                Text("引き続き\(Constants.appName)をご利用いただくには、App Storeからアップデートをお願いします。", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurfaceVariant)
                     .multilineTextAlignment(.center)
                 Button {
                     onTapUpdateButton()
                 } label: {
-                    Text("アップデートする")
+                    Text("アップデートする", bundle: #bundle)
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }

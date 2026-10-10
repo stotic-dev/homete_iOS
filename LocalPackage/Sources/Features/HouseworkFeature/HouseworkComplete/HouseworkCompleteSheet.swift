@@ -83,7 +83,7 @@ struct HouseworkCompleteView: View {
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space24)
             }
-            .navigationTitle("完了にする")
+            .navigationTitle(.localized("完了にする"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
@@ -109,15 +109,15 @@ private extension HouseworkCompleteView {
     func effortSection() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(spacing: .space4) {
-                Text("頑張り度")
+                Text("頑張り度", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 DescriptionPopoverButton(
-                    title: "頑張り度とは？",
-                    message: """
+                    title: .localized("頑張り度とは？"),
+                    message: .localized("""
                     いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。
                     「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。
-                    """
+                    """)
                 )
             }
             HouseworkEffortSelectionContent(

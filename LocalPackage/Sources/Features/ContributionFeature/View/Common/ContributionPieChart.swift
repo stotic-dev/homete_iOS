@@ -6,6 +6,7 @@
 //
 
 import Charts
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -16,26 +17,26 @@ struct ContributionPieChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(spacing: .zero) {
-                Text("家事達成割合")
+                Text("家事達成割合", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
                 DescriptionPopoverButton(
-                    title: "家事達成割合とは？",
-                    message: """
+                    title: .localized("家事達成割合とは？"),
+                    message: .localized("""
                     指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。
                     達成した家事の数の観点から、家事貢献度を図ることができます。
-                    """
+                    """)
                 )
             }
             .padding(.horizontal, .space16)
             Chart(data) { item in
                 SectorMark(
-                    angle: .value("件数", item.achievedCount),
+                    angle: .value(.localized("件数"), item.achievedCount),
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
-                .foregroundStyle(by: .value("名前", item.userName))
+                .foregroundStyle(by: .value(.localized("名前"), item.userName))
             }
             .chartLegend(position: .bottom, alignment: .center)
         }

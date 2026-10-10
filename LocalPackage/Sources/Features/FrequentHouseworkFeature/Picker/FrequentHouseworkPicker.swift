@@ -75,7 +75,10 @@ private extension FrequentHouseworkPicker {
     func categoryFilter() -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: .space8) {
-                categoryChip(id: nil, name: "すべて")
+                categoryChip(
+                    id: nil,
+                    name: LocalizedStringResource.localized("すべて", comment: "すべてのカテゴリを表示する選択肢").resolved()
+                )
                 ForEach(filterCategories) { category in
                     categoryChip(id: category.id, name: category.name)
                 }
@@ -127,12 +130,12 @@ private extension FrequentHouseworkPicker {
 
     func emptyContent() -> some View {
         VStack(spacing: .space16) {
-            Text("いつもの家事を登録しませんか？")
+            Text("いつもの家事を登録しませんか？", bundle: #bundle)
                 .font(with: .headLineS)
-            Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。")
+            Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。", bundle: #bundle)
                 .font(with: .body)
                 .multilineTextAlignment(.center)
-            Button("いつもの家事を登録する") {
+            Button(.localized("いつもの家事を登録する")) {
                 onTapManage()
             }
             .primaryButtonStyle()

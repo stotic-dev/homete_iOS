@@ -48,7 +48,7 @@ struct HouseworkDateCell: View {
 
 private extension HouseworkDateCell {
 
-    func dateLabel() -> String {
+    func dateLabel() -> LocalizedStringResource {
         if calendar.dateComponents(
             [.year, .month, .day],
             from: date
@@ -56,9 +56,9 @@ private extension HouseworkDateCell {
             [.year, .month, .day],
             from: now
         ) {
-            "今日"
+            .localized("今日")
         } else {
-            String(calendar.component(.day, from: date))
+            .localized("\(calendar.component(.day, from: date))", comment: "日付の行に出す日にち（例: 25）")
         }
     }
 

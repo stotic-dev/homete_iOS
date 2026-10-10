@@ -561,4 +561,38 @@ struct AnalyticsEventTest {
         #expect(actual == AnalyticsEvent(name: "paywall", parameters: expectedParameters))
     }
 
+    @Test(
+        "グループ登録直後のチュートリアルに関する行動を、action/stepのパラメータを持つregistration_tutorialイベントに変換する",
+        arguments: [
+            (
+                RegistrationTutorialAnalyticsAction.completed,
+                ["action": "completed"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .dashboard),
+                ["action": "skipped", "step": "dashboard"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .housework),
+                ["action": "skipped", "step": "housework"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .thanks),
+                ["action": "skipped", "step": "thanks"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .houseworkTemplate),
+                ["action": "skipped", "step": "housework_template"]
+            ),
+        ]
+    )
+    func registrationTutorial(
+        action: RegistrationTutorialAnalyticsAction,
+        expectedParameters: [String: String]
+    ) {
+        let actual = AnalyticsEvent.registrationTutorial(action)
+
+        #expect(actual == AnalyticsEvent(name: "registration_tutorial", parameters: expectedParameters))
+    }
+
 }

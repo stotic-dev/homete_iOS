@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -20,12 +21,12 @@ struct PendingEntriesButton: View {
         } label: {
             HStack(spacing: .space4) {
                 Image(systemName: "checklist")
-                Text("登録予定 \(count)件")
+                Text("登録予定 \(count)件", bundle: #bundle)
             }
             .font(with: .headLineS)
         }
         .floatingButtonStyle()
-        .accessibilityLabel("登録予定\(count)件を見る")
+        .accessibilityLabel(.localized("登録予定\(count)件を見る"))
     }
 
 }

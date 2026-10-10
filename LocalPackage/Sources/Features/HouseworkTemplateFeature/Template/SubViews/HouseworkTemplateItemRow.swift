@@ -13,7 +13,7 @@ struct HouseworkTemplateItemRow: View {
 
     let item: HouseworkTemplateItem
     /// 「毎月25日」のような繰り返し方の表示。曜日ごとのリストのように、見出しで分かる場合は`nil`
-    var recurrenceLabel: String?
+    var recurrenceLabel: LocalizedStringResource?
 
     var body: some View {
         HStack(spacing: .space8) {
