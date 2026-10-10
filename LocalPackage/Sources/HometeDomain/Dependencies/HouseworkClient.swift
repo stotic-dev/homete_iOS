@@ -21,6 +21,14 @@ public struct HouseworkClient: Sendable {
         _ thanks: HouseworkThanks,
         _ cohabitantId: String
     ) async throws -> Void
+    /// 複数の家事に、同じありがとうをまとめて記録する（送った人の分だけを書き換え、ほかの人の記録には触れない）
+    /// - Note: `WriteBatch`で一括書き込みし、全件成功か全件失敗かのどちらかにする
+    public let upsertThanksBatch: @Sendable (
+        _ houseworkIds: [String],
+        _ senderId: String,
+        _ thanks: HouseworkThanks,
+        _ cohabitantId: String
+    ) async throws -> Void
     /// 家事のメモだけを書き換える（完了など、同時に起きたほかの変更を巻き戻さないため）
     public let updateMemo: @Sendable (
         _ houseworkId: String,
@@ -65,6 +73,12 @@ public extension HouseworkClient {
             _ thanks: HouseworkThanks,
             _ cohabitantId: String
         ) async throws -> Void = { _, _, _, _ in },
+        upsertThanksBatchHandler: @escaping @Sendable (
+            _ houseworkIds: [String],
+            _ senderId: String,
+            _ thanks: HouseworkThanks,
+            _ cohabitantId: String
+        ) async throws -> Void = { _, _, _, _ in },
         updateMemoHandler: @escaping @Sendable (
             _ houseworkId: String,
             _ memo: HouseworkMemo,
@@ -88,6 +102,7 @@ public extension HouseworkClient {
         insertOrUpdateItems = insertOrUpdateItemsHandler
         removeItem = removeItemHandler
         upsertThanks = upsertThanksHandler
+        upsertThanksBatch = upsertThanksBatchHandler
         updateMemo = updateMemoHandler
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler

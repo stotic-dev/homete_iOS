@@ -32,6 +32,14 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(houseworkId)
         }
+    } upsertThanksBatchHandler: { houseworkIds, senderId, thanks, cohabitantId in
+        try await FirestoreService.shared.batchUpdate(fieldPath: "thanks.\(senderId)", value: thanks) { firestore in
+            houseworkIds.map {
+                firestore
+                    .houseworkListRef(id: cohabitantId)
+                    .document($0)
+            }
+        }
     } updateMemoHandler: { houseworkId, memo, cohabitantId in
         try await FirestoreService.shared.update(fieldPath: "memo", value: memo) {
             $0

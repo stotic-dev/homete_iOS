@@ -401,7 +401,149 @@ public final class HouseworkListStore {
 
 }
 
+// MARK: - 複数選択の一括操作
+
+/// 複数選択で選んだ家事への一括操作
+///
+/// 1回の`WriteBatch`でまとめて書き込み、全件成功か全件失敗のどちらかにする。1件ずつ書き込むと、途中で失敗したときに
+/// 一部の家事にだけ反映されてしまうため。家事ごとの判定（未登録か・ありがとうを記録できるか）は書き込む前に
+/// リスナーで受け取った最新の記録で全件分そろえ、判定した結果が0件なら書き込みもAnalyticsの送信もしない。
+/// Analyticsは操作1回につき1イベントだけ送り、書き込んだ件数を`item_count`に載せる。
+public extension HouseworkListStore {
+
+    /// 家事をまとめて完了にする
+    ///
+    /// 頑張り度や担当者を選ぶ画面を通らないため、自分だけを担当者にして「ふつう」で記録し、上乗せ前のポイントを満額配分する。
+    /// 家事ごとの個別の通知は送らず、件数をまとめた1件の完了通知を今日の家事で1日1回だけ送る。
+    func completeBulk(
+        targets: [HouseworkItem],
+        now: Date,
+        reporter: Account,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        let updatedItems = bulkUpdatedItems(targets, now: now) {
+            $0.updateCompleted(
+                at: now,
+                executors: [.solo(userId: reporter.id, point: $0.point)],
+                effort: .normal
+            )
+        }
+        guard let firstItem = updatedItems.first else { return }
+
+        try await saveBulk(updatedItems, cohabitantId: cohabitantId) {
+            .complete(step: step, executorType: .ownOnly, effort: .normal, isSuccess: $0)
+        }
+
+        // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
+        notifyCompleted(houseworkDate: firstItem.indexedDate.value, now: now, cohabitantId: cohabitantId) {
+            .completedBulkMessage(executorName: reporter.userName, count: updatedItems.count, data: $0)
+        }
+    }
+
+    /// 家事をまとめて「やらない」にする
+    func removeBulk(
+        targets: [HouseworkItem],
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        let updatedItems = bulkUpdatedItems(targets, now: now()) { $0.updateNotTodo() }
+        guard !updatedItems.isEmpty else { return }
+
+        try await saveBulk(updatedItems, cohabitantId: cohabitantId) {
+            .delete(step: step, isSuccess: $0)
+        }
+    }
+
+    /// 家事をまとめて未完了に戻す
+    func returnToIncompleteBulk(
+        targets: [HouseworkItem],
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        let updatedItems = bulkUpdatedItems(targets, now: now()) { $0.updateIncomplete() }
+        guard !updatedItems.isEmpty else { return }
+
+        try await saveBulk(updatedItems, cohabitantId: cohabitantId) {
+            .returnIncomplete(step: step, isSuccess: $0)
+        }
+    }
+
+    /// 家事にまとめて、コメントなしのありがとうを記録する
+    ///
+    /// 送信済みのありがとうは上書きしない（書いたコメントをコメントなしで消さないため）。未完了に戻された家事には記録しない。
+    /// コメントがないので通知は送らない。
+    /// - Returns: 1件でもありがとうを記録したかどうか。記録した家事はすべて初めてのありがとうになる
+    @discardableResult
+    func sendThanksBulk(
+        targets: [HouseworkItem],
+        sender: Account,
+        now: Date,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws -> Bool {
+        let houseworkIds = targets
+            .filter {
+                let current = items.item($0) ?? $0
+                return current.state == .completed && current.thanks[sender.id] == nil
+            }
+            .map(\.id)
+        guard !houseworkIds.isEmpty else { return false }
+
+        let logEvent = { (isSuccess: Bool) in
+            self.analyticsClient.log(
+                .housework(.sendThanks(step: step, isSuccess: isSuccess), itemCount: houseworkIds.count)
+            )
+        }
+        do {
+            try await houseworkClient.upsertThanksBatch(
+                houseworkIds,
+                sender.id,
+                HouseworkThanks(comment: nil, sentAt: now),
+                cohabitantId
+            )
+        } catch {
+            logEvent(false)
+            throw error
+        }
+        logEvent(true)
+        return true
+    }
+
+}
+
 private extension HouseworkListStore {
+
+    /// 一括操作で書き込む家事を、リスナーで受け取った最新の記録に変更を当てて作る
+    ///
+    /// 一覧に見つからない家事は、まだ登録されていない（テンプレートから出している）家事としてドキュメントを新規作成する。
+    func bulkUpdatedItems(
+        _ targets: [HouseworkItem],
+        now: Date,
+        transform: (HouseworkItem) -> HouseworkItem
+    ) -> [HouseworkItem] {
+        targets.map { target in
+            guard let current = items.item(target) else {
+                return transform(target).updateCreatedAt(now)
+            }
+            return transform(current)
+        }
+    }
+
+    /// 一括操作の家事をまとめて書き込み、書き込んだ件数を付けてAnalyticsを1回だけ送る
+    func saveBulk(
+        _ updatedItems: [HouseworkItem],
+        cohabitantId: String,
+        analyticsAction: (Bool) -> HouseworkAnalyticsAction
+    ) async throws {
+        do {
+            try await houseworkClient.insertOrUpdateItems(updatedItems, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(analyticsAction(false), itemCount: updatedItems.count))
+            throw error
+        }
+        analyticsClient.log(.housework(analyticsAction(true), itemCount: updatedItems.count))
+    }
 
     func logRegistered(_ entries: [NewHouseworkEntry], step: HouseworkAnalyticsStep, isSuccess: Bool) {
         for entry in entries {
