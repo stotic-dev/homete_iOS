@@ -22,6 +22,7 @@ public struct AppReviewPolicy: Equatable, Sendable {
         state = savedState ?? .init(
             startedAt: now,
             thanksCountedUntil: now,
+            thanksCountedKeysAtMarker: [],
             receivedThanksCount: .zero,
             requestedTriggers: [],
             lastRequestedAt: nil
@@ -49,17 +50,19 @@ public struct AppReviewPolicy: Equatable, Sendable {
         accountId: String,
         now: Date
     ) -> AppReviewTrigger? {
-        let newSentDates = items.value
-            .flatMap(\.items)
-            .filter { item in item.executors.contains { $0.userId == accountId } }
-            .flatMap { item in item.thanks.filter { $0.key != accountId }.map(\.value.sentAt) }
-            .filter { $0 > state.thanksCountedUntil }
-        guard let latestSentAt = newSentDates.max() else { return nil }
+        let newThanks = receivedThanks(in: items, accountId: accountId).filter(isNew)
+        guard let latestSentAt = newThanks.map(\.sentAt).max() else { return nil }
 
+        let marker = max(latestSentAt, state.thanksCountedUntil)
+        let newKeysAtMarker = Set(newThanks.filter { $0.sentAt == marker }.map(\.key))
         state = .init(
             startedAt: state.startedAt,
-            thanksCountedUntil: latestSentAt,
-            receivedThanksCount: state.receivedThanksCount + newSentDates.count,
+            thanksCountedUntil: marker,
+            // 目印が進んだら、前の目印で覚えていた分はもう判定に使わないので捨てる
+            thanksCountedKeysAtMarker: marker == state.thanksCountedUntil
+                ? state.thanksCountedKeysAtMarker.union(newKeysAtMarker)
+                : newKeysAtMarker,
+            receivedThanksCount: state.receivedThanksCount + newThanks.count,
             requestedTriggers: state.requestedTriggers,
             lastRequestedAt: state.lastRequestedAt
         )
@@ -78,6 +81,7 @@ public struct AppReviewPolicy: Equatable, Sendable {
         state = .init(
             startedAt: state.startedAt,
             thanksCountedUntil: state.thanksCountedUntil,
+            thanksCountedKeysAtMarker: state.thanksCountedKeysAtMarker,
             receivedThanksCount: state.receivedThanksCount,
             requestedTriggers: state.requestedTriggers.union([trigger]),
             lastRequestedAt: now
@@ -88,12 +92,37 @@ public struct AppReviewPolicy: Equatable, Sendable {
 
 private extension AppReviewPolicy {
 
+    /// 自分が担当した家事に、自分以外の人から届いたありがとう
+    func receivedThanks(in items: StoredAllHouseworkList, accountId: String) -> [ReceivedThanks] {
+        items.value
+            .flatMap(\.items)
+            .filter { item in item.executors.contains { $0.userId == accountId } }
+            .flatMap { item in
+                item.thanks
+                    .filter { $0.key != accountId }
+                    .map { ReceivedThanks(key: .init(houseworkId: item.id, senderId: $0.key), sentAt: $0.value.sentAt) }
+            }
+    }
+
+    /// まだ数えていないありがとうか
+    func isNew(_ thanks: ReceivedThanks) -> Bool {
+        thanks.sentAt > state.thanksCountedUntil
+            || (thanks.sentAt == state.thanksCountedUntil && !state.thanksCountedKeysAtMarker.contains(thanks.key))
+    }
+
     func canRequest(_ trigger: AppReviewTrigger, now: Date) -> Bool {
         guard !state.requestedTriggers.contains(trigger) else { return false }
         guard let lastRequestedAt = state.lastRequestedAt else { return true }
 
         return now.timeIntervalSince(lastRequestedAt) >= Self.requestInterval
     }
+
+}
+
+private struct ReceivedThanks {
+
+    let key: AppReviewThanksKey
+    let sentAt: Date
 
 }
 

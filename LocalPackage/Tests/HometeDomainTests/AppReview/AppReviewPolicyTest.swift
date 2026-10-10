@@ -29,6 +29,7 @@ extension AppReviewPolicyTest.InitCase {
         let expected = AppReviewState(
             startedAt: now,
             thanksCountedUntil: now,
+            thanksCountedKeysAtMarker: [],
             receivedThanksCount: 0,
             requestedTriggers: [],
             lastRequestedAt: nil
@@ -50,6 +51,7 @@ extension AppReviewPolicyTest.InitCase {
         let savedState = AppReviewState(
             startedAt: AppReviewPolicyTest.baseDate,
             thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 1),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner")],
             receivedThanksCount: 3,
             requestedTriggers: [.purchase],
             lastRequestedAt: AppReviewPolicyTest.date(afterDays: 2)
@@ -197,6 +199,7 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
         let expected = AppReviewState(
             startedAt: AppReviewPolicyTest.baseDate,
             thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 2),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner2")],
             receivedThanksCount: 2,
             requestedTriggers: [],
             lastRequestedAt: nil
@@ -216,17 +219,25 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
         #expect(sut.state == expected)
     }
 
-    @Test("数え始める前のありがとう・自分が担当していない家事のありがとう・自分が送ったありがとうは数えない")
+    @Test("数え済みのありがとう・自分が担当していない家事のありがとう・自分が送ったありがとうは数えない")
     func receiveThanks_notTargetThanks_doesNotCount() {
         // Arrange
 
-        let savedState = AppReviewPolicyTest.state(thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 1))
+        let savedState = AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 1),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner1")]
+        )
         var sut = AppReviewPolicy(savedState: savedState, now: AppReviewPolicyTest.baseDate)
         let items = AppReviewPolicyTest.houseworkList([
             AppReviewPolicyTest.completedItem(
                 id: 1,
                 executorId: AppReviewPolicyTest.accountId,
-                thanks: ["partner": AppReviewPolicyTest.thanks(afterDays: 1)]
+                thanks: [
+                    // 数え済みの目印より前に届いたもの
+                    "partner0": AppReviewPolicyTest.thanks(afterDays: 0.5),
+                    // 目印と同じ日時で、数え済みのもの
+                    "partner1": AppReviewPolicyTest.thanks(afterDays: 1),
+                ]
             ),
             AppReviewPolicyTest.completedItem(
                 id: 2,
@@ -252,6 +263,54 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
 
         #expect(actual == nil)
         #expect(sut.state == savedState)
+    }
+
+    @Test("目印と同じ日時に届いた別の家事のありがとうは、まだ数えていなければ数える")
+    func receiveThanks_sameSentAtAsMarker_countsUncounted() {
+        // Arrange
+
+        // 一括操作で送ったありがとうは日時が同じで、1件ずつ別のスナップショットで届く
+        let sentAt = AppReviewPolicyTest.date(afterDays: 1)
+        var sut = AppReviewPolicy(
+            savedState: AppReviewPolicyTest.state(
+                thanksCountedUntil: sentAt,
+                thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner")],
+                receivedThanksCount: 1
+            ),
+            now: AppReviewPolicyTest.baseDate
+        )
+        let items = AppReviewPolicyTest.houseworkList([
+            AppReviewPolicyTest.completedItem(
+                id: 1,
+                executorId: AppReviewPolicyTest.accountId,
+                thanks: ["partner": AppReviewPolicyTest.thanks(afterDays: 1)]
+            ),
+            AppReviewPolicyTest.completedItem(
+                id: 2,
+                executorId: AppReviewPolicyTest.accountId,
+                thanks: ["partner": AppReviewPolicyTest.thanks(afterDays: 1)]
+            ),
+        ])
+        let expected = AppReviewPolicyTest.state(
+            thanksCountedUntil: sentAt,
+            thanksCountedKeysAtMarker: [
+                .init(houseworkId: "id1", senderId: "partner"),
+                .init(houseworkId: "id2", senderId: "partner"),
+            ],
+            receivedThanksCount: 2
+        )
+
+        // Act
+
+        _ = sut.receiveThanks(
+            in: items,
+            accountId: AppReviewPolicyTest.accountId,
+            now: AppReviewPolicyTest.date(afterDays: 1)
+        )
+
+        // Assert
+
+        #expect(sut.state == expected)
     }
 
     @Test("受け取ったありがとうの合計が10回になった場合、合計をきっかけにする")
@@ -363,6 +422,7 @@ extension AppReviewPolicyTest.ReceiveThanksCase {
         )
         let expected = AppReviewPolicyTest.state(
             thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 20),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "id1", senderId: "partner")],
             receivedThanksCount: 10,
             requestedTriggers: [.purchase],
             lastRequestedAt: AppReviewPolicyTest.date(afterDays: 1)
@@ -428,6 +488,7 @@ private extension AppReviewPolicyTest {
 
     static func state(
         thanksCountedUntil: Date = baseDate,
+        thanksCountedKeysAtMarker: Set<AppReviewThanksKey> = [],
         receivedThanksCount: Int = 0,
         requestedTriggers: Set<AppReviewTrigger> = [],
         lastRequestedAt: Date? = nil
@@ -435,6 +496,7 @@ private extension AppReviewPolicyTest {
         .init(
             startedAt: baseDate,
             thanksCountedUntil: thanksCountedUntil,
+            thanksCountedKeysAtMarker: thanksCountedKeysAtMarker,
             receivedThanksCount: receivedThanksCount,
             requestedTriggers: requestedTriggers,
             lastRequestedAt: lastRequestedAt
