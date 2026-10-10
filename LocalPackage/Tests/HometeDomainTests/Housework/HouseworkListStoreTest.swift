@@ -47,7 +47,7 @@ struct HouseworkListStoreTest {
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(insertItemsHandler: { items, cohabitantId in
+                houseworkClient: .init(insertOrUpdateItemsHandler: { items, cohabitantId in
                     // Assert
 
                     #expect(items == expected)
@@ -74,7 +74,7 @@ struct HouseworkListStoreTest {
         // Arrange
 
         let store = HouseworkListStore(
-            houseworkClient: .init(insertItemsHandler: { _, _ in Issue.record() }),
+            houseworkClient: .init(insertOrUpdateItemsHandler: { _, _ in Issue.record() }),
             cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
         )
 
