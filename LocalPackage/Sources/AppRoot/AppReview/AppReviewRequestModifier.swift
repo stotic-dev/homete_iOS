@@ -92,6 +92,8 @@ private extension AppReviewRequestModifier {
         updatedPolicy.markRequested(trigger, now: .now)
         policy = updatedPolicy
         appReviewStateClient.save(updatedPolicy.state)
+        // 待っている処理が残っていれば、ダイアログを続けて出さないよう取り消してから置き換える
+        requestTask?.cancel()
         requestTask = Task {
             do {
                 try await Task.sleep(for: .seconds(1.5))
