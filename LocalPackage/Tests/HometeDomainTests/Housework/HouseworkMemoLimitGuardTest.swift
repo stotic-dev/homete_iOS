@@ -177,7 +177,7 @@ extension HouseworkMemoLimitGuardTest.StoreCase {
     func register_overLimit_doesNotWrite() async {
         // Arrange
 
-        let store = HouseworkListStore(houseworkClient: .init(insertItemsHandler: { _, _ in Issue.record() }))
+        let store = HouseworkListStore(houseworkClient: .init(insertOrUpdateItemsHandler: { _, _ in Issue.record() }))
 
         // Act & Assert
 
