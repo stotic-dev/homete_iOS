@@ -280,33 +280,39 @@ private extension HouseworkBoardView {
     func bulkActionContent() -> some View {
         HouseworkBulkActionToolbarContent(
             actions: selection.availableActions,
-            onTap: { action in
-                Task {
-                    await performBulk(action)
-                }
-            }
+            onTap: { performBulk($0) }
         )
     }
 
-    func performBulk(_ action: HouseworkQuickAction) async {
+    /// 一括操作を実行する
+    ///
+    /// 実行は確定の操作なので、対象を確定したらすぐに選択モードを抜け、書き込みの完了は待たない。
+    /// 書き込みはサーバーが受け付けるまで戻らず、通信が遅いと一覧は更新済みなのに選択が残り、オフラインでは抜けられなくなるため。
+    /// まとめて書き込むので失敗したときは全件が反映されておらず、エラーを見たユーザーは選び直せばよい。
+    func performBulk(_ action: HouseworkQuickAction) {
         guard let cohabitantId = loginContext.cohabitantId else { return }
 
-        do {
-            let hasSentFirstThanks = try await houseworkListStore.performBulk(
-                action,
-                on: selection.targets(for: action),
-                now: now,
-                account: loginContext.account,
-                cohabitantId: cohabitantId,
-                step: .board
-            )
-            selectedHouseworkIDs = []
-            // 何件伝えても演出は1回だけにする
-            if hasSentFirstThanks {
-                thanksFeedbackCount += 1
+        let targets = selection.targets(for: action)
+        withAnimation {
+            isSelecting = false
+        }
+        Task {
+            do {
+                let hasSentFirstThanks = try await houseworkListStore.performBulk(
+                    action,
+                    on: targets,
+                    now: now,
+                    account: loginContext.account,
+                    cohabitantId: cohabitantId,
+                    step: .board
+                )
+                // 何件伝えても演出は1回だけにする
+                if hasSentFirstThanks {
+                    thanksFeedbackCount += 1
+                }
+            } catch {
+                commonError = .init(error: error)
             }
-        } catch {
-            commonError = .init(error: error)
         }
     }
 
