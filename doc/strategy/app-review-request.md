@@ -103,6 +103,7 @@ FirestoreのデータはプランごとのFirestore上の保持期間やリス�
 
 `NotificationGuideStateClient`と同じ形で、プロトコルとpreviewValueを`HometeDomain/Dependencies/`に、UserDefaultsを使うliveValueを`AppRoot/Dependency/Impl/`に置く。
 読み書きは同期的に行う。非同期にすると書き込みの順番が入れ替わり、古い記録で上書きされることがあるため。
+リリース後に`AppReviewState`へ項目を足すときは、`decodeIfPresent`で既定値を補う。読めないと記録が最初からやり直しになり、同じきっかけでもう一度リクエストしてしまうため。
 
 保存する内容（1つのCodable構造体`AppReviewState`にまとめる）:
 
