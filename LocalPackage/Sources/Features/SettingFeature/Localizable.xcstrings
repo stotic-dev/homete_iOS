@@ -5,196 +5,541 @@
 
     },
     "1日1回の制限を外す" : {
-
+      "shouldTranslate" : false
     },
     "OK" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
     },
     "P2P登録を試す" : {
-
+      "shouldTranslate" : false
     },
     "Paywallを表示" : {
-
+      "shouldTranslate" : false
     },
     "あなたのデータは全て削除され、復元することはできません。\nまた、現在参加しているグループが2名以下の場合は、グループごと削除されます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All your data will be deleted and can't be restored.\nIf your group has two or fewer members, the whole group will also be deleted."
+          }
+        }
+      }
     },
     "いつもの家事" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go-to Chores"
+          }
+        }
+      }
     },
     "ご利用中のプラン:" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Plan:"
+          }
+        }
+      }
     },
     "ご登録中のプラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Plan"
+          }
+        }
+      }
     },
     "ふりかえりの通知を受け取る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Daily Recap"
+          }
+        }
+      }
     },
     "ふりかえり通知" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Recap"
+          }
+        }
+      }
     },
     "アカウント登録からPaywallまでを表示" : {
-
+      "shouldTranslate" : false
     },
     "オフ" : {
-      "comment" : "自動更新が有効かどうか"
+      "comment" : "自動更新が有効かどうか",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        }
+      }
     },
     "オン" : {
-      "comment" : "自動更新が有効かどうか"
+      "comment" : "自動更新が有効かどうか",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On"
+          }
+        }
+      }
     },
     "オンボーディング" : {
-
+      "shouldTranslate" : false
     },
     "グループメンバー" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group Members"
+          }
+        }
+      }
     },
     "サブスクリプションを管理" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Subscription"
+          }
+        }
+      }
     },
     "サブスクリプション管理" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscription"
+          }
+        }
+      }
     },
     "サーバー側で自分のログイン情報を失効させます。STG環境限定で、本番では動きません。\n\n「アプリはこのまま」を選んだ後にアプリを終了して起動し直すと、起動直後に自動サインアウトされる状況を再現できます。「すぐにトークンを取り直す」を選ぶと、その場でログイン画面に戻ります。\n\nどちらの場合も、もう一度ログインすればそのまま使えるようになります。" : {
-
+      "shouldTranslate" : false
     },
     "ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。" : {
-
+      "shouldTranslate" : false
     },
     "デバッグメニュー" : {
-
+      "shouldTranslate" : false
     },
     "プライバシーポリシー" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
+          }
+        }
+      }
     },
     "プラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan"
+          }
+        }
+      }
     },
     "プランを変更" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Plan"
+          }
+        }
+      }
     },
     "プレミアムプランには登録していません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're not subscribed to Premium"
+          }
+        }
+      }
     },
     "プレミアムプランに登録" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe to Premium"
+          }
+        }
+      }
     },
     "メンバー招待" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite Members"
+          }
+        }
+      }
     },
     "ユーザー名:" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username:"
+          }
+        }
+      }
     },
     "ライセンス" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licenses"
+          }
+        }
+      }
     },
     "ログアウト" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log Out"
+          }
+        }
+      }
     },
     "ログアウトしますか？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log out?"
+          }
+        }
+      }
     },
     "ログイン情報の失効" : {
-
+      "shouldTranslate" : false
     },
     "一緒に家事をするメンバーはまだいません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No one to share chores with yet"
+          }
+        }
+      }
     },
     "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On days when chores get done, we'll notify you at the time you choose. Look back on the day's chores and thank each other."
+          }
+        }
+      }
     },
     "利用規約" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Use"
+          }
+        }
+      }
     },
     "同居人の登録" : {
-
+      "shouldTranslate" : false
     },
     "失効させて、すぐにトークンを取り直す" : {
-
+      "shouldTranslate" : false
     },
     "失効させる（アプリはこのまま）" : {
-
+      "shouldTranslate" : false
     },
     "家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。" : {
-
+      "shouldTranslate" : false
     },
     "家事テンプレート" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Templates"
+          }
+        }
+      }
     },
     "復元できる購入が見つかりませんでした" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No purchases to restore"
+          }
+        }
+      }
     },
     "有効期限" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expires"
+          }
+        }
+      }
     },
     "有効期限: %@" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expires: %@"
+          }
+        }
+      }
     },
     "次回更新日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renews"
+          }
+        }
+      }
     },
     "次回更新日: %@" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renews: %@"
+          }
+        }
+      }
     },
     "毎日の家事のふりかえり" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Chore Recap"
+          }
+        }
+      }
     },
     "毎日の通知時刻" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notification Time"
+          }
+        }
+      }
     },
     "無料プラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free Plan"
+          }
+        }
+      }
     },
     "現在のプラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Plan"
+          }
+        }
+      }
     },
     "自動更新" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto-Renew"
+          }
+        }
+      }
     },
     "複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。" : {
-
+      "shouldTranslate" : false
     },
     "解約する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Subscription"
+          }
+        }
+      }
     },
     "解約手続きはApp Storeの管理画面で行います" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can cancel in your App Store subscription settings"
+          }
+        }
+      }
     },
     "解約手続きへ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel Subscription"
+          }
+        }
+      }
     },
     "設定" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
     },
     "課金" : {
-
+      "shouldTranslate" : false
     },
     "購入の復元" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchases"
+          }
+        }
+      }
     },
     "購入の復元に失敗しました。時間をおいて再度お試しください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't restore purchases. Please try again later."
+          }
+        }
+      }
     },
     "購入を復元" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchases"
+          }
+        }
+      }
     },
     "購入を復元しました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchases restored"
+          }
+        }
+      }
     },
     "退会" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Account"
+          }
+        }
+      }
     },
     "退会してもサブスクリプションは解約されず、料金の請求が続きます。先に解約手続きを行ってください。\nまた、あなたのデータは全て削除され、復元することはできません。現在参加しているグループが2名以下の場合は、グループごと削除されます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting your account doesn't cancel your subscription, and you'll still be charged. Please cancel it first.\nAll your data will be deleted and can't be restored. If your group has two or fewer members, the whole group will also be deleted."
+          }
+        }
+      }
     },
     "退会しますか？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete your account?"
+          }
+        }
+      }
     },
     "退会する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Account"
+          }
+        }
+      }
     },
     "通知設定" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

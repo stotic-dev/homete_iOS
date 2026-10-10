@@ -5,7 +5,15 @@
 
     },
     "%@（未設定）" : {
-      "comment" : "カテゴリを選んでいないときの表示。カテゴリ名「その他」が入る"
+      "comment" : "カテゴリを選んでいないときの表示。カテゴリ名「その他」が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Not Set)"
+          }
+        }
+      }
     },
     "%lld / %lld件" : {
       "localizations" : {
@@ -14,161 +22,559 @@
             "state" : "new",
             "value" : "%1$lld / %2$lld件"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
         }
       }
     },
     "%lldpt" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
     },
     "%lld件を取り込みます" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore will be imported"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores will be imported"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld件取り込む" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Import %lld Chore"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Import %lld Chores"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "あらかじめ用意しているカテゴリ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Built-in Categories"
+          }
+        }
+      }
     },
     "いつもの家事" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go-to Chores"
+          }
+        }
+      }
     },
     "いつもの家事の中身" : {
-
+      "shouldTranslate" : false
     },
     "いつもの家事をまとめる名前を入力してください。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a name for grouping your go-to chores."
+          }
+        }
+      }
     },
     "いつもの家事を登録しませんか？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save your go-to chores?"
+          }
+        }
+      }
     },
     "いつもの家事を登録する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Go-to Chores"
+          }
+        }
+      }
     },
     "いつもの家事を編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Go-to Chore"
+          }
+        }
+      }
     },
     "いつもの家事を追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Go-to Chore"
+          }
+        }
+      }
     },
     "いつもの家事を追加する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a Go-to Chore"
+          }
+        }
+      }
     },
     "このカテゴリのいつもの家事は「その他」に表示されます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go-to chores in this category will appear under “Other.”"
+          }
+        }
+      }
     },
     "このカテゴリを削除しますか？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this category?"
+          }
+        }
+      }
     },
     "すべて" : {
-      "comment" : "すべてのカテゴリを表示する選択肢"
+      "comment" : "すべてのカテゴリを表示する選択肢",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
     },
     "その他の操作" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Actions"
+          }
+        }
+      }
     },
     "よくやる家事を登録しておくと、次からタップするだけで追加できます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save the chores you do often, and add them with a single tap next time."
+          }
+        }
+      }
     },
     "カテゴリ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
+          }
+        }
+      }
     },
     "カテゴリの名前" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category Name"
+          }
+        }
+      }
     },
     "カテゴリの名前を変更" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename Category"
+          }
+        }
+      }
     },
     "カテゴリを管理" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Categories"
+          }
+        }
+      }
     },
     "カテゴリを追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Category"
+          }
+        }
+      }
     },
     "カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add categories to organize your go-to chores."
+          }
+        }
+      }
     },
     "キャンセル" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
     },
     "テンプレートから取り込む" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import from Templates"
+          }
+        }
+      }
     },
     "テンプレートに家事がありません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores in your templates"
+          }
+        }
+      }
     },
     "テンプレートに家事を登録すると、ここからまとめて取り込めます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once you add chores to your templates, you can import them all from here."
+          }
+        }
+      }
     },
     "プレミアムプランで使えます" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available with Premium"
+          }
+        }
+      }
     },
     "プレミアムプランにすると、件数を気にせず登録できます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Premium, you can save as many as you like."
+          }
+        }
+      }
     },
     "プレミアムプランを見る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Premium Plan"
+          }
+        }
+      }
     },
     "ポイント" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
     },
     "上限を増やす" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raise the Limit"
+          }
+        }
+      }
     },
     "入力方法" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input Method"
+          }
+        }
+      }
     },
     "削除" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
     },
     "取り込む家事を選んでください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the chores to import"
+          }
+        }
+      }
     },
     "取り込んだ家事のカテゴリは未設定になります。あとから編集して変更できます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imported chores won't have a category. You can set one later by editing them."
+          }
+        }
+      }
     },
     "同じ名前のいつもの家事があります" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A go-to chore with this name already exists"
+          }
+        }
+      }
     },
     "同じ名前のカテゴリがあります。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A category with this name already exists."
+          }
+        }
+      }
     },
     "名前の変更と削除はできません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't be renamed or deleted"
+          }
+        }
+      }
     },
     "変更" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rename"
+          }
+        }
+      }
     },
     "家事の名前" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Name"
+          }
+        }
+      }
     },
     "家事の名前を入力" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a chore name"
+          }
+        }
+      }
     },
     "新しいカテゴリ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Category"
+          }
+        }
+      }
     },
     "新しく入力" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter New"
+          }
+        }
+      }
     },
     "新しく入力の中身" : {
-
+      "shouldTranslate" : false
     },
     "無料プランでは%lld件まで登録できます" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chores."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "無料プランでは、いつもの家事を%lld件まで登録できます" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chores."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "登録済み" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added"
+          }
+        }
+      }
     },
     "追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
     },
     "追加したカテゴリ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Categories"
+          }
+        }
+      }
     },
     "閉じる" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -2,7 +2,15 @@
   "sourceLanguage" : "ja",
   "strings" : {
     "%@さん" : {
-      "comment" : "担当者の名前に付ける敬称"
+      "comment" : "担当者の名前に付ける敬称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%@さんから「%@」にありがとうが届きました" : {
       "comment" : "1つめは送った人の名前、2つめは家事の名前",
@@ -12,23 +20,77 @@
             "state" : "new",
             "value" : "%1$@さんから「%2$@」にありがとうが届きました"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ thanked you for “%2$@”"
+          }
         }
       }
     },
     "%@さんが家事の完了を記録しました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ marked a chore as done"
+          }
+        }
+      }
     },
     "%@さんが家事を終えました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ finished a chore"
+          }
+        }
+      }
     },
     "%lld件の家事が完了しました" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore was completed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores were completed"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "homeauで一緒に家事を管理しませんか？下のリンクから参加できます。" : {
-      "comment" : "招待リンクと一緒に共有する文。homeauはアプリ名なので訳さない"
+      "comment" : "招待リンクと一緒に共有する文。homeauはアプリ名なので訳さない",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Want to manage chores together on homeau? Join with the link below."
+          }
+        }
+      }
     },
     "「%@」が完了しました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” is done"
+          }
+        }
+      }
     },
     "「%@」（担当：%@）" : {
       "comment" : "1つめは家事の名前、2つめは担当者の名前を並べたもの",
@@ -38,74 +100,244 @@
             "state" : "new",
             "value" : "「%1$@」（担当：%2$@）"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” (done by %2$@)"
+          }
         }
       }
     },
     "その他" : {
-      "comment" : "どのカテゴリにも入らない家事をまとめるカテゴリ名"
+      "comment" : "どのカテゴリにも入らない家事をまとめるカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        }
+      }
     },
     "ゴミ" : {
-      "comment" : "家事のカテゴリ名"
+      "comment" : "家事のカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trash"
+          }
+        }
+      }
     },
     "プレミアムプラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium Plan"
+          }
+        }
+      }
     },
     "・" : {
-      "comment" : "名前を並べるときの区切り（例: Aさん・Bさん、月曜日・木曜日）"
+      "comment" : "名前を並べるときの区切り（例: Aさん・Bさん、月曜日・木曜日）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ", "
+          }
+        }
+      }
     },
     "今日もおつかれさまでした" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Great work today"
+          }
+        }
+      }
     },
     "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores got done today. Look back and thank each other."
+          }
+        }
+      }
     },
     "土曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saturday"
+          }
+        }
+      }
     },
     "年額プラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annual Plan"
+          }
+        }
+      }
     },
     "掃除" : {
-      "comment" : "家事のカテゴリ名"
+      "comment" : "家事のカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cleaning"
+          }
+        }
+      }
     },
     "料理" : {
-      "comment" : "家事のカテゴリ名"
+      "comment" : "家事のカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cooking"
+          }
+        }
+      }
     },
     "日曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunday"
+          }
+        }
+      }
     },
     "月曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monday"
+          }
+        }
+      }
     },
     "月額プラン" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly Plan"
+          }
+        }
+      }
     },
     "木曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thursday"
+          }
+        }
+      }
     },
     "毎日" : {
-      "comment" : "家事のくり返し"
+      "comment" : "家事のくり返し",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily"
+          }
+        }
+      }
     },
     "毎月%lld日" : {
-      "comment" : "家事のくり返し。毎月その日付に表示する"
+      "comment" : "家事のくり返し。毎月その日付に表示する",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly on day %lld"
+          }
+        }
+      }
     },
     "毎週%@" : {
-      "comment" : "家事のくり返し。曜日の名前を並べたものが入る（例: 毎週月曜日・木曜日）"
+      "comment" : "家事のくり返し。曜日の名前を並べたものが入る（例: 毎週月曜日・木曜日）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly on %@"
+          }
+        }
+      }
     },
     "水曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wednesday"
+          }
+        }
+      }
     },
     "洗濯" : {
-      "comment" : "家事のカテゴリ名"
+      "comment" : "家事のカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laundry"
+          }
+        }
+      }
     },
     "火曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tuesday"
+          }
+        }
+      }
     },
     "買い物" : {
-      "comment" : "家事のカテゴリ名"
+      "comment" : "家事のカテゴリ名",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shopping"
+          }
+        }
+      }
     },
     "金曜日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friday"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

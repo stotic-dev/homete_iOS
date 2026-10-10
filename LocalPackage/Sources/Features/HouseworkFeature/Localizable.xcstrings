@@ -11,17 +11,45 @@
             "state" : "new",
             "value" : "%1$@ %2$lldポイント"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$lld points"
+          }
         }
       }
     },
     "%@さん" : {
-      "comment" : "担当者の名前に付ける敬称"
+      "comment" : "担当者の名前に付ける敬称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
     },
     "%@さんから" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From %@"
+          }
+        }
+      }
     },
     "%@を取り消す" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@"
+          }
+        }
+      }
     },
     "%@（%@）" : {
       "comment" : "1つめは頑張り度、2つめはポイントの内訳（例: がんばった（10pt → 12pt））",
@@ -31,11 +59,25 @@
             "state" : "new",
             "value" : "%1$@（%2$@）"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$@)"
+          }
         }
       }
     },
     "%lld" : {
-      "comment" : "日付の行に出す日にち（例: 25）"
+      "comment" : "日付の行に出す日にち（例: 25）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
     },
     "%lld%%・%lldpt" : {
       "localizations" : {
@@ -43,6 +85,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld%%・%2$lldpt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld%% · %2$lldpt"
           }
         }
       }
@@ -54,50 +102,166 @@
             "state" : "new",
             "value" : "%1$lld/%2$lld"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld"
+          }
         }
       }
     },
     "%lldpt" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
     },
     "%lld件登録する" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Add %lld Chore"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Add %lld Chores"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "OK" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
     },
     "ありがとう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks"
+          }
+        }
+      }
     },
     "ありがとうが届きました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks received"
+          }
+        }
+      }
     },
     "ありがとうを伝えました" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks sent"
+          }
+        }
+      }
     },
     "ありがとうを伝える" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks"
+          }
+        }
+      }
     },
     "ありがとう！" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you!"
+          }
+        }
+      }
     },
     "いつもの家事" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go-to Chores"
+          }
+        }
+      }
     },
     "いつもの家事に保存する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save to Go-to Chores"
+          }
+        }
+      }
     },
     "いつもの家事に保存できませんでした" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save to Go-to Chores"
+          }
+        }
+      }
     },
     "いつもの家事を管理" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage Go-to Chores"
+          }
+        }
+      }
     },
     "いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。\n「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose this when a chore took more effort than usual to earn more points.\n“Worked Hard” gives 1.2× and “Went All Out” gives 1.5× (rounded up)."
+          }
+        }
+      }
     },
     "がんばった" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worked Hard"
+          }
+        }
+      }
     },
     "この家事は%lldptなので、担当者は%lld人まで選べます" : {
       "localizations" : {
@@ -106,242 +270,807 @@
             "state" : "new",
             "value" : "この家事は%1$lldptなので、担当者は%2$lld人まで選べます"
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This chore is worth %1$lldpt, so up to %2$lld people can share it."
+          }
         }
       }
     },
     "この家事は完了または「やらない」になったため、メモを編集できません。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This chore is done or marked “Won't Do,” so its note can't be edited."
+          }
+        }
+      }
     },
     "これ以前" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier"
+          }
+        }
+      }
     },
     "これ以前の家事を見るにはプレミアムプランへの登録が必要です" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe to Premium to see earlier chores"
+          }
+        }
+      }
     },
     "その他の操作" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Actions"
+          }
+        }
+      }
     },
     "ひとこと添えられます" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a short message"
+          }
+        }
+      }
     },
     "ふつう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
     },
     "まだありがとうを伝えていません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't said thanks yet"
+          }
+        }
+      }
     },
     "もう一度やった" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did It Again"
+          }
+        }
+      }
     },
     "やらない" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Won't Do"
+          }
+        }
+      }
     },
     "カテゴリ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        }
+      }
     },
     "グループの登録または参加を行うと、家事の管理ができるようになります。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create or join a group to start managing chores."
+          }
+        }
+      }
     },
     "コメント（任意）" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment (Optional)"
+          }
+        }
+      }
     },
     "ステータス" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
     },
     "テンプレートに登録（%@）" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Templates (%@)"
+          }
+        }
+      }
     },
     "プレミアムプランにすると、件数を気にせず登録できます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Premium, you can save as many as you like."
+          }
+        }
+      }
     },
     "プレミアムプランを見る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Premium Plan"
+          }
+        }
+      }
     },
     "ポイント" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
     },
     "メッセージ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        }
+      }
     },
     "メッセージを更新する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Message"
+          }
+        }
+      }
     },
     "メッセージを添える" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a Message"
+          }
+        }
+      }
     },
     "メッセージを編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Message"
+          }
+        }
+      }
     },
     "メッセージを送る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Message"
+          }
+        }
+      }
     },
     "メモ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        }
+      }
     },
     "メモあり" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has a note"
+          }
+        }
+      }
     },
     "メモを保存できませんでした" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the note"
+          }
+        }
+      }
     },
     "メモを編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Note"
+          }
+        }
+      }
     },
     "メモを追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Note"
+          }
+        }
+      }
     },
     "・" : {
-      "comment" : "担当者の名前を並べるときの区切り"
+      "comment" : "担当者の名前を並べるときの区切り",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ", "
+          }
+        }
+      }
     },
     "今日" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        }
+      }
     },
     "今日の家事は全て終わっています" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All of today's chores are done"
+          }
+        }
+      }
     },
     "今日の家事を追加しましょう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add today's chores"
+          }
+        }
+      }
     },
     "入力した内容を破棄しますか？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard what you've entered?"
+          }
+        }
+      }
     },
     "入力を続ける" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Editing"
+          }
+        }
+      }
     },
     "入力履歴" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent Entries"
+          }
+        }
+      }
     },
     "全員が1pt以上になるように配分してください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make sure everyone gets at least 1pt"
+          }
+        }
+      }
     },
     "割合の合計が100%%になるように調整してください（いまは%lld%%です）" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust the shares so they add up to 100%% (currently %lld%%)"
+          }
+        }
+      }
     },
     "同じ名前のいつもの家事があります" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A go-to chore with this name already exists"
+          }
+        }
+      }
     },
     "完了" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
     },
     "完了した家事はありません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No completed chores"
+          }
+        }
+      }
     },
     "完了にする" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Done"
+          }
+        }
+      }
     },
     "完了ポイント" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
     },
     "実施予定日付" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled Date"
+          }
+        }
+      }
     },
     "家事の名前" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Name"
+          }
+        }
+      }
     },
     "家事の名前を入力" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a chore name"
+          }
+        }
+      }
     },
     "家事の情報" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Details"
+          }
+        }
+      }
     },
     "家事は登録できています。いつもの家事への保存は、管理画面からやり直せます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your chore was added. You can save it to Go-to Chores again from the management screen."
+          }
+        }
+      }
     },
     "家事を追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Chore"
+          }
+        }
+      }
     },
     "家事を追加する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Chore"
+          }
+        }
+      }
     },
     "感謝を伝えましょう！" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say thanks!"
+          }
+        }
+      }
     },
     "手伝った人を追加" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Helper"
+          }
+        }
+      }
     },
     "手伝ってくれた人を選ぶと、この家事のポイントを分け合えます。もともとの担当者は外せません。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose who helped to share this chore's points. The original assignee can't be removed."
+          }
+        }
+      }
     },
     "手分けした家事のポイントを、それぞれがやった割合に合わせて分けられます。\n割合の合計が100%になるように調整してください。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split a shared chore's points by how much each person did.\nMake sure the shares add up to 100%."
+          }
+        }
+      }
     },
     "担当者" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assignee"
+          }
+        }
+      }
     },
     "担当者を1人以上選んでください" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose at least one assignee"
+          }
+        }
+      }
     },
     "新しい家事が必要な場合は追加しましょう" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new chores if you need to"
+          }
+        }
+      }
     },
     "未完了" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Do"
+          }
+        }
+      }
     },
     "未完了に戻す" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark as Not Done"
+          }
+        }
+      }
     },
     "未完了の家事" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores To Do"
+          }
+        }
+      }
     },
     "未完了の家事があります" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have chores to do"
+          }
+        }
+      }
     },
     "未完了の家事はありません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores to do"
+          }
+        }
+      }
     },
     "未完了を見る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View To Do"
+          }
+        }
+      }
     },
     "無料プランでは、いつもの家事を%lld件まで登録できます" : {
-
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chores."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "無料プランは%lld件まで" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free Plan: up to %lld"
+          }
+        }
+      }
     },
     "登録する家事" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores to Add"
+          }
+        }
+      }
     },
     "登録予定" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Be Added"
+          }
+        }
+      }
     },
     "登録予定 %lld件" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To Be Added (%lld)"
+          }
+        }
+      }
     },
     "登録予定%lld件を見る" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Chores to Be Added (%lld)"
+          }
+        }
+      }
     },
     "破棄する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        }
+      }
     },
     "続けて入力する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Another"
+          }
+        }
+      }
     },
     "超頑張った" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Went All Out"
+          }
+        }
+      }
     },
     "送ったメッセージを編集" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Sent Message"
+          }
+        }
+      }
     },
     "選択" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        }
+      }
     },
     "選択をやめる" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
     },
     "配分の調整とは？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Adjusting the Split"
+          }
+        }
+      }
     },
     "配分を調整する" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust Split"
+          }
+        }
+      }
     },
     "閉じる" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
     },
     "頑張り度" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effort"
+          }
+        }
+      }
     },
     "頑張り度とは？" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's Effort?"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
