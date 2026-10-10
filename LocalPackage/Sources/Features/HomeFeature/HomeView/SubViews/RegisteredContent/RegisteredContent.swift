@@ -47,7 +47,8 @@ struct RegisteredContent: View {
                             isPremium: subscriptionStore.isPremium,
                             isEnabled: isAdsEnabled
                         ) {
-                            VStack(spacing: .space8) {
+                            // AdMobのガイドラインに沿って、誤タップを防ぐためにタップできるリンクを広告から離す
+                            VStack(spacing: .space16) {
                                 // 高さは届いた広告のサイズから決まる（インライン型アダプティブバナー）
                                 adComponentResolver.resolve(.banner(.dashboardTop))
                                 RemoveAdsPromotionLink {
