@@ -7,8 +7,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -96,18 +96,21 @@ FirestoreのデータはプランごとのFirestore上の保持期間やリス�
   - `sentAt`はコメントを編集しても変わらないので（`HouseworkThanks`）、編集で二重に数えることはない。家事を完了し直すとありがとうは消えて付け直しになるので、その場合は新しく数える
 - 初めて判定するときに、目印と使い始めた日を「今」で初期化する。これでアップデート前に届いていた分は数えない
 - 家事のIDと送った人のIDの組をすべて保存する方法も考えた。ただ、リスナーが空の一覧を返したときなどに保存した組を整理する処理が必要になるので、目印の方式にした
+- 一括操作で送ったありがとうは`sentAt`がすべて同じになるため、目印と同じ日時で数え済みの分は「家事のID＋送った人のID」で覚えておく。目印が進んだら作り直す
 - 送った人の端末の時計がずれていたり、オフラインで送ったありがとうが遅れて届いたりすると、数え漏れることがある。評価を出すきっかけを判定するだけなので、それでもよいとする
 
 ### 3. 保存先: `AppReviewStateClient`
 
 `NotificationGuideStateClient`と同じ形で、プロトコルとpreviewValueを`HometeDomain/Dependencies/`に、UserDefaultsを使うliveValueを`AppRoot/Dependency/Impl/`に置く。
+読み書きは同期的に行う。非同期にすると書き込みの順番が入れ替わり、古い記録で上書きされることがあるため。
 
 保存する内容（1つのCodable構造体`AppReviewState`にまとめる）:
 
 | 項目 | 型 | 用途 |
 |---|---|---|
-| `startedAt` | `Date?` | 使い始めた日（D） |
-| `thanksCountedUntil` | `Date?` | ありがとうをどこまで数えたか |
+| `startedAt` | `Date` | 使い始めた日（D） |
+| `thanksCountedUntil` | `Date` | ありがとうをどこまで数えたか |
+| `thanksCountedKeysAtMarker` | `Set<AppReviewThanksKey>` | `thanksCountedUntil`と同じ日時で数え済みのありがとう（家事のID＋送った人のID）。一括操作で同じ日時のありがとうが別々に届いても数え漏らさないため |
 | `receivedThanksCount` | `Int` | 受け取ったありがとうの累計（C） |
 | `requestedTriggers` | `Set<AppReviewTrigger>` | 出したトリガー |
 | `lastRequestedAt` | `Date?` | 最後にリクエストした日時（30日の制限） |
@@ -130,7 +133,8 @@ struct AppReviewRequestModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .task { policy = .init(state: await appReviewStateClient.load()) }
+            .onAppear { policy = .init(savedState: appReviewStateClient.load(), now: .now) }
+            .onDisappear { requestTask?.cancel() }
             .onChange(of: subscriptionStore.entitlementInfo) { oldValue, newValue in /* トリガーA */ }
             .onChange(of: houseworkItems) { /* トリガーC・D */ }
     }
@@ -181,19 +185,19 @@ struct AppReviewRequestModifier: ViewModifier {
 
 ### Phase 2: 実装
 
-- [ ] `AppReviewTrigger` / `AppReviewState` / `AppReviewStateClient`（previewValue・liveValue）を追加し、`AppDependencies`に登録
-- [ ] `AnalyticsEvent.appReview`を追加
-- [ ] `AppReviewPolicy`を実装（トリガーA・C・Dの判定、頻度制限、記録の更新）
-- [ ] `AppReviewPolicyTest`を追加
-- [ ] `AppReviewRequestModifier`を実装し、`AppTabView`に付ける
-- [ ] `doc/analytics_events.md`に`app_review`を追記
-- [ ] ADR-0041を作成
+- [x] `AppReviewTrigger` / `AppReviewState` / `AppReviewStateClient`（previewValue・liveValue）を追加し、`AppDependencies`に登録
+- [x] `AnalyticsEvent.appReview`を追加
+- [x] `AppReviewPolicy`を実装（トリガーA・C・Dの判定、頻度制限、記録の更新）
+- [x] `AppReviewPolicyTest`を追加
+- [x] `AppReviewRequestModifier`を実装し、`AppTabView`に付ける
+- [x] `doc/analytics_events.md`に`app_review`を追記
+- [x] ADR-0041を作成
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新（画面の見た目は変わらない想定）
 - [ ] Debugビルドで、課金後とありがとうを受け取った後に評価ダイアログが出ることを確認
 
