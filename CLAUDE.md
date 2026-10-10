@@ -333,7 +333,7 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 
 ### ローカライズ
 
-文言は日本語をキーにして各モジュールの`Localizable.xcstrings`で管理し、英語の訳はXcodeの「Generate Translation」で入れる。パッケージ内では`Text("…", bundle: #bundle)` / `.localized("…")`で必ずbundleを指定する。書き方・訳の手順・テストでの言語指定は **[doc/localization.md](doc/localization.md)** が正（経緯は[ADR-0040](doc/adr/0040-localization-with-per-module-string-catalogs.md)）。
+文言は日本語をキーにして各モジュールの`Localizable.xcstrings`で管理する。日本語を足す・変えたら同じ変更で英訳も入れ、`make check-translations`で抜けが無いことを確かめる。パッケージ内では`Text("…", bundle: #bundle)` / `.localized("…")`で必ずbundleを指定する。書き方・訳の手順・用語・テストでの言語指定は **[doc/localization.md](doc/localization.md)** が正（経緯は[ADR-0040](doc/adr/0040-localization-with-per-module-string-catalogs.md)）。
 
 ### Analyticsイベント
 
