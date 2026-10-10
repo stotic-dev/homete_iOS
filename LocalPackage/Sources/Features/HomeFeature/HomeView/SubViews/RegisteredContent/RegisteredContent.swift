@@ -48,8 +48,8 @@ struct RegisteredContent: View {
                             isEnabled: isAdsEnabled
                         ) {
                             VStack(spacing: .space8) {
+                                // 高さは届いた広告のサイズから決まる（インライン型アダプティブバナー）
                                 adComponentResolver.resolve(.banner(.dashboardTop))
-                                    .frame(height: 150)
                                 RemoveAdsPromotionLink {
                                     tappedRemoveAdsPromotionLink()
                                 }

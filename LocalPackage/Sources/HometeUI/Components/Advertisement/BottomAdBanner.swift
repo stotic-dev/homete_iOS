@@ -19,9 +19,8 @@ struct BottomAdBanner: View {
 
     var body: some View {
         VStack(spacing: .space4) {
+            // 高さは広告のサイズから決まる（アンカー型アダプティブバナー）
             adComponentResolver.resolve(.banner(bannerType))
-                // AdSizeBanner(320x50)の高さを確保する
-                .frame(height: 50)
             RemoveAdsPromotionLink(action: onTapPromotionLink)
         }
         .padding(.top, .space8)
