@@ -27,13 +27,17 @@ public struct HouseworkMemoRow: View {
             onTap()
         } label: {
             HStack(spacing: .space8) {
-                Text("メモ")
+                Text("メモ", bundle: #bundle)
                     .font(with: titleFont)
                     .foregroundStyle(.onSurface)
                 Spacer()
-                Text(hasContent ? "あり" : "なし")
-                    .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
+                (hasContent ? Text("あり", bundle: #bundle, comment: "メモが書かれているか") : Text(
+                    "なし",
+                    bundle: #bundle,
+                    comment: "メモが書かれているか"
+                ))
+                .font(with: .body)
+                .foregroundStyle(.onSurfaceVariant)
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)

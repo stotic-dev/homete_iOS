@@ -1,0 +1,234 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "10文字以内で入力して下さい" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter up to 10 characters"
+          }
+        }
+      }
+    },
+    "homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every chore management feature in homeau is free to use.\nFor an even better experience, we also offer a Premium Plan."
+          }
+        }
+      }
+    },
+    "あと%lld文字" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld character left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld characters left"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "あとで決める" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maybe Later"
+          }
+        }
+      }
+    },
+    "この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This name will also appear on your partner's screen.\nYou can change it anytime."
+          }
+        }
+      }
+    },
+    "はじめまして！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nice to meet you!"
+          }
+        }
+      }
+    },
+    "まずはあなたのニックネームを教えてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First, tell us your nickname"
+          }
+        }
+      }
+    },
+    "ようこそ!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome!"
+          }
+        }
+      }
+    },
+    "アカウント登録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Account"
+          }
+        }
+      }
+    },
+    "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To use homeau, you need to sign in with your Apple Account."
+          }
+        }
+      }
+    },
+    "ダッシュボードのバナー広告が消え、家事の記録に集中できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banner ads are removed from the Dashboard, so you can focus on your chores."
+          }
+        }
+      }
+    },
+    "プランを見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Plans"
+          }
+        }
+      }
+    },
+    "プレミアムプランのご案内" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introducing Premium"
+          }
+        }
+      }
+    },
+    "プレミアム限定の新機能が増えても、追加の料金はかかりません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Premium-only features come at no extra cost."
+          }
+        }
+      }
+    },
+    "ユーザー名" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username"
+          }
+        }
+      }
+    },
+    "今後追加される機能もすべて使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get every feature we add in the future"
+          }
+        }
+      }
+    },
+    "例：たろう" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "e.g. Alex"
+          }
+        }
+      }
+    },
+    "全%lldステップ中%lldステップ目" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "全%1$lldステップ中%2$lldステップ目"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %2$lld of %1$lld"
+          }
+        }
+      }
+    },
+    "広告が表示されません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads"
+          }
+        }
+      }
+    },
+    "登録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Register"
+          }
+        }
+      }
+    },
+    "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By continuing, you agree to the [Terms of Use](https://stotic-dev.github.io/homete_iOS/terms.html) and [Privacy Policy](https://stotic-dev.github.io/homete_iOS/privacy.html)."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

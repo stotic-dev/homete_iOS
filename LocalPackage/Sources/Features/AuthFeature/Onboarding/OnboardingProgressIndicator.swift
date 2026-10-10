@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -23,7 +24,7 @@ struct OnboardingProgressIndicator: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("全\(steps.count)ステップ中\(currentIndex + 1)ステップ目")
+        .accessibilityLabel(.localized("全\(steps.count)ステップ中\(currentIndex + 1)ステップ目"))
     }
 
 }

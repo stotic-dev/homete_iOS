@@ -9,48 +9,35 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct HouseworkBoardView: View {
+/// 家事ボードのUI
+///
+/// 渡された値を描画してタップを伝えるだけで、Storeの操作・シートの表示・画面遷移は
+/// `HouseworkBoardScreen`が行う。チュートリアルでも同じViewにサンプルの家事を渡して表示するため、
+/// ここに`Environment`の依存やプレゼンテーションロジックを持ち込まない。
+/// `NavigationStack`の中に置く前提で、ナビゲーションバーのボタンもここで並べる。
+struct HouseworkBoardView<RowMenu: View>: View {
 
-    @Environment(\.calendar) var calendar
-    @Environment(\.now) var now
-    @Environment(\.routeResolver) var router
-    @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
-    @Environment(HouseworkListStore.self) var houseworkListStore
-    @Environment(SubscriptionStore.self) var subscriptionStore
-    @Environment(\.cohabitantMembers) var members
-    @Environment(\.loginContext) var loginContext
-
-    @Binding var houseworkBoardList: HouseworkBoardList
     @Binding var dateList: HouseworkDateList
-
-    @State var navigationPath = AppNavigationPath<HouseworkBoardRoute>()
-    @State var selectedHouseworkState = HouseworkState.incomplete
-    @State var isPresentingAddHouseworkView = false
-    @State var isShowHouseworkTemplate = false
-    @State var isShowPaywall = false
-    @State var isSelecting = false
+    @Binding var selectedHouseworkState: HouseworkState
+    @Binding var isSelecting: Bool
     /// 複数選択モードで選択中の家事のID
-    @State var selectedHouseworkIDs: Set<String> = []
-    /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
-    @State var completingItem: HouseworkBoardItem?
-    /// クイックアクションの「ありがとう」で、メッセージを入力するハーフモーダルを出している家事
-    @State var thankingItem: HouseworkBoardItem?
-    /// クイックアクションの「手伝った人を追加」で、担当者を選ぶハーフモーダルを出している家事
-    @State var addingHelperItem: HouseworkBoardItem?
-    /// 初めてありがとうを伝えた回数。増えるたびにありがとうの演出を出す
-    @State var thanksFeedbackCount = 0
-    /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
-    @State var hasPendingThanksFeedback = false
+    @Binding var selectedHouseworkIDs: Set<String>
 
-    @LoadingState var loadingState
-    @CommonError var commonError
-
+    let houseworkBoardList: HouseworkBoardList
+    let members: CohabitantMemberList
+    let ownUserId: String
     /// 家事の購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
-    let onUpdateHouseboardList: () -> Void
-    let onRetry: () async -> Void
+    let onTapRetry: () -> Void
+    let onTapAdd: () -> Void
+    let onTapItem: (HouseworkBoardItem) -> Void
+    let onTapComplete: (HouseworkBoardItem) -> Void
+    let onTapThanks: (HouseworkBoardItem) -> Void
+    let onTapStorageLimit: () -> Void
+    let onTapHouseworkTemplate: () -> Void
+    let onTapBulkAction: (HouseworkQuickAction) -> Void
+    /// 家事のセルを長押ししたときと、その他ボタンのメニューの中身
+    @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
     var body: some View {
         // 一覧をタブバーの裏まで伸ばすと、一覧側からは下端のセーフエリアが見えなくなる。
@@ -58,91 +45,18 @@ struct HouseworkBoardView: View {
         GeometryReader { proxy in
             boardBody(bottomSafeAreaInset: proxy.safeAreaInsets.bottom)
         }
-    }
-
-    func boardBody(bottomSafeAreaInset: CGFloat) -> some View {
-        NavigationStack(path: $navigationPath.path) {
-            ZStack {
-                if let loadFailure {
-                    LoadErrorView(error: loadFailure) {
-                        loadingState.task {
-                            await onRetry()
-                        }
-                    }
-                } else {
-                    boardContent(bottomSafeAreaInset: bottomSafeAreaInset)
-                }
-            }
-            // 一覧の下に追加ボタンの分の余白を作り、終端までスクロールしても最後の家事行と重ならないようにする。
-            // `overlay`で浮かせると一覧の上に乗るだけで余白ができず、行の右側（ポイント）が隠れてしまう
-            .safeAreaInset(edge: .bottom, alignment: .trailing) {
-                if loadFailure == nil {
-                    AddHouseworkButton {
-                        isPresentingAddHouseworkView = true
-                    }
-                    .padding(.trailing, .space24)
-                    .padding(.bottom, .space24)
-                }
-            }
-            .navigationDestination(for: HouseworkBoardRoute.self) { route in
-                navigationHandler(route)
-            }
-            .softTopScrollEdgeEffect()
-            .leadingToolbarItem {
-                if isSelecting {
-                    cancelSelectingButton()
-                }
-            }
-            .trailingToolbarItem {
-                if isSelecting {
-                    bulkActionContent()
-                } else {
-                    defaultToolbarContent()
-                }
-            }
-            .environment(\.houseworkBoardNavigationPath, navigationPath)
-        }
-        .sheet(isPresented: $isPresentingAddHouseworkView) {
-            RegisterHouseworkView(
-                dailyHouseworkList: .makeInitialValue(
-                    selectedDate: dateList.selectedDate,
-                    items: [],
-                    calendar: calendar,
-                    storagePolicy: storagePolicy
-                ),
-                step: .board
-            )
-        }
-        // TabViewのページの中や、空表示と切り替わる一覧に置くと、完了にした家事が一覧から消えたときに
-        // シートを出しているビューごと作り直され、閉じたシートがもう一度出てしまうため、ボード全体に置く
-        .sheet(item: $completingItem) { item in
-            HouseworkCompleteSheet(item: item, step: .board)
-        }
-        // モーダルの上ではなく、閉じた後のボードに演出を出す。モーダルを閉じるのを演出で待たせないため
-        .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
-            HouseworkThanksView(item: item) {
-                hasPendingThanksFeedback = true
+        .softTopScrollEdgeEffect()
+        .leadingToolbarItem {
+            if isSelecting {
+                cancelSelectingButton()
             }
         }
-        .sheet(item: $addingHelperItem) { item in
-            HouseworkAddHelperSheet(item: item, step: .board)
-        }
-        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
-            router.resolve(.houseworkTemplate)
-        }
-        .fullScreenCoverOnIOS(
-            isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
-        )
-        .onChange(of: houseworkListStore.items) {
-            withAnimation {
-                onUpdateHouseboardList()
-            }
-        }
-        .onChange(of: dateList.selectedDate) {
-            withAnimation {
-                onUpdateHouseboardList()
+        .trailingToolbarItem {
+            if !isSelecting {
+                defaultToolbarContent()
+            } else if !selection.availableActions.isEmpty {
+                // 中身が空でもツールバーの項目を置くと背景だけが残るため、押せるボタンがないあいだは何も置かない
+                bulkActionContent()
             }
         }
         .onChange(of: selectedHouseworkState) {
@@ -154,13 +68,11 @@ struct HouseworkBoardView: View {
         .onChange(of: isSelecting) {
             selectedHouseworkIDs = []
         }
-        .thanksFeedback(trigger: thanksFeedbackCount)
-        .commonError(content: $commonError)
-        .fullScreenLoadingIndicator(loadingState)
-        .trackScreenView(.houseworkBoard)
     }
 
 }
+
+// MARK: - UI定義
 
 private extension HouseworkBoardView {
 
@@ -168,35 +80,53 @@ private extension HouseworkBoardView {
     var selection: HouseworkSelection {
         .init(
             items: houseworkBoardList.items(matching: selectedHouseworkState),
-            state: selectedHouseworkState,
             selectedIDs: selectedHouseworkIDs,
-            ownUserId: loginContext.account.id
+            ownUserId: ownUserId
         )
+    }
+
+    func boardBody(bottomSafeAreaInset: CGFloat) -> some View {
+        ZStack {
+            if let loadFailure {
+                LoadErrorView(error: loadFailure, onTapRetry: onTapRetry)
+            } else {
+                boardContent(bottomSafeAreaInset: bottomSafeAreaInset)
+            }
+        }
+        // 一覧の下に追加ボタンの分の余白を作り、終端までスクロールしても最後の家事行と重ならないようにする。
+        // `overlay`で浮かせると一覧の上に乗るだけで余白ができず、行の右側（ポイント）が隠れてしまう
+        .safeAreaInset(edge: .bottom, alignment: .trailing) {
+            if loadFailure == nil {
+                AddHouseworkButton(action: onTapAdd)
+                    .tutorialSpotlightTarget(.houseworkAddButton)
+                    .padding(.trailing, .space24)
+                    .padding(.bottom, .space24)
+            }
+        }
     }
 
     func boardContent(bottomSafeAreaInset: CGFloat) -> some View {
         VStack(spacing: .space16) {
-            HouseworkDateHeaderContent(dateList: $dateList) {
-                tappedStorageLimitCell()
-            }
+            HouseworkDateHeaderContent(dateList: $dateList, onTapStorageLimit: onTapStorageLimit)
             VStack(spacing: .space16) {
                 HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                 TabView(selection: $selectedHouseworkState) {
                     ForEach(HouseworkState.pageableCases) { state in
                         HouseworkBoardListContent(
-                            houseworkListStore: houseworkListStore,
                             state: state,
                             list: houseworkBoardList,
                             memberList: members,
+                            ownUserId: ownUserId,
                             bottomContentInset: bottomSafeAreaInset,
                             selectedHouseworkState: $selectedHouseworkState,
                             isSelecting: $isSelecting,
-                            selectedIDs: $selectedHouseworkIDs,
-                            onCreateTapped: { isPresentingAddHouseworkView = true },
-                            onSelectComplete: { completingItem = $0 },
-                            onSelectThanks: { thankingItem = $0 },
-                            onSelectAddHelper: { addingHelperItem = $0 },
-                            onSentFirstThanks: { thanksFeedbackCount += 1 }
+                            // 選択に合わせて一括操作のボタンや選べない行の表示が切り替わるので、急に変わらないようにする
+                            selectedIDs: $selectedHouseworkIDs.animation(),
+                            onCreateTapped: onTapAdd,
+                            onTapItem: onTapItem,
+                            onTapComplete: onTapComplete,
+                            onTapThanks: onTapThanks,
+                            rowMenu: rowMenu
                         )
                         .tag(state)
                     }
@@ -211,32 +141,17 @@ private extension HouseworkBoardView {
         }
     }
 
-    func dismissedThanksView() {
-        guard hasPendingThanksFeedback else { return }
-        hasPendingThanksFeedback = false
-        thanksFeedbackCount += 1
-    }
-
-    func tappedStorageLimitCell() {
-        analyticsClient.log(.paywall(.shown(step: .boardStorageLimit)))
-        isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
-    }
-
     /// 選択モードでないときのナビゲーションバー右側（選択モードへの入口とテンプレート）
     func defaultToolbarContent() -> some View {
         HStack(spacing: .space16) {
-            Button("選択") {
+            Button(.localized("選択")) {
                 withAnimation {
                     isSelecting = true
                 }
             }
-            NavigationBarButton(label: .houseworkTemplate) {
-                isShowHouseworkTemplate = true
-            }
+            .tutorialSpotlightTarget(.houseworkSelectButton)
+            NavigationBarButton(label: .houseworkTemplate, action: onTapHouseworkTemplate)
+                .tutorialSpotlightTarget(.houseworkTemplateButton)
         }
     }
 
@@ -247,49 +162,14 @@ private extension HouseworkBoardView {
                 isSelecting = false
             }
         }
-        .accessibilityLabel("選択をやめる")
+        .accessibilityLabel(.localized("選択をやめる"))
     }
 
     func bulkActionContent() -> some View {
         HouseworkBulkActionToolbarContent(
             actions: selection.availableActions,
-            isEnabled: !selection.isEmpty,
-            onTap: { action in
-                Task {
-                    await performBulk(action)
-                }
-            }
+            onTap: onTapBulkAction
         )
-    }
-
-    func performBulk(_ action: HouseworkQuickAction) async {
-        guard let cohabitantId = loginContext.cohabitantId else { return }
-
-        do {
-            let hasSentFirstThanks = try await houseworkListStore.performBulk(
-                action,
-                on: selection.targets(for: action),
-                now: now,
-                account: loginContext.account,
-                cohabitantId: cohabitantId,
-                step: .board
-            )
-            selectedHouseworkIDs = []
-            // 何件伝えても演出は1回だけにする
-            if hasSentFirstThanks {
-                thanksFeedbackCount += 1
-            }
-        } catch {
-            commonError = .init(error: error)
-        }
-    }
-
-    @ViewBuilder
-    func navigationHandler(_ route: HouseworkBoardRoute) -> some View {
-        switch route {
-        case let .houseworkDetail(item):
-            HouseworkDetailView(item: item)
-        }
     }
 
 }
@@ -302,22 +182,34 @@ private extension HouseworkBoardView {
             point: 20
         ),
     ])
-    HouseworkBoardView(
-        houseworkBoardList: .constant(list),
-        dateList: .constant(.init(
-            anchorDate: .distantPast,
-            selectedDate: .distantPast,
-            calendar: .japanese
-        )),
-        loadFailure: nil,
-        onUpdateHouseboardList: {},
-        onRetry: {}
-    )
+    NavigationStack {
+        HouseworkBoardView(
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            )),
+            selectedHouseworkState: .constant(.incomplete),
+            isSelecting: .constant(false),
+            selectedHouseworkIDs: .constant([]),
+            houseworkBoardList: list,
+            members: .init(value: [], ownId: "ownUserId"),
+            ownUserId: "ownUserId",
+            loadFailure: nil,
+            onTapRetry: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onTapComplete: { _ in },
+            onTapThanks: { _ in },
+            onTapStorageLimit: {},
+            onTapHouseworkTemplate: {},
+            onTapBulkAction: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
+    }
     .apply(theme: .init())
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
-    .environment(HouseworkListStore())
-    .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkBoardView_選択モード") {
@@ -333,44 +225,118 @@ private extension HouseworkBoardView {
             point: 100
         ),
     ])
-    HouseworkBoardView(
-        houseworkBoardList: .constant(list),
-        dateList: .constant(.init(
-            anchorDate: .distantPast,
-            selectedDate: .distantPast,
-            calendar: .japanese
-        )),
-        isSelecting: true,
-        selectedHouseworkIDs: ["1"],
-        loadFailure: nil,
-        onUpdateHouseboardList: {},
-        onRetry: {}
-    )
+    NavigationStack {
+        HouseworkBoardView(
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            )),
+            selectedHouseworkState: .constant(.incomplete),
+            isSelecting: .constant(true),
+            selectedHouseworkIDs: .constant(["1"]),
+            houseworkBoardList: list,
+            members: .init(value: [], ownId: "ownUserId"),
+            ownUserId: "ownUserId",
+            loadFailure: nil,
+            onTapRetry: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onTapComplete: { _ in },
+            onTapThanks: { _ in },
+            onTapStorageLimit: {},
+            onTapHouseworkTemplate: {},
+            onTapBulkAction: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
+    }
     .apply(theme: .init())
     .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
-    .environment(HouseworkListStore())
-    .environment(SubscriptionStore())
+}
+
+#Preview("HouseworkBoardView_完了") {
+    let list = HouseworkBoardList(items: [
+        .makeForPreview(
+            id: "1",
+            title: "洗濯",
+            point: 20,
+            state: .completed,
+            executorId: "otherUserId"
+        ),
+        .makeForPreview(
+            id: "2",
+            title: "掃除",
+            point: 100,
+            state: .completed,
+            executorId: "ownUserId"
+        ),
+    ])
+    NavigationStack {
+        HouseworkBoardView(
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            )),
+            selectedHouseworkState: .constant(.completed),
+            isSelecting: .constant(false),
+            selectedHouseworkIDs: .constant([]),
+            houseworkBoardList: list,
+            members: .init(
+                value: [
+                    .init(id: "ownUserId", userName: "たろう"),
+                    .init(id: "otherUserId", userName: "はなこ"),
+                ],
+                ownId: "ownUserId"
+            ),
+            ownUserId: "ownUserId",
+            loadFailure: nil,
+            onTapRetry: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onTapComplete: { _ in },
+            onTapThanks: { _ in },
+            onTapStorageLimit: {},
+            onTapHouseworkTemplate: {},
+            onTapBulkAction: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
+    }
+    .apply(theme: .init())
+    .setupEnvironmentForPreview()
+    .environment(\.now, .distantPast)
 }
 
 #Preview("HouseworkBoardView_読み込みエラー") {
-    HouseworkBoardView(
-        houseworkBoardList: .constant(.init(items: [])),
-        dateList: .constant(.init(
-            anchorDate: .distantPast,
-            selectedDate: .distantPast,
-            calendar: .japanese
-        )),
-        loadFailure: .noNetwork,
-        onUpdateHouseboardList: {},
-        onRetry: {}
-    )
+    NavigationStack {
+        HouseworkBoardView(
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            )),
+            selectedHouseworkState: .constant(.incomplete),
+            isSelecting: .constant(false),
+            selectedHouseworkIDs: .constant([]),
+            houseworkBoardList: .init(items: []),
+            members: .init(value: [], ownId: "ownUserId"),
+            ownUserId: "ownUserId",
+            loadFailure: .noNetwork,
+            onTapRetry: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onTapComplete: { _ in },
+            onTapThanks: { _ in },
+            onTapStorageLimit: {},
+            onTapHouseworkTemplate: {},
+            onTapBulkAction: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
+    }
     .apply(theme: .init())
     .setupEnvironmentForPreview()
     .environment(\.now, .distantPast)
-    .environment(HouseworkListStore())
-    .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkBoardView_家事が多い") {
@@ -381,22 +347,33 @@ private extension HouseworkBoardView {
             point: index * 10
         )
     })
-    HouseworkBoardView(
-        houseworkBoardList: .constant(list),
-        dateList: .constant(.init(
-            anchorDate: .distantPast,
-            selectedDate: .distantPast,
-            calendar: .japanese
-        )),
-        loadFailure: nil,
-        onUpdateHouseboardList: {},
-        onRetry: {}
-    )
+    NavigationStack {
+        HouseworkBoardView(
+            dateList: .constant(.init(
+                anchorDate: .distantPast,
+                selectedDate: .distantPast,
+                calendar: .japanese
+            )),
+            selectedHouseworkState: .constant(.incomplete),
+            isSelecting: .constant(false),
+            selectedHouseworkIDs: .constant([]),
+            houseworkBoardList: list,
+            members: .init(value: [], ownId: "ownUserId"),
+            ownUserId: "ownUserId",
+            loadFailure: nil,
+            onTapRetry: {},
+            onTapAdd: {},
+            onTapItem: { _ in },
+            onTapComplete: { _ in },
+            onTapThanks: { _ in },
+            onTapStorageLimit: {},
+            onTapHouseworkTemplate: {},
+            onTapBulkAction: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
+    }
     .apply(theme: .init())
     .setupEnvironmentForPreview()
-    .setupLoginContextForPreview()
     .environment(\.now, .distantPast)
-    .environment(HouseworkListStore())
-    .environment(SubscriptionStore())
 }
 #endif

@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -13,24 +14,24 @@ import SwiftUI
 /// それぞれのView内ではなく拡張として切り出している（`HouseworkQuickAction+Presentation`と同じ方針）。
 extension HouseworkDetailAction {
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
         case .complete:
-            "完了にする"
+            .localized("完了にする")
         case .sendThanks:
-            "ありがとうを伝える"
+            .localized("ありがとうを伝える")
         case .addThanksMessage:
-            "メッセージを添える"
+            .localized("メッセージを添える")
         case .editThanksMessage:
-            "送ったメッセージを編集"
+            .localized("送ったメッセージを編集")
         case .addHelper:
-            "手伝った人を追加"
+            .localized("手伝った人を追加")
         case .redo:
-            "もう一度やった"
+            .localized("もう一度やった")
         case .returnToIncomplete:
-            "未完了に戻す"
+            .localized("未完了に戻す")
         case .remove:
-            "やらない"
+            .localized("やらない")
         }
     }
 

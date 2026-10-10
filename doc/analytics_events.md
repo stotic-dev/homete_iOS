@@ -94,7 +94,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
 | `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる家事の一覧。ダッシュボードの感謝の促しから開く） |
 | `contribution_analytics` | `ContributionAnalyticsView` |
-| `housework_board` | `HouseworkBoardView` |
+| `housework_board` | `HouseworkBoardScreen` |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
@@ -191,25 +191,33 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
 | `result` | — | `success` / `failure` | 行動の結果 |
+| `item_count` | — | 数値 | 複数選択の一括操作でまとめて書き込んだ家事の件数。一括操作（`complete` / `delete` / `send_thanks` / `return_incomplete`）のときだけ付与し、1件ずつの操作には付けない。GA4のレポートで集計するため、stg / prodの両方でカスタム指標（イベントスコープ）として登録する |
+
+複数選択の一括操作は、操作1回につき1イベントだけ送り、件数は`item_count`で表す（家事1件ごとには送らない）。
+送信済みのありがとうや未完了に戻された家事など、書き込む直前の判定で対象から外れた家事は件数に含めず、
+対象が0件になった場合はイベントを送らない。どの家事に操作したか（家事IDや家事名）はパラメータに含めない。
+値の種類が多すぎて集計できず、家事名はユーザーが入力した内容のため。
 
 送信されるパターンと、その送信タイミング:
 
 | `action` | `step` | 送信タイミング |
 |---|---|---|
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
-| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`） |
+| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`で、`item_count`を付けて1回だけ送る） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
 | `add_helper` | `board` / `detail` | 完了した家事に手伝った人を追加した（家事ボードのクイックアクション、または家事詳細の「手伝った人を追加」から開くハーフモーダル）。家事の合計ポイントは変えず、追加後の担当者で配分し直す。1件ずつ配分を決める操作なので複数選択の一括操作にはない |
-| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなし、`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
 | `edit_thanks` | `thanks` / `comment_prompt` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面、またはありがとうを伝えられる家事の一覧から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
-| `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
-| `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
+| `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
+| `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `edit_memo` | `detail` | 家事詳細でメモのテキスト・チェックリストの項目を編集して保存した。チェックの切り替えだけでは送らない（頻度が高く、メモの利用状況を見るには編集だけで足りるため）。家事を追加する画面で入力したメモは`register`に含まれ、これは送らない |
 
 いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
 `source`の比率は、いつもの家事が実際の登録をどれだけ肩代わりしているかの指標になる。
+`item_count`の付いたイベントの数と`item_count`の平均で、複数選択の一括操作がどれだけ・何件ずつ使われているかが分かる。
+`complete`・`send_thanks`などを家事の件数で比べるときは、一括操作の分を`item_count`の合計で数える（イベント数では1回にまとまっているため）。
 `complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
 `complete` → `return_incomplete`の比率が高い場合は、完了の取り消しが頻発している（誤タップや認識のずれ）と読める。
 `complete`のうち`executor_type`が`others` / `shared`の割合で、代わりに記録する・手分けする使い方がどれだけあるかが分かる。
@@ -368,6 +376,33 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 **分析での使い方:** `step`で分けて`permission_requested(granted)`の比率を比べると、オンボーディングと設定画面の
 どちらの案内がオプトイン率が高いかが分かる。
+
+### `registration_tutorial`
+
+同居人グループの登録直後に一度だけ出す、導線を案内するチュートリアルでの行動。表示はタブの画面に重ねるオーバーレイで、独立した画面ではないため`screen_view`は送らない。
+
+> **注意:** チュートリアルは説明に合わせてダッシュボードと家事のタブを切り替えるため、裏にある本番の画面の`screen_view`（`dashboard`・`housework_board`）が送られる。登録直後のユーザーはこの分だけ表示回数が多く出る。
+
+グループを抜けたときや、グループに未所属のアカウントでログインし直したときは、ユーザーの操作によらずに表示をやめるため、イベントは送らない。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `RegistrationTutorialAnalyticsAction`、`RegistrationTutorialStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `completed` / `skipped` | 最後まで見たか、途中で閉じたか |
+| `step` | — | `dashboard` / `housework` / `housework_complete` / `thanks` / `bulk_action` / `housework_template` | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `completed` | — | 最後のステップで「はじめる」をタップした |
+| `skipped` | 表示中のステップ | 途中のステップで「閉じる」をタップした |
+
+**分析での使い方:** `completed`と`skipped`の比率で、案内が最後まで読まれているかが分かる。`skipped`を`step`で分けると、
+どのステップで離脱しているかが分かり、ステップの数や順番を見直す材料になる。
 
 ### `cohabitant_invitation`
 

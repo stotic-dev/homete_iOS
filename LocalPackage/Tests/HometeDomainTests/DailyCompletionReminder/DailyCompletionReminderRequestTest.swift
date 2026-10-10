@@ -29,9 +29,7 @@ struct DailyCompletionReminderRequestTest {
 
         let expected = DailyCompletionReminderRequest(
             identifier: "dailyCompletionReminder-2026-9-25",
-            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
-            title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30)
         )
 
         // Act
@@ -92,9 +90,7 @@ struct DailyCompletionReminderRequestTest {
 
         let expected = DailyCompletionReminderRequest(
             identifier: "dailyCompletionReminder-2026-9-25#1790298000",
-            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
-            title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30)
         )
 
         // Act
@@ -119,8 +115,7 @@ struct DailyCompletionReminderRequestTest {
         let expected = DailyCompletionReminderRequest(
             identifier: "dailyCompletionReminder-2026-9-25",
             fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
-            title: "今日もおつかれさまでした",
-            body: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう\n[DEBUG] 家事一覧 / 09:05予約"
+            debugNote: "[DEBUG] 家事一覧 / 09:05予約"
         )
 
         // Act
@@ -154,6 +149,35 @@ struct DailyCompletionReminderRequestTest {
             requestIdentifier,
             ofDay: "dailyCompletionReminder-2026-9-2"
         )
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+    @Test(
+        "本文は、動作確認用の一文があれば次の行に載せる",
+        arguments: [
+            (debugNote: String?.none, expected: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"),
+            (
+                debugNote: "[DEBUG] 家事一覧 / 09:05予約",
+                expected: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう\n[DEBUG] 家事一覧 / 09:05予約"
+            ),
+        ]
+    )
+    func body_returnsBodyWithDebugNote(debugNote: String?, expected: String) {
+        // Arrange
+
+        let sut = DailyCompletionReminderRequest(
+            identifier: "dailyCompletionReminder-2026-9-25",
+            fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: 21, minute: 30),
+            debugNote: debugNote
+        )
+
+        // Act
+
+        // `swift test`のランナーは言語を指定しないと英語の訳になるため、日本語を指定する
+        let actual = sut.body(locale: Locale(identifier: "ja"))
 
         // Assert
 

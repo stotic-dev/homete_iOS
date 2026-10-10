@@ -105,14 +105,14 @@ struct SettingView: View {
                     Button {
                         tappedLogoutRowButton()
                     } label: {
-                        Text("ログアウト")
+                        Text("ログアウト", bundle: #bundle)
                             .frame(maxWidth: .infinity)
                     }
                     .primaryButtonStyle()
                     Button {
                         tappedAccountDeletionRowButton()
                     } label: {
-                        Text("退会")
+                        Text("退会", bundle: #bundle)
                             .frame(maxWidth: .infinity)
                     }
                     .destructiveButtonStyle()
@@ -122,7 +122,7 @@ struct SettingView: View {
             .padding(.horizontal, .space16)
             .padding(.vertical, .space16)
         }
-        .navigationTitle("設定")
+        .navigationTitle(.localized("設定"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .trailingToolbarItem {
@@ -135,12 +135,12 @@ struct SettingView: View {
         }
         .commonError(content: $errorContent)
         .fullScreenLoadingIndicator(loadingState)
-        .alert("ログアウトしますか？", isPresented: $isPresentedLogoutConfirmAlert) {
-            Button("ログアウト", role: .destructive) {
+        .alert(.localized("ログアウトしますか？"), isPresented: $isPresentedLogoutConfirmAlert) {
+            Button(.localized("ログアウト"), role: .destructive) {
                 tappedLogoutAlertOkButton()
             }
         }
-        .alert("退会しますか？", isPresented: $isPresentedAccountDeletionConfirmAlert) {
+        .alert(.localized("退会しますか？"), isPresented: $isPresentedAccountDeletionConfirmAlert) {
             accountDeletionAlertActions(plan: subscriptionStore.plan)
         } message: {
             Text(accountDeletionAlertMessage(plan: subscriptionStore.plan))
@@ -172,7 +172,7 @@ private extension SettingView {
     func basicInfoSection(plan: SubscriptionPlan) -> some View {
         VStack(spacing: .space8) {
             HStack(spacing: .zero) {
-                Text("ユーザー名:")
+                Text("ユーザー名:", bundle: #bundle)
                     .font(with: .headLineS)
                 Spacer()
                 Text(loginContext.account.userName)
@@ -180,13 +180,13 @@ private extension SettingView {
                     .lineLimit(1)
             }
             HStack(spacing: .zero) {
-                Text("ご利用中のプラン:")
+                Text("ご利用中のプラン:", bundle: #bundle)
                     .font(with: .headLineS)
                 Spacer()
                 VStack(alignment: .trailing, spacing: .space4) {
                     switch plan {
                     case .free:
-                        Text("無料プラン")
+                        Text("無料プラン", bundle: #bundle)
                             .font(with: .body)
 
                     case let .subscription(period, nextRenewalDate, willRenew):
@@ -207,29 +207,29 @@ private extension SettingView {
     @ViewBuilder
     func accountDeletionAlertActions(plan: SubscriptionPlan) -> some View {
         if plan.willAutoRenew {
-            Button("解約手続きへ") {
+            Button(.localized("解約手続きへ")) {
                 tappedManageSubscriptionInDeletionAlert()
             }
         }
-        Button("退会する", role: .destructive) {
+        Button(.localized("退会する"), role: .destructive) {
             loadingState.task {
                 await tappedAccountDeletionAlertOkButton()
             }
         }
     }
 
-    func accountDeletionAlertMessage(plan: SubscriptionPlan) -> LocalizedStringKey {
+    func accountDeletionAlertMessage(plan: SubscriptionPlan) -> LocalizedStringResource {
         guard plan.willAutoRenew else {
-            return """
+            return .localized("""
             あなたのデータは全て削除され、復元することはできません。
             また、現在参加しているグループが2名以下の場合は、グループごと削除されます。
-            """
+            """)
         }
 
-        return """
+        return .localized("""
         退会してもサブスクリプションは解約されず、料金の請求が続きます。先に解約手続きを行ってください。
         また、あなたのデータは全て削除され、復元することはできません。現在参加しているグループが2名以下の場合は、グループごと削除されます。
-        """
+        """)
     }
 
     /// 解約済みの場合は更新されないため、日付の意味づけを切り替える
@@ -238,9 +238,9 @@ private extension SettingView {
         let formattedDate = date.formatted(date: .abbreviated, time: .omitted)
 
         if willRenew {
-            Text("次回更新日: \(formattedDate)")
+            Text("次回更新日: \(formattedDate)", bundle: #bundle)
         } else {
-            Text("有効期限: \(formattedDate)")
+            Text("有効期限: \(formattedDate)", bundle: #bundle)
         }
     }
 

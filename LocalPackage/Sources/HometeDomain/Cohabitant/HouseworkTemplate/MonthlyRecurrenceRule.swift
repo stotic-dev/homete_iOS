@@ -14,10 +14,10 @@ public enum MonthlyRecurrenceRule: Sendable, Hashable {
     case dayOfMonth(Int)
 
     /// 「毎月25日」のような表示用の文言
-    public var label: String {
+    public var label: LocalizedStringResource {
         switch self {
         case let .dayOfMonth(day):
-            "毎月\(day)日"
+            .localized("毎月\(day)日", comment: "家事のくり返し。毎月その日付に表示する")
         }
     }
 

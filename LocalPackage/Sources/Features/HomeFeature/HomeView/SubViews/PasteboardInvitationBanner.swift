@@ -41,10 +41,10 @@ private extension PasteboardInvitationBanner {
                 Image(systemName: "link")
                     .foregroundStyle(.decorativeIcon)
                 VStack(alignment: .leading, spacing: .space4) {
-                    Text("招待リンクからアプリを開きましたか？")
+                    Text("招待リンクからアプリを開きましたか？", bundle: #bundle)
                         .font(with: .headLineS)
                         .foregroundStyle(.onSurface)
-                    Text("招待の内容を確認して、そのままグループに参加できます。")
+                    Text("招待の内容を確認して、そのままグループに参加できます。", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.onSubSurface)
                 }
@@ -53,7 +53,7 @@ private extension PasteboardInvitationBanner {
             Button {
                 onTapCheck()
             } label: {
-                Text("招待リンクを確認する")
+                Text("招待リンクを確認する", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
@@ -69,7 +69,7 @@ private extension PasteboardInvitationBanner {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.onSubSurface)
-            Text("招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。")
+            Text("招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。", bundle: #bundle)
                 .font(with: .caption)
                 .foregroundStyle(.onSubSurface)
                 .frame(maxWidth: .infinity, alignment: .leading)

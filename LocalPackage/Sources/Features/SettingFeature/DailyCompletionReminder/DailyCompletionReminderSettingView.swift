@@ -76,7 +76,8 @@ struct DailyCompletionReminderSettingView: View {
                 sectionHeader
                 settingCard
                 Text(
-                    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。"
+                    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。",
+                    bundle: #bundle
                 )
                 .font(with: .caption)
                 .foregroundStyle(.onSurfaceVariant)
@@ -87,7 +88,7 @@ struct DailyCompletionReminderSettingView: View {
         }
         // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
         .background(.groupedBackground)
-        .navigationTitle("通知設定")
+        .navigationTitle(.localized("通知設定"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .trackScreenView(.settingNotification)
@@ -100,7 +101,7 @@ struct DailyCompletionReminderSettingView: View {
 private extension DailyCompletionReminderSettingView {
 
     var sectionHeader: some View {
-        Text("毎日の家事のふりかえり")
+        Text("毎日の家事のふりかえり", bundle: #bundle)
             .font(with: .boldCaption)
             .foregroundStyle(.onSurfaceVariant)
             .padding(.horizontal, .space16)
@@ -109,14 +110,14 @@ private extension DailyCompletionReminderSettingView {
     var settingCard: some View {
         VStack(spacing: .space8) {
             Toggle(isOn: enabledBinding) {
-                Text("ふりかえりの通知を受け取る")
+                Text("ふりかえりの通知を受け取る", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurface)
             }
             if setting.isEnabled {
                 Divider()
                 DatePicker(selection: timeBinding, displayedComponents: .hourAndMinute) {
-                    Text("毎日の通知時刻")
+                    Text("毎日の通知時刻", bundle: #bundle)
                         .font(with: .body)
                         .foregroundStyle(.onSurface)
                 }

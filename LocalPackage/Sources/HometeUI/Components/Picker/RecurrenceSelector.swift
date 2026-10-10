@@ -38,11 +38,11 @@ public struct RecurrenceSelector: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             HStack(spacing: .space8) {
-                Text("くり返し")
+                Text("くり返し", bundle: #bundle)
                     .font(with: titleFont)
                     .foregroundStyle(.onSurface)
                 Spacer()
-                Picker("くり返し", selection: $input.kind) {
+                Picker(.localized("くり返し"), selection: $input.kind) {
                     ForEach(kinds, id: \.self) { kind in
                         Text(kind.label)
                             .tag(kind)
@@ -81,19 +81,19 @@ private extension RecurrenceSelector {
     func dayOfMonthContent() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(spacing: .space4) {
-                Text("毎月")
+                Text("毎月", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurface)
-                Picker("日付", selection: $input.dayOfMonth) {
+                Picker(.localized("日付"), selection: $input.dayOfMonth) {
                     ForEach(1 ... 31, id: \.self) { day in
-                        Text("\(day)日")
+                        Text("\(day)日", bundle: #bundle)
                             .tag(day)
                     }
                 }
                 .pickerStyle(.menu)
             }
             if input.dayOfMonth >= 29 {
-                Text("\(input.dayOfMonth)日がない月は、月末に表示されます")
+                Text("\(input.dayOfMonth)日がない月は、月末に表示されます", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSubSurface)
             }
@@ -104,12 +104,12 @@ private extension RecurrenceSelector {
 
 private extension HouseworkRecurrenceInput.Kind {
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
-        case .none: "しない"
-        case .daily: "毎日"
-        case .weekly: "毎週"
-        case .monthly: "毎月"
+        case .none: .localized("しない", comment: "家事のくり返しの種類")
+        case .daily: .localized("毎日", comment: "家事のくり返しの種類")
+        case .weekly: .localized("毎週", comment: "家事のくり返しの種類")
+        case .monthly: .localized("毎月", comment: "家事のくり返しの種類")
         }
     }
 

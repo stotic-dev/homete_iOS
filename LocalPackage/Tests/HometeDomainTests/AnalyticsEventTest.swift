@@ -252,6 +252,25 @@ struct AnalyticsEventTest {
         #expect(actual == AnalyticsEvent(name: "housework", parameters: expectedParameters))
     }
 
+    @Test("一括操作の件数を渡すと、item_countを数値パラメータとして持つhouseworkイベントに変換する")
+    func housework_withItemCount() {
+        // Arrange
+
+        let expected = AnalyticsEvent(
+            name: "housework",
+            parameters: ["action": "send_thanks", "step": "board", "result": "success"],
+            numericParameters: ["item_count": 3]
+        )
+
+        // Act
+
+        let actual = AnalyticsEvent.housework(.sendThanks(step: .board, isSuccess: true), itemCount: 3)
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
     @Test(
         "家事テンプレートに関する行動を、action/result（追加・編集時はstep/recurrenceも）のパラメータを持つhousework_templateイベントに変換する",
         arguments: [
@@ -579,6 +598,40 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.encouragementComment(action)
 
         #expect(actual == AnalyticsEvent(name: "encouragement_comment", parameters: expectedParameters))
+    }
+
+    @Test(
+        "グループ登録直後のチュートリアルに関する行動を、action/stepのパラメータを持つregistration_tutorialイベントに変換する",
+        arguments: [
+            (
+                RegistrationTutorialAnalyticsAction.completed,
+                ["action": "completed"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .dashboard),
+                ["action": "skipped", "step": "dashboard"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .housework),
+                ["action": "skipped", "step": "housework"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .thanks),
+                ["action": "skipped", "step": "thanks"]
+            ),
+            (
+                RegistrationTutorialAnalyticsAction.skipped(step: .houseworkTemplate),
+                ["action": "skipped", "step": "housework_template"]
+            ),
+        ]
+    )
+    func registrationTutorial(
+        action: RegistrationTutorialAnalyticsAction,
+        expectedParameters: [String: String]
+    ) {
+        let actual = AnalyticsEvent.registrationTutorial(action)
+
+        #expect(actual == AnalyticsEvent(name: "registration_tutorial", parameters: expectedParameters))
     }
 
 }

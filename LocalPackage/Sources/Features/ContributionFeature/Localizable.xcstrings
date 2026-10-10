@@ -1,0 +1,592 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "%@ 〜 %@" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ 〜 %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        }
+      }
+    },
+    "%@: %lldpt" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lldpt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lldpt"
+          }
+        }
+      }
+    },
+    "%@pt / 日" : {
+      "comment" : "1日あたりの平均ポイント",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@pt/day"
+          }
+        }
+      }
+    },
+    "%@pt / 月" : {
+      "comment" : "1か月あたりの平均ポイント",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@pt/month"
+          }
+        }
+      }
+    },
+    "%@の家事貢献度サマリー" : {
+      "comment" : "月の名前が入る（例: 10月の家事貢献度サマリー）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Contribution Summary"
+          }
+        }
+      }
+    },
+    "%@件 / 日" : {
+      "comment" : "1日あたりに達成した家事の平均数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ chores/day"
+          }
+        }
+      }
+    },
+    "%@件 / 月" : {
+      "comment" : "1か月あたりに達成した家事の平均数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ chores/month"
+          }
+        }
+      }
+    },
+    "%lldpt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
+    },
+    "%lld件" : {
+      "comment" : "達成した家事の数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld件達成" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore done"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores done"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "あなた" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You"
+          }
+        }
+      }
+    },
+    "この期間に達成された家事はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores were completed in this period"
+          }
+        }
+      }
+    },
+    "この期間は表示できません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This period isn't available"
+          }
+        }
+      }
+    },
+    "これまでの貢献履歴なら振り返れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can still look back on your past contributions"
+          }
+        }
+      }
+    },
+    "もっと詳しく見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See More"
+          }
+        }
+      }
+    },
+    "データ無し" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No data"
+          }
+        }
+      }
+    },
+    "プレミアムプランに登録すると、全期間の家事データを振り返れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe to Premium to look back on your entire chore history"
+          }
+        }
+      }
+    },
+    "プレミアムプランを見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Premium Plan"
+          }
+        }
+      }
+    },
+    "ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
+    "メンバー別ランキング" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ranking by Member"
+          }
+        }
+      }
+    },
+    "ユーザー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "User"
+          }
+        }
+      }
+    },
+    "ランキング種別" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ranking Type"
+          }
+        }
+      }
+    },
+    "今月の獲得ポイント合計" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total points earned this month"
+          }
+        }
+      }
+    },
+    "今月の貢献ランキング" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Month's Ranking"
+          }
+        }
+      }
+    },
+    "今月はまだ達成された家事がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores completed yet this month"
+          }
+        }
+      }
+    },
+    "件数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Count"
+          }
+        }
+      }
+    },
+    "名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "家事分析" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Insights"
+          }
+        }
+      }
+    },
+    "家事達成割合" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share of Chores Done"
+          }
+        }
+      }
+    },
+    "家事達成割合とは？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's Share of Chores Done?"
+          }
+        }
+      }
+    },
+    "年" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Year"
+          }
+        }
+      }
+    },
+    "指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。\n達成した家事の数の観点から、家事貢献度を図ることができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows each member's share of all the chores completed in the selected period.\nIt lets you gauge contributions by the number of chores completed."
+          }
+        }
+      }
+    },
+    "日ごとの獲得ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points per Day"
+          }
+        }
+      }
+    },
+    "日ごと獲得ポイントの累積" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulative Points by Day"
+          }
+        }
+      }
+    },
+    "日付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        }
+      }
+    },
+    "月" : {
+      "comment" : "1か月あたりの平均の単位（例: 17.1pt / 月）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month"
+          }
+        }
+      }
+    },
+    "月ごとの獲得ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points per Month"
+          }
+        }
+      }
+    },
+    "月ごと獲得ポイントの累積" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulative Points by Month"
+          }
+        }
+      }
+    },
+    "月間ポイント比較" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly Points Comparison"
+          }
+        }
+      }
+    },
+    "期間の最初から日が経つごとに積み上がっていく合計ポイントです。\n期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。\n線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the total points that build up day by day from the start of the period.\nWhoever is highest at the end of the period earned the most points.\nThe steeper a line, the more points were earned at that time."
+          }
+        }
+      }
+    },
+    "期間を変更すると過去の家事貢献度を確認できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change the period to see past contributions"
+          }
+        }
+      }
+    },
+    "期間中、日ごとに獲得したポイントを表します。\n同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the points earned each day in the period.\nCompare users on the same day to see at a glance who did the most that day."
+          }
+        }
+      }
+    },
+    "期間中、月ごとに獲得したポイントを表します。\n同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the points earned each month in the period.\nCompare users in the same month to see at a glance who did the most that month."
+          }
+        }
+      }
+    },
+    "獲得ポイントからわかること" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Points Tell You"
+          }
+        }
+      }
+    },
+    "獲得ポイントの累積からわかること" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Cumulative Points Tell You"
+          }
+        }
+      }
+    },
+    "直近1ヶ月" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past Month"
+          }
+        }
+      }
+    },
+    "直近1年" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past Year"
+          }
+        }
+      }
+    },
+    "直近1週間" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past Week"
+          }
+        }
+      }
+    },
+    "直近のデータがある期間を表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Latest Period with Data"
+          }
+        }
+      }
+    },
+    "累計ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Points"
+          }
+        }
+      }
+    },
+    "表示期間" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period"
+          }
+        }
+      }
+    },
+    "週" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week"
+          }
+        }
+      }
+    },
+    "達成した家事の件数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Number of chores done"
+          }
+        }
+      }
+    },
+    "達成数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores Done"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

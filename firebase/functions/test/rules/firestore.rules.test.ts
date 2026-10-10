@@ -185,29 +185,23 @@ describe("Cohabitant", () => {
     );
   });
 
-  it("自分をmembersに含む新規グループを作成できる", async () => {
-    await assertSucceeds(
+  it("自分だけをmembersに含むグループも作成できない", async () => {
+    // グループの作成はjoincohabitant（Admin SDK）だけが行う
+    await assertFails(
+      setDoc(doc(malloryDb(), cohabitantPath("new-group")), {
+        id: "new-group",
+        members: [MALLORY],
+      })
+    );
+  });
+
+  it("他人のuidを含むグループは作成できない", async () => {
+    // 本人の同意なしに相手をメンバーにできると、プレミアムの借用や
+    // 通知の送り付けに使われる（#367）
+    await assertFails(
       setDoc(doc(malloryDb(), cohabitantPath("new-group")), {
         id: "new-group",
         members: [MALLORY, ALICE],
-      })
-    );
-  });
-
-  it("自分をmembersに含まないグループは作成できない", async () => {
-    await assertFails(
-      setDoc(doc(malloryDb(), cohabitantPath("new-group")), {
-        id: "new-group",
-        members: [ALICE, BOB],
-      })
-    );
-  });
-
-  it("ドキュメントIDとidフィールドが一致しないと作成できない", async () => {
-    await assertFails(
-      setDoc(doc(malloryDb(), cohabitantPath("new-group")), {
-        id: "another-id",
-        members: [MALLORY],
       })
     );
   });
@@ -221,11 +215,20 @@ describe("Cohabitant", () => {
     );
   });
 
-  it("メンバーはmembersを更新できる", async () => {
-    await assertSucceeds(
+  it("メンバーでも他人のuidをmembersに追加できない", async () => {
+    await assertFails(
       setDoc(doc(aliceDb(), cohabitantPath(GROUP_ID)), {
         id: GROUP_ID,
         members: [ALICE, BOB, MALLORY],
+      })
+    );
+  });
+
+  it("メンバーでも他のメンバーをmembersから外せない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), cohabitantPath(GROUP_ID)), {
+        id: GROUP_ID,
+        members: [ALICE],
       })
     );
   });
@@ -634,6 +637,62 @@ describe("家事メモ", () => {
           ...housework("housework-1"),
           state: "completed",
         })
+      );
+    });
+
+  it("空のメモを持つ家事は、メモの無いドキュメントで上書きできる（旧アプリ対策）",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), houseworkDoc),
+          {...housework("housework-1"), memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(
+        setDoc(doc(aliceDb(), houseworkDoc), {
+          ...housework("housework-1"),
+          state: "notTodo",
+        })
+      );
+    });
+
+  it("チェックリストだけのメモを持つ家事は、メモの無いドキュメントで上書きできない",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), houseworkDoc),
+          {...housework("housework-1"), memo: memo(0, 1)}
+        );
+      });
+      await assertFails(
+        setDoc(doc(aliceDb(), houseworkDoc), {
+          ...housework("housework-1"),
+          state: "notTodo",
+        })
+      );
+    });
+
+  it("空のメモを持つ毎月の家事は、メモの無いドキュメントで上書きできる",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), monthlyItemDoc),
+          {...monthlyItem, memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(setDoc(doc(aliceDb(), monthlyItemDoc), monthlyItem));
+    });
+
+  it("空のメモを持ついつもの家事は、メモの無いドキュメントで上書きできる",
+    async () => {
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(
+          doc(context.firestore(), frequentDoc),
+          {...frequentHousework, memo: memo(0, 0)}
+        );
+      });
+      await assertSucceeds(
+        setDoc(doc(aliceDb(), frequentDoc), frequentHousework)
       );
     });
 

@@ -21,29 +21,29 @@ struct HouseworkDetailItemListContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
-            SectionCard("家事の情報") {
-                HouseworkDetailItemRow(title: "実施予定日付") {
+            SectionCard(.localized("家事の情報")) {
+                HouseworkDetailItemRow(title: .localized("実施予定日付")) {
                     valueText(item.formattedIndexedDate(calendar: calendar))
                 }
                 Divider()
-                HouseworkDetailItemRow(title: "ステータス") {
+                HouseworkDetailItemRow(title: .localized("ステータス")) {
                     Text(item.state.segmentTitle)
                         .font(with: .body)
                         .foregroundStyle(.onSurfaceVariant)
                 }
                 Divider()
-                HouseworkDetailItemRow(title: "ポイント") {
+                HouseworkDetailItemRow(title: .localized("ポイント")) {
                     PointLabel(point: item.earnedPoint)
                 }
                 if let effortLabel {
                     Divider()
-                    HouseworkDetailItemRow(title: "頑張り度") {
+                    HouseworkDetailItemRow(title: .localized("頑張り度")) {
                         valueText(effortLabel)
                     }
                 }
             }
             if !executors.isEmpty {
-                SectionCard("担当者") {
+                SectionCard(.localized("担当者")) {
                     ForEach(Array(executors.enumerated()), id: \.element.userId) { index, executor in
                         if index > 0 {
                             Divider()
@@ -53,7 +53,7 @@ struct HouseworkDetailItemListContent: View {
                 }
             }
             if !thanksMessages.isEmpty {
-                SectionCard("ありがとう") {
+                SectionCard(.localized("ありがとう")) {
                     ForEach(thanksMessages.indices, id: \.self) { index in
                         if index > 0 {
                             Divider()
@@ -75,13 +75,16 @@ private extension HouseworkDetailItemListContent {
     }
 
     /// 完了した家事の頑張り度。上乗せしたときはポイントの内訳を添える（例: `がんばった（10pt → 12pt）`）
-    var effortLabel: String? {
+    var effortLabel: LocalizedStringResource? {
         guard item.state == .completed else { return nil }
 
         guard let pointBreakdown = item.effort.pointBreakdown(basePoint: item.originalItem.point) else {
             return item.effort.title
         }
-        return "\(item.effort.title)（\(pointBreakdown)）"
+        return .localized(
+            "\(item.effort.title)（\(pointBreakdown)）",
+            comment: "1つめは頑張り度、2つめはポイントの内訳（例: がんばった（10pt → 12pt））"
+        )
     }
 
     /// 複数人で担当した家事は、名前の横に割合とポイントを添える（例: `60%（6pt）`）
@@ -92,7 +95,15 @@ private extension HouseworkDetailItemListContent {
     }
 
     func valueText(_ value: String) -> some View {
-        Text(value)
+        valueText(Text(value))
+    }
+
+    func valueText(_ value: LocalizedStringResource) -> some View {
+        valueText(Text(value))
+    }
+
+    func valueText(_ text: Text) -> some View {
+        text
             .font(with: .body)
             .foregroundStyle(.onSurfaceVariant)
     }
@@ -113,7 +124,7 @@ private extension HouseworkDetailItemListContent {
     func thanksMessageRow(_ thanksMessage: HouseworkThanksMessage) -> some View {
         VStack(alignment: .leading, spacing: .space4) {
             Label {
-                Text("\(thanksMessage.senderName)さんから")
+                Text("\(thanksMessage.senderName)さんから", bundle: #bundle)
             } icon: {
                 Image(systemName: "heart.fill")
                     .foregroundStyle(.thanksHeart)
@@ -121,7 +132,7 @@ private extension HouseworkDetailItemListContent {
             .font(with: .boldCaption)
             .foregroundStyle(.onSubSurface)
             // メッセージを書かずに伝えたありがとうは、ハートをタップしたときの気持ちを代わりに添える
-            Text(thanksMessage.comment ?? "ありがとう！")
+            (thanksMessage.comment.map { Text(verbatim: $0) } ?? Text("ありがとう！", bundle: #bundle))
                 .font(with: .body)
                 .foregroundStyle(.onSurfaceVariant)
         }

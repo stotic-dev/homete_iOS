@@ -15,9 +15,9 @@ struct CohabitantRegistrationSimulationTests {
     static let peerA = PeerID(displayName: "A_peer")
     static let peerB = PeerID(displayName: "B_peer")
     static let peerC = PeerID(displayName: "C_peer")
-    static let cohabitantId = "cohabitant-id"
+    static let invitationToken = "invitation-token"
 
-    @Test("2台とも宣言したら、名前順が最小の端末がレコードを作成し、両端末とも同居人IDを保存して完了する")
+    @Test("2台とも宣言したら、名前順が最小の端末が招待トークンを発行し、相手がそのトークンで参加して両端末とも完了する")
     func twoDevices_leadConfirmsFirst() {
         // Arrange
         var simulation = Simulation(peers: [Self.peerA, Self.peerB])
@@ -29,16 +29,18 @@ struct CohabitantRegistrationSimulationTests {
             Self.peerA: .init(phase: .completed, connectedPeers: [Self.peerB]),
             Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA]),
         ]
-        let expectedRegistered = [CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account"])]
-        let expectedSaved = [Self.peerA: Self.cohabitantId, Self.peerB: Self.cohabitantId]
+        let expectedServer = Server(
+            invitationIssuers: [Self.peerA],
+            joinedPeers: [Self.peerB],
+            reloadedPeers: [Self.peerA]
+        )
 
         // Act
         simulation.run(operations)
 
         // Assert
         #expect(simulation.states == expectedStates)
-        #expect(simulation.registeredCohabitants == expectedRegistered)
-        #expect(simulation.savedCohabitantIds == expectedSaved)
+        #expect(simulation.server == expectedServer)
     }
 
     @Test("フォロワー側が先に宣言しても、同じ結果で完了する")
@@ -53,19 +55,21 @@ struct CohabitantRegistrationSimulationTests {
             Self.peerA: .init(phase: .completed, connectedPeers: [Self.peerB]),
             Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA]),
         ]
-        let expectedRegistered = [CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account"])]
-        let expectedSaved = [Self.peerA: Self.cohabitantId, Self.peerB: Self.cohabitantId]
+        let expectedServer = Server(
+            invitationIssuers: [Self.peerA],
+            joinedPeers: [Self.peerB],
+            reloadedPeers: [Self.peerA]
+        )
 
         // Act
         simulation.run(operations)
 
         // Assert
         #expect(simulation.states == expectedStates)
-        #expect(simulation.registeredCohabitants == expectedRegistered)
-        #expect(simulation.savedCohabitantIds == expectedSaved)
+        #expect(simulation.server == expectedServer)
     }
 
-    @Test("3台でも、リーダー1台が全員分のアカウントIDでレコードを作成して全端末が完了する")
+    @Test("3台でも、リーダー1台が発行した招待トークンでフォロワー全員が参加して全端末が完了する")
     func threeDevices() {
         // Arrange
         var simulation = Simulation(peers: [Self.peerA, Self.peerB, Self.peerC])
@@ -79,22 +83,18 @@ struct CohabitantRegistrationSimulationTests {
             Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA, Self.peerC]),
             Self.peerC: .init(phase: .completed, connectedPeers: [Self.peerA, Self.peerB]),
         ]
-        let expectedRegistered = [
-            CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account", "C_peer-account"]),
-        ]
-        let expectedSaved = [
-            Self.peerA: Self.cohabitantId,
-            Self.peerB: Self.cohabitantId,
-            Self.peerC: Self.cohabitantId,
-        ]
+        let expectedServer = Server(
+            invitationIssuers: [Self.peerA],
+            joinedPeers: [Self.peerB, Self.peerC],
+            reloadedPeers: [Self.peerA]
+        )
 
         // Act
         simulation.run(operations)
 
         // Assert
         #expect(simulation.states == expectedStates)
-        #expect(simulation.registeredCohabitants == expectedRegistered)
-        #expect(simulation.savedCohabitantIds == expectedSaved)
+        #expect(simulation.server == expectedServer)
     }
 
     @Test("リーダーの役割通知だけが先に届いても、フォロワーは自分の役割を送り直して完了する")
@@ -112,16 +112,18 @@ struct CohabitantRegistrationSimulationTests {
             Self.peerA: .init(phase: .completed, connectedPeers: [Self.peerB]),
             Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA]),
         ]
-        let expectedRegistered = [CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account"])]
-        let expectedSaved = [Self.peerA: Self.cohabitantId, Self.peerB: Self.cohabitantId]
+        let expectedServer = Server(
+            invitationIssuers: [Self.peerA],
+            joinedPeers: [Self.peerB],
+            reloadedPeers: [Self.peerA]
+        )
 
         // Act
         simulation.run(operations)
 
         // Assert
         #expect(simulation.states == expectedStates)
-        #expect(simulation.registeredCohabitants == expectedRegistered)
-        #expect(simulation.savedCohabitantIds == expectedSaved)
+        #expect(simulation.server == expectedServer)
     }
 
     @Test("片方がキャンセルすると相手はアラートを閉じて宣言をやり直し、両者が再度宣言すれば完了する")
@@ -139,16 +141,18 @@ struct CohabitantRegistrationSimulationTests {
             Self.peerA: .init(phase: .completed, connectedPeers: [Self.peerB]),
             Self.peerB: .init(phase: .completed, connectedPeers: [Self.peerA]),
         ]
-        let expectedRegistered = [CohabitantData(id: Self.cohabitantId, members: ["A_peer-account", "B_peer-account"])]
-        let expectedSaved = [Self.peerA: Self.cohabitantId, Self.peerB: Self.cohabitantId]
+        let expectedServer = Server(
+            invitationIssuers: [Self.peerA],
+            joinedPeers: [Self.peerB],
+            reloadedPeers: [Self.peerA]
+        )
 
         // Act
         simulation.run(operations)
 
         // Assert
         #expect(simulation.states == expectedStates)
-        #expect(simulation.registeredCohabitants == expectedRegistered)
-        #expect(simulation.savedCohabitantIds == expectedSaved)
+        #expect(simulation.server == expectedServer)
     }
 
 }
@@ -157,14 +161,25 @@ struct CohabitantRegistrationSimulationTests {
 
 extension CohabitantRegistrationSimulationTests {
 
+    /// サーバー（Cloud Functions）に届いた操作の記録
+    struct Server: Equatable {
+
+        /// 招待トークンを発行した端末
+        var invitationIssuers: [PeerID] = []
+        /// 招待トークンでグループに参加した端末
+        var joinedPeers: Set<PeerID> = []
+        /// 自分のアカウントを取り直した端末
+        var reloadedPeers: [PeerID] = []
+
+    }
+
     /// 各端末の状態機械と、端末間の送受信・非同期処理の結果を配線するインメモリのハーネス
-    /// - Note: 送信は相手端末の受信イベントに、レコード作成・保存は即時成功の結果イベントに置き換える。
+    /// - Note: 送信は相手端末の受信イベントに、招待の発行・参加・アカウントの取り直しは即時成功の結果イベントに置き換える。
     ///         イベントは1本のキューでFIFOに処理し、キューが空いたら各端末へ役割再送のタイミングを配る
     struct Simulation {
 
         private(set) var states: [PeerID: State] = [:]
-        private(set) var registeredCohabitants: [CohabitantData] = []
-        private(set) var savedCohabitantIds: [PeerID: String] = [:]
+        private(set) var server = Server()
 
         private let machines: [PeerID: CohabitantRegistrationStateMachine]
         private var queue: [(peer: PeerID, event: CohabitantRegistrationEvent)] = []
@@ -172,11 +187,7 @@ extension CohabitantRegistrationSimulationTests {
         init(peers: [PeerID]) {
             var machines: [PeerID: CohabitantRegistrationStateMachine] = [:]
             for peer in peers {
-                machines[peer] = .init(
-                    myPeerID: peer,
-                    myAccountId: "\(peer.displayName)-account",
-                    makeCohabitantId: { CohabitantRegistrationSimulationTests.cohabitantId }
-                )
+                machines[peer] = .init(myPeerID: peer)
                 states[peer] = .init(connectedPeers: Set(peers).subtracting([peer]))
             }
             self.machines = machines
@@ -223,13 +234,20 @@ extension CohabitantRegistrationSimulationTests {
                     queue.append((target, .received(message, from: sender)))
                 }
 
-            case let .registerCohabitant(cohabitant):
-                registeredCohabitants.append(cohabitant)
-                queue.append((sender, .cohabitantRegistered))
+            case .issueInvitation:
+                server.invitationIssuers.append(sender)
+                queue.append((sender, .invitationIssued(token: CohabitantRegistrationSimulationTests.invitationToken)))
 
-            case let .saveCohabitantId(cohabitantId):
-                savedCohabitantIds[sender] = cohabitantId
-                queue.append((sender, .cohabitantIdSaved(cohabitantId)))
+            case let .joinCohabitant(invitationToken):
+                #expect(invitationToken == CohabitantRegistrationSimulationTests.invitationToken)
+                server.joinedPeers.insert(sender)
+                queue.append((sender, .cohabitantJoined))
+
+            case .reloadAccount:
+                // 全フォロワーの参加が済む前に取り直すと、リーダーのアカウントにグループIDが入っていないことがある
+                #expect(server.joinedPeers == Set(states.keys).subtracting([sender]))
+                server.reloadedPeers.append(sender)
+                queue.append((sender, .cohabitantJoined))
 
             case .log:
                 break

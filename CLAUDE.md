@@ -140,7 +140,7 @@ View → Store（AppDependenciesを受け取る）
 - コレクションパスは`CollectionPath.swift`で定義
 
 **Cloud Functions** (`firebase/functions/src/`):
-- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する
+- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する。アプリは通知の種類を`data`に載せ、受け取った端末がその言語で文面を組み立て直す（[doc/localization.md](doc/localization.md)）
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 - `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
 - `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）
@@ -331,6 +331,10 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 - **HouseworkBoardList**: 日付で整理された家事のコレクション
 - **DailyHouseworkList**: 特定の日の家事アイテム
 
+### ローカライズ
+
+文言は日本語をキーにして各モジュールの`Localizable.xcstrings`で管理する。日本語を足す・変えたら同じ変更で英訳も入れ、`make check-translations`で抜けが無いことを確かめる。パッケージ内では`Text("…", bundle: #bundle)` / `.localized("…")`で必ずbundleを指定する。書き方・訳の手順・用語・テストでの言語指定は **[doc/localization.md](doc/localization.md)** が正（経緯は[ADR-0040](doc/adr/0040-localization-with-per-module-string-catalogs.md)）。
+
 ### Analyticsイベント
 
 Firebase Analytics（GA4）へ送るイベントの一覧・送信タイミング・パラメータ定義は **[doc/analytics_events.md](doc/analytics_events.md)** が正。イベント名は行動ごとに増やさず機能単位で定義し、パラメータで区別する（[ADR-0009](doc/adr/0009-analytics-event-parameter-design.md)）。イベントを追加・変更したら同ドキュメントも必ず更新する。
@@ -406,8 +410,9 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
   - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`、`task-closure-capture.md`
-  - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-attributes-in-view.md`
+  - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-attributes-in-view.md`、`ui-logic-view-separation.md`
   - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
+  - `LocalPackage/Sources/**/*.swift` / `LocalPackage/Tests/**/*.swift`: `localization.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
   - `adr.md` / `git-commit.md` は`paths:`を持たない（技術選定・コミット粒度はファイル種別に紐づかないため意図的に常時ロード）
 

@@ -147,7 +147,8 @@ extension HouseworkRecurrenceInputTest.LabelCase {
     )
     func label(rule: MonthlyRecurrenceRule, expected: String) {
         // Act
-        let actual = rule.label
+        // `swift test`のランナーは言語を指定しないと英語の訳になるため、日本語を指定する
+        let actual = rule.label.resolved(locale: Locale(identifier: "ja"))
 
         // Assert
         #expect(actual == expected)

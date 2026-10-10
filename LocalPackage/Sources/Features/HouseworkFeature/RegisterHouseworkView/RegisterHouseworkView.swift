@@ -61,7 +61,7 @@ public struct RegisterHouseworkView: View {
             } manualContent: {
                 manualTab()
             }
-            .navigationTitle("家事を追加")
+            .navigationTitle(.localized("家事を追加"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
@@ -114,29 +114,29 @@ public struct RegisterHouseworkView: View {
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
-        .alert("入力した内容を破棄しますか？", isPresented: $isPresentingDiscardAlert) {
-            Button("破棄する", role: .destructive) {
+        .alert(.localized("入力した内容を破棄しますか？"), isPresented: $isPresentingDiscardAlert) {
+            Button(.localized("破棄する"), role: .destructive) {
                 dismiss()
             }
-            Button("入力を続ける", role: .cancel) {}
+            Button(.localized("入力を続ける"), role: .cancel) {}
         }
         .alert(
-            "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
+            .localized("無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます"),
             isPresented: $isPresentingLimitAlert
         ) {
-            Button("プレミアムプランを見る") {
+            Button(.localized("プレミアムプランを見る")) {
                 showPaywall()
             }
-            Button("閉じる", role: .cancel) {}
+            Button(.localized("閉じる"), role: .cancel) {}
         } message: {
-            Text("プレミアムプランにすると、件数を気にせず登録できます。")
+            Text("プレミアムプランにすると、件数を気にせず登録できます。", bundle: #bundle)
         }
-        .alert("いつもの家事に保存できませんでした", isPresented: $isPresentingFrequentSaveFailure) {
+        .alert(.localized("いつもの家事に保存できませんでした"), isPresented: $isPresentingFrequentSaveFailure) {
             Button("OK") {
                 dismiss()
             }
         } message: {
-            Text("家事は登録できています。いつもの家事への保存は、管理画面からやり直せます。")
+            Text("家事は登録できています。いつもの家事への保存は、管理画面からやり直せます。", bundle: #bundle)
         }
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
@@ -210,7 +210,7 @@ private extension RegisterHouseworkView {
         }
         // 繰り返しの入力が途中のときは、入力中の家事を含めて登録できない
         .disabled(pendingEntries.isEmpty || !draft.input.recurrenceInput.isValid)
-        .accessibilityLabel("\(pendingEntries.count)件登録する")
+        .accessibilityLabel(.localized("\(pendingEntries.count)件登録する"))
     }
 
     /// - Note: いつもの家事を選ぶときにしか使わないため、「いつもの家事」タブのときだけ出す
@@ -221,7 +221,7 @@ private extension RegisterHouseworkView {
             Image(systemName: "list.bullet")
         }
         .foregroundStyle(.onSurface)
-        .accessibilityLabel("いつもの家事を管理")
+        .accessibilityLabel(.localized("いつもの家事を管理"))
     }
 
     /// 「続けて入力する」ボタン
@@ -233,7 +233,7 @@ private extension RegisterHouseworkView {
         } label: {
             HStack(spacing: .space4) {
                 Image(systemName: "plus")
-                Text("続けて入力する")
+                Text("続けて入力する", bundle: #bundle)
             }
             .font(with: .headLineS)
         }
