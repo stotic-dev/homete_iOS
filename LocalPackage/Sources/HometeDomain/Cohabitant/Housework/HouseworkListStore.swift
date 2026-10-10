@@ -77,7 +77,7 @@ public final class HouseworkListStore {
             }
             // まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
             let createdAt = now()
-            try await houseworkClient.insertItems(
+            try await houseworkClient.insertOrUpdateItems(
                 newItems.map { $0.item.updateCreatedAt(createdAt) },
                 cohabitantId
             )
