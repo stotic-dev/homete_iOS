@@ -21,13 +21,13 @@ struct HouseworkExecutorSectionContent: View {
     /// 担当者として選べるメンバー（メンバー一覧の並び順。自分が先頭）
     let selectableMembers: [CohabitantMember]
     /// 見出しの下に出す説明
-    let caption: String?
+    let caption: LocalizedStringResource?
     @Binding var allocation: HouseworkExecutorAllocation
     @Binding var isExpandedAllocation: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("担当者")
+            Text("担当者", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.onSurface)
             if let caption {
@@ -71,13 +71,13 @@ private extension HouseworkExecutorSectionContent {
             .padding(.top, .space8)
         } label: {
             HStack(spacing: .space4) {
-                Text("配分を調整する")
+                Text("配分を調整する", bundle: #bundle)
                 DescriptionPopoverButton(
-                    title: "配分の調整とは？",
-                    message: """
+                    title: .localized("配分の調整とは？"),
+                    message: .localized("""
                     手分けした家事のポイントを、それぞれがやった割合に合わせて分けられます。
                     割合の合計が100%になるように調整してください。
-                    """
+                    """)
                 )
             }
         }
@@ -124,22 +124,22 @@ extension HouseworkExecutorSectionContent {
     ///
     /// 上限の基準は完了時なら上乗せ前、手伝った人の追加時なら上乗せ後のポイントで、
     /// どちらも`allocation.basePoint`に入っている。
-    var executorLimitMessage: String? {
+    var executorLimitMessage: LocalizedStringResource? {
         guard selectableMembers.count > allocation.maxExecutorCount else { return nil }
 
-        return "この家事は\(allocation.basePoint)ptなので、担当者は\(allocation.maxExecutorCount)人まで選べます"
+        return .localized("この家事は\(allocation.basePoint)ptなので、担当者は\(allocation.maxExecutorCount)人まで選べます")
     }
 
-    var validationMessage: String? {
+    var validationMessage: LocalizedStringResource? {
         switch allocation.validationError {
         case .noExecutor:
-            "担当者を1人以上選んでください"
+            .localized("担当者を1人以上選んでください")
 
         case let .percentageNotHundred(total):
-            "割合の合計が100%になるように調整してください（いまは\(total)%です）"
+            .localized("割合の合計が100%になるように調整してください（いまは\(total)%です）")
 
         case .zeroPoint:
-            "全員が1pt以上になるように配分してください"
+            .localized("全員が1pt以上になるように配分してください")
 
         case nil:
             nil

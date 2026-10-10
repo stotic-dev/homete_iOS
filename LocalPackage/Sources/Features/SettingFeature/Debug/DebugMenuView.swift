@@ -28,48 +28,48 @@ struct DebugMenuView: View {
 
     var body: some View {
         List {
-            Section("オンボーディング") {
-                Button("アカウント登録からPaywallまでを表示") {
+            Section(.localized("オンボーディング")) {
+                Button(.localized("アカウント登録からPaywallまでを表示")) {
                     isShowOnboarding = true
                 }
-                Text("ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。")
+                Text("ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }
-            Section("同居人の登録") {
-                Button("P2P登録を試す") {
+            Section(.localized("同居人の登録")) {
+                Button(.localized("P2P登録を試す")) {
                     isShowCohabitantRegistration = true
                 }
-                Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。")
+                Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }
-            Section("チュートリアル") {
-                Button("グループ登録直後のチュートリアルを表示") {
+            Section(.localized("チュートリアル")) {
+                Button(.localized("グループ登録直後のチュートリアルを表示")) {
                     Task {
                         await registrationTutorialStore?.start()
                     }
                 }
-                Text("設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。")
+                Text("設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }
-            Section("ふりかえり通知") {
-                Toggle("1日1回の制限を外す", isOn: dailyCompletionReminderLimitBinding)
-                Text("家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。")
+            Section(.localized("ふりかえり通知")) {
+                Toggle(.localized("1日1回の制限を外す"), isOn: dailyCompletionReminderLimitBinding)
+                Text("家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             }
-            Section("課金") {
-                Button("Paywallを表示") {
+            Section(.localized("課金")) {
+                Button(.localized("Paywallを表示")) {
                     isShowPaywall = true
                 }
             }
-            Section("ログイン情報の失効") {
-                Button("失効させる（アプリはこのまま）") {
+            Section(.localized("ログイン情報の失効")) {
+                Button(.localized("失効させる（アプリはこのまま）")) {
                     Task { await revokeRefreshTokens() }
                 }
-                Button("失効させて、すぐにトークンを取り直す") {
+                Button(.localized("失効させて、すぐにトークンを取り直す")) {
                     Task { await revokeRefreshTokensAndRefresh() }
                 }
                 Text("""
@@ -84,12 +84,12 @@ struct DebugMenuView: View {
                 .foregroundStyle(.onSurfaceVariant)
             }
         }
-        .alert("ログイン情報の失効", isPresented: $isShowRevokeResult) {
+        .alert(.localized("ログイン情報の失効"), isPresented: $isShowRevokeResult) {
             Button("OK") {}
         } message: {
             Text(revokeResultMessage)
         }
-        .navigationTitle("デバッグメニュー")
+        .navigationTitle(.localized("デバッグメニュー"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .fullScreenCoverOnIOS(isPresented: $isShowOnboarding) {

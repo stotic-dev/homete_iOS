@@ -91,7 +91,7 @@ public struct HouseworkBoardScreen: View {
         } else {
             // TODO: グループ登録前は利用できない旨の空表示を出す
             ContentUnavailableView(
-                "グループの登録または参加を行うと、家事の管理ができるようになります。",
+                .localized("グループの登録または参加を行うと、家事の管理ができるようになります。"),
                 systemImage: ""
             )
         }

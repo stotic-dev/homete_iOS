@@ -113,20 +113,20 @@ struct HouseworkTemplateItemEditModal: View {
 
 private extension HouseworkTemplateItemEditModal {
 
-    var navigationTitle: String {
+    var navigationTitle: LocalizedStringResource {
         switch mode {
-        case .create: "家事を追加"
-        case .edit: "家事を編集"
+        case .create: .localized("家事を追加")
+        case .edit: .localized("家事を編集")
         }
     }
 
     func inputTitleField() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("家事の名前")
+            Text("家事の名前", bundle: #bundle)
                 .font(with: .headLineS)
             ClearableTextField(
                 text: $input.title,
-                placeholder: "家事の名前を入力",
+                placeholder: .localized("家事の名前を入力"),
                 focus: $isShowingKeyboard
             )
         }
@@ -134,7 +134,7 @@ private extension HouseworkTemplateItemEditModal {
 
     func inputPointPicker() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("ポイント")
+            Text("ポイント", bundle: #bundle)
                 .font(with: .headLineS)
             PointWheelPickerField(point: $input.point)
                 .font(with: .headLineM)

@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -15,15 +16,15 @@ struct FrequentHouseworkLimitHeader: View {
     var body: some View {
         HStack(spacing: .space8) {
             VStack(alignment: .leading, spacing: .space4) {
-                Text("無料プランでは\(status.limit)件まで登録できます")
+                Text("無料プランでは\(status.limit)件まで登録できます", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
-                Text("\(status.count) / \(status.limit)件")
+                Text("\(status.count) / \(status.limit)件", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(status.isReached ? Color.destructive : Color.onSurface)
             }
             Spacer()
-            Button("上限を増やす") {
+            Button(.localized("上限を増やす")) {
                 onTapUpgrade()
             }
             .font(with: .headLineS)

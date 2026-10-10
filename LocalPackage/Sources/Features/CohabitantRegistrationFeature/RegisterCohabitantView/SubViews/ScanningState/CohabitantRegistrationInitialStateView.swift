@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
+import HometeDomain
 import HometeResources
 import HometeUI
 import SwiftUI
@@ -22,11 +23,11 @@ struct CohabitantRegistrationInitialStateView: View {
     var body: some View {
         VStack(spacing: .zero) {
             VStack(alignment: .leading, spacing: .space16) {
-                Text("同居人の登録")
+                Text("同居人の登録", bundle: #bundle)
                     .font(with: .headLineL)
-                Text("同居人同士でこの画面を開いて近づけてください。自動的に登録が始まります。")
+                Text("同居人同士でこの画面を開いて近づけてください。自動的に登録が始まります。", bundle: #bundle)
                     .font(with: .body)
-                Text("お互いのiPhoneでWi-Fiをオンにしておいてください。同じWi-Fiにつながっていなくても登録できます。")
+                Text("お互いのiPhoneでWi-Fiをオンにしておいてください。同じWi-Fiにつながっていなくても登録できます。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSubSurface)
             }
@@ -55,7 +56,7 @@ private extension CohabitantRegistrationInitialStateView {
             HStack(spacing: .space8) {
                 Rectangle()
                     .frame(height: 1)
-                Text("または")
+                Text("または", bundle: #bundle)
                     .font(with: .caption)
                 Rectangle()
                     .frame(height: 1)
@@ -64,11 +65,11 @@ private extension CohabitantRegistrationInitialStateView {
                 Button {
                     onTapInvite()
                 } label: {
-                    Label("リンクで招待", systemImage: "square.and.arrow.up")
+                    Label(.localized("リンクで招待"), systemImage: "square.and.arrow.up")
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()
-                Text("離れている相手には、招待リンクを送って参加してもらえます。")
+                Text("離れている相手には、招待リンクを送って参加してもらえます。", bundle: #bundle)
                     .font(with: .caption)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }

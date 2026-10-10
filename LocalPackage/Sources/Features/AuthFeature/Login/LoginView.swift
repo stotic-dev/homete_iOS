@@ -22,9 +22,9 @@ public struct LoginView: View {
         VStack(spacing: .space16) {
             Text(Constants.appName)
                 .font(with: .headLineM)
-            Text("ようこそ!")
+            Text("ようこそ!", bundle: #bundle)
                 .font(with: .headLineL)
-            Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
+            Text("サービスを利用するには、Appleアカウントでサインインする必要があります。", bundle: #bundle)
                 .font(with: .body)
             SignInUpWithAppleButton { result in
                 await onSignInWithApple(result)
@@ -34,7 +34,8 @@ public struct LoginView: View {
             Spacer()
             // swiftlint:disable:next line_length
             Text(
-                "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。"
+                "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。",
+                bundle: #bundle
             )
             .font(with: .caption)
             .foregroundStyle(.onSurfaceVariant)

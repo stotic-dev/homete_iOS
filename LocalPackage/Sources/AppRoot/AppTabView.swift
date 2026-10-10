@@ -121,19 +121,23 @@ private extension AppTabView {
         ZStack {
             if #available(iOS 18.0, *) {
                 TabView(selection: handler) {
-                    Tab(
-                        "ダッシュボード",
-                        systemImage: "list.bullet.clipboard.fill",
-                        value: .dashboard
-                    ) {
+                    Tab(value: .dashboard) {
                         homeScreen
+                    } label: {
+                        Label {
+                            Text("ダッシュボード", bundle: #bundle)
+                        } icon: {
+                            Image(systemName: "list.bullet.clipboard.fill")
+                        }
                     }
-                    Tab(
-                        "家事",
-                        systemImage: "person.2.arrow.trianglehead.counterclockwise",
-                        value: .homework
-                    ) {
+                    Tab(value: .homework) {
                         houseworkBoardScreen
+                    } label: {
+                        Label {
+                            Text("家事", bundle: #bundle)
+                        } icon: {
+                            Image(systemName: "person.2.arrow.trianglehead.counterclockwise")
+                        }
                     }
                 }
             } else {
@@ -142,7 +146,7 @@ private extension AppTabView {
                         .tag(TabType.dashboard)
                         .tabItem {
                             Label(
-                                "ダッシュボード",
+                                .localized("ダッシュボード"),
                                 systemImage: "list.bullet.clipboard.fill"
                             )
                         }
@@ -150,7 +154,7 @@ private extension AppTabView {
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
-                                "家事",
+                                .localized("家事"),
                                 systemImage: "person.2.arrow.trianglehead.counterclockwise"
                             )
                         }

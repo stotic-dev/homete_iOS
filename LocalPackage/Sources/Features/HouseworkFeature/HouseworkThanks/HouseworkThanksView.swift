@@ -40,8 +40,8 @@ public struct HouseworkThanksView: View {
             ScrollView {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
-                        title: "メッセージ",
-                        placeholder: "感謝を伝えましょう！",
+                        title: .localized("メッセージ"),
+                        placeholder: .localized("感謝を伝えましょう！"),
                         text: $inputMessage,
                         focus: $isShowingKeyboard
                     )
@@ -111,23 +111,23 @@ private extension HouseworkThanksView {
         sentThanks?.comment != nil
     }
 
-    var navigationTitle: String {
+    var navigationTitle: LocalizedStringResource {
         if isEditingMessage {
-            "メッセージを編集"
+            .localized("メッセージを編集")
         } else if sentThanks != nil {
-            "メッセージを添える"
+            .localized("メッセージを添える")
         } else {
-            "ありがとうを伝える"
+            .localized("ありがとうを伝える")
         }
     }
 
-    var submitButtonLabel: String {
+    var submitButtonLabel: LocalizedStringResource {
         if isEditingMessage {
-            "メッセージを更新する"
+            .localized("メッセージを更新する")
         } else if sentThanks != nil {
-            "メッセージを送る"
+            .localized("メッセージを送る")
         } else {
-            "ありがとうを伝える"
+            .localized("ありがとうを伝える")
         }
     }
 

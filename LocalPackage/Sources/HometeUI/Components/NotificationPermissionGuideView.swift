@@ -33,10 +33,10 @@ public struct NotificationPermissionGuideView: View {
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 56))
                     .foregroundStyle(.decorativeIcon)
-                Text("通知を受け取りませんか？")
+                Text("通知を受け取りませんか？", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
-                Text("パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。")
+                Text("パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurfaceVariant)
                     .multilineTextAlignment(.center)
@@ -46,12 +46,12 @@ public struct NotificationPermissionGuideView: View {
                 Button {
                     onTapEnableNotificationButton()
                 } label: {
-                    Text("通知を受け取る")
+                    Text("通知を受け取る", bundle: #bundle)
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()
-                Button("あとで設定する") {
+                Button(.localized("あとで設定する")) {
                     onTapSkipButton()
                 }
                 .font(with: .body)

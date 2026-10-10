@@ -1,0 +1,468 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "%@さんのグループに参加しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join %@'s group?"
+          }
+        }
+      }
+    },
+    "%lldpt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
+    },
+    "%lld件" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "あとで" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        }
+      }
+    },
+    "お手数ですが、通信状況をご確認の上、再度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try again."
+          }
+        }
+      }
+    },
+    "これからは、グループのメンバーと家事を分担し、協力していくことができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now you can share the chores and work together with your group."
+          }
+        }
+      }
+    },
+    "すでにこのグループに参加しています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're already in this group"
+          }
+        }
+      }
+    },
+    "すでにグループに参加しています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're already in a group"
+          }
+        }
+      }
+    },
+    "まだパートナーが登録されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No partner added yet"
+          }
+        }
+      }
+    },
+    "もっと表示する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show More"
+          }
+        }
+      }
+    },
+    "グループに参加しています..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joining the group…"
+          }
+        }
+      }
+    },
+    "グループに参加しました！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You joined the group!"
+          }
+        }
+      }
+    },
+    "グループに参加しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join this group?"
+          }
+        }
+      }
+    },
+    "グループに参加できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't join the group"
+          }
+        }
+      }
+    },
+    "テンプレートを設定する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Up Templates"
+          }
+        }
+      }
+    },
+    "パートナーを登録して、家事を分担しましょう！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your partner and share the chores!"
+          }
+        }
+      }
+    },
+    "パートナーを登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Partner"
+          }
+        }
+      }
+    },
+    "ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
+    "今日の家事がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores for today"
+          }
+        }
+      }
+    },
+    "今日の家事は全て完了しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All of today's chores are done"
+          }
+        }
+      }
+    },
+    "今日の家事を確認して、家事リストを設定しましょう！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check today's chores and set up your chore list!"
+          }
+        }
+      }
+    },
+    "今日の家事サマリー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Summary"
+          }
+        }
+      }
+    },
+    "件数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Count"
+          }
+        }
+      }
+    },
+    "別のグループに参加中のため、この招待では参加できません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're already in another group, so you can't join with this invitation."
+          }
+        }
+      }
+    },
+    "参加する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join"
+          }
+        }
+      }
+    },
+    "参加すると、招待してくれた人と家事を分担・共有できるようになります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once you join, you can share chores with the person who invited you."
+          }
+        }
+      }
+    },
+    "名前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "完了した家事の数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores Done"
+          }
+        }
+      }
+    },
+    "家事のテンプレートが設定されていません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chore templates yet"
+          }
+        }
+      }
+    },
+    "家事のテンプレートを設定して、家事を分担しましょう！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up chore templates and share the chores!"
+          }
+        }
+      }
+    },
+    "家事を設定する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set Up Chores"
+          }
+        }
+      }
+    },
+    "招待されたグループには参加済みなので、このまま家事の管理を続けられます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've already joined the group you were invited to, so you can keep managing chores as usual."
+          }
+        }
+      }
+    },
+    "招待した方に、新しい招待リンクを送ってもらってください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask the person who invited you to send a new invite link."
+          }
+        }
+      }
+    },
+    "招待の内容を確認して、そのままグループに参加できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review the invitation and join the group right away."
+          }
+        }
+      }
+    },
+    "招待を確認しています..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking the invitation…"
+          }
+        }
+      }
+    },
+    "招待リンクからアプリを開きましたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you open the app from an invite link?"
+          }
+        }
+      }
+    },
+    "招待リンクが無効です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invite link is invalid"
+          }
+        }
+      }
+    },
+    "招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't find an invite link. Open the link from the person who invited you again to join the group."
+          }
+        }
+      }
+    },
+    "招待リンクの有効期限が切れています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This invite link has expired"
+          }
+        }
+      }
+    },
+    "招待リンクは発行から24時間で期限が切れます。招待した方に、新しい招待リンクを送ってもらってください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite links expire 24 hours after they're created. Ask the person who invited you to send a new one."
+          }
+        }
+      }
+    },
+    "招待リンクを確認する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check Invite Link"
+          }
+        }
+      }
+    },
+    "未完了の家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores To Do"
+          }
+        }
+      }
+    },
+    "獲得したポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points Earned"
+          }
+        }
+      }
+    },
+    "達成率" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completion"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

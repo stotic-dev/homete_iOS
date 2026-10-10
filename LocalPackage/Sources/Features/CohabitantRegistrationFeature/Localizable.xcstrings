@@ -1,0 +1,279 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "お互いのiPhoneでWi-Fiをオンにしておいてください。同じWi-Fiにつながっていなくても登録できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on Wi-Fi on both iPhones. You don't need to be on the same Wi-Fi network."
+          }
+        }
+      }
+    },
+    "お手数ですが、再度デバイスを近づけて通信を行ってください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please bring your devices close together and try again."
+          }
+        }
+      }
+    },
+    "お手数ですが、通信状況をご確認の上、再度接続からお試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try connecting again."
+          }
+        }
+      }
+    },
+    "これからは、あなたとパートナーの家事を分担し、協力していくことができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now you and your partner can share the chores and work together."
+          }
+        }
+      }
+    },
+    "しばらくお待ちください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please wait a moment"
+          }
+        }
+      }
+    },
+    "または" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "or"
+          }
+        }
+      }
+    },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "デバイスの名前を確認してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the device names"
+          }
+        }
+      }
+    },
+    "リンクで招待" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite with a Link"
+          }
+        }
+      }
+    },
+    "他のメンバーが登録を開始するのを待っています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the other member to start"
+          }
+        }
+      }
+    },
+    "共に家事を頑張るパートナーへ、エールを送り合いませんか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why not cheer each other on as you share the chores?"
+          }
+        }
+      }
+    },
+    "同居人の登録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Housemates"
+          }
+        }
+      }
+    },
+    "同居人同士でこの画面を開いて近づけてください。自動的に登録が始まります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open this screen on each other's iPhones and hold them close together. Registration will start automatically."
+          }
+        }
+      }
+    },
+    "接続エラー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection Error"
+          }
+        }
+      }
+    },
+    "登録が完了しました！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration complete!"
+          }
+        }
+      }
+    },
+    "登録に失敗しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration failed"
+          }
+        }
+      }
+    },
+    "登録はもうすぐ完了します！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almost done!"
+          }
+        }
+      }
+    },
+    "登録を終了すると、また初めから登録し直す必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you stop now, you'll need to start over from the beginning."
+          }
+        }
+      }
+    },
+    "登録を開始して、あなたを待っています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Started and waiting for you"
+          }
+        }
+      }
+    },
+    "登録を開始する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Registration"
+          }
+        }
+      }
+    },
+    "登録処理を終了しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop registration?"
+          }
+        }
+      }
+    },
+    "終了する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        }
+      }
+    },
+    "表示されているメンバーで登録を開始しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start registration with the members shown?"
+          }
+        }
+      }
+    },
+    "通信中のメンバーがキャンセルしました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other member canceled"
+          }
+        }
+      }
+    },
+    "開始する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        }
+      }
+    },
+    "離れている相手には、招待リンクを送って参加してもらえます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If they're not nearby, send them an invite link to join."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

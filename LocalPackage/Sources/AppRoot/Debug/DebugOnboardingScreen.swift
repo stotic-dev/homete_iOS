@@ -76,12 +76,12 @@ private struct DebugRoutePlaceholderView: View {
 
     var body: some View {
         VStack(spacing: .space16) {
-            Text("デバッグ用のダミー画面")
+            Text("デバッグ用のダミー画面", bundle: #bundle)
                 .font(with: .headLineM)
             Text(String(describing: route))
                 .font(with: .body)
                 .foregroundStyle(.onSurfaceVariant)
-            Button("閉じる") {
+            Button(.localized("閉じる")) {
                 dismiss()
             }
             .subPrimaryButtonStyle()

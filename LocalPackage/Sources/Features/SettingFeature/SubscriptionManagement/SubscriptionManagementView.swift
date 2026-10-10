@@ -18,7 +18,7 @@ struct SubscriptionManagementView: View {
 
     @State var isShowPaywall = false
     @State var isPresentedRestoreResultAlert = false
-    @State var restoreResultMessage: LocalizedStringKey = ""
+    @State var restoreResultMessage: LocalizedStringResource = ""
 
     var body: some View {
         ScrollView {
@@ -29,7 +29,7 @@ struct SubscriptionManagementView: View {
             .frame(maxWidth: .infinity)
             .padding(.space16)
         }
-        .navigationTitle("サブスクリプション管理")
+        .navigationTitle(.localized("サブスクリプション管理"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .fullScreenLoadingIndicator(loadingState)
@@ -38,7 +38,7 @@ struct SubscriptionManagementView: View {
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
-        .alert("購入の復元", isPresented: $isPresentedRestoreResultAlert) {
+        .alert(.localized("購入の復元"), isPresented: $isPresentedRestoreResultAlert) {
             Button("OK") {}
         } message: {
             Text(restoreResultMessage)
@@ -63,7 +63,7 @@ private extension SubscriptionManagementView {
         HStack(spacing: .space8) {
             Image(systemName: "crown.fill")
                 .foregroundStyle(.onSurface)
-            Text("現在のプラン")
+            Text("現在のプラン", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.onSurface)
             Spacer()
@@ -74,7 +74,7 @@ private extension SubscriptionManagementView {
     func planCard(plan: SubscriptionPlan) -> some View {
         switch plan {
         case .free:
-            Text("プレミアムプランには登録していません")
+            Text("プレミアムプランには登録していません", bundle: #bundle)
                 .font(with: .body)
                 .foregroundStyle(.onSubSurface)
                 .frame(maxWidth: .infinity)
@@ -85,16 +85,23 @@ private extension SubscriptionManagementView {
 
         case let .subscription(period, nextRenewalDate, willRenew):
             VStack(spacing: .space8) {
-                planRow(title: "プラン", value: Text(period.displayName))
+                planRow(title: .localized("プラン"), value: Text(period.displayName))
                 if let nextRenewalDate {
                     Divider()
                     planRow(
-                        title: willRenew ? "次回更新日" : "有効期限",
+                        title: willRenew ? .localized("次回更新日") : .localized("有効期限"),
                         value: Text(nextRenewalDate.formatted(date: .abbreviated, time: .omitted))
                     )
                 }
                 Divider()
-                planRow(title: "自動更新", value: Text(willRenew ? "オン" : "オフ"))
+                planRow(
+                    title: .localized("自動更新"),
+                    value: willRenew ? Text("オン", bundle: #bundle, comment: "自動更新が有効かどうか") : Text(
+                        "オフ",
+                        bundle: #bundle,
+                        comment: "自動更新が有効かどうか"
+                    )
+                )
             }
             .padding(.space16)
             .background(.subSurface)
@@ -102,7 +109,7 @@ private extension SubscriptionManagementView {
         }
     }
 
-    func planRow(title: LocalizedStringKey, value: Text) -> some View {
+    func planRow(title: LocalizedStringResource, value: Text) -> some View {
         HStack(spacing: .zero) {
             Text(title)
                 .font(with: .headLineS)
@@ -120,14 +127,14 @@ private extension SubscriptionManagementView {
             Button {
                 tappedChangePlanButton()
             } label: {
-                Text(plan == .free ? "プレミアムプランに登録" : "プランを変更")
+                Text(plan == .free ? "プレミアムプランに登録" : "プランを変更", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .primaryButtonStyle()
             Button {
                 tappedRestorePurchasesButton()
             } label: {
-                Text("購入を復元")
+                Text("購入を復元", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
@@ -142,11 +149,11 @@ private extension SubscriptionManagementView {
                 Button {
                     tappedManageSubscriptionButton()
                 } label: {
-                    Text(willRenew ? "解約する" : "サブスクリプションを管理")
+                    Text(willRenew ? "解約する" : "サブスクリプションを管理", bundle: #bundle)
                         .frame(maxWidth: .infinity)
                 }
                 .modifier(ManageSubscriptionButtonStyle(isCancelable: willRenew))
-                Text("解約手続きはApp Storeの管理画面で行います")
+                Text("解約手続きはApp Storeの管理画面で行います", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSubSurface)
             }
@@ -193,10 +200,10 @@ private extension SubscriptionManagementView {
         do {
             let isRestored = try await subscriptionStore.restorePurchases()
             restoreResultMessage = isRestored
-                ? "購入を復元しました"
-                : "復元できる購入が見つかりませんでした"
+                ? .localized("購入を復元しました")
+                : .localized("復元できる購入が見つかりませんでした")
         } catch {
-            restoreResultMessage = "購入の復元に失敗しました。時間をおいて再度お試しください"
+            restoreResultMessage = .localized("購入の復元に失敗しました。時間をおいて再度お試しください")
         }
         isPresentedRestoreResultAlert = true
     }

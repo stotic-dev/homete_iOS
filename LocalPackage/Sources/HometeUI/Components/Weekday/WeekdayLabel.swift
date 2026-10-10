@@ -34,15 +34,15 @@ public struct WeekdayLabel: View {
 
 private extension WeekdayLabel {
 
-    var weekDayLabel: String {
+    var weekDayLabel: LocalizedStringResource {
         switch weekday {
-        case .sunday: "日"
-        case .monday: "月"
-        case .tuesday: "火"
-        case .wednesday: "水"
-        case .thursday: "木"
-        case .friday: "金"
-        case .saturday: "土"
+        case .sunday: .localized("日", comment: "曜日を選ぶボタンに出すSundayの1文字の略称")
+        case .monday: .localized("月", comment: "曜日を選ぶボタンに出すMondayの1文字の略称")
+        case .tuesday: .localized("火", comment: "曜日を選ぶボタンに出すTuesdayの1文字の略称")
+        case .wednesday: .localized("水", comment: "曜日を選ぶボタンに出すWednesdayの1文字の略称")
+        case .thursday: .localized("木", comment: "曜日を選ぶボタンに出すThursdayの1文字の略称")
+        case .friday: .localized("金", comment: "曜日を選ぶボタンに出すFridayの1文字の略称")
+        case .saturday: .localized("土", comment: "曜日を選ぶボタンに出すSaturdayの1文字の略称")
         }
     }
 

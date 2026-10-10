@@ -3,6 +3,9 @@
 //  LocalPackage
 //
 
+import Foundation
+import HometeDomain
+
 /// 家事を追加するときの入力方法
 public enum RegisterSourceTab: String, CaseIterable, Identifiable, Sendable {
 
@@ -15,13 +18,13 @@ public enum RegisterSourceTab: String, CaseIterable, Identifiable, Sendable {
         rawValue
     }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .frequent:
-            "いつもの家事"
+            .localized("いつもの家事")
 
         case .manual:
-            "新しく入力"
+            .localized("新しく入力")
         }
     }
 

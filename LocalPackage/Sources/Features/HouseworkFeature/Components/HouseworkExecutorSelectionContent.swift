@@ -71,7 +71,7 @@ private extension HouseworkExecutorSelectionContent {
                     .foregroundStyle(.onSurface)
                 Spacer()
                 if let allocation = row.allocation {
-                    Text("\(allocation.percentage)%・\(allocation.point)pt")
+                    Text("\(allocation.percentage)%・\(allocation.point)pt", bundle: #bundle)
                         .font(with: .body)
                         .foregroundStyle(.onSurfaceVariant)
                         .monospacedDigit()

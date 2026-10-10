@@ -23,7 +23,7 @@ struct CohabitantJoinFailureView: View {
             Button {
                 onTapClose()
             } label: {
-                Text("閉じる")
+                Text("閉じる", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
@@ -34,35 +34,35 @@ struct CohabitantJoinFailureView: View {
 
 private extension CohabitantJoinFailureView {
 
-    var title: LocalizedStringKey {
+    var title: LocalizedStringResource {
         switch failure {
         case .invalidLink:
-            "招待リンクが無効です"
+            .localized("招待リンクが無効です")
 
         case .expired:
-            "招待リンクの有効期限が切れています"
+            .localized("招待リンクの有効期限が切れています")
 
         case .alreadyJoined:
-            "すでにグループに参加しています"
+            .localized("すでにグループに参加しています")
 
         case .unknown:
-            "グループに参加できませんでした"
+            .localized("グループに参加できませんでした")
         }
     }
 
-    var message: LocalizedStringKey {
+    var message: LocalizedStringResource {
         switch failure {
         case .invalidLink:
-            "招待した方に、新しい招待リンクを送ってもらってください。"
+            .localized("招待した方に、新しい招待リンクを送ってもらってください。")
 
         case .expired:
-            "招待リンクは発行から24時間で期限が切れます。招待した方に、新しい招待リンクを送ってもらってください。"
+            .localized("招待リンクは発行から24時間で期限が切れます。招待した方に、新しい招待リンクを送ってもらってください。")
 
         case .alreadyJoined:
-            "別のグループに参加中のため、この招待では参加できません。"
+            .localized("別のグループに参加中のため、この招待では参加できません。")
 
         case .unknown:
-            "お手数ですが、通信状況をご確認の上、再度お試しください。"
+            .localized("お手数ですが、通信状況をご確認の上、再度お試しください。")
         }
     }
 
