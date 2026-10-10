@@ -71,8 +71,8 @@ struct AppTabView: View {
             }
             .animation(.default, value: registrationTutorialStore.currentStep)
             // ログアウトをまたいでこの画面が作り直されたときも、表示中のステップにタブを合わせる
-            .onChange(of: registrationTutorialStore.currentStep, initial: true) {
-                switchTabForTutorial(to: registrationTutorialStore.currentStep)
+            .onChange(of: registrationTutorialStore.currentStep, initial: true) { oldValue, newValue in
+                switchTabForTutorial(from: oldValue, to: newValue)
             }
             .fullScreenCoverOnIOS(isPresented: isPresentingCohabitantJoin) {
                 if let token = pendingInvitationStore.pendingToken {
@@ -281,9 +281,13 @@ private extension AppTabView {
 private extension AppTabView {
 
     /// チュートリアルの説明に合わせてタブを切り替え、終わったらダッシュボードに戻す
-    func switchTabForTutorial(to newStep: RegistrationTutorialStep?) {
+    /// - Note: チュートリアルを出していないときは触らない。通知から開いて家事タブに切り替えたのを、
+    ///         画面を出したときの呼び出しでダッシュボードに戻さないため
+    func switchTabForTutorial(from oldStep: RegistrationTutorialStep?, to newStep: RegistrationTutorialStep?) {
         guard let newStep else {
-            type = .dashboard
+            if oldStep != nil {
+                type = .dashboard
+            }
             return
         }
         type = tutorialHouseworkPage(newStep) == nil ? .dashboard : .homework
