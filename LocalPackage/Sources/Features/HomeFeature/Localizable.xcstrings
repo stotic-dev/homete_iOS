@@ -163,12 +163,12 @@
         }
       }
     },
-    "パートナーを登録して、家事を分担しましょう！" : {
+    "パートナーを招待すると、家事を分け合えます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add your partner and share the chores!"
+            "value" : "Invite your partner to share the chores."
           }
         }
       }
@@ -193,6 +193,16 @@
         }
       }
     },
+    "今日の家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Chores"
+          }
+        }
+      }
+    },
     "今日の家事がありません" : {
       "localizations" : {
         "en" : {
@@ -203,7 +213,7 @@
         }
       }
     },
-    "今日の家事は全て完了しました" : {
+    "今日の家事は、ぜんぶ終わりました" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -213,22 +223,12 @@
         }
       }
     },
-    "今日の家事を確認して、家事リストを設定しましょう！" : {
+    "今日やる家事を登録すると、みんなの進み具合がここに表示されます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check today's chores and set up your chore list!"
-          }
-        }
-      }
-    },
-    "今日の家事サマリー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today's Summary"
+            "value" : "Add the chores you'll do today, and everyone's progress will show up here."
           }
         }
       }

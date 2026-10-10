@@ -109,14 +109,14 @@ private extension HouseworkCompleteView {
     func effortSection() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(spacing: .space4) {
-                Text("頑張り度", bundle: #bundle)
+                Text("どれくらいがんばりましたか", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.textPrimary)
                 DescriptionPopoverButton(
-                    title: .localized("頑張り度とは？"),
+                    title: .localized("がんばりについて"),
                     message: .localized("""
                     いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。
-                    「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。
+                    「がんばった」は1.2倍、「すごくがんばった」は1.5倍になります（端数は切り上げ）。
                     """)
                 )
             }

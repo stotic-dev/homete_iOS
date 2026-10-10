@@ -19,7 +19,7 @@ struct HouseworkEffortSelectionContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
             Picker(
-                .localized("頑張り度"),
+                .localized("どれくらいがんばったか"),
                 selection: .init(
                     get: { selection },
                     set: { onSelect($0) }

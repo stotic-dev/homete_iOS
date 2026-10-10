@@ -37,7 +37,7 @@ struct HouseworkDetailItemListContent: View {
                 }
                 if let effortLabel {
                     Divider()
-                    HouseworkDetailItemRow(title: .localized("頑張り度")) {
+                    HouseworkDetailItemRow(title: .localized("がんばり")) {
                         valueText(effortLabel)
                     }
                 }
@@ -83,7 +83,7 @@ private extension HouseworkDetailItemListContent {
         }
         return .localized(
             "\(item.effort.title)（\(pointBreakdown)）",
-            comment: "1つめは頑張り度、2つめはポイントの内訳（例: がんばった（10pt → 12pt））"
+            comment: "1つめはがんばり、2つめはポイントの内訳（例: がんばった（10pt → 12pt））"
         )
     }
 

@@ -58,13 +58,13 @@
         }
       }
     },
-    "%@の家事貢献度サマリー" : {
-      "comment" : "月の名前が入る（例: 10月の家事貢献度サマリー）",
+    "%@のがんばり" : {
+      "comment" : "月の名前が入る（例: 10月のがんばり）",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Contribution Summary"
+            "value" : "Efforts in %@"
           }
         }
       }
@@ -276,22 +276,22 @@
         }
       }
     },
+    "今月の記録はまだありません。家事をひとつ終えると、ここに表示されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records yet this month. Finish a chore, and it will show up here."
+          }
+        }
+      }
+    },
     "今月の貢献ランキング" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This Month's Ranking"
-          }
-        }
-      }
-    },
-    "今月はまだ達成された家事がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No chores completed yet this month"
           }
         }
       }

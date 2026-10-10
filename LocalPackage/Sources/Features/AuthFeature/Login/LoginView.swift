@@ -20,11 +20,9 @@ public struct LoginView: View {
 
     public var body: some View {
         VStack(spacing: .space16) {
-            Text(Constants.appName)
-                .font(with: .headLineM)
-            Text("ようこそ!", bundle: #bundle)
+            Text("\(Constants.appName)へようこそ", bundle: #bundle)
                 .font(with: .headLineL)
-            Text("サービスを利用するには、Appleアカウントでサインインする必要があります。", bundle: #bundle)
+            Text("Appleアカウントで、すぐに始められます", bundle: #bundle)
                 .font(with: .body)
             SignInUpWithAppleButton { result in
                 await onSignInWithApple(result)

@@ -55,8 +55,8 @@ private extension HouseworkBoardEmptyView {
         case .allCompleted:
             EmptyContent(
                 systemImage: "checkmark.circle",
-                title: .localized("今日の家事は全て終わっています"),
-                message: .localized("新しい家事が必要な場合は追加しましょう"),
+                title: .localized("今日の家事は、ぜんぶ終わりました"),
+                message: .localized("おつかれさまでした。ゆっくり休んでくださいね"),
                 action: (.localized("家事を追加"), onCreateTapped)
             )
 

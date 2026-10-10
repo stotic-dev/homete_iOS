@@ -96,7 +96,7 @@ struct ContributionSummaryContent: View {
                 }
             } else {
                 ContentUnavailableView {
-                    Label(.localized("今月はまだ達成された家事がありません"), systemImage: "house.circle")
+                    Label(.localized("今月の記録はまだありません。家事をひとつ終えると、ここに表示されます"), systemImage: "house.circle")
                 } description: {
                     Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
                 } actions: {
@@ -156,7 +156,7 @@ private extension ContributionSummaryContent {
         let month = now.formatted(
             Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone).month(.wide)
         )
-        return .localized("\(month)の家事貢献度サマリー", comment: "月の名前が入る（例: 10月の家事貢献度サマリー）")
+        return .localized("\(month)のがんばり", comment: "月の名前が入る（例: 10月のがんばり）")
     }
 
 }
