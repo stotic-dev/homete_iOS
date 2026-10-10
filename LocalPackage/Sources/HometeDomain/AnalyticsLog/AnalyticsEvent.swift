@@ -167,4 +167,14 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// ねぎらいのコメントに関する行動
+    /// - Note: 行動ごとにイベント名を増やさず、`action` / `kind` / `step` パラメータで区別する。
+    ///         意図は`EncouragementCommentAnalyticsAction`を参照
+    static func encouragementComment(_ action: EncouragementCommentAnalyticsAction) -> Self {
+        .init(
+            name: "encouragement_comment",
+            parameters: action.parameters
+        )
+    }
+
 }

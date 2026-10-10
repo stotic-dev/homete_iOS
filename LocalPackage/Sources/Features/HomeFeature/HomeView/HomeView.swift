@@ -34,6 +34,7 @@ public struct HomeView: View {
     let contributionStore: ContributionStore?
     let houseworkTemplateListStore: HouseworkTemplateListStore?
     let houseworkListStore: HouseworkListStore?
+    let encouragementCommentStore: EncouragementCommentStore?
 
     public var body: some View {
         NavigationStack(path: $registeredContentNavigationPath.path) {
@@ -42,11 +43,13 @@ public struct HomeView: View {
                     if loginContext.hasCohabitant,
                        let contributionStore,
                        let houseworkListStore,
-                       let houseworkTemplateListStore {
+                       let houseworkTemplateListStore,
+                       let encouragementCommentStore {
                         registeredContent(
                             contributionStore: contributionStore,
                             houseworkTemplateListStore: houseworkTemplateListStore,
-                            houseworkListStore: houseworkListStore
+                            houseworkListStore: houseworkListStore,
+                            encouragementCommentStore: encouragementCommentStore
                         )
                     } else if !loginContext.hasCohabitant {
                         notRegisteredContent()
@@ -76,12 +79,14 @@ public extension HomeView {
     static func make(
         contributionStore: ContributionStore?,
         houseworkTemplateListStore: HouseworkTemplateListStore?,
-        houseworkListStore: HouseworkListStore?
+        houseworkListStore: HouseworkListStore?,
+        encouragementCommentStore: EncouragementCommentStore?
     ) -> some View {
         HomeView(
             contributionStore: contributionStore,
             houseworkTemplateListStore: houseworkTemplateListStore,
-            houseworkListStore: houseworkListStore
+            houseworkListStore: houseworkListStore,
+            encouragementCommentStore: encouragementCommentStore
         )
     }
 
@@ -92,7 +97,8 @@ private extension HomeView {
     func registeredContent(
         contributionStore: ContributionStore,
         houseworkTemplateListStore: HouseworkTemplateListStore,
-        houseworkListStore: HouseworkListStore
+        houseworkListStore: HouseworkListStore,
+        encouragementCommentStore: EncouragementCommentStore
     ) -> some View {
         RegisteredContent(onRetry: {
             await didAppearRegisteredContent()
@@ -106,6 +112,7 @@ private extension HomeView {
         .environment(contributionStore)
         .environment(houseworkTemplateListStore)
         .environment(houseworkListStore)
+        .environment(encouragementCommentStore)
     }
 
     func notRegisteredContent() -> some View {

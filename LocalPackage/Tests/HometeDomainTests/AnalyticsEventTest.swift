@@ -209,6 +209,10 @@ struct AnalyticsEventTest {
                 ["action": "send_thanks", "step": "board", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.sendThanks(step: .commentPrompt, isSuccess: true),
+                ["action": "send_thanks", "step": "comment_prompt", "result": "success"]
+            ),
+            (
                 HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: true),
                 ["action": "edit_thanks", "step": "thanks", "result": "success"]
             ),
@@ -559,6 +563,41 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.paywall(action)
 
         #expect(actual == AnalyticsEvent(name: "paywall", parameters: expectedParameters))
+    }
+
+    @Test(
+        "ねぎらいのコメントの表示・タップ・評価を、action/kind/step（評価はresultも）のパラメータを持つencouragement_commentイベントに変換する",
+        arguments: [
+            (
+                EncouragementCommentAnalyticsAction.shown(kind: .selfPraise, step: .dashboard),
+                ["action": "shown", "kind": "self_praise", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.shown(kind: .neutral, step: .dashboard),
+                ["action": "shown", "kind": "neutral", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.shown(kind: .thanksPrompt, step: .dashboard),
+                ["action": "shown", "kind": "thanks_prompt", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.tapped(kind: .thanksPrompt, step: .dashboard),
+                ["action": "tapped", "kind": "thanks_prompt", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.rated(kind: .selfPraise, rating: .good, step: .dashboard),
+                ["action": "rated", "kind": "self_praise", "result": "good", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.rated(kind: .selfPraise, rating: .bad, step: .dashboard),
+                ["action": "rated", "kind": "self_praise", "result": "bad", "step": "dashboard"]
+            ),
+        ]
+    )
+    func encouragementComment(action: EncouragementCommentAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.encouragementComment(action)
+
+        #expect(actual == AnalyticsEvent(name: "encouragement_comment", parameters: expectedParameters))
     }
 
     @Test(

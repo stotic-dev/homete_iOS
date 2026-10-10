@@ -25,12 +25,20 @@ public struct HouseworkThanksView: View {
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
     let sentThanks: HouseworkThanks?
+    /// どの画面から開いたか。Analyticsで、ありがとうの経由を区別するために使う
+    let step: HouseworkAnalyticsStep
     /// 初めてありがとうを伝えられた。閉じた後の画面で演出を出すために、開いた側へ伝える
     let onSentFirstThanks: () -> Void
 
-    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil, onSentFirstThanks: @escaping () -> Void) {
+    init(
+        item: HouseworkBoardItem,
+        sentThanks: HouseworkThanks? = nil,
+        step: HouseworkAnalyticsStep = .thanks,
+        onSentFirstThanks: @escaping () -> Void
+    ) {
         self.item = item
         self.sentThanks = sentThanks
+        self.step = step
         self.onSentFirstThanks = onSentFirstThanks
         _inputMessage = State(initialValue: sentThanks?.comment ?? "")
     }
@@ -158,7 +166,7 @@ private extension HouseworkThanksView {
                 comment: trimmedMessage,
                 now: now,
                 cohabitantId: cohabitantId,
-                step: .thanks
+                step: step
             )
             if isFirstThanks {
                 onSentFirstThanks()
