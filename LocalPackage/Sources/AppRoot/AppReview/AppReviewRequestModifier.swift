@@ -20,13 +20,19 @@ private struct AppReviewRequestModifier: ViewModifier {
 
     /// 記録を読み込むまでは`nil`。読み込む前の変化は判定しない
     @State var policy: AppReviewPolicy?
+    /// 待ってから評価ダイアログをリクエストする処理。画面が消えたら取り消す
+    @State var requestTask: Task<Void, Never>?
 
     let houseworkItems: StoredAllHouseworkList?
 
     func body(content: Content) -> some View {
         content
-            .task {
-                await loadPolicy()
+            .onAppear {
+                loadPolicy()
+            }
+            .onDisappear {
+                // ログアウトなどで画面が消えた後に、別の画面の上でダイアログを出さない
+                requestTask?.cancel()
             }
             .onChange(of: subscriptionStore.entitlementInfo) { oldValue, newValue in
                 onChangeEntitlementInfo(from: oldValue, to: newValue)
@@ -42,14 +48,14 @@ private struct AppReviewRequestModifier: ViewModifier {
 
 private extension AppReviewRequestModifier {
 
-    func loadPolicy() async {
-        let savedState = await appReviewStateClient.load()
+    func loadPolicy() {
+        let savedState = appReviewStateClient.load()
         let loadedPolicy = AppReviewPolicy(savedState: savedState, now: .now)
         policy = loadedPolicy
         if savedState == nil {
-            await appReviewStateClient.save(loadedPolicy.state)
+            appReviewStateClient.save(loadedPolicy.state)
         }
-        // 読み込んでいる間に届いた家事一覧を取りこぼさないよう、読み込んだ時点の一覧でも判定する
+        // 表示する前に届いていた家事一覧は`onChange`では拾えないため、読み込んだ時点の一覧でも判定する
         onChangeHouseworkItems()
     }
 
@@ -73,7 +79,7 @@ private extension AppReviewRequestModifier {
         if let trigger {
             request(trigger)
         } else {
-            save(updatedPolicy.state)
+            appReviewStateClient.save(updatedPolicy.state)
         }
     }
 
@@ -85,17 +91,15 @@ private extension AppReviewRequestModifier {
 
         updatedPolicy.markRequested(trigger, now: .now)
         policy = updatedPolicy
-        save(updatedPolicy.state)
-        Task {
-            try? await Task.sleep(for: .seconds(1.5))
+        appReviewStateClient.save(updatedPolicy.state)
+        requestTask = Task {
+            do {
+                try await Task.sleep(for: .seconds(1.5))
+            } catch {
+                return
+            }
             requestReview()
             analyticsClient.log(.appReview(trigger: trigger))
-        }
-    }
-
-    func save(_ state: AppReviewState) {
-        Task {
-            await appReviewStateClient.save(state)
         }
     }
 
