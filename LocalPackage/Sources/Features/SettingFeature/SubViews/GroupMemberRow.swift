@@ -19,13 +19,7 @@ public struct GroupMemberRow: View {
 
     public var body: some View {
         HStack(spacing: .space16) {
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .frame(width: 24, height: 24)
-                .padding(.space8)
-                .foregroundStyle(.textPrimary)
-                .background(.fillAccentSubtle)
-                .cornerRadius(.radius12)
+            PedestalIcon(systemName: "person.circle.fill")
             Text(member.userName)
                 .font(with: .body)
             Spacer()

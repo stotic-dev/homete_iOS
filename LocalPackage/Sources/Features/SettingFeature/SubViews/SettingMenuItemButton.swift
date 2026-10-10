@@ -21,13 +21,7 @@ struct SettingMenuItemButton: View {
             action()
         } label: {
             HStack(spacing: .space16) {
-                Image(systemName: item.iconName)
-                    .resizable()
-                    .frame(width: 24, height: 24)
-                    .padding(.space8)
-                    .foregroundStyle(.textPrimary)
-                    .background(.fillAccentSubtle)
-                    .cornerRadius(.radius12)
+                PedestalIcon(systemName: item.iconName)
                 Text(item.title(plan: plan))
                     .font(with: .body)
                 Spacer()
