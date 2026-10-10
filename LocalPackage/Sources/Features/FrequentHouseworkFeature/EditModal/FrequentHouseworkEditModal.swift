@@ -65,10 +65,10 @@ struct FrequentHouseworkEditModal: View {
                 input.memo = memo
             }
         }
-        .alert("新しいカテゴリ", isPresented: $isPresentingCategoryNameAlert) {
-            TextField("カテゴリの名前", text: $newCategoryName)
-            Button("キャンセル", role: .cancel) {}
-            Button("追加") {
+        .alert(.localized("新しいカテゴリ"), isPresented: $isPresentingCategoryNameAlert) {
+            TextField(.localized("カテゴリの名前"), text: $newCategoryName)
+            Button(.localized("キャンセル"), role: .cancel) {}
+            Button(.localized("追加")) {
                 confirmedNewCategory()
             }
             .disabled(!newCategoryNameValidation.isValid)
@@ -117,13 +117,13 @@ extension FrequentHouseworkEditModal {
 
 private extension FrequentHouseworkEditModal {
 
-    var navigationTitle: String {
+    var navigationTitle: LocalizedStringResource {
         switch target {
         case .create:
-            "いつもの家事を追加"
+            .localized("いつもの家事を追加")
 
         case .edit:
-            "いつもの家事を編集"
+            .localized("いつもの家事を編集")
         }
     }
 
@@ -143,13 +143,13 @@ private extension FrequentHouseworkEditModal {
         editingContext.validateCategoryName(newCategoryName)
     }
 
-    var newCategoryNameMessage: String {
+    var newCategoryNameMessage: LocalizedStringResource {
         switch newCategoryNameValidation {
         case .valid, .emptyName:
-            "いつもの家事をまとめる名前を入力してください。"
+            .localized("いつもの家事をまとめる名前を入力してください。")
 
         case .duplicatedName:
-            "同じ名前のカテゴリがあります。"
+            .localized("同じ名前のカテゴリがあります。")
         }
     }
 
@@ -165,15 +165,15 @@ private extension FrequentHouseworkEditModal {
 
     func inputTitleField() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("家事の名前")
+            Text("家事の名前", bundle: #bundle)
                 .font(with: .headLineS)
             ClearableTextField(
                 text: $input.title,
-                placeholder: "家事の名前を入力",
+                placeholder: .localized("家事の名前を入力"),
                 focus: $isShowingKeyboard
             )
             if validation == .duplicatedTitle {
-                Text("同じ名前のいつもの家事があります")
+                Text("同じ名前のいつもの家事があります", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.destructive)
             }
@@ -182,7 +182,7 @@ private extension FrequentHouseworkEditModal {
 
     func inputPointPicker() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("ポイント")
+            Text("ポイント", bundle: #bundle)
                 .font(with: .headLineS)
             PointWheelPickerField(point: $input.point)
                 .font(with: .headLineM)
@@ -193,10 +193,10 @@ private extension FrequentHouseworkEditModal {
     /// - Note: 選択肢と「＋ 新しいカテゴリ」を1つのメニューに並べるため、`Picker`単体ではなく`Menu`で組み立てる
     func inputCategoryPicker() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("カテゴリ")
+            Text("カテゴリ", bundle: #bundle)
                 .font(with: .headLineS)
             Menu {
-                Picker("カテゴリ", selection: $input.categoryId) {
+                Picker(.localized("カテゴリ"), selection: $input.categoryId) {
                     ForEach(editingContext.categories) { category in
                         Text(categoryLabel(category))
                             .tag(category.categoryId)
@@ -207,7 +207,7 @@ private extension FrequentHouseworkEditModal {
                 Button {
                     presentCategoryNameAlert()
                 } label: {
-                    Label("新しいカテゴリ", systemImage: "plus")
+                    Label(.localized("新しいカテゴリ"), systemImage: "plus")
                 }
             } label: {
                 HStack(spacing: .space4) {
@@ -228,7 +228,9 @@ private extension FrequentHouseworkEditModal {
     func categoryLabel(_ category: FrequentHouseworkCategory) -> String {
         switch category {
         case .uncategorized:
-            "\(category.name)（未設定）"
+            // カスタムカテゴリの名前（ユーザーの入力）と並べるため、文字列にそろえる
+            LocalizedStringResource.localized("\(category.name)（未設定）", comment: "カテゴリを選んでいないときの表示。カテゴリ名「その他」が入る")
+                .resolved()
 
         case .preset, .custom:
             category.name

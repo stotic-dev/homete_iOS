@@ -229,7 +229,7 @@ private extension HouseworkBoardView {
     /// 選択モードでないときのナビゲーションバー右側（選択モードへの入口とテンプレート）
     func defaultToolbarContent() -> some View {
         HStack(spacing: .space16) {
-            Button("選択") {
+            Button(.localized("選択")) {
                 withAnimation {
                     isSelecting = true
                 }
@@ -247,7 +247,7 @@ private extension HouseworkBoardView {
                 isSelecting = false
             }
         }
-        .accessibilityLabel("選択をやめる")
+        .accessibilityLabel(.localized("選択をやめる"))
     }
 
     func bulkActionContent() -> some View {

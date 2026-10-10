@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/08/29.
 //
 
+import HometeDomain
 import SwiftUI
 
 /// ポイント値をドラムロール（wheelスタイルのPicker）のポップアップで選択させる入力コンポーネント。
@@ -15,18 +16,19 @@ public struct PointWheelPickerField: View {
 
     @Binding var point: Int?
     let range: ClosedRange<Int>
-    let placeholder: LocalizedStringKey
+    let placeholder: LocalizedStringResource
 
     @State private var isShowingPicker = false
 
     public init(
         point: Binding<Int?>,
         range: ClosedRange<Int> = 1 ... 100,
-        placeholder: LocalizedStringKey = "未選択"
+        placeholder: LocalizedStringResource? = nil
     ) {
         _point = point
         self.range = range
-        self.placeholder = placeholder
+        // publicなinitの既定値からはBundle.moduleを参照できないため、ここで補う
+        self.placeholder = placeholder ?? .localized("未選択")
     }
 
     public init(point: Binding<Int>, range: ClosedRange<Int> = 1 ... 100) {
@@ -48,7 +50,7 @@ public struct PointWheelPickerField: View {
             label()
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("ポイント")
+        .accessibilityLabel(.localized("ポイント"))
         .accessibilityValue(point.map { Text($0.formatted()) } ?? Text(placeholder))
         .popover(isPresented: $isShowingPicker) {
             pointPicker()
@@ -77,7 +79,7 @@ private extension PointWheelPickerField {
     }
 
     func pointPicker() -> some View {
-        Picker("ポイント", selection: selectedPointBinding) {
+        Picker(.localized("ポイント"), selection: selectedPointBinding) {
             ForEach(range, id: \.self) { value in
                 Text(value.formatted()).tag(value)
             }

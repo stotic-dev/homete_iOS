@@ -23,7 +23,7 @@ public struct LoadErrorView: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 48))
                     .foregroundStyle(.decorativeIcon)
-                Text("うまく読み込めませんでした")
+                Text("うまく読み込めませんでした", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
                 Text(message)
@@ -34,7 +34,7 @@ public struct LoadErrorView: View {
             Button {
                 onTapRetry()
             } label: {
-                Text("もう一度試す")
+                Text("もう一度試す", bundle: #bundle)
                     .padding(.vertical, .space8)
                     .frame(maxWidth: .infinity)
             }
@@ -47,19 +47,19 @@ public struct LoadErrorView: View {
 
 private extension LoadErrorView {
 
-    var message: String {
+    var message: LocalizedStringResource {
         switch error {
         case .noNetwork:
-            "通信状態をご確認のうえ、もう一度お試しください。"
+            .localized("通信状態をご確認のうえ、もう一度お試しください。")
 
         case .failAuth:
-            "認証に失敗しました。再度サインインをお試しください。"
+            .localized("認証に失敗しました。再度サインインをお試しください。")
 
         case .accountNotFound:
-            "アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。"
+            .localized("アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。")
 
         case .other:
-            "時間をおいて、もう一度お試しください。"
+            .localized("時間をおいて、もう一度お試しください。")
         }
     }
 

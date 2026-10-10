@@ -30,7 +30,7 @@ struct CohabitantRegistrationPeersListView: View {
             // メンバーが増えても、画面下部の「登録を開始する」を押せる高さを確保できるようスクロールさせる
             ScrollView {
                 VStack(spacing: .space16) {
-                    Text("デバイスの名前を確認してください")
+                    Text("デバイスの名前を確認してください", bundle: #bundle)
                         .font(with: .headLineM)
                     ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
                         HStack(spacing: .space24) {
@@ -45,7 +45,7 @@ struct CohabitantRegistrationPeersListView: View {
                                     .font(with: .body)
                                 if row.isConfirmed {
                                     // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
-                                    Label("登録を開始して、あなたを待っています", systemImage: "checkmark.circle.fill")
+                                    Label(.localized("登録を開始して、あなたを待っています"), systemImage: "checkmark.circle.fill")
                                         .font(with: .caption)
                                         .foregroundStyle(.accent)
                                 }
@@ -57,14 +57,14 @@ struct CohabitantRegistrationPeersListView: View {
                 .frame(maxWidth: .infinity)
             }
             if isConfirmed {
-                Label("他のメンバーが登録を開始するのを待っています", systemImage: "hourglass")
+                Label(.localized("他のメンバーが登録を開始するのを待っています"), systemImage: "hourglass")
                     .font(with: .caption)
                     .foregroundStyle(.onSubSurface)
             }
             Button {
                 isPresentingConfirmReadyRegistrationAlert = true
             } label: {
-                Text("登録を開始する")
+                Text("登録を開始する", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
@@ -73,16 +73,16 @@ struct CohabitantRegistrationPeersListView: View {
                 .frame(height: .space24)
         }
         .padding(.horizontal, .space16)
-        .alert("表示されているメンバーで登録を開始しますか？", isPresented: $isPresentingConfirmReadyRegistrationAlert) {
+        .alert(.localized("表示されているメンバーで登録を開始しますか？"), isPresented: $isPresentingConfirmReadyRegistrationAlert) {
             Button {
                 onConfirmMembers(false)
             } label: {
-                Text("キャンセル")
+                Text("キャンセル", bundle: #bundle)
             }
             Button {
                 onConfirmMembers(true)
             } label: {
-                Text("開始する")
+                Text("開始する", bundle: #bundle)
             }
         }
     }

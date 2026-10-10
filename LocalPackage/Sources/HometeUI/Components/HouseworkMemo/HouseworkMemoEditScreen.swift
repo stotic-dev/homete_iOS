@@ -127,7 +127,7 @@ struct HouseworkMemoEditView: View {
             viewportHeight = height
         }
         .scrollDismissesKeyboard(.interactively)
-        .navigationTitle("メモ")
+        .navigationTitle(.localized("メモ"))
         .inlineNavigationBarTitleDisplayMode()
         .leadingToolbarItem {
             NavigationBarButton(label: .close) {
@@ -156,8 +156,8 @@ struct HouseworkMemoEditView: View {
 private extension HouseworkMemoEditView {
 
     func textSection() -> some View {
-        SectionCard("テキスト") {
-            TextField("買う物や手順などを書いておけます", text: $draft.text, axis: .vertical)
+        SectionCard(.localized("テキスト")) {
+            TextField(.localized("買う物や手順などを書いておけます"), text: $draft.text, axis: .vertical)
                 .font(with: .body)
                 .lineLimit(3 ... 10)
                 .focused($focusedField, equals: .text)
@@ -168,7 +168,7 @@ private extension HouseworkMemoEditView {
     }
 
     func checklistSection() -> some View {
-        SectionCard("チェックリスト") {
+        SectionCard(.localized("チェックリスト")) {
             ForEach(draft.checklist) { item in
                 checklistItemRow(item)
                 Divider()
@@ -176,7 +176,7 @@ private extension HouseworkMemoEditView {
             Button {
                 onTapAddItem()
             } label: {
-                Label("項目を追加", systemImage: "plus")
+                Label(.localized("項目を追加"), systemImage: "plus")
                     .font(with: .body)
             }
             .disabled(!draft.canAddItem)
@@ -190,7 +190,7 @@ private extension HouseworkMemoEditView {
             Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(.onSurfaceVariant)
                 .accessibilityHidden(true)
-            TextField("項目を入力", text: titleBinding(of: item.id))
+            TextField(.localized("項目を入力"), text: titleBinding(of: item.id))
                 .font(with: .body)
                 .focused($focusedField, equals: .item(item.id))
                 .submitLabel(.next)
@@ -211,7 +211,7 @@ private extension HouseworkMemoEditView {
 
     func limitSection() -> some View {
         VStack(alignment: .trailing, spacing: .space8) {
-            Text("\(draft.memo.characterCount) / \(limitPolicy.maxCharacterCount.formatted())文字")
+            Text("\(draft.memo.characterCount) / \(limitPolicy.maxCharacterCount.formatted())文字", bundle: #bundle)
                 .font(with: .caption)
                 .foregroundStyle(draft.isOverLimit(limitPolicy) ? .alert : .onSurfaceVariant)
                 .monospacedDigit()
@@ -224,15 +224,16 @@ private extension HouseworkMemoEditView {
 
     func upgradeGuide() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("無料プランでは、メモを\(HouseworkMemoLimitPolicy.freeMaxCharacterCount)文字まで書けます")
+            Text("無料プランでは、メモを\(HouseworkMemoLimitPolicy.freeMaxCharacterCount)文字まで書けます", bundle: #bundle)
                 .font(with: .boldCaption)
                 .foregroundStyle(.onSurface)
             Text(
-                "プレミアムプランなら、\(HouseworkMemoLimitPolicy.premiumMaxCharacterCount.formatted())文字まで書けます。"
+                "プレミアムプランなら、\(HouseworkMemoLimitPolicy.premiumMaxCharacterCount.formatted())文字まで書けます。",
+                bundle: #bundle
             )
             .font(with: .caption)
             .foregroundStyle(.onSurfaceVariant)
-            Button("プレミアムプランを見る") {
+            Button(.localized("プレミアムプランを見る")) {
                 onTapUpgrade()
             }
             .font(with: .boldCaption)
@@ -246,9 +247,9 @@ private extension HouseworkMemoEditView {
     }
 
     /// 名前が空の項目は「「」を削除」と読まれないようにする
-    func deleteAccessibilityLabel(_ item: HouseworkMemoDraft.Item) -> String {
+    func deleteAccessibilityLabel(_ item: HouseworkMemoDraft.Item) -> LocalizedStringResource {
         let title = item.title.trimmingCharacters(in: .whitespaces)
-        return title.isEmpty ? "項目を削除" : "「\(title)」を削除"
+        return title.isEmpty ? .localized("項目を削除") : .localized("「\(title)」を削除")
     }
 
     func endEditing() {

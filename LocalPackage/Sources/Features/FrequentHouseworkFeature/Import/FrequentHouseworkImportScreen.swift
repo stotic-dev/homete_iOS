@@ -37,15 +37,15 @@ struct FrequentHouseworkImportScreen: View {
             onTapImport: { tappedImportButton() }
         )
         .alert(
-            "無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます",
+            .localized("無料プランでは、いつもの家事を\(FrequentHouseworkLimitPolicy.freeLimit)件まで登録できます"),
             isPresented: $isPresentingLimitAlert
         ) {
-            Button("プレミアムプランを見る") {
+            Button(.localized("プレミアムプランを見る")) {
                 showPaywall()
             }
-            Button("閉じる", role: .cancel) {}
+            Button(.localized("閉じる"), role: .cancel) {}
         } message: {
-            Text("プレミアムプランにすると、件数を気にせず登録できます。")
+            Text("プレミアムプランにすると、件数を気にせず登録できます。", bundle: #bundle)
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,

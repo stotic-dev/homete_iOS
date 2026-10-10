@@ -25,13 +25,13 @@ struct HouseworkTemplateItemDetailView: View {
         // メモが長くても読み切れるようにスクロールさせる
         ScrollView {
             VStack(alignment: .leading, spacing: .space24) {
-                row(label: "ポイント") {
+                row(label: .localized("ポイント")) {
                     PointLabel(point: item.point)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 recurrenceContent()
                 if let memo = item.memo, !memo.isEmpty {
-                    row(label: "メモ") {
+                    row(label: .localized("メモ")) {
                         // テンプレートのメモのチェックは、作られた家事の側で付ける
                         HouseworkMemoContent(memo: memo, isEditable: false, onToggle: { _ in })
                     }
@@ -64,7 +64,7 @@ struct HouseworkTemplateItemDetailView: View {
 
 private extension HouseworkTemplateItemDetailView {
 
-    func row(label: String, @ViewBuilder valueContent: () -> some View) -> some View {
+    func row(label: LocalizedStringResource, @ViewBuilder valueContent: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(label)
                 .font(with: .headLineS)
@@ -77,14 +77,14 @@ private extension HouseworkTemplateItemDetailView {
     func recurrenceContent() -> some View {
         switch recurrence {
         case let .weekly(days) where days.count == DayOfWeek.allCases.count:
-            row(label: "くり返し") {
-                Text("毎日")
+            row(label: .localized("くり返し")) {
+                Text("毎日", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurface)
             }
 
         case let .weekly(days):
-            row(label: "登録曜日") {
+            row(label: .localized("登録曜日")) {
                 HStack(spacing: .space8) {
                     ForEach(DayOfWeek.displayOrdered.filter { days.contains($0) }) { day in
                         WeekdayLabel(
@@ -98,7 +98,7 @@ private extension HouseworkTemplateItemDetailView {
             }
 
         case let .monthly(rule):
-            row(label: "くり返し") {
+            row(label: .localized("くり返し")) {
                 Text(rule.label)
                     .font(with: .body)
                     .foregroundStyle(.onSurface)

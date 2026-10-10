@@ -24,14 +24,14 @@ struct RegistrationAccountView: View {
         NavigationStack {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
-                    Text("はじめまして！")
+                    Text("はじめまして！", bundle: #bundle)
                         .font(with: .headLineM)
-                    Text("まずはあなたのニックネームを教えてください")
+                    Text("まずはあなたのニックネームを教えてください", bundle: #bundle)
                         .font(with: .body)
                         .foregroundStyle(.onSurfaceVariant)
                 }
                 VStack(spacing: .space8) {
-                    Text("ユーザー名")
+                    Text("ユーザー名", bundle: #bundle)
                         .font(with: .headLineS)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     UserNameInputTextField(userName: $inputUserName)
@@ -43,7 +43,7 @@ struct RegistrationAccountView: View {
                         await tappedRegistrationButton()
                     }
                 } label: {
-                    Text("登録")
+                    Text("登録", bundle: #bundle)
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
@@ -53,7 +53,7 @@ struct RegistrationAccountView: View {
                     .frame(height: .space24)
             }
             .padding(.horizontal, .space16)
-            .navigationTitle("アカウント登録")
+            .navigationTitle(.localized("アカウント登録"))
             .inlineNavigationBarTitleDisplayMode()
         }
         .fullScreenLoadingIndicator(loadingState)
@@ -68,7 +68,7 @@ private extension RegistrationAccountView {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundStyle(.alert)
-            Text("この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。")
+            Text("この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。", bundle: #bundle)
                 .font(with: .caption)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

@@ -30,7 +30,7 @@ private extension GroupMemberListView {
         HStack(spacing: .space8) {
             Image(systemName: "person.2.fill")
                 .foregroundStyle(.onSurface)
-            Text("グループメンバー")
+            Text("グループメンバー", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.onSurface)
             Spacer()
@@ -63,7 +63,7 @@ private extension GroupMemberListView {
     }
 
     var emptyContent: some View {
-        Text("一緒に家事をするメンバーはまだいません")
+        Text("一緒に家事をするメンバーはまだいません", bundle: #bundle)
             .font(with: .body)
             .foregroundStyle(.onSubSurface)
             .frame(maxWidth: .infinity)

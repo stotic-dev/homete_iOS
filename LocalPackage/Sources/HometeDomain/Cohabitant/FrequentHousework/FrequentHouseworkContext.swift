@@ -83,11 +83,11 @@ public struct FrequentHouseworkContext: Sendable, Equatable {
 
     /// 同じ名前のカテゴリがあるか（プリセット・「その他」を含め、前後の空白を除いて比較する）
     /// - Parameter excludingId: 名前を変更中のカテゴリ自身を比較対象から外すためのID
+    /// - Note: プリセット・「その他」の名前は、アプリが対応しているすべての言語の名前と比較する。
+    ///         同居人ごとに表示の言語が違っても、同じ意味のカテゴリが並ばないようにするため
     public func containsCategoryName(_ name: String, excludingId: String? = nil) -> Bool {
         let normalizedName = Self.normalize(name)
-        let reservedNames = PresetFrequentHouseworkCategory.allCases.map(\.name)
-            + [FrequentHouseworkCategory.uncategorizedName]
-        if reservedNames.contains(normalizedName) {
+        if Self.reservedCategoryNames.contains(normalizedName) {
             return true
         }
         return customCategories.contains { $0.id != excludingId && Self.normalize($0.name) == normalizedName }
@@ -368,6 +368,19 @@ private extension FrequentHouseworkContext {
             return .custom(custom)
         }
         return .uncategorized
+    }
+
+}
+
+private extension FrequentHouseworkContext {
+
+    /// カスタムカテゴリに付けられない名前（すべての言語のプリセット・「その他」の名前）
+    static var reservedCategoryNames: Set<String> {
+        let names = PresetFrequentHouseworkCategory.allCases.map(\.name)
+            + [FrequentHouseworkCategory.uncategorizedNameResource]
+        return Set(Bundle.module.localizations.flatMap { language in
+            names.map { $0.resolved(locale: Locale(identifier: language)) }
+        })
     }
 
 }

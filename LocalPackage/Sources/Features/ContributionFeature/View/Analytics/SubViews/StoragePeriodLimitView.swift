@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -13,11 +14,11 @@ struct StoragePeriodLimitView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("この期間は表示できません", systemImage: "lock.fill")
+            Label(.localized("この期間は表示できません"), systemImage: "lock.fill")
         } description: {
-            Text("プレミアムプランに登録すると、全期間の家事データを振り返れます")
+            Text("プレミアムプランに登録すると、全期間の家事データを振り返れます", bundle: #bundle)
         } actions: {
-            Button("プレミアムプランを見る", action: onUpgradeTapped)
+            Button(.localized("プレミアムプランを見る"), action: onUpgradeTapped)
                 .subPrimaryButtonStyle()
         }
     }

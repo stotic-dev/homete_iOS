@@ -46,7 +46,7 @@ public struct ContributionAnalyticsScreen: View {
             onUpgradeTapped: { tappedUpgradeButton() },
             onTapRemoveAdsLink: { tappedRemoveAdsLink() }
         )
-        .navigationTitle("家事分析")
+        .navigationTitle(.localized("家事分析"))
         .softTopScrollEdgeEffect()
         .task(id: contributionStore.contiribution) {
             await onChangeContribution()

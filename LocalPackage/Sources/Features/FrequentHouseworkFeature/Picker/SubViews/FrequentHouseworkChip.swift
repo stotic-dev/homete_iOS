@@ -43,7 +43,7 @@ struct FrequentHouseworkChip: View {
         }
         .buttonStyle(.plain)
         .disabled(!isUsable)
-        .accessibilityHint(isUsable ? "" : "プレミアムプランで使えます")
+        .accessibilityHint(isUsable ? Text(verbatim: "") : Text("プレミアムプランで使えます", bundle: #bundle))
     }
 
 }

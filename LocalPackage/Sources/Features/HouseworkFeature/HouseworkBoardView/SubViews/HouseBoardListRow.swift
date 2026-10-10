@@ -84,7 +84,9 @@ public struct HouseworkRowCompletionInfo: Equatable {
     var executorLabel: String? {
         guard !executorNames.isEmpty else { return nil }
 
-        return executorNames.map { "\($0)さん" }.joined(separator: "・")
+        return executorNames
+            .map { LocalizedStringResource.localized("\($0)さん", comment: "担当者の名前に付ける敬称").resolved() }
+            .joined(separator: LocalizedStringResource.localized("・", comment: "担当者の名前を並べるときの区切り").resolved())
     }
 
 }
@@ -130,7 +132,7 @@ private extension HouseBoardListRow {
         Image(systemName: "note.text")
             .font(with: .caption)
             .foregroundStyle(.onSurfaceVariant)
-            .accessibilityLabel("メモあり")
+            .accessibilityLabel(.localized("メモあり"))
     }
 
     func executorLabel(_ label: String) -> some View {
@@ -144,7 +146,7 @@ private extension HouseBoardListRow {
             Image(systemName: thanksSystemImage(status))
             // アイコンだけで伝わらない、ありがとうが届いたことだけ文言を添える
             if status == .received {
-                Text("ありがとうが届きました")
+                Text("ありがとうが届きました", bundle: #bundle)
                     .font(with: .boldCaption)
             }
         }
@@ -172,14 +174,14 @@ private extension HouseBoardListRow {
         }
     }
 
-    func thanksAccessibilityLabel(_ status: HouseworkThanksStatus) -> String {
+    func thanksAccessibilityLabel(_ status: HouseworkThanksStatus) -> LocalizedStringResource {
         switch status {
         case .notSent:
-            "まだありがとうを伝えていません"
+            .localized("まだありがとうを伝えていません")
         case .sent:
-            "ありがとうを伝えました"
+            .localized("ありがとうを伝えました")
         case .received:
-            "ありがとうが届きました"
+            .localized("ありがとうが届きました")
         }
     }
 
@@ -191,7 +193,7 @@ private extension HouseBoardListRow {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel("ありがとうを伝える")
+        .accessibilityLabel(.localized("ありがとうを伝える"))
     }
 
 }

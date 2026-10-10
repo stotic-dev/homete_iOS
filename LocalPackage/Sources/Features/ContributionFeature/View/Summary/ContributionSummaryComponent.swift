@@ -95,11 +95,11 @@ struct ContributionSummaryContent: View {
                 }
             } else {
                 ContentUnavailableView {
-                    Label("今月はまだ達成された家事がありません", systemImage: "house.circle")
+                    Label(.localized("今月はまだ達成された家事がありません"), systemImage: "house.circle")
                 } description: {
-                    Text("これまでの貢献履歴なら振り返れます")
+                    Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
                 } actions: {
-                    Button("もっと詳しく見る") {
+                    Button(.localized("もっと詳しく見る")) {
                         isShowAnalytics = true
                     }
                     .primaryButtonStyle()
@@ -117,7 +117,7 @@ private extension ContributionSummaryContent {
     func graphContent(_ summaries: AllUserPointSummary) -> some View {
         VStack(spacing: .space16) {
             ContributionGraphSection(summaries: summaries)
-            Button("もっと詳しく見る") {
+            Button(.localized("もっと詳しく見る")) {
                 isShowAnalytics = true
             }
             .primaryButtonStyle()
@@ -127,7 +127,7 @@ private extension ContributionSummaryContent {
     func rankingContent(_ ranking: [ContributionRankItem]) -> some View {
         VStack(spacing: .space8) {
             HStack(spacing: .zero) {
-                Text("今月の貢献ランキング")
+                Text("今月の貢献ランキング", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
@@ -150,9 +150,9 @@ private extension ContributionSummaryContent {
         }
     }
 
-    var monthTitle: String {
+    var monthTitle: LocalizedStringResource {
         let month = calendar.component(.month, from: now)
-        return "\(month)月の家事貢献度サマリー"
+        return .localized("\(month)月の家事貢献度サマリー")
     }
 
 }

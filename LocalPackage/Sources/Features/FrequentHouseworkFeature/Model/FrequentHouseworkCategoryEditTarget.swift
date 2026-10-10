@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import Foundation
 import HometeDomain
 
 /// カテゴリの名前を入力するアラートの対象
@@ -12,23 +13,23 @@ enum FrequentHouseworkCategoryEditTarget: Equatable {
     case create
     case rename(FrequentHouseworkCustomCategory)
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .create:
-            "カテゴリを追加"
+            .localized("カテゴリを追加")
 
         case .rename:
-            "カテゴリの名前を変更"
+            .localized("カテゴリの名前を変更")
         }
     }
 
-    var confirmLabel: String {
+    var confirmLabel: LocalizedStringResource {
         switch self {
         case .create:
-            "追加"
+            .localized("追加")
 
         case .rename:
-            "変更"
+            .localized("変更")
         }
     }
 

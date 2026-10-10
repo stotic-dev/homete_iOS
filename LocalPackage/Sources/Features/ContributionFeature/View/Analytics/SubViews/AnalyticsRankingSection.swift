@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -21,12 +22,12 @@ struct AnalyticsRankingSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("メンバー別ランキング")
+            Text("メンバー別ランキング", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.onSurface)
                 .padding(.horizontal, .space16)
 
-            Picker("ランキング種別", selection: $selectedCriterion) {
+            Picker(.localized("ランキング種別"), selection: $selectedCriterion) {
                 ForEach(ContributionAnalyticsRankingCriterion.allCases) { criterion in
                     Text(criterion.title).tag(criterion)
                 }
@@ -60,8 +61,8 @@ private extension AnalyticsRankingSection {
             ForEach(items) { item in
                 AnalyticsRankingRow(
                     item: item,
-                    totalUnit: criterion.totalUnit,
-                    averageDenominatorUnit: averageDenominatorUnit
+                    totalUnit: criterion.totalUnit.resolved(),
+                    averageDenominatorUnit: averageDenominatorUnit.resolved()
                 )
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space16)
@@ -77,10 +78,10 @@ private extension AnalyticsRankingSection {
         return CGFloat(rowCount) * (Self.rowHeight + 1)
     }
 
-    var averageDenominatorUnit: String {
+    var averageDenominatorUnit: LocalizedStringResource {
         switch selectedPriodType {
-        case .week, .month: "日"
-        case .year: "月"
+        case .week, .month: .localized("日", comment: "1日あたりの平均の単位（例: 17.1pt / 日）")
+        case .year: .localized("月", comment: "1か月あたりの平均の単位（例: 17.1pt / 月）")
         }
     }
 

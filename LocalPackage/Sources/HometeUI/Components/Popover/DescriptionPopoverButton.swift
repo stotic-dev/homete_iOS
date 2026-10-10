@@ -13,16 +13,16 @@ import Prefire
 /// 項目の意味をポップアップで説明する「？」ボタン
 public struct DescriptionPopoverButton: View {
 
-    let title: LocalizedStringKey
-    let message: LocalizedStringKey
+    let title: LocalizedStringResource
+    let message: LocalizedStringResource
 
     @State var isShowPopover: Bool
 
-    public init(title: LocalizedStringKey, message: LocalizedStringKey) {
+    public init(title: LocalizedStringResource, message: LocalizedStringResource) {
         self.init(title: title, message: message, isShowPopover: false)
     }
 
-    init(title: LocalizedStringKey, message: LocalizedStringKey, isShowPopover: Bool) {
+    init(title: LocalizedStringResource, message: LocalizedStringResource, isShowPopover: Bool) {
         self.title = title
         self.message = message
         // @Stateは他のプロパティを初期化してから代入する（iOS 27 SDKで@Stateがマクロになったため）

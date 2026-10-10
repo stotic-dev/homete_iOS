@@ -17,7 +17,7 @@ struct UserNameInputTextField: View {
     var body: some View {
         VStack(spacing: .space16) {
             HStack(spacing: .space8) {
-                TextField("例：たろう", text: $userName.value)
+                TextField(.localized("例：たろう"), text: $userName.value)
                     .font(with: .body)
                 Button {
                     userName.value = ""
@@ -34,10 +34,10 @@ struct UserNameInputTextField: View {
             }
             ZStack {
                 if userName.isOverLimitCharacters {
-                    Text("10文字以内で入力して下さい")
+                    Text("10文字以内で入力して下さい", bundle: #bundle)
                         .foregroundStyle(.alert)
                 } else {
-                    Text("あと\(userName.remainingCharacters)文字")
+                    Text("あと\(userName.remainingCharacters)文字", bundle: #bundle)
                 }
             }
             .font(with: .body)

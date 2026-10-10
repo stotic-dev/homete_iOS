@@ -94,14 +94,14 @@ private extension AppTabView {
             if #available(iOS 18.0, *) {
                 TabView(selection: handler) {
                     Tab(
-                        "ダッシュボード",
+                        .localized("ダッシュボード"),
                         systemImage: "list.bullet.clipboard.fill",
                         value: .dashboard
                     ) {
                         homeScreen
                     }
                     Tab(
-                        "家事",
+                        .localized("家事"),
                         systemImage: "person.2.arrow.trianglehead.counterclockwise",
                         value: .homework
                     ) {
@@ -114,7 +114,7 @@ private extension AppTabView {
                         .tag(TabType.dashboard)
                         .tabItem {
                             Label(
-                                "ダッシュボード",
+                                .localized("ダッシュボード"),
                                 systemImage: "list.bullet.clipboard.fill"
                             )
                         }
@@ -122,7 +122,7 @@ private extension AppTabView {
                         .tag(TabType.homework)
                         .tabItem {
                             Label(
-                                "家事",
+                                .localized("家事"),
                                 systemImage: "person.2.arrow.trianglehead.counterclockwise"
                             )
                         }

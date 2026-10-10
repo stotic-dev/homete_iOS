@@ -22,19 +22,19 @@ public struct DomainErrorAlertContent: Sendable {
         error != nil
     }
 
-    public var errorMessage: LocalizedStringKey? {
+    public var errorMessage: LocalizedStringResource? {
         switch error {
         case .failAuth:
-            "認証に失敗しました。再度サインインをお試しください。"
+            .localized("認証に失敗しました。再度サインインをお試しください。")
 
         case .noNetwork:
-            "通信に失敗しました"
+            .localized("通信に失敗しました")
 
         case .accountNotFound:
-            "アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。"
+            .localized("アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。")
 
         case .other:
-            "不明のエラーが発生しました"
+            .localized("不明のエラーが発生しました")
 
         default:
             nil

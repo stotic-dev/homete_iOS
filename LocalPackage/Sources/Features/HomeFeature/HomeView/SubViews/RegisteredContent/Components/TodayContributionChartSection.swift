@@ -6,6 +6,7 @@
 //
 
 import Charts
+import HometeDomain
 import HometeUI
 import HouseworkFeature
 import SwiftUI
@@ -40,18 +41,18 @@ private extension TodayContributionChartSection {
 
     @ViewBuilder
     var charts: some View {
-        donutChart(title: "完了した家事の数", valueLabel: "件数") {
-            ($0.completedCount, "\($0.completedCount)件")
+        donutChart(title: .localized("完了した家事の数"), valueLabel: .localized("件数")) {
+            ($0.completedCount, .localized("\($0.completedCount)件"))
         }
-        donutChart(title: "獲得したポイント", valueLabel: "ポイント") {
-            ($0.point, "\($0.point)pt")
+        donutChart(title: .localized("獲得したポイント"), valueLabel: .localized("ポイント")) {
+            ($0.point, .localized("\($0.point)pt"))
         }
     }
 
     func donutChart(
-        title: LocalizedStringKey,
-        valueLabel: String,
-        value: @escaping (TodayMemberContribution) -> (Int, String)
+        title: LocalizedStringResource,
+        valueLabel: LocalizedStringResource,
+        value: @escaping (TodayMemberContribution) -> (Int, LocalizedStringResource)
     ) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(title)
@@ -64,7 +65,7 @@ private extension TodayContributionChartSection {
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
-                .foregroundStyle(by: .value("名前", item.userName))
+                .foregroundStyle(by: .value(.localized("名前"), item.userName))
                 .annotation(position: .overlay) {
                     if amount > 0 {
                         Text(amountText)

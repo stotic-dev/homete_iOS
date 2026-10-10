@@ -24,7 +24,7 @@ struct AnalyticsRankingRow: View {
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 if item.isMe {
-                    Text("あなた")
+                    Text("あなた", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.secondary)
                 }

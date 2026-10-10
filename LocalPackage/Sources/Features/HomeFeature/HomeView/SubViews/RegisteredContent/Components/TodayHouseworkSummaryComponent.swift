@@ -63,7 +63,7 @@ private extension TodayHouseworkSummaryComponent {
 
     func contentView(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space24) {
-            Text("今日の家事サマリー")
+            Text("今日の家事サマリー", bundle: #bundle)
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
             switch summary.displayState {
@@ -86,7 +86,7 @@ private extension TodayHouseworkSummaryComponent {
     func progressContent(progress: Double) -> some View {
         VStack(spacing: .space8) {
             HStack {
-                Text("達成率")
+                Text("達成率", bundle: #bundle)
                     .font(with: .body)
                 Spacer()
                 Text(progress.formatted(.percent.precision(.fractionLength(0))))
@@ -108,16 +108,16 @@ private extension TodayHouseworkSummaryComponent {
 
     func emptyContent() -> some View {
         VStack(spacing: .zero) {
-            Text("今日の家事がありません")
+            Text("今日の家事がありません", bundle: #bundle)
                 .font(with: .headLineS)
             Spacer()
                 .frame(height: .space8)
-            Text("今日の家事を確認して、家事リストを設定しましょう！")
+            Text("今日の家事を確認して、家事リストを設定しましょう！", bundle: #bundle)
                 .font(with: .body)
                 .multilineTextAlignment(.center)
             Spacer()
                 .frame(height: .space24)
-            Button("家事を設定する") {
+            Button(.localized("家事を設定する")) {
                 isPresentingRegister = true
             }
             .primaryButtonStyle()
@@ -136,7 +136,7 @@ private extension TodayHouseworkSummaryComponent {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.accent)
-            Text("今日の家事は全て完了しました")
+            Text("今日の家事は全て完了しました", bundle: #bundle)
                 .font(with: .headLineS)
         }
         .frame(maxWidth: .infinity)
@@ -146,11 +146,11 @@ private extension TodayHouseworkSummaryComponent {
     func incompleteListContent(summary: TodayHouseworkSummary) -> some View {
         VStack(spacing: .space16) {
             HStack {
-                Text("未完了の家事")
+                Text("未完了の家事", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 Spacer()
-                Text("\(summary.incompleteItems.count)件")
+                Text("\(summary.incompleteItems.count)件", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSubSurface)
             }
@@ -161,7 +161,7 @@ private extension TodayHouseworkSummaryComponent {
                     }
             }
             if summary.hasMoreIncomplete {
-                Button("もっと表示する") {
+                Button(.localized("もっと表示する")) {
                     navigationPath.push(.incompleteHouseworkList)
                 }
                 .primaryButtonStyle()

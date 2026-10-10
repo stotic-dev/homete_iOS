@@ -23,15 +23,12 @@ struct PointsTimeSeriesChartView: View {
     var body: some View {
         VStack(spacing: .space16) {
             HStack(spacing: .zero) {
-                Text("\(periodUnitLabel)獲得ポイント")
+                Text(graphTitle)
                     .font(with: .headLineS)
                 Spacer()
                 DescriptionPopoverButton(
-                    title: "獲得ポイントからわかること",
-                    message: """
-                    期間中、\(periodUnitLabel)に獲得したポイントを表します。
-                    同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
-                    """
+                    title: .localized("獲得ポイントからわかること"),
+                    message: graphDescription
                 )
             }
             graphContent(viewableData.list)
@@ -83,20 +80,20 @@ private extension PointsTimeSeriesChartView {
     func userDataPlotContent(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
             LineMark(
-                x: .value("日付", element.date),
-                y: .value("ポイント", element.point.value)
+                x: .value(.localized("日付"), element.date),
+                y: .value(.localized("ポイント"), element.point.value)
             )
-            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
             PointMark(
-                x: .value("日付", element.date),
-                y: .value("ポイント", element.point.value)
+                x: .value(.localized("日付"), element.date),
+                y: .value(.localized("ポイント"), element.point.value)
             )
-            .foregroundStyle(by: .value("ユーザー", userData.userName))
+            .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
         }
     }
 
     func selectedChartMark(_ selectedDate: Date) -> some ChartContent {
-        RuleMark(x: .value("日付", selectedDate))
+        RuleMark(x: .value(.localized("日付"), selectedDate))
             .foregroundStyle(.secondary.opacity(0.3))
             .annotation(
                 position: .top,
@@ -135,10 +132,26 @@ private extension PointsTimeSeriesChartView {
         return style
     }
 
-    var periodUnitLabel: String {
+    var graphTitle: LocalizedStringResource {
         switch viewableData.displayPeriod {
-        case .year: "月ごとの"
-        case .month, .week: "日ごとの"
+        case .year: .localized("月ごとの獲得ポイント")
+        case .month, .week: .localized("日ごとの獲得ポイント")
+        }
+    }
+
+    var graphDescription: LocalizedStringResource {
+        switch viewableData.displayPeriod {
+        case .year:
+            .localized("""
+            期間中、月ごとに獲得したポイントを表します。
+            同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
+            """)
+
+        case .month, .week:
+            .localized("""
+            期間中、日ごとに獲得したポイントを表します。
+            同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。
+            """)
         }
     }
 

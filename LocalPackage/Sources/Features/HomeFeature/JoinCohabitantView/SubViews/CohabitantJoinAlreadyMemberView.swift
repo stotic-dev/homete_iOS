@@ -15,15 +15,15 @@ struct CohabitantJoinAlreadyMemberView: View {
 
     var body: some View {
         VStack(spacing: .space16) {
-            Text("すでにこのグループに参加しています")
+            Text("すでにこのグループに参加しています", bundle: #bundle)
                 .font(with: .headLineL)
-            Text("招待されたグループには参加済みなので、このまま家事の管理を続けられます。")
+            Text("招待されたグループには参加済みなので、このまま家事の管理を続けられます。", bundle: #bundle)
                 .font(with: .body)
             Spacer()
             Button {
                 onTapClose()
             } label: {
-                Text("閉じる")
+                Text("閉じる", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()

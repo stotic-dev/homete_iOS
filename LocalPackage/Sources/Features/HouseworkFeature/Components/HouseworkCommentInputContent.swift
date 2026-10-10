@@ -10,8 +10,8 @@ import SwiftUI
 /// 家事の完了・ありがとうのハーフモーダルで使う、コメントの入力欄
 struct HouseworkCommentInputContent: View {
 
-    let title: String
-    let placeholder: String
+    let title: LocalizedStringResource
+    let placeholder: LocalizedStringResource
     @Binding var text: String
     /// 入力欄のフォーカス。開いた直後にキーボードを出すかどうかは呼び出し側で決める
     let focus: FocusState<Bool>.Binding
