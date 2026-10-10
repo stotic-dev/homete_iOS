@@ -19,13 +19,13 @@ public struct PointLabel: View {
     public var body: some View {
         Text(point.formatted())
             .font(with: .headLineM)
-            .foregroundStyle(.onPrimary2)
+            .foregroundStyle(.textReward)
             .padding(.space8)
             .frame(minWidth: 45)
             .background {
                 GeometryReader {
                     RoundedRectangle(cornerRadius: $0.size.height / 2)
-                        .fill(.primary2)
+                        .fill(.fillRewardSubtle)
                 }
             }
     }
