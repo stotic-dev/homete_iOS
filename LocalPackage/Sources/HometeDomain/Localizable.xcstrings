@@ -162,12 +162,12 @@
         }
       }
     },
-    "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう" : {
+    "今日終わった家事があります。ふりかえって、ありがとうを伝え合いませんか" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chores got done today. Look back and thank each other."
+            "value" : "Chores got done today. Why not look back and thank each other?"
           }
         }
       }

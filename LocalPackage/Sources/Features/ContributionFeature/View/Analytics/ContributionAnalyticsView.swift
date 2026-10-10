@@ -96,7 +96,7 @@ private extension ContributionAnalyticsView {
         ContentUnavailableView {
             Label(.localized("この期間に達成された家事はありません"), systemImage: "chart.bar.xaxis")
         } description: {
-            Text("期間を変更すると過去の家事貢献度を確認できます", bundle: #bundle)
+            Text("期間を変えると、前の記録も見られます", bundle: #bundle)
         } actions: {
             Button(.localized("直近のデータがある期間を表示")) {
                 tappedLatestAchievedPeriodShowButton()

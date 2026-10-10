@@ -128,7 +128,7 @@ private extension ContributionSummaryContent {
     func rankingContent(_ ranking: [ContributionRankItem]) -> some View {
         VStack(spacing: .space8) {
             HStack(spacing: .zero) {
-                Text("今月の貢献ランキング", bundle: #bundle)
+                Text("今月のランキング", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.textPrimary)
                 Spacer()

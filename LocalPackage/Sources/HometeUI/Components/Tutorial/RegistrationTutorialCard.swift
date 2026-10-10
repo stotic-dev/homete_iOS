@@ -167,7 +167,7 @@ private extension RegistrationTutorialCard {
             .localized("家事を完了にする")
 
         case .thanks:
-            .localized("ありがとうを伝えましょう")
+            .localized("ありがとうを伝える")
 
         case .bulkAction:
             .localized("まとめて操作する")
@@ -180,7 +180,7 @@ private extension RegistrationTutorialCard {
     var message: LocalizedStringResource {
         switch step {
         case .dashboard:
-            .localized("今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。")
+            .localized("今日の家事がどこまで進んだかと、メンバーごとのがんばりをひと目で確認できます。")
 
         case .housework:
             .localized("＋ボタンから、やる家事を登録しておけます。")
@@ -189,7 +189,7 @@ private extension RegistrationTutorialCard {
             .localized("終わった家事は、行の右にある✓ボタンから完了にできます。誰がどの家事をしたかが記録されます。「…」ボタンからは、やらないにするなどほかの操作もできます。")
 
         case .thanks:
-            .localized("パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。")
+            .localized("パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言添えてみませんか。")
 
         case .bulkAction:
             .localized("「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。")

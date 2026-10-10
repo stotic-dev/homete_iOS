@@ -84,7 +84,7 @@ private extension HouseworkTemplateItemDetailView {
             }
 
         case let .weekly(days):
-            row(label: .localized("登録曜日")) {
+            row(label: .localized("くり返す曜日")) {
                 HStack(spacing: .space8) {
                     ForEach(DayOfWeek.displayOrdered.filter { days.contains($0) }) { day in
                         WeekdayLabel(

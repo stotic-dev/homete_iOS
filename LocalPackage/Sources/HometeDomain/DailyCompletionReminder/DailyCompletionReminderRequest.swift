@@ -25,7 +25,7 @@ public struct DailyCompletionReminderRequest: Equatable, Sendable {
     /// 通知のタイトル
     public static let title: LocalizedStringResource = .localized("今日もおつかれさまでした")
     /// 通知の本文（`debugNote`を除く）
-    public static let body: LocalizedStringResource = .localized("今日完了した家事があります。ふりかえって、感謝を伝え合いましょう")
+    public static let body: LocalizedStringResource = .localized("今日終わった家事があります。ふりかえって、ありがとうを伝え合いませんか")
 
     /// 通知の本文
     /// - Parameter locale: 文面の言語。`nil`ならアプリが表示している言語

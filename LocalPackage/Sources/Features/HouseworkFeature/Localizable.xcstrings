@@ -429,12 +429,32 @@
         }
       }
     },
+    "もらえるポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
     "やらない" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Won't Do"
+          }
+        }
+      }
+    },
+    "やる家事を追加すると、ここに並びます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the chores you'll do, and they'll show up here."
           }
         }
       }
@@ -630,6 +650,16 @@
         }
       }
     },
+    "予定日" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled Date"
+          }
+        }
+      }
+    },
     "今日" : {
       "localizations" : {
         "en" : {
@@ -650,12 +680,12 @@
         }
       }
     },
-    "今日の家事を追加しましょう" : {
+    "今日の家事はまだありません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add today's chores"
+            "value" : "No chores for today yet"
           }
         }
       }
@@ -746,26 +776,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mark as Done"
-          }
-        }
-      }
-    },
-    "完了ポイント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Points"
-          }
-        }
-      }
-    },
-    "実施予定日付" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scheduled Date"
           }
         }
       }

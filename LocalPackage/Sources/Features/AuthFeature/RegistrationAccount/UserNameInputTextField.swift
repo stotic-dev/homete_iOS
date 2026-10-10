@@ -36,7 +36,7 @@ struct UserNameInputTextField: View {
             }
             ZStack {
                 if userName.isOverLimitCharacters {
-                    Text("10文字以内で入力して下さい", bundle: #bundle)
+                    Text("10文字以内で入力してください", bundle: #bundle)
                         .foregroundStyle(.textDestructive)
                 } else {
                     Text("あと\(userName.remainingCharacters)文字", bundle: #bundle)

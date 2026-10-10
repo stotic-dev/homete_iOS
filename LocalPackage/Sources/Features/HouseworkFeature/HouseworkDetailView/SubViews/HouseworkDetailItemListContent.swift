@@ -22,7 +22,7 @@ struct HouseworkDetailItemListContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
             SectionCard(.localized("家事の情報")) {
-                HouseworkDetailItemRow(title: .localized("実施予定日付")) {
+                HouseworkDetailItemRow(title: .localized("予定日")) {
                     valueText(item.formattedIndexedDate(calendar: calendar))
                 }
                 Divider()

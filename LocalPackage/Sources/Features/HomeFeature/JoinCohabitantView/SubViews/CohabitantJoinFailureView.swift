@@ -62,7 +62,7 @@ private extension CohabitantJoinFailureView {
             .localized("別のグループに参加中のため、この招待では参加できません。")
 
         case .unknown:
-            .localized("お手数ですが、通信状況をご確認の上、再度お試しください。")
+            .localized("通信状態をご確認のうえ、もう一度お試しください。")
         }
     }
 

@@ -158,10 +158,10 @@ struct DailyCompletionReminderRequestTest {
     @Test(
         "本文は、動作確認用の一文があれば次の行に載せる",
         arguments: [
-            (debugNote: String?.none, expected: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"),
+            (debugNote: String?.none, expected: "今日終わった家事があります。ふりかえって、ありがとうを伝え合いませんか"),
             (
                 debugNote: "[DEBUG] 家事一覧 / 09:05予約",
-                expected: "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう\n[DEBUG] 家事一覧 / 09:05予約"
+                expected: "今日終わった家事があります。ふりかえって、ありがとうを伝え合いませんか\n[DEBUG] 家事一覧 / 09:05予約"
             ),
         ]
     )

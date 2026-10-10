@@ -129,7 +129,7 @@
     "ありがとう" : {
       "shouldTranslate" : false
     },
-    "ありがとうを伝えましょう" : {
+    "ありがとうを伝える" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -307,12 +307,12 @@
         }
       }
     },
-    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。" : {
+    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言添えてみませんか。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Try saying a few words, even for small chores."
+            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Why not add a few words, even for small chores?"
           }
         }
       }
@@ -377,7 +377,7 @@
         }
       }
     },
-    "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。" : {
+    "今日の家事がどこまで進んだかと、メンバーごとのがんばりをひと目で確認できます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {

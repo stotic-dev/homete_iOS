@@ -126,10 +126,10 @@ private extension CohabitantRegistrationState.Alert {
             nil
 
         case .sendFailed, .connectionError:
-            .localized("お手数ですが、再度デバイスを近づけて通信を行ってください")
+            .localized("もう一度、デバイスを近づけてください")
 
         case .registrationFailed:
-            .localized("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
+            .localized("通信状態をご確認のうえ、もう一度つなぎ直してください。")
 
         case .outdatedPeer:
             .localized("相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。")
