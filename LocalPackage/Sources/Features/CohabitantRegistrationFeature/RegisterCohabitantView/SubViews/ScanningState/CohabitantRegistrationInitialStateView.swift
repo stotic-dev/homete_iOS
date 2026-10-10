@@ -68,7 +68,7 @@ private extension CohabitantRegistrationInitialStateView {
                     Label(.localized("リンクで招待"), systemImage: "square.and.arrow.up")
                         .frame(maxWidth: .infinity)
                 }
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
                 Text("離れている相手には、招待リンクを送って参加してもらえます。", bundle: #bundle)
                     .font(with: .caption)
                     .frame(maxWidth: .infinity, alignment: .leading)

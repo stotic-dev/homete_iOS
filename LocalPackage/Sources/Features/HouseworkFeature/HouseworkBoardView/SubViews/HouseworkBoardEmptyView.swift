@@ -24,7 +24,7 @@ struct HouseworkBoardEmptyView: View {
         } actions: {
             if let action = content.action {
                 Button(action.label, action: action.handler)
-                    .subPrimaryButtonStyle()
+                    .primaryButtonStyle()
             }
         }
     }

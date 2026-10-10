@@ -47,7 +47,7 @@ struct RegistrationAccountView: View {
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
-                .subPrimaryButtonStyle()
+                .primaryButtonStyle()
                 .disabled(!inputUserName.canRegistration)
                 Spacer()
                     .frame(height: .space24)

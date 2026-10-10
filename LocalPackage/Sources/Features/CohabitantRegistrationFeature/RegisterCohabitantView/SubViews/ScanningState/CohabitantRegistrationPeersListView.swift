@@ -67,7 +67,7 @@ struct CohabitantRegistrationPeersListView: View {
                 Text("登録を開始する", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
-            .subPrimaryButtonStyle()
+            .primaryButtonStyle()
             .disabled(isConfirmed)
             Spacer()
                 .frame(height: .space24)

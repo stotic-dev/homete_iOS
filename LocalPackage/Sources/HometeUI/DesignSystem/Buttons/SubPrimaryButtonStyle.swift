@@ -7,15 +7,15 @@
 
 import SwiftUI
 
+/// 主な操作に並ぶ副の操作や、「もっと見る」のような補助の操作のボタン
 struct SubPrimaryButtonStyle: ButtonStyle {
 
     @Environment(\.isEnabled) var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration
-            .commonStyle(.textOnAccent)
-            .background(.fillAccent)
-            .cornerRadius(.radius20)
+            .commonStyle(.textAccent)
+            .background(.fillAccentSubtle, in: Capsule())
             .opacity(isEnabled ? 1 : 0.5)
     }
 

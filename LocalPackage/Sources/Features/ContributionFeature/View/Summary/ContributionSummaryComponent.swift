@@ -103,7 +103,7 @@ struct ContributionSummaryContent: View {
                     Button(.localized("もっと詳しく見る")) {
                         isShowAnalytics = true
                     }
-                    .primaryButtonStyle()
+                    .subPrimaryButtonStyle()
                 }
             }
         }
@@ -121,7 +121,7 @@ private extension ContributionSummaryContent {
             Button(.localized("もっと詳しく見る")) {
                 isShowAnalytics = true
             }
-            .primaryButtonStyle()
+            .subPrimaryButtonStyle()
         }
     }
 
