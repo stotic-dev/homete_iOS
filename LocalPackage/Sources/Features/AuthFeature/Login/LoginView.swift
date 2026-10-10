@@ -30,7 +30,7 @@ public struct LoginView: View {
                 await onSignInWithApple(result)
             }
             .frame(height: .space48)
-            .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
+            .cornerRadius(.radius12)
             Spacer()
             // swiftlint:disable:next line_length
             Text(
