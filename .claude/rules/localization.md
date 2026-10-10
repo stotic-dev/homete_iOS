@@ -6,7 +6,7 @@ paths:
 
 # 文言のローカライズのルール
 
-画面・通知に出す文言は、日本語の文言をキーにして各モジュールの`Localizable.xcstrings`から引く（[ADR-0040](../../doc/adr/0040-localization-with-per-module-string-catalogs.md)）。
+画面・通知に出す文言は、日本語の文言をキーにして各モジュールの`Localizable.xcstrings`から引く（[ADR-0042](../../doc/adr/0042-localization-with-per-module-string-catalogs.md)）。
 書き方の詳細と訳を入れる手順は [doc/localization.md](../../doc/localization.md) が正。
 
 ## 必須事項

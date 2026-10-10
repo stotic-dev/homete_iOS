@@ -92,6 +92,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `cohabitant_join` | `CohabitantJoinView` |
 | `cohabitant_completion` | `CohabitantCompletionView` |
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
+| `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる家事の一覧。ダッシュボードの感謝の促しから開く） |
 | `contribution_analytics` | `ContributionAnalyticsView` |
 | `housework_board` | `HouseworkBoardScreen` |
 | `housework_detail` | `HouseworkDetailView` |
@@ -185,36 +186,74 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
-| `step` | — | `dashboard` / `board` / `detail` / `thanks` | 起点画面 |
+| `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む） |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
 | `result` | — | `success` / `failure` | 行動の結果 |
+| `item_count` | — | 数値 | 複数選択の一括操作でまとめて書き込んだ家事の件数。一括操作（`complete` / `delete` / `send_thanks` / `return_incomplete`）のときだけ付与し、1件ずつの操作には付けない。GA4のレポートで集計するため、stg / prodの両方でカスタム指標（イベントスコープ）として登録する |
+
+複数選択の一括操作は、操作1回につき1イベントだけ送り、件数は`item_count`で表す（家事1件ごとには送らない）。
+送信済みのありがとうや未完了に戻された家事など、書き込む直前の判定で対象から外れた家事は件数に含めず、
+対象が0件になった場合はイベントを送らない。どの家事に操作したか（家事IDや家事名）はパラメータに含めない。
+値の種類が多すぎて集計できず、家事名はユーザーが入力した内容のため。
 
 送信されるパターンと、その送信タイミング:
 
 | `action` | `step` | 送信タイミング |
 |---|---|---|
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
-| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`） |
+| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`で、`item_count`を付けて1回だけ送る） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
 | `add_helper` | `board` / `detail` | 完了した家事に手伝った人を追加した（家事ボードのクイックアクション、または家事詳細の「手伝った人を追加」から開くハーフモーダル）。家事の合計ポイントは変えず、追加後の担当者で配分し直す。1件ずつ配分を決める操作なので複数選択の一括操作にはない |
-| `send_thanks` | `board` / `detail` / `thanks` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなし、`thanks`はありがとうを伝える画面からメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
-| `edit_thanks` | `thanks` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
-| `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した |
-| `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした |
+| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `edit_thanks` | `thanks` / `comment_prompt` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面、またはありがとうを伝えられる家事の一覧から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
+| `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
+| `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `edit_memo` | `detail` | 家事詳細でメモのテキスト・チェックリストの項目を編集して保存した。チェックの切り替えだけでは送らない（頻度が高く、メモの利用状況を見るには編集だけで足りるため）。家事を追加する画面で入力したメモは`register`に含まれ、これは送らない |
 
 いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
 **分析での使い方:** `register`の起点画面比率でダッシュボードと家事ボードのどちらが主な追加導線かが分かる。
 `source`の比率は、いつもの家事が実際の登録をどれだけ肩代わりしているかの指標になる。
+`item_count`の付いたイベントの数と`item_count`の平均で、複数選択の一括操作がどれだけ・何件ずつ使われているかが分かる。
+`complete`・`send_thanks`などを家事の件数で比べるときは、一括操作の分を`item_count`の合計で数える（イベント数では1回にまとまっているため）。
 `complete`に対する`send_thanks`の比率は、相手の家事に感謝を伝える体験がどれだけ使われているかの指標になる。
 `complete` → `return_incomplete`の比率が高い場合は、完了の取り消しが頻発している（誤タップや認識のずれ）と読める。
 `complete`のうち`executor_type`が`others` / `shared`の割合で、代わりに記録する・手分けする使い方がどれだけあるかが分かる。
 `complete`のうち`effort`が`hard` / `very_hard`の割合で、頑張り度がどれだけ使われているかが分かる（一括完了は頑張り度を選べず常に`normal`になるため、実際の利用率より低く出る点に注意）。
 `complete`に対する`redo`の比率で、1日に同じ家事を繰り返す運用がどれだけあるかが分かる。
 `complete`に対する`add_helper`の比率で、完了時に担当者を選びきれず後から足す運用がどれだけあるかが分かる（比率が高い場合は、完了時の担当者選択が使いにくいか、手分けが後から判明しやすいと読める）。
+
+### `encouragement_comment`
+
+ダッシュボードのコメントカード（自分へのねぎらいと、同居人への感謝の促し）に関する行動。設計は[ADR-0042](adr/0042-encouragement-comment-with-foundation-models.md)。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `EncouragementCommentAnalyticsAction`、`EncouragementCommentComponent` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `shown` / `tapped` / `rated` | 何が起きたか |
+| `kind` | ○ | `self_praise` / `neutral` / `thanks_prompt` | コメントの種類。`self_praise`は自分の実績へのねぎらい、`neutral`は自分の実績がまだない日の中立・励まし、`thanks_prompt`は同居人への感謝の促し |
+| `result` | `rated`のみ | `good` / `bad` | AIが作成したコメントへの評価。他のイベントと同じ`result`キーを使い、カスタムディメンションを増やさない |
+| `step` | ○ | `dashboard` | コメントを出した場所（現状はダッシュボードのみ） |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `kind` | 送信タイミング |
+|---|---|---|
+| `shown` | `self_praise` / `neutral` / `thanks_prompt` | ダッシュボードを表示したとき、および出すコメントの種類が変わったとき。ねぎらいと感謝の促しを両方出している場合はそれぞれ1イベント送る。ねぎらいの生成を待っている間は、感謝の促しも含めて送らない（生成後にもう一度送って二重に数えないため） |
+| `tapped` | `thanks_prompt` | 感謝の促しの「ありがとうを伝える」をタップした（ありがとうを伝えられる家事の一覧へ遷移する） |
+| `rated` | `self_praise` | AIが作成したコメントの「AI」バッジから開いたポップアップで、「よかった」（`good`）か「いまいち」（`bad`）をタップした（`result`に入る）。同じコメントへの評価は1回だけ送る（コメントが作り直されたら再び評価できる） |
+
+ねぎらいをFoundation Modelsで生成したか、固定文言にしたかは`shown`のパラメータにしない（カスタムディメンションを増やさないため。必要になったら追加する）。`rated`はAIが作成したコメントでしか送られないので、生成した文の評価として扱える。生成した文そのものは送らない（家事のタイトルなど、家庭の記録が含まれるため）。
+
+**分析での使い方:** `housework`イベントの`send_thanks`のうち`step=comment_prompt`の割合が、感謝の促しを経由したありがとうの割合（主指標）になる。
+`shown`（`thanks_prompt`）に対する`tapped`の比率で、感謝の促しのタップ率が分かる。
+`shown`の`self_praise` / `neutral`の比率で、自分の実績がある日にダッシュボードを見ている割合が分かる。
+`rated`の`result`（`good` / `bad`）の比率で、AIが作成したコメントの受け止められ方が分かる（プロンプトや禁止表現の見直しの判断材料にする）。
 
 ### `housework_template`
 

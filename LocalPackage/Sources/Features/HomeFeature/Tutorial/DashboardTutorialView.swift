@@ -36,6 +36,10 @@ public struct DashboardTutorialView: View {
                 onTapRetry: {},
                 onTapRemoveAdsPromotion: {},
                 onTapTemplateBanner: {},
+                // コメントは家事の実績から作るため、サンプルの家事では出さない
+                encouragementComment: {
+                    EmptyView()
+                },
                 todaySummary: {
                     TodayHouseworkSummaryContent(
                         summary: todaySummary,
