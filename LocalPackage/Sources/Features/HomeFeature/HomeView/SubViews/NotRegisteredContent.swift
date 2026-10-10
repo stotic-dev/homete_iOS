@@ -31,7 +31,7 @@ struct NotRegisteredContent: View {
                 VStack(spacing: .space8) {
                     Text("まだパートナーが登録されていません", bundle: #bundle)
                         .font(with: .headLineS)
-                    Text("パートナーを登録して、家事を分担しましょう！", bundle: #bundle)
+                    Text("パートナーを招待すると、家事を分け合えます", bundle: #bundle)
                         .font(with: .body)
                 }
                 Button(.localized("パートナーを登録する")) {

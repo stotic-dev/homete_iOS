@@ -49,7 +49,7 @@ public struct HouseworkThanksView: View {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
                         title: .localized("メッセージ"),
-                        placeholder: .localized("感謝を伝えましょう！"),
+                        placeholder: .localized("ひとこと添えてみませんか（例：助かったよ）"),
                         text: $inputMessage,
                         focus: $isShowingKeyboard
                     )

@@ -81,7 +81,7 @@ private extension ManualHouseworkForm {
 
     func inputPointPicker() -> some View {
         HStack(spacing: .space8) {
-            Text("完了ポイント", bundle: #bundle)
+            Text("もらえるポイント", bundle: #bundle)
                 .font(with: .body)
                 .foregroundStyle(.textPrimary)
             Spacer()

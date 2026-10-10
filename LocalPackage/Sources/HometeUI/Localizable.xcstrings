@@ -40,23 +40,6 @@
         }
       }
     },
-    "%lldつ中%lldつ目" : {
-      "comment" : "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Step %2$lld of %1$lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lldつ中%2$lldつ目"
-          }
-        }
-      }
-    },
     "%lld日" : {
       "localizations" : {
         "en" : {
@@ -143,7 +126,10 @@
         }
       }
     },
-    "ありがとうを伝えましょう" : {
+    "ありがとう" : {
+      "shouldTranslate" : false
+    },
+    "ありがとうを伝える" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -321,12 +307,12 @@
         }
       }
     },
-    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言伝えてみましょう。" : {
+    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言添えてみませんか。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Even small chores deserve a kind word."
+            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Why not add a few words, even for small chores?"
           }
         }
       }
@@ -391,12 +377,23 @@
         }
       }
     },
-    "今日の家事がどこまで進んだかと、メンバーごとの貢献度をひと目で確認できます。" : {
+    "今日の家事がどこまで進んだかと、メンバーごとのがんばりをひと目で確認できます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See at a glance how far along today's chores are and how much each member has contributed."
+            "value" : "See at a glance how far today's chores have come and how much each member has contributed."
+          }
+        }
+      }
+    },
+    "全%lldステップ中%lldステップ目" : {
+      "comment" : "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %2$lld of %1$lld"
           }
         }
       }

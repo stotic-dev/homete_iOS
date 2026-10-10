@@ -21,7 +21,7 @@ struct HouseworkTemplateEmptyView: View {
                 .frame(width: 80, height: 80)
                 .foregroundStyle(.iconDecorative)
             VStack(spacing: .space8) {
-                Text("テンプレートが未登録です", bundle: #bundle)
+                Text("テンプレートはまだありません", bundle: #bundle)
                     .font(with: .headLineM)
                 Text("週単位で繰り返す家事を登録できます", bundle: #bundle)
                     .font(with: .body)

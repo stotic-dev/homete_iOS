@@ -1,12 +1,32 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
-    "10文字以内で入力して下さい" : {
+    "%@へようこそ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to %@"
+          }
+        }
+      }
+    },
+    "10文字以内で入力してください" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter up to 10 characters"
+          }
+        }
+      }
+    },
+    "Appleアカウントで、すぐに始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get started right away with your Apple Account."
           }
         }
       }
@@ -83,32 +103,12 @@
         }
       }
     },
-    "ようこそ!" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Welcome!"
-          }
-        }
-      }
-    },
     "アカウント登録" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create Account"
-          }
-        }
-      }
-    },
-    "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To use homeau, you need to sign in with your Apple Account."
           }
         }
       }

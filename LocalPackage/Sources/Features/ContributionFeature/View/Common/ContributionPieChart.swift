@@ -24,8 +24,8 @@ struct ContributionPieChart: View {
                 DescriptionPopoverButton(
                     title: .localized("家事達成割合とは？"),
                     message: .localized("""
-                    指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。
-                    達成した家事の数の観点から、家事貢献度を図ることができます。
+                    選んだ期間に終えた家事のうち、それぞれが何件やったかの割合です。
+                    件数で比べると、だれがどれくらい家事をしたかが分かります。
                     """)
                 )
             }

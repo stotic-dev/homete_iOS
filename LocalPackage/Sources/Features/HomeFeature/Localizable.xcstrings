@@ -53,16 +53,6 @@
         }
       }
     },
-    "お手数ですが、通信状況をご確認の上、再度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please check your connection and try again."
-          }
-        }
-      }
-    },
     "これからは、グループのメンバーと家事を分担し、協力していくことができます。" : {
       "localizations" : {
         "en" : {
@@ -163,12 +153,12 @@
         }
       }
     },
-    "パートナーを登録して、家事を分担しましょう！" : {
+    "パートナーを招待すると、家事を分け合えます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add your partner and share the chores!"
+            "value" : "Invite your partner to share the chores."
           }
         }
       }
@@ -193,6 +183,16 @@
         }
       }
     },
+    "今日の家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Chores"
+          }
+        }
+      }
+    },
     "今日の家事がありません" : {
       "localizations" : {
         "en" : {
@@ -203,7 +203,7 @@
         }
       }
     },
-    "今日の家事は全て完了しました" : {
+    "今日の家事は、ぜんぶ終わりました" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -213,22 +213,12 @@
         }
       }
     },
-    "今日の家事を確認して、家事リストを設定しましょう！" : {
+    "今日やる家事を登録すると、みんなの進み具合がここに表示されます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check today's chores and set up your chore list!"
-          }
-        }
-      }
-    },
-    "今日の家事サマリー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today's Summary"
+            "value" : "Add the chores you'll do today, and everyone's progress will show up here."
           }
         }
       }
@@ -293,22 +283,12 @@
         }
       }
     },
-    "家事のテンプレートが設定されていません" : {
+    "家事のテンプレートはまだありません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No chore templates yet"
-          }
-        }
-      }
-    },
-    "家事のテンプレートを設定して、家事を分担しましょう！" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set up chore templates and share the chores!"
           }
         }
       }
@@ -433,12 +413,32 @@
         }
       }
     },
+    "毎週やる家事をテンプレートにしておくと、家事ボードに自動で並びます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save your weekly chores as templates, and they'll appear on the chore board automatically."
+          }
+        }
+      }
+    },
     "獲得したポイント" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Points Earned"
+          }
+        }
+      }
+    },
+    "通信状態をご確認のうえ、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try again."
           }
         }
       }

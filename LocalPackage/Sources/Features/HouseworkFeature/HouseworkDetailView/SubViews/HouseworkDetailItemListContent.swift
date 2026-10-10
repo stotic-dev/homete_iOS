@@ -22,7 +22,7 @@ struct HouseworkDetailItemListContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
             SectionCard(.localized("家事の情報")) {
-                HouseworkDetailItemRow(title: .localized("実施予定日付")) {
+                HouseworkDetailItemRow(title: .localized("予定日")) {
                     valueText(item.formattedIndexedDate(calendar: calendar))
                 }
                 Divider()
@@ -37,7 +37,7 @@ struct HouseworkDetailItemListContent: View {
                 }
                 if let effortLabel {
                     Divider()
-                    HouseworkDetailItemRow(title: .localized("頑張り度")) {
+                    HouseworkDetailItemRow(title: .localized("がんばり")) {
                         valueText(effortLabel)
                     }
                 }
@@ -83,7 +83,7 @@ private extension HouseworkDetailItemListContent {
         }
         return .localized(
             "\(item.effort.title)（\(pointBreakdown)）",
-            comment: "1つめは頑張り度、2つめはポイントの内訳（例: がんばった（10pt → 12pt））"
+            comment: "1つめはがんばり、2つめはポイントの内訳（例: がんばった（10pt → 12pt））"
         )
     }
 

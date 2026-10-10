@@ -17,7 +17,7 @@ extension HouseworkEffort {
             .localized("がんばった")
 
         case .veryHard:
-            .localized("超頑張った")
+            .localized("すごくがんばった")
         }
     }
 

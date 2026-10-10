@@ -58,13 +58,13 @@
         }
       }
     },
-    "%@の家事貢献度サマリー" : {
-      "comment" : "月の名前が入る（例: 10月の家事貢献度サマリー）",
+    "%@のがんばり" : {
+      "comment" : "月の名前が入る（例: 10月のがんばり）",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Contribution Summary"
+            "value" : "Efforts in %@"
           }
         }
       }
@@ -196,7 +196,7 @@
         }
       }
     },
-    "データ無し" : {
+    "データなし" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -266,6 +266,16 @@
         }
       }
     },
+    "今月のランキング" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Month's Ranking"
+          }
+        }
+      }
+    },
     "今月の獲得ポイント合計" : {
       "localizations" : {
         "en" : {
@@ -276,22 +286,12 @@
         }
       }
     },
-    "今月の貢献ランキング" : {
+    "今月の記録はまだありません。家事をひとつ終えると、ここに表示されます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This Month's Ranking"
-          }
-        }
-      }
-    },
-    "今月はまだ達成された家事がありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No chores completed yet this month"
+            "value" : "No records yet this month. Finish a chore, and it will show up here."
           }
         }
       }
@@ -316,7 +316,7 @@
         }
       }
     },
-    "家事分析" : {
+    "家事の記録" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -352,16 +352,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Year"
-          }
-        }
-      }
-    },
-    "指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。\n達成した家事の数の観点から、家事貢献度を図ることができます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows each member's share of all the chores completed in the selected period.\nIt lets you gauge contributions by the number of chores completed."
           }
         }
       }
@@ -407,6 +397,16 @@
         }
       }
     },
+    "月ごとのポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points by Month"
+          }
+        }
+      }
+    },
     "月ごとの獲得ポイント" : {
       "localizations" : {
         "en" : {
@@ -427,16 +427,6 @@
         }
       }
     },
-    "月間ポイント比較" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monthly Points Comparison"
-          }
-        }
-      }
-    },
     "期間の最初から日が経つごとに積み上がっていく合計ポイントです。\n期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。\n線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。" : {
       "localizations" : {
         "en" : {
@@ -447,27 +437,27 @@
         }
       }
     },
-    "期間を変更すると過去の家事貢献度を確認できます" : {
+    "期間を変えると、前の記録も見られます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change the period to see past contributions"
+            "value" : "Change the period to see earlier records"
           }
         }
       }
     },
-    "期間中、日ごとに獲得したポイントを表します。\n同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。" : {
+    "期間中、日ごとに獲得したポイントを表します。\n同じ日のメンバー同士を比べると、その日にだれがよくがんばったかがひと目で分かります。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows the points earned each day in the period.\nCompare users on the same day to see at a glance who did the most that day."
+            "value" : "Shows the points earned each day in the period.\nCompare members on the same day to see at a glance who did the most that day."
           }
         }
       }
     },
-    "期間中、月ごとに獲得したポイントを表します。\n同じ日のユーザー同士を比較すれば、その日に誰がよく頑張ったかが一目でわかります。" : {
+    "期間中、月ごとに獲得したポイントを表します。\n同じ月のメンバー同士を比べると、その月にだれがよくがんばったかがひと目で分かります。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -583,6 +573,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chores Done"
+          }
+        }
+      }
+    },
+    "選んだ期間に終えた家事のうち、それぞれが何件やったかの割合です。\n件数で比べると、だれがどれくらい家事をしたかが分かります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows each member's share of the chores completed in the selected period.\nComparing the counts shows who did how much."
           }
         }
       }

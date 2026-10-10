@@ -16,7 +16,7 @@ struct HouseworkTemplateConflictBanner: View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.fillDestructive)
-            Text("他のユーザーがテンプレートを編集中です。保存時にコンフリクトすると編集内容が消える場合があります。", bundle: #bundle)
+            Text("ほかのメンバーがテンプレートを編集しています。同時に保存すると、編集した内容が消えることがあります。", bundle: #bundle)
                 .font(with: .caption)
                 .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)

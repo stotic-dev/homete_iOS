@@ -37,7 +37,7 @@ private extension TodayHouseworkSummaryContent {
 
     var contentView: some View {
         VStack(spacing: .space24) {
-            Text("今日の家事サマリー", bundle: #bundle)
+            Text("今日の家事", bundle: #bundle)
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
             switch summary.displayState {
@@ -86,7 +86,7 @@ private extension TodayHouseworkSummaryContent {
                 .font(with: .headLineS)
             Spacer()
                 .frame(height: .space8)
-            Text("今日の家事を確認して、家事リストを設定しましょう！", bundle: #bundle)
+            Text("今日やる家事を登録すると、みんなの進み具合がここに表示されます", bundle: #bundle)
                 .font(with: .body)
                 .multilineTextAlignment(.center)
             Spacer()
@@ -103,7 +103,7 @@ private extension TodayHouseworkSummaryContent {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.fillAccent)
-            Text("今日の家事は全て完了しました", bundle: #bundle)
+            Text("今日の家事は、ぜんぶ終わりました", bundle: #bundle)
                 .font(with: .headLineS)
         }
         .frame(maxWidth: .infinity)

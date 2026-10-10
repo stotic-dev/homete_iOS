@@ -56,7 +56,7 @@ struct HouseworkCommentInputContent: View {
 
     HouseworkCommentInputContent(
         title: "メッセージ",
-        placeholder: "感謝を伝えましょう！",
+        placeholder: "ひとこと添えてみませんか（例：助かったよ）",
         text: .constant("いつもありがとう！"),
         focus: $isShowingKeyboard
     )

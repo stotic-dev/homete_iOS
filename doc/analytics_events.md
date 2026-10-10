@@ -188,7 +188,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む） |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
-| `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`は超頑張った |
+| `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`はすごくがんばった |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
 | `result` | — | `success` / `failure` | 行動の結果 |
 | `item_count` | — | 数値 | 複数選択の一括操作でまとめて書き込んだ家事の件数。一括操作（`complete` / `delete` / `send_thanks` / `return_incomplete`）のときだけ付与し、1件ずつの操作には付けない。GA4のレポートで集計するため、stg / prodの両方でカスタム指標（イベントスコープ）として登録する |

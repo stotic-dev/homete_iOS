@@ -22,9 +22,9 @@ struct PromoteHouseworkTemplateBanner: View {
                 .aspectRatio(contentMode: .fit)
                 .cornerRadius(.radius12)
             VStack(spacing: .space8) {
-                Text("家事のテンプレートが設定されていません", bundle: #bundle)
+                Text("家事のテンプレートはまだありません", bundle: #bundle)
                     .font(with: .headLineS)
-                Text("家事のテンプレートを設定して、家事を分担しましょう！", bundle: #bundle)
+                Text("毎週やる家事をテンプレートにしておくと、家事ボードに自動で並びます", bundle: #bundle)
                     .font(with: .body)
                     .multilineTextAlignment(.center)
             }

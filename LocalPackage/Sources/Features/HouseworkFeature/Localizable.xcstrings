@@ -52,7 +52,7 @@
       }
     },
     "%@（%@）" : {
-      "comment" : "1つめは頑張り度、2つめはポイントの内訳（例: がんばった（10pt → 12pt））",
+      "comment" : "1つめはがんばり、2つめはポイントの内訳（例: がんばった（10pt → 12pt））",
       "localizations" : {
         "ja" : {
           "stringUnit" : {
@@ -243,12 +243,22 @@
         }
       }
     },
-    "いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。\n「がんばった」は1.2倍、「超頑張った」は1.5倍になります（端数は切り上げ）。" : {
+    "いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。\n「がんばった」は1.2倍、「すごくがんばった」は1.5倍になります（端数は切り上げ）。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose this when a chore took more effort than usual to earn more points.\n“Worked Hard” gives 1.2× and “Went All Out” gives 1.5× (rounded up)."
+          }
+        }
+      }
+    },
+    "おつかれさまでした。ゆっくり休んでくださいね" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Great work. Take it easy and get some rest."
           }
         }
       }
@@ -270,6 +280,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Worked Hard"
+          }
+        }
+      }
+    },
+    "がんばり" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effort"
+          }
+        }
+      }
+    },
+    "がんばりについて" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Effort"
           }
         }
       }
@@ -320,6 +350,16 @@
         }
       }
     },
+    "すごくがんばった" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Went All Out"
+          }
+        }
+      }
+    },
     "その他の操作" : {
       "localizations" : {
         "en" : {
@@ -341,6 +381,26 @@
         }
       }
     },
+    "どれくらいがんばったか" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effort"
+          }
+        }
+      }
+    },
+    "どれくらいがんばりましたか" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How hard did you work?"
+          }
+        }
+      }
+    },
     "はなこ" : {
       "comment" : "チュートリアルの見本で、パートナーとして出す架空の名前",
       "localizations" : {
@@ -348,6 +408,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sam"
+          }
+        }
+      }
+    },
+    "ひとこと添えてみませんか（例：助かったよ）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a few words (e.g. “That really helped!”)"
           }
         }
       }
@@ -392,12 +462,32 @@
         }
       }
     },
+    "もらえるポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
     "やらない" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Won't Do"
+          }
+        }
+      }
+    },
+    "やる家事を追加すると、ここに並びます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the chores you'll do, and they'll show up here."
           }
         }
       }
@@ -604,6 +694,16 @@
         }
       }
     },
+    "予定日" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled Date"
+          }
+        }
+      }
+    },
     "今日" : {
       "localizations" : {
         "en" : {
@@ -614,7 +714,7 @@
         }
       }
     },
-    "今日の家事は全て終わっています" : {
+    "今日の家事は、ぜんぶ終わりました" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -624,12 +724,12 @@
         }
       }
     },
-    "今日の家事を追加しましょう" : {
+    "今日の家事はまだありません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add today's chores"
+            "value" : "No chores for today yet"
           }
         }
       }
@@ -735,26 +835,6 @@
         }
       }
     },
-    "完了ポイント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Points"
-          }
-        }
-      }
-    },
-    "実施予定日付" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scheduled Date"
-          }
-        }
-      }
-    },
     "家事の名前" : {
       "localizations" : {
         "en" : {
@@ -815,16 +895,6 @@
         }
       }
     },
-    "感謝を伝えましょう！" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Say thanks!"
-          }
-        }
-      }
-    },
     "手伝った人を追加" : {
       "localizations" : {
         "en" : {
@@ -871,16 +941,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose at least one assignee"
-          }
-        }
-      }
-    },
-    "新しい家事が必要な場合は追加しましょう" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add new chores if you need to"
           }
         }
       }
@@ -1048,16 +1108,6 @@
         }
       }
     },
-    "超頑張った" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Went All Out"
-          }
-        }
-      }
-    },
     "送ったメッセージを編集" : {
       "localizations" : {
         "en" : {
@@ -1114,26 +1164,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
-          }
-        }
-      }
-    },
-    "頑張り度" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Effort"
-          }
-        }
-      }
-    },
-    "頑張り度とは？" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What's Effort?"
           }
         }
       }

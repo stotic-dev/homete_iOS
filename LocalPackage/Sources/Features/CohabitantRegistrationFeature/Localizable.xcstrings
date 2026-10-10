@@ -24,26 +24,6 @@
         }
       }
     },
-    "お手数ですが、再度デバイスを近づけて通信を行ってください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please bring your devices close together and try again."
-          }
-        }
-      }
-    },
-    "お手数ですが、通信状況をご確認の上、再度接続からお試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please check your connection and try connecting again."
-          }
-        }
-      }
-    },
     "これからは、あなたとパートナーの家事を分担し、協力していくことができます。" : {
       "localizations" : {
         "en" : {
@@ -70,6 +50,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "or"
+          }
+        }
+      }
+    },
+    "もう一度、デバイスを近づけてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please bring your devices close together and try again."
           }
         }
       }
@@ -270,6 +260,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The other member canceled"
+          }
+        }
+      }
+    },
+    "通信状態をご確認のうえ、もう一度つなぎ直してください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try connecting again."
           }
         }
       }

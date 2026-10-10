@@ -47,16 +47,16 @@ private extension HouseworkBoardEmptyView {
         case .noHouseworkRegistered:
             EmptyContent(
                 systemImage: "checklist",
-                title: .localized("今日の家事を追加しましょう"),
-                message: nil,
+                title: .localized("今日の家事はまだありません"),
+                message: .localized("やる家事を追加すると、ここに並びます"),
                 action: (.localized("家事を追加"), onCreateTapped)
             )
 
         case .allCompleted:
             EmptyContent(
                 systemImage: "checkmark.circle",
-                title: .localized("今日の家事は全て終わっています"),
-                message: .localized("新しい家事が必要な場合は追加しましょう"),
+                title: .localized("今日の家事は、ぜんぶ終わりました"),
+                message: .localized("おつかれさまでした。ゆっくり休んでくださいね"),
                 action: (.localized("家事を追加"), onCreateTapped)
             )
 

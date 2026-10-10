@@ -15,7 +15,7 @@ struct SummaryPointBarChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("月間ポイント比較", bundle: #bundle)
+            Text("月ごとのポイント", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.textPrimary)
                 .padding(.top, .space16)
