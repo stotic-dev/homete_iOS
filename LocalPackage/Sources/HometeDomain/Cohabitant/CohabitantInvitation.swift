@@ -40,7 +40,13 @@ public extension CohabitantInvitation {
     ///
     /// 複数の導線（同居人登録画面・設定画面）から同じ招待を共有するため、
     /// 文言が食い違わないようここに置く。
-    static let shareMessage = "homeauで一緒に家事を管理しませんか？下のリンクから参加できます。"
+    static var shareMessage: String {
+        LocalizedStringResource.localized(
+            "homeauで一緒に家事を管理しませんか？下のリンクから参加できます。",
+            comment: "招待リンクと一緒に共有する文。homeauはアプリ名なので訳さない"
+        )
+        .resolved()
+    }
 
     static let preview = CohabitantInvitation(
         token: "preview-token",

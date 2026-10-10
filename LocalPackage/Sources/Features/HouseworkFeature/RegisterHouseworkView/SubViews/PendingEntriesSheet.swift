@@ -22,7 +22,7 @@ struct PendingEntriesSheet: View {
                     entryRow(entry)
                 }
             }
-            .navigationTitle("登録予定")
+            .navigationTitle(.localized("登録予定"))
             .inlineNavigationBarTitleDisplayMode()
             .trailingToolbarItem {
                 NavigationBarButton(label: .close) {
@@ -44,7 +44,7 @@ private extension PendingEntriesSheet {
                     .font(with: .body)
                     .foregroundStyle(.onSurface)
                 if let recurrence = entry.recurrence {
-                    Text("テンプレートに登録（\(recurrence.scheduleLabel)）")
+                    Text("テンプレートに登録（\(recurrence.scheduleLabel)）", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.onSurfaceVariant)
                 }
@@ -58,7 +58,7 @@ private extension PendingEntriesSheet {
                     .foregroundStyle(.onSurfaceVariant)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(entry.title)を取り消す")
+            .accessibilityLabel(.localized("\(entry.title)を取り消す"))
         }
     }
 

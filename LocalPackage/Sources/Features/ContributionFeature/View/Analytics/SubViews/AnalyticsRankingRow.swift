@@ -11,8 +11,8 @@ import SwiftUI
 struct AnalyticsRankingRow: View {
 
     let item: ContributionAnalyticsRankItem
-    let totalUnit: String
-    let averageDenominatorUnit: String
+    let criterion: ContributionAnalyticsRankingCriterion
+    let averageDenominator: AverageDenominator
 
     var body: some View {
         HStack(spacing: .space16) {
@@ -24,17 +24,17 @@ struct AnalyticsRankingRow: View {
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 if item.isMe {
-                    Text("あなた")
+                    Text("あなた", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.secondary)
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: .space4) {
-                Text("\(item.totalValue)\(totalUnit)")
+                Text(totalText)
                     .font(with: .headLineM)
                     .foregroundStyle(.onSurface)
-                Text("\(formattedAverage) / \(averageDenominatorUnit)")
+                Text(averageText)
                     .font(with: .caption)
                     .foregroundStyle(.secondary)
             }
@@ -50,8 +50,34 @@ struct AnalyticsRankingRow: View {
         }
     }
 
-    private var formattedAverage: String {
-        String(format: "%.1f%@", item.averageValue, totalUnit)
+    /// 単位の付け方・語順が言語で変わるため、数値と単位を1つの文言にする
+    private var totalText: LocalizedStringResource {
+        switch criterion {
+        case .point: .localized("\(item.totalValue)pt")
+        case .achievement: .localized("\(item.totalValue)件", comment: "達成した家事の数")
+        }
+    }
+
+    private var averageText: LocalizedStringResource {
+        let average = String(format: "%.1f", item.averageValue)
+        return switch (criterion, averageDenominator) {
+        case (.point, .day): .localized("\(average)pt / 日", comment: "1日あたりの平均ポイント")
+        case (.point, .month): .localized("\(average)pt / 月", comment: "1か月あたりの平均ポイント")
+        case (.achievement, .day): .localized("\(average)件 / 日", comment: "1日あたりに達成した家事の平均数")
+        case (.achievement, .month): .localized("\(average)件 / 月", comment: "1か月あたりに達成した家事の平均数")
+        }
+    }
+
+}
+
+extension AnalyticsRankingRow {
+
+    /// 平均を何あたりで出すか
+    enum AverageDenominator {
+
+        case day
+        case month
+
     }
 
 }
@@ -67,8 +93,8 @@ struct AnalyticsRankingRow: View {
             totalValue: 120,
             averageValue: 17.1
         ),
-        totalUnit: "pt",
-        averageDenominatorUnit: "日"
+        criterion: .point,
+        averageDenominator: .day
     )
     .setupEnvironmentForPreview()
 }
@@ -83,8 +109,8 @@ struct AnalyticsRankingRow: View {
             totalValue: 40,
             averageValue: 5.7
         ),
-        totalUnit: "pt",
-        averageDenominatorUnit: "日"
+        criterion: .point,
+        averageDenominator: .day
     )
     .setupEnvironmentForPreview()
 }
@@ -99,8 +125,8 @@ struct AnalyticsRankingRow: View {
             totalValue: 24,
             averageValue: 2.0
         ),
-        totalUnit: "件",
-        averageDenominatorUnit: "月"
+        criterion: .achievement,
+        averageDenominator: .month
     )
     .setupEnvironmentForPreview()
 }

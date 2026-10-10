@@ -36,9 +36,9 @@ private extension HouseworkBoardEmptyView {
     struct EmptyContent {
 
         let systemImage: String
-        let title: String
-        let message: String?
-        let action: (label: String, handler: () -> Void)?
+        let title: LocalizedStringResource
+        let message: LocalizedStringResource?
+        let action: (label: LocalizedStringResource, handler: () -> Void)?
 
     }
 
@@ -47,25 +47,25 @@ private extension HouseworkBoardEmptyView {
         case .noHouseworkRegistered:
             EmptyContent(
                 systemImage: "checklist",
-                title: "今日の家事を追加しましょう",
+                title: .localized("今日の家事を追加しましょう"),
                 message: nil,
-                action: ("家事を追加", onCreateTapped)
+                action: (.localized("家事を追加"), onCreateTapped)
             )
 
         case .allCompleted:
             EmptyContent(
                 systemImage: "checkmark.circle",
-                title: "今日の家事は全て終わっています",
-                message: "新しい家事が必要な場合は追加しましょう",
-                action: ("家事を追加", onCreateTapped)
+                title: .localized("今日の家事は全て終わっています"),
+                message: .localized("新しい家事が必要な場合は追加しましょう"),
+                action: (.localized("家事を追加"), onCreateTapped)
             )
 
         case .hasIncompleteHousework:
             EmptyContent(
                 systemImage: "list.bullet.clipboard",
-                title: "完了した家事はありません",
-                message: "未完了の家事があります",
-                action: ("未完了を見る", { onSwitchTab(.incomplete) })
+                title: .localized("完了した家事はありません"),
+                message: .localized("未完了の家事があります"),
+                action: (.localized("未完了を見る"), { onSwitchTab(.incomplete) })
             )
         }
     }

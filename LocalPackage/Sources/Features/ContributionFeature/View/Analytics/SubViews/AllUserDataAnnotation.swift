@@ -23,7 +23,7 @@ struct AllUserDataAnnotation: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: true, vertical: false)
             if entries.isEmpty {
-                Text("データ無し")
+                Text("データ無し", bundle: #bundle)
                     .font(with: .boldCaption)
             } else {
                 ForEach(entries) { entry in

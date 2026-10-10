@@ -46,8 +46,8 @@ struct CohabitantRegistrationSession: View {
 
             case .completed:
                 CohabitantCompletionView(
-                    title: "登録が完了しました！",
-                    message: "これからは、あなたとパートナーの家事を分担し、協力していくことができます。"
+                    title: .localized("登録が完了しました！"),
+                    message: .localized("これからは、あなたとパートナーの家事を分担し、協力していくことができます。")
                 ) {
                     dismiss()
                 }
@@ -104,35 +104,35 @@ private extension View {
 
 private extension CohabitantRegistrationState.Alert {
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .rejectedByPeer:
-            "通信中のメンバーがキャンセルしました"
+            .localized("通信中のメンバーがキャンセルしました")
 
         case .sendFailed, .connectionError:
-            "接続エラー"
+            .localized("接続エラー")
 
         case .registrationFailed:
-            "登録に失敗しました"
+            .localized("登録に失敗しました")
 
         case .outdatedPeer:
-            "相手のアプリのアップデートが必要です"
+            .localized("相手のアプリのアップデートが必要です")
         }
     }
 
-    var message: String? {
+    var message: LocalizedStringResource? {
         switch self {
         case .rejectedByPeer:
             nil
 
         case .sendFailed, .connectionError:
-            "お手数ですが、再度デバイスを近づけて通信を行ってください"
+            .localized("お手数ですが、再度デバイスを近づけて通信を行ってください")
 
         case .registrationFailed:
-            "お手数ですが、通信状況をご確認の上、再度接続からお試しください。"
+            .localized("お手数ですが、通信状況をご確認の上、再度接続からお試しください。")
 
         case .outdatedPeer:
-            "相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。"
+            .localized("相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。")
         }
     }
 

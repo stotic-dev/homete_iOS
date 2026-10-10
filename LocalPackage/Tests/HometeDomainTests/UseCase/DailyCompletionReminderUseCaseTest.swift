@@ -621,12 +621,10 @@ private func todayRequest(
     identifier: String = "dailyCompletionReminder-2026-9-25",
     debugNote: String? = nil
 ) -> DailyCompletionReminderRequest {
-    let body = "今日完了した家事があります。ふりかえって、感謝を伝え合いましょう"
-    return .init(
+    .init(
         identifier: identifier,
         fireDateComponents: DateComponents(year: 2026, month: 9, day: 25, hour: hour, minute: minute),
-        title: "今日もおつかれさまでした",
-        body: debugNote.map { body + "\n" + $0 } ?? body
+        debugNote: debugNote
     )
 }
 

@@ -25,9 +25,9 @@ struct PremiumIntroductionView: View {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 56))
                     .foregroundStyle(.decorativeIcon)
-                Text("プレミアムプランのご案内")
+                Text("プレミアムプランのご案内", bundle: #bundle)
                     .font(with: .headLineM)
-                Text("homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。")
+                Text("homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。", bundle: #bundle)
                     .font(with: .body)
                     .foregroundStyle(.onSurfaceVariant)
                     .multilineTextAlignment(.center)
@@ -35,13 +35,13 @@ struct PremiumIntroductionView: View {
             VStack(spacing: .space24) {
                 benefitRow(
                     systemImage: "rectangle.slash",
-                    title: "広告が表示されません",
-                    description: "ダッシュボードのバナー広告が消え、家事の記録に集中できます。"
+                    title: .localized("広告が表示されません"),
+                    description: .localized("ダッシュボードのバナー広告が消え、家事の記録に集中できます。")
                 )
                 benefitRow(
                     systemImage: "sparkles",
-                    title: "今後追加される機能もすべて使えます",
-                    description: "プレミアム限定の新機能が増えても、追加の料金はかかりません。"
+                    title: .localized("今後追加される機能もすべて使えます"),
+                    description: .localized("プレミアム限定の新機能が増えても、追加の料金はかかりません。")
                 )
             }
             Spacer(minLength: .space24)
@@ -49,12 +49,12 @@ struct PremiumIntroductionView: View {
                 Button {
                     tappedShowPaywallButton()
                 } label: {
-                    Text("プランを見る")
+                    Text("プランを見る", bundle: #bundle)
                         .padding(.vertical, .space8)
                         .frame(maxWidth: .infinity)
                 }
                 .subPrimaryButtonStyle()
-                Button("あとで決める") {
+                Button(.localized("あとで決める")) {
                     tappedSkipButton()
                 }
                 .font(with: .body)
@@ -83,7 +83,11 @@ struct PremiumIntroductionView: View {
 
 private extension PremiumIntroductionView {
 
-    func benefitRow(systemImage: String, title: String, description: String) -> some View {
+    func benefitRow(
+        systemImage: String,
+        title: LocalizedStringResource,
+        description: LocalizedStringResource
+    ) -> some View {
         HStack(alignment: .top, spacing: .space16) {
             Image(systemName: systemImage)
                 .font(.title3)

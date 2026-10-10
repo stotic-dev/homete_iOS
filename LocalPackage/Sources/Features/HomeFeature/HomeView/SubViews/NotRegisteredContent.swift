@@ -29,12 +29,12 @@ struct NotRegisteredContent: View {
                     .aspectRatio(contentMode: .fit)
                     .cornerRadius(.radius16)
                 VStack(spacing: .space8) {
-                    Text("まだパートナーが登録されていません")
+                    Text("まだパートナーが登録されていません", bundle: #bundle)
                         .font(with: .headLineS)
-                    Text("パートナーを登録して、家事を分担しましょう！")
+                    Text("パートナーを登録して、家事を分担しましょう！", bundle: #bundle)
                         .font(with: .body)
                 }
-                Button("パートナーを登録する") {
+                Button(.localized("パートナーを登録する")) {
                     isShowCohabitantRegistrationModal = true
                 }
                 .primaryButtonStyle()

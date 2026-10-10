@@ -27,15 +27,15 @@ public enum DayOfWeek: Int, Codable, Sendable, CaseIterable, Identifiable, Hasha
         .monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday,
     ]
 
-    public var fullLabel: String {
+    public var fullLabel: LocalizedStringResource {
         switch self {
-        case .sunday: "日曜日"
-        case .monday: "月曜日"
-        case .tuesday: "火曜日"
-        case .wednesday: "水曜日"
-        case .thursday: "木曜日"
-        case .friday: "金曜日"
-        case .saturday: "土曜日"
+        case .sunday: .localized("日曜日")
+        case .monday: .localized("月曜日")
+        case .tuesday: .localized("火曜日")
+        case .wednesday: .localized("水曜日")
+        case .thursday: .localized("木曜日")
+        case .friday: .localized("金曜日")
+        case .saturday: .localized("土曜日")
         }
     }
 

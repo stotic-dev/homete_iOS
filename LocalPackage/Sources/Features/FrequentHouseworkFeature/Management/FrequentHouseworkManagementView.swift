@@ -38,7 +38,7 @@ struct FrequentHouseworkManagementView: View {
 
     var body: some View {
         content()
-            .navigationTitle("いつもの家事")
+            .navigationTitle(.localized("いつもの家事"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
                 NavigationBarButton(label: .close) {
@@ -127,7 +127,7 @@ private extension FrequentHouseworkManagementView {
                         .font(with: .body)
                         .foregroundStyle(.onSurface)
                     if !isUsable {
-                        Text("プレミアムプランで使えます")
+                        Text("プレミアムプランで使えます", bundle: #bundle)
                             .font(with: .caption)
                             .foregroundStyle(.onSurfaceVariant)
                     }
@@ -158,7 +158,7 @@ private extension FrequentHouseworkManagementView {
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .accessibilityLabel("いつもの家事を追加")
+                    .accessibilityLabel(.localized("いつもの家事を追加"))
                     subMenu()
                 }
             }
@@ -178,19 +178,19 @@ private extension FrequentHouseworkManagementView {
             Button {
                 onTapManageCategories()
             } label: {
-                Label("カテゴリを管理", systemImage: "folder")
+                Label(.localized("カテゴリを管理"), systemImage: "folder")
             }
             if let onTapImport {
                 Button {
                     onTapImport()
                 } label: {
-                    Label("テンプレートから取り込む", systemImage: "square.and.arrow.down")
+                    Label(.localized("テンプレートから取り込む"), systemImage: "square.and.arrow.down")
                 }
             }
         } label: {
             Image(systemName: "ellipsis")
         }
-        .accessibilityLabel("その他の操作")
+        .accessibilityLabel(.localized("その他の操作"))
     }
 
 }

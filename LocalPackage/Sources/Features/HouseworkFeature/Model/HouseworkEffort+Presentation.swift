@@ -3,20 +3,21 @@
 //  LocalPackage
 //
 
+import Foundation
 import HometeDomain
 
 extension HouseworkEffort {
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .normal:
-            "ふつう"
+            .localized("ふつう")
 
         case .hard:
-            "がんばった"
+            .localized("がんばった")
 
         case .veryHard:
-            "超頑張った"
+            .localized("超頑張った")
         }
     }
 

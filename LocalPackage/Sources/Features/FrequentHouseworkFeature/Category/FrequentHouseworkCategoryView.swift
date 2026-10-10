@@ -30,7 +30,7 @@ struct FrequentHouseworkCategoryView: View {
             presetSection()
             customSection()
         }
-        .navigationTitle("カテゴリ")
+        .navigationTitle(.localized("カテゴリ"))
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
             trailingNavigationItem()
@@ -49,7 +49,7 @@ struct FrequentHouseworkCategoryView: View {
 private extension FrequentHouseworkCategoryView {
 
     func presetSection() -> some View {
-        Section("あらかじめ用意しているカテゴリ") {
+        Section(.localized("あらかじめ用意しているカテゴリ")) {
             ForEach(PresetFrequentHouseworkCategory.allCases, id: \.self) { preset in
                 HStack(spacing: .space8) {
                     Text(preset.name)
@@ -58,7 +58,7 @@ private extension FrequentHouseworkCategoryView {
                     Spacer()
                     Image(systemName: "lock.fill")
                         .foregroundStyle(.onSurfaceVariant)
-                        .accessibilityLabel("名前の変更と削除はできません")
+                        .accessibilityLabel(.localized("名前の変更と削除はできません"))
                 }
             }
             .deleteDisabled(true)
@@ -67,9 +67,9 @@ private extension FrequentHouseworkCategoryView {
     }
 
     func customSection() -> some View {
-        Section("追加したカテゴリ") {
+        Section(.localized("追加したカテゴリ")) {
             if customCategories.isEmpty {
-                Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。")
+                Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.onSurfaceVariant)
             } else {
@@ -117,7 +117,7 @@ private extension FrequentHouseworkCategoryView {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("カテゴリを追加")
+                .accessibilityLabel(.localized("カテゴリを追加"))
             }
         }
     }

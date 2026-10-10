@@ -22,7 +22,7 @@ struct SummaryRow: View {
                     .font(with: .headLineS)
                     .foregroundStyle(.onSurface)
                 if item.isMe {
-                    Text("あなた")
+                    Text("あなた", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.secondary)
                 }
@@ -39,7 +39,7 @@ struct SummaryRow: View {
                 HStack(spacing: .space4) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text("\(item.achievedCount)件達成")
+                    Text("\(item.achievedCount)件達成", bundle: #bundle)
                         .font(with: .headLineM)
                         .foregroundStyle(.onSurface)
                 }

@@ -22,7 +22,7 @@ public struct RemoveAdsPromotionLink: View {
             action()
         } label: {
             HStack(spacing: .space4) {
-                Text("広告を非表示にする")
+                Text("広告を非表示にする", bundle: #bundle)
                     .font(with: .boldCaption)
                 Image(systemName: "chevron.right")
                     .font(with: .caption)

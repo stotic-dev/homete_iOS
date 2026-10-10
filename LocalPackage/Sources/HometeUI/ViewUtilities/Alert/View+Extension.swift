@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
+import HometeDomain
 import SwiftUI
 
 public extension View {
@@ -14,7 +15,7 @@ public extension View {
         onDismiss: @escaping () -> Void = {}
     ) -> some View {
         alert(
-            "操作が完了しませんでした",
+            .localized("操作が完了しませんでした"),
             isPresented: content.wrappedValue.hasError ? content.isPresenting : .constant(false),
             actions: {
                 Button("OK") {
@@ -22,7 +23,9 @@ public extension View {
                 }
             },
             message: {
-                Text(content.wrappedValue.errorMessage ?? "")
+                if let errorMessage = content.wrappedValue.errorMessage {
+                    Text(errorMessage)
+                }
             }
         )
     }
