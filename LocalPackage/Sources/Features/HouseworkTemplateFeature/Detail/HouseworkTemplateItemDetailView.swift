@@ -68,7 +68,7 @@ private extension HouseworkTemplateItemDetailView {
         VStack(alignment: .leading, spacing: .space8) {
             Text(label)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSubSurface)
+                .foregroundStyle(.textPrimary)
             valueContent()
         }
     }
@@ -80,7 +80,7 @@ private extension HouseworkTemplateItemDetailView {
             row(label: .localized("くり返し")) {
                 Text("毎日", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
             }
 
         case let .weekly(days):
@@ -101,7 +101,7 @@ private extension HouseworkTemplateItemDetailView {
             row(label: .localized("くり返し")) {
                 Text(rule.label)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
             }
         }
     }
@@ -112,7 +112,7 @@ private extension HouseworkTemplateItemDetailView {
                 tappedEditButton()
             } label: {
                 Image(systemName: "pencil")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
             }
             NavigationBarButton(label: .delete) {
                 tappedDeleteButton()

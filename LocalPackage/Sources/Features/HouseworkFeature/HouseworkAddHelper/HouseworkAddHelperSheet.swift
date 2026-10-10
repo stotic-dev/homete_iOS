@@ -112,7 +112,7 @@ private extension HouseworkAddHelperView {
                 await tappedSaveButton()
             }
         }
-        .foregroundStyle(.onPrimary1)
+        .foregroundStyle(.textOnAccent)
         .disabled(!canSave)
     }
 

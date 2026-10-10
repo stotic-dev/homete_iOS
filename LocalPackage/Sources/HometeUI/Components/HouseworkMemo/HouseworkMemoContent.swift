@@ -29,7 +29,7 @@ public struct HouseworkMemoContent: View {
             if !memo.text.isEmpty {
                 Text(memo.text)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
@@ -55,11 +55,11 @@ private extension HouseworkMemoContent {
         } label: {
             HStack(spacing: .space8) {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(item.isChecked ? .accent : .onSurfaceVariant)
+                    .foregroundStyle(item.isChecked ? .fillAccent : .textSecondary)
                     .font(with: .headLineS)
                 Text(item.title)
                     .font(with: .body)
-                    .foregroundStyle(item.isChecked ? .onSurfaceVariant : .onSurface)
+                    .foregroundStyle(item.isChecked ? .textSecondary : .textPrimary)
                     .strikethrough(item.isChecked)
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: .zero)

@@ -29,7 +29,7 @@ struct HouseworkDetailItemListContent: View {
                 HouseworkDetailItemRow(title: .localized("ステータス")) {
                     Text(item.state.segmentTitle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                 }
                 Divider()
                 HouseworkDetailItemRow(title: .localized("ポイント")) {
@@ -105,14 +105,14 @@ private extension HouseworkDetailItemListContent {
     func valueText(_ text: Text) -> some View {
         text
             .font(with: .body)
-            .foregroundStyle(.onSurfaceVariant)
+            .foregroundStyle(.textSecondary)
     }
 
     func executorRow(_ executor: HouseworkExecutor) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: .space16) {
             Text(cohabitantMemberList.userName(executor.userId) ?? "")
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer(minLength: .zero)
             if let shareLabel = executorShareLabel(executor) {
                 valueText(shareLabel)
@@ -127,14 +127,14 @@ private extension HouseworkDetailItemListContent {
                 Text("\(thanksMessage.senderName)さんから", bundle: #bundle)
             } icon: {
                 Image(systemName: "heart.fill")
-                    .foregroundStyle(.thanksHeart)
+                    .foregroundStyle(.fillThanks)
             }
             .font(with: .boldCaption)
-            .foregroundStyle(.onSubSurface)
+            .foregroundStyle(.textPrimary)
             // メッセージを書かずに伝えたありがとうは、ハートをタップしたときの気持ちを代わりに添える
             (thanksMessage.comment.map { Text(verbatim: $0) } ?? Text("ありがとう！", bundle: #bundle))
                 .font(with: .body)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
         }
         .accessibilityElement(children: .combine)
     }

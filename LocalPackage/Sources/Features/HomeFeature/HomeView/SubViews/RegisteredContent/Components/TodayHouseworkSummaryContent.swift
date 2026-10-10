@@ -67,7 +67,7 @@ private extension TodayHouseworkSummaryContent {
                     .font(with: .headLineS)
             }
             ProgressView(value: progress)
-                .tint(.accent)
+                .tint(.fillAccent)
         }
     }
 
@@ -99,7 +99,7 @@ private extension TodayHouseworkSummaryContent {
         .overlay {
             RoundedRectangle(radius: .radius8)
                 .stroke(style: .init(lineWidth: 2, dash: [8]))
-                .foregroundStyle(.accent)
+                .foregroundStyle(.fillAccent)
         }
     }
 
@@ -107,7 +107,7 @@ private extension TodayHouseworkSummaryContent {
         VStack(spacing: .space8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.accent)
+                .foregroundStyle(.fillAccent)
             Text("今日の家事は全て完了しました")
                 .font(with: .headLineS)
         }
@@ -120,11 +120,11 @@ private extension TodayHouseworkSummaryContent {
             HStack {
                 Text("未完了の家事")
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 Text("\(summary.incompleteItems.count)件")
                     .font(with: .body)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
             }
             ForEach(summary.displayIncompleteItems) { item in
                 houseworkItemRow(item)

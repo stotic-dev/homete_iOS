@@ -34,7 +34,7 @@ struct DebugMenuView: View {
                 }
                 Text("ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             Section(.localized("同居人の登録")) {
                 Button(.localized("P2P登録を試す")) {
@@ -42,7 +42,7 @@ struct DebugMenuView: View {
                 }
                 Text("複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             Section(.localized("チュートリアル")) {
                 Button(.localized("グループ登録直後のチュートリアルを表示")) {
@@ -52,13 +52,13 @@ struct DebugMenuView: View {
                 }
                 Text("設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             Section(.localized("ふりかえり通知")) {
                 Toggle(.localized("1日1回の制限を外す"), isOn: dailyCompletionReminderLimitBinding)
                 Text("家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             Section(.localized("課金")) {
                 Button(.localized("Paywallを表示")) {
@@ -81,7 +81,7 @@ struct DebugMenuView: View {
                 どちらの場合も、もう一度ログインすればそのまま使えるようになります。
                 """)
                 .font(with: .caption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
             }
         }
         .alert(.localized("ログイン情報の失効"), isPresented: $isShowRevokeResult) {

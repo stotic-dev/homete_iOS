@@ -24,12 +24,12 @@ struct PremiumIntroductionView: View {
             VStack(spacing: .space16) {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(.decorativeIcon)
+                    .foregroundStyle(.iconDecorative)
                 Text("プレミアムプランのご案内", bundle: #bundle)
                     .font(with: .headLineM)
                 Text("homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.center)
             }
             VStack(spacing: .space24) {
@@ -58,7 +58,7 @@ struct PremiumIntroductionView: View {
                     tappedSkipButton()
                 }
                 .font(with: .body)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
             }
             Spacer()
                 .frame(height: .space24)
@@ -91,14 +91,14 @@ private extension PremiumIntroductionView {
         HStack(alignment: .top, spacing: .space16) {
             Image(systemName: systemImage)
                 .font(.title3)
-                .foregroundStyle(.decorativeIcon)
+                .foregroundStyle(.iconDecorative)
                 .frame(width: .space32)
             VStack(alignment: .leading, spacing: .space4) {
                 Text(title)
                     .font(with: .headLineS)
                 Text(description)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

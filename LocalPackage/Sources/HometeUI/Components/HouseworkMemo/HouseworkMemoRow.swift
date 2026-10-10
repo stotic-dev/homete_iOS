@@ -29,7 +29,7 @@ public struct HouseworkMemoRow: View {
             HStack(spacing: .space8) {
                 Text("メモ", bundle: #bundle)
                     .font(with: titleFont)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 (hasContent ? Text("あり", bundle: #bundle, comment: "メモが書かれているか") : Text(
                     "なし",
@@ -37,10 +37,10 @@ public struct HouseworkMemoRow: View {
                     comment: "メモが書かれているか"
                 ))
                 .font(with: .body)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .accessibilityHidden(true)
             }
             .contentShape(Rectangle())

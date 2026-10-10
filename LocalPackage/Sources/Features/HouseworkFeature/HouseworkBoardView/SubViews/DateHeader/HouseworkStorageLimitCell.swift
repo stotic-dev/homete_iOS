@@ -22,11 +22,11 @@ struct HouseworkStorageLimitCell: View {
                 Text("これ以前", bundle: #bundle)
                     .font(with: .caption)
             }
-            .foregroundStyle(.onPrimary3)
+            .foregroundStyle(.textSecondary)
             .frame(width: 60, height: 60)
             .background {
                 Circle()
-                    .fill(.primary3)
+                    .fill(.fillAccentSubtle)
             }
             .padding(2)
         }

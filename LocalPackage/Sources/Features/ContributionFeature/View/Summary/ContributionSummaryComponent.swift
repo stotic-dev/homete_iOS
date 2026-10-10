@@ -85,7 +85,7 @@ struct ContributionSummaryContent: View {
             Text(monthTitle)
                 .font(with: .headLineM)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Divider()
             if summaries.hasData {
                 VStack(spacing: .zero) {
@@ -130,7 +130,7 @@ private extension ContributionSummaryContent {
             HStack(spacing: .zero) {
                 Text("今月の貢献ランキング", bundle: #bundle)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 Button {
                     isShowingLegend = true

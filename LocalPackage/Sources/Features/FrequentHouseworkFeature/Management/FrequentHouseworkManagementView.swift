@@ -125,11 +125,11 @@ private extension FrequentHouseworkManagementView {
                 VStack(alignment: .leading, spacing: .space4) {
                     Text(item.title)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     if !isUsable {
                         Text("プレミアムプランで使えます", bundle: #bundle)
                             .font(with: .caption)
-                            .foregroundStyle(.onSurfaceVariant)
+                            .foregroundStyle(.textSecondary)
                     }
                 }
                 Spacer()

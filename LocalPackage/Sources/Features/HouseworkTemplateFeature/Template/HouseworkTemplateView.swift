@@ -190,7 +190,7 @@ private extension HouseworkTemplateView {
                 .padding(.space8)
                 .background {
                     RoundedRectangle(radius: .radius8)
-                        .fill(.subSurface)
+                        .fill(.backgroundCard)
                 }
                 .dropDestination(for: String.self) { ids, _ in
                     guard let droppedId = ids.first else { return false }
@@ -213,16 +213,16 @@ private extension HouseworkTemplateView {
             HStack(spacing: .space8) {
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .rotationEffect(.degrees(isCollapsed ? 0 : 90))
                 Text(day.fullLabel)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                 if isCollapsed,
                    itemCount > 0 {
                     Text("(\(itemCount))")
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                 }
                 Spacer()
             }
@@ -244,7 +244,7 @@ private extension HouseworkTemplateView {
     func emptyDayRow() -> some View {
         Text("家事なし", bundle: #bundle)
             .font(with: .caption)
-            .foregroundStyle(.onSubSurface)
+            .foregroundStyle(.textPrimary)
             .padding(.vertical, .space8)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -270,7 +270,7 @@ private extension HouseworkTemplateView {
         VStack(alignment: .leading, spacing: .space8) {
             Text("毎月", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSubSurface)
+                .foregroundStyle(.textPrimary)
             VStack(spacing: .space8) {
                 if !monthlyItems.isEmpty {
                     ForEach(monthlyItems) { monthlyItem in
@@ -284,7 +284,7 @@ private extension HouseworkTemplateView {
             .padding(.space8)
             .background {
                 RoundedRectangle(radius: .radius8)
-                    .fill(.subSurface)
+                    .fill(.backgroundCard)
             }
         }
     }
@@ -328,7 +328,7 @@ private extension HouseworkTemplateView {
         } label: {
             Image(systemName: "xmark")
         }
-        .foregroundStyle(.onSurface)
+        .foregroundStyle(.textPrimary)
     }
 
     #if os(iOS)
@@ -345,7 +345,7 @@ private extension HouseworkTemplateView {
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
                 }
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             }
         }
         if #available(iOS 26.0, *) {

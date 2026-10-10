@@ -44,7 +44,7 @@ public struct DescriptionPopoverButton: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(message)
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .multilineTextAlignment(.leading)
             }
             .padding(.space16)

@@ -38,8 +38,8 @@ public struct LoginView: View {
                 bundle: #bundle
             )
             .font(with: .caption)
-            .foregroundStyle(.onSurfaceVariant)
-            .tint(.accent)
+            .foregroundStyle(.textSecondary)
+            .tint(.textAccent)
             Spacer()
                 .frame(height: .space32)
         }

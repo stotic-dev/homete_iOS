@@ -43,19 +43,19 @@ private extension AnalyticsPeriodHeader {
                 tappedShiftLeftButton()
             } label: {
                 Image(systemName: "chevron.left")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .padding(.space8)
             }
             Spacer()
             Text(periodTitle())
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             Button {
                 tappedShiftRightButton()
             } label: {
                 Image(systemName: "chevron.right")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .padding(.space8)
             }
             // `foregroundStyle`でtintを上書きしているとdisabled時の自動ディムが効かず、

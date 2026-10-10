@@ -71,7 +71,7 @@ struct ThanksHeartCanvas: View {
                 in: context
             )
         } symbols: {
-            heartSymbol(color: .thanksHeart)
+            heartSymbol(color: .fillThanks)
                 .tag(SymbolID.primary)
             heartSymbol(color: .pink.opacity(0.8))
                 .tag(SymbolID.secondary)

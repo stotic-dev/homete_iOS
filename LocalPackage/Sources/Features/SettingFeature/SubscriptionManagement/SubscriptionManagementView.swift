@@ -62,10 +62,10 @@ private extension SubscriptionManagementView {
     var sectionHeader: some View {
         HStack(spacing: .space8) {
             Image(systemName: "crown.fill")
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Text("現在のプラン", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
         }
     }
@@ -76,11 +76,11 @@ private extension SubscriptionManagementView {
         case .free:
             Text("プレミアムプランには登録していません", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSubSurface)
+                .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, .space16)
                 .padding(.vertical, .space24)
-                .background(.subSurface)
+                .background(.backgroundCard)
                 .cornerRadius(.radius16)
 
         case let .subscription(period, nextRenewalDate, willRenew):
@@ -104,7 +104,7 @@ private extension SubscriptionManagementView {
                 )
             }
             .padding(.space16)
-            .background(.subSurface)
+            .background(.backgroundCard)
             .cornerRadius(.radius16)
         }
     }
@@ -113,11 +113,11 @@ private extension SubscriptionManagementView {
         HStack(spacing: .zero) {
             Text(title)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             value
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .lineLimit(1)
         }
     }
@@ -155,7 +155,7 @@ private extension SubscriptionManagementView {
                 .modifier(ManageSubscriptionButtonStyle(isCancelable: willRenew))
                 Text("解約手続きはApp Storeの管理画面で行います", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
             }
         }
     }

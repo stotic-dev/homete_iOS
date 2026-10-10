@@ -20,7 +20,7 @@ public struct ForceUpdateView: View {
             VStack(spacing: .space16) {
                 Image(systemName: "arrow.down.app.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(.decorativeIcon)
+                    .foregroundStyle(.iconDecorative)
                     .accessibilityHidden(true)
                 Text("新しいバージョンがあります", bundle: #bundle)
                     .font(with: .headLineM)
@@ -28,7 +28,7 @@ public struct ForceUpdateView: View {
                     .accessibilityAddTraits(.isHeader)
                 Text("引き続き\(Constants.appName)をご利用いただくには、App Storeからアップデートをお願いします。", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.center)
                 Button {
                     onTapUpdateButton()

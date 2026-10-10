@@ -33,7 +33,7 @@ struct HouseworkEffortSelectionContent: View {
             if let pointBreakdown {
                 Text(pointBreakdown)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .monospacedDigit()
             }
         }

@@ -20,11 +20,11 @@ struct HouseworkTemplateItemRow: View {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(item.title)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 if let recurrenceLabel {
                     Text(recurrenceLabel)
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -35,7 +35,7 @@ struct HouseworkTemplateItemRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             RoundedRectangle(radius: .radius8)
-                .fill(.surface)
+                .fill(.backgroundScreen)
         }
     }
 

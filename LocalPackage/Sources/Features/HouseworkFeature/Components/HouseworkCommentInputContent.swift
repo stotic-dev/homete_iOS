@@ -20,7 +20,7 @@ struct HouseworkCommentInputContent: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(title)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             TextField(placeholder, text: $text, axis: .vertical)
                 .focused(focus)
                 .font(with: .body)
@@ -31,7 +31,7 @@ struct HouseworkCommentInputContent: View {
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .background {
                     RoundedRectangle(radius: .radius8)
-                        .fill(.subSurface)
+                        .fill(.backgroundCard)
                 }
         }
     }

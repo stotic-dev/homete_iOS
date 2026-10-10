@@ -29,10 +29,10 @@ private extension GroupMemberListView {
     var sectionHeader: some View {
         HStack(spacing: .space8) {
             Image(systemName: "person.2.fill")
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Text("グループメンバー", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
         }
     }
@@ -58,18 +58,18 @@ private extension GroupMemberListView {
         }
         .padding(.horizontal, .space16)
         .padding(.vertical, .space8)
-        .background(.subSurface)
+        .background(.backgroundCard)
         .cornerRadius(.radius16)
     }
 
     var emptyContent: some View {
         Text("一緒に家事をするメンバーはまだいません", bundle: #bundle)
             .font(with: .body)
-            .foregroundStyle(.onSubSurface)
+            .foregroundStyle(.textPrimary)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
-            .background(.subSurface)
+            .background(.backgroundCard)
             .cornerRadius(.radius16)
     }
 

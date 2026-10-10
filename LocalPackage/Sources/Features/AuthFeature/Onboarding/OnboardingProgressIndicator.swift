@@ -43,12 +43,12 @@ private extension OnboardingProgressIndicator {
     }
 
     /// 到達済みのステップはアクセントカラーで塗りつぶし、未到達のステップは薄く表示する
-    /// - Note: `primary1`〜`primary3`は面（背景）に使う色で、`surface`の上に置くとどちらのモードでも
-    ///         ほとんど識別できないため、前景として塗るドットには`accent`と`decorativeIcon`を使う
+    /// - Note: `fillAccentSubtle`は面（背景）に使う色で、`backgroundScreen`の上に置くとどちらのモードでも
+    ///         ほとんど識別できないため、前景として塗るドットには`fillAccent`と`iconDecorative`を使う
     func color(of step: OnboardingStep) -> Color {
         guard let index = steps.firstIndex(of: step) else { return .clear }
 
-        return index <= currentIndex ? .accent : Color.decorativeIcon.opacity(0.4)
+        return index <= currentIndex ? .fillAccent : Color.iconDecorative.opacity(0.4)
     }
 
 }

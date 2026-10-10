@@ -51,7 +51,7 @@ struct HouseworkExecutorSelectionContent: View {
         }
         .background {
             RoundedRectangle(radius: .radius8)
-                .fill(.subSurface)
+                .fill(.backgroundCard)
         }
     }
 
@@ -65,15 +65,15 @@ private extension HouseworkExecutorSelectionContent {
         } label: {
             HStack(spacing: .space8) {
                 Image(systemName: row.isSelected ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(row.isSelected ? Color.accent : Color.onSurfaceVariant)
+                    .foregroundStyle(row.isSelected ? Color.fillAccent : Color.textSecondary)
                 Text(row.userName)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 if let allocation = row.allocation {
                     Text("\(allocation.percentage)%・\(allocation.point)pt", bundle: #bundle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                         .monospacedDigit()
                 }
             }

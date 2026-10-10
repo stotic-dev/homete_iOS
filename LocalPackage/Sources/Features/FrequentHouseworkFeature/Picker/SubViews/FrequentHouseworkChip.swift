@@ -32,12 +32,12 @@ struct FrequentHouseworkChip: View {
                         .font(.caption)
                 }
             }
-            .foregroundStyle(isSelected ? .onPrimary1 : .onSurface)
+            .foregroundStyle(isSelected ? .textOnAccent : .textPrimary)
             .padding(.horizontal, .space8)
             .frame(maxWidth: .infinity, minHeight: 44)
             .background {
                 RoundedRectangle(radius: .radius8)
-                    .fill(isSelected ? Color.primary1 : Color.primary3)
+                    .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
             }
             .opacity(isUsable ? 1 : 0.5)
         }

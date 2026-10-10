@@ -54,10 +54,10 @@ private extension FrequentHouseworkCategoryView {
                 HStack(spacing: .space8) {
                     Text(preset.name)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer()
                     Image(systemName: "lock.fill")
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                         .accessibilityLabel(.localized("名前の変更と削除はできません"))
                 }
             }
@@ -71,7 +71,7 @@ private extension FrequentHouseworkCategoryView {
             if customCategories.isEmpty {
                 Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             } else {
                 ForEach(customCategories) { category in
                     categoryRow(category)
@@ -95,7 +95,7 @@ private extension FrequentHouseworkCategoryView {
             HStack(spacing: .space8) {
                 Text(category.name)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
             }
             .contentShape(Rectangle())

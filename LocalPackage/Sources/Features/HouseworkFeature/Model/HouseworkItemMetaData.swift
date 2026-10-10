@@ -39,7 +39,7 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
     var foregroundStyle: Color {
         switch self {
         case .completed, .notTodo:
-            .onSubSurface
+            .textPrimary
         }
     }
 

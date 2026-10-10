@@ -26,7 +26,7 @@ struct BottomAdBanner: View {
         }
         .padding(.top, .space8)
         // スクロール領域の内容が透けないように背景を敷く
-        .background(.surface)
+        .background(.backgroundScreen)
     }
 
 }

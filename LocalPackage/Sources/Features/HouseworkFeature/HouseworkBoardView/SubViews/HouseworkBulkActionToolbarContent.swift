@@ -46,7 +46,7 @@ private extension HouseworkBulkActionToolbarContent {
 
     /// 取り消しにあたる操作だけ、赤系の色で他のアクションと取り違えないようにする
     func foregroundStyle(_ action: HouseworkQuickAction) -> Color {
-        action.role == .destructive ? .destructive : .onSurface
+        action.role == .destructive ? .fillDestructive : .textPrimary
     }
 
 }

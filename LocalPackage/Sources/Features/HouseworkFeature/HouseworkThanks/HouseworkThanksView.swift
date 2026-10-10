@@ -83,7 +83,7 @@ private extension HouseworkThanksView {
     func commentLengthLabel() -> some View {
         Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
             .font(with: .caption)
-            .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
+            .foregroundStyle(isOverCommentLimit ? .textDestructive : .textSecondary)
             .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
@@ -93,7 +93,7 @@ private extension HouseworkThanksView {
                 await tappedSendThanksButton()
             }
         }
-        .foregroundStyle(.onPrimary1)
+        .foregroundStyle(.textOnAccent)
         .accessibilityLabel(submitButtonLabel)
         .disabled(!canSubmit)
     }

@@ -80,7 +80,7 @@ private struct DebugRoutePlaceholderView: View {
                 .font(with: .headLineM)
             Text(String(describing: route))
                 .font(with: .body)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
             Button(.localized("閉じる")) {
                 dismiss()
             }

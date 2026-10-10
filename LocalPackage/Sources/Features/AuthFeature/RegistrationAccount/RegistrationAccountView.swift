@@ -28,7 +28,7 @@ struct RegistrationAccountView: View {
                         .font(with: .headLineM)
                     Text("まずはあなたのニックネームを教えてください", bundle: #bundle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                 }
                 VStack(spacing: .space8) {
                     Text("ユーザー名", bundle: #bundle)
@@ -67,7 +67,7 @@ private extension RegistrationAccountView {
     func userNameCautionMessage() -> some View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "exclamationmark.circle.fill")
-                .foregroundStyle(.alert)
+                .foregroundStyle(.fillDestructive)
             Text("この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。", bundle: #bundle)
                 .font(with: .caption)
                 .frame(maxWidth: .infinity, alignment: .leading)

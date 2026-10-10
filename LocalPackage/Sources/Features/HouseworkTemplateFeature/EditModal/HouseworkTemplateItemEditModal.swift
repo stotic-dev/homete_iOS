@@ -149,7 +149,7 @@ private extension HouseworkTemplateItemEditModal {
         NavigationBarPrimaryActionButton(systemImage: "paperplane") {
             tappedConfirmButton()
         }
-        .foregroundStyle(.onPrimary1)
+        .foregroundStyle(.textOnAccent)
         .disabled(!input.canConfirm(mode))
     }
 

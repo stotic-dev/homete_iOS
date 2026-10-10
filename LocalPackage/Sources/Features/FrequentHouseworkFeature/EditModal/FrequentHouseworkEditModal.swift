@@ -177,7 +177,7 @@ private extension FrequentHouseworkEditModal {
             if validation == .duplicatedTitle {
                 Text("同じ名前のいつもの家事があります", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.destructive)
+                    .foregroundStyle(.textDestructive)
             }
         }
     }
@@ -218,7 +218,7 @@ private extension FrequentHouseworkEditModal {
                         .font(.caption)
                 }
             }
-            .tint(.onSurface)
+            .tint(.textPrimary)
         }
     }
 

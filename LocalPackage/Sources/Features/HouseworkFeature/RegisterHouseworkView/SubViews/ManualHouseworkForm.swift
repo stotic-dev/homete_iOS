@@ -69,7 +69,7 @@ private extension ManualHouseworkForm {
         VStack(alignment: .leading, spacing: .space8) {
             Text("家事の名前", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ClearableTextField(
                 text: $entry.title,
@@ -83,7 +83,7 @@ private extension ManualHouseworkForm {
         HStack(spacing: .space8) {
             Text("完了ポイント", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             PointWheelPickerField(point: $entry.point)
                 .font(with: .body)
@@ -114,7 +114,7 @@ private extension ManualHouseworkForm {
                     .disabled(true)
                 Text("同じ名前のいつもの家事があります", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
 
         case .limitReached:
@@ -124,11 +124,11 @@ private extension ManualHouseworkForm {
                 HStack(spacing: .space8) {
                     Text("いつもの家事に保存する", bundle: #bundle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer()
                     Text("無料プランは\(FrequentHouseworkLimitPolicy.freeLimit)件まで", bundle: #bundle)
                         .font(with: .caption)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                 }
                 .contentShape(Rectangle())
             }
@@ -140,7 +140,7 @@ private extension ManualHouseworkForm {
         HStack(spacing: .space8) {
             Text("カテゴリ", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             Picker(.localized("カテゴリ"), selection: $entry.categoryId) {
                 ForEach(categories) { category in
@@ -149,7 +149,7 @@ private extension ManualHouseworkForm {
                 }
             }
             .pickerStyle(.menu)
-            .tint(.onSurface)
+            .tint(.textPrimary)
         }
     }
 
@@ -181,11 +181,11 @@ private extension ManualHouseworkForm {
             HStack(spacing: .space8) {
                 Text(item.title)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 Text("\(item.point)pt")
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             .contentShape(Rectangle())
         }

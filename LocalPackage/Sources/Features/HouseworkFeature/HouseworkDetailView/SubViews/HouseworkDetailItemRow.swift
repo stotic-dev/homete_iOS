@@ -18,7 +18,7 @@ struct HouseworkDetailItemRow<Content: View>: View {
         HStack(alignment: .firstTextBaseline, spacing: .space16) {
             Text(title)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer(minLength: .zero)
             content()
                 .multilineTextAlignment(.trailing)
