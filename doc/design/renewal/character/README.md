@@ -1,6 +1,6 @@
 # ほめっと 素材
 
-homeauのイメージキャラクター「ほめっと」の清書素材。方針は [#403](https://github.com/stotic-dev/homete_iOS/issues/403) を参照。
+homeauのイメージキャラクター「ほめっと」の清書素材。方針は [ADR-0041](../../../adr/0041-homette-character-and-design-renewal.md) を参照。
 
 ![キャラクターシート](character_sheet.png)
 
