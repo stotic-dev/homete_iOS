@@ -37,15 +37,18 @@ public extension DesignSystem {
         case body
         case caption
         case boldCaption
+        /// ポイント・件数などの数字。桁がそろうように等幅数字にする
+        case number
 
         var value: SwiftUI.Font {
             switch self {
-            case .headLineL: .title.weight(.heavy)
-            case .headLineM: .title2.weight(.heavy)
+            case .headLineL: .title.bold()
+            case .headLineM: .title2.bold()
             case .headLineS: .headline
             case .body: .body
             case .caption: .caption
             case .boldCaption: .caption.bold()
+            case .number: .title2.bold().monospacedDigit()
             }
         }
 
