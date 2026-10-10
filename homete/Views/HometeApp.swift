@@ -119,7 +119,7 @@ extension AppDelegate: MessagingDelegate {
 
 }
 
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
@@ -129,13 +129,16 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         [.banner, .list, .sound]
     }
 
-    nonisolated func userNotificationCenter(
+    /// 通知のタップを受け取り、開く画面を保持する
+    /// - Note: メインアクターで受け取る。`nonisolated`にすると、処理を終えたことをOSへ返す完了ハンドラが
+    ///         メインスレッド以外から呼ばれ、UIKitが`Call must be made on main thread`で落ちる
+    func userNotificationCenter(
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
         guard let route = NotificationRoute(userInfo: response.notification.request.content.userInfo) else { return }
 
-        await pendingNotificationRouteStore.store(route)
+        pendingNotificationRouteStore.store(route)
     }
 
 }
