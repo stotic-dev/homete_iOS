@@ -30,9 +30,7 @@ public struct NotificationPermissionGuideView: View {
     public var body: some View {
         VStack(spacing: .space32) {
             VStack(spacing: .space16) {
-                Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.iconDecorative)
+                HometteView(.point)
                 Text("通知を受け取りませんか？", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)

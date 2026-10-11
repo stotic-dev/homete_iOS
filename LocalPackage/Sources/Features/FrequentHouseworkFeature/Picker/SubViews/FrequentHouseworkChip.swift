@@ -20,21 +20,24 @@ struct FrequentHouseworkChip: View {
         Button {
             onTap()
         } label: {
-            HStack(spacing: .space4) {
+            HStack(alignment: .firstTextBaseline, spacing: .space4) {
+                // 行に収まらない長さの家事名は、省略せずチップの中で折り返す
                 Text(item.title)
                     .font(with: .body)
-                    .lineLimit(1)
-                Spacer(minLength: .space4)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("\(item.point)pt")
                     .font(with: .caption)
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.caption)
-                }
+                    .fixedSize()
+                // 選択でチップの幅が変わると後ろのチップが別の行へ動くため、未選択でも幅を確保しておく
+                Image(systemName: "checkmark")
+                    .font(.caption)
+                    .opacity(isSelected ? 1 : 0)
+                    .accessibilityHidden(!isSelected)
             }
             .foregroundStyle(isSelected ? .textOnAccent : .textPrimary)
             .padding(.horizontal, .space8)
-            .frame(maxWidth: .infinity, minHeight: 44)
+            .padding(.vertical, .space4)
+            .frame(minWidth: 44, minHeight: 44)
             .background {
                 RoundedRectangle(radius: .radius12)
                     .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
@@ -76,6 +79,18 @@ struct FrequentHouseworkChip: View {
         isUsable: false,
         onTap: {}
     )
+    .padding()
+}
+
+#Preview("FrequentHouseworkChip_長い家事名", traits: .sizeThatFitsLayout) {
+    // 並べる行の幅を超える家事名は、チップの中で折り返す
+    FrequentHouseworkChip(
+        item: .makeForPreview(id: "1", title: "冷蔵庫の中の賞味期限切れの食品を確認して捨てる", point: 15),
+        isSelected: true,
+        isUsable: true,
+        onTap: {}
+    )
+    .frame(width: 240, alignment: .leading)
     .padding()
 }
 #endif
