@@ -64,6 +64,7 @@ private extension PointsTimeSeriesChartView {
                 AxisValueLabel("\(value.as(Int.self) ?? 0)pt")
             }
         }
+        .memberChartForegroundStyle(memberNames: list.map(\.userName))
         .chartLegend(position: .bottom, alignment: .center)
         .chartOverlay { proxy in
             GeometryReader { geometry in

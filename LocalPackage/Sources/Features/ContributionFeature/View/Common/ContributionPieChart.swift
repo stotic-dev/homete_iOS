@@ -38,6 +38,7 @@ struct ContributionPieChart: View {
                 )
                 .foregroundStyle(by: .value(.localized("名前"), item.userName))
             }
+            .memberChartForegroundStyle(memberNames: data.map(\.userName))
             .chartLegend(position: .bottom, alignment: .center)
         }
     }

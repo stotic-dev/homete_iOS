@@ -25,7 +25,7 @@ struct SummaryPointBarChart: View {
                     x: .value(.localized("ユーザー"), item.userName),
                     y: .value(.localized("ポイント"), item.monthlyPoint.value)
                 )
-                .foregroundStyle(item.isMe ? Color.fillAccent : Color.secondary)
+                .foregroundStyle(by: .value(.localized("ユーザー"), item.userName))
                 .annotation(position: .top) {
                     Text("\(item.monthlyPoint.value)pt")
                         .font(with: .caption)
@@ -33,6 +33,9 @@ struct SummaryPointBarChart: View {
                 }
             }
             .chartYAxis(.hidden)
+            .memberChartForegroundStyle(memberNames: summaries.items.map(\.userName))
+            // 名前は横軸に出ているため、凡例は出さない
+            .chartLegend(.hidden)
         }
     }
 
