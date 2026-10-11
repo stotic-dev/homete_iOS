@@ -60,17 +60,29 @@ public extension ChartContent {
 
 }
 
-#Preview("MemberChartPalette", traits: .sizeThatFitsLayout) {
-    let names = ["自分", "はなこ", "じろう", "さぶろう"]
-    Chart(Array(names.enumerated()), id: \.offset) { index, name in
-        BarMark(
-            x: .value("名前", name),
-            y: .value("ポイント", (index + 1) * 10)
-        )
-        .foregroundStyle(by: .value("名前", name))
-        .softCornerStyle()
+/// メンバーの色と角丸を確かめるための見本
+///
+/// PrefireはPreviewの中身をChartsを読み込まないテストへ展開するため、グラフはこのViewの中で組み立てる。
+struct MemberChartPaletteSample: View {
+
+    let names: [String]
+
+    var body: some View {
+        Chart(Array(names.enumerated()), id: \.offset) { index, name in
+            BarMark(
+                x: .value("名前", name),
+                y: .value("ポイント", (index + 1) * 10)
+            )
+            .foregroundStyle(by: .value("名前", name))
+            .softCornerStyle()
+        }
+        .memberChartForegroundStyle(memberNames: names)
     }
-    .memberChartForegroundStyle(memberNames: names)
-    .frame(height: 200)
-    .padding(.space16)
+
+}
+
+#Preview("MemberChartPalette", traits: .sizeThatFitsLayout) {
+    MemberChartPaletteSample(names: ["自分", "はなこ", "じろう", "さぶろう"])
+        .frame(height: 200)
+        .padding(.space16)
 }
