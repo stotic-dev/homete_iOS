@@ -128,13 +128,13 @@ struct AppReviewRequestModifier: ViewModifier {
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.loginContext) var loginContext
-    @State var policy: AppReviewPolicy?
+    @State var requestTask: Task<Void, Never>?
 
     let houseworkItems: StoredAllHouseworkList?
 
     func body(content: Content) -> some View {
         content
-            .onAppear { policy = .init(savedState: appReviewStateClient.load(), now: .now) }
+            .onAppear { /* 初めてなら記録を作り、表示した時点の家事一覧でも判定する */ }
             .onDisappear { requestTask?.cancel() }
             .onChange(of: subscriptionStore.entitlementInfo) { oldValue, newValue in /* トリガーA */ }
             .onChange(of: houseworkItems) { /* トリガーC・D */ }
@@ -144,7 +144,20 @@ struct AppReviewRequestModifier: ViewModifier {
 
 - トリガーが返ってきたら、少し待ってから`requestReview()`を呼ぶ。その後`markRequested`で記録を更新して保存し、`app_review`を送る
 - `receiveThanks`は記録を更新するので、トリガーが返らなかったときも保存する
-- 記録を読み込み終わる前の変化は判定しない（`policy`が`nil`の間は何もしない）
+- 記録は画面に持たず、判定のたびに`appReviewStateClient.load()`で読み直す。デバッグメニューで書き換えた記録を、画面が持つ古い記録で上書きしないため
+
+### 4-1. デバッグメニュー
+
+DEBUGビルドの「設定 → デバッグメニュー → アプリ評価」で、今の記録の確認と、各トリガーで評価ダイアログを出せる状態への書き換えができる。
+
+| ボタン | 書き換える内容 | 続けてやること |
+|---|---|---|
+| 課金で出せる状態にする | 課金を未使用に戻し、前回のリクエストを消す | 無料プランから課金する |
+| ありがとう10回で出せる状態にする | 合計を未使用に戻し、受け取った数を9にする | 同居人からありがとうを1回受け取る |
+| 使い始めて2週間後のありがとうで出せる状態にする | 2週間を未使用に戻し、使い始めた日を2週間前にして、受け取った数を0にする | 同居人からありがとうを1回受け取る |
+| 記録をリセット | 今日から使い始めた状態に戻す | — |
+
+書き換えは`AppReviewPolicy.makeReadyForDebug(_:now:)`（`#if DEBUG`）で行い、閾値の定数を`AppReviewPolicy`の外に出さない。数え済みのありがとうはそのままなので、ボタンを押した後に新しく受け取ったありがとうだけが数えられる。
 
 ### 5. Analytics
 
@@ -167,6 +180,7 @@ struct AppReviewRequestModifier: ViewModifier {
 | 修正AppRoot | `LocalPackage/Sources/AppRoot/AppTabView.swift` | `AppReviewRequestModifier`を付ける |
 | 新規AppRoot | `LocalPackage/Sources/AppRoot/AppReview/AppReviewRequestModifier.swift` | 変化の検知・記録の保存・`requestReview`の呼び出し・Analytics |
 | 新規テスト | `LocalPackage/Tests/HometeDomainTests/AppReview/AppReviewPolicyTest.swift` | 判定ロジックのテスト |
+| 修正デバッグ | `LocalPackage/Sources/Features/SettingFeature/Debug/DebugMenuView.swift` | 記録の確認と、評価ダイアログを出せる状態への書き換え |
 | 修正ドキュメント | `doc/analytics_events.md` | `app_review`イベントを追記 |
 | 新規ADR | `doc/adr/0041-app-review-request-triggers.md` | トリガーと数え方の決定経緯 |
 
