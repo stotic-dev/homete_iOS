@@ -1,6 +1,50 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
+    "%@が%lld件の家事をしてくれました。ありがとうを伝えてみませんか？" : {
+      "comment" : "1つめは家事をした人の名前を並べたもの、2つめは家事の件数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ did %#@chores@ for you. Why not say thanks?"
+          },
+          "substitutions" : {
+            "chores" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg chore"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg chores"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@さん" : {
+      "comment" : "家事をした人の名前に付ける敬称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
     "%@さんのグループに参加しますか？" : {
       "localizations" : {
         "en" : {
@@ -43,6 +87,48 @@
         }
       }
     },
+    "%lld件の家事をしてもらいました。ありがとうを伝えてみませんか？" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your housemates did %lld chore for you. Why not say thanks?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Your housemates did %lld chores for you. Why not say thanks?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AIが作成したコメントです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This comment was written by AI"
+          }
+        }
+      }
+    },
+    "AIが作成したコメントについて" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About AI-written comments"
+          }
+        }
+      }
+    },
     "あとで" : {
       "localizations" : {
         "en" : {
@@ -53,12 +139,52 @@
         }
       }
     },
+    "ありがとうを伝える" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks"
+          }
+        }
+      }
+    },
+    "いまいち" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Great"
+          }
+        }
+      }
+    },
+    "このコメントはいかがでしたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How was this comment?"
+          }
+        }
+      }
+    },
     "これからは、グループのメンバーと家事を分担し、協力していくことができます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Now you can share the chores and work together with your group."
+          }
+        }
+      }
+    },
+    "ご意見ありがとうございます。今後のコメントづくりの参考にします" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks for your feedback. We'll use it to improve future comments."
           }
         }
       }
@@ -103,6 +229,16 @@
         }
       }
     },
+    "よかった" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Good"
+          }
+        }
+      }
+    },
     "グループに参加しています..." : {
       "localizations" : {
         "en" : {
@@ -139,6 +275,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couldn't join the group"
+          }
+        }
+      }
+    },
+    "コメントを準備しています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing a comment"
           }
         }
       }
@@ -183,6 +329,17 @@
         }
       }
     },
+    "・" : {
+      "comment" : "名前を並べるときの区切り（例: Aさん・Bさん）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ", "
+          }
+        }
+      }
+    },
     "今日の家事" : {
       "localizations" : {
         "en" : {
@@ -209,6 +366,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All of today's chores are done"
+          }
+        }
+      }
+    },
+    "今日もおうちのこと、おつかれさまです。ゆっくり休んでくださいね" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks for taking care of things at home today. Take it easy and get some rest."
           }
         }
       }
@@ -289,6 +456,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No chore templates yet"
+          }
+        }
+      }
+    },
+    "家事の記録をもとに、端末内のAIが作成しました。記録が端末の外へ送られることはありません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Written by on-device AI based on your chore history. Your history never leaves your device."
           }
         }
       }

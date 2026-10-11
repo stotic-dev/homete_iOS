@@ -183,6 +183,16 @@
         }
       }
     },
+    "ありがとうを伝えられる家事はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores to say thanks for"
+          }
+        }
+      }
+    },
     "ありがとうを伝える" : {
       "localizations" : {
         "en" : {

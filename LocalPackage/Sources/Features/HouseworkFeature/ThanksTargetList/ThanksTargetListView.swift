@@ -40,7 +40,7 @@ public struct ThanksTargetListView: View {
             now: now,
             calendar: calendar
         ))
-        .navigationTitle("ありがとうを伝える")
+        .navigationTitle(.localized("ありがとうを伝える"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
@@ -66,7 +66,7 @@ private extension ThanksTargetListView {
     @ViewBuilder
     func contentView(summary: ThanksPromptSummary) -> some View {
         if summary.thankableItems.isEmpty {
-            Text("ありがとうを伝えられる家事はありません")
+            Text("ありがとうを伝えられる家事はありません", bundle: #bundle)
                 .font(with: .body)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
