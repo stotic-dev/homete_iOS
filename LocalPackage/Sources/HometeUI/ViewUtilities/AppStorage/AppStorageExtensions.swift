@@ -24,6 +24,23 @@ public enum AppStorageOptionalDataKey: String {
 
 }
 
+// MARK: - Double型の拡張
+
+public extension SwiftUI.AppStorage where Value == Double {
+
+    init(wrappedValue: Double, key: AppStorageDoubleKey) {
+        self.init(wrappedValue: wrappedValue, key.rawValue)
+    }
+
+}
+
+public enum AppStorageDoubleKey: String {
+
+    /// ホームで見た、自分の家事に最後に届いたありがとうの日時（1970年からの秒数）。まだ見ていなければ0
+    case receivedThanksSeenAt
+
+}
+
 // MARK: - カスタムオブジェクト用の拡張
 
 public extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {

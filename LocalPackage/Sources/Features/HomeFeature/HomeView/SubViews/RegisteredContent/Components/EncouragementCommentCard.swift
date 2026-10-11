@@ -292,7 +292,7 @@ private extension EncouragementAICommentPopover {
             kind: .selfPraise,
             source: .generated
         ),
-        receivedThanks: .init(count: 2, senderNames: ["はなこ"]),
+        receivedThanks: .init(count: 2, senderNames: ["はなこ"], latestSentAt: nil),
         thanksPrompt: .init(thankableItems: [], notSentCount: 1, executorNames: ["はなこ"]),
         onTapThanks: {},
         onRate: { _ in }
