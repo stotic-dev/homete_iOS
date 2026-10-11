@@ -11,6 +11,7 @@ import SwiftUI
 /// 家事を完了にするハーフモーダル
 ///
 /// 頑張り度と、担当者（自分以外や複数人も選べる）・ポイントの配分を入力する。
+/// 完了にしたら、中身をほめっとがほめる演出に切り替え、見せ終わってから閉じる。
 public struct HouseworkCompleteSheet: View {
 
     @Environment(\.cohabitantMembers) var members
@@ -47,6 +48,8 @@ struct HouseworkCompleteView: View {
 
     @State var allocation: HouseworkExecutorAllocation
     @State var isExpandedAllocation: Bool
+    /// 完了にできたときの、ほめっとがほめる内容。入ると中身を演出に切り替える
+    @State var praise: HometteCompletionPraise?
 
     init(
         item: HouseworkBoardItem,
@@ -74,24 +77,38 @@ struct HouseworkCompleteView: View {
 
     var body: some View {
         NavigationStack {
+            // 演出に切り替えてもシートの高さを中身に合わせ続けるため、中身だけを差し替える
             ContentFittingSheetScrollView {
-                VStack(alignment: .leading, spacing: .space24) {
-                    // 担当者に配分するポイントが頑張り度で変わるため、頑張り度を先に選ばせる
-                    effortSection()
-                    executorSection()
+                if let praise {
+                    HometteCompletionPraisePlayer(praise: praise) {
+                        dismiss()
+                    }
+                    .padding(.horizontal, .space16)
+                    .padding(.vertical, .space24)
+                } else {
+                    VStack(alignment: .leading, spacing: .space24) {
+                        // 担当者に配分するポイントが頑張り度で変わるため、頑張り度を先に選ばせる
+                        effortSection()
+                        executorSection()
+                    }
+                    .padding(.horizontal, .space16)
+                    .padding(.vertical, .space24)
                 }
-                .padding(.horizontal, .space16)
-                .padding(.vertical, .space24)
             }
             .navigationTitle(.localized("完了にする"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
-                NavigationBarButton(label: .close) {
-                    dismiss()
+                // 完了にした後は、演出を見せ終わると自動で閉じるので、ボタンは出さない
+                if praise == nil {
+                    NavigationBarButton(label: .close) {
+                        dismiss()
+                    }
                 }
             }
             .trailingToolbarItem {
-                completeButton()
+                if praise == nil {
+                    completeButton()
+                }
             }
         }
         .presentationDragIndicator(.visible)
@@ -175,7 +192,10 @@ extension HouseworkCompleteView {
                 isRegistered: item.isRegistered,
                 step: step
             )
-            dismiss()
+            praise = .init(
+                houseworkTitle: item.originalItem.title,
+                point: executors.reduce(0) { $0 + $1.point }
+            )
         } catch {
             commonError = .init(error: error)
         }
