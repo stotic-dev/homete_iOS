@@ -65,6 +65,7 @@ private extension TodayContributionChartSection {
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
+                .softCornerStyle()
                 .foregroundStyle(by: .value(.localized("名前"), item.userName))
                 .annotation(position: .overlay) {
                     if amount > 0 {

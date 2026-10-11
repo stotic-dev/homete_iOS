@@ -85,6 +85,7 @@ private extension PointsTimeSeriesChartView {
                 y: .value(.localized("ポイント"), element.point.value)
             )
             .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
+            .softLineStyle()
             PointMark(
                 x: .value(.localized("日付"), element.date),
                 y: .value(.localized("ポイント"), element.point.value)

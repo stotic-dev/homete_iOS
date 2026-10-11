@@ -99,11 +99,13 @@ private extension CumulativePointsAreaChartView {
             )
             .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
             .opacity(0.4)
+            .softAreaStyle()
             LineMark(
                 x: .value(.localized("日付"), element.date),
                 y: .value(.localized("累計ポイント"), element.point.value)
             )
             .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
+            .softLineStyle()
         }
     }
 

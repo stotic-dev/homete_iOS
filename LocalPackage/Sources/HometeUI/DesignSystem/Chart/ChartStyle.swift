@@ -38,6 +38,28 @@ public extension View {
 
 }
 
+public extension ChartContent {
+
+    /// 折れ線を、角の立たないなめらかな太めの線にする
+    ///
+    /// 0を下回る山ができないよう、点を通りつつ行き過ぎない補間にする。
+    func softLineStyle() -> some ChartContent {
+        interpolationMethod(.monotone)
+            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+    }
+
+    /// 面グラフの縁を、`softLineStyle()`の折れ線と同じ曲線にする
+    func softAreaStyle() -> some ChartContent {
+        interpolationMethod(.monotone)
+    }
+
+    /// 棒や扇形の角を丸める
+    func softCornerStyle() -> some ChartContent {
+        cornerRadius(DesignSystem.Corner.radius12.rawValue)
+    }
+
+}
+
 #Preview("MemberChartPalette", traits: .sizeThatFitsLayout) {
     let names = ["自分", "はなこ", "じろう", "さぶろう"]
     Chart(Array(names.enumerated()), id: \.offset) { index, name in
@@ -46,6 +68,7 @@ public extension View {
             y: .value("ポイント", (index + 1) * 10)
         )
         .foregroundStyle(by: .value("名前", name))
+        .softCornerStyle()
     }
     .memberChartForegroundStyle(memberNames: names)
     .frame(height: 200)
