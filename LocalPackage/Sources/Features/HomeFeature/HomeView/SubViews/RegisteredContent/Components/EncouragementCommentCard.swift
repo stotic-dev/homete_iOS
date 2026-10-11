@@ -135,13 +135,18 @@ private extension EncouragementCommentCard {
             return .localized("\(count)件の家事をしてもらいました。ありがとうを伝えてみませんか？")
         }
 
-        let names = thanksPrompt.executorNames
-            .map { LocalizedStringResource.localized("\($0)さん", comment: "家事をした人の名前に付ける敬称").resolved() }
-            .joined(separator: LocalizedStringResource.localized("・", comment: "名前を並べるときの区切り（例: Aさん・Bさん）").resolved())
+        let names = joinedNames(thanksPrompt.executorNames)
         return .localized(
             "\(names)が\(count)件の家事をしてくれました。ありがとうを伝えてみませんか？",
             comment: "1つめは家事をした人の名前を並べたもの、2つめは家事の件数"
         )
+    }
+
+    /// メンバーの名前に敬称を付けて並べる（例: Aさん・Bさん）
+    func joinedNames(_ names: [String]) -> String {
+        names
+            .map { LocalizedStringResource.localized("\($0)さん", comment: "家事をした人の名前に付ける敬称").resolved() }
+            .joined(separator: LocalizedStringResource.localized("・", comment: "名前を並べるときの区切り（例: Aさん・Bさん）").resolved())
     }
 
 }
