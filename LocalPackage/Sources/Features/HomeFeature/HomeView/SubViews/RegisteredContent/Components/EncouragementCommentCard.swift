@@ -49,13 +49,13 @@ private extension EncouragementCommentCard {
                 .foregroundStyle(.fillAccent)
                 .accessibilityHidden(true)
             // 生成を待つ間は、同じくらいの長さの文で枠だけを出し、カードの高さが変わらないようにする
-            Text(comment?.text ?? "今日もおうちのこと、おつかれさまです。ゆっくり休んでくださいね")
+            commentText
                 .font(with: .body)
                 .foregroundStyle(.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .redacted(reason: comment == nil ? .placeholder : [])
                 // 枠だけを出している間に、仮の文をVoiceOverで読み上げないようにする
-                .accessibilityLabel(comment?.text ?? "コメントを準備しています")
+                .accessibilityLabel(commentAccessibilityLabel)
             if let comment, comment.source == .generated {
                 Spacer(minLength: .zero)
                 aiBadge(comment)
@@ -69,7 +69,7 @@ private extension EncouragementCommentCard {
             isShowAIInfo = true
         } label: {
             HStack(spacing: .space4) {
-                Text("AI")
+                Text(verbatim: "AI")
                     .font(with: .boldCaption)
                 Image(systemName: "info.circle")
                     .font(with: .caption)
@@ -82,7 +82,7 @@ private extension EncouragementCommentCard {
                     .stroke(.fillAccent)
             }
         }
-        .accessibilityLabel("AIが作成したコメントについて")
+        .accessibilityLabel(.localized("AIが作成したコメントについて"))
         .popover(isPresented: $isShowAIInfo) {
             EncouragementAICommentPopover(isRated: ratedComment == comment) { rating in
                 ratedComment = comment
@@ -104,22 +104,46 @@ private extension EncouragementCommentCard {
                     .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Button("ありがとうを伝える") {
+            Button(.localized("ありがとうを伝える")) {
                 onTapThanks()
             }
             .primaryButtonStyle()
         }
     }
 
-    /// 相手がやってくれたことに焦点を当て、自分がまだ送っていないことには触れない
-    func thanksPromptMessage(_ thanksPrompt: ThanksPromptSummary) -> String {
-        let count = thanksPrompt.notSentCount
-        guard !thanksPrompt.executorNames.isEmpty else {
-            return "\(count)件の家事をしてもらいました。ありがとうを伝えてみませんか？"
+    /// コメントの本文。生成を待つ間は、同じくらいの長さの仮の文を出す
+    ///
+    /// 本文はAIが作成した文や固定の文言をそのまま出すため、翻訳しない。
+    var commentText: Text {
+        guard let comment else {
+            return Text("今日もおうちのこと、おつかれさまです。ゆっくり休んでくださいね", bundle: #bundle)
         }
 
-        let names = thanksPrompt.executorNames.map { "\($0)さん" }.joined(separator: "・")
-        return "\(names)が\(count)件の家事をしてくれました。ありがとうを伝えてみませんか？"
+        return Text(verbatim: comment.text)
+    }
+
+    var commentAccessibilityLabel: Text {
+        guard let comment else {
+            return Text("コメントを準備しています", bundle: #bundle)
+        }
+
+        return Text(verbatim: comment.text)
+    }
+
+    /// 相手がやってくれたことに焦点を当て、自分がまだ送っていないことには触れない
+    func thanksPromptMessage(_ thanksPrompt: ThanksPromptSummary) -> LocalizedStringResource {
+        let count = thanksPrompt.notSentCount
+        guard !thanksPrompt.executorNames.isEmpty else {
+            return .localized("\(count)件の家事をしてもらいました。ありがとうを伝えてみませんか？")
+        }
+
+        let names = thanksPrompt.executorNames
+            .map { LocalizedStringResource.localized("\($0)さん", comment: "家事をした人の名前に付ける敬称").resolved() }
+            .joined(separator: LocalizedStringResource.localized("・", comment: "名前を並べるときの区切り（例: Aさん・Bさん）").resolved())
+        return .localized(
+            "\(names)が\(count)件の家事をしてくれました。ありがとうを伝えてみませんか？",
+            comment: "1つめは家事をした人の名前を並べたもの、2つめは家事の件数"
+        )
     }
 
 }
@@ -134,17 +158,17 @@ struct EncouragementAICommentPopover: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             VStack(alignment: .leading, spacing: .space8) {
-                Text("AIが作成したコメントです")
+                Text("AIが作成したコメントです", bundle: #bundle)
                     .font(with: .headLineS)
                     .foregroundStyle(.textPrimary)
-                Text("家事の記録をもとに、端末内のAIが作成しました。記録が端末の外へ送られることはありません。")
+                Text("家事の記録をもとに、端末内のAIが作成しました。記録が端末の外へ送られることはありません。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Divider()
             if isRated {
-                Text("ご意見ありがとうございます。今後のコメントづくりの参考にします")
+                Text("ご意見ありがとうございます。今後のコメントづくりの参考にします", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -162,20 +186,20 @@ private extension EncouragementAICommentPopover {
 
     func ratingContent() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("このコメントはいかがでしたか？")
+            Text("このコメントはいかがでしたか？", bundle: #bundle)
                 .font(with: .caption)
                 .foregroundStyle(.textPrimary)
             HStack(spacing: .space8) {
                 Button {
                     onRate(.good)
                 } label: {
-                    Label("よかった", systemImage: "hand.thumbsup")
+                    Label(.localized("よかった"), systemImage: "hand.thumbsup")
                         .frame(maxWidth: .infinity)
                 }
                 Button {
                     onRate(.bad)
                 } label: {
-                    Label("いまいち", systemImage: "hand.thumbsdown")
+                    Label(.localized("いまいち"), systemImage: "hand.thumbsdown")
                         .frame(maxWidth: .infinity)
                 }
             }
