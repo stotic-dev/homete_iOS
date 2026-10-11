@@ -45,6 +45,7 @@ struct HouseworkBoardView<RowMenu: View>: View {
         GeometryReader { proxy in
             boardBody(bottomSafeAreaInset: proxy.safeAreaInsets.bottom)
         }
+        .background(.backgroundScreen)
         .softTopScrollEdgeEffect()
         .leadingToolbarItem {
             if isSelecting {
