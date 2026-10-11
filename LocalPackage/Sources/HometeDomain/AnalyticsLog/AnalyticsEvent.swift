@@ -147,6 +147,16 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// アプリの評価をリクエストした
+    /// - Note: `requestReview`はダイアログを実際に出したかを返さないため、「出した」ではなく「リクエストした」を表す。
+    ///         行動は1種類だけなので、行動ごとのenumは持たず`trigger`だけで区別する
+    static func appReview(trigger: AppReviewTrigger) -> Self {
+        .init(
+            name: "app_review",
+            parameters: ["trigger": trigger.rawValue]
+        )
+    }
+
     /// 契約中プランの管理に関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`action` / `result` パラメータで区別する。
     ///         意図は`SubscriptionAnalyticsAction`を参照
