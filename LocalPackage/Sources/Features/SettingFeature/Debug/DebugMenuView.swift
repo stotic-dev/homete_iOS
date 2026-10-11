@@ -16,6 +16,7 @@ struct DebugMenuView: View {
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
+    @Environment(\.appDependencies.appReviewStateClient) var appReviewStateClient
 
     @State var isShowOnboarding = false
     @State var isShowPaywall = false
@@ -23,6 +24,7 @@ struct DebugMenuView: View {
     @State var isDailyCompletionReminderLimitDisabled = false
     @State var isShowRevokeResult = false
     @State var revokeResultMessage = ""
+    @State var appReviewState: AppReviewState?
 
     var body: some View {
         List {
@@ -52,6 +54,29 @@ struct DebugMenuView: View {
                 Button("Paywallを表示") {
                     isShowPaywall = true
                 }
+            }
+            Section("アプリ評価") {
+                appReviewStateContent
+                Button("課金で出せる状態にする") {
+                    prepareAppReview(.purchase)
+                }
+                Button("ありがとう10回で出せる状態にする") {
+                    prepareAppReview(.thanksCount)
+                }
+                Button("使い始めて2週間後のありがとうで出せる状態にする") {
+                    prepareAppReview(.thanksAfterTwoWeeks)
+                }
+                Button("記録をリセット", role: .destructive) {
+                    resetAppReviewState()
+                }
+                Text("""
+                状態を整えた後、無料プランから課金するか、同居人からありがとうを受け取ると、評価ダイアログが出ます。\
+                ありがとうは、ボタンを押した後に新しく受け取ったものだけを数えます。
+
+                「記録をリセット」は、今日から使い始めた状態に戻します。
+                """)
+                .font(with: .caption)
+                .foregroundStyle(.onSurfaceVariant)
             }
             Section("ログイン情報の失効") {
                 Button("失効させる（アプリはこのまま）") {
@@ -89,6 +114,9 @@ struct DebugMenuView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistration) {
             router.resolve(.debugCohabitantRegistration)
         }
+        .onAppear {
+            appReviewState = appReviewStateClient.load()
+        }
         .task {
             isDailyCompletionReminderLimitDisabled = await dailyCompletionReminderUseCase.loadIsDailyLimitDisabled()
         }
@@ -107,6 +135,56 @@ private extension DebugMenuView {
                 await dailyCompletionReminderUseCase.updateIsDailyLimitDisabled(isDisabled)
             }
         }
+    }
+
+}
+
+// MARK: - アプリ評価
+
+private extension DebugMenuView {
+
+    @ViewBuilder
+    var appReviewStateContent: some View {
+        if let appReviewState {
+            LabeledContent("受け取ったありがとう", value: "\(appReviewState.receivedThanksCount)回")
+            LabeledContent("使い始めた日") {
+                Text(appReviewState.startedAt, format: .dateTime.year().month().day())
+            }
+            LabeledContent("使ったきっかけ", value: requestedTriggersText(appReviewState.requestedTriggers))
+            LabeledContent("最後のリクエスト") {
+                if let lastRequestedAt = appReviewState.lastRequestedAt {
+                    Text(lastRequestedAt, format: .dateTime)
+                } else {
+                    Text("なし")
+                }
+            }
+        } else {
+            Text("まだ記録がありません。ホーム画面を開くと記録が始まります。")
+        }
+    }
+
+    func requestedTriggersText(_ triggers: Set<AppReviewTrigger>) -> String {
+        let labels: [String] = [
+            triggers.contains(.purchase) ? "課金" : nil,
+            triggers.contains(.thanksCount) ? "ありがとう10回" : nil,
+            triggers.contains(.thanksAfterTwoWeeks) ? "2週間後のありがとう" : nil,
+        ].compactMap(\.self)
+        return labels.isEmpty ? "なし" : labels.joined(separator: "、")
+    }
+
+    func prepareAppReview(_ trigger: AppReviewTrigger) {
+        var policy = AppReviewPolicy(savedState: appReviewStateClient.load(), now: .now)
+        policy.makeReadyForDebug(trigger, now: .now)
+        saveAppReviewState(policy.state)
+    }
+
+    func resetAppReviewState() {
+        saveAppReviewState(AppReviewPolicy(savedState: nil, now: .now).state)
+    }
+
+    func saveAppReviewState(_ state: AppReviewState) {
+        appReviewStateClient.save(state)
+        appReviewState = state
     }
 
 }

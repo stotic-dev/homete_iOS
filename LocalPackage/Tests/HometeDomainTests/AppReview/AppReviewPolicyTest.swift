@@ -14,6 +14,7 @@ enum AppReviewPolicyTest {
     struct PurchaseTriggerCase {}
     struct ReceiveThanksCase {}
     struct MarkRequestedCase {}
+    struct MakeReadyForDebugCase {}
 
 }
 
@@ -571,6 +572,94 @@ extension AppReviewPolicyTest.MarkRequestedCase {
 
 }
 
+// MARK: - デバッグメニュー用の記録
+
+#if DEBUG
+
+extension AppReviewPolicyTest.MakeReadyForDebugCase {
+
+    /// 3つのきっかけをすべて使い、ありがとうを5回数えた記録
+    static var usedUpState: AppReviewState {
+        AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 20),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "1", senderId: "partner")],
+            receivedThanksCount: 5,
+            requestedTriggers: [.purchase, .thanksCount, .thanksAfterTwoWeeks],
+            lastRequestedAt: AppReviewPolicyTest.date(afterDays: 20)
+        )
+    }
+
+    @Test("課金を指定すると、課金だけを未使用に戻し、前回のリクエストを消す")
+    func makeReadyForDebug_purchase_resetsPurchaseOnly() {
+        // Arrange
+
+        var sut = AppReviewPolicy(savedState: Self.usedUpState, now: AppReviewPolicyTest.baseDate)
+        let expected = AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 20),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "1", senderId: "partner")],
+            receivedThanksCount: 5,
+            requestedTriggers: [.thanksCount, .thanksAfterTwoWeeks],
+            lastRequestedAt: nil
+        )
+
+        // Act
+
+        sut.makeReadyForDebug(.purchase, now: AppReviewPolicyTest.date(afterDays: 21))
+
+        // Assert
+
+        #expect(sut.state == expected)
+    }
+
+    @Test("合計を指定すると、あと1回で合計に達する数にし、合計だけを未使用に戻す")
+    func makeReadyForDebug_thanksCount_setsCountJustBelowThreshold() {
+        // Arrange
+
+        var sut = AppReviewPolicy(savedState: Self.usedUpState, now: AppReviewPolicyTest.baseDate)
+        let expected = AppReviewPolicyTest.state(
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 20),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "1", senderId: "partner")],
+            receivedThanksCount: 9,
+            requestedTriggers: [.purchase, .thanksAfterTwoWeeks],
+            lastRequestedAt: nil
+        )
+
+        // Act
+
+        sut.makeReadyForDebug(.thanksCount, now: AppReviewPolicyTest.date(afterDays: 21))
+
+        // Assert
+
+        #expect(sut.state == expected)
+    }
+
+    @Test("2週間を指定すると、2週間前から使い始めた扱いにし、受け取った数を0に戻す")
+    func makeReadyForDebug_thanksAfterTwoWeeks_movesStartBackTwoWeeks() {
+        // Arrange
+
+        var sut = AppReviewPolicy(savedState: Self.usedUpState, now: AppReviewPolicyTest.baseDate)
+        let expected = AppReviewPolicyTest.state(
+            startedAt: AppReviewPolicyTest.date(afterDays: 7),
+            thanksCountedUntil: AppReviewPolicyTest.date(afterDays: 20),
+            thanksCountedKeysAtMarker: [.init(houseworkId: "1", senderId: "partner")],
+            receivedThanksCount: 0,
+            requestedTriggers: [.purchase, .thanksCount],
+            lastRequestedAt: nil
+        )
+
+        // Act
+
+        sut.makeReadyForDebug(.thanksAfterTwoWeeks, now: AppReviewPolicyTest.date(afterDays: 21))
+
+        // Assert
+
+        #expect(sut.state == expected)
+    }
+
+}
+
+#endif
+
 // MARK: - Helper
 
 private extension AppReviewPolicyTest {
@@ -583,6 +672,7 @@ private extension AppReviewPolicyTest {
     }
 
     static func state(
+        startedAt: Date = baseDate,
         thanksCountedUntil: Date = baseDate,
         thanksCountedKeysAtMarker: Set<AppReviewThanksKey> = [],
         receivedThanksCount: Int = 0,
@@ -590,7 +680,7 @@ private extension AppReviewPolicyTest {
         lastRequestedAt: Date? = nil
     ) -> AppReviewState {
         .init(
-            startedAt: baseDate,
+            startedAt: startedAt,
             thanksCountedUntil: thanksCountedUntil,
             thanksCountedKeysAtMarker: thanksCountedKeysAtMarker,
             receivedThanksCount: receivedThanksCount,

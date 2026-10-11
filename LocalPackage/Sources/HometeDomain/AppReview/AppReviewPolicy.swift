@@ -90,6 +90,40 @@ public struct AppReviewPolicy: Equatable, Sendable {
 
 }
 
+#if DEBUG
+
+public extension AppReviewPolicy {
+
+    /// 次の機会に、指定したきっかけでリクエストされる記録にする（デバッグメニュー用）
+    ///
+    /// どのきっかけでも、指定したきっかけを未使用に戻し、前回のリクエストからの期間を空け終えた扱いにする。
+    /// - 課金: 無料プランから課金すると満たす
+    /// - 合計: ありがとうをあと1回受け取ると満たす
+    /// - 2週間: 使い始めてから2週間経った扱いにし、次にありがとうを受け取ると満たす。
+    ///   合計の条件が先に満たされないよう、受け取った数は0に戻す
+    /// - Note: 数え済みのありがとうはそのまま。同じありがとうを数え直さないよう、新しく受け取る必要がある
+    mutating func makeReadyForDebug(_ trigger: AppReviewTrigger, now: Date) {
+        let receivedThanksCount = switch trigger {
+        case .purchase: state.receivedThanksCount
+        case .thanksCount: Self.thanksCountThreshold - 1
+        case .thanksAfterTwoWeeks: Int.zero
+        }
+        state = .init(
+            startedAt: trigger == .thanksAfterTwoWeeks
+                ? now.addingTimeInterval(-Self.usagePeriodForThanks)
+                : state.startedAt,
+            thanksCountedUntil: state.thanksCountedUntil,
+            thanksCountedKeysAtMarker: state.thanksCountedKeysAtMarker,
+            receivedThanksCount: receivedThanksCount,
+            requestedTriggers: state.requestedTriggers.subtracting([trigger]),
+            lastRequestedAt: nil
+        )
+    }
+
+}
+
+#endif
+
 private extension AppReviewPolicy {
 
     /// 自分が担当した家事に、自分以外の人から届いたありがとう
