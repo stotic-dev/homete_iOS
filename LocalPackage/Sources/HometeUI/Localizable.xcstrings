@@ -436,12 +436,12 @@
         }
       }
     },
-    "パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。" : {
+    "パートナーが家事を終えたときや、メッセージ付きの「ありがとう」が届いたときにお知らせします。\n家事が終わった日の夜には、ふりかえりの通知も届きます。時刻は設定で変えられます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We'll let you know when your partner finishes a chore.\nNoticing each other's chores makes it easier to say “thanks.”"
+            "value" : "We'll let you know when your partner finishes a chore or sends “thanks” with a message.\nOn days when chores get done, you'll also get a Daily Recap in the evening. You can change the time in Settings."
           }
         }
       }
