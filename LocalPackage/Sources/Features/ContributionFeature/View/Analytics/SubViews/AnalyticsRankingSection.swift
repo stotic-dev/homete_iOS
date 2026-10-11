@@ -25,7 +25,6 @@ struct AnalyticsRankingSection: View {
             Text("メンバー別ランキング", bundle: #bundle)
                 .font(with: .headLineS)
                 .foregroundStyle(.textPrimary)
-                .padding(.horizontal, .space16)
 
             Picker(.localized("ランキング種別"), selection: $selectedCriterion) {
                 ForEach(ContributionAnalyticsRankingCriterion.allCases) { criterion in
@@ -33,7 +32,6 @@ struct AnalyticsRankingSection: View {
                 }
             }
             .pickerStyle(.segmented)
-            .padding(.horizontal, .space16)
 
             #if os(iOS)
             TabView(selection: $selectedCriterion) {
@@ -64,11 +62,12 @@ private extension AnalyticsRankingSection {
                     criterion: criterion,
                     averageDenominator: averageDenominator
                 )
-                .padding(.horizontal, .space16)
                 .padding(.vertical, .space16)
                 .frame(height: Self.rowHeight)
-                Divider()
-                    .padding(.leading, .space16)
+                // カードの下端と線が重ならないよう、区切り線は行の間にだけ引く
+                if item.id != items.last?.id {
+                    Divider()
+                }
             }
         }
     }

@@ -29,7 +29,6 @@ struct ContributionPieChart: View {
                     """)
                 )
             }
-            .padding(.horizontal, .space16)
             Chart(data) { item in
                 SectorMark(
                     angle: .value(.localized("件数"), item.achievedCount),
