@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -43,12 +44,12 @@ private extension HouseworkRowActionButtons {
         Button(action: onTapComplete) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 22))
-                .foregroundStyle(.accent)
+                .foregroundStyle(.fillAccent)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel("完了にする")
+        .accessibilityLabel(.localized("完了にする"))
     }
 
     func moreButton() -> some View {
@@ -57,12 +58,12 @@ private extension HouseworkRowActionButtons {
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 22))
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel("その他の操作")
+        .accessibilityLabel(.localized("その他の操作"))
     }
 
 }

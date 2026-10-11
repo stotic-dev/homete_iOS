@@ -18,12 +18,12 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
     /// やらないことにした
     case notTodo
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
         case .completed:
-            "完了"
+            .localized("完了")
         case .notTodo:
-            "やらない"
+            .localized("やらない")
         }
     }
 
@@ -39,7 +39,7 @@ enum HouseworkItemMetaData: Equatable, CaseIterable {
     var foregroundStyle: Color {
         switch self {
         case .completed, .notTodo:
-            .onSubSurface
+            .textPrimary
         }
     }
 

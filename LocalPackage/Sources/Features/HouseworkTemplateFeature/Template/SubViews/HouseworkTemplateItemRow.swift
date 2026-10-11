@@ -13,18 +13,18 @@ struct HouseworkTemplateItemRow: View {
 
     let item: HouseworkTemplateItem
     /// 「毎月25日」のような繰り返し方の表示。曜日ごとのリストのように、見出しで分かる場合は`nil`
-    var recurrenceLabel: String?
+    var recurrenceLabel: LocalizedStringResource?
 
     var body: some View {
         HStack(spacing: .space8) {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(item.title)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 if let recurrenceLabel {
                     Text(recurrenceLabel)
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -34,8 +34,8 @@ struct HouseworkTemplateItemRow: View {
         .padding(.vertical, .space8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background {
-            RoundedRectangle(radius: .radius8)
-                .fill(.surface)
+            RoundedRectangle(radius: .radius12)
+                .fill(.backgroundScreen)
         }
     }
 

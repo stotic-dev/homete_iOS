@@ -13,12 +13,12 @@ import SwiftUI
 public struct ClearableTextField: View {
 
     @Binding public var text: String
-    public let placeholder: String
+    public let placeholder: LocalizedStringResource
     public let focus: FocusState<Bool>.Binding
 
     public init(
         text: Binding<String>,
-        placeholder: String,
+        placeholder: LocalizedStringResource,
         focus: FocusState<Bool>.Binding
     ) {
         _text = text
@@ -32,21 +32,21 @@ public struct ClearableTextField: View {
                 "",
                 text: $text,
                 prompt: Text(placeholder)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             )
             .focused(focus)
-            .foregroundStyle(.onSurface)
+            .foregroundStyle(.textPrimary)
             .padding()
             .font(with: .body)
             .background {
-                RoundedRectangle(radius: .radius8)
-                    .foregroundStyle(.primary3)
+                RoundedRectangle(radius: .radius12)
+                    .foregroundStyle(.fillAccentSubtle)
             }
             Button {
                 text = ""
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .padding(.space8)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)

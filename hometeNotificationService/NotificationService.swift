@@ -8,10 +8,12 @@ import HometeDomain
 import HometeLocalNotification
 import UserNotifications
 
-/// 同居人からの家事の完了通知を受け取ったときに、今日のふりかえり通知を予約する
+/// 同居人からの通知を受け取ったときに、文面をこの端末の言語で組み立て直し、
+/// 家事の完了通知なら今日のふりかえり通知を予約する
 ///
 /// アプリが起動していなくても、`mutable-content`付きの通知を受け取るとOSがこの拡張を起動する。
-/// 受け取った通知の内容は書き換えず、そのまま表示する。
+/// 届いた文面は送った側の端末の言語で書かれているため、dataに載った通知の種類から組み立て直す。
+/// 種類が読み取れない通知（古いアプリから届いたものなど）は、届いた文面のまま表示する。
 /// - Note: `didReceive`とOSからの`serviceExtensionTimeWillExpire`は別スレッドから呼ばれうるため、
 ///         保持する状態はロックで守る
 final class NotificationService: UNNotificationServiceExtension, @unchecked Sendable {
@@ -24,7 +26,7 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
         _ request: UNNotificationRequest,
         withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
     ) {
-        let content = request.content
+        let content = Self.localized(request.content)
         guard let data = HouseworkCompletedNotificationData(userInfo: content.userInfo) else {
             contentHandler(content)
             return
@@ -55,6 +57,16 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
 }
 
 private extension NotificationService {
+
+    /// 届いた文面を、この端末の言語で組み立て直す
+    static func localized(_ content: UNNotificationContent) -> UNNotificationContent {
+        guard let pushContent = PushNotificationContent(userInfo: content.userInfo),
+              let mutableContent = content.mutableCopy() as? UNMutableNotificationContent else { return content }
+
+        mutableContent.title = pushContent.title()
+        mutableContent.body = pushContent.body()
+        return mutableContent
+    }
 
     /// 受け取った通知をそのまま表示に回す。2回目以降の呼び出しは何もしない
     func deliverOriginalContent() {

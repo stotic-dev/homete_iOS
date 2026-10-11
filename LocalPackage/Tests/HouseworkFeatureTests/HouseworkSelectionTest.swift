@@ -29,7 +29,6 @@ extension HouseworkSelectionTest.SelectedItemsCase {
         ]
         let selection = HouseworkSelection(
             items: items,
-            state: .incomplete,
             selectedIDs: ["1", "3"],
             ownUserId: "ownUserId"
         )
@@ -50,7 +49,6 @@ extension HouseworkSelectionTest.SelectedItemsCase {
         let item = HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete)
         let selection = HouseworkSelection(
             items: [item],
-            state: .incomplete,
             selectedIDs: ["1", "removed"],
             ownUserId: "ownUserId"
         )
@@ -69,22 +67,14 @@ extension HouseworkSelectionTest.SelectedItemsCase {
 extension HouseworkSelectionTest.AvailableActionsCase {
 
     @Test(
-        "何も選択されていない場合は、タブのステータスから決まる既定のアクションを返す",
-        arguments: [
-            (HouseworkState.incomplete, [HouseworkQuickAction.complete, .remove]),
-            (.completed, [.sendThanks, .returnToIncomplete]),
-            (.notTodo, []),
-        ]
+        "何も選択されていない場合は、アクションを返さない",
+        arguments: [HouseworkState.incomplete, .completed, .notTodo]
     )
-    func availableActions_emptySelection_returnsDefaultActionsForState(
-        state: HouseworkState,
-        expected: [HouseworkQuickAction]
-    ) {
+    func availableActions_emptySelection_returnsEmpty(state: HouseworkState) {
         // Arrange
 
         let selection = HouseworkSelection(
             items: [.makeForPreview(id: "1", state: state)],
-            state: state,
             selectedIDs: [],
             ownUserId: "ownUserId"
         )
@@ -95,7 +85,7 @@ extension HouseworkSelectionTest.AvailableActionsCase {
 
         // Assert
 
-        #expect(actual == expected)
+        #expect(actual.isEmpty)
     }
 
     @Test("完了済みで自分が実施した家事だけを選んだ場合は、もう一度やったを除いた未完了に戻すのみが行える")
@@ -107,7 +97,6 @@ extension HouseworkSelectionTest.AvailableActionsCase {
                 .makeForPreview(id: "1", state: .completed, executorId: "ownUserId"),
                 .makeForPreview(id: "2", state: .completed, executorId: "ownUserId"),
             ],
-            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -130,7 +119,6 @@ extension HouseworkSelectionTest.AvailableActionsCase {
                 .makeForPreview(id: "1", state: .completed, executorId: "ownUserId"),
                 .makeForPreview(id: "2", state: .completed, executorId: "otherUserId"),
             ],
-            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -153,7 +141,6 @@ extension HouseworkSelectionTest.AvailableActionsCase {
                 .makeForPreview(id: "1", state: .incomplete),
                 .makeForPreview(id: "2", state: .incomplete),
             ],
-            state: .incomplete,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -178,7 +165,6 @@ extension HouseworkSelectionTest.IsSelectableCase {
         let item = HouseworkBoardItem.makeForPreview(id: "1", state: .completed, executorId: "ownUserId")
         let selection = HouseworkSelection(
             items: [item],
-            state: .completed,
             selectedIDs: [],
             ownUserId: "ownUserId"
         )
@@ -202,7 +188,6 @@ extension HouseworkSelectionTest.IsSelectableCase {
                 .makeForPreview(id: "1", state: .completed, executorId: "otherUserId"),
                 item,
             ],
-            state: .completed,
             selectedIDs: ["1"],
             ownUserId: "ownUserId"
         )
@@ -226,7 +211,6 @@ extension HouseworkSelectionTest.IsSelectableCase {
                 .makeForPreview(id: "1", state: .completed, executorId: "otherUserId"),
                 item,
             ],
-            state: .completed,
             selectedIDs: ["1"],
             ownUserId: "ownUserId"
         )
@@ -250,7 +234,6 @@ extension HouseworkSelectionTest.IsSelectableCase {
                 .makeForPreview(id: "1", state: .incomplete),
                 item,
             ],
-            state: .incomplete,
             selectedIDs: ["1"],
             ownUserId: "ownUserId"
         )
@@ -278,7 +261,6 @@ extension HouseworkSelectionTest.TargetsCase {
         ]
         let selection = HouseworkSelection(
             items: items,
-            state: .incomplete,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )
@@ -306,7 +288,6 @@ extension HouseworkSelectionTest.TargetsCase {
                 thanksTargetItem,
                 .makeForPreview(id: "2", state: .completed, executorId: "ownUserId"),
             ],
-            state: .completed,
             selectedIDs: ["1", "2"],
             ownUserId: "ownUserId"
         )

@@ -39,45 +39,45 @@ private extension PasteboardInvitationBanner {
         VStack(alignment: .leading, spacing: .space8) {
             HStack(alignment: .top, spacing: .space8) {
                 Image(systemName: "link")
-                    .foregroundStyle(.decorativeIcon)
+                    .foregroundStyle(.iconDecorative)
                 VStack(alignment: .leading, spacing: .space4) {
-                    Text("招待リンクからアプリを開きましたか？")
+                    Text("招待リンクからアプリを開きましたか？", bundle: #bundle)
                         .font(with: .headLineS)
-                        .foregroundStyle(.onSurface)
-                    Text("招待の内容を確認して、そのままグループに参加できます。")
+                        .foregroundStyle(.textPrimary)
+                    Text("招待の内容を確認して、そのままグループに参加できます。", bundle: #bundle)
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             Button {
                 onTapCheck()
             } label: {
-                Text("招待リンクを確認する")
+                Text("招待リンクを確認する", bundle: #bundle)
                     .frame(maxWidth: .infinity)
             }
             .subPrimaryButtonStyle()
         }
         .padding(.space16)
         .background {
-            RoundedRectangle(radius: .radius16)
-                .fill(.subSurface)
+            RoundedRectangle(radius: .radius20)
+                .fill(.backgroundCard)
         }
     }
 
     func notFoundContent() -> some View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "info.circle")
-                .foregroundStyle(.onSubSurface)
-            Text("招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。")
+                .foregroundStyle(.textPrimary)
+            Text("招待リンクが見つかりませんでした。招待した方から送ってもらったリンクをもう一度開くと、グループに参加できます。", bundle: #bundle)
                 .font(with: .caption)
-                .foregroundStyle(.onSubSurface)
+                .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.space16)
         .background {
-            RoundedRectangle(radius: .radius16)
-                .fill(.subSurface)
+            RoundedRectangle(radius: .radius20)
+                .fill(.backgroundCard)
         }
     }
 

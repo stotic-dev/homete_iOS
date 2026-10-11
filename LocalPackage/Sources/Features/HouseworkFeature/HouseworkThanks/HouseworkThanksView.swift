@@ -25,12 +25,20 @@ public struct HouseworkThanksView: View {
     let item: HouseworkBoardItem
     /// すでに送ったありがとう。あればコメントの編集として開く
     let sentThanks: HouseworkThanks?
+    /// どの画面から開いたか。Analyticsで、ありがとうの経由を区別するために使う
+    let step: HouseworkAnalyticsStep
     /// 初めてありがとうを伝えられた。閉じた後の画面で演出を出すために、開いた側へ伝える
     let onSentFirstThanks: () -> Void
 
-    init(item: HouseworkBoardItem, sentThanks: HouseworkThanks? = nil, onSentFirstThanks: @escaping () -> Void) {
+    init(
+        item: HouseworkBoardItem,
+        sentThanks: HouseworkThanks? = nil,
+        step: HouseworkAnalyticsStep = .thanks,
+        onSentFirstThanks: @escaping () -> Void
+    ) {
         self.item = item
         self.sentThanks = sentThanks
+        self.step = step
         self.onSentFirstThanks = onSentFirstThanks
         _inputMessage = State(initialValue: sentThanks?.comment ?? "")
     }
@@ -40,8 +48,8 @@ public struct HouseworkThanksView: View {
             ScrollView {
                 VStack(spacing: .space8) {
                     HouseworkCommentInputContent(
-                        title: "メッセージ",
-                        placeholder: "感謝を伝えましょう！",
+                        title: .localized("メッセージ"),
+                        placeholder: .localized("ひとこと添えてみませんか（例：助かったよ）"),
                         text: $inputMessage,
                         focus: $isShowingKeyboard
                     )
@@ -83,7 +91,7 @@ private extension HouseworkThanksView {
     func commentLengthLabel() -> some View {
         Text("\(trimmedMessage.count)/\(HouseworkThanks.commentMaxLength)")
             .font(with: .caption)
-            .foregroundStyle(isOverCommentLimit ? .alert : .onSurfaceVariant)
+            .foregroundStyle(isOverCommentLimit ? .textDestructive : .textSecondary)
             .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
@@ -93,7 +101,7 @@ private extension HouseworkThanksView {
                 await tappedSendThanksButton()
             }
         }
-        .foregroundStyle(.onPrimary1)
+        .foregroundStyle(.textOnAccent)
         .accessibilityLabel(submitButtonLabel)
         .disabled(!canSubmit)
     }
@@ -111,23 +119,23 @@ private extension HouseworkThanksView {
         sentThanks?.comment != nil
     }
 
-    var navigationTitle: String {
+    var navigationTitle: LocalizedStringResource {
         if isEditingMessage {
-            "メッセージを編集"
+            .localized("メッセージを編集")
         } else if sentThanks != nil {
-            "メッセージを添える"
+            .localized("メッセージを添える")
         } else {
-            "ありがとうを伝える"
+            .localized("ありがとうを伝える")
         }
     }
 
-    var submitButtonLabel: String {
+    var submitButtonLabel: LocalizedStringResource {
         if isEditingMessage {
-            "メッセージを更新する"
+            .localized("メッセージを更新する")
         } else if sentThanks != nil {
-            "メッセージを送る"
+            .localized("メッセージを送る")
         } else {
-            "ありがとうを伝える"
+            .localized("ありがとうを伝える")
         }
     }
 
@@ -158,7 +166,7 @@ private extension HouseworkThanksView {
                 comment: trimmedMessage,
                 now: now,
                 cohabitantId: cohabitantId,
-                step: .thanks
+                step: step
             )
             if isFirstThanks {
                 onSentFirstThanks()

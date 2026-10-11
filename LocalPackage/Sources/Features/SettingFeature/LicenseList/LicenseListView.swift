@@ -18,7 +18,7 @@ struct LicenseListView: View {
             }
         }
         .listStyle(.plain)
-        .navigationTitle("ライセンス")
+        .navigationTitle(.localized("ライセンス"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .trackScreenView(.licenseList)

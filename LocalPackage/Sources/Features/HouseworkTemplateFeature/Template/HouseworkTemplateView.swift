@@ -58,7 +58,8 @@ struct HouseworkTemplateView: View {
                     addItemButton()
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         .padding(.trailing, .space24)
-                        .padding(.bottom, .space8)
+                        // 直下に広告バナーが来るため、誤タップを防ぐ余白を取る
+                        .padding(.bottom, .space24)
                 }
                 #if os(iOS)
                 .toolbar {
@@ -77,7 +78,7 @@ struct HouseworkTemplateView: View {
                 }
             }
         }
-        .navigationTitle("家事テンプレート")
+        .navigationTitle(.localized("家事テンプレート"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .leadingToolbarItem {
@@ -118,27 +119,30 @@ struct HouseworkTemplateView: View {
         .onChange(of: initialDraft) {
             onChangeInitialDraft()
         }
-        .alert("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？", isPresented: $presentingConflictDraftAlert) {
-            Button("破棄", role: .destructive) {
+        .alert(
+            .localized("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？"),
+            isPresented: $presentingConflictDraftAlert
+        ) {
+            Button(.localized("破棄"), role: .destructive) {
                 tappedDiscardChangesAlertButton()
             }
-            Button("キャンセル", role: .cancel) {}
+            Button(.localized("キャンセル"), role: .cancel) {}
         }
-        .alert("変更内容はまだ確定していません", isPresented: $presentingDismissAlert) {
-            Button("閉じる", role: .destructive) {
+        .alert(.localized("変更内容はまだ確定していません"), isPresented: $presentingDismissAlert) {
+            Button(.localized("閉じる"), role: .destructive) {
                 tappedDismissAlertButton()
             }
-            Button("キャンセル", role: .cancel) {}
+            Button(.localized("キャンセル"), role: .cancel) {}
         } message: {
-            Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。")
+            Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。", bundle: #bundle)
         }
-        .alert("編集前の状態に戻しますか？", isPresented: $presentingResetAlert) {
-            Button("戻す", role: .destructive) {
+        .alert(.localized("編集前の状態に戻しますか？"), isPresented: $presentingResetAlert) {
+            Button(.localized("戻す"), role: .destructive) {
                 tappedResetAlertButton()
             }
-            Button("キャンセル", role: .cancel) {}
+            Button(.localized("キャンセル"), role: .cancel) {}
         } message: {
-            Text("現在の編集内容は破棄されます。")
+            Text("現在の編集内容は破棄されます。", bundle: #bundle)
         }
         .animation(.default, value: collapsedDays)
         .commonError(content: $commonErrorContent)
@@ -166,7 +170,8 @@ private extension HouseworkTemplateView {
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space32)
-            .padding(.bottom, .space64)
+            // 最後の項目が追加ボタンに隠れないよう、ボタンの高さと下の余白ぶん空ける
+            .padding(.bottom, .space64 + .space24)
         }
     }
 
@@ -186,8 +191,8 @@ private extension HouseworkTemplateView {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.space8)
                 .background {
-                    RoundedRectangle(radius: .radius8)
-                        .fill(.subSurface)
+                    RoundedRectangle(radius: .radius12)
+                        .fill(.backgroundCard)
                 }
                 .dropDestination(for: String.self) { ids, _ in
                     guard let droppedId = ids.first else { return false }
@@ -210,16 +215,16 @@ private extension HouseworkTemplateView {
             HStack(spacing: .space8) {
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .rotationEffect(.degrees(isCollapsed ? 0 : 90))
                 Text(day.fullLabel)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                 if isCollapsed,
                    itemCount > 0 {
                     Text("(\(itemCount))")
                         .font(with: .caption)
-                        .foregroundStyle(.onSubSurface)
+                        .foregroundStyle(.textPrimary)
                 }
                 Spacer()
             }
@@ -239,9 +244,9 @@ private extension HouseworkTemplateView {
     }
 
     func emptyDayRow() -> some View {
-        Text("家事なし")
+        Text("家事なし", bundle: #bundle)
             .font(with: .caption)
-            .foregroundStyle(.onSubSurface)
+            .foregroundStyle(.textPrimary)
             .padding(.vertical, .space8)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -254,10 +259,10 @@ private extension HouseworkTemplateView {
             }
             .draggable(item.id.id)
             .contextMenu {
-                Button("編集") {
+                Button(.localized("編集")) {
                     presentingEditModal = item
                 }
-                Button("削除", role: .destructive) {
+                Button(.localized("削除"), role: .destructive) {
                     tappedDeleteItemButton(itemId: item.id, from: day)
                 }
             }
@@ -265,9 +270,9 @@ private extension HouseworkTemplateView {
 
     func monthlySection(_ monthlyItems: [HouseworkTemplateMonthlyItem]) -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("毎月")
+            Text("毎月", bundle: #bundle)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSubSurface)
+                .foregroundStyle(.textPrimary)
             VStack(spacing: .space8) {
                 if !monthlyItems.isEmpty {
                     ForEach(monthlyItems) { monthlyItem in
@@ -280,8 +285,8 @@ private extension HouseworkTemplateView {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space8)
             .background {
-                RoundedRectangle(radius: .radius8)
-                    .fill(.subSurface)
+                RoundedRectangle(radius: .radius12)
+                    .fill(.backgroundCard)
             }
         }
     }
@@ -294,10 +299,10 @@ private extension HouseworkTemplateView {
                 presentingDetailItem = monthlyItem.item
             }
             .contextMenu {
-                Button("編集") {
+                Button(.localized("編集")) {
                     presentingEditModal = monthlyItem.item
                 }
-                Button("削除", role: .destructive) {
+                Button(.localized("削除"), role: .destructive) {
                     tappedDeleteItemButton(itemId: monthlyItem.id)
                 }
             }
@@ -325,7 +330,7 @@ private extension HouseworkTemplateView {
         } label: {
             Image(systemName: "xmark")
         }
-        .foregroundStyle(.onSurface)
+        .foregroundStyle(.textPrimary)
     }
 
     #if os(iOS)
@@ -342,7 +347,7 @@ private extension HouseworkTemplateView {
                 } label: {
                     Image(systemName: "arrow.uturn.backward")
                 }
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             }
         }
         if #available(iOS 26.0, *) {

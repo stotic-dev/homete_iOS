@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -28,7 +29,7 @@ public struct RegisterSourceTabs<FrequentContent: View, ManualContent: View>: Vi
 
     public var body: some View {
         VStack(spacing: .space8) {
-            Picker("入力方法", selection: $selectedTab) {
+            Picker(.localized("入力方法"), selection: $selectedTab) {
                 ForEach(RegisterSourceTab.allCases) { tab in
                     Text(tab.title)
                         .tag(tab)

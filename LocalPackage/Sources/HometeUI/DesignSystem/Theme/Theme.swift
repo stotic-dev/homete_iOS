@@ -39,9 +39,9 @@ public extension Theme {
         public let foregroundColor: Color
 
         public init() {
-            backgroundColor = .primary3
-            selectedForegroundColor = .onSurface
-            foregroundColor = .onSurfaceVariant
+            backgroundColor = .fillAccentSubtle
+            selectedForegroundColor = .textPrimary
+            foregroundColor = .textSecondary
         }
 
         public init(

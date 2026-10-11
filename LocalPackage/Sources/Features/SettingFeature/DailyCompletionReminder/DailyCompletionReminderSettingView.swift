@@ -76,18 +76,19 @@ struct DailyCompletionReminderSettingView: View {
                 sectionHeader
                 settingCard
                 Text(
-                    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。"
+                    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。",
+                    bundle: #bundle
                 )
                 .font(with: .caption)
-                .foregroundStyle(.onSurfaceVariant)
+                .foregroundStyle(.textSecondary)
                 .padding(.horizontal, .space16)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space16)
         }
         // 純正の設定アプリと同じく、セクションのカードと画面の背景の色を分けて境目を見せる
-        .background(.groupedBackground)
-        .navigationTitle("通知設定")
+        .background(.backgroundScreen)
+        .navigationTitle(.localized("通知設定"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .trackScreenView(.settingNotification)
@@ -100,25 +101,25 @@ struct DailyCompletionReminderSettingView: View {
 private extension DailyCompletionReminderSettingView {
 
     var sectionHeader: some View {
-        Text("毎日の家事のふりかえり")
+        Text("毎日の家事のふりかえり", bundle: #bundle)
             .font(with: .boldCaption)
-            .foregroundStyle(.onSurfaceVariant)
+            .foregroundStyle(.textSecondary)
             .padding(.horizontal, .space16)
     }
 
     var settingCard: some View {
         VStack(spacing: .space8) {
             Toggle(isOn: enabledBinding) {
-                Text("ふりかえりの通知を受け取る")
+                Text("ふりかえりの通知を受け取る", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
             }
             if setting.isEnabled {
                 Divider()
                 DatePicker(selection: timeBinding, displayedComponents: .hourAndMinute) {
-                    Text("毎日の通知時刻")
+                    Text("毎日の通知時刻", bundle: #bundle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                 }
                 // 時・分の変換に使うcalendarと表示のタイムゾーンを揃え、設定した時刻がずれて表示されないようにする
                 .environment(\.calendar, calendar)
@@ -126,8 +127,8 @@ private extension DailyCompletionReminderSettingView {
             }
         }
         .padding(.space16)
-        .background(.subSurface)
-        .cornerRadius(.radius16)
+        .background(.backgroundCard)
+        .cornerRadius(.radius20)
     }
 
     var enabledBinding: Binding<Bool> {

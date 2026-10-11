@@ -36,6 +36,8 @@ public extension AdComponentResolver {
 
     static let preview = AdComponentResolver { type in
         Text("Preview: \(String(describing: type))")
+            // 実際の広告は高さを自分で決めるので、Previewでも広告らしい高さを取っておく
+            .frame(maxWidth: .infinity, minHeight: 50)
     }
 
 }

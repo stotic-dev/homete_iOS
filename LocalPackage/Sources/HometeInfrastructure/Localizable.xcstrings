@@ -1,0 +1,26 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "現在プレミアムプランをご利用いただけません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium isn't available right now"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

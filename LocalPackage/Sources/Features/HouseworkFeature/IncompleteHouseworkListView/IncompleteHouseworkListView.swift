@@ -37,7 +37,7 @@ public struct IncompleteHouseworkListView: View {
             storagePolicy: storagePolicy
         )
         )
-        .navigationTitle("未完了の家事")
+        .navigationTitle(.localized("未完了の家事"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .sheet(item: $completingItem) { item in
@@ -54,7 +54,7 @@ private extension IncompleteHouseworkListView {
     @ViewBuilder
     func contentView(summary: TodayHouseworkSummary) -> some View {
         if summary.incompleteItems.isEmpty {
-            Text("未完了の家事はありません")
+            Text("未完了の家事はありません", bundle: #bundle)
                 .font(with: .body)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {

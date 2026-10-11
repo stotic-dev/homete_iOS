@@ -23,7 +23,7 @@ struct AllUserDataAnnotation: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: true, vertical: false)
             if entries.isEmpty {
-                Text("データ無し")
+                Text("データなし", bundle: #bundle)
                     .font(with: .boldCaption)
             } else {
                 ForEach(entries) { entry in
@@ -35,7 +35,7 @@ struct AllUserDataAnnotation: View {
         .padding(.horizontal, .space8)
         .padding(.vertical, .space4)
         .background {
-            RoundedRectangle(radius: .radius8)
+            RoundedRectangle(radius: .radius12)
                 .fill(.background)
                 .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
         }

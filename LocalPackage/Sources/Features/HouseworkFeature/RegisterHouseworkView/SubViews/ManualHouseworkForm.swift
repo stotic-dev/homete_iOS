@@ -50,7 +50,7 @@ struct ManualHouseworkForm: View {
 private extension ManualHouseworkForm {
 
     func houseworkSection() -> some View {
-        SectionCard("登録する家事") {
+        SectionCard(.localized("登録する家事")) {
             inputTitleField()
             Divider()
             inputPointPicker()
@@ -67,13 +67,13 @@ private extension ManualHouseworkForm {
 
     func inputTitleField() -> some View {
         VStack(alignment: .leading, spacing: .space8) {
-            Text("家事の名前")
+            Text("家事の名前", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ClearableTextField(
                 text: $entry.title,
-                placeholder: "家事の名前を入力",
+                placeholder: .localized("家事の名前を入力"),
                 focus: $isShowingKeyboard
             )
         }
@@ -81,9 +81,9 @@ private extension ManualHouseworkForm {
 
     func inputPointPicker() -> some View {
         HStack(spacing: .space8) {
-            Text("完了ポイント")
+            Text("もらえるポイント", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             PointWheelPickerField(point: $entry.point)
                 .font(with: .body)
@@ -92,7 +92,7 @@ private extension ManualHouseworkForm {
 
     /// - Note: 家事自体はカテゴリを持たないため、カテゴリはいつもの家事に保存するときだけ意味を持つ
     func saveAsFrequentSection() -> some View {
-        SectionCard("いつもの家事") {
+        SectionCard(.localized("いつもの家事")) {
             saveAsFrequentControl()
             Divider()
             categoryPicker()
@@ -104,17 +104,17 @@ private extension ManualHouseworkForm {
     func saveAsFrequentControl() -> some View {
         switch saveAsFrequentState {
         case .available:
-            Toggle("いつもの家事に保存する", isOn: $entry.savesAsFrequent)
+            Toggle(.localized("いつもの家事に保存する"), isOn: $entry.savesAsFrequent)
                 .font(with: .body)
 
         case .duplicated:
             VStack(alignment: .leading, spacing: .space4) {
-                Toggle("いつもの家事に保存する", isOn: .constant(false))
+                Toggle(.localized("いつもの家事に保存する"), isOn: .constant(false))
                     .font(with: .body)
                     .disabled(true)
-                Text("同じ名前のいつもの家事があります")
+                Text("同じ名前のいつもの家事があります", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
 
         case .limitReached:
@@ -122,13 +122,13 @@ private extension ManualHouseworkForm {
                 onTapSaveAsFrequentWhenLimitReached()
             } label: {
                 HStack(spacing: .space8) {
-                    Text("いつもの家事に保存する")
+                    Text("いつもの家事に保存する", bundle: #bundle)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer()
-                    Text("無料プランは\(FrequentHouseworkLimitPolicy.freeLimit)件まで")
+                    Text("無料プランは\(FrequentHouseworkLimitPolicy.freeLimit)件まで", bundle: #bundle)
                         .font(with: .caption)
-                        .foregroundStyle(.onSurfaceVariant)
+                        .foregroundStyle(.textSecondary)
                 }
                 .contentShape(Rectangle())
             }
@@ -138,18 +138,18 @@ private extension ManualHouseworkForm {
 
     func categoryPicker() -> some View {
         HStack(spacing: .space8) {
-            Text("カテゴリ")
+            Text("カテゴリ", bundle: #bundle)
                 .font(with: .body)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
-            Picker("カテゴリ", selection: $entry.categoryId) {
+            Picker(.localized("カテゴリ"), selection: $entry.categoryId) {
                 ForEach(categories) { category in
                     Text(category.name)
                         .tag(category.categoryId)
                 }
             }
             .pickerStyle(.menu)
-            .tint(.onSurface)
+            .tint(.textPrimary)
         }
     }
 
@@ -164,7 +164,7 @@ private extension ManualHouseworkForm {
 
     /// - Note: 前回登録したときの完了ポイントも一緒に戻すため、名前の横にポイントを添えて何が入るかを示す
     func entryHistorySection() -> some View {
-        SectionCard("入力履歴") {
+        SectionCard(.localized("入力履歴")) {
             ForEach(Array(history.enumerated()), id: \.element) { index, item in
                 if index > 0 {
                     Divider()
@@ -181,16 +181,16 @@ private extension ManualHouseworkForm {
             HStack(spacing: .space8) {
                 Text(item.title)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
                 Text("\(item.point)pt")
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(item.title) \(item.point)ポイント")
+        .accessibilityLabel(.localized("\(item.title) \(item.point)ポイント"))
     }
 
 }

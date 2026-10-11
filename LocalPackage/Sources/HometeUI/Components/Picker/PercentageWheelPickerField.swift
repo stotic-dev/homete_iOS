@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import SwiftUI
 
 /// 割合（%）をドラムロール（wheelスタイルのPicker）のポップアップで選択させる入力コンポーネント。
@@ -28,7 +29,7 @@ public struct PercentageWheelPickerField: View {
             label()
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text("\(accessibilityName)の割合"))
+        .accessibilityLabel(Text("\(accessibilityName)の割合", bundle: #bundle))
         .accessibilityValue(Text("\(percentage)%"))
         .popover(isPresented: $isShowingPicker) {
             percentagePicker()
@@ -53,7 +54,7 @@ private extension PercentageWheelPickerField {
     }
 
     func percentagePicker() -> some View {
-        Picker("割合", selection: $percentage) {
+        Picker(.localized("割合"), selection: $percentage) {
             ForEach(range, id: \.self) { value in
                 Text("\(value)%").tag(value)
             }

@@ -22,12 +22,12 @@ public struct RemoveAdsPromotionLink: View {
             action()
         } label: {
             HStack(spacing: .space4) {
-                Text("広告を非表示にする")
+                Text("広告を非表示にする", bundle: #bundle)
                     .font(with: .boldCaption)
                 Image(systemName: "chevron.right")
                     .font(with: .caption)
             }
-            .foregroundStyle(.accent)
+            .foregroundStyle(.textAccent)
             // テキストリンク風の見た目のまま、タップ領域だけHIG推奨の44pt四方を確保する
             .frame(maxWidth: .infinity, minHeight: 44)
             .contentShape(Rectangle())

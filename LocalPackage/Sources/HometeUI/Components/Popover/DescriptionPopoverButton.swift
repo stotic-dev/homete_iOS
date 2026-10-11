@@ -13,16 +13,16 @@ import Prefire
 /// 項目の意味をポップアップで説明する「？」ボタン
 public struct DescriptionPopoverButton: View {
 
-    let title: LocalizedStringKey
-    let message: LocalizedStringKey
+    let title: LocalizedStringResource
+    let message: LocalizedStringResource
 
     @State var isShowPopover: Bool
 
-    public init(title: LocalizedStringKey, message: LocalizedStringKey) {
+    public init(title: LocalizedStringResource, message: LocalizedStringResource) {
         self.init(title: title, message: message, isShowPopover: false)
     }
 
-    init(title: LocalizedStringKey, message: LocalizedStringKey, isShowPopover: Bool) {
+    init(title: LocalizedStringResource, message: LocalizedStringResource, isShowPopover: Bool) {
         self.title = title
         self.message = message
         // @Stateは他のプロパティを初期化してから代入する（iOS 27 SDKで@Stateがマクロになったため）
@@ -33,9 +33,10 @@ public struct DescriptionPopoverButton: View {
         Button {
             isShowPopover = true
         } label: {
-            // 親の`.tint`に引きずられて置き場所ごとに色が変わらないよう、アクセントカラーを基準に固定する
+            // 親の`.tint`に引きずられて置き場所ごとに色が変わらないよう、fillAccentを基準に固定する。
+            // Color.accentColorはVRTのホストアプリにAccentColorがなく、スナップショットだけ青になるため使わない
             Image(systemName: "questionmark.circle")
-                .foregroundStyle(Color.accentColor.secondary)
+                .foregroundStyle(Color.fillAccent.secondary)
         }
         .popover(isPresented: $isShowPopover) {
             VStack(alignment: .leading, spacing: .space8) {
@@ -44,7 +45,7 @@ public struct DescriptionPopoverButton: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(message)
                     .font(with: .caption)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .multilineTextAlignment(.leading)
             }
             .padding(.space16)

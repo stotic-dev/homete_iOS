@@ -11,6 +11,9 @@ import Testing
 
 struct SettingMenuItemTest {
 
+    /// `swift test`のランナーはローカライズを持たず、言語を指定しないと英語の訳になるため、日本語を指定して確かめる
+    private let japanese = Locale(identifier: "ja")
+
     @Test("未購入の場合、プレミアムプラン項目のタイトルは登録訴求文言になる")
     func title_premiumPlanFree_returnsPromotionTitle() {
         // Arrange
@@ -19,7 +22,7 @@ struct SettingMenuItemTest {
 
         // Act
 
-        let actual = sut.title(plan: .free)
+        let actual = sut.title(plan: .free).resolved(locale: japanese)
 
         // Assert
 
@@ -39,7 +42,7 @@ struct SettingMenuItemTest {
 
         // Act
 
-        let actual = sut.title(plan: plan)
+        let actual = sut.title(plan: plan).resolved(locale: japanese)
 
         // Assert
 
@@ -59,7 +62,7 @@ struct SettingMenuItemTest {
 
         // Act
 
-        let actual = sut.title(plan: plan)
+        let actual = sut.title(plan: plan).resolved(locale: japanese)
 
         // Assert
 
@@ -91,11 +94,11 @@ struct SettingMenuItemTest {
 
         // Act
 
-        let actual = item.title(plan: plan)
+        let actual = item.title(plan: plan).resolved(locale: japanese)
 
         // Assert
 
-        #expect(actual == LocalizedStringKey(expectedTitle))
+        #expect(actual == expectedTitle)
     }
 
     @Test("グループ参加済みかつ招待リンクを使える場合、メンバー招待・家事テンプレート・いつもの家事の項目を含む表示項目が返る")

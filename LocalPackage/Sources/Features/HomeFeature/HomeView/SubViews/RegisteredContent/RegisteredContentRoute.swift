@@ -15,6 +15,8 @@ enum RegisteredContentRoute: Hashable {
     case incompleteHouseworkList
     /// 家事詳細画面
     case houseworkDetail(HouseworkBoardItem)
+    /// ありがとうを伝えられる家事の一覧画面
+    case thanksTargetList
 
 }
 

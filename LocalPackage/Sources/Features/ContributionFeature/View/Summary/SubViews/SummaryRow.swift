@@ -20,9 +20,9 @@ struct SummaryRow: View {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(item.userName)
                     .font(with: .headLineS)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 if item.isMe {
-                    Text("あなた")
+                    Text("あなた", bundle: #bundle)
                         .font(with: .caption)
                         .foregroundStyle(.secondary)
                 }
@@ -34,14 +34,14 @@ struct SummaryRow: View {
                         .foregroundStyle(.yellow)
                     Text("\(item.monthlyPoint.value)pt")
                         .font(with: .headLineM)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                 }
                 HStack(spacing: .space4) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text("\(item.achievedCount)件達成")
+                    Text("\(item.achievedCount)件達成", bundle: #bundle)
                         .font(with: .headLineM)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                 }
             }
         }

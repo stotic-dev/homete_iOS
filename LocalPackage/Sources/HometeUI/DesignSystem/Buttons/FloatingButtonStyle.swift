@@ -14,11 +14,11 @@ struct FloatingButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(.space16)
-            .foregroundStyle(.onSurface)
+            .foregroundStyle(.textOnAccent)
             .background {
                 GeometryReader {
                     RoundedRectangle(cornerRadius: $0.size.height / 2)
-                        .fill(.primary1)
+                        .fill(.fillAccent)
                 }
             }
             .opacity(configuration.isPressed || !isEnabled ? 0.5 : 1)

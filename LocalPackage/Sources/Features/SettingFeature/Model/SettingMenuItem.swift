@@ -48,39 +48,39 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
-    func title(plan: SubscriptionPlan) -> LocalizedStringKey {
+    func title(plan: SubscriptionPlan) -> LocalizedStringResource {
         switch self {
         case .memberInvitation:
-            "メンバー招待"
+            .localized("メンバー招待")
 
         case .taskTemplate:
-            "家事テンプレート"
+            .localized("家事テンプレート")
 
         case .frequentHousework:
-            "いつもの家事"
+            .localized("いつもの家事")
 
         case .notificationPermission:
-            "通知設定"
+            .localized("通知設定")
 
         case .premiumPlan:
             if case .free = plan {
-                "プレミアムプランに登録"
+                .localized("プレミアムプランに登録")
             } else {
-                "ご登録中のプラン"
+                .localized("ご登録中のプラン")
             }
 
         case .termsOfService:
-            "利用規約"
+            .localized("利用規約")
 
         case .privacyPolicy:
-            "プライバシーポリシー"
+            .localized("プライバシーポリシー")
 
         case .license:
-            "ライセンス"
+            .localized("ライセンス")
 
         #if DEBUG
         case .debugMenu:
-            "デバッグメニュー"
+            .localized("デバッグメニュー")
         #endif
         }
     }

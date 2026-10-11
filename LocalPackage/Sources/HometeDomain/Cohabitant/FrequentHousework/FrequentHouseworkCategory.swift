@@ -3,6 +3,8 @@
 //  LocalPackage
 //
 
+import Foundation
+
 /// 画面に表示するカテゴリ
 public enum FrequentHouseworkCategory: Identifiable, Sendable, Hashable {
 
@@ -23,7 +25,7 @@ public enum FrequentHouseworkCategory: Identifiable, Sendable, Hashable {
 
     public var name: String {
         switch self {
-        case let .preset(preset): preset.name
+        case let .preset(preset): preset.name.resolved()
         case let .custom(custom): custom.name
         case .uncategorized: Self.uncategorizedName
         }
@@ -39,6 +41,13 @@ public enum FrequentHouseworkCategory: Identifiable, Sendable, Hashable {
     }
 
     /// 「その他」の表示名
-    public static let uncategorizedName = "その他"
+    public static var uncategorizedName: String {
+        uncategorizedNameResource.resolved()
+    }
+
+    static let uncategorizedNameResource = LocalizedStringResource.localized(
+        "その他",
+        comment: "どのカテゴリにも入らない家事をまとめるカテゴリ名"
+    )
 
 }

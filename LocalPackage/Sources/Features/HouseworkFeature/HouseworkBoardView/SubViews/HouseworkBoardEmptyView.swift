@@ -6,6 +6,7 @@
 //
 
 import HometeDomain
+import HometeUI
 import SwiftUI
 
 struct HouseworkBoardEmptyView: View {
@@ -16,7 +17,11 @@ struct HouseworkBoardEmptyView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label(content.title, systemImage: content.systemImage)
+            Label {
+                Text(content.title)
+            } icon: {
+                icon
+            }
         } description: {
             if let message = content.message {
                 Text(message)
@@ -24,7 +29,7 @@ struct HouseworkBoardEmptyView: View {
         } actions: {
             if let action = content.action {
                 Button(action.label, action: action.handler)
-                    .subPrimaryButtonStyle()
+                    .primaryButtonStyle()
             }
         }
     }
@@ -35,37 +40,55 @@ private extension HouseworkBoardEmptyView {
 
     struct EmptyContent {
 
-        let systemImage: String
-        let title: String
-        let message: String?
-        let action: (label: String, handler: () -> Void)?
+        let icon: Icon
+        let title: LocalizedStringResource
+        let message: LocalizedStringResource?
+        let action: (label: LocalizedStringResource, handler: () -> Void)?
 
+    }
+
+    enum Icon {
+
+        case homette(HometteExpression)
+        case systemImage(String)
+
+    }
+
+    @ViewBuilder
+    var icon: some View {
+        switch content.icon {
+        case let .homette(expression):
+            HometteView(expression)
+
+        case let .systemImage(name):
+            Image(systemName: name)
+        }
     }
 
     var content: EmptyContent {
         switch reason {
         case .noHouseworkRegistered:
             EmptyContent(
-                systemImage: "checklist",
-                title: "今日の家事を追加しましょう",
-                message: nil,
-                action: ("家事を追加", onCreateTapped)
+                icon: .homette(.cheer),
+                title: .localized("今日の家事はまだありません"),
+                message: .localized("やる家事を追加すると、ここに並びます"),
+                action: (.localized("家事を追加"), onCreateTapped)
             )
 
         case .allCompleted:
             EmptyContent(
-                systemImage: "checkmark.circle",
-                title: "今日の家事は全て終わっています",
-                message: "新しい家事が必要な場合は追加しましょう",
-                action: ("家事を追加", onCreateTapped)
+                icon: .homette(.rest),
+                title: .localized("今日の家事は、ぜんぶ終わりました"),
+                message: .localized("おつかれさまでした。ゆっくり休んでくださいね"),
+                action: (.localized("家事を追加"), onCreateTapped)
             )
 
         case .hasIncompleteHousework:
             EmptyContent(
-                systemImage: "list.bullet.clipboard",
-                title: "完了した家事はありません",
-                message: "未完了の家事があります",
-                action: ("未完了を見る", { onSwitchTab(.incomplete) })
+                icon: .systemImage("list.bullet.clipboard"),
+                title: .localized("完了した家事はありません"),
+                message: .localized("未完了の家事があります"),
+                action: (.localized("未完了を見る"), { onSwitchTab(.incomplete) })
             )
         }
     }

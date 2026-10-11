@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import SwiftUI
 
 /// クイックアクションの見せ方
@@ -12,20 +13,20 @@ import SwiftUI
 /// それぞれのView内ではなく拡張として切り出している。
 extension HouseworkQuickAction {
 
-    var label: String {
+    var label: LocalizedStringResource {
         switch self {
         case .complete:
-            "完了にする"
+            .localized("完了にする")
         case .remove:
-            "やらない"
+            .localized("やらない")
         case .sendThanks:
-            "ありがとう"
+            .localized("ありがとう")
         case .addHelper:
-            "手伝った人を追加"
+            .localized("手伝った人を追加")
         case .redo:
-            "もう一度やった"
+            .localized("もう一度やった")
         case .returnToIncomplete:
-            "未完了に戻す"
+            .localized("未完了に戻す")
         }
     }
 

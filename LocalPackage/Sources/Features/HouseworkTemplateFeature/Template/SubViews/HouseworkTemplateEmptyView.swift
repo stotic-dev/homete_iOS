@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/15.
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -14,20 +15,16 @@ struct HouseworkTemplateEmptyView: View {
 
     var body: some View {
         VStack(spacing: .space24) {
-            Image(systemName: "list.bullet.rectangle")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.decorativeIcon)
+            HometteView(.point)
             VStack(spacing: .space8) {
-                Text("テンプレートが未登録です")
+                Text("テンプレートはまだありません", bundle: #bundle)
                     .font(with: .headLineM)
-                Text("週単位で繰り返す家事を登録できます")
+                Text("週単位で繰り返す家事を登録できます", bundle: #bundle)
                     .font(with: .body)
-                    .foregroundStyle(.onSubSurface)
+                    .foregroundStyle(.textPrimary)
                     .multilineTextAlignment(.center)
             }
-            Button("テンプレートを作成する") {
+            Button(.localized("テンプレートを作成する")) {
                 onCreate()
             }
             .primaryButtonStyle()

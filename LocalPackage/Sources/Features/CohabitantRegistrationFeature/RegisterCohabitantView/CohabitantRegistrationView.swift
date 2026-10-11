@@ -49,16 +49,16 @@ public struct CohabitantRegistrationView: View {
             dismiss()
         }
         .alert(
-            "登録処理を終了しますか？",
+            .localized("登録処理を終了しますか？"),
             isPresented: $isPresentingConfirmCancelAlert
         ) {
             Button(role: .destructive) {
                 dismiss()
             } label: {
-                Text("終了する")
+                Text("終了する", bundle: #bundle)
             }
         } message: {
-            Text("登録を終了すると、また初めから登録し直す必要があります。")
+            Text("登録を終了すると、また初めから登録し直す必要があります。", bundle: #bundle)
         }
         .environment(\.cohabitantRegistrationStoreFactory, .init { myPeerID, messageSender in
             CohabitantRegistrationStore(

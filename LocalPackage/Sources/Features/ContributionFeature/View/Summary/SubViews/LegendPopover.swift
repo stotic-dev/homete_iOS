@@ -14,13 +14,13 @@ struct LegendPopover: View {
             HStack(spacing: .space8) {
                 Image(systemName: "star.fill")
                     .foregroundStyle(.yellow)
-                Text("今月の獲得ポイント合計")
+                Text("今月の獲得ポイント合計", bundle: #bundle)
                     .font(with: .body)
             }
             HStack(spacing: .space8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text("達成した家事の件数")
+                Text("達成した家事の件数", bundle: #bundle)
                     .font(with: .body)
             }
         }

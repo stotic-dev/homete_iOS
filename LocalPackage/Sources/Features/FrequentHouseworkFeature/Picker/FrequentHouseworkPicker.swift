@@ -75,7 +75,10 @@ private extension FrequentHouseworkPicker {
     func categoryFilter() -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: .space8) {
-                categoryChip(id: nil, name: "すべて")
+                categoryChip(
+                    id: nil,
+                    name: LocalizedStringResource.localized("すべて", comment: "すべてのカテゴリを表示する選択肢").resolved()
+                )
                 ForEach(filterCategories) { category in
                     categoryChip(id: category.id, name: category.name)
                 }
@@ -91,12 +94,12 @@ private extension FrequentHouseworkPicker {
         } label: {
             Text(name)
                 .font(with: .caption)
-                .foregroundStyle(isSelected ? .onPrimary1 : .onSurface)
+                .foregroundStyle(isSelected ? .textOnAccent : .textPrimary)
                 .padding(.horizontal, .space16)
                 .frame(minHeight: 32)
                 .background {
-                    RoundedRectangle(radius: .radius8)
-                        .fill(isSelected ? Color.primary1 : Color.primary3)
+                    RoundedRectangle(radius: .radius12)
+                        .fill(isSelected ? Color.fillAccent : Color.fillAccentSubtle)
                 }
         }
         .buttonStyle(.plain)
@@ -104,11 +107,8 @@ private extension FrequentHouseworkPicker {
 
     func itemGrid() -> some View {
         ScrollView {
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 150), spacing: .space8)],
-                alignment: .leading,
-                spacing: .space8
-            ) {
+            // 家事名を省略せずに見せるため、チップを家事名の長さに合わせた幅で並べる
+            FrequentHouseworkChipFlowLayout(spacing: .space8) {
                 ForEach(displayedItems) { item in
                     FrequentHouseworkChip(
                         item: item,
@@ -127,12 +127,12 @@ private extension FrequentHouseworkPicker {
 
     func emptyContent() -> some View {
         VStack(spacing: .space16) {
-            Text("いつもの家事を登録しませんか？")
+            Text("いつもの家事を登録しませんか？", bundle: #bundle)
                 .font(with: .headLineS)
-            Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。")
+            Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。", bundle: #bundle)
                 .font(with: .body)
                 .multilineTextAlignment(.center)
-            Button("いつもの家事を登録する") {
+            Button(.localized("いつもの家事を登録する")) {
                 onTapManage()
             }
             .primaryButtonStyle()
@@ -150,6 +150,8 @@ private extension FrequentHouseworkPicker {
         .makeForPreview(id: "2", title: "換気扇", point: 30, categoryId: "preset.cleaning", sortOrder: 1),
         .makeForPreview(id: "3", title: "布団干し", point: 20, categoryId: "preset.laundry"),
         .makeForPreview(id: "4", title: "ゴミ出し"),
+        .makeForPreview(id: "5", title: "冷蔵庫の中の賞味期限切れの食品を確認して捨てる", point: 15),
+        .makeForPreview(id: "6", title: "皿洗い", point: 5),
     ]
     let context = FrequentHouseworkContext(items: items)
     FrequentHouseworkPicker(

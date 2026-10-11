@@ -30,7 +30,7 @@ struct FrequentHouseworkCategoryView: View {
             presetSection()
             customSection()
         }
-        .navigationTitle("カテゴリ")
+        .navigationTitle(.localized("カテゴリ"))
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
             trailingNavigationItem()
@@ -49,16 +49,16 @@ struct FrequentHouseworkCategoryView: View {
 private extension FrequentHouseworkCategoryView {
 
     func presetSection() -> some View {
-        Section("あらかじめ用意しているカテゴリ") {
+        Section(.localized("あらかじめ用意しているカテゴリ")) {
             ForEach(PresetFrequentHouseworkCategory.allCases, id: \.self) { preset in
                 HStack(spacing: .space8) {
                     Text(preset.name)
                         .font(with: .body)
-                        .foregroundStyle(.onSurface)
+                        .foregroundStyle(.textPrimary)
                     Spacer()
                     Image(systemName: "lock.fill")
-                        .foregroundStyle(.onSurfaceVariant)
-                        .accessibilityLabel("名前の変更と削除はできません")
+                        .foregroundStyle(.textSecondary)
+                        .accessibilityLabel(.localized("名前の変更と削除はできません"))
                 }
             }
             .deleteDisabled(true)
@@ -67,11 +67,11 @@ private extension FrequentHouseworkCategoryView {
     }
 
     func customSection() -> some View {
-        Section("追加したカテゴリ") {
+        Section(.localized("追加したカテゴリ")) {
             if customCategories.isEmpty {
-                Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。")
+                Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。", bundle: #bundle)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
             } else {
                 ForEach(customCategories) { category in
                     categoryRow(category)
@@ -95,7 +95,7 @@ private extension FrequentHouseworkCategoryView {
             HStack(spacing: .space8) {
                 Text(category.name)
                     .font(with: .body)
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                 Spacer()
             }
             .contentShape(Rectangle())
@@ -117,7 +117,7 @@ private extension FrequentHouseworkCategoryView {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("カテゴリを追加")
+                .accessibilityLabel(.localized("カテゴリを追加"))
             }
         }
     }

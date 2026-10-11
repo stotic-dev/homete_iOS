@@ -13,9 +13,8 @@ struct DestructiveButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration
-            .commonStyle(.onDestructive)
-            .background(.red)
-            .cornerRadius(.radius16)
+            .commonStyle(.textOnDestructive)
+            .background(.fillDestructive, in: Capsule())
             .opacity(isEnabled ? 1 : 0.5)
     }
 

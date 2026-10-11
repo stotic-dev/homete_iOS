@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 /// ユーザーが現在利用しているプランの状態
 public enum SubscriptionPlan: Equatable, Sendable {
@@ -39,16 +38,16 @@ public enum SubscriptionPeriod: Equatable, Sendable {
     /// プロダクトIDから周期を判別できない場合
     case unknown
 
-    public var displayName: LocalizedStringKey {
+    public var displayName: LocalizedStringResource {
         switch self {
         case .monthly:
-            "月額プラン"
+            .localized("月額プラン")
 
         case .yearly:
-            "年額プラン"
+            .localized("年額プラン")
 
         case .unknown:
-            "プレミアムプラン"
+            .localized("プレミアムプラン")
         }
     }
 

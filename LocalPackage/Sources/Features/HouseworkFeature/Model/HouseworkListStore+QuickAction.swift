@@ -10,9 +10,7 @@ extension HouseworkListStore {
 
     /// 家事リストのセルから行うクイックアクションを実行する
     ///
-    /// - Parameter notify: 完了の通知を送るかどうか。複数選択の一括操作では、
-    ///   家事ごとの個別通知の代わりに件数をまとめた1件の通知を呼び出し側で送るため`false`を渡す。
-    ///   ありがとうはコメントなしで記録するため、この値に関わらず通知しない。
+    /// ありがとうはコメントなしで記録するため、通知しない。
     /// - Returns: このアクションで初めてありがとうを記録したかどうか。ありがとう以外のアクションでは常に`false`
     @discardableResult
     // swiftlint:disable:next function_parameter_count
@@ -22,13 +20,12 @@ extension HouseworkListStore {
         now: Date,
         account: Account,
         cohabitantId: String,
-        step: HouseworkAnalyticsStep,
-        notify: Bool = true
+        step: HouseworkAnalyticsStep
     ) async throws -> Bool {
         switch action {
-        // 担当者やコメントを選ばずに完了にする経路（一括完了）では、自分だけを担当者にする
+        // 担当者やコメントを選ばずに完了にする経路では、自分だけを担当者にする
         case .complete:
-            // 一括完了は頑張り度を選ぶ画面を通らないため「ふつう」で記録し、上乗せ前のポイントを満額配分する
+            // 頑張り度を選ぶ画面を通らないため「ふつう」で記録し、上乗せ前のポイントを満額配分する
             try await complete(
                 target: item.originalItem,
                 now: now,
@@ -39,8 +36,7 @@ extension HouseworkListStore {
                 comment: "",
                 cohabitantId: cohabitantId,
                 isRegistered: item.isRegistered,
-                step: step,
-                notify: notify
+                step: step
             )
 
         case .remove:
@@ -91,9 +87,9 @@ extension HouseworkListStore {
 
     /// 複数選択で選んだ家事に、クイックアクションを一括で適用する
     ///
-    /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は抑制する。
+    /// 選んだ家事は1回の書き込みでまとめて反映し、全件成功か全件失敗のどちらかにする。
+    /// 家事ごとに通知を送ると件数分のPush通知が相手に届いてしまうため、個別の通知は送らない。
     /// 完了だけは、ふりかえり通知の予約を兼ねて件数をまとめた1件の通知を今日の家事で1日1回だけ送る。
-    /// ほかのアクション（やらない・ありがとう・未完了に戻す）では何も送らない。
     /// - Returns: 1件でも初めてありがとうを記録したかどうか。ありがとう以外のアクションでは常に`false`
     @discardableResult
     // swiftlint:disable:next function_parameter_count
@@ -105,33 +101,37 @@ extension HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> Bool {
-        guard let firstItem = items.first else { return false }
-
-        var hasSentFirstThanks = false
-        for item in items {
-            let isFirstThanks = try await perform(
-                action,
-                on: item,
+        let targets = items.map(\.originalItem)
+        switch action {
+        case .complete:
+            try await completeBulk(
+                targets: targets,
                 now: now,
-                account: account,
+                reporter: account,
                 cohabitantId: cohabitantId,
-                step: step,
-                notify: false
+                step: step
             )
-            hasSentFirstThanks = hasSentFirstThanks || isFirstThanks
-        }
 
-        if action == .complete {
-            // 複数選択は1日分の家事ボード内で行うため、先頭の家事の日付を代表として使う
-            notifyCompleted(
-                houseworkDate: firstItem.originalItem.indexedDate.value,
+        case .remove:
+            try await removeBulk(targets: targets, cohabitantId: cohabitantId, step: step)
+
+        case .sendThanks:
+            return try await sendThanksBulk(
+                targets: targets,
+                sender: account,
                 now: now,
-                cohabitantId: cohabitantId
-            ) {
-                .completedBulkMessage(executorName: account.userName, count: items.count, data: $0)
-            }
+                cohabitantId: cohabitantId,
+                step: step
+            )
+
+        case .returnToIncomplete:
+            try await returnToIncompleteBulk(targets: targets, cohabitantId: cohabitantId, step: step)
+
+        case .redo, .addHelper:
+            // 一括操作の対象にしていない（`HouseworkQuickAction.isAvailableInBulk`）
+            break
         }
-        return hasSentFirstThanks
+        return false
     }
 
 }

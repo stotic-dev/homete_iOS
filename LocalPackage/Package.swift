@@ -6,6 +6,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalPackage",
+    defaultLocalization: "ja",
     platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
         lib("HometeDomain"),
@@ -42,6 +43,7 @@ let package = Package(
 
         .target(
             name: "HometeDomain",
+            resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
         .target(
@@ -51,6 +53,7 @@ let package = Package(
                 "HometeResources",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
+            resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
         .target(
@@ -84,6 +87,7 @@ let package = Package(
                 "HometeResources",
             ],
             path: "./Sources/Features/HouseworkTemplateFeature",
+            resources: [localizableStrings()],
             plugins: [
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
@@ -116,6 +120,7 @@ let package = Package(
                 .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
                 .product(name: "GRDB", package: "GRDB.swift")
             ],
+            resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
         // Notification Service Extensionからも使うため、Firebaseなど重い依存を持たせない
@@ -140,6 +145,7 @@ let package = Package(
                 "HometeInfrastructure",
                 "HometeLocalNotification"
             ],
+            resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
 
@@ -184,8 +190,14 @@ func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {
         name: name,
         dependencies: ["HometeDomain", "HometeUI", "HometeResources"] + extraDeps,
         path: "./Sources/Features/\(name)",
+        resources: [localizableStrings()],
         plugins: [swiftLintPlugin()]
     )
+}
+
+/// 画面に出す文言のString Catalog。キーは日本語の文言そのもので、英語などの訳はXcodeの「Generate Translation」で入れる
+func localizableStrings() -> Resource {
+    .process("Localizable.xcstrings")
 }
 
 func lib(_ name: String) -> Product {

@@ -44,9 +44,11 @@ public final actor HouseworkManager {
     }
 
     /// テスト用：allItems を初期値で設定する
-    public init(houseworkClient: HouseworkClient, allItems: [HouseworkItem]) {
+    /// - Parameter fetchedRange: 初回のフェッチを終えた状態から始める場合に渡す
+    public init(houseworkClient: HouseworkClient, allItems: [HouseworkItem], fetchedRange: ClosedRange<Date>? = nil) {
         self.houseworkClient = houseworkClient
         self.allItems = allItems
+        self.fetchedRange = fetchedRange
     }
 
     // MARK: public method

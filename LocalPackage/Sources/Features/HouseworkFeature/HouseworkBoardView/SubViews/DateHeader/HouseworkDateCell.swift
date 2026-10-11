@@ -34,13 +34,6 @@ struct HouseworkDateCell: View {
                         .fill(background)
                 }
                 .padding(2)
-                .background {
-                    if let borderColor {
-                        Circle()
-                            .stroke(lineWidth: 1.5)
-                            .fill(borderColor)
-                    }
-                }
         }
     }
 
@@ -48,7 +41,7 @@ struct HouseworkDateCell: View {
 
 private extension HouseworkDateCell {
 
-    func dateLabel() -> String {
+    func dateLabel() -> LocalizedStringResource {
         if calendar.dateComponents(
             [.year, .month, .day],
             from: date
@@ -56,9 +49,9 @@ private extension HouseworkDateCell {
             [.year, .month, .day],
             from: now
         ) {
-            "今日"
+            .localized("今日")
         } else {
-            String(calendar.component(.day, from: date))
+            .localized("\(calendar.component(.day, from: date))", comment: "日付の行に出す日にち（例: 25）")
         }
     }
 
@@ -66,30 +59,22 @@ private extension HouseworkDateCell {
 
         let foreground: Color
         let background: Color
-        let borderColor: Color?
 
     }
 
     var foreground: Color {
         switch state {
-        case .selected: .onPrimary1
-        case .selectable: .onPrimary2
-        case .unselectable: .onPrimary3
+        case .selected: .textOnAccent
+        case .selectable: .textPrimary
+        case .unselectable: .textSecondary
         }
     }
 
     var background: Color {
         switch state {
-        case .selected: .primary1
-        case .selectable: .primary2
-        case .unselectable: .primary3
-        }
-    }
-
-    var borderColor: Color? {
-        switch state {
-        case .selected: .primary2
-        case .selectable, .unselectable: nil
+        case .selected: .fillAccent
+        case .selectable: .fillAccentSubtle
+        case .unselectable: .backgroundScreen
         }
     }
 

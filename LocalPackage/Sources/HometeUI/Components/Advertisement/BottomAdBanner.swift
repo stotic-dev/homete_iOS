@@ -18,15 +18,15 @@ struct BottomAdBanner: View {
     let onTapPromotionLink: () -> Void
 
     var body: some View {
-        VStack(spacing: .space4) {
+        // AdMobのガイドラインに沿って、誤タップを防ぐためにタップできるリンクを広告から離す
+        VStack(spacing: .space16) {
+            // 高さは広告のサイズから決まる（アンカー型アダプティブバナー）
             adComponentResolver.resolve(.banner(bannerType))
-                // AdSizeBanner(320x50)の高さを確保する
-                .frame(height: 50)
             RemoveAdsPromotionLink(action: onTapPromotionLink)
         }
         .padding(.top, .space8)
         // スクロール領域の内容が透けないように背景を敷く
-        .background(.surface)
+        .background(.backgroundScreen)
     }
 
 }

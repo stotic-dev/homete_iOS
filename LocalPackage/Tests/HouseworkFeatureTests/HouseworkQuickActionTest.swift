@@ -164,7 +164,7 @@ extension HouseworkQuickActionTest.ActionsForItemCase {
 extension HouseworkQuickActionTest.ActionsForStateCase {
 
     @Test(
-        "状態のみからクイックアクションを判定する（一括操作用）",
+        "状態のみからクイックアクションを判定する",
         arguments: [
             (HouseworkState.incomplete, [HouseworkQuickAction.complete, .remove]),
             (.completed, [.sendThanks, .returnToIncomplete]),

@@ -30,11 +30,11 @@ extension HouseworkState {
         [.incomplete, .completed]
     }
 
-    var segmentTitle: LocalizedStringKey {
+    var segmentTitle: LocalizedStringResource {
         switch self {
-        case .incomplete: "未完了"
-        case .completed: "完了"
-        case .notTodo: "やらない"
+        case .incomplete: .localized("未完了")
+        case .completed: .localized("完了")
+        case .notTodo: .localized("やらない")
         }
     }
 

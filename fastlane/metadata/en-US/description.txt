@@ -1,0 +1,34 @@
+A little reward for everyday chores.
+
+homeau helps your household connect through the chores you share.
+With a simple, clean design, keeping up with daily housework feels natural.
+
+Key features
+
+Log chores and manage them as a checklist
+
+Celebrate what you get done each day
+
+Share with your partner or family and praise each other
+
+Great for people who
+
+Want to feel more motivated about housework
+
+Want to communicate more with their family
+
+Are looking for a simple, easy-to-use chore app
+
+Make every day a little more comfortable with homeau.
+
+
+About the Premium Plan
+
+The Premium Plan (renews monthly or yearly) is an auto-renewing subscription.
+- Payment is charged to your Apple Account when you confirm the purchase.
+- Your subscription renews automatically unless auto-renew is turned off at least 24 hours before the end of the current period. You'll be charged for the next period within 24 hours before the current period ends.
+- You can manage your subscription or turn off auto-renew in your Apple Account settings after purchase.
+
+Terms of Use (EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
+Terms of Service: https://stotic-dev.github.io/homete_iOS/terms.html
+Privacy Policy: https://stotic-dev.github.io/homete_iOS/privacy.html

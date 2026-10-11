@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeDomain
 import HometeUI
 import SwiftUI
 
@@ -17,21 +18,21 @@ struct FrequentHouseworkEmptyView: View {
         VStack(spacing: .space24) {
             Image(systemName: "star.square.on.square")
                 .font(.system(size: 48))
-                .foregroundStyle(.decorativeIcon)
+                .foregroundStyle(.iconDecorative)
             VStack(spacing: .space8) {
-                Text("いつもの家事を登録しませんか？")
+                Text("いつもの家事を登録しませんか？", bundle: #bundle)
                     .font(with: .headLineS)
-                Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。")
+                Text("よくやる家事を登録しておくと、次からタップするだけで追加できます。", bundle: #bundle)
                     .font(with: .body)
                     .multilineTextAlignment(.center)
             }
             VStack(spacing: .space8) {
-                Button("いつもの家事を追加する") {
+                Button(.localized("いつもの家事を追加する")) {
                     onTapAdd()
                 }
                 .primaryButtonStyle()
                 if let onTapImport {
-                    Button("テンプレートから取り込む") {
+                    Button(.localized("テンプレートから取り込む")) {
                         onTapImport()
                     }
                     .subPrimaryButtonStyle()

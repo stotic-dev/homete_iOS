@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/01.
 //
 
+import HometeDomain
 import SwiftUI
 
 struct AnalyticsPeriodHeader: View {
@@ -28,10 +29,10 @@ struct AnalyticsPeriodHeader: View {
 private extension AnalyticsPeriodHeader {
 
     func periodTypePicker() -> some View {
-        Picker("表示期間", selection: $selectedPeriod.type) {
-            Text("週").tag(DisplayPointPeriod.PeriodType.week)
-            Text("月").tag(DisplayPointPeriod.PeriodType.month)
-            Text("年").tag(DisplayPointPeriod.PeriodType.year)
+        Picker(.localized("表示期間"), selection: $selectedPeriod.type) {
+            Text("週", bundle: #bundle).tag(DisplayPointPeriod.PeriodType.week)
+            Text("月", bundle: #bundle).tag(DisplayPointPeriod.PeriodType.month)
+            Text("年", bundle: #bundle).tag(DisplayPointPeriod.PeriodType.year)
         }
         .pickerStyle(.segmented)
     }
@@ -42,19 +43,19 @@ private extension AnalyticsPeriodHeader {
                 tappedShiftLeftButton()
             } label: {
                 Image(systemName: "chevron.left")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .padding(.space8)
             }
             Spacer()
             Text(periodTitle())
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             Spacer()
             Button {
                 tappedShiftRightButton()
             } label: {
                 Image(systemName: "chevron.right")
-                    .foregroundStyle(.onSurface)
+                    .foregroundStyle(.textPrimary)
                     .padding(.space8)
             }
             // `foregroundStyle`でtintを上書きしているとdisabled時の自動ディムが効かず、
@@ -68,13 +69,13 @@ private extension AnalyticsPeriodHeader {
         calendar.isDate(selectedPeriod.anchor, inSameDayAs: now)
     }
 
-    func periodTitle() -> String {
+    func periodTitle() -> LocalizedStringResource {
         guard !calendar.isDate(selectedPeriod.anchor, inSameDayAs: now) else {
             // 基準日が今日の場合は直近の表示にする
             return switch selectedPeriod.type {
-            case .week: "直近1週間"
-            case .month: "直近1ヶ月"
-            case .year: "直近1年"
+            case .week: .localized("直近1週間")
+            case .month: .localized("直近1ヶ月")
+            case .year: .localized("直近1年")
             }
         }
 

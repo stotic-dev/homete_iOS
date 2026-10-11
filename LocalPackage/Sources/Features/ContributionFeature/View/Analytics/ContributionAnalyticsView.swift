@@ -94,14 +94,18 @@ private extension ContributionAnalyticsView {
 
     func emptyContent() -> some View {
         ContentUnavailableView {
-            Label("この期間に達成された家事はありません", systemImage: "chart.bar.xaxis")
+            Label {
+                Text("この期間に達成された家事はありません", bundle: #bundle)
+            } icon: {
+                HometteView(.cheer)
+            }
         } description: {
-            Text("期間を変更すると過去の家事貢献度を確認できます")
+            Text("期間を変えると、前の記録も見られます", bundle: #bundle)
         } actions: {
-            Button("直近のデータがある期間を表示") {
+            Button(.localized("直近のデータがある期間を表示")) {
                 tappedLatestAchievedPeriodShowButton()
             }
-            .subPrimaryButtonStyle()
+            .primaryButtonStyle()
         }
     }
 

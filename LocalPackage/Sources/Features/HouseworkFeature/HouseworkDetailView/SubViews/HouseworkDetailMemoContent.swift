@@ -22,7 +22,7 @@ struct HouseworkDetailMemoContent: View {
     let onToggle: (HouseworkMemoChecklistItem.ID) -> Void
 
     var body: some View {
-        SectionCard("メモ") {
+        SectionCard(.localized("メモ")) {
             if let memo {
                 HouseworkMemoContent(memo: memo, isEditable: isEditable, onToggle: onToggle)
                 if isEditable {
@@ -46,9 +46,9 @@ private extension HouseworkDetailMemoContent {
             onTapEdit()
         } label: {
             if memo == nil {
-                Label("メモを追加", systemImage: "plus")
+                Label(.localized("メモを追加"), systemImage: "plus")
             } else {
-                Label("メモを編集", systemImage: "pencil")
+                Label(.localized("メモを編集"), systemImage: "pencil")
             }
         }
         .font(with: .body)

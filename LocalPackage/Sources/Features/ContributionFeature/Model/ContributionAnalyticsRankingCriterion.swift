@@ -5,6 +5,9 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
+import Foundation
+import HometeDomain
+
 enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable {
 
     /// 獲得ポイント
@@ -16,17 +19,10 @@ enum ContributionAnalyticsRankingCriterion: String, CaseIterable, Identifiable {
         rawValue
     }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
-        case .point: "ポイント"
-        case .achievement: "達成数"
-        }
-    }
-
-    var totalUnit: String {
-        switch self {
-        case .point: "pt"
-        case .achievement: "件"
+        case .point: .localized("ポイント")
+        case .achievement: .localized("達成数")
         }
     }
 

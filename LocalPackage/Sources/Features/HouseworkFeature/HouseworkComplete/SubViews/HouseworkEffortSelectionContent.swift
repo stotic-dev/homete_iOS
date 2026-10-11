@@ -19,7 +19,7 @@ struct HouseworkEffortSelectionContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space8) {
             Picker(
-                "頑張り度",
+                .localized("どれくらいがんばったか"),
                 selection: .init(
                     get: { selection },
                     set: { onSelect($0) }
@@ -33,7 +33,7 @@ struct HouseworkEffortSelectionContent: View {
             if let pointBreakdown {
                 Text(pointBreakdown)
                     .font(with: .caption)
-                    .foregroundStyle(.onSurfaceVariant)
+                    .foregroundStyle(.textSecondary)
                     .monospacedDigit()
             }
         }

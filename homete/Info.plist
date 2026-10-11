@@ -6,6 +6,12 @@
 	<string>$(APP_GROUP_IDENTIFIER)</string>
 	<key>CFBundleDisplayName</key>
 	<string>homeau</string>
+	<!-- LocalPackageの文言の訳は、アプリが対応している言語の中から選ばれる -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ja</string>
+	</array>
 	<key>AdUnitIdList</key>
 	<dict>
 		<key>BANNER_ANALYTICS_BOTTOM_AD_UNIT_ID</key>
@@ -42,7 +48,7 @@
 		<string>_register._udp</string>
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。</string>
+	<string>Your browsing history is used to show you more relevant ads.</string>
 	<key>REVENUECAT_API_KEY</key>
 	<string>$(REVENUECAT_API_KEY)</string>
 	<key>REVENUECAT_TEST_STORE_API_KEY</key>

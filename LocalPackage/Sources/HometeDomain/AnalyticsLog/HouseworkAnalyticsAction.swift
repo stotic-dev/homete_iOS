@@ -14,6 +14,8 @@ public enum HouseworkAnalyticsStep: String, Equatable, Sendable {
     case detail
     /// ありがとうを伝える画面
     case thanks
+    /// ダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧
+    case commentPrompt = "comment_prompt"
 
 }
 

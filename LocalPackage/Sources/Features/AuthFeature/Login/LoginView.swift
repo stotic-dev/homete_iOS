@@ -20,25 +20,25 @@ public struct LoginView: View {
 
     public var body: some View {
         VStack(spacing: .space16) {
-            Text(Constants.appName)
-                .font(with: .headLineM)
-            Text("ようこそ!")
+            HometteView(.wave, size: .large)
+            Text("\(Constants.appName)へようこそ", bundle: #bundle)
                 .font(with: .headLineL)
-            Text("サービスを利用するには、Appleアカウントでサインインする必要があります。")
+            Text("Appleアカウントで、すぐに始められます", bundle: #bundle)
                 .font(with: .body)
             SignInUpWithAppleButton { result in
                 await onSignInWithApple(result)
             }
             .frame(height: .space48)
-            .clipShape(RoundedRectangle(cornerRadius: .space16 / 2))
+            .cornerRadius(.radius12)
             Spacer()
             // swiftlint:disable:next line_length
             Text(
-                "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。"
+                "続行すると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。",
+                bundle: #bundle
             )
             .font(with: .caption)
-            .foregroundStyle(.onSurfaceVariant)
-            .tint(.accent)
+            .foregroundStyle(.textSecondary)
+            .tint(.textAccent)
             Spacer()
                 .frame(height: .space32)
         }

@@ -15,8 +15,8 @@ public extension View {
     func sectionCardStyle() -> some View {
         padding(.space16)
             .background {
-                RoundedRectangle(radius: .radius16)
-                    .fill(.subSurface)
+                RoundedRectangle(radius: .radius20)
+                    .fill(.backgroundCard)
                     .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
             }
     }
@@ -28,8 +28,8 @@ public extension View {
     func sectionCardStyle(onTapBackground: @escaping () -> Void) -> some View {
         padding(.space16)
             .background {
-                RoundedRectangle(radius: .radius16)
-                    .fill(.subSurface)
+                RoundedRectangle(radius: .radius20)
+                    .fill(.backgroundCard)
                     .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
                     .onTapGesture(perform: onTapBackground)
             }

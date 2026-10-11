@@ -1,0 +1,972 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "%@、おつかれさま！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is done. Nice work!"
+          }
+        }
+      }
+    },
+    "%@、きっちりおわったね！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is all done. Great job!"
+          }
+        }
+      }
+    },
+    "%@の割合" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@'s share"
+          }
+        }
+      }
+    },
+    "%lld / %@文字" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$@文字"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$@"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "%lld日" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day %lld"
+          }
+        }
+      }
+    },
+    "%lld日がない月は、月末に表示されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In months without day %lld, it appears on the last day of the month."
+          }
+        }
+      }
+    },
+    "+%lldpt" : {
+      "comment" : "家事を完了してもらえたポイント",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lldpt"
+          }
+        }
+      }
+    },
+    "1つ目の項目" : {
+      "shouldTranslate" : false
+    },
+    "2つ目の項目" : {
+      "shouldTranslate" : false
+    },
+    "Button" : {
+      "shouldTranslate" : false
+    },
+    "Homete" : {
+      "shouldTranslate" : false
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Preview: %@" : {
+      "shouldTranslate" : false
+    },
+    "「%@」を削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete “%@”"
+          }
+        }
+      }
+    },
+    "「選択」から家事を複数選ぶと、まとめて完了にしたり、ありがとうを伝えたりできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap “Select” to choose several chores, then mark them all as done or say thanks at once."
+          }
+        }
+      }
+    },
+    "あとで設定する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Now"
+          }
+        }
+      }
+    },
+    "あり" : {
+      "comment" : "メモが書かれているか",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes"
+          }
+        }
+      }
+    },
+    "ありがとう" : {
+      "shouldTranslate" : false
+    },
+    "ありがとうを伝える" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks"
+          }
+        }
+      }
+    },
+    "うまく読み込めなかったみたい。電波のいいところで、もう一度ためしてみてね" : {
+      "shouldTranslate" : false
+    },
+    "うまく読み込めませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load"
+          }
+        }
+      }
+    },
+    "くり返し" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat"
+          }
+        }
+      }
+    },
+    "これからは、あなたとパートナーの家事を分担し、協力していくことができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now you and your partner can share the chores and work together."
+          }
+        }
+      }
+    },
+    "これからは、グループのメンバーと家事を分担し、協力していくことができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now you can share the chores and work together with your group."
+          }
+        }
+      }
+    },
+    "しない" : {
+      "comment" : "家事のくり返しの種類",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never"
+          }
+        }
+      }
+    },
+    "その他の操作" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More Actions"
+          }
+        }
+      }
+    },
+    "なし" : {
+      "comment" : "メモが書かれているか",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        }
+      }
+    },
+    "はじめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        }
+      }
+    },
+    "まとめて操作する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Multiple Chores"
+          }
+        }
+      }
+    },
+    "もう一度試す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "やったね、%@おわり！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yay, %@ is done!"
+          }
+        }
+      }
+    },
+    "やったね、洗濯おわり！" : {
+      "shouldTranslate" : false
+    },
+    "アカウント情報を確認できませんでした。アプリを再起動して、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't verify your account. Please restart the app and try again."
+          }
+        }
+      }
+    },
+    "アップデートする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update"
+          }
+        }
+      }
+    },
+    "グループに参加しました！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You joined the group!"
+          }
+        }
+      }
+    },
+    "セクションの内容" : {
+      "shouldTranslate" : false
+    },
+    "セクションタイトル" : {
+      "shouldTranslate" : false
+    },
+    "ダッシュボード" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
+          }
+        }
+      }
+    },
+    "チェックリスト" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checklist"
+          }
+        }
+      }
+    },
+    "テキスト" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        }
+      }
+    },
+    "パートナーが完了した家事にありがとうを送ると、相手に通知が届きます。小さな家事にも、ひと言添えてみませんか。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send thanks for a chore your partner finished, and they'll get a notification. Why not add a few words, even for small chores?"
+          }
+        }
+      }
+    },
+    "パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We'll let you know when your partner finishes a chore.\nNoticing each other's chores makes it easier to say “thanks.”"
+          }
+        }
+      }
+    },
+    "プレミアムプランなら、%@文字まで書けます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Premium, you can write up to %@ characters."
+          }
+        }
+      }
+    },
+    "プレミアムプランを見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Premium Plan"
+          }
+        }
+      }
+    },
+    "ポイント" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Points"
+          }
+        }
+      }
+    },
+    "メモ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        }
+      }
+    },
+    "不明のエラーが発生しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An unknown error occurred"
+          }
+        }
+      }
+    },
+    "今日の家事がどこまで進んだかと、メンバーごとのがんばりをひと目で確認できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See at a glance how far today's chores have come and how much each member has contributed."
+          }
+        }
+      }
+    },
+    "今日はもうおしまい。おつかれさま" : {
+      "shouldTranslate" : false
+    },
+    "全%lldステップ中%lldステップ目" : {
+      "comment" : "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step %2$lld of %1$lld"
+          }
+        }
+      }
+    },
+    "別のセクション" : {
+      "shouldTranslate" : false
+    },
+    "削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "前へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        }
+      }
+    },
+    "割合" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
+    "土" : {
+      "comment" : "曜日を選ぶボタンに出すSaturdayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sa"
+          }
+        }
+      }
+    },
+    "始める" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        }
+      }
+    },
+    "家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores"
+          }
+        }
+      }
+    },
+    "家事の名前を入力" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a chore name"
+          }
+        }
+      }
+    },
+    "家事を完了にする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark Chores as Done"
+          }
+        }
+      }
+    },
+    "家事タブの「完了」に並んだ家事のハートから送れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the heart on a chore under Done in the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの「未完了」に並んだ家事から操作できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available on chores under To Do in the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの右上の「選択」から使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap Select at the top right of the Chores tab"
+          }
+        }
+      }
+    },
+    "家事タブの右上のボタンから設定できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set them up with the button at the top right of the Chores tab"
+          }
+        }
+      }
+    },
+    "家事テンプレート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Templates"
+          }
+        }
+      }
+    },
+    "家事達成割合とは？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What's Share of Chores Done?"
+          }
+        }
+      }
+    },
+    "広告を非表示にする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Ads"
+          }
+        }
+      }
+    },
+    "引き続き%@をご利用いただくには、App Storeからアップデートをお願いします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To keep using %@, please update it from the App Store."
+          }
+        }
+      }
+    },
+    "指定期間中において、達成した家事の数の合計からグループ内のユーザーの割合を示しています。\n達成した家事の数の観点から、家事貢献度を図ることができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows each member's share of all the chores completed in the selected period.\nIt lets you gauge contributions by the number of chores completed."
+          }
+        }
+      }
+    },
+    "操作が完了しませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't complete the action"
+          }
+        }
+      }
+    },
+    "新しいバージョンがあります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A new version is available"
+          }
+        }
+      }
+    },
+    "日" : {
+      "comment" : "曜日を選ぶボタンに出すSundayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Su"
+          }
+        }
+      }
+    },
+    "日付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
+    "時間をおいて、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please wait a moment and try again."
+          }
+        }
+      }
+    },
+    "月" : {
+      "comment" : "曜日を選ぶボタンに出すMondayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mo"
+          }
+        }
+      }
+    },
+    "木" : {
+      "comment" : "曜日を選ぶボタンに出すThursdayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Th"
+          }
+        }
+      }
+    },
+    "未選択" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Selected"
+          }
+        }
+      }
+    },
+    "次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
+    "毎日" : {
+      "comment" : "家事のくり返しの種類",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily"
+          }
+        }
+      }
+    },
+    "毎月" : {
+      "comment" : "家事のくり返しの種類",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly"
+          }
+        }
+      }
+    },
+    "毎週" : {
+      "comment" : "家事のくり返しの種類",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekly"
+          }
+        }
+      }
+    },
+    "毎週やる家事を曜日ごとに登録しておくと、家事ボードに自動で並びます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Register your weekly chores by day of the week, and they'll show up on your chore list automatically."
+          }
+        }
+      }
+    },
+    "水" : {
+      "comment" : "曜日を選ぶボタンに出すWednesdayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We"
+          }
+        }
+      }
+    },
+    "火" : {
+      "comment" : "曜日を選ぶボタンに出すTuesdayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu"
+          }
+        }
+      }
+    },
+    "無料プランでは、メモを%lld文字まで書けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the Free Plan, notes can be up to %lld characters."
+          }
+        }
+      }
+    },
+    "画面下の「ダッシュボード」タブから開けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it from the Dashboard tab at the bottom of the screen"
+          }
+        }
+      }
+    },
+    "画面下の「家事」タブから開けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open it from the Chores tab at the bottom of the screen"
+          }
+        }
+      }
+    },
+    "登録が完了しました！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration complete!"
+          }
+        }
+      }
+    },
+    "終わった家事は、行の右にある✓ボタンから完了にできます。誰がどの家事をしたかが記録されます。「…」ボタンからは、やらないにするなどほかの操作もできます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark a finished chore as done with the ✓ button on the right of its row, and it records who did it. The “…” button has other actions, such as Won't Do."
+          }
+        }
+      }
+    },
+    "設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "認証に失敗しました。再度サインインをお試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication failed. Please try signing in again."
+          }
+        }
+      }
+    },
+    "説明のカード" : {
+      "shouldTranslate" : false
+    },
+    "買う物や手順などを書いておけます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jot down things to buy, steps, and more"
+          }
+        }
+      }
+    },
+    "通信に失敗しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection failed"
+          }
+        }
+      }
+    },
+    "通信状態をご確認のうえ、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try again."
+          }
+        }
+      }
+    },
+    "通知を受け取りませんか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on notifications?"
+          }
+        }
+      }
+    },
+    "通知を受け取る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn On Notifications"
+          }
+        }
+      }
+    },
+    "金" : {
+      "comment" : "曜日を選ぶボタンに出すFridayの1文字の略称",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fr"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "項目を入力" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter an item"
+          }
+        }
+      }
+    },
+    "項目を削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Item"
+          }
+        }
+      }
+    },
+    "項目を追加" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Item"
+          }
+        }
+      }
+    },
+    "＋ボタンから、やる家事を登録しておけます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the chores you plan to do with the + button."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

@@ -4,6 +4,7 @@
 //
 
 #if canImport(RevenueCat)
+import HometeDomain
 import RevenueCat
 #endif
 #if canImport(RevenueCatUI)
@@ -38,8 +39,8 @@ private extension PaywallScreen {
 
     var unavailableContent: some View {
         VStack(spacing: 16) {
-            Text("現在プレミアムプランをご利用いただけません")
-            Button("閉じる") {
+            Text("現在プレミアムプランをご利用いただけません", bundle: #bundle)
+            Button(.localized("閉じる")) {
                 dismiss()
             }
         }

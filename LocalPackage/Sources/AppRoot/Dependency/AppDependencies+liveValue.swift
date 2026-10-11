@@ -28,9 +28,12 @@ public extension AppDependencies {
         notificationPermissionClient: liveNotificationPermissionClient,
         notificationGuideStateClient: .liveValue,
         appReviewStateClient: .liveValue,
+        registrationTutorialStateClient: .liveValue,
         pasteboardClient: livePasteboardClient,
         dailyCompletionReminderClient: .liveValue,
         remoteConfigClient: .liveValue,
+        encouragementCommentClient: .liveValue,
+        encouragementCommentCacheClient: .liveValue,
         debugAuthClient: liveDebugAuthClient
     )
 

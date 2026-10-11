@@ -10,8 +10,8 @@ import SwiftUI
 /// 家事の完了・ありがとうのハーフモーダルで使う、コメントの入力欄
 struct HouseworkCommentInputContent: View {
 
-    let title: String
-    let placeholder: String
+    let title: LocalizedStringResource
+    let placeholder: LocalizedStringResource
     @Binding var text: String
     /// 入力欄のフォーカス。開いた直後にキーボードを出すかどうかは呼び出し側で決める
     let focus: FocusState<Bool>.Binding
@@ -20,7 +20,7 @@ struct HouseworkCommentInputContent: View {
         VStack(alignment: .leading, spacing: .space8) {
             Text(title)
                 .font(with: .headLineS)
-                .foregroundStyle(.onSurface)
+                .foregroundStyle(.textPrimary)
             TextField(placeholder, text: $text, axis: .vertical)
                 .focused(focus)
                 .font(with: .body)
@@ -30,8 +30,8 @@ struct HouseworkCommentInputContent: View {
                 .padding(.space16)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .background {
-                    RoundedRectangle(radius: .radius8)
-                        .fill(.subSurface)
+                    RoundedRectangle(radius: .radius12)
+                        .fill(.backgroundCard)
                 }
         }
     }
@@ -56,7 +56,7 @@ struct HouseworkCommentInputContent: View {
 
     HouseworkCommentInputContent(
         title: "メッセージ",
-        placeholder: "感謝を伝えましょう！",
+        placeholder: "ひとこと添えてみませんか（例：助かったよ）",
         text: .constant("いつもありがとう！"),
         focus: $isShowingKeyboard
     )

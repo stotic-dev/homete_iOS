@@ -1,0 +1,10 @@
+Thank you for using homeau.
+
+- homeau is now available in English
+- You can now add notes to chores. Keep shopping lists or steps as a checklist and share them with your household
+- Complete, thank, or skip a chore right from its row on the chore board
+- Add the people who helped with a completed chore later on, and split the points with them
+- A heart animation now celebrates each "thank you" you send
+- Other usability improvements and minor bug fixes
+
+A little reward for everyday chores.

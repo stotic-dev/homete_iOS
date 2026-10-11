@@ -51,8 +51,9 @@ public extension DailyCompletionReminderClient {
             },
             schedule: { request in
                 let content = UNMutableNotificationContent()
-                content.title = request.title
-                content.body = request.body
+                // 予約した時点のアプリの言語で文面を決める
+                content.title = DailyCompletionReminderRequest.title.resolved()
+                content.body = request.body()
                 content.sound = .default
                 let trigger = UNCalendarNotificationTrigger(dateMatching: request.fireDateComponents, repeats: false)
                 try await UNUserNotificationCenter.current().add(

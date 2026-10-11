@@ -9,7 +9,7 @@ Swiftファイルで`NavigationStack`を用いたpush遷移を実装する際は
 
 ## 対象となる画面（NavigationStackを直接所有するfeature root）
 
-`NavigationStack`を持ち、複数の遷移先を持つ画面（例: `SettingViewScreen`、`HouseworkBoardView`）は、以下の「Route enum + AppNavigationPath」パターンで実装する。
+`NavigationStack`を持ち、複数の遷移先を持つ画面（例: `SettingViewScreen`、`HouseworkBoardScreen`）は、以下の「Route enum + AppNavigationPath」パターンで実装する。
 
 ### 1. Route enumを定義する
 
@@ -75,7 +75,7 @@ private extension SettingViewScreen {
 
 ### 3. 子Viewからの遷移トリガーは `navigationPath.push(...)`
 
-子Viewは`@Environment(\.xxxNavigationPath) var navigationPath`でパスを受け取り、`Button`のaction内で`navigationPath.push(.case)`を呼ぶ。`NavigationLink(value:)`は使わない（値駆動の`NavigationLink`と`AppNavigationPath`によるpush管理が二重化するため）。
+子Viewは`@Environment(\.xxxNavigationPath) var navigationPath`でパスを受け取り、`Button`のaction内で`navigationPath.push(.case)`を呼ぶ。UIのみのView（[ui-logic-view-separation.md](ui-logic-view-separation.md)）はパスを受け取らず、タップをクロージャで伝えて`NavigationStack`を持つ側が`push`する。`NavigationLink(value:)`は使わない（値駆動の`NavigationLink`と`AppNavigationPath`によるpush管理が二重化するため）。
 
 ```swift
 Button {
@@ -98,8 +98,7 @@ Button {
 ## 参照実装
 
 - `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardRoute.swift`
-- `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardView.swift`
-- `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkBoardListContent.swift`
+- `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen.swift`
 - `LocalPackage/Sources/Features/SettingFeature/SettingRoute.swift`
 - `LocalPackage/Sources/Features/SettingFeature/SettingView.swift`
 - `LocalPackage/Sources/HometeUI/ViewUtilities/Navigation/AppNavigationPath.swift`

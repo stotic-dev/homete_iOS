@@ -31,7 +31,7 @@ public struct NavigationBarPrimaryActionButton: View {
             basicButton()
             #endif
         }
-        .tint(.accent)
+        .tint(.fillAccent)
     }
 
 }
