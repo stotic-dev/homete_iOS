@@ -94,7 +94,11 @@ private extension ContributionAnalyticsView {
 
     func emptyContent() -> some View {
         ContentUnavailableView {
-            Label(.localized("この期間に達成された家事はありません"), systemImage: "chart.bar.xaxis")
+            Label {
+                Text("この期間に達成された家事はありません", bundle: #bundle)
+            } icon: {
+                HometteView(.cheer)
+            }
         } description: {
             Text("期間を変えると、前の記録も見られます", bundle: #bundle)
         } actions: {

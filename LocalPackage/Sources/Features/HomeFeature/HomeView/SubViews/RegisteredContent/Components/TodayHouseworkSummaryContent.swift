@@ -82,6 +82,9 @@ private extension TodayHouseworkSummaryContent {
 
     func emptyContent() -> some View {
         VStack(spacing: .zero) {
+            HometteView(.cheer)
+            Spacer()
+                .frame(height: .space16)
             Text("今日の家事がありません", bundle: #bundle)
                 .font(with: .headLineS)
             Spacer()
@@ -100,9 +103,7 @@ private extension TodayHouseworkSummaryContent {
 
     func allCompletedContent() -> some View {
         VStack(spacing: .space8) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(.fillAccent)
+            HometteView(.rest, size: .small)
             Text("今日の家事は、ぜんぶ終わりました", bundle: #bundle)
                 .font(with: .headLineS)
         }

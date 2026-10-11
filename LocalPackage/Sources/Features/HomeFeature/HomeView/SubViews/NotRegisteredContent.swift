@@ -6,7 +6,6 @@
 //
 
 import HometeDomain
-import HometeResources
 import HometeUI
 import SwiftUI
 
@@ -23,11 +22,7 @@ struct NotRegisteredContent: View {
             Spacer()
                 .frame(height: .space24)
             VStack(spacing: .space24) {
-                Image(.suggest_partner)
-                    .resizable()
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(contentMode: .fit)
-                    .cornerRadius(.radius20)
+                HometteView(.cheer, size: .large)
                 VStack(spacing: .space8) {
                     Text("まだパートナーが登録されていません", bundle: #bundle)
                         .font(with: .headLineS)
