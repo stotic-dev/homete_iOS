@@ -8,6 +8,8 @@ import SwiftUI
 
 /// ありがとうを伝えたときに、中央のハートがふくらんで小さなハートが飛び散る演出
 ///
+/// 中央のハートの下には、ハートをわたすほめっとを一緒に出す。
+///
 /// 表示されたときから再生を始め、終わったら`completion`を呼ぶ。
 struct ThanksHeartBurstView: View {
 
@@ -64,17 +66,22 @@ struct ThanksHeartCanvas: View {
                     )
                 }
             }
+            let centerHeart = ThanksHeartMotion.centerHeart(at: elapsed, isReduceMotion: isReduceMotion)
+            // ほめっとはハートと一緒にふくらんで消える。ハートが浮き上がっても、ほめっとはその場に残す
             draw(
-                ThanksHeartMotion.centerHeart(at: elapsed, isReduceMotion: isReduceMotion),
-                symbol: SymbolID.primary,
-                from: origin,
+                .init(offset: .zero, size: centerHeart.size, opacity: centerHeart.opacity),
+                symbol: SymbolID.homette,
+                from: CGPoint(x: origin.x, y: origin.y + Self.hometteOffsetY),
                 in: context
             )
+            draw(centerHeart, symbol: SymbolID.primary, from: origin, in: context)
         } symbols: {
             heartSymbol(color: .fillThanks)
                 .tag(SymbolID.primary)
             heartSymbol(color: .pink.opacity(0.8))
                 .tag(SymbolID.secondary)
+            HometteView(.holdHeart)
+                .tag(SymbolID.homette)
         }
         .accessibilityHidden(true)
     }
@@ -87,8 +94,12 @@ private extension ThanksHeartCanvas {
 
         static let primary = 0
         static let secondary = 1
+        static let homette = 2
 
     }
+
+    /// 中央のハートから、ほめっとの中心までの距離。ハートの下に、少しだけ重ねて置く
+    static let hometteOffsetY: CGFloat = 104
 
     func heartSymbol(color: Color) -> some View {
         Image(systemName: "heart.fill")

@@ -4,6 +4,28 @@
     "" : {
 
     },
+    "%@、おつかれさま！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is done. Nice work!"
+          }
+        }
+      }
+    },
+    "%@、きっちりおわったね！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is all done. Great job!"
+          }
+        }
+      }
+    },
     "%@の割合" : {
       "localizations" : {
         "en" : {
@@ -56,6 +78,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In months without day %lld, it appears on the last day of the month."
+          }
+        }
+      }
+    },
+    "+%lldpt" : {
+      "comment" : "家事を完了してもらえたポイント",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lldpt"
           }
         }
       }
@@ -240,6 +273,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Try Again"
+          }
+        }
+      }
+    },
+    "やったね、%@おわり！" : {
+      "comment" : "ほめっとのセリフ。家事の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yay, %@ is done!"
           }
         }
       }
