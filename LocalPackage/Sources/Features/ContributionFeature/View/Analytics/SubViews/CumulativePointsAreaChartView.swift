@@ -93,9 +93,11 @@ private extension CumulativePointsAreaChartView {
 
     func userCumulativeArea(_ userData: ViewablePointList) -> some ChartContent {
         ForEach(userData.sortedElements, id: \.self) { element in
+            // 面を積み上げると上の人の面が線より高く描かれるため、線と同じ高さに重ねる
             AreaMark(
                 x: .value(.localized("日付"), element.date),
-                y: .value(.localized("累計ポイント"), element.point.value)
+                y: .value(.localized("累計ポイント"), element.point.value),
+                stacking: .unstacked
             )
             .foregroundStyle(by: .value(.localized("ユーザー"), userData.userName))
             .opacity(0.4)
