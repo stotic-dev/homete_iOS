@@ -36,8 +36,10 @@ struct ContributionPieChart: View {
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
+                .softCornerStyle()
                 .foregroundStyle(by: .value(.localized("名前"), item.userName))
             }
+            .memberChartForegroundStyle(memberNames: data.map(\.userName))
             .chartLegend(position: .bottom, alignment: .center)
         }
     }

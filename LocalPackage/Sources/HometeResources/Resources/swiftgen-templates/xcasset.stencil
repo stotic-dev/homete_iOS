@@ -59,7 +59,6 @@ public extension UIColor {
 // MARK: - SwiftUI ShapeStyle shortcuts (Colors)
 
 {% macro shapeStyleColorCases assets %}
-public extension ShapeStyle where Self == Color {
   {%- for asset in assets %}
     {%- if asset.type == "color" %}
   static var {{ asset.name|swiftIdentifier:"pretty"|lowerFirstWord|escapeReservedKeywords }} : Color { .init("{{ asset.value }}", bundle: .module) }
@@ -67,16 +66,13 @@ public extension ShapeStyle where Self == Color {
       {%- call shapeStyleColorCases asset.items %}
     {%- endif %}
   {%- endfor %}
-}
 {% endmacro %}
 
-{% if catalogs.count > 1 %}
+public extension ShapeStyle where Self == Color {
   {%- for catalog in catalogs %}
-    {%- call shapeStyleColorCases catalog.assets %}
+  {%- call shapeStyleColorCases catalog.assets %}
   {%- endfor %}
-{% else %}
-  {%- call shapeStyleColorCases catalogs.first.assets %}
-{% endif %}
+}
 
 // MARK: - Images
 

@@ -65,17 +65,21 @@ private extension TodayContributionChartSection {
                     innerRadius: .ratio(0.5),
                     angularInset: 2
                 )
+                .softCornerStyle()
                 .foregroundStyle(by: .value(.localized("名前"), item.userName))
                 .annotation(position: .overlay) {
                     if amount > 0 {
+                        // メンバーの色によって白い文字が読みにくくなるため、カードの色の台に載せる
                         Text(amountText)
-                            .font(with: .caption)
-                            .foregroundStyle(.white)
+                            .font(with: .boldCaption)
+                            .foregroundStyle(.textPrimary)
+                            .padding(.horizontal, .space8)
+                            .padding(.vertical, .space4)
+                            .background(.backgroundCard, in: Capsule())
                     }
                 }
             }
-            // 実績0のメンバーは扇形が無いため、凡例から漏れないよう全員を明示する
-            .chartForegroundStyleScale(domain: contributions.map(\.userName))
+            .memberChartForegroundStyle(memberNames: contributions.map(\.userName))
             .chartLegend(position: .bottom, alignment: .center)
         }
     }
