@@ -6,7 +6,6 @@
 //
 
 import HometeDomain
-import HometeResources
 import HometeUI
 import SwiftUI
 
@@ -33,11 +32,7 @@ struct CohabitantRegistrationInitialStateView: View {
             }
             Spacer()
                 .frame(height: .space24)
-            Image(.cohabitantsRegistrationGuide)
-                .resizable()
-                .frame(maxWidth: .infinity)
-                .aspectRatio(contentMode: .fit)
-                .cornerRadius(.radius12)
+            HometteView(.point, size: .large)
             Spacer()
                 .frame(height: .space16)
             if let onTapInvite {

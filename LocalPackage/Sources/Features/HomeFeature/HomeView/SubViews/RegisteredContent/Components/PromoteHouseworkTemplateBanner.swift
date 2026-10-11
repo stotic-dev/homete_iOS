@@ -6,7 +6,6 @@
 //
 
 import HometeDomain
-import HometeResources
 import HometeUI
 import SwiftUI
 
@@ -16,11 +15,7 @@ struct PromoteHouseworkTemplateBanner: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: .space24) {
-            Image(.promoteHouseworkTemplateBannerIcon)
-                .resizable()
-                .frame(maxWidth: .infinity)
-                .aspectRatio(contentMode: .fit)
-                .cornerRadius(.radius12)
+            HometteView(.point)
             VStack(spacing: .space8) {
                 Text("家事のテンプレートはまだありません", bundle: #bundle)
                     .font(with: .headLineS)

@@ -31,6 +31,7 @@ public struct CohabitantCompletionView: View {
     public var body: some View {
         ZStack {
             VStack(spacing: .space16) {
+                HometteView(.praise, size: .large)
                 Text(title)
                     .font(with: .headLineL)
                 Text(message)

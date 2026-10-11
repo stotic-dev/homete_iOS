@@ -20,9 +20,7 @@ public struct LoadErrorView: View {
     public var body: some View {
         VStack(spacing: .space24) {
             VStack(spacing: .space16) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.iconDecorative)
+                HometteView(.puzzled)
                 Text("うまく読み込めませんでした", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)

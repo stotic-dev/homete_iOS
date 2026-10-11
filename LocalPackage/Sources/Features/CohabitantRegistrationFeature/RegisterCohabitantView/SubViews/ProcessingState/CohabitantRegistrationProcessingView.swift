@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
-import HometeResources
 import HometeUI
 import SwiftUI
 
@@ -22,11 +21,7 @@ struct CohabitantRegistrationProcessingView: View {
                     Text("共に家事を頑張るパートナーへ、エールを送り合いませんか？", bundle: #bundle)
                 }
                 .font(with: .headLineM)
-                Image(.cohabitantsHandShake)
-                    .resizable()
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(contentMode: .fit)
-                    .cornerRadius(.radius12)
+                HometteView(.normal, size: .large)
                 Text("しばらくお待ちください", bundle: #bundle)
                     .font(with: .caption)
             }
