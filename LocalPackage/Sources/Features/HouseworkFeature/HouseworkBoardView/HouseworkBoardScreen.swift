@@ -47,6 +47,8 @@ public struct HouseworkBoardScreen: View {
     @State var thanksFeedbackCount = 0
     /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
     @State var hasPendingThanksFeedback = false
+    /// まとめて完了にできたときの、ほめっとがほめる内容。入ると演出を出す
+    @State var bulkCompletionPraise: HometteCompletionPraise?
 
     @LoadingState var loadingState
     @CommonError var commonError
@@ -157,6 +159,8 @@ private extension HouseworkBoardScreen {
                 }
             }
             .thanksFeedback(trigger: thanksFeedbackCount)
+            // まとめて完了は完了のハーフモーダルを通らないため、ボードに重ねてほめる
+            .completionPraise($bulkCompletionPraise)
             .commonError(content: $commonError)
             .fullScreenLoadingIndicator(loadingState)
             .trackScreenView(.houseworkBoard)
@@ -331,6 +335,12 @@ private extension HouseworkBoardScreen {
                 // 何件伝えても演出は1回だけにする
                 if hasSentFirstThanks {
                     thanksFeedbackCount += 1
+                }
+                if action == .complete {
+                    bulkCompletionPraise = .init(
+                        completedCount: targets.count,
+                        point: targets.reduce(0) { $0 + $1.originalItem.point }
+                    )
                 }
             } catch {
                 commonError = .init(error: error)

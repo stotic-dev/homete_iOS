@@ -27,6 +27,7 @@ public extension AppDependencies {
         mobileAdsClient: .liveValue,
         notificationPermissionClient: liveNotificationPermissionClient,
         notificationGuideStateClient: .liveValue,
+        appReviewStateClient: .liveValue,
         registrationTutorialStateClient: .liveValue,
         pasteboardClient: livePasteboardClient,
         dailyCompletionReminderClient: .liveValue,

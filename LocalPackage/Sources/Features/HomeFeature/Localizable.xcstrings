@@ -1,6 +1,28 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
+    "%@から「ありがとう」が%lld件届いたよ" : {
+      "comment" : "ほめっとのセリフ。1つめはありがとうを送ってくれた人の名前を並べたもの、2つめは届いた件数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sent you thanks %2$lld times!"
+          }
+        }
+      }
+    },
+    "%@から「ありがとう」が届いたよ" : {
+      "comment" : "ほめっとのセリフ。ありがとうを送ってくれた人の名前が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sent you thanks!"
+          }
+        }
+      }
+    },
     "%@が%lld件の家事をしてくれました。ありがとうを伝えてみませんか？" : {
       "comment" : "1つめは家事をした人の名前を並べたもの、2つめは家事の件数",
       "localizations" : {
@@ -137,6 +159,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "About AI-written comments"
+          }
+        }
+      }
+    },
+    "「ありがとう」が%lld件届いたよ" : {
+      "comment" : "ほめっとのセリフ。自分の家事に届いたありがとうの件数が入る",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You got %lld thanks!"
           }
         }
       }
