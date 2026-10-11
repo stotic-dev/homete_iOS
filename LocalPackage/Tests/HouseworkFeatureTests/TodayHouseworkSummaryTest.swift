@@ -257,6 +257,36 @@ extension TodayHouseworkSummaryTest.ProgressCase {
 
 }
 
+extension TodayHouseworkSummaryTest.ProgressCase {
+
+    @Test("終わった家事の数は、完了とやらないにした家事を合わせた数になる")
+    func finishedCount_countsCompletedAndNotTodo() {
+        // Arrange
+
+        let input = TodayHouseworkSummaryTest.makeStoredForToday(items: [
+            .makeForTest(id: 1, state: .completed),
+            .makeForTest(id: 2, state: .notTodo),
+            .makeForTest(id: 3, state: .incomplete),
+        ])
+        let summary = TodayHouseworkSummary.make(
+            storedAllItems: input,
+            template: nil,
+            now: TodayHouseworkSummaryTest.today,
+            calendar: TodayHouseworkSummaryTest.calendar,
+            storagePolicy: .free
+        )
+
+        // Act
+
+        let actual = summary.finishedCount
+
+        // Assert
+
+        #expect(actual == 2)
+    }
+
+}
+
 extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
 
     @Test("未完了が4件以下の場合はhasMoreIncompleteがfalseになり全件表示される")

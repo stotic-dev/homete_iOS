@@ -86,6 +86,11 @@ public extension TodayHouseworkSummary {
         )
     }
 
+    /// 終わった家事の数。進捗率と同じく、やらないにした家事も終わった側に数える
+    var finishedCount: Int {
+        allItems.count - incompleteItems.count
+    }
+
     /// メンバーごとの当日の実績（`members.value` の順。自分が先頭）
     ///
     /// 月間の貢献度集計と同じく、完了（`completed`）の家事だけを担当者ごとに集計する。
