@@ -8,13 +8,15 @@ import HometeUI
 import HouseworkFeature
 import SwiftUI
 
-/// ダッシュボードの先頭に出す、ねぎらいのコメントと同居人への感謝の促し
+/// ダッシュボードの先頭に出す、ねぎらいのコメント・届いたありがとう・同居人への感謝の促し
 ///
 /// 何を出すかは呼び出し側が決め、このカードは渡された値を描いてタップを伝えるだけにする。
 struct EncouragementCommentCard: View {
 
     /// ねぎらいのコメント。生成を待っている間は`nil`
     let comment: EncouragementComment?
+    /// 自分の家事に届いたありがとう。届いていなければ`nil`
+    let receivedThanks: ReceivedThanksSummary?
     /// 感謝の促し。ありがとうを伝えられる家事がなければ`nil`
     let thanksPrompt: ThanksPromptSummary?
     let onTapThanks: () -> Void
@@ -28,6 +30,10 @@ struct EncouragementCommentCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             commentContent()
+            if let receivedThanks {
+                Divider()
+                HometteSpeechView(.thanks, message: receivedThanksMessage(receivedThanks))
+            }
             if let thanksPrompt {
                 Divider()
                 thanksPromptContent(thanksPrompt)
@@ -142,6 +148,25 @@ private extension EncouragementCommentCard {
         )
     }
 
+    /// ほめっとのセリフ。ほめっとの言葉なので、くだけた口調にする
+    func receivedThanksMessage(_ receivedThanks: ReceivedThanksSummary) -> LocalizedStringResource {
+        let count = receivedThanks.count
+        // 送ってくれた人がグループを抜けていると、名前を出せない
+        guard !receivedThanks.senderNames.isEmpty else {
+            return .localized("「ありがとう」が\(count)件届いたよ", comment: "ほめっとのセリフ。自分の家事に届いたありがとうの件数が入る")
+        }
+
+        let names = joinedNames(receivedThanks.senderNames)
+        guard count > 1 else {
+            return .localized("\(names)から「ありがとう」が届いたよ", comment: "ほめっとのセリフ。ありがとうを送ってくれた人の名前が入る")
+        }
+
+        return .localized(
+            "\(names)から「ありがとう」が\(count)件届いたよ",
+            comment: "ほめっとのセリフ。1つめはありがとうを送ってくれた人の名前を並べたもの、2つめは届いた件数"
+        )
+    }
+
     /// メンバーの名前に敬称を付けて並べる（例: Aさん・Bさん）
     func joinedNames(_ names: [String]) -> String {
         names
@@ -222,6 +247,7 @@ private extension EncouragementAICommentPopover {
             kind: .selfPraise,
             source: .generated
         ),
+        receivedThanks: nil,
         thanksPrompt: .init(thankableItems: [], notSentCount: 3, executorNames: ["はなこ"]),
         onTapThanks: {},
         onRate: { _ in }
@@ -236,6 +262,7 @@ private extension EncouragementAICommentPopover {
             kind: .selfPraise,
             source: .fixed
         ),
+        receivedThanks: nil,
         thanksPrompt: .init(thankableItems: [], notSentCount: 5, executorNames: ["はなこ", "じろう"]),
         onTapThanks: {},
         onRate: { _ in }
@@ -250,6 +277,7 @@ private extension EncouragementAICommentPopover {
             kind: .neutral,
             source: .fixed
         ),
+        receivedThanks: nil,
         thanksPrompt: nil,
         onTapThanks: {},
         onRate: { _ in }
@@ -257,8 +285,23 @@ private extension EncouragementAICommentPopover {
     .padding(.space16)
 }
 
+#Preview("EncouragementCommentCard_ありがとうが届いた", traits: .sizeThatFitsLayout) {
+    EncouragementCommentCard(
+        comment: .init(
+            text: "今日も洗い物と洗濯、おつかれさまです。3日続けて家事をしていて、すてきですね",
+            kind: .selfPraise,
+            source: .generated
+        ),
+        receivedThanks: .init(count: 2, senderNames: ["はなこ"]),
+        thanksPrompt: .init(thankableItems: [], notSentCount: 1, executorNames: ["はなこ"]),
+        onTapThanks: {},
+        onRate: { _ in }
+    )
+    .padding(.space16)
+}
+
 #Preview("EncouragementCommentCard_生成中", traits: .sizeThatFitsLayout) {
-    EncouragementCommentCard(comment: nil, thanksPrompt: nil, onTapThanks: {}, onRate: { _ in })
+    EncouragementCommentCard(comment: nil, receivedThanks: nil, thanksPrompt: nil, onTapThanks: {}, onRate: { _ in })
         .padding(.space16)
 }
 
