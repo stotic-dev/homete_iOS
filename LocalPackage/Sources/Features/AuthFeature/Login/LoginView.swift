@@ -20,6 +20,7 @@ public struct LoginView: View {
 
     public var body: some View {
         VStack(spacing: .space16) {
+            HometteView(.wave, size: .large)
             Text("\(Constants.appName)へようこそ", bundle: #bundle)
                 .font(with: .headLineL)
             Text("Appleアカウントで、すぐに始められます", bundle: #bundle)

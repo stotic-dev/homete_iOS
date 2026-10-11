@@ -44,10 +44,8 @@ private extension EncouragementCommentCard {
 
     func commentContent() -> some View {
         HStack(alignment: .top, spacing: .space8) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 20))
-                .foregroundStyle(.fillAccent)
-                .accessibilityHidden(true)
+            // ホームのあいさつとして、ほめっとを添える
+            HometteView(.normal, size: .small)
             // 生成を待つ間は、同じくらいの長さの文で枠だけを出し、カードの高さが変わらないようにする
             commentText
                 .font(with: .body)

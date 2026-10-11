@@ -24,6 +24,8 @@ struct RegistrationAccountView: View {
         NavigationStack {
             VStack(spacing: .space24) {
                 VStack(spacing: .space16) {
+                    // 入力中はキーボードで画面が狭くなるため、小さく出す
+                    HometteView(.wave, size: .small)
                     Text("はじめまして！", bundle: #bundle)
                         .font(with: .headLineM)
                     Text("まずはあなたのニックネームを教えてください", bundle: #bundle)
