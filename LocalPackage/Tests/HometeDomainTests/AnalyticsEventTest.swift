@@ -484,6 +484,20 @@ struct AnalyticsEventTest {
     }
 
     @Test(
+        "アプリの評価のリクエストを、triggerのパラメータを持つapp_reviewイベントに変換する",
+        arguments: [
+            (AppReviewTrigger.purchase, ["trigger": "purchase"]),
+            (AppReviewTrigger.thanksCount, ["trigger": "thanks_count"]),
+            (AppReviewTrigger.thanksAfterTwoWeeks, ["trigger": "thanks_after_two_weeks"]),
+        ]
+    )
+    func appReview(trigger: AppReviewTrigger, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.appReview(trigger: trigger)
+
+        #expect(actual == AnalyticsEvent(name: "app_review", parameters: expectedParameters))
+    }
+
+    @Test(
         "契約中プランの管理に関する行動を、action/resultのパラメータを持つsubscriptionイベントに変換する",
         arguments: [
             (

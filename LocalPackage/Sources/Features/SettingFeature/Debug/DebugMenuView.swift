@@ -16,6 +16,7 @@ struct DebugMenuView: View {
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
+    @Environment(\.appDependencies.appReviewStateClient) var appReviewStateClient
     /// 設定画面はタブの画面から開くため、通常は必ず注入されている
     @Environment(RegistrationTutorialStore.self) var registrationTutorialStore: RegistrationTutorialStore?
 
@@ -25,6 +26,7 @@ struct DebugMenuView: View {
     @State var isDailyCompletionReminderLimitDisabled = false
     @State var isShowRevokeResult = false
     @State var revokeResultMessage = ""
+    @State var appReviewState: AppReviewState?
 
     var body: some View {
         List {
@@ -65,6 +67,29 @@ struct DebugMenuView: View {
                     isShowPaywall = true
                 }
             }
+            Section(.localized("アプリ評価")) {
+                appReviewStateContent
+                Button(.localized("課金で出せる状態にする")) {
+                    prepareAppReview(.purchase)
+                }
+                Button(.localized("ありがとう10回で出せる状態にする")) {
+                    prepareAppReview(.thanksCount)
+                }
+                Button(.localized("使い始めて2週間後のありがとうで出せる状態にする")) {
+                    prepareAppReview(.thanksAfterTwoWeeks)
+                }
+                Button(.localized("記録をリセット"), role: .destructive) {
+                    resetAppReviewState()
+                }
+                Text("""
+                状態を整えた後、無料プランから課金するか、同居人からありがとうを受け取ると、評価ダイアログが出ます。\
+                ありがとうは、ボタンを押した後に新しく受け取ったものだけを数えます。
+
+                「記録をリセット」は、今日から使い始めた状態に戻します。
+                """, bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+            }
             Section(.localized("ログイン情報の失効")) {
                 Button(.localized("失効させる（アプリはこのまま）")) {
                     Task { await revokeRefreshTokens() }
@@ -101,6 +126,9 @@ struct DebugMenuView: View {
         .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistration) {
             router.resolve(.debugCohabitantRegistration)
         }
+        .onAppear {
+            appReviewState = appReviewStateClient.load()
+        }
         .task {
             isDailyCompletionReminderLimitDisabled = await dailyCompletionReminderUseCase.loadIsDailyLimitDisabled()
         }
@@ -119,6 +147,70 @@ private extension DebugMenuView {
                 await dailyCompletionReminderUseCase.updateIsDailyLimitDisabled(isDisabled)
             }
         }
+    }
+
+}
+
+// MARK: - アプリ評価
+
+private extension DebugMenuView {
+
+    @ViewBuilder
+    var appReviewStateContent: some View {
+        if let appReviewState {
+            LabeledContent {
+                Text("\(appReviewState.receivedThanksCount)回", bundle: #bundle)
+            } label: {
+                Text("受け取ったありがとう", bundle: #bundle)
+            }
+            LabeledContent {
+                Text(appReviewState.startedAt, format: .dateTime.year().month().day())
+            } label: {
+                Text("使い始めた日", bundle: #bundle)
+            }
+            LabeledContent {
+                Text(requestedTriggersText(appReviewState.requestedTriggers))
+            } label: {
+                Text("使ったきっかけ", bundle: #bundle)
+            }
+            LabeledContent {
+                if let lastRequestedAt = appReviewState.lastRequestedAt {
+                    Text(lastRequestedAt, format: .dateTime)
+                } else {
+                    Text("なし", bundle: #bundle)
+                }
+            } label: {
+                Text("最後のリクエスト", bundle: #bundle)
+            }
+        } else {
+            Text("まだ記録がありません。ホーム画面を開くと記録が始まります。", bundle: #bundle)
+        }
+    }
+
+    func requestedTriggersText(_ triggers: Set<AppReviewTrigger>) -> String {
+        let labels: [LocalizedStringResource] = [
+            triggers.contains(.purchase) ? .localized("課金") : nil,
+            triggers.contains(.thanksCount) ? .localized("ありがとう10回") : nil,
+            triggers.contains(.thanksAfterTwoWeeks) ? .localized("2週間後のありがとう") : nil,
+        ].compactMap(\.self)
+        return labels.isEmpty
+            ? LocalizedStringResource.localized("なし").resolved()
+            : labels.map { $0.resolved() }.joined(separator: "、")
+    }
+
+    func prepareAppReview(_ trigger: AppReviewTrigger) {
+        var policy = AppReviewPolicy(savedState: appReviewStateClient.load(), now: .now)
+        policy.makeReadyForDebug(trigger, now: .now)
+        saveAppReviewState(policy.state)
+    }
+
+    func resetAppReviewState() {
+        saveAppReviewState(AppReviewPolicy(savedState: nil, now: .now).state)
+    }
+
+    func saveAppReviewState(_ state: AppReviewState) {
+        appReviewStateClient.save(state)
+        appReviewState = state
     }
 
 }

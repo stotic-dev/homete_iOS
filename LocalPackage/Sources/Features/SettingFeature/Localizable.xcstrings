@@ -4,7 +4,13 @@
     "" : {
 
     },
+    "%lld回" : {
+      "shouldTranslate" : false
+    },
     "1日1回の制限を外す" : {
+      "shouldTranslate" : false
+    },
+    "2週間後のありがとう" : {
       "shouldTranslate" : false
     },
     "OK" : {
@@ -32,6 +38,12 @@
           }
         }
       }
+    },
+    "ありがとう10回" : {
+      "shouldTranslate" : false
+    },
+    "ありがとう10回で出せる状態にする" : {
+      "shouldTranslate" : false
     },
     "いつもの家事" : {
       "localizations" : {
@@ -63,6 +75,9 @@
         }
       }
     },
+    "なし" : {
+      "shouldTranslate" : false
+    },
     "ふりかえりの通知を受け取る" : {
       "localizations" : {
         "en" : {
@@ -83,7 +98,13 @@
         }
       }
     },
+    "まだ記録がありません。ホーム画面を開くと記録が始まります。" : {
+      "shouldTranslate" : false
+    },
     "アカウント登録からPaywallまでを表示" : {
+      "shouldTranslate" : false
+    },
+    "アプリ評価" : {
       "shouldTranslate" : false
     },
     "オフ" : {
@@ -279,6 +300,15 @@
         }
       }
     },
+    "使い始めた日" : {
+      "shouldTranslate" : false
+    },
+    "使い始めて2週間後のありがとうで出せる状態にする" : {
+      "shouldTranslate" : false
+    },
+    "使ったきっかけ" : {
+      "shouldTranslate" : false
+    },
     "利用規約" : {
       "localizations" : {
         "en" : {
@@ -288,6 +318,9 @@
           }
         }
       }
+    },
+    "受け取ったありがとう" : {
+      "shouldTranslate" : false
     },
     "同居人の登録" : {
       "shouldTranslate" : false
@@ -320,6 +353,9 @@
           }
         }
       }
+    },
+    "最後のリクエスト" : {
+      "shouldTranslate" : false
     },
     "有効期限" : {
       "localizations" : {
@@ -391,6 +427,9 @@
         }
       }
     },
+    "状態を整えた後、無料プランから課金するか、同居人からありがとうを受け取ると、評価ダイアログが出ます。ありがとうは、ボタンを押した後に新しく受け取ったものだけを数えます。\n\n「記録をリセット」は、今日から使い始めた状態に戻します。" : {
+      "shouldTranslate" : false
+    },
     "現在のプラン" : {
       "localizations" : {
         "en" : {
@@ -444,6 +483,9 @@
         }
       }
     },
+    "記録をリセット" : {
+      "shouldTranslate" : false
+    },
     "設定" : {
       "localizations" : {
         "en" : {
@@ -458,6 +500,9 @@
       "shouldTranslate" : false
     },
     "課金" : {
+      "shouldTranslate" : false
+    },
+    "課金で出せる状態にする" : {
       "shouldTranslate" : false
     },
     "購入の復元" : {
