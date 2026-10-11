@@ -21,27 +21,4 @@ struct AllUserPointSummary: Equatable {
         !items.allSatisfy { $0.achievedCount == 0 }
     }
 
-    /// ランキング形式のアイテム一覧を生成する
-    func makeRanking() -> [ContributionRankItem] {
-        items.sorted { $0.monthlyPoint.value > $1.monthlyPoint.value }
-            .enumerated()
-            .map { index, item in
-                ContributionRankItem(
-                    rank: index + 1,
-                    userId: item.userId,
-                    userName: item.userName,
-                    isMe: item.isMe,
-                    monthlyPoint: item.monthlyPoint,
-                    achievedCount: item.achievedCount
-                )
-            }
-    }
-
-    /// サマリー情報からユーザー毎の達成情報のモデルを返す
-    func achieved() -> [UserHouseworkAchieved] {
-        items.map {
-            .init(userId: $0.userId, userName: $0.userName, achievedCount: $0.achievedCount)
-        }
-    }
-
 }
