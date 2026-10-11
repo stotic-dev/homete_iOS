@@ -36,10 +36,13 @@ public struct NotificationPermissionGuideView: View {
                 Text("通知を受け取りませんか？", bundle: #bundle)
                     .font(with: .headLineM)
                     .multilineTextAlignment(.center)
-                Text("パートナーが家事を完了したときにお知らせします。\nお互いの家事に気づけると、「ありがとう」を伝えやすくなります。", bundle: #bundle)
-                    .font(with: .body)
-                    .foregroundStyle(.textSecondary)
-                    .multilineTextAlignment(.center)
+                Text(
+                    "パートナーが家事を終えたときや、メッセージ付きの「ありがとう」が届いたときにお知らせします。\n家事が終わった日の夜には、ふりかえりの通知も届きます。時刻は設定で変えられます。",
+                    bundle: #bundle
+                )
+                .font(with: .body)
+                .foregroundStyle(.textSecondary)
+                .multilineTextAlignment(.center)
             }
             Spacer(minLength: .space24)
             VStack(spacing: .space16) {
