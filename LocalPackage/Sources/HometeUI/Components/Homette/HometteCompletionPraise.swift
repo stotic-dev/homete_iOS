@@ -8,20 +8,38 @@ import HometeResources
 import SwiftUI
 
 /// 家事を完了したときに、ほめっとがほめる内容
-public struct HometteCompletionPraise: Equatable, Sendable {
+public struct HometteCompletionPraise: Hashable, Sendable {
 
-    /// 完了した家事の名前
-    let houseworkTitle: String
+    /// 何を完了したか
+    let subject: Subject
     /// 担当者に配ったポイントの合計
     let point: Int
     /// セリフの種類
     let line: Line
 
+    /// 1件の家事を完了したときにほめる
     /// - Parameter line: 飽きにくいように、指定しなければ完了のたびにランダムに選ぶ
     public init(houseworkTitle: String, point: Int, line: Line = Line.allCases.randomElement() ?? .done) {
-        self.houseworkTitle = houseworkTitle
+        subject = .housework(title: houseworkTitle)
         self.point = point
         self.line = line
+    }
+
+    /// まとめて完了したときに、件数でほめる
+    /// - Parameter line: 飽きにくいように、指定しなければ完了のたびにランダムに選ぶ
+    public init(completedCount: Int, point: Int, line: Line = Line.allCases.randomElement() ?? .done) {
+        subject = .count(completedCount)
+        self.point = point
+        self.line = line
+    }
+
+    enum Subject: Hashable {
+
+        /// 1件の家事。家事の名前でほめる
+        case housework(title: String)
+        /// まとめて完了した家事の件数
+        case count(Int)
+
     }
 
     public enum Line: CaseIterable, Sendable {
@@ -34,10 +52,49 @@ public struct HometteCompletionPraise: Equatable, Sendable {
 
 }
 
+public extension View {
+
+    /// 家事を完了したときに、ほめっとのセリフと「+pt」の演出を画面の下に重ねてほめる
+    ///
+    /// 完了のハーフモーダルを通らない操作（まとめて完了など）で使う。演出は2秒ほどでふわっと消え、
+    /// その間も下の画面は操作できる。
+    /// - Parameter praise: 値が入ると演出を再生し、終わると`nil`に戻す
+    func completionPraise(_ praise: Binding<HometteCompletionPraise?>) -> some View {
+        modifier(CompletionPraiseModifier(praise: praise))
+    }
+
+}
+
+private struct CompletionPraiseModifier: ViewModifier {
+
+    @Binding var praise: HometteCompletionPraise?
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if let praise {
+                    HometteCompletionPraisePlayer(praise: praise) {
+                        withAnimation(.easeIn(duration: 0.3)) {
+                            self.praise = nil
+                        }
+                    }
+                    // 続けて完了したときは、途中の演出を最初からやり直す
+                    .id(praise)
+                    .padding(.horizontal, .space16)
+                    .padding(.bottom, .space24)
+                    .transition(.opacity)
+                    // 演出の間も下の画面を操作できるようにする
+                    .allowsHitTesting(false)
+                }
+            }
+    }
+
+}
+
 /// 家事を完了したときに、ほめっとのセリフと「+pt」の演出でほめる
 ///
-/// 表示されたときから再生を始め、見せ終わったら`completion`を呼ぶ。完了のハーフモーダルの中で出し、
-/// `completion`でモーダルを閉じる想定のため、消えるアニメーションは付けない（閉じる動きと重なるため）。
+/// 表示されたときから再生を始め、見せ終わったら`completion`を呼ぶ。消えるアニメーションは付けないので、
+/// 完了のハーフモーダルの中ではモーダルを閉じ、画面に重ねるときは呼び出し側で消し方を決める。
 /// 触覚で手応えを返し、VoiceOverにはセリフを読み上げさせる。
 public struct HometteCompletionPraisePlayer: View {
 
@@ -130,6 +187,16 @@ private extension HometteCompletionPraise {
 
     /// ほめっとのセリフ。ほめっとの言葉なので、くだけた口調にする
     var message: LocalizedStringResource {
+        switch subject {
+        case let .housework(title):
+            houseworkMessage(title: title)
+
+        case let .count(count):
+            countMessage(count: count)
+        }
+    }
+
+    func houseworkMessage(title houseworkTitle: String) -> LocalizedStringResource {
         switch line {
         case .done:
             .localized("やったね、\(houseworkTitle)おわり！", comment: "ほめっとのセリフ。家事の名前が入る")
@@ -139,6 +206,19 @@ private extension HometteCompletionPraise {
 
         case .allDone:
             .localized("\(houseworkTitle)、きっちりおわったね！", comment: "ほめっとのセリフ。家事の名前が入る")
+        }
+    }
+
+    func countMessage(count: Int) -> LocalizedStringResource {
+        switch line {
+        case .done:
+            .localized("やったね、\(count)件おわり！", comment: "ほめっとのセリフ。まとめて完了した家事の件数が入る")
+
+        case .goodJob:
+            .localized("\(count)件、おつかれさま！", comment: "ほめっとのセリフ。まとめて完了した家事の件数が入る")
+
+        case .allDone:
+            .localized("\(count)件、きっちりおわったね！", comment: "ほめっとのセリフ。まとめて完了した家事の件数が入る")
         }
     }
 
@@ -171,6 +251,17 @@ private extension HometteCompletionPraise {
         praise: .init(houseworkTitle: "キッチンの換気扇のフィルター交換", point: 50, line: .allDone),
         isAppeared: true,
         isPointRaised: false,
+        isReduceMotion: false
+    )
+    .padding(.space16)
+    .background(.backgroundScreen)
+}
+
+#Preview("HometteCompletionPraiseView_まとめて完了", traits: .sizeThatFitsLayout) {
+    HometteCompletionPraiseView(
+        praise: .init(completedCount: 3, point: 60, line: .done),
+        isAppeared: true,
+        isPointRaised: true,
         isReduceMotion: false
     )
     .padding(.space16)

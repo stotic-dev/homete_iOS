@@ -62,6 +62,52 @@
         }
       }
     },
+    "%lld件、おつかれさま！" : {
+      "comment" : "ほめっとのセリフ。まとめて完了した家事の件数が入る",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore done. Nice work!"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores done. Nice work!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld件、きっちりおわったね！" : {
+      "comment" : "ほめっとのセリフ。まとめて完了した家事の件数が入る",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chore, all done. Great job!"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld chores, all done. Great job!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld日" : {
       "localizations" : {
         "en" : {
@@ -284,6 +330,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yay, %@ is done!"
+          }
+        }
+      }
+    },
+    "やったね、%lld件おわり！" : {
+      "comment" : "ほめっとのセリフ。まとめて完了した家事の件数が入る",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Yay, %lld chore is done!"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Yay, %lld chores are done!"
+                }
+              }
+            }
           }
         }
       }
