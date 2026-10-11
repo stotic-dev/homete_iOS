@@ -182,7 +182,7 @@ DEBUGビルドの「設定 → デバッグメニュー → アプリ評価」�
 | 新規テスト | `LocalPackage/Tests/HometeDomainTests/AppReview/AppReviewPolicyTest.swift` | 判定ロジックのテスト |
 | 修正デバッグ | `LocalPackage/Sources/Features/SettingFeature/Debug/DebugMenuView.swift` | 記録の確認と、評価ダイアログを出せる状態への書き換え |
 | 修正ドキュメント | `doc/analytics_events.md` | `app_review`イベントを追記 |
-| 新規ADR | `doc/adr/0041-app-review-request-triggers.md` | トリガーと数え方の決定経緯 |
+| 新規ADR | `doc/adr/0043-app-review-request-triggers.md` | トリガーと数え方の決定経緯 |
 
 ## タスク
 
@@ -206,7 +206,7 @@ DEBUGビルドの「設定 → デバッグメニュー → アプリ評価」�
 - [x] `AppReviewPolicyTest`を追加
 - [x] `AppReviewRequestModifier`を実装し、`AppTabView`に付ける
 - [x] `doc/analytics_events.md`に`app_review`を追記
-- [x] ADR-0041を作成
+- [x] ADR-0043を作成
 
 ### Phase 3: 検証
 

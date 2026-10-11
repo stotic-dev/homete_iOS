@@ -536,7 +536,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 ### `app_review`
 
 アプリの評価（OS標準の評価ダイアログ）をリクエストした。きっかけの判定と頻度の制限は`AppReviewPolicy`が行う
-（経緯は[ADR-0041](adr/0041-app-review-request-triggers.md)）。
+（経緯は[ADR-0043](adr/0043-app-review-request-triggers.md)）。
 
 | 項目 | 内容 |
 |---|---|
