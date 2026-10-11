@@ -18,8 +18,6 @@ private struct AppReviewRequestModifier: ViewModifier {
     @Environment(\.loginContext) var loginContext
     @Environment(SubscriptionStore.self) var subscriptionStore
 
-    /// 記録を読み込むまでは`nil`。読み込む前の変化は判定しない
-    @State var policy: AppReviewPolicy?
     /// 待ってから評価ダイアログをリクエストする処理。画面が消えたら取り消す
     @State var requestTask: Task<Void, Never>?
 
@@ -28,7 +26,7 @@ private struct AppReviewRequestModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                loadPolicy()
+                onAppear()
             }
             .onDisappear {
                 // ログアウトなどで画面が消えた後に、別の画面の上でダイアログを出さない
@@ -48,26 +46,35 @@ private struct AppReviewRequestModifier: ViewModifier {
 
 private extension AppReviewRequestModifier {
 
-    func loadPolicy() {
-        let savedState = appReviewStateClient.load()
-        let loadedPolicy = AppReviewPolicy(savedState: savedState, now: .now)
-        policy = loadedPolicy
-        if savedState == nil {
-            appReviewStateClient.save(loadedPolicy.state)
-        }
-        // 表示する前に届いていた家事一覧は`onChange`では拾えないため、読み込んだ時点の一覧でも判定する
+    func onAppear() {
+        _ = loadPolicy()
+        // 表示する前に届いていた家事一覧は`onChange`では拾えないため、表示した時点の一覧でも判定する
         onChangeHouseworkItems()
     }
 
-    func onChangeEntitlementInfo(from oldValue: EntitlementInfo?, to newValue: EntitlementInfo?) {
-        guard let trigger = policy?.purchaseTrigger(from: oldValue, to: newValue, now: .now) else { return }
+    /// 保存済みの記録から判定を組み立てる。初めてなら使い始めた日時を記録する
+    /// - Note: 記録はデバッグメニューからも書き換えるため、画面に持たず判定のたびに読み直す
+    func loadPolicy() -> AppReviewPolicy {
+        let savedState = appReviewStateClient.load()
+        let policy = AppReviewPolicy(savedState: savedState, now: .now)
+        if savedState == nil {
+            appReviewStateClient.save(policy.state)
+        }
+        return policy
+    }
 
-        request(trigger)
+    func onChangeEntitlementInfo(from oldValue: EntitlementInfo?, to newValue: EntitlementInfo?) {
+        let policy = loadPolicy()
+        guard let trigger = policy.purchaseTrigger(from: oldValue, to: newValue, now: .now) else { return }
+
+        request(trigger, policy: policy)
     }
 
     func onChangeHouseworkItems() {
-        guard var updatedPolicy = policy, let houseworkItems else { return }
+        guard let houseworkItems else { return }
 
+        let policy = loadPolicy()
+        var updatedPolicy = policy
         let trigger = updatedPolicy.receiveThanks(
             in: houseworkItems,
             accountId: loginContext.account.id,
@@ -75,9 +82,8 @@ private extension AppReviewRequestModifier {
         )
         guard updatedPolicy != policy else { return }
 
-        policy = updatedPolicy
         if let trigger {
-            request(trigger)
+            request(trigger, policy: updatedPolicy)
         } else {
             appReviewStateClient.save(updatedPolicy.state)
         }
@@ -86,11 +92,9 @@ private extension AppReviewRequestModifier {
     /// 少し待ってから評価ダイアログをリクエストする
     /// - Note: 待っている間に別のきっかけで重ねてリクエストしないよう、待つ前に記録する。
     ///         課金ではペイウォールが閉じるアニメーションと重ならないよう、ありがとうでは画面の表示が落ち着くまで待つ
-    func request(_ trigger: AppReviewTrigger) {
-        guard var updatedPolicy = policy else { return }
-
+    func request(_ trigger: AppReviewTrigger, policy: AppReviewPolicy) {
+        var updatedPolicy = policy
         updatedPolicy.markRequested(trigger, now: .now)
-        policy = updatedPolicy
         appReviewStateClient.save(updatedPolicy.state)
         // 待っている処理が残っていれば、ダイアログを続けて出さないよう取り消してから置き換える
         requestTask?.cancel()
