@@ -4,6 +4,8 @@ name: Sync Metadata
 # （fastlane sync_metadataレーン、Fastfile参照）。ビルドのアップロードは行わない。
 # versionはASC上のバージョン作成にも使うため必須。対象バージョンがASCに無ければ新規作成し、
 # 既にあればメタデータの更新のみ行う（Fastfileのsync_metadataレーン参照）。
+# fastlane/creative_assets配下のクリエイティブアセット（プロダクトページヘッダー・検索結果）は
+# deliverが対応していないため、メタデータの同期後にASC APIを直接叩いて配置する（doc/adr/0045）。
 # release-merged.yml（PRマージ時）からは起動しない（doc/adr/0027）。
 # リリースPRのブランチ（release/*）にメタデータ・スクリーンショットの変更がpushされたときは
 # 自動で同期する（doc/adr/0032）。それ以外は workflow_dispatch で手動実行する。
@@ -25,6 +27,7 @@ on:
     paths:
       - "fastlane/metadata/**"
       - "fastlane/screenshots/**"
+      - "fastlane/creative_assets/**"
 
 # 同じリリースブランチへ連続でpushされても deliver が並走しないよう直列化する。
 # 実行中のものはキャンセルしない（ASCへの反映途中で止めないため）。
@@ -76,6 +79,13 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: bundle exec fastlane sync_metadata app_version:"$NORMALIZED_VERSION"
+
+      # deliverの後に流す。対象バージョンが無い場合はsync_metadataが作成するため
+      - name: Sync creative assets to App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: scripts/appstoreconnect.sh creative-assets sync "$NORMALIZED_VERSION" fastlane/creative_assets
 
       - name: Create summary
         if: always()
