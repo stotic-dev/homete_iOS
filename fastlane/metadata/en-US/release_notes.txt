@@ -1,10 +1,12 @@
 Thank you for using homeau.
 
+- Meet Homette, our new character. Homette cheers you on when you finish a chore or receive a "thank you"
+- Home now shows a few kind words based on how today's chores are going
+- A fresh new design. Home, the chore board, and the charts are easier to read, with soft colors and a color for each member
+- The app icon now features Homette
+- Right after you create your household, a short guide shows you how to get started
+- Tapping a "thank you" notification now opens that chore's details
 - homeau is now available in English
-- You can now add notes to chores. Keep shopping lists or steps as a checklist and share them with your household
-- Complete, thank, or skip a chore right from its row on the chore board
-- Add the people who helped with a completed chore later on, and split the points with them
-- A heart animation now celebrates each "thank you" you send
 - Other usability improvements and minor bug fixes
 
 A little reward for everyday chores.
