@@ -124,27 +124,16 @@
         }
       }
     },
-    "%lld件達成" : {
+    "%lld件・%lldpt" : {
       "localizations" : {
         "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld chore done"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld chores done"
-                }
-              }
-            }
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld done · %2$lldpt"
           }
         }
-      }
+      },
+      "comment" : "メンバーが今月終えた家事の件数と、もらったポイント"
     },
     "あなた" : {
       "localizations" : {
@@ -266,26 +255,6 @@
         }
       }
     },
-    "今月のランキング" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This Month's Ranking"
-          }
-        }
-      }
-    },
-    "今月の獲得ポイント合計" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total points earned this month"
-          }
-        }
-      }
-    },
     "今月の記録はまだありません。家事をひとつ終えると、ここに表示されます" : {
       "localizations" : {
         "en" : {
@@ -393,16 +362,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Month"
-          }
-        }
-      }
-    },
-    "月ごとのポイント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Points by Month"
           }
         }
       }
@@ -553,16 +512,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Week"
-          }
-        }
-      }
-    },
-    "達成した家事の件数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Number of chores done"
           }
         }
       }

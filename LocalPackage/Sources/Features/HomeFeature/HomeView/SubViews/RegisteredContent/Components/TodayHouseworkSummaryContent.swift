@@ -37,78 +37,118 @@ private extension TodayHouseworkSummaryContent {
 
     var contentView: some View {
         VStack(spacing: .space24) {
-            Text("今日の家事", bundle: #bundle)
-                .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
             switch summary.displayState {
             case .empty:
+                titleText
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 emptyContent()
 
             case .allCompleted:
-                progressContent(progress: summary.progress)
-                contributionChartContent
+                progressContent
+                memberShareContent
                 allCompletedContent()
 
             case .hasIncomplete:
-                progressContent(progress: summary.progress)
-                contributionChartContent
+                progressContent
+                memberShareContent
                 incompleteListContent
             }
         }
     }
 
-    func progressContent(progress: Double) -> some View {
-        VStack(spacing: .space8) {
-            HStack {
-                Text("達成率", bundle: #bundle)
-                    .font(with: .body)
+    var titleText: some View {
+        Text("今日の家事", bundle: #bundle)
+            .font(with: .headLineM)
+            .foregroundStyle(.textPrimary)
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    /// 見出しと、終わった家事の数（3/5）・進み具合のバー
+    var progressContent: some View {
+        VStack(spacing: .space16) {
+            HStack(alignment: .firstTextBaseline) {
+                titleText
                 Spacer()
-                Text(progress.formatted(.percent.precision(.fractionLength(0))))
-                    .font(with: .headLineS)
+                progressCountText
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        .localized(
+                            "\(summary.allItems.count)件中\(summary.finishedCount)件終わりました",
+                            comment: "1つめは今日の家事の数、2つめは終わった家事の数"
+                        )
+                    )
             }
-            ProgressView(value: progress)
-                .tint(.fillAccent)
+            SoftProgressBar(value: summary.progress)
+                .accessibilityHidden(true)
         }
     }
 
-    /// 誰も家事を完了していない間は、割合グラフを表示しない
+    /// 終わった数を大きく、全体の数を小さく添える（例: 3/5）
+    var progressCountText: some View {
+        HStack(alignment: .firstTextBaseline, spacing: .zero) {
+            Text(verbatim: "\(summary.finishedCount)")
+                .font(with: .number)
+                .foregroundStyle(.textPrimary)
+            Text(verbatim: "/\(summary.allItems.count)")
+                .font(with: .headLineS)
+                .monospacedDigit()
+                .foregroundStyle(.textSecondary)
+        }
+    }
+
+    /// 誰も家事を終えていない間は、分担を表示しない
     @ViewBuilder
-    var contributionChartContent: some View {
+    var memberShareContent: some View {
         let contributions = summary.memberContributions(members: members)
         if contributions.contains(where: { $0.completedCount > 0 }) {
-            TodayContributionChartSection(contributions: contributions)
+            // ポイントが0の家事だけのときも分担が見えるよう、件数で塗り分ける
+            let usesPoint = contributions.contains { $0.point > 0 }
+            MemberShareSummary(items: contributions.map { contribution in
+                .init(
+                    id: contribution.userId,
+                    name: contribution.userName,
+                    value: usesPoint ? contribution.point : contribution.completedCount,
+                    detail: .localized(
+                        "\(contribution.completedCount)件・\(contribution.point)pt",
+                        comment: "メンバーが終えた家事の件数と、もらったポイント"
+                    )
+                )
+            })
         }
     }
 
     func emptyContent() -> some View {
-        VStack(spacing: .zero) {
+        VStack(spacing: .space8) {
             HometteView(.cheer)
-            Spacer()
-                .frame(height: .space16)
+                .padding(.bottom, .space8)
             Text("今日の家事がありません", bundle: #bundle)
                 .font(with: .headLineS)
-            Spacer()
-                .frame(height: .space8)
+                .foregroundStyle(.textPrimary)
             Text("今日やる家事を登録すると、みんなの進み具合がここに表示されます", bundle: #bundle)
                 .font(with: .body)
+                .foregroundStyle(.textSecondary)
                 .multilineTextAlignment(.center)
-            Spacer()
-                .frame(height: .space24)
             Button(.localized("家事を設定する"), action: onTapRegister)
                 .primaryButtonStyle()
+                .padding(.top, .space16)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, .space24)
+        .padding(.vertical, .space8)
     }
 
     func allCompletedContent() -> some View {
         VStack(spacing: .space8) {
-            HometteView(.rest, size: .small)
+            HometteView(.rest, size: .medium)
             Text("今日の家事は、ぜんぶ終わりました", bundle: #bundle)
                 .font(with: .headLineS)
+                .foregroundStyle(.textPrimary)
+            Text("おつかれさまでした。ゆっくり休んでくださいね", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textSecondary)
+                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, .space24)
+        .padding(.vertical, .space8)
     }
 
     var incompleteListContent: some View {

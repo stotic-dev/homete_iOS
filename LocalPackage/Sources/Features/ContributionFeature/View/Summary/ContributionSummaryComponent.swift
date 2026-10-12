@@ -78,39 +78,31 @@ struct ContributionSummaryContent: View {
     @Binding var isShowAnalytics: Bool
 
     let summaries: AllUserPointSummary
-    @State var isShowingLegend = false
 
     var body: some View {
-        VStack(spacing: .space8) {
+        VStack(alignment: .leading, spacing: .space24) {
             Text(monthTitle)
                 .font(with: .headLineM)
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .foregroundStyle(.textPrimary)
-            Divider()
+                .accessibilityAddTraits(.isHeader)
             if summaries.hasData {
-                VStack(spacing: .zero) {
-                    graphContent(summaries)
-                    Divider()
-                        .padding(.vertical, .space24)
-                    rankingContent(summaries.makeRanking())
-                }
+                MemberShareSummary(items: summaries.items.map { item in
+                    .init(
+                        id: item.userId,
+                        name: item.userName,
+                        value: item.monthlyPoint.value,
+                        detail: .localized(
+                            "\(item.achievedCount)件・\(item.monthlyPoint.value)pt",
+                            comment: "メンバーが今月終えた家事の件数と、もらったポイント"
+                        )
+                    )
+                })
+                showAnalyticsButton
             } else {
-                ContentUnavailableView {
-                    Label {
-                        Text("今月の記録はまだありません。家事をひとつ終えると、ここに表示されます", bundle: #bundle)
-                    } icon: {
-                        HometteView(.cheer)
-                    }
-                } description: {
-                    Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
-                } actions: {
-                    Button(.localized("もっと詳しく見る")) {
-                        isShowAnalytics = true
-                    }
-                    .subPrimaryButtonStyle()
-                }
+                emptyContent
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
 }
@@ -119,40 +111,30 @@ struct ContributionSummaryContent: View {
 
 private extension ContributionSummaryContent {
 
-    func graphContent(_ summaries: AllUserPointSummary) -> some View {
-        VStack(spacing: .space16) {
-            ContributionGraphSection(summaries: summaries)
-            Button(.localized("もっと詳しく見る")) {
-                isShowAnalytics = true
-            }
-            .subPrimaryButtonStyle()
+    var showAnalyticsButton: some View {
+        Button(.localized("もっと詳しく見る")) {
+            isShowAnalytics = true
         }
+        .subPrimaryButtonStyle()
+        .frame(maxWidth: .infinity)
     }
 
-    func rankingContent(_ ranking: [ContributionRankItem]) -> some View {
+    var emptyContent: some View {
         VStack(spacing: .space8) {
-            HStack(spacing: .zero) {
-                Text("今月のランキング", bundle: #bundle)
-                    .font(with: .headLineS)
-                    .foregroundStyle(.textPrimary)
-                Spacer()
-                Button {
-                    isShowingLegend = true
-                } label: {
-                    Image(systemName: "questionmark.circle")
-                        .foregroundStyle(.secondary)
-                }
-                .popover(isPresented: $isShowingLegend) {
-                    LegendPopover()
-                        .presentationCompactAdaptation(.popover)
-                }
-            }
-            ForEach(ranking) { item in
-                SummaryRow(item: item)
-                Divider()
-                    .padding(.leading, .space16)
-            }
+            HometteView(.cheer)
+            Text("今月の記録はまだありません。家事をひとつ終えると、ここに表示されます", bundle: #bundle)
+                .font(with: .headLineS)
+                .foregroundStyle(.textPrimary)
+                .multilineTextAlignment(.center)
+            Text("これまでの貢献履歴なら振り返れます", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textSecondary)
+                .multilineTextAlignment(.center)
+            Spacer()
+                .frame(height: .space16)
+            showAnalyticsButton
         }
+        .frame(maxWidth: .infinity)
     }
 
     var monthTitle: LocalizedStringResource {

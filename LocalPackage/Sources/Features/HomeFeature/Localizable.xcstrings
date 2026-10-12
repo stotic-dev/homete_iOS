@@ -77,16 +77,6 @@
         }
       }
     },
-    "%lldpt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lldpt"
-          }
-        }
-      }
-    },
     "%lld件" : {
       "localizations" : {
         "en" : {
@@ -130,6 +120,28 @@
           }
         }
       }
+    },
+    "%lld件・%lldpt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld done · %2$lldpt"
+          }
+        }
+      },
+      "comment" : "メンバーが終えた家事の件数と、もらったポイント"
+    },
+    "%lld件中%lld件終わりました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$lld of %1$lld done"
+          }
+        }
+      },
+      "comment" : "1つめは今日の家事の数、2つめは終わった家事の数"
     },
     "AIが作成したコメントです" : {
       "localizations" : {
@@ -188,6 +200,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not Great"
+          }
+        }
+      }
+    },
+    "おつかれさまでした。ゆっくり休んでくださいね" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Great work. Take it easy and get some rest."
           }
         }
       }
@@ -352,16 +374,6 @@
         }
       }
     },
-    "ポイント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Points"
-          }
-        }
-      }
-    },
     "・" : {
       "comment" : "名前を並べるときの区切り（例: Aさん・Bさん）",
       "localizations" : {
@@ -423,16 +435,6 @@
         }
       }
     },
-    "件数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Count"
-          }
-        }
-      }
-    },
     "別のグループに参加中のため、この招待では参加できません。" : {
       "localizations" : {
         "en" : {
@@ -459,26 +461,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Once you join, you can share chores with the person who invited you."
-          }
-        }
-      }
-    },
-    "名前" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
-          }
-        }
-      }
-    },
-    "完了した家事の数" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chores Done"
           }
         }
       }
@@ -633,32 +615,12 @@
         }
       }
     },
-    "獲得したポイント" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Points Earned"
-          }
-        }
-      }
-    },
     "通信状態をご確認のうえ、もう一度お試しください。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please check your connection and try again."
-          }
-        }
-      }
-    },
-    "達成率" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completion"
           }
         }
       }

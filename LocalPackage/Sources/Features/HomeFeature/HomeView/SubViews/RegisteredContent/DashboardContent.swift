@@ -69,6 +69,8 @@ struct DashboardContent<
                 }
             }
         }
+        // 白いカードが浮いて見えるよう、画面の地はミルク色にする
+        .background(.backgroundScreen)
     }
 
 }
