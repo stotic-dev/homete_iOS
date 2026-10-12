@@ -7,9 +7,9 @@
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定（Phase 1の検証項目が残っている）
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [ ] 設計確定（バックグラウンド起動の実機確認が残っている）
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -46,7 +46,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 
 1. 候補は**今日の未完了の家事**。Siriで名前を言ったときは家事の名前で探す
 2. 担当者は自分だけ、頑張り度は「ふつう」で記録する（一括完了`completeBulk`と同じ既定値）。コメントは付けない
-3. 実行した時点でサーバーから今日の家事を取り直し、同じ名前の未完了の家事の先頭（作成日時の古い順）を完了にする。見つからなければ「今日の家事に洗濯はありません」と返して何もしない（すでに完了していた場合は「洗濯はもう終わっています」）
+3. 実行した時点でサーバーから今日の家事とテンプレートを取り直し、家事ボードと同じくテンプレートの家事も含めた今日の家事から、同じ名前の未完了の家事の先頭（ダッシュボードの未完了の家事と同じ並び）を完了にする。見つからなければ「今日の家事に洗濯はありません」と返して何もしない（すでに完了していた場合は「洗濯はもう終わっています」）
 4. 同居人への完了通知は、アプリで完了にしたときと同じ条件で送る（今日の家事なら1日1回）
 5. 自分の端末のふりかえり通知の予約にも反映する（`DailyCompletionReminderUseCase.syncToday`）
 
@@ -69,7 +69,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 
 #### 共通
 
-14. ログインしていない・グループに所属していない場合は、「hometeを開いて、ログインしてから使えます」「パートナーを招待すると使えます」のように返し、何もしない
+14. ログインしていない・グループに所属していない場合は、「アプリを開いて、ログインしてから使えます」「パートナーを招待すると使えます」のように返し、何もしない
 15. 強制アップデートが必要なバージョン（最後に有効化したRemote Configの`minimum_required_version`）では、書き込み系のIntentは実行せず「アップデートしてから使えます」と返す
 16. 端末がロックされているときは解除を求める（`authenticationPolicy = .requiresAuthentication`）。家事の名前や同居人の名前をロック画面に出さないため
 
@@ -84,7 +84,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
     | `ShowContributionSummaryIntent` | 「${applicationName}で今月のがんばりを見る」 | "Show this month in ${applicationName}" |
     | `OpenContributionAnalyticsIntent` | 「${applicationName}でがんばりを分析」 | "Open analytics in ${applicationName}" |
 
-    文言は実装時に`ux-writing.md`に沿って詰める
+    プロジェクトの開発言語が英語なので、フレーズはコードに英語で書き、日本語は`homete/Resouces/AppShortcuts.xcstrings`に入れる
 
 #### ドネーション
 
@@ -97,7 +97,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
     | 分析画面を開いた | `ShowContributionSummaryIntent` | なし |
 
     - 一括操作・「もう一回やった」・コメントの編集ではドネーションしない（習慣的な操作ではなく、提案の学習を乱すため）
-    - Intent経由で実行した操作はOSが自動でドネーションするため、アプリ側では重ねない（`step == .appIntent`なら送らない）
+    - Intent経由で実行した操作はOSが自動でドネーションするため、アプリ側では重ねない。ドネーションは画面の操作だけが通る`HouseworkListStore`で行い、Intentが使う`HouseworkCommandUseCase`では行わない
     - 同居人の完了を受けたときなど、ユーザー自身がしていない操作ではドネーションしない（OSの学習を誤らせるため）
 19. ありがとうはその都度の家事を引数に入れない。家事は日ごとに別のIDなので、引数に入れると翌日の提案が終わった家事を指してしまう。実行時に候補から解決する
 20. 家事の完了は**家事の名前**を引数に入れる。毎朝の「洗濯」のように、名前は日をまたいでも同じなので、翌日の同じ時間に「洗濯を完了」と提案できる
@@ -109,6 +109,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 - Intentは`HouseworkListStore`を使わない。Storeはスナップショットリスナーを張るため、Intentの短い実行時間に合わない。書き込みと通知の処理はStoreとIntentで共有するUseCaseに切り出す（[ADR-0044](../adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - Firestoreのセキュリティルール・Cloud Functionsは変更しない（書き込む内容はアプリからの操作と同じ）
 - 文言は日本語キーで`Localizable.xcstrings`に入れ、英訳も同じ変更で入れる。App Shortcutsのフレーズはメインターゲットの`AppShortcuts.xcstrings`に置く
+- Intentのタイトル・説明・引数名・Entityの型名・`requestValueDialog`・App Shortcutsの短い名前は、パッケージに置いてもメタデータにキーだけが抽出され、実行時はアプリ本体のbundleから引かれる。これらはメインターゲットの`homete/Resouces/Localizable.xcstrings`に日英で入れる（`extractionState: manual`）。実行時に組み立てるダイアログは`.localized`で`HometeAppIntents`のカタログから引く
 - Analyticsは`doc/analytics_events.md`を同じPRで更新する
 
 ## 設計方針
@@ -132,12 +133,16 @@ homete ──▶ HometeAppIntents ──▶ HometeDomain
 
 `HometeAppIntents`は`HometeInfrastructure`に依存させない。Firebaseの実装は`homete`が`AppDependencyManager.shared.add(dependency:)`で`AppDependencies.liveValue`を渡し、Intentは`@Dependency`で受け取る。ユニットテストやPreviewでFirebaseを引き込まないため。
 
-> Swift Package（静的ライブラリ）に置いたIntentのメタデータが抽出されるか、`AppShortcutsProvider`をパッケージに置けるかはPhase 1で確かめる。抽出されない場合は、Intent一式をメインターゲットの`homete/AppIntents/`に置き、UseCaseだけをパッケージに残す。
+> Swift Package（静的ライブラリ）に置いたIntentのメタデータは、メインターゲットの`AppIntentsPackage`が`includedPackages`で`HometeAppIntentsPackage`を挙げれば、アプリの`Metadata.appintents`に抽出されることをシミュレータ向けのビルドで確かめた（5つのIntent・2つのEntity・App Shortcuts）。`AppShortcutsProvider`はメインターゲットに置き、そこから参照するIntentとEntityは`public`にする。
+>
+> ありがとうの候補の判定（`ThanksPromptSummary`）と今日の家事の組み立て（`TodayHouseworkSummary`）は`HouseworkFeature`にあるため、`HometeAppIntents`から`HouseworkFeature`に依存して使う（`HometeDomain`へは移さない）。画面と同じ判定を1か所で保つため。
 
 ### 2. 書き込みをStoreとIntentで共有する（先にリファクタリング）
 
 `HouseworkListStore.complete`・`sendThanks`は「リスナーで受け取った最新の家事を探す」処理と「書き込み・Analytics・通知」の処理が一体になっている。
 後者を`HouseworkCommandUseCase`（`HometeDomain`、`Sendable`な値型）に切り出し、Storeからも呼ぶ形に変える。挙動を変えないリファクタリングとして先にコミットする。
+
+同居人への通知は、画面からは送信を待たずに返す（今と同じ）。Intentでは`perform`から返るとプロセスが止められて送れなくなりうるため、`delivery: .awaiting`で送り終えてから返す。
 
 ```swift
 /// 家事の完了・ありがとうの書き込みと、それに伴うAnalytics・通知
@@ -165,7 +170,8 @@ public struct AppIntentSessionUseCase: Sendable {
 ```
 
 - 未ログインの判定は`AccountAuthClient.makeListener()`の最初の値で行う（Firebase Authは端末に保存したユーザーを起動直後に復元する）
-- アカウントは`AccountInfoClient.fetch`、家事は`HouseworkClient.fetchItems`（今日・昨日の範囲）で1回だけ取る
+- アカウントは`AccountInfoClient.fetch`、家事は`HouseworkClient.fetchItems`（今日・昨日の範囲）、テンプレートは`fetchTemplates`/`fetchDays`/`fetchMonthlyItems`で1回だけ取る。メンバーは同居人グループの購読の最初の値だけ使って購読をやめ、名前を`AccountInfoClient.fetch`で取る
+- 強制アップデートの判定は書き込むIntentだけで行う（`resolve(requiresLatestVersion:)`）。読むだけのIntent（候補の一覧・今月のがんばり）は古いバージョンでも動かす
 
 ### 3. 家事のEntityと候補
 
@@ -220,13 +226,13 @@ public struct IntentDonationClient: DependencyClient {
 }
 ```
 
-- 家事の完了・ありがとうは`HouseworkCommandUseCase`の成功後に、`step != .appIntent`かつ単発操作のときだけ呼ぶ
+- 家事の完了は`HouseworkListStore.complete`で`notify == true`（単発の操作）のとき、ありがとうは`HouseworkListStore.sendThanks`で初めて記録したときに呼ぶ
 - 分析画面は`ContributionAnalyticsScreen`の表示時に呼ぶ
 
 ### 7. Analytics
 
 - 家事の完了・ありがとうは既存の`housework`イベントを使い、`step`に`app_intent`を足す（`HouseworkAnalyticsStep.appIntent`）
-- Intentの実行そのものを数える`app_intent`イベントを追加する。パラメータは`intent`（`complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics`）と`is_success`
+- Intentの実行そのものを数える`app_intent`イベントを追加する。パラメータは`action`（`complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics`）と`result`（`success` / `not_found` / `already_completed` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure`）。カスタムディメンションを増やさないため、どのIntentかは既存の`action`キーに載せる
   - 家事の完了・ありがとうは`housework`イベントと二重に送るが、見たいものが違う（`housework`は操作の量、`app_intent`はアプリの外の入口の使われ方）
 - 開くIntentで表示した画面の`screen_view`は既存どおり送られる
 
@@ -246,11 +252,13 @@ public struct IntentDonationClient: DependencyClient {
 | 新規Intent | `LocalPackage/Sources/HometeAppIntents/` | 5つのIntent・2つのEntity・候補・ドネーションのliveValue |
 | 新規View | `LocalPackage/Sources/Features/ContributionFeature/View/Snippet/ContributionSnippetContent.swift` | スニペットのUI |
 | 修正View | `LocalPackage/Sources/AppRoot/AppTabView.swift` | 新しい`PendingRoute`でのタブ切り替え |
-| 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen.swift` | 完了シートを開く |
-| 修正View | `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/RegisteredContent/RegisteredContent.swift` | 分析画面へ遷移 |
+| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen+PendingRoute.swift` | 通知・App Intentから詳細画面・完了シートを開く（`HouseworkBoardScreen`から切り出し） |
+| 修正View | `LocalPackage/Sources/Features/ContributionFeature/View/Summary/ContributionSummaryComponent.swift` | 分析画面へ遷移（分析画面への遷移を持っているコンポーネント） |
 | 修正View | `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsScreen.swift` | 表示時のドネーション |
 | 新規 | `homete/AppIntents/HometeAppShortcuts.swift` | `AppShortcutsProvider` |
-| 新規 | `homete/Resouces/AppShortcuts.xcstrings` | フレーズの日英 |
+| 新規 | `homete/Resouces/AppShortcuts.xcstrings` | フレーズの日本語 |
+| 修正 | `homete/Resouces/Localizable.xcstrings` | Intentのメタデータ・App Shortcutsの短い名前の日英 |
+| 修正 | `homete.xcodeproj/project.pbxproj` | アプリ本体に`HometeAppIntents`をリンク |
 | 修正 | `homete/Views/HometeApp.swift` | `AppDependencyManager`への登録 |
 | ドキュメント | `doc/analytics_events.md`・`doc/multimodules_structure.md`・`CLAUDE.md` | イベント・モジュール・エントリーポイントの追記 |
 
@@ -262,25 +270,25 @@ public struct IntentDonationClient: DependencyClient {
 - [x] ありがとうは開かずに送り、コメントは任意
 - [x] がんばりは「スニペット」「分析画面を開く」の両方を用意する
 - [x] 入口はApp Shortcutsとドネーション（ウィジェット・コントロールセンターは対象外）
-- [ ] Swift Packageに置いたIntentのメタデータが抽出され、ショートカットAppに出ることを確かめる（だめならメインターゲットに置く）
+- [x] Swift Packageに置いたIntentのメタデータが抽出されることを確かめる（シミュレータ向けのビルドで`Metadata.appintents`を確認。ショートカットAppでの表示は実機確認で見る）
 - [ ] バックグラウンドで起動したときに、Firebase Auth・App Check（App Attest）・Firestoreの読み書きが通ることを実機で確かめる
-- [ ] `ThanksPromptSummary`の判定を`HometeDomain`へ移すか決める
+- [x] `ThanksPromptSummary`の判定を`HometeDomain`へ移すか決める（移さず、`HometeAppIntents`から`HouseworkFeature`に依存する）
 - [x] Issueを起票する（#434）
 
 ### Phase 2: 実装
 
-- [ ] （refactor）`HouseworkCommandUseCase`を切り出し、`HouseworkListStore`から呼ぶ
-- [ ] （refactor）`NotificationRoute`・`PendingNotificationRouteStore`を`PendingRoute`・`PendingRouteStore`にリネーム
-- [ ] `AppIntentSessionUseCase`・`AppIntentFailure`を追加
-- [ ] `HometeAppIntents`ターゲットを追加し、2つのEntityと候補を実装
-- [ ] `CompleteHouseworkIntent`・`SendThanksIntent`を実装
-- [ ] `OpenHouseworkCompleteIntent`・`OpenContributionAnalyticsIntent`と、`PendingRoute`からの画面遷移を実装
-- [ ] `ContributionSnippetContent`（Previewつき）と`ShowContributionSummaryIntent`を実装
-- [ ] `IntentDonationClient`とドネーションの呼び出しを実装
-- [ ] `HometeAppShortcuts`とフレーズ（日英）を追加
-- [ ] Analytics（`app_intent`イベント・`step=app_intent`）を追加
-- [ ] 文言の英訳を入れ、`make check-translations`を通す
-- [ ] `doc/analytics_events.md`・`doc/multimodules_structure.md`・`CLAUDE.md`を更新
+- [x] （refactor）`HouseworkCommandUseCase`を切り出し、`HouseworkListStore`から呼ぶ
+- [x] （refactor）`NotificationRoute`・`PendingNotificationRouteStore`を`PendingRoute`・`PendingRouteStore`にリネーム
+- [x] `AppIntentSessionUseCase`・`AppIntentFailure`を追加
+- [x] `HometeAppIntents`ターゲットを追加し、2つのEntityと候補を実装
+- [x] `CompleteHouseworkIntent`・`SendThanksIntent`を実装
+- [x] `OpenHouseworkCompleteIntent`・`OpenContributionAnalyticsIntent`と、`PendingRoute`からの画面遷移を実装
+- [x] `ContributionSnippetContent`（Previewつき）と`ShowContributionSummaryIntent`を実装
+- [x] `IntentDonationClient`とドネーションの呼び出しを実装
+- [x] `HometeAppShortcuts`とフレーズ（日英）を追加
+- [x] Analytics（`app_intent`イベント・`step=app_intent`）を追加
+- [x] 文言の英訳を入れ、`make check-translations`を通す
+- [x] `doc/analytics_events.md`・`doc/multimodules_structure.md`・`CLAUDE.md`を更新
 
 ### Phase 3: 検証
 

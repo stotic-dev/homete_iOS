@@ -18,9 +18,13 @@ Intentから何を呼ぶか、ドネーションの引数で家事をどう表�
 * 家事の完了・ありがとうの書き込み・Analytics・通知を`HouseworkCommandUseCase`に切り出し、`HouseworkListStore`とIntentの両方から呼ぶ
   * 「最新の家事を探す」のは呼び出し側。Storeはリスナーの家事、Intentはサーバーから1回取り直した家事を渡す
 * Intentは`HometeAppIntents`ターゲットに置き、Firebaseの実装は`AppDependencyManager`経由で受け取る（`HometeInfrastructure`に依存させない）
+  * `AppShortcutsProvider`と、パッケージを含める`AppIntentsPackage`はメインターゲットに置く。パッケージのIntentのメタデータがアプリの`Metadata.appintents`に抽出されることはビルドで確かめた
+  * 今日の家事とありがとうの候補は、画面と同じ`TodayHouseworkSummary`・`ThanksPromptSummary`で判定するため、`HometeAppIntents`から`HouseworkFeature`に依存する
+  * Intentのタイトルなどのメタデータはキーだけが抽出され、実行時はアプリ本体のbundleから引かれる。そのため、これらの訳はメインターゲットのString Catalogに置く
 * 完了のIntentの家事は**名前**をIDにしたEntityで表す。実行時に今日の同じ名前の未完了の家事を探して完了にする
 * ありがとうのドネーションには家事を引数に入れず、実行時に候補から解決する
 * ドネーションは`HometeDomain`の`IntentDonationClient`経由で行い、`HometeDomain`をApp Intentsに依存させない
+  * 呼ぶのは画面の操作だけが通る`HouseworkListStore`（と分析画面）にする。Intentが使う`HouseworkCommandUseCase`で呼ぶと、OSが自動で記録するIntent経由の実行と二重になる
 
 ## 考慮した選択肢
 
@@ -49,6 +53,8 @@ Intentから何を呼ぶか、ドネーションの引数で家事をどう表�
 * 同じ日に同じ名前の家事が複数あると、作成日時の古い方を完了にする（ユーザーは選べない）
 * 家事の名前を変えると、それまでの提案は使えなくなる
 * `HouseworkListStore`のリファクタリングが先に必要になる
+* Intentのメタデータの訳がパッケージではなくアプリ本体のString Catalogに分かれる
+* `HometeAppIntents`が`HouseworkFeature`・`ContributionFeature`（SwiftUIのView）にも依存する
 
 ## 参考
 
