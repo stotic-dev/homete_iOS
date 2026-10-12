@@ -108,6 +108,8 @@ private extension HouseworkDetailView {
             .padding(.vertical, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
+        // 家事ボードからの遷移で地の色が変わらないよう、ボードと同じミルク色にして白いカードを浮かせる
+        .background(.backgroundScreen)
         .softTopScrollEdgeEffect()
     }
 
