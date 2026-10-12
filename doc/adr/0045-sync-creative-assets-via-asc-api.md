@@ -19,8 +19,11 @@
 * 画像は`doc/design/store_assets/generate_creative_assets.py`で生成する。手で直さず、スクリプトを直して書き出し直す
 * 同期は`scripts/appstoreconnect.sh creative-assets sync <version>`で行う。`sync-metadata.yml`の`deliver`の後に流し、pathsフィルタに`fastlane/creative_assets/**`を足す
 * 同期の流れ: アセットライブラリへアップロード（`appAssetLibraryImages`）→ 処理完了を待つ → バージョンのロケールに配置（`appAssetLibraryPlacements`）
+* 配置グループ（`placementGroup`）は直書きせず、参照データ（`appAssetLibraryRefData`）から引く。アップロードした画像の仕様（`specId`）を受け付けるグループすべてに配置する。グループの識別子は端末の種類ごとの文字列で、Appleが端末を足すと増えるため（公式記事「Discovering asset specifications」でも直書きしないよう書かれている）
 * 審査への提出はしない。配置した画像はバージョンと一緒に審査される（`deliver`の`submit_for_review(false)`と同じ扱い）
-* 画像のsha256を`referenceName`に入れ、配置済みの画像と同じなら何もしない。違えば新しい画像の準備ができてから古い配置を外して付け替える
+* 画像のsha256を`referenceName`に入れ、配置済みの画像と同じなら何もしない。違えば新しい画像の準備ができてから、グループごとに古い配置を外して付け替える
+  * グループごとに置ける数に上限があり（ヘッダーは1枚）、新しい配置を先に作れないため、外してから作る
+  * 作れなかったときは、外した配置を元の画像で作り直してから失敗として止める。そのロケールの画像が消えたままにならないようにするため
 
 ## 考慮した選択肢
 
