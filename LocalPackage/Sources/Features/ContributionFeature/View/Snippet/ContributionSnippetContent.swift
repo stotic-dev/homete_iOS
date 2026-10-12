@@ -14,6 +14,7 @@ import Prefire
 ///
 /// Siriの結果の中ではボタンを押せないため、ダッシュボードの`ContributionSummaryContent`から
 /// 「もっと詳しく見る」とほめっとを除いた形にする。
+/// 色はSiriの背景に任せず、背景を自前で塗る（`body`のコメント参照）。
 public struct ContributionSnippetContent: View {
 
     @Environment(\.calendar) var calendar
@@ -51,6 +52,9 @@ public struct ContributionSnippetContent: View {
         }
         .padding(.space16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // SiriがダークモードでもこのViewにライトモードを渡すことがあり、Siriの暗い背景にライトモードの文字色が載って読めなくなる。
+        // 背景も文字と同じ外観の色で塗り、どちらの外観を渡されても文字と背景の組み合わせが崩れないようにする
+        .background(.backgroundCard)
     }
 
 }
