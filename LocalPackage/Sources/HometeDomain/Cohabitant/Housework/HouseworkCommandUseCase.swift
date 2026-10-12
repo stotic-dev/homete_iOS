@@ -45,8 +45,7 @@ public struct HouseworkCommandUseCase: Sendable {
     ///   - comment: 完了通知に添えるコメント。空なら添えない
     ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す
     ///   - delivery: 通知の送信を待つかどうか
-    // swiftlint:disable:next function_parameter_count
-    public func complete(
+    public func complete( // swiftlint:disable:this function_parameter_count function_body_length
         current: HouseworkItem,
         now: Date,
         reporter: Account,
@@ -132,8 +131,7 @@ public struct HouseworkCommandUseCase: Sendable {
     /// - Returns: この家事に初めてありがとうを記録したかどうか。コメントの書き足し・編集だった場合や、
     ///   未完了に戻されていたなどで何も記録しなかった場合は`false`
     @discardableResult
-    // swiftlint:disable:next function_parameter_count
-    public func sendThanks(
+    public func sendThanks( // swiftlint:disable:this function_parameter_count
         current: HouseworkItem,
         sender: Account,
         comment: String?,
