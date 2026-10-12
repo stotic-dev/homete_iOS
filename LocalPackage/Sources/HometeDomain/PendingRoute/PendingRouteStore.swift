@@ -5,9 +5,9 @@
 
 import Observation
 
-/// タップされた通知から開く画面を保持するStore
+/// タップされた通知やApp Intentから開く画面を保持するStore
 ///
-/// 通知はアプリが終了していても、ログインや家事の読み込みが終わる前にタップされうるため、
+/// 通知のタップやApp Intentはアプリが終了していても、ログインや家事の読み込みが終わる前に届きうるため、
 /// 開く画面をここに退避し、表示できる状態になってから画面側が消化する。
 @MainActor
 @Observable
@@ -53,6 +53,35 @@ public final class PendingRouteStore {
             pendingRoute = nil
         }
         return item
+    }
+
+    /// 完了シートを開く家事を取り出す
+    ///
+    /// 見つかった家事は開いたものとして、保持している画面を破棄する。読み込み終えても見つからない場合
+    /// （未完了の家事に同じ名前が無い・すでに完了していた）も、後から急にシートが開かないよう破棄する。
+    /// - Parameters:
+    ///   - isLoading: 家事やテンプレートを読み込み中かどうか。読み込み中は見つからなくても破棄せず、次の読み込みを待つ
+    ///   - find: 家事の名前から、完了シートを開く家事を探す
+    /// - Returns: 完了シートを開く家事。開く家事がない、またはまだ見つからない場合は`nil`
+    public func takeHouseworkCompleteItem<Item>(isLoading: Bool, find: (_ houseworkTitle: String) -> Item?) -> Item? {
+        guard case let .houseworkComplete(houseworkTitle) = pendingRoute else { return nil }
+
+        let item = find(houseworkTitle)
+        if item != nil || !isLoading {
+            pendingRoute = nil
+        }
+        return item
+    }
+
+    /// がんばりの分析画面を開くかどうかを取り出す
+    ///
+    /// 開くと判断したら、保持している画面を破棄する。
+    /// - Returns: 分析画面を開く場合は`true`
+    public func takeContributionAnalytics() -> Bool {
+        guard pendingRoute == .contributionAnalytics else { return false }
+
+        pendingRoute = nil
+        return true
     }
 
 }

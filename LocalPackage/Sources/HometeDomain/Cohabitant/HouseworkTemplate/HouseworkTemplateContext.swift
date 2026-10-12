@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct HouseworkTemplateContext: Equatable {
+public struct HouseworkTemplateContext: Equatable, Sendable {
 
     public let metadata: HouseworkTemplateMeta?
     public let houseworkTemplate: [HouseworkTemplateDay]

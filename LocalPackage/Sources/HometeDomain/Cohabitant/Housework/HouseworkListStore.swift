@@ -29,6 +29,7 @@ public final class HouseworkListStore {
     private let analyticsClient: AnalyticsClient
     private let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
     private let commandUseCase: HouseworkCommandUseCase
+    private let intentDonationClient: IntentDonationClient
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
@@ -38,6 +39,7 @@ public final class HouseworkListStore {
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         analyticsClient: AnalyticsClient = .previewValue,
         dailyCompletionReminderUseCase: DailyCompletionReminderUseCase = .init(client: .previewValue),
+        intentDonationClient: IntentDonationClient = .previewValue,
         calendar: Calendar = .autoupdatingCurrent,
         now: @escaping @MainActor @Sendable () -> Date = { .now },
         items: [DailyHouseworkList] = [],
@@ -47,6 +49,7 @@ public final class HouseworkListStore {
         self.houseworkManager = houseworkManager
         self.analyticsClient = analyticsClient
         self.dailyCompletionReminderUseCase = dailyCompletionReminderUseCase
+        self.intentDonationClient = intentDonationClient
         self.calendar = calendar
         self.now = now
         self.idGenerator = idGenerator
@@ -98,6 +101,7 @@ public final class HouseworkListStore {
     ///
     /// 書き込み・Analytics・通知の詳細は`HouseworkCommandUseCase.complete`を参照。
     /// 手元の家事は画面を開いた時点のものなので、登録済みの家事はリスナーで受け取った最新の記録に当てる。
+    /// 1件だけ完了にしたときは、同じ家事をSiriやロック画面で提案してもらえるようドネーションする。
     // swiftlint:disable:next function_parameter_count
     public func complete(
         target: HouseworkItem,
@@ -125,6 +129,9 @@ public final class HouseworkListStore {
             step: step,
             notify: notify
         )
+        if notify {
+            intentDonationClient.donateCompleteHousework(target.title)
+        }
     }
 
     /// 完了した家事を、もう一度やったものとして記録する
@@ -185,6 +192,7 @@ public final class HouseworkListStore {
     ///
     /// 判定と書き込みの詳細は`HouseworkCommandUseCase.sendThanks`を参照。
     /// 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の記録を見て判断する。
+    /// 初めてありがとうを記録したときは、Siriやロック画面で提案してもらえるようドネーションする（コメントの編集ではしない）。
     /// - Parameter comment: 添えるコメント。コメントなしで送る場合は`nil`
     /// - Returns: この家事に初めてありがとうを記録したかどうか
     @discardableResult
@@ -197,7 +205,7 @@ public final class HouseworkListStore {
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> Bool {
-        try await commandUseCase.sendThanks(
+        let isFirstThanks = try await commandUseCase.sendThanks(
             current: items.item(target) ?? target,
             sender: sender,
             comment: comment,
@@ -205,6 +213,10 @@ public final class HouseworkListStore {
             cohabitantId: cohabitantId,
             step: step
         )
+        if isFirstThanks {
+            intentDonationClient.donateSendThanks()
+        }
+        return isFirstThanks
     }
 
     public func returnToIncomplete(

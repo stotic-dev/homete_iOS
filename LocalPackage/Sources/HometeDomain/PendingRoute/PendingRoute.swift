@@ -5,11 +5,16 @@
 
 import Foundation
 
-/// 通知をタップして開いたときに表示する画面
+/// 通知のタップやApp Intentでアプリを開いたときに表示する画面
 public enum PendingRoute: Equatable, Sendable {
 
-    /// 家事の詳細画面
+    /// 家事の詳細画面（通知のタップ）
     case houseworkDetail(houseworkId: String)
+    /// 今日の家事の完了シート（App Intent）
+    /// - Note: 家事は日ごとに別のIDになるため、日をまたいでも変わらない家事の名前で指定する
+    case houseworkComplete(houseworkTitle: String)
+    /// がんばりの分析画面（App Intent）
+    case contributionAnalytics
 
 }
 

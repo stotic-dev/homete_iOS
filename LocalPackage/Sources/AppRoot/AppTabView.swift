@@ -309,20 +309,20 @@ private extension AppTabView {
         await startObserveTemplateIfNeeded()
     }
 
-    /// 通知から開く画面があれば、その画面を持つタブに切り替える
-    /// - Note: 画面を開くのは切り替えた先のタブが行う。家事の読み込みを待ってから開く必要があるため
+    /// 通知やApp Intentから開く画面があれば、その画面を持つタブに切り替える
+    /// - Note: 画面は家事の読み込みを待って切り替え先のタブが開く。グループ未所属なら開けないので破棄する
     func onChangePendingRoute() {
-        switch pendingRouteStore.pendingRoute {
-        case .houseworkDetail:
-            // グループに所属していないと家事を開けないため、後から急に画面が開かないよう破棄する
-            guard loginContext.hasCohabitant else {
-                pendingRouteStore.clear()
-                return
-            }
+        guard let route = pendingRouteStore.pendingRoute else { return }
+        guard loginContext.hasCohabitant else {
+            pendingRouteStore.clear()
+            return
+        }
+        switch route {
+        case .houseworkDetail, .houseworkComplete:
             type = .homework
 
-        case nil:
-            break
+        case .contributionAnalytics:
+            type = .dashboard
         }
     }
 
@@ -347,6 +347,7 @@ private extension AppTabView {
             houseworkManager: appDependencies.houseworkManager,
             analyticsClient: appDependencies.analyticsClient,
             dailyCompletionReminderUseCase: appDependencies.dailyCompletionReminderUseCase,
+            intentDonationClient: appDependencies.intentDonationClient,
             calendar: calendar
         )
         houseworkTemplateListStore = .init(
