@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import {
   ClientCollections,
+  accountFcmTokenPath,
   accountPath,
   cohabitantPath,
   frequentHouseworkCategoriesPath,
@@ -72,10 +73,11 @@ const anonymousDb = () => testEnv.unauthenticatedContext().firestore();
 const account = (userId: string, cohabitantId?: string) => ({
   id: userId,
   userName: `name-of-${userId}`,
-  fcmToken: `token-of-${userId}`,
   isPremium: false,
   ...(cohabitantId ? {cohabitantId} : {}),
 });
+
+const fcmToken = (userId: string) => ({token: `token-of-${userId}`});
 
 const housework = (id: string) => ({
   id,
@@ -125,6 +127,8 @@ beforeEach(async () => {
     // MALLORYは自分のcohabitantIdにGROUP_IDを詐称しているが、
     // GROUP_IDのmembersには含まれていない
     await setDoc(doc(db, accountPath(MALLORY)), account(MALLORY, GROUP_ID));
+    await setDoc(doc(db, accountFcmTokenPath(ALICE)), fcmToken(ALICE));
+    await setDoc(doc(db, accountFcmTokenPath(BOB)), fcmToken(BOB));
 
     await setDoc(
       doc(db, `${houseworksPath(GROUP_ID)}/housework-1`),
@@ -284,6 +288,39 @@ describe("Account", () => {
 
   it("本人でもAccountを削除できない", async () => {
     await assertFails(deleteDoc(doc(aliceDb(), accountPath(ALICE))));
+  });
+});
+
+describe("Account/Private（FCMトークン）", () => {
+  it("本人は自分のFCMトークンを取得できる", async () => {
+    await assertSucceeds(getDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
+  });
+
+  it("本人は自分のFCMトークンを書き込める", async () => {
+    await assertSucceeds(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: "new-token"})
+    );
+  });
+
+  it("同じグループのメンバーでも他人のFCMトークンは取得できない", async () => {
+    // Account本体は同居人に読めるため、トークンだけをここへ分けている（#241）
+    await assertFails(getDoc(doc(aliceDb(), accountFcmTokenPath(BOB))));
+  });
+
+  it("グループ外のユーザーは他人のFCMトークンを取得できない", async () => {
+    await assertFails(getDoc(doc(malloryDb(), accountFcmTokenPath(ALICE))));
+  });
+
+  it("他人のFCMトークンは書き換えられない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(BOB)), {token: "stolen"})
+    );
+  });
+
+  it("未認証ユーザーはFCMトークンを取得できない", async () => {
+    await assertFails(
+      getDoc(doc(anonymousDb(), accountFcmTokenPath(ALICE)))
+    );
   });
 });
 

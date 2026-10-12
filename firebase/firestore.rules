@@ -88,8 +88,10 @@ service cloud.firestore {
       // CohabitantStoreがメンバー一覧のuserNameを引くために他メンバーのAccountをgetするため
       // （LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantStore.swift）。
       //
-      // ルールはフィールド単位の読み取り制限ができないので、同居人にはfcmTokenも
-      // 見えてしまう点は許容している。グループ外からは読めない。
+      // ルールはフィールド単位の読み取り制限ができないので、同居人に見せたくない値は
+      // ここに置かず、下の`Private`へ分ける。
+      // NOTE: 旧バージョンのアプリはまだ`fcmToken`をこのドキュメントへ書く。
+      // 拒否すると旧アプリのアカウント更新ごと失敗するため、書き込みは制限していない。
       allow get: if isSelf(userId)
                  || (
                    'cohabitantId' in resource.data
@@ -104,6 +106,12 @@ service cloud.firestore {
 
       // アカウント削除は deleteuserdata (Authトリガー) が Admin SDK で行う
       allow delete: if false;
+
+      // 本人以外に読ませない値（FCMトークン）。同居人にも開かない（#241）。
+      // 通知の配信は notifyothercohabitants が Admin SDK で読む
+      match /Private/{documentId} {
+        allow read, write: if isSelf(userId);
+      }
     }
 
     match /Cohabitant/{cohabitantId} {
