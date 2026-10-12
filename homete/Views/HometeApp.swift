@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     /// タップされた通知から開く画面
     /// - Note: アプリが終了している状態で通知をタップすると、画面を組み立てる前に通知のタップが届くため、
     ///         画面側ではなくここで受け取って保持する
-    let pendingNotificationRouteStore = PendingNotificationRouteStore()
+    let pendingRouteStore = PendingRouteStore()
 
     func application(
         _: UIApplication,
@@ -136,9 +136,9 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard let route = NotificationRoute(userInfo: response.notification.request.content.userInfo) else { return }
+        guard let route = PendingRoute(userInfo: response.notification.request.content.userInfo) else { return }
 
-        pendingNotificationRouteStore.store(route)
+        pendingRouteStore.store(route)
     }
 
 }
@@ -157,7 +157,7 @@ struct HometeApp: App {
             } else {
                 RootView.make(
                     dependencies: .liveValue,
-                    pendingNotificationRouteStore: delegate.pendingNotificationRouteStore
+                    pendingRouteStore: delegate.pendingRouteStore
                 )
             }
         }

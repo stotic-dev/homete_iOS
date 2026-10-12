@@ -25,7 +25,7 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.cohabitantMembers) var members
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(CohabitantStore.self) var cohabitantStore
-    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
+    @Environment(PendingRouteStore.self) var pendingRouteStore
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -147,7 +147,7 @@ private extension HouseworkBoardScreen {
                 openPendingHouseworkDetail(store: houseworkListStore)
             }
             // 通知から開く家事は、起動直後だとまだ読み込まれていないため、家事が届くたびに探し直す
-            .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
+            .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
                 openPendingHouseworkDetail(store: houseworkListStore)
             }
             .onChange(of: houseworkListStore.loadState) {
@@ -354,7 +354,7 @@ private extension HouseworkBoardScreen {
     ///         シートやフルスクリーンカバーは閉じず、その裏に詳細画面を積む。購入中のペイウォールや入力中の
     ///         シートを通知で勝手に閉じないためで、ダッシュボード側のシートなどはそもそもここから閉じられない
     func openPendingHouseworkDetail(store: HouseworkListStore) {
-        guard let item = pendingNotificationRouteStore.takeHouseworkDetailItem(
+        guard let item = pendingRouteStore.takeHouseworkDetailItem(
             in: store.items,
             loadState: store.loadState
         ) else { return }

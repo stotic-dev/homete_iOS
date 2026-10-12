@@ -1,12 +1,12 @@
 //
-//  PendingNotificationRouteStoreTest.swift
+//  PendingRouteStoreTest.swift
 //  LocalPackage
 //
 
 @testable import HometeDomain
 import Testing
 
-enum PendingNotificationRouteStoreTest {
+enum PendingRouteStoreTest {
 
     @MainActor
     struct StoreCase {}
@@ -18,13 +18,13 @@ enum PendingNotificationRouteStoreTest {
 
 // MARK: - store / clear
 
-extension PendingNotificationRouteStoreTest.StoreCase {
+extension PendingRouteStoreTest.StoreCase {
 
     @Test("通知から開く画面を保持する")
     func store() {
         // Arrange
 
-        let sut = PendingNotificationRouteStore()
+        let sut = PendingRouteStore()
 
         // Act
 
@@ -39,7 +39,7 @@ extension PendingNotificationRouteStoreTest.StoreCase {
     func clear() {
         // Arrange
 
-        let sut = PendingNotificationRouteStore(pendingRoute: .houseworkDetail(houseworkId: "houseworkId"))
+        let sut = PendingRouteStore(pendingRoute: .houseworkDetail(houseworkId: "houseworkId"))
 
         // Act
 
@@ -54,7 +54,7 @@ extension PendingNotificationRouteStoreTest.StoreCase {
 
 // MARK: - takeHouseworkDetailItem
 
-extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
+extension PendingRouteStoreTest.TakeHouseworkDetailItemCase {
 
     @Test("開く家事が見つかったら、その家事を返して保持している画面を破棄する")
     func takeHouseworkDetailItem_found_returnsItemAndClears() {
@@ -65,7 +65,7 @@ extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
             .makeForTest(items: [.makeForTest(id: "other", indexedDate: .distantFuture)]),
             .makeForTest(items: [inputTargetItem]),
         ])
-        let sut = PendingNotificationRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
+        let sut = PendingRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
 
         // Act
 
@@ -81,7 +81,7 @@ extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
     func takeHouseworkDetailItem_notFoundWhileLoading_keepsRoute() {
         // Arrange
 
-        let sut = PendingNotificationRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
+        let sut = PendingRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
 
         // Act
 
@@ -103,7 +103,7 @@ extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
         let inputItems = StoredAllHouseworkList(value: [
             .makeForTest(items: [.makeForTest(id: "other")]),
         ])
-        let sut = PendingNotificationRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
+        let sut = PendingRouteStore(pendingRoute: .houseworkDetail(houseworkId: "target"))
 
         // Act
 
@@ -122,7 +122,7 @@ extension PendingNotificationRouteStoreTest.TakeHouseworkDetailItemCase {
         let inputItems = StoredAllHouseworkList(value: [
             .makeForTest(items: [.makeForTest(id: "target")]),
         ])
-        let sut = PendingNotificationRouteStore()
+        let sut = PendingRouteStore()
 
         // Act
 

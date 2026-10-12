@@ -1,5 +1,5 @@
 //
-//  PendingNotificationRouteStore.swift
+//  PendingRouteStore.swift
 //  LocalPackage
 //
 
@@ -11,17 +11,17 @@ import Observation
 /// 開く画面をここに退避し、表示できる状態になってから画面側が消化する。
 @MainActor
 @Observable
-public final class PendingNotificationRouteStore {
+public final class PendingRouteStore {
 
     /// まだ開いていない画面
-    public private(set) var pendingRoute: NotificationRoute?
+    public private(set) var pendingRoute: PendingRoute?
 
-    public init(pendingRoute: NotificationRoute? = nil) {
+    public init(pendingRoute: PendingRoute? = nil) {
         self.pendingRoute = pendingRoute
     }
 
     /// 開く画面を保持する
-    public func store(_ route: NotificationRoute) {
+    public func store(_ route: PendingRoute) {
         pendingRoute = route
     }
 
