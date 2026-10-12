@@ -17,7 +17,8 @@
 
 set -e
 
-API_HOST="https://api.appstoreconnect.apple.com"
+# テストでモックサーバーに向けるときだけ ASC_API_HOST で差し替える
+API_HOST="${ASC_API_HOST:-https://api.appstoreconnect.apple.com}"
 
 usage() {
   cat <<'EOS'
@@ -113,6 +114,21 @@ Usage: appstoreconnect.sh <command> [args...]
 
 スクリーンショットアップロード（予約 → バイナリアップロード → コミットの3ステップを自動実行、実機確認済み）:
   subscriptions screenshot upload <subscription_id> <file_path>
+
+クリエイティブアセット（プロダクトページヘッダー・検索結果。iOS 27以降のApp Storeに表示。ADR-0045）:
+  creative-assets sync <version> [dir]
+    dir（デフォルト: fastlane/creative_assets）配下の <locale>/<ファイル名>.png を、
+    指定バージョン（X.Y.Z）の同じロケールに配置します。ファイル名と配置の対応:
+      product_page_header.png → PRODUCT_PAGE_HEADER_ASSET（21:9、3840x1646）
+      search_results.png      → APP_STORE_SEARCH_RESULTS_ASSET（3:2、1920x1280〜3840x2560）
+    アセットライブラリへのアップロード → 処理完了待ち → 配置、の順に行います。
+    配置グループ（placementGroup）は、アップロードした画像の仕様（specId）を受け付けるものを
+    参照データ（appAssetLibraryRefData）から引きます。
+    審査への提出はしません（配置した画像はバージョンと一緒に審査されます）。
+    画像のsha256をreferenceNameに入れておき、配置済みの画像と同じなら何もしません（冪等）。
+    違う場合は新しい画像をアップロードしてから、古い配置を外して付け替えます。
+    ※ リポジトリから消したファイルの配置は外しません。外すときはASCで手動で外してください
+    ※ ASC_APP_ID を指定しない場合は ASC_BUNDLE_ID（デフォルト: taichi.satou.hometekure）からアプリを引きます
 
 Env:
   ASC_KEY_ID        App Store Connect APIキーのKey ID (必須)
@@ -651,6 +667,232 @@ upload_screenshot() {
 
   echo "3/3: アップロードをコミット中..." >&2
   call PATCH "/v1/subscriptionAppStoreReviewScreenshots/${screenshot_id}" "$commit_body"
+}
+
+# ---- クリエイティブアセット（ADR-0045） ----
+
+# ファイル名（拡張子なし）を配置の種類（placementType）に対応させる
+creative_asset_placement_type() {
+  case "$1" in
+    product_page_header) echo "PRODUCT_PAGE_HEADER_ASSET" ;;
+    search_results) echo "APP_STORE_SEARCH_RESULTS_ASSET" ;;
+    *) echo "" ;;
+  esac
+}
+
+# アプリのIDを返す。ASC_APP_ID があればそれを使い、無ければバンドルIDから引く
+resolve_app_id() {
+  if [ -n "${ASC_APP_ID:-}" ]; then
+    echo "$ASC_APP_ID"
+    return
+  fi
+  local bundle_id="${ASC_BUNDLE_ID:-taichi.satou.hometekure}"
+  local apps_json app_id
+  apps_json=$(call GET "/v1/apps?filter%5BbundleId%5D=${bundle_id}&fields%5Bapps%5D=bundleId")
+  app_id=$(echo "$apps_json" | jq -r '.data[0].id // empty')
+  if [ -z "$app_id" ]; then
+    echo "エラー: バンドルID ${bundle_id} のアプリが見つかりません" >&2
+    exit 1
+  fi
+  echo "$app_id"
+}
+
+# 画像をアセットライブラリへアップロードし、処理が終わるまで待つ。
+# IDは UPLOADED_IMAGE_ID、処理で判定された仕様（specId）は UPLOADED_IMAGE_SPEC_ID に入れる
+# コマンド置換の中では set -e が効かず、途中で失敗しても先へ進んでしまうため、標準出力では返さない
+# 使い方: upload_library_image <asset_library_id> <file_path> <reference_name>
+upload_library_image() {
+  local library_id="$1"
+  local file_path="$2"
+  local reference_name="$3"
+  local file_name file_size reserve_body reserve_json image_id
+
+  file_name=$(basename "$file_path")
+  file_size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path")
+
+  # specIdは作成時に指定できない（サイズから自動で判定される）
+  reserve_body=$(jq -n \
+    --arg fileName "$file_name" \
+    --argjson fileSize "$file_size" \
+    --arg referenceName "$reference_name" \
+    --arg libraryId "$library_id" \
+    '{data:{type:"appAssetLibraryImages",
+      attributes:{category:"CREATIVE_ASSETS",fileName:$fileName,fileSize:$fileSize,referenceName:$referenceName},
+      relationships:{assetLibrary:{data:{type:"appAssetLibraries",id:$libraryId}}}}}')
+  reserve_json=$(call POST /v1/appAssetLibraryImages "$reserve_body")
+  image_id=$(echo "$reserve_json" | jq -r '.data.id')
+
+  echo "$reserve_json" | jq -c '.data.attributes.uploadOperations[]' | while read -r op; do
+    local op_method op_url op_offset op_length header_args header_line
+    op_method=$(echo "$op" | jq -r '.method')
+    op_url=$(echo "$op" | jq -r '.url')
+    op_offset=$(echo "$op" | jq -r '.offset')
+    op_length=$(echo "$op" | jq -r '.length')
+
+    header_args=()
+    while IFS= read -r header_line; do
+      header_args+=(-H "$header_line")
+    done < <(echo "$op" | jq -r '.requestHeaders[]? | "\(.name): \(.value)"')
+
+    # アップロード先は一時的なURLで、APIのトークンは送らない
+    tail -c +"$((op_offset + 1))" "$file_path" | head -c "$op_length" |
+      curl -sS --fail -X "$op_method" "$op_url" "${header_args[@]}" --data-binary @- -o /dev/null || exit 1
+  done || {
+    echo "エラー: ${file_path} のアップロードに失敗しました" >&2
+    exit 1
+  }
+
+  call PATCH "/v1/appAssetLibraryImages/${image_id}" \
+    "$(jq -n --arg id "$image_id" '{data:{type:"appAssetLibraryImages",id:$id,attributes:{uploaded:true}}}')" > /dev/null
+
+  # アップロード直後はUPLOAD_COMPLETE。仕様の検査などが終わると配置できる状態に進む
+  local state image_json
+  for _ in $(seq 1 60); do
+    image_json=$(call GET "/v1/appAssetLibraryImages/${image_id}?fields%5BappAssetLibraryImages%5D=state,stateDetails,specId")
+    state=$(echo "$image_json" | jq -r '.data.attributes.state')
+    case "$state" in
+      AWAITING_UPLOAD | UPLOAD_COMPLETE)
+        sleep 5
+        ;;
+      FAILED | REJECTED)
+        echo "$image_json" | jq '.data.attributes.stateDetails' >&2
+        echo "エラー: ${file_path} の処理に失敗しました（state: ${state}）" >&2
+        exit 1
+        ;;
+      *)
+        UPLOADED_IMAGE_ID="$image_id"
+        UPLOADED_IMAGE_SPEC_ID=$(echo "$image_json" | jq -r '.data.attributes.specId // empty')
+        return
+        ;;
+    esac
+  done
+  echo "エラー: ${file_path} の処理が5分以内に終わりませんでした（state: ${state}）" >&2
+  exit 1
+}
+
+# 配置を作る。失敗しても終了せず、終了コードで返す（呼び出し元で元に戻せるようにするため）
+# 使い方: create_placement <placement_type> <placement_group> <image_id> <localization_id>
+create_placement() {
+  local body
+  body=$(jq -n \
+    --arg type "$1" \
+    --arg group "$2" \
+    --arg imageId "$3" \
+    --arg localizationId "$4" \
+    '{data:{type:"appAssetLibraryPlacements",
+      attributes:{placementType:$type,placementGroup:$group},
+      relationships:{
+        image:{data:{type:"appAssetLibraryImages",id:$imageId}},
+        appStoreVersionLocalization:{data:{type:"appStoreVersionLocalizations",id:$localizationId}}}}}')
+  (call POST /v1/appAssetLibraryPlacements "$body" > /dev/null)
+}
+
+# 使い方: sync_creative_assets <version> [dir]
+sync_creative_assets() {
+  local version="$1"
+  local dir="${2:-fastlane/creative_assets}"
+
+  if [ -z "$version" ] || [ ! -d "$dir" ]; then
+    echo "エラー: creative-assets sync <version> [dir] の形式で指定してください（dir: ${dir}）" >&2
+    exit 1
+  fi
+
+  local app_id version_json version_id version_state library_json library_id localizations_json
+  app_id=$(resolve_app_id)
+
+  version_json=$(call GET "/v1/apps/${app_id}/appStoreVersions?filter%5BversionString%5D=${version}&filter%5Bplatform%5D=IOS&fields%5BappStoreVersions%5D=versionString,appVersionState")
+  version_id=$(echo "$version_json" | jq -r '.data[0].id // empty')
+  version_state=$(echo "$version_json" | jq -r '.data[0].attributes.appVersionState // empty')
+  if [ -z "$version_id" ]; then
+    echo "エラー: バージョン ${version} がApp Store Connectにありません（先に fastlane sync_metadata で作成してください）" >&2
+    exit 1
+  fi
+  echo "バージョン ${version}（${version_state}）に同期します" >&2
+
+  library_json=$(call GET "/v1/apps/${app_id}/assetLibrary")
+  library_id=$(echo "$library_json" | jq -r '.data.id')
+  localizations_json=$(call GET "/v1/appStoreVersions/${version_id}/appStoreVersionLocalizations?fields%5BappStoreVersionLocalizations%5D=locale&limit=200")
+
+  # 配置グループ（placementGroup）は端末の種類ごとの識別子で、Appleが端末を足すと増えるため直書きしない。
+  # 参照データで、配置の種類ごとに「どのグループがどの仕様（specId）の画像を受け付けるか」を引く
+  local ref_data_json
+  ref_data_json=$(call GET "/v1/appAssetLibraryRefData?filter%5BplacementTypes%5D=PRODUCT_PAGE_HEADER_ASSET,APP_STORE_SEARCH_RESULTS_ASSET&fields%5BappAssetLibraryRefData%5D=placementTypes")
+
+  local locale_dir locale localization_id file stem placement_type checksum reference_name
+  local placements_json existing_json target_groups group old_json old_id old_image_id
+  for locale_dir in "$dir"/*/; do
+    locale=$(basename "$locale_dir")
+    localization_id=$(echo "$localizations_json" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id')
+    if [ -z "$localization_id" ]; then
+      echo "警告: バージョン ${version} にロケール ${locale} が無いため ${locale_dir} をスキップします" >&2
+      continue
+    fi
+
+    for file in "$locale_dir"*.png; do
+      [ -f "$file" ] || continue
+      stem=$(basename "$file" .png)
+      placement_type=$(creative_asset_placement_type "$stem")
+      if [ -z "$placement_type" ]; then
+        echo "警告: ${file} は対応する配置が無いためスキップします" >&2
+        continue
+      fi
+
+      checksum=$(shasum -a 256 "$file" | cut -c1-16)
+      reference_name="${locale}/${stem}/${checksum}"
+
+      # 配置済みの画像を [{id, group, imageId, ref}] にまとめる
+      placements_json=$(call GET "/v1/appStoreVersionLocalizations/${localization_id}/placements?filter%5BplacementType%5D=${placement_type}&include=image&fields%5BappAssetLibraryImages%5D=referenceName&limit=200")
+      existing_json=$(echo "$placements_json" | jq -c '
+        (.included // []) as $images
+        | [.data[] | .relationships.image.data.id as $imageId | {
+            id,
+            group: .attributes.placementGroup,
+            imageId: $imageId,
+            ref: ([$images[] | select(.id == $imageId) | .attributes.referenceName][0] // "")
+          }]')
+
+      if [ "$(echo "$existing_json" | jq --arg ref "$reference_name" 'length > 0 and all(.ref == $ref)')" = "true" ]; then
+        echo "変更なし: ${file}" >&2
+        continue
+      fi
+
+      echo "アップロード中: ${file}" >&2
+      upload_library_image "$library_id" "$file" "$reference_name"
+
+      target_groups=$(echo "$ref_data_json" | jq -r --arg type "$placement_type" --arg spec "$UPLOADED_IMAGE_SPEC_ID" '
+        [.data[].attributes.placementTypes[]? | select(.placementTypeId == $type) | .specMappings[]?
+          | select((.specs // []) | index($spec)) | .placementGroupId] | unique | .[]')
+      if [ -z "$target_groups" ]; then
+        echo "エラー: ${file}（specId: ${UPLOADED_IMAGE_SPEC_ID}）を ${placement_type} に置ける配置グループがありません。画像のサイズを確認してください" >&2
+        exit 1
+      fi
+
+      for group in $target_groups; do
+        # グループごとに置ける数に上限があり（ヘッダーは1枚）、新しい配置を先に作れない。
+        # 古い配置を外してから作り、作れなかったときは外した配置を元の画像で作り直す
+        old_json=$(echo "$existing_json" | jq -c --arg group "$group" '[.[] | select(.group == $group)]')
+        for old_id in $(echo "$old_json" | jq -r '.[].id'); do
+          call DELETE "/v1/appAssetLibraryPlacements/${old_id}" > /dev/null
+        done
+
+        if ! create_placement "$placement_type" "$group" "$UPLOADED_IMAGE_ID" "$localization_id"; then
+          for old_image_id in $(echo "$old_json" | jq -r '.[].imageId'); do
+            create_placement "$placement_type" "$group" "$old_image_id" "$localization_id" ||
+              echo "警告: 元の配置（image: ${old_image_id}）にも戻せませんでした。ASCで ${locale} の ${placement_type} を確認してください" >&2
+          done
+          echo "エラー: ${file} を ${locale} / ${placement_type} / ${group} に配置できませんでした" >&2
+          exit 1
+        fi
+        echo "配置しました: ${file} → ${locale} / ${placement_type} / ${group}" >&2
+      done
+
+      # 新しい画像を受け付けないグループに残った古い配置は外す（同じ場所に新旧の画像が混ざらないように）
+      for old_id in $(echo "$existing_json" | jq -r --arg groups "$target_groups" '
+        ($groups | split("\n")) as $targets | .[] | select(.group as $g | $targets | index($g) | not) | .id'); do
+        call DELETE "/v1/appAssetLibraryPlacements/${old_id}" > /dev/null
+      done
+    done
+  done
 }
 
 # subscriptionの現在の価格を "territory<TAB>pricePointId<TAB>customerPrice" 形式で出力する
@@ -1227,6 +1469,15 @@ main() {
     verify)
       parse_apply_args "$@"
       verify
+      ;;
+
+    creative-assets)
+      if [ "${1:-}" = "sync" ]; then
+        sync_creative_assets "${2:-}" "${3:-}"
+      else
+        usage
+        exit 1
+      fi
       ;;
 
     -h|--help|help)
