@@ -122,6 +122,8 @@ Usage: appstoreconnect.sh <command> [args...]
       product_page_header.png → PRODUCT_PAGE_HEADER_ASSET（21:9、3840x1646）
       search_results.png      → APP_STORE_SEARCH_RESULTS_ASSET（3:2、1920x1280〜3840x2560）
     アセットライブラリへのアップロード → 処理完了待ち → 配置、の順に行います。
+    配置グループ（placementGroup）は、アップロードした画像の仕様（specId）を受け付けるものを
+    参照データ（appAssetLibraryRefData）から引きます。
     審査への提出はしません（配置した画像はバージョンと一緒に審査されます）。
     画像のsha256をreferenceNameに入れておき、配置済みの画像と同じなら何もしません（冪等）。
     違う場合は新しい画像をアップロードしてから、古い配置を外して付け替えます。
@@ -695,7 +697,8 @@ resolve_app_id() {
   echo "$app_id"
 }
 
-# 画像をアセットライブラリへアップロードし、処理が終わるまで待つ。IDは UPLOADED_IMAGE_ID に入れる
+# 画像をアセットライブラリへアップロードし、処理が終わるまで待つ。
+# IDは UPLOADED_IMAGE_ID、処理で判定された仕様（specId）は UPLOADED_IMAGE_SPEC_ID に入れる
 # コマンド置換の中では set -e が効かず、途中で失敗しても先へ進んでしまうため、標準出力では返さない
 # 使い方: upload_library_image <asset_library_id> <file_path> <reference_name>
 upload_library_image() {
@@ -745,7 +748,7 @@ upload_library_image() {
   # アップロード直後はUPLOAD_COMPLETE。仕様の検査などが終わると配置できる状態に進む
   local state image_json
   for _ in $(seq 1 60); do
-    image_json=$(call GET "/v1/appAssetLibraryImages/${image_id}?fields%5BappAssetLibraryImages%5D=state,stateDetails")
+    image_json=$(call GET "/v1/appAssetLibraryImages/${image_id}?fields%5BappAssetLibraryImages%5D=state,stateDetails,specId")
     state=$(echo "$image_json" | jq -r '.data.attributes.state')
     case "$state" in
       AWAITING_UPLOAD | UPLOAD_COMPLETE)
@@ -758,12 +761,30 @@ upload_library_image() {
         ;;
       *)
         UPLOADED_IMAGE_ID="$image_id"
+        UPLOADED_IMAGE_SPEC_ID=$(echo "$image_json" | jq -r '.data.attributes.specId // empty')
         return
         ;;
     esac
   done
   echo "エラー: ${file_path} の処理が5分以内に終わりませんでした（state: ${state}）" >&2
   exit 1
+}
+
+# 配置を作る。失敗しても終了せず、終了コードで返す（呼び出し元で元に戻せるようにするため）
+# 使い方: create_placement <placement_type> <placement_group> <image_id> <localization_id>
+create_placement() {
+  local body
+  body=$(jq -n \
+    --arg type "$1" \
+    --arg group "$2" \
+    --arg imageId "$3" \
+    --arg localizationId "$4" \
+    '{data:{type:"appAssetLibraryPlacements",
+      attributes:{placementType:$type,placementGroup:$group},
+      relationships:{
+        image:{data:{type:"appAssetLibraryImages",id:$imageId}},
+        appStoreVersionLocalization:{data:{type:"appStoreVersionLocalizations",id:$localizationId}}}}}')
+  (call POST /v1/appAssetLibraryPlacements "$body" > /dev/null)
 }
 
 # 使い方: sync_creative_assets <version> [dir]
@@ -792,8 +813,13 @@ sync_creative_assets() {
   library_id=$(echo "$library_json" | jq -r '.data.id')
   localizations_json=$(call GET "/v1/appStoreVersions/${version_id}/appStoreVersionLocalizations?fields%5BappStoreVersionLocalizations%5D=locale&limit=200")
 
+  # 配置グループ（placementGroup）は端末の種類ごとの識別子で、Appleが端末を足すと増えるため直書きしない。
+  # 参照データで、配置の種類ごとに「どのグループがどの仕様（specId）の画像を受け付けるか」を引く
+  local ref_data_json
+  ref_data_json=$(call GET "/v1/appAssetLibraryRefData?filter%5BplacementTypes%5D=PRODUCT_PAGE_HEADER_ASSET,APP_STORE_SEARCH_RESULTS_ASSET&fields%5BappAssetLibraryRefData%5D=placementTypes")
+
   local locale_dir locale localization_id file stem placement_type checksum reference_name
-  local placements_json current_placement_id current_reference placement_body
+  local placements_json existing_json target_groups group old_json old_id old_image_id
   for locale_dir in "$dir"/*/; do
     locale=$(basename "$locale_dir")
     localization_id=$(echo "$localizations_json" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id')
@@ -814,11 +840,18 @@ sync_creative_assets() {
       checksum=$(shasum -a 256 "$file" | cut -c1-16)
       reference_name="${locale}/${stem}/${checksum}"
 
-      placements_json=$(call GET "/v1/appStoreVersionLocalizations/${localization_id}/placements?filter%5BplacementType%5D=${placement_type}&include=image&fields%5BappAssetLibraryImages%5D=referenceName")
-      current_placement_id=$(echo "$placements_json" | jq -r '.data[0].id // empty')
-      current_reference=$(echo "$placements_json" | jq -r '.included[0].attributes.referenceName // empty')
+      # 配置済みの画像を [{id, group, imageId, ref}] にまとめる
+      placements_json=$(call GET "/v1/appStoreVersionLocalizations/${localization_id}/placements?filter%5BplacementType%5D=${placement_type}&include=image&fields%5BappAssetLibraryImages%5D=referenceName&limit=200")
+      existing_json=$(echo "$placements_json" | jq -c '
+        (.included // []) as $images
+        | [.data[] | .relationships.image.data.id as $imageId | {
+            id,
+            group: .attributes.placementGroup,
+            imageId: $imageId,
+            ref: ([$images[] | select(.id == $imageId) | .attributes.referenceName][0] // "")
+          }]')
 
-      if [ "$current_reference" = "$reference_name" ]; then
+      if [ "$(echo "$existing_json" | jq --arg ref "$reference_name" 'length > 0 and all(.ref == $ref)')" = "true" ]; then
         echo "変更なし: ${file}" >&2
         continue
       fi
@@ -826,22 +859,38 @@ sync_creative_assets() {
       echo "アップロード中: ${file}" >&2
       upload_library_image "$library_id" "$file" "$reference_name"
 
-      # 同じ配置に置ける数には上限があるため、新しい画像の準備ができてから古い配置を外す
-      if [ -n "$current_placement_id" ]; then
-        call DELETE "/v1/appAssetLibraryPlacements/${current_placement_id}" > /dev/null
+      target_groups=$(echo "$ref_data_json" | jq -r --arg type "$placement_type" --arg spec "$UPLOADED_IMAGE_SPEC_ID" '
+        [.data[].attributes.placementTypes[]? | select(.placementTypeId == $type) | .specMappings[]?
+          | select((.specs // []) | index($spec)) | .placementGroupId] | unique | .[]')
+      if [ -z "$target_groups" ]; then
+        echo "エラー: ${file}（specId: ${UPLOADED_IMAGE_SPEC_ID}）を ${placement_type} に置ける配置グループがありません。画像のサイズを確認してください" >&2
+        exit 1
       fi
 
-      placement_body=$(jq -n \
-        --arg type "$placement_type" \
-        --arg imageId "$UPLOADED_IMAGE_ID" \
-        --arg localizationId "$localization_id" \
-        '{data:{type:"appAssetLibraryPlacements",
-          attributes:{placementType:$type},
-          relationships:{
-            image:{data:{type:"appAssetLibraryImages",id:$imageId}},
-            appStoreVersionLocalization:{data:{type:"appStoreVersionLocalizations",id:$localizationId}}}}}')
-      call POST /v1/appAssetLibraryPlacements "$placement_body" > /dev/null
-      echo "配置しました: ${file} → ${locale} / ${placement_type}" >&2
+      for group in $target_groups; do
+        # グループごとに置ける数に上限があり（ヘッダーは1枚）、新しい配置を先に作れない。
+        # 古い配置を外してから作り、作れなかったときは外した配置を元の画像で作り直す
+        old_json=$(echo "$existing_json" | jq -c --arg group "$group" '[.[] | select(.group == $group)]')
+        for old_id in $(echo "$old_json" | jq -r '.[].id'); do
+          call DELETE "/v1/appAssetLibraryPlacements/${old_id}" > /dev/null
+        done
+
+        if ! create_placement "$placement_type" "$group" "$UPLOADED_IMAGE_ID" "$localization_id"; then
+          for old_image_id in $(echo "$old_json" | jq -r '.[].imageId'); do
+            create_placement "$placement_type" "$group" "$old_image_id" "$localization_id" ||
+              echo "警告: 元の配置（image: ${old_image_id}）にも戻せませんでした。ASCで ${locale} の ${placement_type} を確認してください" >&2
+          done
+          echo "エラー: ${file} を ${locale} / ${placement_type} / ${group} に配置できませんでした" >&2
+          exit 1
+        fi
+        echo "配置しました: ${file} → ${locale} / ${placement_type} / ${group}" >&2
+      done
+
+      # 新しい画像を受け付けないグループに残った古い配置は外す（同じ場所に新旧の画像が混ざらないように）
+      for old_id in $(echo "$existing_json" | jq -r --arg groups "$target_groups" '
+        ($groups | split("\n")) as $targets | .[] | select(.group as $g | $targets | index($g) | not) | .id'); do
+        call DELETE "/v1/appAssetLibraryPlacements/${old_id}" > /dev/null
+      done
     done
   done
 }
