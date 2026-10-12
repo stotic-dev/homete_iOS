@@ -28,7 +28,7 @@ let package = Package(
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
         .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "13.0.1"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
