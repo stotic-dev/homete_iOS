@@ -45,6 +45,7 @@ struct ContributionAnalyticsView: View {
             .padding(.bottom, .space24)
             .padding(.horizontal, .space16)
         }
+        .background(.backgroundScreen)
         .safeAreaInset(edge: .top, spacing: 0) {
             AnalyticsPeriodHeader(selectedPeriod: $selectedPeriod)
                 .padding(.horizontal, .space16)
@@ -61,10 +62,12 @@ struct ContributionAnalyticsView: View {
 private extension ContributionAnalyticsView {
 
     func graphContent(analytics: ContributionAnalytics) -> some View {
-        VStack(spacing: .space32) {
+        // グラフとランキングを1つずつカードに載せ、ミルク色の地の上でまとまりが分かるようにする
+        VStack(spacing: .space16) {
             pointGraph(pointData: analytics.currentList(calendar: calendar))
             ContributionPieChart(data: analytics.achieved())
                 .frame(height: 240)
+                .sectionCardStyle()
             AnalyticsRankingSection(
                 pointRanking: analytics.ranking(
                     criterion: .point,
@@ -78,6 +81,7 @@ private extension ContributionAnalyticsView {
                 ),
                 selectedPriodType: selectedPeriod.type
             )
+            .sectionCardStyle()
         }
     }
 
@@ -85,11 +89,13 @@ private extension ContributionAnalyticsView {
     func pointGraph(pointData: AllUserViewablePointList) -> some View {
         PointsTimeSeriesChartView(viewableData: pointData)
             .frame(height: 240)
+            .sectionCardStyle()
         CumulativePointsAreaChartView(viewableData: AllUserCumulativeData.make(
             list: pointData.list,
             displayPeriod: pointData.displayPeriod
         ))
         .frame(height: 240)
+        .sectionCardStyle()
     }
 
     func emptyContent() -> some View {
