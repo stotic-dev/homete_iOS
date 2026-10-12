@@ -14,6 +14,8 @@ import {
   expectCollectionNotEmpty,
 } from "../helpers/assertions";
 import {
+  ClientCollections,
+  accountPath,
   houseworksPath,
   houseworkTemplatesPath,
   houseworkTemplateDaysPath,
@@ -157,6 +159,29 @@ describe("deleteUserData E2E Tests", () => {
 
       // Assert（ポーリングで確認）
       await expectAccountNotExists(user1.uid);
+    });
+  });
+
+  describe("FCMトークンのテスト", () => {
+    it("削除したユーザーのFCMトークンだけが削除される", async () => {
+      // Arrange
+      const uid1 = `test6-user-1-${testCounter}`;
+      const uid2 = `test6-user-2-${testCounter}`;
+      const user1 = await createTestUser(uid1, `${uid1}@example.com`);
+      const user2 = await createTestUser(uid2, `${uid2}@example.com`);
+      const cohabitantId = `test6-cohabitant-${testCounter}`;
+      await createTestCohabitant(cohabitantId, [user1.uid, user2.uid]);
+      await createTestAccount(user1.uid, cohabitantId, "token-1");
+      await createTestAccount(user2.uid, cohabitantId, "token-2");
+      const privatePath = (uid: string) =>
+        `${accountPath(uid)}/${ClientCollections.ACCOUNT_PRIVATE}`;
+
+      // Act
+      await getAuth().deleteUser(user1.uid);
+
+      // Assert
+      await expectCollectionEmpty(privatePath(user1.uid));
+      await expectCollectionNotEmpty(privatePath(user2.uid));
     });
   });
 

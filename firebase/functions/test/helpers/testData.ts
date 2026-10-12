@@ -1,7 +1,11 @@
 import {getAuth} from "firebase-admin/auth";
 import {getFirestore} from "firebase-admin/firestore";
 import {FirestoreCollections} from "../../src/models/FirestoreCollections";
-import {Account} from "../../src/models/Account";
+import {
+  Account,
+  AccountFcmTokenFields,
+} from "../../src/models/Account";
+import {FirestoreHelper} from "../../src/models/FirestoreHelper";
 import {Cohabitant} from "../../src/models/Cohabitant";
 import {
   houseworksPath,
@@ -36,7 +40,8 @@ export async function createTestUser(
  * プロダクションコードのAccountモデルを使用
  * @param {string} userId - ユーザーID
  * @param {string} cohabitantId - CohabitantドキュメントのID（オプション）
- * @param {string} fcmToken - FCMトークン（オプション）
+ * @param {string} fcmToken - FCMトークン（オプション）。
+ *   新しいアプリと同じく`Account/{uid}/Private/fcm`へ書き込む
  * @param {boolean} isPremium - プレミアム加入状態（省略時はfalse）
  * @param {string} userName - 表示名（オプション）
  * @return {Promise<void>}
@@ -55,7 +60,6 @@ export async function createTestAccount(
     id: userId,
     userName,
     cohabitantId,
-    fcmToken,
     isPremium,
   };
 
@@ -63,6 +67,33 @@ export async function createTestAccount(
   const accountData = removeUndefinedFields(account);
 
   await db.collection(FirestoreCollections.ACCOUNT).add(accountData);
+
+  if (fcmToken) {
+    await new FirestoreHelper().fcmTokenRef(userId).set({
+      [AccountFcmTokenFields.TOKEN]: fcmToken,
+    });
+  }
+}
+
+/**
+ * 旧バージョンのアプリと同じく、FCMトークンをAccount本体に持つAccountを作成
+ * @param {string} userId - ユーザーID
+ * @param {string} cohabitantId - CohabitantドキュメントのID
+ * @param {string} fcmToken - Accountへ直接書き込むFCMトークン
+ * @return {Promise<void>}
+ */
+export async function createLegacyTestAccount(
+  userId: string,
+  cohabitantId: string,
+  fcmToken: string
+): Promise<void> {
+  const account: Account = {
+    id: userId,
+    cohabitantId,
+    fcmToken,
+    isPremium: false,
+  };
+  await getFirestore().collection(FirestoreCollections.ACCOUNT).add(account);
 }
 
 /**
