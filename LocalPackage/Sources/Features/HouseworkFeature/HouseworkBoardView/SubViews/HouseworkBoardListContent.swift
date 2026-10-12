@@ -67,13 +67,16 @@ struct HouseworkBoardListContent<RowMenu: View>: View {
                             isTutorialTargetRow(item) ? .houseworkIncompleteRow : nil
                         )
                 }
-                .listRowBackground(Color.clear)
+                // 1件ずつをカードに載せ、ミルク色の地の上で家事の区切りが見えるようにする
+                .listRowInsets(.init(top: .space8, leading: .space16, bottom: .space8, trailing: .space8))
+                .listRowBackground(rowCardBackground)
                 #if os(iOS)
                     .listRowSpacing(.zero)
                     .listRowSeparator(.hidden)
                 #endif
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             // 終端までスクロールしたときに、最後の行が浮いている追加ボタンやタブバーに隠れないようにする。
             // 高さをリテラルで持つとボタンのデザイン変更に追従できないため、同じボタンを隠して置いて実寸を使う
             .safeAreaInset(edge: .bottom) {
@@ -91,6 +94,13 @@ struct HouseworkBoardListContent<RowMenu: View>: View {
 }
 
 private extension HouseworkBoardListContent {
+
+    /// 行の背景のカード。上下を空けて、カード同士の間にミルク色の地をのぞかせる
+    var rowCardBackground: some View {
+        RoundedRectangle(radius: .radius12)
+            .fill(.backgroundCard)
+            .padding(.vertical, .space4)
+    }
 
     var selection: HouseworkSelection {
         .init(

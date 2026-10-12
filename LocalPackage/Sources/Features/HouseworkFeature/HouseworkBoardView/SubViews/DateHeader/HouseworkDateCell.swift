@@ -74,7 +74,8 @@ private extension HouseworkDateCell {
         switch state {
         case .selected: .fillAccent
         case .selectable: .fillAccentSubtle
-        case .unselectable: .backgroundScreen
+        // ミルク色の地に溶けないよう、選べない日もカードの色で丸を見せる
+        case .unselectable: .backgroundCard
         }
     }
 
