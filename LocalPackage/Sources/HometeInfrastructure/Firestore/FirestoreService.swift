@@ -98,6 +98,14 @@ public final actor FirestoreService {
         try await batch.commit()
     }
 
+    /// 複数のドキュメントへの書き込みをまとめてコミットする（全件成功か全件失敗のどちらかになる）
+    /// - Parameter writes: 書き込みを`WriteBatch`へ積む
+    public func commitBatch(_ writes: (Firestore, WriteBatch) -> Void) async throws {
+        let batch = firestore.batch()
+        writes(firestore, batch)
+        try await batch.commit()
+    }
+
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {
         try await predicate(firestore).delete()
     }

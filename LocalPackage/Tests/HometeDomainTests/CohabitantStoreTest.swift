@@ -27,7 +27,6 @@ struct CohabitantStoreTest {
         let expectedAccount = Account(
             id: newMemberId,
             userName: newMemberUserName,
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let inputCohabitantData = CohabitantData(

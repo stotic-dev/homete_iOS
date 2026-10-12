@@ -352,7 +352,6 @@ private extension SettingView {
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
-            fcmToken: "",
             // グループ未参加の状態を表すため、空文字ではなくnilにする
             cohabitantId: nil
         )))
@@ -366,7 +365,6 @@ private extension SettingView {
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
-            fcmToken: "",
             cohabitantId: ""
         )))
         .environment(
@@ -396,7 +394,6 @@ private extension SettingView {
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
-            fcmToken: "",
             cohabitantId: ""
         )))
         .environment(
@@ -426,7 +423,6 @@ private extension SettingView {
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
-            fcmToken: "",
             cohabitantId: ""
         )))
         .environment(
