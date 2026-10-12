@@ -12,6 +12,7 @@ import SwiftUI
 public struct ContributionAnalyticsScreen: View {
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.appDependencies.intentDonationClient) var intentDonationClient
     @Environment(ContributionStore.self) var contributionStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.isAdsEnabled) var isAdsEnabled
@@ -50,6 +51,10 @@ public struct ContributionAnalyticsScreen: View {
         .softTopScrollEdgeEffect()
         .task(id: contributionStore.contiribution) {
             await onChangeContribution()
+        }
+        // 分析を見る習慣をSiriやロック画面で提案してもらえるよう、開くたびに伝える
+        .onAppear {
+            intentDonationClient.donateContributionSummary()
         }
         .onChange(of: selectedPeriod) {
             loadingState.task {

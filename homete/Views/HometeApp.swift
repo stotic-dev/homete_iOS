@@ -5,9 +5,11 @@
 //  Created by 佐藤汰一 on 2025/04/22.
 //
 
+import AppIntents
 import AppRoot
 import FirebaseCore
 import FirebaseMessaging
+import HometeAppIntents
 import HometeDomain
 import HometeInfrastructure
 import SwiftUI
@@ -16,7 +18,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
-    /// タップされた通知から開く画面
+    /// タップされた通知やApp Intentから開く画面
     /// - Note: アプリが終了している状態で通知をタップすると、画面を組み立てる前に通知のタップが届くため、
     ///         画面側ではなくここで受け取って保持する
     let pendingRouteStore = PendingRouteStore()
@@ -31,6 +33,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         // Initialize RevenueCat
         setupRevenueCat()
+
+        setupAppIntents()
 
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
@@ -102,6 +106,18 @@ private extension AppDelegate {
     func setupRevenueCat() {
         guard !isXcodePreview, !isUnitTestMode else { return }
         RevenueCatClient.shared.initialize()
+    }
+
+    /// App Intentが使う依存を登録する
+    /// - Note: アプリを開かないIntentもアプリのプロセスを起動して実行されるため、Firebaseの初期化と同じく起動時に行う
+    func setupAppIntents() {
+        HometeAppIntentsConfigurator.configure(
+            dependencies: .liveValue,
+            pendingRouteStore: pendingRouteStore,
+            currentAppVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        )
+        // Siriで家事の名前を言えるよう、今日の家事の名前を読み直してもらう
+        HometeAppShortcuts.updateAppShortcutParameters()
     }
 
 }

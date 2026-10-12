@@ -20,6 +20,7 @@ let package = Package(
         lib("ContributionFeature"),
         lib("HometeInfrastructure"),
         lib("HometeLocalNotification"),
+        lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
         lib("AppRoot")
@@ -129,6 +130,14 @@ let package = Package(
             dependencies: ["HometeDomain"],
             plugins: [swiftLintPlugin()]
         ),
+        // Siri・Spotlight・ショートカットAppから実行するApp Intent。Firebaseの実装はアプリから受け取るため、
+        // HometeInfrastructureに依存させない
+        .target(
+            name: "HometeAppIntents",
+            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeature"],
+            resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
         .target(
             name: "AppRoot",
             dependencies: [
@@ -143,7 +152,8 @@ let package = Package(
                 "ContributionFeature",
                 "FrequentHouseworkFeature",
                 "HometeInfrastructure",
-                "HometeLocalNotification"
+                "HometeLocalNotification",
+                "HometeAppIntents"
             ],
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
@@ -174,6 +184,11 @@ let package = Package(
         .testTarget(
             name: "FrequentHouseworkFeatureTests",
             dependencies: ["FrequentHouseworkFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "HometeAppIntentsTests",
+            dependencies: ["HometeAppIntents"],
             plugins: [swiftLintPlugin()]
         )
     ]

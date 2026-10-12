@@ -19,6 +19,8 @@ public struct ContributionSummaryComponent: View {
     @Environment(\.loginContext.account.id) var userId
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+    /// プレビューやチュートリアルでは注入されないため、無くても描画できるようにする
+    @Environment(PendingRouteStore.self) var pendingRouteStore: PendingRouteStore?
 
     @State var summary: AllUserPointSummary = .init()
     @State var isShowAnalytics = false
@@ -36,6 +38,12 @@ public struct ContributionSummaryComponent: View {
             }
             .task(id: contributionStore.contiribution) {
                 await onChangeContribution()
+            }
+            // App Intentから分析画面を開く。分析画面への遷移はこのコンポーネントが持っている
+            .onChange(of: pendingRouteStore?.pendingRoute, initial: true) {
+                if pendingRouteStore?.takeContributionAnalytics() == true {
+                    isShowAnalytics = true
+                }
             }
             .navigationDestination(isPresented: $isShowAnalytics) {
                 ContributionAnalyticsScreen.make()

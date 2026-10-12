@@ -44,6 +44,324 @@
           }
         }
       }
+    },
+    "Analytics" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "がんばりの分析"
+          }
+        }
+      }
+    },
+    "Complete Chore" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事を完了"
+          }
+        }
+      }
+    },
+    "Say Thanks" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ありがとう"
+          }
+        }
+      }
+    },
+    "This Month" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月のがんばり"
+          }
+        }
+      }
+    },
+    "ありがとうを伝える" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ありがとうを伝える"
+          }
+        }
+      }
+    },
+    "ありがとうを伝える家事" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore to Say Thanks For"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ありがとうを伝える家事"
+          }
+        }
+      }
+    },
+    "がんばりの分析を開く" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Effort Analytics"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "がんばりの分析を開く"
+          }
+        }
+      }
+    },
+    "どの家事を完了にしますか？" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore did you finish?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの家事を完了にしますか？"
+          }
+        }
+      }
+    },
+    "どの家事を記録しますか？" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to record?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの家事を記録しますか？"
+          }
+        }
+      }
+    },
+    "ひとこと" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ひとこと"
+          }
+        }
+      }
+    },
+    "アプリを開いて、家事の完了を記録する画面を出します" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the app to record a chore as done."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを開いて、家事の完了を記録する画面を出します"
+          }
+        }
+      }
+    },
+    "アプリを開いて、家事の記録の分析画面を出します" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the app to the chore history analytics."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを開いて、家事の記録の分析画面を出します"
+          }
+        }
+      }
+    },
+    "アプリを開かずに、パートナーが終えた家事にありがとうを伝えます" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Says thanks for a chore your partner finished, without opening the app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを開かずに、パートナーが終えた家事にありがとうを伝えます"
+          }
+        }
+      }
+    },
+    "アプリを開かずに、今日の家事を完了にします" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marks one of today's chores as done without opening the app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを開かずに、今日の家事を完了にします"
+          }
+        }
+      }
+    },
+    "今月、だれがどれくらい家事をしたかを表示します" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows who did how many chores this month."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月、だれがどれくらい家事をしたかを表示します"
+          }
+        }
+      }
+    },
+    "今月のがんばりを見る" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show This Month's Effort"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今月のがんばりを見る"
+          }
+        }
+      }
+    },
+    "家事" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事"
+          }
+        }
+      }
+    },
+    "家事の完了を記録する" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record a Done Chore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事の完了を記録する"
+          }
+        }
+      }
+    },
+    "家事を完了にする" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete Chore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事を完了にする"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

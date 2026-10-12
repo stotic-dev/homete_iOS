@@ -1,0 +1,105 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Complete ${housework} in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${housework}を完了",
+              "${applicationName}で${housework}を完了にする"
+            ]
+          }
+        }
+      }
+    },
+    "Finish ${housework} in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${housework}を終えた"
+            ]
+          }
+        }
+      }
+    },
+    "Complete a chore in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で家事を完了",
+              "${applicationName}で家事を完了にする"
+            ]
+          }
+        }
+      }
+    },
+    "Say thanks in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でありがとうを伝える"
+            ]
+          }
+        }
+      }
+    },
+    "Send thanks in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でありがとう"
+            ]
+          }
+        }
+      }
+    },
+    "Show this month in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で今月のがんばりを見る"
+            ]
+          }
+        }
+      }
+    },
+    "Show this month's effort in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で今月のがんばり"
+            ]
+          }
+        }
+      }
+    },
+    "Open analytics in ${applicationName}" : {
+      "localizations" : {
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でがんばりを分析",
+              "${applicationName}でがんばりの分析を開く"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}
