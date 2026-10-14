@@ -697,9 +697,36 @@ resolve_app_id() {
   echo "$app_id"
 }
 
-# 画像をアセットライブラリへアップロードし、処理が終わるまで待つ。
+# 画像をアセットライブラリへ用意し、処理が終わるまで待つ。
+# 同じreferenceName（=同じ中身）の画像が前回の実行でアップロード済みならそれを使い、無ければアップロードする。
+# 処理待ちで失敗した後に再実行しても、同じ画像をアップロードし直さず続きから待てるようにするため
 # IDは UPLOADED_IMAGE_ID、処理で判定された仕様（specId）は UPLOADED_IMAGE_SPEC_ID に入れる
 # コマンド置換の中では set -e が効かず、途中で失敗しても先へ進んでしまうため、標準出力では返さない
+# 使い方: prepare_library_image <asset_library_id> <file_path> <reference_name>
+prepare_library_image() {
+  local library_id="$1"
+  local file_path="$2"
+  local reference_name="$3"
+  local encoded_reference_name images_json image_id
+
+  # アップロード途中で止まったもの・処理に失敗したもの・アーカイブ済みのものは使わない
+  encoded_reference_name=$(jq -rn --arg value "$reference_name" '$value | @uri')
+  images_json=$(call GET "/v1/appAssetLibraries/${library_id}/images?filter%5BreferenceName%5D=${encoded_reference_name}&fields%5BappAssetLibraryImages%5D=referenceName,state&limit=200")
+  image_id=$(echo "$images_json" | jq -r --arg ref "$reference_name" '
+    [.data[] | select(.attributes.referenceName == $ref)
+      | select(.attributes.state as $s | ["AWAITING_UPLOAD", "FAILED", "REJECTED", "ARCHIVED"] | index($s) | not)][0].id // empty')
+
+  if [ -n "$image_id" ]; then
+    echo "アップロード済みの画像を使います: ${file_path}（image: ${image_id}）" >&2
+  else
+    echo "アップロード中: ${file_path}" >&2
+    upload_library_image "$library_id" "$file_path" "$reference_name"
+    image_id="$UPLOADED_IMAGE_ID"
+  fi
+  wait_library_image "$image_id" "$file_path"
+}
+
+# 画像をアセットライブラリへアップロードする。IDは UPLOADED_IMAGE_ID に入れる
 # 使い方: upload_library_image <asset_library_id> <file_path> <reference_name>
 upload_library_image() {
   local library_id="$1"
@@ -745,14 +772,25 @@ upload_library_image() {
   call PATCH "/v1/appAssetLibraryImages/${image_id}" \
     "$(jq -n --arg id "$image_id" '{data:{type:"appAssetLibraryImages",id:$id,attributes:{uploaded:true}}}')" > /dev/null
 
-  # アップロード直後はUPLOAD_COMPLETE。仕様の検査などが終わると配置できる状態に進む
+  UPLOADED_IMAGE_ID="$image_id"
+}
+
+# 画像の処理が終わり、配置できる状態になるまで待つ。
+# IDは UPLOADED_IMAGE_ID、処理で判定された仕様（specId）は UPLOADED_IMAGE_SPEC_ID に入れる
+# 使い方: wait_library_image <image_id> <file_path>
+wait_library_image() {
+  local image_id="$1"
+  local file_path="$2"
+
+  # アップロード直後はUPLOAD_COMPLETE。仕様の検査などが終わると配置できる状態に進む。
+  # 本物のASCでは5分を超えることがあったため、30分（10秒 × 180回）まで待つ
   local state image_json
-  for _ in $(seq 1 60); do
+  for _ in $(seq 1 180); do
     image_json=$(call GET "/v1/appAssetLibraryImages/${image_id}?fields%5BappAssetLibraryImages%5D=state,stateDetails,specId")
     state=$(echo "$image_json" | jq -r '.data.attributes.state')
     case "$state" in
       AWAITING_UPLOAD | UPLOAD_COMPLETE)
-        sleep 5
+        sleep 10
         ;;
       FAILED | REJECTED)
         echo "$image_json" | jq '.data.attributes.stateDetails' >&2
@@ -766,7 +804,7 @@ upload_library_image() {
         ;;
     esac
   done
-  echo "エラー: ${file_path} の処理が5分以内に終わりませんでした（state: ${state}）" >&2
+  echo "エラー: ${file_path} の処理が30分以内に終わりませんでした（state: ${state}）。再実行すると、アップロード済みの画像の処理を続けて待ちます" >&2
   exit 1
 }
 
@@ -856,8 +894,7 @@ sync_creative_assets() {
         continue
       fi
 
-      echo "アップロード中: ${file}" >&2
-      upload_library_image "$library_id" "$file" "$reference_name"
+      prepare_library_image "$library_id" "$file" "$reference_name"
 
       target_groups=$(echo "$ref_data_json" | jq -r --arg type "$placement_type" --arg spec "$UPLOADED_IMAGE_SPEC_ID" '
         [.data[].attributes.placementTypes[]? | select(.placementTypeId == $type) | .specMappings[]?
