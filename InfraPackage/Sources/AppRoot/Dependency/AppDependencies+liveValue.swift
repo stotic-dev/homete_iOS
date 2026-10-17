@@ -2,6 +2,7 @@
 //  AppDependencies+liveValue.swift
 //
 
+import HometeAppIntents
 import HometeDomain
 import HometeLocalNotification
 
@@ -34,6 +35,7 @@ public extension AppDependencies {
         remoteConfigClient: .liveValue,
         encouragementCommentClient: .liveValue,
         encouragementCommentCacheClient: .liveValue,
+        intentDonationClient: .liveValue,
         debugAuthClient: liveDebugAuthClient
     )
 

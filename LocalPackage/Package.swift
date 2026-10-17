@@ -19,6 +19,7 @@ let package = Package(
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeLocalNotification"),
+        lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
         lib("HometeSnapshotTestSupport")
@@ -26,7 +27,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.7"),
     ],
     targets: [
@@ -97,6 +98,14 @@ let package = Package(
             dependencies: ["HometeDomain"],
             plugins: [swiftLintPlugin()]
         ),
+        // Siri・Spotlight・ショートカットAppから実行するApp Intent。Firebaseの実装はアプリから受け取るため、
+        // HometeInfrastructureに依存させない
+        .target(
+            name: "HometeAppIntents",
+            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeature"],
+            resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
 
         // MARK: Test Support
 
@@ -135,6 +144,11 @@ let package = Package(
         .testTarget(
             name: "FrequentHouseworkFeatureTests",
             dependencies: ["FrequentHouseworkFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "HometeAppIntentsTests",
+            dependencies: ["HometeAppIntents"],
             plugins: [swiftLintPlugin()]
         )
     ]

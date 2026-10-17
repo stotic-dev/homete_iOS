@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(path: "../LocalPackage"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "13.0.1"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
             url: "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
@@ -66,7 +66,8 @@ let package = Package(
                 localPackage("HouseworkTemplateFeature"),
                 localPackage("ContributionFeature"),
                 localPackage("FrequentHouseworkFeature"),
-                localPackage("HometeLocalNotification")
+                localPackage("HometeLocalNotification"),
+                localPackage("HometeAppIntents")
             ],
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]

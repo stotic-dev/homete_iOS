@@ -112,7 +112,8 @@ Domain Models（Codable構造体）
 - `InfraPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
 
 **エントリーポイント:**
-- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
+- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化、App Intentの依存の登録
+- `homete/AppIntents/HometeAppShortcuts.swift` - App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要があるため、メインターゲットに置く）。Intent本体は`LocalPackage/Sources/HometeAppIntents/`。Intentのタイトルなどのメタデータの文言はアプリ本体の`homete/Resouces/Localizable.xcstrings`から引かれ、フレーズの日本語は`homete/Resouces/AppShortcuts.xcstrings`に入れる（[ADR-0044](doc/adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - `hometeNotificationService/NotificationService.swift` - Notification Service Extension。同居人から届く家事の完了通知を受けて、今日のふりかえり通知を予約する。アプリが終了していても起動する（[ADR-0021](doc/adr/0021-daily-completion-reminder-on-device.md)）
 - `InfraPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
 - `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
@@ -214,9 +215,9 @@ launching → notLoggedIn → Sign In with Apple
 ### テスト戦略
 
 **ユニットテスト** (`LocalPackage/Tests/`):
-- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`
+- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
 - 実行: `make test-packages-fast`（`swift test`。xcodebuildは使わない）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
-- Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記4ターゲットを含む）
+- Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記のターゲットを含む）
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
 
 **スナップショットテスト** (`hometeSnapshotTests/`):

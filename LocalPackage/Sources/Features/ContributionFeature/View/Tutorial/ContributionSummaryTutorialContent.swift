@@ -23,7 +23,6 @@ public struct ContributionSummaryTutorialContent: View {
 
     public var body: some View {
         ContributionSummaryContent(
-            isShowAnalytics: .constant(false),
             summaries: .init(items: members.value.enumerated().map { index, member in
                 // 自分が少し多めに見えるよう、並び順でポイントに差を付ける
                 UserPointSummary(
@@ -33,7 +32,8 @@ public struct ContributionSummaryTutorialContent: View {
                     monthlyPoint: .init(value: 120 - index * 40),
                     achievedCount: 6 - index * 2
                 )
-            })
+            }),
+            onTapShowAnalytics: {}
         )
     }
 
