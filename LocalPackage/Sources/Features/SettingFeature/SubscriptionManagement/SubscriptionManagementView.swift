@@ -29,6 +29,8 @@ struct SubscriptionManagementView: View {
             .frame(maxWidth: .infinity)
             .padding(.space16)
         }
+        // 設定からの遷移で地の色が変わらないよう、設定と同じミルク色にして白いカードを浮かせる
+        .background(.backgroundScreen)
         .navigationTitle(.localized("サブスクリプション管理"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
