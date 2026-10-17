@@ -6,8 +6,6 @@
 //
 
 import AppRoot
-import FirebaseCore
-import FirebaseMessaging
 import HometeDomain
 import HometeInfrastructure
 import SwiftUI
@@ -33,14 +31,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         setupRevenueCat()
 
         UNUserNotificationCenter.current().delegate = self
-        Messaging.messaging().delegate = self
+        MessagingConfigurator.configure()
 
         return true
     }
 
     func application(_: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        guard Messaging.messaging().apnsToken != deviceToken else { return }
-        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+        MessagingConfigurator.setAPNSToken(deviceToken)
     }
 
 }
@@ -61,16 +58,15 @@ private extension AppDelegate {
                     withExtension: "plist"
                 )?
                     .path()
-            ),
-                let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
-            FirebaseApp.configure(options: firebaseOption)
+            ) else { return }
+            FirebaseConfigurator.configure(optionsFilePath: devPlistFilePath)
         }
         #else
-        FirebaseApp.configure()
+        FirebaseConfigurator.configure()
         #endif
 
         // プレビュー・ユニットテストではFirebaseを初期化しないため、Remote Configも設定しない
-        guard FirebaseApp.app() != nil else { return }
+        guard FirebaseConfigurator.isConfigured else { return }
         RemoteConfigConfigurator.configure(minimumFetchInterval: remoteConfigMinimumFetchInterval)
     }
 
@@ -107,17 +103,6 @@ private extension AppDelegate {
 }
 
 // MARK: - Delegate Conformances
-
-extension AppDelegate: MessagingDelegate {
-
-    nonisolated func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
-        }
-    }
-
-}
 
 extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 

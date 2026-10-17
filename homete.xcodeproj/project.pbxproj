@@ -23,7 +23,6 @@
 		6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 535152FA786C3EF10199AC4D /* HometeLocalNotification */; };
 		B7FEC780BA78A9E533B6AFE4 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A3B833DF798387E007B09FB3 /* HometeDomain */; };
-		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
 		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
 		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
@@ -180,7 +179,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
 				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
 				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
@@ -331,7 +329,6 @@
 			);
 			name = homete;
 			packageProductDependencies = (
-				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
 				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
 				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
@@ -375,7 +372,6 @@
 			mainGroup = BCC853EC2DB74BBC00C9A44B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 				BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */,
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
@@ -1221,14 +1217,6 @@
 				version = 5.9.0;
 			};
 		};
-		BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-			requirement = {
-				kind = exactVersion;
-				version = 12.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1301,11 +1289,6 @@
 		A3B833DF798387E007B09FB3 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeDomain;
-		};
-		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
 		};
 		BC1BB2712E909B99001D168F /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
