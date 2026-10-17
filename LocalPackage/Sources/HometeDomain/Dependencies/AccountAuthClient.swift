@@ -12,6 +12,8 @@ public struct AccountAuthClient: Sendable {
     public let signIn: @Sendable (String, String) async throws -> AccountAuthResult
     public let signOut: @Sendable () throws -> Void
     public let makeListener: @Sendable () -> AccountListenerStream
+    /// 端末に保存されているログイン中のユーザー。リスナーを張らずに1回だけ知りたいとき（App Intentなど）に使う
+    public let currentAuth: @Sendable () -> AccountAuthResult?
     public let reauthenticateWithApple: @Sendable (_ signInWithAppleResult: SignInWithAppleResult) async throws -> Void
     public let revokeAppleToken: @Sendable (_ authorizationCode: String) async throws -> Void
     public let deleteAccount: @Sendable () async throws -> Void
@@ -27,6 +29,7 @@ public struct AccountAuthClient: Sendable {
                 continuation: continuation
             )
         },
+        currentAuth: @Sendable @escaping () -> AccountAuthResult? = { nil },
         reauthenticateWithApple: @Sendable @escaping (_: SignInWithAppleResult) async throws -> Void = { _ in },
         revokeAppleToken: @Sendable @escaping (_: String) async throws -> Void = { _ in },
         deleteAccount: @Sendable @escaping () async throws -> Void = {}
@@ -34,6 +37,7 @@ public struct AccountAuthClient: Sendable {
         self.signIn = signIn
         self.signOut = signOut
         self.makeListener = makeListener
+        self.currentAuth = currentAuth
         self.reauthenticateWithApple = reauthenticateWithApple
         self.revokeAppleToken = revokeAppleToken
         self.deleteAccount = deleteAccount

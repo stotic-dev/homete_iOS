@@ -18,6 +18,10 @@ extension AccountAuthClient {
         makeListener: {
             Self.makeListener()
         },
+        currentAuth: {
+            // Firebase Authは初期化時にキーチェーンから保存済みのユーザーを読み込むため、起動直後でも取れる
+            Auth.auth().currentUser.map { .init(id: $0.uid) }
+        },
         reauthenticateWithApple: { signInWithAppleResult in
             let credential = OAuthProvider.credential(
                 providerID: .apple,

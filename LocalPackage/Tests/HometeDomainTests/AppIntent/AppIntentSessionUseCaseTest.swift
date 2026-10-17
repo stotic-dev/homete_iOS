@@ -142,11 +142,7 @@ private extension AppIntentSessionUseCaseTest {
         minimumRequiredVersion: String = ""
     ) -> AppIntentSessionUseCase {
         .init(
-            accountAuthClient: .init(makeListener: {
-                let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
-                continuation.yield(authId.map(AccountAuthResult.init(id:)))
-                return .init(values: stream, listenerToken: NSObject(), continuation: continuation)
-            }),
+            accountAuthClient: .init(currentAuth: { authId.map(AccountAuthResult.init(id:)) }),
             accountInfoClient: .init(fetch: { _ in account }),
             cohabitantClient: .init(),
             houseworkClient: .init(),

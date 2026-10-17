@@ -282,11 +282,7 @@ private extension HouseworkIntentServiceTest {
         let reminderUseCase = DailyCompletionReminderUseCase(client: .previewValue)
         return .init(
             sessionUseCase: .init(
-                accountAuthClient: .init(makeListener: {
-                    let (stream, continuation) = AsyncStream<AccountAuthResult?>.makeStream()
-                    continuation.yield(.init(id: "own"))
-                    return .init(values: stream, listenerToken: NSObject(), continuation: continuation)
-                }),
+                accountAuthClient: .init(currentAuth: { .init(id: "own") }),
                 accountInfoClient: .init(fetch: { accounts[$0] }),
                 cohabitantClient: .init(addSnapshotListener: { _, _ in
                     AsyncThrowingStream { $0.yield(CohabitantData(id: "cohabitant", members: ["own", "partner"])) }

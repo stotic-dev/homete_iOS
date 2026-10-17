@@ -49,7 +49,7 @@ public struct AppIntentSessionUseCase: Sendable {
         ) {
             throw AppIntentFailure.updateRequired
         }
-        guard let auth = await currentAuth(),
+        guard let auth = accountAuthClient.currentAuth(),
               let account = try await accountInfoClient.fetch(auth.id) else {
             throw AppIntentFailure.notLoggedIn
         }
@@ -125,21 +125,6 @@ public struct AppIntentSessionUseCase: Sendable {
             members.insert(.init(id: account.id, userName: account.userName))
         }
         return members
-    }
-
-}
-
-private extension AppIntentSessionUseCase {
-
-    /// 端末に保存されているログイン状態を取得する
-    /// - Note: Firebase Authは、リスナーを登録した直後に保存済みのユーザー（いなければ`nil`）を1回届ける
-    func currentAuth() async -> AccountAuthResult? {
-        let listener = accountAuthClient.makeListener()
-        defer { listener.stopListening() }
-        for await auth in listener.values {
-            return auth
-        }
-        return nil
     }
 
 }
