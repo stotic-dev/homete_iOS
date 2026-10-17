@@ -108,8 +108,8 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 - 開かないIntentは、アプリのプロセスがバックグラウンドで起動して実行する（Extensionは作らない）。`AppDelegate`の`didFinishLaunching`でFirebase・App Checkの初期化が済んでから`perform`が呼ばれる前提で組む（Phase 1で確認する）
 - Intentは`HouseworkListStore`を使わない。Storeはスナップショットリスナーを張るため、Intentの短い実行時間に合わない。書き込みと通知の処理はStoreとIntentで共有するUseCaseに切り出す（[ADR-0044](../adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - Firestoreのセキュリティルール・Cloud Functionsは変更しない（書き込む内容はアプリからの操作と同じ）
-- オフラインでも失敗にしない。Firestoreは書き込みを端末に保存してオンラインになったら反映するが、書き込みはサーバーの応答まで返らない。完了・ありがとうの書き込みを10秒待ってもサーバーに届かなければ待つのをやめ、「オンラインになってから反映されます（届きます）」と返す。同居人への通知は、プロセスが動いている間に書き込みが終わったときだけ送られる
-- Siriで家事の名前を言えるよう、今日の家事の名前か状態が変わったときに`updateAppShortcutParameters()`でOSに読み直してもらう（家事のスナップショットを受け取った`HouseworkListStore`から`IntentDonationClient.updateHouseworkTitles`経由で呼ぶ）。起動時には呼ばない。Firebaseを初期化しない起動でも呼ばれ、日付が変わった後も起動した日の名前のまま残るため
+- オフラインでも失敗にしない。Firestoreは書き込みを端末に保存してオンラインになったら反映するが、書き込みはサーバーの応答まで返らない。完了・ありがとうの書き込みを10秒待ってもサーバーに届かなければ待つのをやめ、「オンラインになってから反映されます（届きます）」と返す。10秒は書き込みが届くまでにだけかけ、届いた後の同居人への通知は時間に関係なく送り終えるまで待つ（通知が遅いだけで「オンラインになってから」と返さないため）。同居人への通知は、プロセスが動いている間に書き込みが終わったときだけ送られる
+- Siriで家事の名前を言えるよう、今日の家事の名前か状態が変わったときに`updateAppShortcutParameters()`でOSに読み直してもらう（家事のスナップショットを受け取った`HouseworkListStore`から`IntentDonationClient.updateHouseworkTitles`経由で呼ぶ）。テンプレートから出している未登録の家事は家事のスナップショットに載らないため、テンプレートを受け取った`HouseworkTemplateListStore`も、今日のテンプレートの家事の名前が変わったときに呼ぶ。起動時には呼ばない。Firebaseを初期化しない起動でも呼ばれ、日付が変わった後も起動した日の名前のまま残るため
 - 文言は日本語キーで`Localizable.xcstrings`に入れ、英訳も同じ変更で入れる。App Shortcutsのフレーズはメインターゲットの`AppShortcuts.xcstrings`に置く
 - Intentのタイトル・説明・引数名・Entityの型名・`requestValueDialog`・App Shortcutsの短い名前は、パッケージに置いてもメタデータにキーだけが抽出され、実行時はアプリ本体のbundleから引かれる。これらはメインターゲットの`homete/Resouces/Localizable.xcstrings`に日英で入れる（`extractionState: manual`）。実行時に組み立てるダイアログは`.localized`で`HometeAppIntents`のカタログから引く
 - Analyticsは`doc/analytics_events.md`を同じPRで更新する

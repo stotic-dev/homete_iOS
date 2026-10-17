@@ -581,7 +581,7 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 
 | `action` | 送信タイミング |
 |---|---|
-| `complete_housework` | アプリを開かずに家事を完了にしようとした。今日の家事に同じ名前が無ければ`not_found`、もう終わっていれば`already_completed`。通信できず、書き込みを端末に保存して返したときは`pending_sync`（10秒待ってもサーバーに届かなかった。オンラインになったら反映される） |
+| `complete_housework` | アプリを開かずに家事を完了にしようとした。今日の家事に同じ名前が無ければ`not_found`、もう終わっていれば`already_completed`。通信できず、書き込みを端末に保存して返したときは`pending_sync`（書き込みが10秒待ってもサーバーに届かなかった。オンラインになったら反映される。同居人への通知にかかる時間は含めない） |
 | `open_housework_complete` | アプリを開いて家事の完了シートを出すIntentを実行した（常に`success`。シートを出せたかは含めない） |
 | `send_thanks` | アプリを開かずにありがとうを伝えようとした。伝えられる家事が無い・送信済みなら`not_found`、通信できず端末に保存して返したときは`pending_sync`。伝える家事をSiriが聞き返し、選ばずに閉じたときは送らない |
 | `show_contribution_summary` | 今月のがんばりをSiriの結果に出した |
