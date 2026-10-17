@@ -1,5 +1,5 @@
 {
-  "originHash" : "5c42f702ab3dd82a6c8778b3c51f055a91ae2839062117b7ca732352daad3e76",
+  "originHash" : "390ab189012fd6eb00a63238c38295c689da98854deb98187c8b773f5f4373e8",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "9cca1d7ae05b89d8fd60776792c26e10cd61e680",
-        "version" : "5.9.0"
+        "revision" : "b4dd93fb351c33749006329dfb416c29cb3243d9",
+        "version" : "6.0.0"
       }
     },
     {
