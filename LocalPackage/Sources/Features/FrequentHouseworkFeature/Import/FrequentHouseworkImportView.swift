@@ -23,6 +23,8 @@ struct FrequentHouseworkImportView: View {
     var body: some View {
         NavigationStack {
             content()
+                // いつもの家事と地の色をそろえ、白い行を浮かせる
+                .background(.backgroundScreen)
                 .navigationTitle(.localized("テンプレートから取り込む"))
                 .inlineNavigationBarTitleDisplayMode()
                 .leadingToolbarItem {
@@ -75,12 +77,14 @@ private extension FrequentHouseworkImportView {
                 ForEach(candidates) { candidate in
                     candidateRow(candidate)
                 }
+                .listRowBackground(Color.backgroundCard)
             } header: {
                 Text(importCount == 0 ? .localized("取り込む家事を選んでください") : .localized("\(importCount)件を取り込みます"))
             } footer: {
                 Text("取り込んだ家事のカテゴリは未設定になります。あとから編集して変更できます。", bundle: #bundle)
             }
         }
+        .scrollContentBackground(.hidden)
     }
 
     func candidateRow(_ candidate: FrequentHouseworkImportCandidate) -> some View {

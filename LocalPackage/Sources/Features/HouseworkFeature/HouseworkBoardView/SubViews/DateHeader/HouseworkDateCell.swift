@@ -32,6 +32,7 @@ struct HouseworkDateCell: View {
                 .background {
                     Circle()
                         .fill(background)
+                        .strokeBorder(border, lineWidth: 1)
                 }
                 .padding(2)
         }
@@ -74,8 +75,16 @@ private extension HouseworkDateCell {
         switch state {
         case .selected: .fillAccent
         case .selectable: .fillAccentSubtle
-        // ミルク色の地に溶けないよう、選べない日もカードの色で丸を見せる
-        case .unselectable: .backgroundCard
+        // 塗りのある選べる日と見分けられるよう、選べない日は塗らずに輪郭線だけで丸を見せる。
+        // カードの色で塗ると、ミルク色の地の上では選べる日より目立ってしまう
+        case .unselectable: .clear
+        }
+    }
+
+    var border: Color {
+        switch state {
+        case .selected, .selectable: .clear
+        case .unselectable: .textSecondary.opacity(0.3)
         }
     }
 
