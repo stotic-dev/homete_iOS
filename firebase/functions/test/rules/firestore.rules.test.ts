@@ -292,14 +292,26 @@ describe("Account", () => {
 });
 
 describe("Account/Private（FCMトークン）", () => {
-  it("本人は自分のFCMトークンを取得できる", async () => {
-    await assertSucceeds(getDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
+  it("本人でも自分のFCMトークンは取得できない", async () => {
+    // アプリは書くだけで読み返さない。読めるようにする理由がない
+    await assertFails(getDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
   });
 
-  it("本人は自分のFCMトークンを書き込める", async () => {
+  it("本人は自分のFCMトークンを初めて書き込める", async () => {
+    await assertSucceeds(
+      setDoc(doc(malloryDb(), accountFcmTokenPath(MALLORY)), {token: "token"})
+    );
+  });
+
+  it("本人は自分のFCMトークンを上書きできる", async () => {
     await assertSucceeds(
       setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: "new-token"})
     );
+  });
+
+  it("本人でも自分のFCMトークンは削除できない", async () => {
+    // 退会時の削除は deleteuserdata が Admin SDK で行う
+    await assertFails(deleteDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
   });
 
   it("同じグループのメンバーでも他人のFCMトークンは取得できない", async () => {

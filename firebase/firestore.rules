@@ -108,9 +108,11 @@ service cloud.firestore {
       allow delete: if false;
 
       // 本人以外に読ませない値（FCMトークン）。同居人にも開かない（#241）。
-      // 通知の配信は notifyothercohabitants が Admin SDK で読む
+      // 通知の配信は notifyothercohabitants が Admin SDK で読む。
+      // アプリは受け取ったトークンを書くだけで読み返さないので、本人にも読み取りは開かない。
+      // 退会時の削除も deleteuserdata が Admin SDK で行う
       match /Private/{documentId} {
-        allow read, write: if isSelf(userId);
+        allow create, update: if isSelf(userId);
       }
     }
 
