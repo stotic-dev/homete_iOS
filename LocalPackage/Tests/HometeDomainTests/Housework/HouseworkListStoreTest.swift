@@ -99,7 +99,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputExecutor = Account(
             id: "dummyExecutor",
             userName: "じっこうしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
@@ -165,7 +164,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputExecutor = Account(
             id: "dummyExecutor",
             userName: "じっこうしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
@@ -217,7 +215,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputExecutor = Account(
             id: "dummyExecutor",
             userName: "じっこうしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let logger = TestBox<[AnalyticsEvent]>(value: [])
@@ -264,7 +261,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputExecutor = Account(
             id: "dummyExecutor",
             userName: "じっこうしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
@@ -336,7 +332,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputReporter = Account(
             id: "reporter",
             userName: "きろくしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let inputExecutors = [
@@ -428,7 +423,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             expiredAt: .previewDate(year: 2026, month: 12, day: 25),
             templateHouseworkItemId: .init(id: "templateItemId")
         )
-        let inputExecutor = Account(id: "dummyExecutor", userName: "", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputExecutor = Account(id: "dummyExecutor", userName: "", cohabitantId: inputCohabitantId)
         let redoneAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
         let expectedItem = HouseworkItem(
             id: "newItemId",
@@ -484,7 +479,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         let inputExecutor = Account(
             id: "dummyExecutor",
             userName: "じっこうしゃ",
-            fcmToken: nil,
             cohabitantId: inputCohabitantId
         )
         let expectedContent = PushNotificationContent(
@@ -918,7 +912,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let inputComment = "お疲れ様でした！"
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputNow)
         let expectedNotificationContent = PushNotificationContent(
@@ -982,7 +976,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let expectedThanks = HouseworkThanks(comment: nil, sentAt: inputNow)
 
         try await confirmation { confirmation in
@@ -1026,7 +1020,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executedAt: .distantPast,
             thanks: ["senderId": .init(comment: nil, sentAt: inputSentAt)]
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let inputComment = "お疲れ様でした！"
         let expectedThanks = HouseworkThanks(comment: inputComment, sentAt: inputSentAt)
         let expectedNotificationContent = PushNotificationContent(
@@ -1087,7 +1081,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executedAt: .distantPast,
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: inputSentAt)]
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let expectedThanks = HouseworkThanks(comment: "いつもありがとう", sentAt: inputSentAt)
 
         try await confirmation { confirmation in
@@ -1130,7 +1124,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executedAt: .distantPast,
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: .distantPast)]
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let store = HouseworkListStore(
             houseworkClient: .init(
                 upsertThanksHandler: { _, _, _, _ in
@@ -1171,7 +1165,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let store = HouseworkListStore(
             houseworkClient: .init(
                 upsertThanksHandler: { _, _, _, _ in
@@ -1210,7 +1204,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
 
         await confirmation(expectedCount: 2) { confirmation in
             let _: Void = await withCheckedContinuation { continuation in
@@ -1261,7 +1255,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executorId: "executorId",
             executedAt: .distantPast
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let store = HouseworkListStore(
             houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in }),
             cohabitantPushNotificationClient: .previewValue,
@@ -1345,7 +1339,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executedAt: .distantPast,
             thanks: input.sentThanks.map { ["senderId": $0] } ?? [:]
         )
-        let inputSender = Account(id: "senderId", userName: "おくりぬし", fcmToken: nil, cohabitantId: inputCohabitantId)
+        let inputSender = Account(id: "senderId", userName: "おくりぬし", cohabitantId: inputCohabitantId)
         let store = HouseworkListStore(
             houseworkClient: .init(upsertThanksHandler: { _, _, _, _ in }),
             cohabitantPushNotificationClient: .previewValue,

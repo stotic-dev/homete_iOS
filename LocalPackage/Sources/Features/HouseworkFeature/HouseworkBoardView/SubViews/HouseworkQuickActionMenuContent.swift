@@ -116,7 +116,7 @@ private extension HouseworkQuickActionMenuContent {
     .environment(HouseworkListStore())
     .environment(
         \.loginContext,
-        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+        .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
     )
 }
 
@@ -138,7 +138,7 @@ private extension HouseworkQuickActionMenuContent {
     .environment(HouseworkListStore())
     .environment(
         \.loginContext,
-        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+        .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
     )
 }
 
@@ -160,7 +160,7 @@ private extension HouseworkQuickActionMenuContent {
     .environment(HouseworkListStore())
     .environment(
         \.loginContext,
-        .init(account: .init(id: "own", userName: "", fcmToken: nil, cohabitantId: "cohabitant"))
+        .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
     )
 }
 #endif

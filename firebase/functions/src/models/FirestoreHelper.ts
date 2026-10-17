@@ -1,6 +1,11 @@
 import {getFirestore} from "firebase-admin/firestore";
 import {FirestoreCollections} from "./FirestoreCollections";
-import {Account, AccountFields, AccountConverter} from "./Account";
+import {
+  Account,
+  AccountFcmTokenFields,
+  AccountFields,
+  AccountConverter,
+} from "./Account";
 import {Cohabitant, CohabitantConverter} from "./Cohabitant";
 
 /**
@@ -97,6 +102,58 @@ export class FirestoreHelper {
     }
 
     return accounts;
+  }
+
+  /**
+     * メンバーIDの配列から、通知の送信先になるFCMトークンを取得
+     *
+     * `Account/{uid}/Private/fcm`を優先し、無いユーザーは旧バージョンのアプリが
+     * Accountへ書き込んだ`fcmToken`で補う。トークンを持たないユーザーは含めない。
+     * @param {string[]} userIds - 取得するユーザーIDの配列
+     * @return {Promise<string[]>} FCMトークンの配列
+     */
+  async getFcmTokensByUserIds(userIds: string[]): Promise<string[]> {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const snapshots = await this.db.getAll(
+      ...userIds.map((userId) => this.fcmTokenRef(userId))
+    );
+    const tokenByUserId = new Map<string, string>();
+    snapshots.forEach((snapshot, index) => {
+      const token = snapshot.get(AccountFcmTokenFields.TOKEN);
+      if (typeof token === "string" && token) {
+        tokenByUserId.set(userIds[index], token);
+      }
+    });
+
+    // 新しいパスにトークンが無いユーザーだけ、旧バージョンのアプリが書いた値を読む
+    const legacyUserIds = userIds.filter((id) => !tokenByUserId.has(id));
+    const legacyAccounts = await this.getAccountsByUserIds(legacyUserIds);
+    legacyAccounts.forEach((account) => {
+      if (account.fcmToken) {
+        tokenByUserId.set(account.id, account.fcmToken);
+      }
+    });
+
+    return userIds
+      .map((id) => tokenByUserId.get(id))
+      .filter((token): token is string => !!token);
+  }
+
+  /**
+     * FCMトークンを置くドキュメントの参照を取得
+     * @param {string} userId - ユーザーID
+     * @return {FirebaseFirestore.DocumentReference}
+     *   `Account/{uid}/Private/fcm`の参照
+     */
+  fcmTokenRef(userId: string): FirebaseFirestore.DocumentReference {
+    return this.db
+      .collection(FirestoreCollections.ACCOUNT)
+      .doc(userId)
+      .collection(FirestoreCollections.ACCOUNT_PRIVATE)
+      .doc(FirestoreCollections.ACCOUNT_PRIVATE_FCM);
   }
 
   /**

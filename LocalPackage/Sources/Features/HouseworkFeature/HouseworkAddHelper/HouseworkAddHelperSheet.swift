@@ -166,7 +166,7 @@ extension HouseworkAddHelperView {
             value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
             ownId: "own"
         ),
-        account: .init(id: "own", userName: "たいち", fcmToken: nil, cohabitantId: "cohabitant")
+        account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant")
     )
     .environment(HouseworkListStore())
 }
@@ -191,7 +191,7 @@ extension HouseworkAddHelperView {
             ],
             ownId: "own"
         ),
-        account: .init(id: "own", userName: "たいち", fcmToken: nil, cohabitantId: "cohabitant"),
+        account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant"),
         isExpandedAllocation: true
     )
     .environment(HouseworkListStore())

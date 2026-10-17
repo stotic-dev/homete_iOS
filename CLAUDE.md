@@ -325,7 +325,7 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 ### ドメインモデル
 
 コアエンティティは家事管理システムを表現:
-- **Account**: FCMトークンとcohabitantId参照を持つユーザープロファイル
+- **Account**: ユーザー名とcohabitantId参照を持つユーザープロファイル。同居人からも読めるため、FCMトークンは本人だけが読める`Account/{uid}/Private/fcm`に分けている（[ADR-0044](doc/adr/0044-separate-fcm-token-from-account.md)）
 - **Cohabitant**: 一緒に住んでいるユーザーのグループ（Account IDの配列としてmembers）
 - **HouseworkItem**: 状態、担当者、完了ステータスを持つ個別の家事/タスク
 - **HouseworkBoardList**: 日付で整理された家事のコレクション

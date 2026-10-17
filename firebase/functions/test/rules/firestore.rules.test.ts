@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import {
   ClientCollections,
+  accountFcmTokenPath,
   accountPath,
   cohabitantPath,
   frequentHouseworkCategoriesPath,
@@ -72,10 +73,11 @@ const anonymousDb = () => testEnv.unauthenticatedContext().firestore();
 const account = (userId: string, cohabitantId?: string) => ({
   id: userId,
   userName: `name-of-${userId}`,
-  fcmToken: `token-of-${userId}`,
   isPremium: false,
   ...(cohabitantId ? {cohabitantId} : {}),
 });
+
+const fcmToken = (userId: string) => ({token: `token-of-${userId}`});
 
 const housework = (id: string) => ({
   id,
@@ -125,6 +127,8 @@ beforeEach(async () => {
     // MALLORYは自分のcohabitantIdにGROUP_IDを詐称しているが、
     // GROUP_IDのmembersには含まれていない
     await setDoc(doc(db, accountPath(MALLORY)), account(MALLORY, GROUP_ID));
+    await setDoc(doc(db, accountFcmTokenPath(ALICE)), fcmToken(ALICE));
+    await setDoc(doc(db, accountFcmTokenPath(BOB)), fcmToken(BOB));
 
     await setDoc(
       doc(db, `${houseworksPath(GROUP_ID)}/housework-1`),
@@ -284,6 +288,96 @@ describe("Account", () => {
 
   it("本人でもAccountを削除できない", async () => {
     await assertFails(deleteDoc(doc(aliceDb(), accountPath(ALICE))));
+  });
+});
+
+describe("Account/Private（FCMトークン）", () => {
+  it("本人でも自分のFCMトークンは取得できない", async () => {
+    // アプリは書くだけで読み返さない。読めるようにする理由がない
+    await assertFails(getDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
+  });
+
+  it("本人は自分のFCMトークンを初めて書き込める", async () => {
+    await assertSucceeds(
+      setDoc(doc(malloryDb(), accountFcmTokenPath(MALLORY)), {token: "token"})
+    );
+  });
+
+  it("本人は自分のFCMトークンを上書きできる", async () => {
+    await assertSucceeds(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: "new-token"})
+    );
+  });
+
+  it("本人でもPrivateにfcm以外のドキュメントは作れない", async () => {
+    // deleteuserdataが消すのはfcmだけなので、それ以外を作られると退会後も残る
+    await assertFails(
+      setDoc(
+        doc(
+          aliceDb(),
+          accountPath(ALICE),
+          ClientCollections.ACCOUNT_PRIVATE,
+          "other"
+        ),
+        {token: "token"}
+      )
+    );
+  });
+
+  it("FCMトークンにtoken以外のフィールドは書き込めない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), accountFcmTokenPath(ALICE)),
+        {token: "token", extra: "x".repeat(1000)}
+      )
+    );
+  });
+
+  it("FCMトークンは文字列でなければ書き込めない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: 123})
+    );
+  });
+
+  it("FCMトークンは空文字では書き込めない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: ""})
+    );
+  });
+
+  it("FCMトークンは長すぎると書き込めない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), accountFcmTokenPath(ALICE)),
+        {token: "x".repeat(4097)}
+      )
+    );
+  });
+
+  it("本人でも自分のFCMトークンは削除できない", async () => {
+    // 退会時の削除は deleteuserdata が Admin SDK で行う
+    await assertFails(deleteDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
+  });
+
+  it("同じグループのメンバーでも他人のFCMトークンは取得できない", async () => {
+    // Account本体は同居人に読めるため、トークンだけをここへ分けている（#241）
+    await assertFails(getDoc(doc(aliceDb(), accountFcmTokenPath(BOB))));
+  });
+
+  it("グループ外のユーザーは他人のFCMトークンを取得できない", async () => {
+    await assertFails(getDoc(doc(malloryDb(), accountFcmTokenPath(ALICE))));
+  });
+
+  it("他人のFCMトークンは書き換えられない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(BOB)), {token: "stolen"})
+    );
+  });
+
+  it("未認証ユーザーはFCMトークンを取得できない", async () => {
+    await assertFails(
+      getDoc(doc(anonymousDb(), accountFcmTokenPath(ALICE)))
+    );
   });
 });
 

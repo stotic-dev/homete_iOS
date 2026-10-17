@@ -23,7 +23,7 @@ enum HouseworkListStoreBulkTest {
 }
 
 private let inputCohabitantId = "cohabitantId"
-private let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+private let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
 /// `DailyHouseworkList`は先頭の家事の日付でまとめるため、全件を同じ日付にする
 private let inputIndexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
 private let inputExpiredAt = Date.previewDate(year: 2026, month: 12, day: 25)
