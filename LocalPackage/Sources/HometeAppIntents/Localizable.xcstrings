@@ -1,0 +1,146 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "%@に、ありがとうを伝えました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks sent for %@."
+          }
+        }
+      }
+    },
+    "%@はもう終わっています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is already done."
+          }
+        }
+      }
+    },
+    "おつかれさまでした。%@を記録しました（+%lldpt）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nice work! %1$@ is done (+%2$lldpt)."
+          }
+        }
+      }
+    },
+    "おつかれさまでした。通信がつながりにくいため、%@の記録はオンラインになってから反映されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nice work! You're offline, so %@ will be recorded once you're back online."
+          }
+        }
+      }
+    },
+    "この家事には、ありがとうを伝えられません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can't say thanks for this chore."
+          }
+        }
+      }
+    },
+    "どの家事にありがとうを伝えますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to say thanks for?"
+          }
+        }
+      }
+    },
+    "アプリをアップデートしてから使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update the app to use this."
+          }
+        }
+      }
+    },
+    "アプリを開いて、ログインしてから使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open the app and sign in to use this."
+          }
+        }
+      }
+    },
+    "パートナーを招待すると使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite your partner to use this."
+          }
+        }
+      }
+    },
+    "今は、ありがとうを伝えられる家事はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no chores to say thanks for right now."
+          }
+        }
+      }
+    },
+    "今日の家事に%@はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ isn't on today's chores."
+          }
+        }
+      }
+    },
+    "今月のがんばりです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Here's this month's effort."
+          }
+        }
+      }
+    },
+    "今月の記録はまだありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records yet this month."
+          }
+        }
+      }
+    },
+    "通信がつながりにくいため、%@へのありがとうはオンラインになってから届きます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're offline, so your thanks for %@ will be sent once you're back online."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

@@ -19,8 +19,9 @@
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
-| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
-| `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
+| `HometeAppIntents` | Siri・Spotlight・ショートカットAppから実行するApp Intent・Entity・ドネーションの liveValue。Firebase の実装はアプリから`AppDependencyManager`経由で受け取るため`HometeInfrastructure`に依存させない（[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)） | `HometeDomain`, `HouseworkFeature`, `ContributionFeature` |
+| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification`, `HometeAppIntents` |
+| `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`）・App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要がある） | `AppRoot`, `HometeInfrastructure`, `HometeAppIntents` |
 | `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
 | `HometeSnapshotTestSupport` | VRT（`hometeSnapshotTests`）が使う SnapshotTesting・Prefire を提供する。アプリ本体からは依存しない | Prefire, swift-snapshot-testing |
 
@@ -62,13 +63,19 @@ HometeInfrastructure/
 HometeLocalNotification/
   └── DailyCompletionReminderClient.liveValue（UNUserNotificationCenter + App Group UserDefaults）
 
+HometeAppIntents/
+  ├── Intent（AppIntent）/ Entity（AppEntity・EntityQuery）
+  ├── Service（家事を探して完了にする・ありがとうを伝える判定。App Intentsに依存しない）
+  └── IntentDonationClient.liveValue・HometeAppIntentsConfigurator（依存の登録）
+
 AppRoot/
   ├── RootView / AppTabView / LaunchScreenView
   ├── DependenciesInjectLayer
   └── RouteResolverInjection
 
 homete（メインターゲット）/
-  └── HometeApp.swift（アプリエントリーポイント）
+  ├── HometeApp.swift（アプリエントリーポイント）
+  └── AppIntents/HometeAppShortcuts.swift（AppShortcutsProvider・AppIntentsPackage）
 
 hometeNotificationService（拡張ターゲット）/
   └── NotificationService.swift（古いアプリからの完了通知の受信時にふりかえり通知を予約）
@@ -102,6 +109,12 @@ graph TD
 
     homete --> AppRoot
     homete --> HometeInfrastructure
+
+    HometeAppIntents["HometeAppIntents\nApp Intent・Entity\nドネーションの liveValue"]
+    homete --> HometeAppIntents
+    AppRoot --> HometeAppIntents
+    HometeAppIntents --> HouseworkFeature
+    HometeAppIntents --> HometeDomain
 
     HometeInfrastructure --> Firebase
     HometeInfrastructure --> HometeDomain

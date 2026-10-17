@@ -5,6 +5,7 @@
 //  Created by Taichi Sato on 2026/05/09.
 //
 
+import Foundation
 import Observation
 
 @MainActor
@@ -21,9 +22,14 @@ public final class HouseworkTemplateListStore {
     private var daysObserveTask: Task<Void, Never>?
     private var monthlyItemsObserveTask: Task<Void, Never>?
     private var templatesObserveTask: Task<Void, Never>?
+    /// 最後に見た「日付と、その日のテンプレートの家事の名前」
+    private var lastHouseworkTitlesState: HouseworkTemplateTitlesState?
 
     private let houseworkTemplateClient: HouseworkTemplateClient
     private let analyticsClient: AnalyticsClient
+    private let intentDonationClient: IntentDonationClient
+    private let calendar: Calendar
+    private let now: @MainActor @Sendable () -> Date
     private let daysListenerKey = "houseworkTemplateDaysListener"
     private let monthlyItemsListenerKey = "houseworkTemplateMonthlyItemsListener"
     private let templatesListenerKey = "houseworkTemplatesListener"
@@ -35,6 +41,9 @@ public final class HouseworkTemplateListStore {
     public init(
         houseworkTemplateClient: HouseworkTemplateClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
+        intentDonationClient: IntentDonationClient = .previewValue,
+        calendar: Calendar = .autoupdatingCurrent,
+        now: @escaping @MainActor @Sendable () -> Date = { .now },
         templates: [HouseworkTemplateMeta] = [],
         selectedDays: [HouseworkTemplateDay] = [],
         monthlyItems: [HouseworkTemplateMonthlyItem] = [],
@@ -43,6 +52,9 @@ public final class HouseworkTemplateListStore {
     ) {
         self.houseworkTemplateClient = houseworkTemplateClient
         self.analyticsClient = analyticsClient
+        self.intentDonationClient = intentDonationClient
+        self.calendar = calendar
+        self.now = now
         self.templates = templates
         self.selectedDays = selectedDays
         self.monthlyItems = monthlyItems
@@ -66,6 +78,8 @@ public final class HouseworkTemplateListStore {
             } else {
                 await startObservingTemplates(cohabitantId)
             }
+            // テンプレートが無くても読み込んだ状態を覚え、後から作ったテンプレートの家事で読み直してもらえるようにする
+            updateHouseworkTitlesIfNeeded()
             loadState = .loaded
         } catch {
             loadState = .failed(DomainError.make(error) ?? .other)
@@ -127,6 +141,7 @@ public final class HouseworkTemplateListStore {
         daysObserveTask = Task {
             for await currentDays in daysStream {
                 self.selectedDays = currentDays
+                self.updateHouseworkTitlesIfNeeded()
             }
         }
 
@@ -138,6 +153,7 @@ public final class HouseworkTemplateListStore {
         monthlyItemsObserveTask = Task {
             for await currentMonthlyItems in monthlyItemsStream {
                 self.monthlyItems = currentMonthlyItems
+                self.updateHouseworkTitlesIfNeeded()
             }
         }
     }
@@ -263,6 +279,25 @@ public final class HouseworkTemplateListStore {
 
 private extension HouseworkTemplateListStore {
 
+    /// 今日のテンプレートの家事の名前が変わったときだけ、Siriで言える家事の名前をOSに読み直してもらう
+    ///
+    /// テンプレートから出している未登録の家事は家事のスナップショットに載らないため、`HouseworkListStore`では
+    /// 追加・名前の変更・削除に気づけない。
+    /// 最初に読み込んだときは頼まない。家事のスナップショットを受け取った`HouseworkListStore`が頼み、
+    /// OSはそのときテンプレートもサーバーから取り直すため。
+    func updateHouseworkTitlesIfNeeded() {
+        let currentDate = now()
+        let state = HouseworkTemplateTitlesState(
+            day: calendar.startOfDay(for: currentDate),
+            titles: Set(context.templateOfDay(by: currentDate, calendar: calendar)?.items.map(\.title) ?? [])
+        )
+        guard state != lastHouseworkTitlesState else { return }
+
+        defer { lastHouseworkTitlesState = state }
+        guard lastHouseworkTitlesState != nil else { return }
+        intentDonationClient.updateHouseworkTitles()
+    }
+
     /// 保存前後の曜日別アイテムを比較し、追加・編集・削除されたアイテムのIDを洗い出す
     struct HouseworkTemplateItemChanges {
 
@@ -378,5 +413,13 @@ private extension HouseworkTemplateListStore {
         templatesObserveTask = nil
         await houseworkTemplateClient.removeListener(templatesListenerKey)
     }
+
+}
+
+/// Siriで言える家事の名前のうち、テンプレートから出しているものを最後に見たときの状態
+private struct HouseworkTemplateTitlesState: Equatable {
+
+    let day: Date
+    let titles: Set<String>
 
 }
