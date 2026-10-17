@@ -150,7 +150,7 @@ private extension HouseworkTemplateScreen {
             [.houseworkTemplateFirstDaySection]
 
         case .save:
-            [.houseworkTemplateSaveButton]
+            [.houseworkTemplateNavigationBar]
         }
     }
 

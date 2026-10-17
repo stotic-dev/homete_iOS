@@ -241,7 +241,6 @@ private extension HouseworkTemplateListContent {
                 onTapSave()
             }
             .disabled(!hasUnsavedChanges)
-            .tutorialSpotlightTarget(.houseworkTemplateSaveButton)
         }
     }
 

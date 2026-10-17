@@ -14,7 +14,7 @@ extension TutorialSpotlightID {
     static let houseworkTemplateAddButton = Self("housework_template_add_button")
     /// 先頭の曜日のセクション
     static let houseworkTemplateFirstDaySection = Self("housework_template_first_day_section")
-    /// 保存ボタン
-    static let houseworkTemplateSaveButton = Self("housework_template_save_button")
+    /// ナビゲーションバー。保存ボタンはバーに1つだけ置いていて位置を測れないため、バーごと切り抜く
+    static let houseworkTemplateNavigationBar = Self("housework_template_navigation_bar")
 
 }

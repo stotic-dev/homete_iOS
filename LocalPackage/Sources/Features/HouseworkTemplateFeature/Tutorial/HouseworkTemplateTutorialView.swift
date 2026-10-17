@@ -27,6 +27,7 @@ struct HouseworkTemplateTutorialView: View {
                     Image(systemName: "xmark")
                         .foregroundStyle(.textPrimary)
                 }
+                .tutorialSpotlightNavigationBarTarget(.houseworkTemplateNavigationBar)
         }
     }
 

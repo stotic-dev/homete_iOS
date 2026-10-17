@@ -43,6 +43,15 @@ public extension View {
         modifier(TutorialSpotlightTargetModifier(id: id))
     }
 
+    /// このViewを表示しているナビゲーションバーを、チュートリアルでハイライトできるUIとして位置をスポットライトに伝える
+    ///
+    /// ナビゲーションバーにボタンを1つだけ置くと、iOS 26以降はシステムのボタンとして描かれ、
+    /// `tutorialSpotlightTarget(_:)`を付けても位置を測れない。そのボタンを説明するときに、バーごと切り抜くために使う。
+    /// `NavigationStack`の中のViewに付ける。iOS以外では位置を伝えない。
+    func tutorialSpotlightNavigationBarTarget(_ id: TutorialSpotlightID) -> some View {
+        modifier(TutorialSpotlightTargetModifier(id: id, measuresNavigationBar: true))
+    }
+
     /// 説明のカードを置いてよい範囲として、このViewの位置をスポットライトに伝える
     ///
     /// タブの中の画面に付けると、カードがタブバーに重ならないようになる。
@@ -153,6 +162,8 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
 
     /// `nil`なら位置を伝えない
     let id: TutorialSpotlightID?
+    /// 自分ではなく、自分を表示しているナビゲーションバーの位置を伝えるか
+    var measuresNavigationBar = false
 
     func body(content: Content) -> some View {
         content
@@ -161,14 +172,19 @@ struct TutorialSpotlightTargetModifier: ViewModifier {
             } action: { newFrame in
                 layoutFrame = newFrame
                 #if !os(iOS)
-                update(newFrame)
+                if !measuresNavigationBar {
+                    update(newFrame)
+                }
                 #endif
             }
         #if os(iOS)
             // ナビゲーションバーの項目は、タブが選ばれる前などウィンドウに載る前に測られることがあり、
             // そのあと位置が変わらないと測り直されない。ウィンドウに載ったときにもUIKitで測り直す
             .background {
-                TutorialSpotlightWindowFrameReader(trigger: layoutFrame) { newFrame in
+                TutorialSpotlightWindowFrameReader(
+                    trigger: layoutFrame,
+                    measuresNavigationBar: measuresNavigationBar
+                ) { newFrame in
                     update(newFrame)
                 }
             }
