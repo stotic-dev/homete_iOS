@@ -133,7 +133,8 @@ public extension RootView {
             let launchStateStore = LaunchStateStore(
                 accountStore: accountStore,
                 authSubscriptionSyncUseCase: authSubscriptionSyncUseCase,
-                analyticsClient: $0.analyticsClient
+                analyticsClient: $0.analyticsClient,
+                accountAuthClient: $0.accountAuthClient
             )
 
             RootView(

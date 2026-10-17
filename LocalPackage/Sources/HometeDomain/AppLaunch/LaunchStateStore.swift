@@ -39,16 +39,19 @@ public final class LaunchStateStore {
     private let accountStore: AccountStore
     private let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
     private let analyticsClient: AnalyticsClient
+    private let accountAuthClient: AccountAuthClient
 
     public init(
         accountStore: AccountStore,
         authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase,
         analyticsClient: AnalyticsClient = .previewValue,
+        accountAuthClient: AccountAuthClient = .previewValue,
         launchState: LaunchState = .launching
     ) {
         self.accountStore = accountStore
         self.authSubscriptionSyncUseCase = authSubscriptionSyncUseCase
         self.analyticsClient = analyticsClient
+        self.accountAuthClient = accountAuthClient
         self.launchState = launchState
     }
 
@@ -171,7 +174,16 @@ private extension LaunchStateStore {
             return
         }
 
-        guard let account = await authSubscriptionSyncUseCase.syncOnSignedIn(authResult) else {
+        let loadedAccount: Account?
+        do {
+            loadedAccount = try await authSubscriptionSyncUseCase.syncOnSignedIn(authResult)
+        } catch {
+            guard !Task.isCancelled else { return }
+            await signOutOnAccountLoadFailure(error)
+            return
+        }
+
+        guard let account = loadedAccount else {
             guard !Task.isCancelled else { return }
             launchState = .preLoggedIn(auth: authResult)
             return
@@ -193,6 +205,24 @@ private extension LaunchStateStore {
         applyLoggedIn(accountStore.account ?? account)
         // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
         await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
+    }
+
+    /// アカウントを取得できなかったときは、サインアウトしてログイン画面からやり直してもらう
+    ///
+    /// 取得の失敗（App Checkの検証失敗・権限エラーなど）を未登録と同じに扱うと、登録済みのユーザーに
+    /// 会員登録画面を出してしまう。そのまま登録すると既存のアカウントをグループ未所属で上書きするため、
+    /// 先へは進めずにログイン前の状態へ戻す。
+    /// - Note: Firebase Authからもサインアウトし、次回の起動で同じ失敗を繰り返さないようにする。
+    ///         サインアウトの通知は後から届くが、画面と後片付けはここで先に反映しておく
+    func signOutOnAccountLoadFailure(_ error: any Error) async {
+        print("failed to load account, signing out: \(error)")
+        launchState = .notLoggedIn
+        await authSubscriptionSyncUseCase.syncOnSignedOut()
+        do {
+            try accountAuthClient.signOut()
+        } catch {
+            print("failed to sign out: \(error)")
+        }
     }
 
     func applyLoggedIn(_ account: Account) {

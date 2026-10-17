@@ -12,7 +12,7 @@ import Testing
 struct AccountStoreTest {
 
     @Test("アカウント情報をロードし、アカウントがある場合はアカウント情報を返す")
-    func load() async {
+    func load() async throws {
         // Arrange
         let inputAccountId = "test"
         let inputAccount = Account(
@@ -22,7 +22,7 @@ struct AccountStoreTest {
             cohabitantId: nil
         )
 
-        await confirmation(expectedCount: 1) { confirmation in
+        try await confirmation(expectedCount: 1) { confirmation in
             let inputAuthResult = AccountAuthResult(id: "test")
             let accountInfoClient = AccountInfoClient(fetch: {
                 confirmation()
@@ -32,7 +32,7 @@ struct AccountStoreTest {
             let store = AccountStore(accountInfoClient: accountInfoClient)
 
             // Act
-            let actual = await store.load(inputAuthResult)
+            let actual = try await store.load(inputAuthResult)
 
             // Assert
             #expect(actual == inputAccount)
