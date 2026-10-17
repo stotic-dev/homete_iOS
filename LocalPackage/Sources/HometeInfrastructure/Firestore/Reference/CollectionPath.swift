@@ -7,6 +7,7 @@ import FirebaseFirestore
 public enum CollectionPath: String {
 
     case account = "Account"
+    case accountPrivate = "Private"
     case cohabitant = "Cohabitant"
     case houseworks = "Houseworks"
     case dailyHouseworks = "DailyHouseworks"

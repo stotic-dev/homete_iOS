@@ -15,6 +15,11 @@ export const deleteuserdata = functions
     const db = getFirestore();
 
     try {
+      // Step 0: 本人だけが読めるFCMトークンの削除
+      // Firestoreは親ドキュメントを消してもサブコレクションを消さないため、
+      // Accountの有無に関わらず個別に消す
+      await firestoreHelper.fcmTokenRef(userId).delete();
+
       // Step 1: Accountドキュメントの検索と取得
       const result = await firestoreHelper.findAccountByUserId(userId);
 

@@ -212,7 +212,7 @@ extension HouseworkCompleteView {
             value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
             ownId: "own"
         ),
-        account: .init(id: "own", userName: "たいち", fcmToken: nil, cohabitantId: "cohabitant")
+        account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant")
     )
     .environment(HouseworkListStore())
 }
@@ -229,7 +229,7 @@ extension HouseworkCompleteView {
             ],
             ownId: "own"
         ),
-        account: .init(id: "own", userName: "たいち", fcmToken: nil, cohabitantId: "cohabitant"),
+        account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant"),
         // CohabitantMemberList.valueと同じ並び順（自分が先頭、他はユーザーID昇順）
         allocation: .init(
             memberIds: ["own", "child", "partner"],
