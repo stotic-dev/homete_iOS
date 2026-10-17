@@ -18,6 +18,11 @@ extension AccountAuthClient {
         makeListener: {
             Self.makeListener()
         },
+        currentAuth: {
+            // Firebase Authは初期化時に保存済みのユーザーの読み込みを内部のキューに積み、currentUserは同じキューで待って読む。
+            // そのため起動直後でも読み込みを終えた値が返る。リスナーの初回の呼び出しはキューを待たずに読むため、こちらを使う
+            Auth.auth().currentUser.map { .init(id: $0.uid) }
+        },
         reauthenticateWithApple: { signInWithAppleResult in
             let credential = OAuthProvider.credential(
                 providerID: .apple,
