@@ -72,19 +72,19 @@ struct HouseworkIntentService {
     /// ありがとうを伝えられる家事（今日と昨日に同居人が終えた家事のうち、まだ自分が送っていないもの）
     func thanksCandidates(now: Date) async throws -> [ThanksCandidate] {
         let session = try await sessionUseCase.resolve(requiresLatestVersion: false)
-        return try await thanksContext(session: session, now: now).candidates
+        return try await thanksCandidates(session: session, now: now)
     }
 
     /// ありがとうを伝える
     /// - Parameter comment: 添えるコメント。空なら添えず、通知も送らない（ハートのタップと同じ）
     func sendThanks(houseworkId: String, comment: String?, now: Date) async throws -> SendThanksOutcome {
         let session = try await sessionUseCase.resolve(requiresLatestVersion: true)
-        let context = try await thanksContext(session: session, now: now)
         // 送った後や、未完了に戻された家事は候補から外れる。コメントの編集にもしない
-        guard let candidate = context.candidates.first(where: { $0.id == houseworkId }),
-              let target = context.items.item(candidate.item) else {
+        guard let candidate = try await thanksCandidates(session: session, now: now)
+            .first(where: { $0.id == houseworkId }) else {
             return .notFound
         }
+        let target = candidate.item
 
         let trimmedComment = comment?.trimmingCharacters(in: .whitespacesAndNewlines)
         let thanksComment = trimmedComment?.isEmpty == false ? trimmedComment : nil
@@ -220,10 +220,7 @@ private extension HouseworkIntentService {
         )
     }
 
-    func thanksContext(
-        session: AppIntentSession,
-        now: Date
-    ) async throws -> (items: StoredAllHouseworkList, candidates: [ThanksCandidate]) {
+    func thanksCandidates(session: AppIntentSession, now: Date) async throws -> [ThanksCandidate] {
         let today = calendar.startOfDay(for: now)
         let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
         async let stored = sessionUseCase.fetchHousework(session: session, days: [yesterday, today], calendar: calendar)
@@ -238,7 +235,7 @@ private extension HouseworkIntentService {
             now: now,
             calendar: calendar
         )
-        let candidates = summary.thankableItems
+        return summary.thankableItems
             .filter { $0.sentThanks(ownUserId: ownUserId) == nil }
             .map { item in
                 ThanksCandidate(
@@ -249,7 +246,6 @@ private extension HouseworkIntentService {
                         .compactMap { memberList.userName($0) }
                 )
             }
-        return (items, candidates)
     }
 
 }
