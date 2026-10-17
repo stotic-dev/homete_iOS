@@ -53,12 +53,12 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 #### 家事の完了（アプリを開く）
 
 6. アプリを開いて家事ボードに切り替え、家事の読み込みを待ってから、その家事の完了シート（`HouseworkCompleteSheet`）を出す
-7. 家事が見つからない・すでに完了している場合は、家事ボードを開くだけにする（通知のタップで家事詳細を開くときと同じ扱い）
+7. 家事が見つからない・すでに完了している場合は、家事ボードを開くだけにする（通知のタップで家事詳細を開くときと同じ扱い）。家事ボードの上に別のシートを出しているときは、閉じるまで待ってから完了シートを出す（入力中のシートや購入中のペイウォールを勝手に閉じない）
 
 #### ありがとう
 
 8. 候補は、ダッシュボードの感謝の促し（`ThanksPromptSummary`）と同じく、**今日と昨日に同居人が終えた家事のうち、まだ自分がありがとうを送っていないもの**
-9. 家事を指定しないで実行したときは、候補が1件ならそれに、複数ならSiriが聞き返して選ばせる。0件なら「今は、ありがとうを伝えられる家事はありません」と返す
+9. 家事を指定しないで実行したときは、候補が1件ならそれに、複数ならSiriが聞き返して選ばせる。0件なら「今は、ありがとうを伝えられる家事はありません」と返す。聞き返しを選ばずに閉じたときは、実行の失敗として数えない
 10. コメントは任意。入れたときは今と同じ`thanksMessage`のPush通知を送り、入れなかったときは記録だけ残す（ハートのタップと同じ。[complete-list-thanks-status.md](complete-list-thanks-status.md)の要件12）
 11. 実行時点でサーバーから家事を取り直し、未完了に戻されていた・すでに送っていた場合は記録しない（`HouseworkListStore.sendThanks`と同じ判定）
 
@@ -94,7 +94,7 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
     |---|---|---|
     | 家事を1件完了にした（完了シート・クイックアクション） | `CompleteHouseworkIntent` | その家事（名前で表す） |
     | ありがとうを1件送った（ハート・詳細・感謝の促し） | `SendThanksIntent` | なし |
-    | 分析画面を開いた | `ShowContributionSummaryIntent` | なし |
+    | ダッシュボードの「もっと詳しく見る」から分析画面を開いた | `ShowContributionSummaryIntent` | なし |
 
     - 一括操作・「もう一回やった」・コメントの編集ではドネーションしない（習慣的な操作ではなく、提案の学習を乱すため）
     - Intent経由で実行した操作はOSが自動でドネーションするため、アプリ側では重ねない。ドネーションは画面の操作だけが通る`HouseworkListStore`で行い、Intentが使う`HouseworkCommandUseCase`では行わない
@@ -108,6 +108,8 @@ App Intentsを使って、アプリを開かなくてもSiri・Spotlight・シ�
 - 開かないIntentは、アプリのプロセスがバックグラウンドで起動して実行する（Extensionは作らない）。`AppDelegate`の`didFinishLaunching`でFirebase・App Checkの初期化が済んでから`perform`が呼ばれる前提で組む（Phase 1で確認する）
 - Intentは`HouseworkListStore`を使わない。Storeはスナップショットリスナーを張るため、Intentの短い実行時間に合わない。書き込みと通知の処理はStoreとIntentで共有するUseCaseに切り出す（[ADR-0044](../adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - Firestoreのセキュリティルール・Cloud Functionsは変更しない（書き込む内容はアプリからの操作と同じ）
+- オフラインでも失敗にしない。Firestoreは書き込みを端末に保存してオンラインになったら反映するが、書き込みはサーバーの応答まで返らない。完了・ありがとうの書き込みを10秒待ってもサーバーに届かなければ待つのをやめ、「オンラインになってから反映されます（届きます）」と返す。同居人への通知は、プロセスが動いている間に書き込みが終わったときだけ送られる
+- Siriで家事の名前を言えるよう、今日の家事の名前か状態が変わったときに`updateAppShortcutParameters()`でOSに読み直してもらう（家事のスナップショットを受け取った`HouseworkListStore`から`IntentDonationClient.updateHouseworkTitles`経由で呼ぶ）。起動時には呼ばない。Firebaseを初期化しない起動でも呼ばれ、日付が変わった後も起動した日の名前のまま残るため
 - 文言は日本語キーで`Localizable.xcstrings`に入れ、英訳も同じ変更で入れる。App Shortcutsのフレーズはメインターゲットの`AppShortcuts.xcstrings`に置く
 - Intentのタイトル・説明・引数名・Entityの型名・`requestValueDialog`・App Shortcutsの短い名前は、パッケージに置いてもメタデータにキーだけが抽出され、実行時はアプリ本体のbundleから引かれる。これらはメインターゲットの`homete/Resouces/Localizable.xcstrings`に日英で入れる（`extractionState: manual`）。実行時に組み立てるダイアログは`.localized`で`HometeAppIntents`のカタログから引く
 - Analyticsは`doc/analytics_events.md`を同じPRで更新する
@@ -223,16 +225,17 @@ public struct IntentDonationClient: DependencyClient {
     public let donateCompleteHousework: @Sendable (_ houseworkTitle: String) -> Void
     public let donateSendThanks: @Sendable () -> Void
     public let donateContributionSummary: @Sendable () -> Void
+    public let updateHouseworkTitles: @Sendable () -> Void
 }
 ```
 
 - 家事の完了は`HouseworkListStore.complete`で`notify == true`（単発の操作）のとき、ありがとうは`HouseworkListStore.sendThanks`で初めて記録したときに呼ぶ
-- 分析画面は`ContributionAnalyticsScreen`の表示時に呼ぶ
+- 分析画面は`ContributionSummaryComponent`の「もっと詳しく見る」のタップで呼ぶ。分析画面の表示時に呼ぶと、Intentから開いたときや子の画面から戻ったときにも伝わってしまう
 
 ### 7. Analytics
 
 - 家事の完了・ありがとうは既存の`housework`イベントを使い、`step`に`app_intent`を足す（`HouseworkAnalyticsStep.appIntent`）
-- Intentの実行そのものを数える`app_intent`イベントを追加する。パラメータは`action`（`complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics`）と`result`（`success` / `not_found` / `already_completed` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure`）。カスタムディメンションを増やさないため、どのIntentかは既存の`action`キーに載せる
+- Intentの実行そのものを数える`app_intent`イベントを追加する。パラメータは`action`（`complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics`）と`result`（`success` / `not_found` / `already_completed` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure`）。カスタムディメンションを増やさないため、どのIntentかは既存の`action`キーに載せる
   - 家事の完了・ありがとうは`housework`イベントと二重に送るが、見たいものが違う（`housework`は操作の量、`app_intent`はアプリの外の入口の使われ方）
 - 開くIntentで表示した画面の`screen_view`は既存どおり送られる
 
@@ -253,8 +256,7 @@ public struct IntentDonationClient: DependencyClient {
 | 新規View | `LocalPackage/Sources/Features/ContributionFeature/View/Snippet/ContributionSnippetContent.swift` | スニペットのUI |
 | 修正View | `LocalPackage/Sources/AppRoot/AppTabView.swift` | 新しい`PendingRoute`でのタブ切り替え |
 | 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen+PendingRoute.swift` | 通知・App Intentから詳細画面・完了シートを開く（`HouseworkBoardScreen`から切り出し） |
-| 修正View | `LocalPackage/Sources/Features/ContributionFeature/View/Summary/ContributionSummaryComponent.swift` | 分析画面へ遷移（分析画面への遷移を持っているコンポーネント） |
-| 修正View | `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsScreen.swift` | 表示時のドネーション |
+| 修正View | `LocalPackage/Sources/Features/ContributionFeature/View/Summary/ContributionSummaryComponent.swift` | 分析画面へ遷移（分析画面への遷移を持っているコンポーネント）、「もっと詳しく見る」のタップでのドネーション |
 | 新規 | `homete/AppIntents/HometeAppShortcuts.swift` | `AppShortcutsProvider` |
 | 新規 | `homete/Resouces/AppShortcuts.xcstrings` | フレーズの日本語 |
 | 修正 | `homete/Resouces/Localizable.xcstrings` | Intentのメタデータ・App Shortcutsの短い名前の日英 |

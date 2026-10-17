@@ -575,21 +575,21 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics` | 実行したIntent。キーを増やさないため、他のイベントと同じ`action`に載せる |
-| `result` | ○ | `success` / `not_found` / `already_completed` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
+| `result` | ○ | `success` / `not_found` / `already_completed` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
 
 送信されるパターンと、その送信タイミング:
 
 | `action` | 送信タイミング |
 |---|---|
-| `complete_housework` | アプリを開かずに家事を完了にしようとした。今日の家事に同じ名前が無ければ`not_found`、もう終わっていれば`already_completed` |
+| `complete_housework` | アプリを開かずに家事を完了にしようとした。今日の家事に同じ名前が無ければ`not_found`、もう終わっていれば`already_completed`。通信できず、書き込みを端末に保存して返したときは`pending_sync`（10秒待ってもサーバーに届かなかった。オンラインになったら反映される） |
 | `open_housework_complete` | アプリを開いて家事の完了シートを出すIntentを実行した（常に`success`。シートを出せたかは含めない） |
-| `send_thanks` | アプリを開かずにありがとうを伝えようとした。伝えられる家事が無い・送信済みなら`not_found` |
+| `send_thanks` | アプリを開かずにありがとうを伝えようとした。伝えられる家事が無い・送信済みなら`not_found`、通信できず端末に保存して返したときは`pending_sync`。伝える家事をSiriが聞き返し、選ばずに閉じたときは送らない |
 | `show_contribution_summary` | 今月のがんばりをSiriの結果に出した |
 | `open_contribution_analytics` | アプリを開いてがんばりの分析画面を出すIntentを実行した（常に`success`） |
 
 ログインしていない・グループに所属していない・強制アップデートが必要なバージョンのときは、それぞれ`not_logged_in` / `no_cohabitant` / `update_required`になる。
 
-家事の完了・ありがとうは、書き込めたときに`housework`イベント（`step=app_intent`）も送る。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
+家事の完了・ありがとうは、書き込めたときに`housework`イベント（`step=app_intent`）も送る。`pending_sync`のときは、プロセスが動いている間に書き込みがサーバーに届いた場合だけ送られる。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
 
 **分析での使い方:** `action`ごとの件数で、どのIntentが使われているかが分かる。`housework`の`complete`・`send_thanks`のうち`step=app_intent`の割合が、アプリを開かずに記録された割合（このIntentの主指標）になる。
 `not_found`が多い場合は、OSの提案やSiriで指定された家事が今日の家事に無い（名前の変更・登録していない）と読める。

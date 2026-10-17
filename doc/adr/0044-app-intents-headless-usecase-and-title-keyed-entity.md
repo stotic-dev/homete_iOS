@@ -24,7 +24,8 @@ Intentから何を呼ぶか、ドネーションの引数で家事をどう表�
 * 完了のIntentの家事は**名前**をIDにしたEntityで表す。実行時に今日の同じ名前の未完了の家事を探して完了にする
 * ありがとうのドネーションには家事を引数に入れず、実行時に候補から解決する
 * ドネーションは`HometeDomain`の`IntentDonationClient`経由で行い、`HometeDomain`をApp Intentsに依存させない
-  * 呼ぶのは画面の操作だけが通る`HouseworkListStore`（と分析画面）にする。Intentが使う`HouseworkCommandUseCase`で呼ぶと、OSが自動で記録するIntent経由の実行と二重になる
+  * 呼ぶのは画面の操作だけが通る`HouseworkListStore`（とダッシュボードの「もっと詳しく見る」）にする。Intentが使う`HouseworkCommandUseCase`で呼ぶと、OSが自動で記録するIntent経由の実行と二重になる
+* Intentの書き込みは10秒だけサーバーへ届くのを待ち、届かなければ「オンラインになってから反映されます」と返す。Firestoreはオフラインの書き込みを端末に保存して後で反映するため、失敗と返すと後で記録されて食い違う
 
 ## 考慮した選択肢
 
@@ -54,6 +55,7 @@ Intentから何を呼ぶか、ドネーションの引数で家事をどう表�
 * 家事の名前を変えると、それまでの提案は使えなくなる
 * `HouseworkListStore`のリファクタリングが先に必要になる
 * Intentのメタデータの訳がパッケージではなくアプリ本体のString Catalogに分かれる
+* オフラインで待つのをやめたとき、同居人への完了・ありがとうの通知は、プロセスが動いている間に書き込みが終わった場合にしか送られない
 * `HometeAppIntents`が`HouseworkFeature`・`ContributionFeature`（SwiftUIのView）にも依存する
 
 ## 参考
