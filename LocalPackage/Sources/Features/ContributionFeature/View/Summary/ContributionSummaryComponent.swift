@@ -19,6 +19,7 @@ public struct ContributionSummaryComponent: View {
     @Environment(\.loginContext.account.id) var userId
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
+    @Environment(\.appDependencies.intentDonationClient) var intentDonationClient
     /// プレビューやチュートリアルでは注入されないため、無くても描画できるようにする
     @Environment(PendingRouteStore.self) var pendingRouteStore: PendingRouteStore?
 
@@ -30,25 +31,30 @@ public struct ContributionSummaryComponent: View {
     }
 
     public var body: some View {
-        ContributionSummaryContent(isShowAnalytics: $isShowAnalytics, summaries: summary)
-            .onChange(of: members) {
-                Task {
-                    await onChangeContribution()
-                }
-            }
-            .task(id: contributionStore.contiribution) {
+        ContributionSummaryContent(summaries: summary) {
+            // 分析を見る習慣をSiriやロック画面で提案してもらえるよう、自分で開いたときだけ伝える。
+            // App Intentから開いたときは、OSがIntentの実行として記録するため伝えない
+            intentDonationClient.donateContributionSummary()
+            isShowAnalytics = true
+        }
+        .onChange(of: members) {
+            Task {
                 await onChangeContribution()
             }
-            // App Intentから分析画面を開く。分析画面への遷移はこのコンポーネントが持っている
-            .onChange(of: pendingRouteStore?.pendingRoute, initial: true) {
-                if pendingRouteStore?.takeContributionAnalytics() == true {
-                    isShowAnalytics = true
-                }
+        }
+        .task(id: contributionStore.contiribution) {
+            await onChangeContribution()
+        }
+        // App Intentから分析画面を開く。分析画面への遷移はこのコンポーネントが持っている
+        .onChange(of: pendingRouteStore?.pendingRoute, initial: true) {
+            if pendingRouteStore?.takeContributionAnalytics() == true {
+                isShowAnalytics = true
             }
-            .navigationDestination(isPresented: $isShowAnalytics) {
-                ContributionAnalyticsScreen.make()
-                    .environment(contributionStore)
-            }
+        }
+        .navigationDestination(isPresented: $isShowAnalytics) {
+            ContributionAnalyticsScreen.make()
+                .environment(contributionStore)
+        }
     }
 
 }
@@ -83,9 +89,8 @@ struct ContributionSummaryContent: View {
     @Environment(\.locale) var locale
     @Environment(\.now) var now
 
-    @Binding var isShowAnalytics: Bool
-
     let summaries: AllUserPointSummary
+    let onTapShowAnalytics: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space24) {
@@ -121,7 +126,7 @@ private extension ContributionSummaryContent {
 
     var showAnalyticsButton: some View {
         Button(.localized("もっと詳しく見る")) {
-            isShowAnalytics = true
+            onTapShowAnalytics()
         }
         .subPrimaryButtonStyle()
         .frame(maxWidth: .infinity)
@@ -158,7 +163,6 @@ private extension ContributionSummaryContent {
 #if DEBUG
 #Preview("ContributionSummaryContent_データ有り", traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
-        isShowAnalytics: .constant(false),
         summaries: AllUserPointSummary(items: [
             UserPointSummary(
                 userId: "user1",
@@ -174,7 +178,8 @@ private extension ContributionSummaryContent {
                 monthlyPoint: .init(value: 40),
                 achievedCount: 2
             ),
-        ])
+        ]),
+        onTapShowAnalytics: {}
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
     .setupEnvironmentForPreview()
@@ -185,8 +190,8 @@ private extension ContributionSummaryContent {
 
 #Preview("ContributionSummaryContent_データ無し", traits: .sizeThatFitsLayout) {
     ContributionSummaryContent(
-        isShowAnalytics: .constant(false),
-        summaries: AllUserPointSummary(items: [])
+        summaries: AllUserPointSummary(items: []),
+        onTapShowAnalytics: {}
     )
     .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
     .setupEnvironmentForPreview()
