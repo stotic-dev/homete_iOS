@@ -23,10 +23,8 @@
 		6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 535152FA786C3EF10199AC4D /* HometeLocalNotification */; };
 		B7FEC780BA78A9E533B6AFE4 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A3B833DF798387E007B09FB3 /* HometeDomain */; };
-		BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */; };
-		BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = BC1BB2712E909B99001D168F /* SnapshotTesting */; };
+		0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000C /* HometeSnapshotTestSupport */; };
 		BC1BB4922E90FE4B001D168F /* snapshotTesting.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */; };
-		BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */ = {isa = PBXBuildFile; productRef = BC4701FA2E9A0F3D006CC530 /* Prefire */; };
 		BC7469472DBCBE71007E4222 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -160,8 +158,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC4701FB2E9A0F3D006CC530 /* Prefire in Frameworks */,
-				BC1BB2722E909B99001D168F /* SnapshotTesting in Frameworks */,
+				0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */,
 				0AA7C0030000000000000001 /* HometeDomain in Frameworks */,
 				0AA7C0030000000000000002 /* HometeResources in Frameworks */,
 				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
@@ -180,7 +177,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BC0CF70D2E77B3A500DC31CA /* FirebaseMessaging in Frameworks */,
 				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
 				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
@@ -292,8 +288,7 @@
 			);
 			name = hometeSnapshotTests;
 			packageProductDependencies = (
-				BC1BB2712E909B99001D168F /* SnapshotTesting */,
-				BC4701FA2E9A0F3D006CC530 /* Prefire */,
+				0AA7C002000000000000000C /* HometeSnapshotTestSupport */,
 				0AA7C0020000000000000001 /* HometeDomain */,
 				0AA7C0020000000000000002 /* HometeResources */,
 				0AA7C0020000000000000003 /* HometeUI */,
@@ -331,7 +326,6 @@
 			);
 			name = homete;
 			packageProductDependencies = (
-				BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */,
 				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
 				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
@@ -375,9 +369,6 @@
 			mainGroup = BCC853EC2DB74BBC00C9A44B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
-				BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */,
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
 				04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */,
 			);
@@ -1204,32 +1195,6 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing.git";
-			requirement = {
-				kind = exactVersion;
-				version = 1.18.7;
-			};
-		};
-		BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/BarredEwe/Prefire.git";
-			requirement = {
-				kind = exactVersion;
-				version = 5.9.0;
-			};
-		};
-		BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-			requirement = {
-				kind = exactVersion;
-				version = 12.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		0AA7C0020000000000000001 /* HometeDomain */ = {
@@ -1276,9 +1241,12 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FrequentHouseworkFeature;
 		};
+		0AA7C002000000000000000C /* HometeSnapshotTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeSnapshotTestSupport;
+		};
 		04B783702F4996860080EFAC /* PrefireTestsPlugin */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
 			productName = "plugin:PrefireTestsPlugin";
 		};
 		04FD07782F77AEA500BEC61C /* ProjectToolsDummy */ = {
@@ -1301,21 +1269,6 @@
 		A3B833DF798387E007B09FB3 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeDomain;
-		};
-		BC0CF70C2E77B3A500DC31CA /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BCB8DAFC2E36FC7100FFB4E1 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
-		};
-		BC1BB2712E909B99001D168F /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC1BB2612E909B50001D168F /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
-		};
-		BC4701FA2E9A0F3D006CC530 /* Prefire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = BC4701F92E9A0F3D006CC530 /* XCRemoteSwiftPackageReference "Prefire" */;
-			productName = Prefire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -217,7 +217,7 @@ launching → notLoggedIn → Sign In with Apple
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
 
 **スナップショットテスト** (`hometeSnapshotTests/`):
-- ライブラリ: PointFreeのswift-snapshot-testing 1.18.7
+- ライブラリ: PointFreeのswift-snapshot-testing 1.18.7（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
 - テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
 - Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `LocalPackage/Sources`
 - テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` とテストターゲットのリンク設定の両方を更新する
@@ -434,11 +434,10 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 ## 主要な依存関係
 
-**iOS（SPM）:**
-- Firebase iOS SDK 12.0.0（Auth、Firestore、Messaging、Analytics）
+**iOS（SPM）:** バージョンは`LocalPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
+- Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
 - swift-snapshot-testing 1.18.7
-- Prefire 5.3.0
-- swift-custom-dump 1.3.3
+- Prefire 5.9.0
 
 **Firebase Functions（npm）:**
 - firebase-admin 12.6.0
