@@ -9,8 +9,9 @@ public struct AccountInfoClient: Sendable {
 
     public let insertOrUpdate: @Sendable (Account) async throws -> Void
     public let fetch: @Sendable (String) async throws -> Account?
-    /// FCMトークンを本人だけが読める場所へ保存する
-    /// - Note: 旧バージョンのアプリがAccount本体に書いた`fcmToken`も同時に消す
+    /// FCMトークンを同居人から読めない場所へ保存する
+    /// - Note: 旧バージョンのアプリがAccount本体に書いた`fcmToken`も同時に消す。
+    ///         ログイン済みへ進む前に呼ぶため、オフラインでも止まらないようサーバーへの反映は待たずに返す
     public let updateFcmToken: @Sendable (_ accountId: String, _ fcmToken: String) async throws -> Void
     /// 自分のアカウントを購読する
     /// - Note: 招待リンク経由の参加ではサーバー側（Cloud Functions）が発行者の`cohabitantId`を更新するため、

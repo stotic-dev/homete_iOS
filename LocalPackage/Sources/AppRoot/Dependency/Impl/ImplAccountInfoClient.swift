@@ -17,7 +17,8 @@ extension AccountInfoClient {
             $0.accountRef(id: id)
         }
     } updateFcmToken: { accountId, fcmToken in
-        try await FirestoreService.shared.commitBatch { firestore, batch in
+        // 起動のたびに呼ばれ、ログイン済みへ進むのを待たせる。オフラインでも止めないようサーバーの応答は待たない
+        await FirestoreService.shared.commitBatchWithoutWaitingForServer { firestore, batch in
             // フィールド名はFunctions（AccountFcmTokenFields.TOKEN）と合わせる
             batch.setData(["token": fcmToken], forDocument: firestore.accountFcmTokenRef(accountId: accountId))
             // 旧バージョンのアプリがAccount本体に書いたトークンを消す。同じグループのメンバーから読めてしまうため。
