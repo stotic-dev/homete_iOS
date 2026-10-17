@@ -109,15 +109,17 @@ private extension AppDelegate {
     }
 
     /// App Intentが使う依存を登録する
-    /// - Note: アプリを開かないIntentもアプリのプロセスを起動して実行されるため、Firebaseの初期化と同じく起動時に行う
+    /// - Note: アプリを開かないIntentもアプリのプロセスを起動して実行されるため、Firebaseの初期化と同じく起動時に行う。
+    ///         家事の名前の読み直しは、家事を読み込んだとき（`HouseworkListStore`）に頼む
     func setupAppIntents() {
+        // プレビュー・ユニットテストではFirebaseを初期化しないため、Firebaseを使うIntentも登録しない
+        guard FirebaseApp.app() != nil else { return }
         HometeAppIntentsConfigurator.configure(
             dependencies: .liveValue,
             pendingRouteStore: pendingRouteStore,
-            currentAppVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+            currentAppVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+            updateAppShortcutParameters: { HometeAppShortcuts.updateAppShortcutParameters() }
         )
-        // Siriで家事の名前を言えるよう、今日の家事の名前を読み直してもらう
-        HometeAppShortcuts.updateAppShortcutParameters()
     }
 
 }

@@ -6,6 +6,7 @@
 import AppIntents
 import Foundation
 import HometeDomain
+import os
 
 /// App Intentが使う依存
 ///
@@ -52,13 +53,18 @@ public enum HometeAppIntentsConfigurator {
     /// アプリの起動時に1回だけ呼ぶ
     ///
     /// アプリを開かないIntentでもアプリのプロセスが起動して実行されるため、Intentより先に必ず呼ばれる場所（`AppDelegate`）で呼ぶ。
-    /// - Parameter pendingRouteStore: アプリを開くIntentが、開く画面を退避する先。通知のタップと同じものを渡す
+    /// - Parameters:
+    ///   - pendingRouteStore: アプリを開くIntentが、開く画面を退避する先。通知のタップと同じものを渡す
+    ///   - updateAppShortcutParameters: アプリ本体の`AppShortcutsProvider`の`updateAppShortcutParameters()`。
+    ///     `AppShortcutsProvider`はアプリ本体にしか置けず、このパッケージから型を参照できないため受け取る
     @MainActor
     public static func configure(
         dependencies: AppDependencies,
         pendingRouteStore: PendingRouteStore,
-        currentAppVersion: String
+        currentAppVersion: String,
+        updateAppShortcutParameters: @escaping @Sendable () -> Void
     ) {
+        appShortcutParametersUpdater.withLock { $0 = updateAppShortcutParameters }
         let environment = AppIntentEnvironment(
             dependencies: dependencies,
             currentAppVersion: currentAppVersion,
@@ -66,6 +72,17 @@ public enum HometeAppIntentsConfigurator {
         )
         AppDependencyManager.shared.add(dependency: environment)
         AppDependencyManager.shared.add(dependency: pendingRouteStore)
+    }
+
+}
+
+extension HometeAppIntentsConfigurator {
+
+    private static let appShortcutParametersUpdater = OSAllocatedUnfairLock<(@Sendable () -> Void)?>(initialState: nil)
+
+    /// Siriで家事の名前を言えるよう、OSに今日の家事の名前を読み直してもらう。`configure`の前に呼ばれたら何もしない
+    static func updateAppShortcutParameters() {
+        appShortcutParametersUpdater.withLock { $0 }?()
     }
 
 }

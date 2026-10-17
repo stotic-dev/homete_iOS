@@ -23,6 +23,9 @@ public final class HouseworkListStore {
     /// - Note: スナップショットは家事が1件変わるたびに届くため、結果が変わったときだけ予約し直す。
     ///         件数で見るのは、1日1回の制限を外している間（デバッグ用）に完了のたびに予約を積むため
     private var lastReminderSyncState: DailyCompletionReminderSyncState?
+    /// 最後にOSへ読み直してもらった「日付と、その日の家事の名前ごとの状態」
+    /// - Note: 曜日でテンプレートの家事が変わるため、名前が同じでも日付が変わったら読み直してもらう
+    private var lastHouseworkTitlesState: HouseworkTitlesState?
 
     private let houseworkClient: HouseworkClient
     private let houseworkManager: HouseworkManager
@@ -497,6 +500,7 @@ private extension HouseworkListStore {
                 )
                 print("did receive current items: \(items)")
                 loadState = .loaded
+                updateHouseworkTitlesIfNeeded()
                 await syncDailyCompletionReminder()
 
             case let .failure(error):
@@ -540,6 +544,26 @@ private extension HouseworkListStore {
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
     }
 
+    /// 今日の家事の名前か状態が変わったときだけ、Siriで言える家事の名前をOSに読み直してもらう
+    ///
+    /// Siriに出すのは未完了の家事の名前で、テンプレートから出している未登録の家事も含む。未登録の家事は
+    /// 完了にすると初めて一覧に現れるため、未完了の名前だけでなく名前ごとの状態の変化を見る。
+    /// 読み直すたびにIntentの候補をサーバーから取り直すため、スナップショットのたびには頼まない。
+    func updateHouseworkTitlesIfNeeded() {
+        let currentDate = now()
+        let todayItems = items.value
+            .filter { calendar.isDate($0.metaData.indexedDate.value, inSameDayAs: currentDate) }
+            .flatMap(\.items)
+        let state = HouseworkTitlesState(
+            day: calendar.startOfDay(for: currentDate),
+            statesByTitle: Dictionary(grouping: todayItems, by: \.title).mapValues { Set($0.map(\.state)) }
+        )
+        guard state != lastHouseworkTitlesState else { return }
+
+        lastHouseworkTitlesState = state
+        intentDonationClient.updateHouseworkTitles()
+    }
+
     /// 今日完了した家事があるかを、ふりかえり通知の予約に反映する
     func syncDailyCompletionReminder() async {
         let currentDate = now()
@@ -568,5 +592,13 @@ private struct DailyCompletionReminderSyncState: Equatable {
 
     let day: Date
     let completedCount: Int
+
+}
+
+/// Siriで言える家事の名前を、最後にOSへ読み直してもらったときの状態
+private struct HouseworkTitlesState: Equatable {
+
+    let day: Date
+    let statesByTitle: [String: Set<HouseworkState>]
 
 }

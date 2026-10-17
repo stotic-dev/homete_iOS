@@ -16,15 +16,19 @@ public struct IntentDonationClient: Sendable {
     public let donateSendThanks: @Sendable () -> Void
     /// がんばりの分析を見た
     public let donateContributionSummary: @Sendable () -> Void
+    /// 今日の家事の名前が変わった。Siriで家事の名前を言えるよう、OSに読み直してもらう
+    public let updateHouseworkTitles: @Sendable () -> Void
 
     public init(
         donateCompleteHousework: @Sendable @escaping (_ houseworkTitle: String) -> Void = { _ in },
         donateSendThanks: @Sendable @escaping () -> Void = {},
-        donateContributionSummary: @Sendable @escaping () -> Void = {}
+        donateContributionSummary: @Sendable @escaping () -> Void = {},
+        updateHouseworkTitles: @Sendable @escaping () -> Void = {}
     ) {
         self.donateCompleteHousework = donateCompleteHousework
         self.donateSendThanks = donateSendThanks
         self.donateContributionSummary = donateContributionSummary
+        self.updateHouseworkTitles = updateHouseworkTitles
     }
 
 }

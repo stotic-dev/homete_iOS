@@ -19,6 +19,9 @@ public extension IntentDonationClient {
         },
         donateContributionSummary: {
             donate(ShowContributionSummaryIntent())
+        },
+        updateHouseworkTitles: {
+            HometeAppIntentsConfigurator.updateAppShortcutParameters()
         }
     )
 

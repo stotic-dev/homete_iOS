@@ -137,4 +137,67 @@ struct HouseworkListStoreDonationTest {
         )
     }
 
+    @Test("今日の家事の名前か状態が変わったときだけ、Siriで言える家事の名前をOSに読み直してもらう")
+    func startObserving_updatesHouseworkTitlesOnlyWhenChanged() async {
+        // Arrange
+
+        let now = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
+        let incompleteItems = [
+            HouseworkItem.makeForTest(id: 1, indexedDate: .previewDate(year: 2026, month: 9, day: 25), title: "洗濯"),
+        ]
+        let completedItems = [
+            HouseworkItem.makeForTest(
+                id: 1,
+                indexedDate: .previewDate(year: 2026, month: 9, day: 25),
+                title: "洗濯",
+                state: .completed
+            ),
+        ]
+        let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
+        let manager = HouseworkManager(
+            houseworkClient: .init(
+                snapshotListenerHandler: { _, _, _, _ in stream },
+                fetchItemsHandler: { _, _, _ in incompleteItems }
+            )
+        )
+
+        // Assert
+
+        // 最初の受信と、完了にしたときの2回だけ。同じ内容をもう一度受け取ったときは頼まない
+        await confirmation(expectedCount: 2) { confirmation in
+            let _: Void = await withCheckedContinuation { continuation in
+                let store = HouseworkListStore(
+                    houseworkManager: manager,
+                    dailyCompletionReminderUseCase: .init(
+                        client: .init(
+                            loadSetting: { .init(isEnabled: true, hour: 21, minute: 0) },
+                            // 完了にした家事を受け取り終えたことを、ふりかえり通知の予約で知る
+                            schedule: { _ in continuation.resume() },
+                            cancel: { _ in }
+                        )
+                    ),
+                    intentDonationClient: .init(updateHouseworkTitles: { confirmation() }),
+                    calendar: .japanese,
+                    now: { now }
+                )
+
+                // Act
+
+                Task {
+                    _ = store
+                    await manager.setupObserver(
+                        currentTime: now,
+                        cohabitantId: inputCohabitantId,
+                        calendar: .japanese,
+                        storagePolicy: .premium
+                    )
+                    streamContinuation.yield(incompleteItems)
+                    streamContinuation.yield(incompleteItems)
+                    streamContinuation.yield(completedItems)
+                }
+            }
+        }
+        streamContinuation.finish()
+    }
+
 }
