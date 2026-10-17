@@ -32,8 +32,8 @@ private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncSt
 extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
     @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
-    func syncOnSignedInSuccess() async {
-        await confirmation(expectedCount: 2) { confirmation in
+    func syncOnSignedInSuccess() async throws {
+        try await confirmation(expectedCount: 2) { confirmation in
             let inputAuthResult = AccountAuthResult(id: "testAccountId")
             let inputAccount = Account(
                 id: inputAuthResult.id,
@@ -75,7 +75,7 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 houseworkManager: .init(houseworkClient: .previewValue)
             )
 
-            let actual = await useCase.syncOnSignedIn(inputAuthResult)
+            let actual = try await useCase.syncOnSignedIn(inputAuthResult)
 
             #expect(actual == expectedAccount)
             #expect(accountStore.account == expectedAccount)
@@ -84,8 +84,8 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
     }
 
     @Test("サインイン成功時に自分のアカウントの購読を開始する")
-    func syncOnSignedInStartsObservingAccount() async {
-        await confirmation(expectedCount: 1) { confirmation in
+    func syncOnSignedInStartsObservingAccount() async throws {
+        try await confirmation(expectedCount: 1) { confirmation in
             let inputAuthResult = AccountAuthResult(id: "testAccountId")
             let inputAccount = Account(
                 id: inputAuthResult.id,
@@ -109,13 +109,13 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 houseworkManager: .init(houseworkClient: .previewValue)
             )
 
-            _ = await useCase.syncOnSignedIn(inputAuthResult)
+            _ = try await useCase.syncOnSignedIn(inputAuthResult)
         }
     }
 
     @Test("サインイン成功時にアカウントが取得できない場合はサブスクリプションにログインしない")
-    func syncOnSignedInAccountNotFound() async {
-        await confirmation(expectedCount: 0) { confirmation in
+    func syncOnSignedInAccountNotFound() async throws {
+        try await confirmation(expectedCount: 0) { confirmation in
             let inputAuthResult = AccountAuthResult(id: "testAccountId")
             let accountInfoClient = AccountInfoClient(fetch: { _ in nil })
             let purchaseClient = PurchaseClient(logIn: { _ in
@@ -128,7 +128,7 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 houseworkManager: .init(houseworkClient: .previewValue)
             )
 
-            let actual = await useCase.syncOnSignedIn(inputAuthResult)
+            let actual = try await useCase.syncOnSignedIn(inputAuthResult)
 
             #expect(actual == nil)
         }
@@ -157,16 +157,17 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
             await useCase.syncOnSignedOut()
 
-            let actual = await useCase.syncOnSignedIn(newAuthResult)
+            await #expect(throws: DomainError.other) {
+                try await useCase.syncOnSignedIn(newAuthResult)
+            }
 
-            #expect(actual == nil)
             #expect(accountStore.account == nil)
         }
     }
 
     @Test("アカウントのロード中に世代が打ち切られた場合は、購読を開始せずロード結果も破棄する")
-    func syncOnSignedInAbortsWhenCancelledDuringLoad() async {
-        await confirmation("古いユーザーIDでは購読もサブスクリプションのログインも行わない", expectedCount: 0) { confirmation in
+    func syncOnSignedInAbortsWhenCancelledDuringLoad() async throws {
+        try await confirmation("古いユーザーIDでは購読もサブスクリプションのログインも行わない", expectedCount: 0) { confirmation in
             let staleAuthResult = AccountAuthResult(id: "staleAccountId")
             let staleAccount = Account(
                 id: staleAuthResult.id,
@@ -193,10 +194,10 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
             // ロードを待っている間にトークン失効で自動サインアウトした状況を、
             // 世代のTaskをキャンセル済みにしてから走らせることで再現する
-            let task = Task { await useCase.syncOnSignedIn(staleAuthResult) }
+            let task = Task { try await useCase.syncOnSignedIn(staleAuthResult) }
             task.cancel()
 
-            let actual = await task.value
+            let actual = try await task.value
 
             #expect(actual == nil)
             #expect(accountStore.account == nil)
