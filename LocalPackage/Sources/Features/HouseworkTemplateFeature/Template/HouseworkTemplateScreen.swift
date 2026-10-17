@@ -23,6 +23,8 @@ public struct HouseworkTemplateScreen: View {
     @CommonError var commonErrorContent
 
     @State var templateEditStore: HouseworkTemplateEditStore
+    /// 初めて開いたときに出すチュートリアル
+    @State var tutorialStore: ScreenTutorialStore<HouseworkTemplateTutorialStep>
     @State var initialDraft: HouseworkTemplateDraft?
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
@@ -31,34 +33,37 @@ public struct HouseworkTemplateScreen: View {
     public static func make() -> some View {
         DependenciesInjectLayer {
             HouseworkTemplateScreen(
-                templateEditStore: .init(houseworkTemplateClient: $0.houseworkTemplateClient)
+                templateEditStore: .init(houseworkTemplateClient: $0.houseworkTemplateClient),
+                tutorialStore: .init(stateClient: $0.screenTutorialStateClient, analyticsClient: $0.analyticsClient)
             )
         }
     }
 
     public var body: some View {
-        NavigationStack {
-            HouseworkTemplateView(
-                initialDraft: $initialDraft,
-                draft: $editingDraft,
-                editorContext: $editorContext,
-                isShowAd: AdDisplayPolicy.shouldShowAds(
-                    isPremium: subscriptionStore.isPremium,
-                    isEnabled: isAdsEnabled
-                ),
-                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
-                loadFailure: loadFailure,
-                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
-                onRetry: { await retry() }
-            )
+        ZStack {
+            templateContent()
+                // 後ろに隠れた本番の画面のUIが、チュートリアルの画面と同じ識別子で位置を伝えないようにする
+                .excludedFromTutorialSpotlight()
+            if let step = tutorialStore.currentStep {
+                HouseworkTemplateTutorialView(step: step)
+            }
         }
-        .environment(templateEditStore)
+        .tutorialSpotlight(
+            isPresented: tutorialStore.currentStep != nil,
+            targets: tutorialStore.currentStep.map(spotlightTargets) ?? []
+        ) {
+            tutorialCard()
+        }
+        .animation(.default, value: tutorialStore.currentStep)
         .commonError(content: $commonErrorContent)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
+        .task {
+            await tutorialStore.startIfNeeded()
+        }
         .task {
             await onAppear()
         }
@@ -82,6 +87,69 @@ public struct HouseworkTemplateScreen: View {
             Task {
                 await onChangeSelectedTemplateId(oldValue: oldValue, newValue: newValue)
             }
+        }
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension HouseworkTemplateScreen {
+
+    func templateContent() -> some View {
+        NavigationStack {
+            HouseworkTemplateView(
+                initialDraft: $initialDraft,
+                draft: $editingDraft,
+                editorContext: $editorContext,
+                isShowAd: AdDisplayPolicy.shouldShowAds(
+                    isPremium: subscriptionStore.isPremium,
+                    isEnabled: isAdsEnabled
+                ),
+                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
+                loadFailure: loadFailure,
+                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
+                onRetry: { await retry() }
+            )
+        }
+        .environment(templateEditStore)
+    }
+
+    @ViewBuilder
+    func tutorialCard() -> some View {
+        if let step = tutorialStore.currentStep {
+            HouseworkTemplateTutorialCard(
+                step: step,
+                onTapNext: {
+                    Task {
+                        await tutorialStore.next(from: step)
+                    }
+                },
+                onTapBack: {
+                    tutorialStore.back(from: step)
+                },
+                onTapClose: {
+                    Task {
+                        await tutorialStore.close()
+                    }
+                }
+            )
+        }
+    }
+
+    func spotlightTargets(_ step: HouseworkTemplateTutorialStep) -> [TutorialSpotlightID] {
+        switch step {
+        case .create:
+            [.houseworkTemplateCreateButton]
+
+        case .addItem:
+            [.houseworkTemplateAddButton]
+
+        case .autoPlacement:
+            [.houseworkTemplateFirstDaySection, .houseworkTemplateMonthlySection]
+
+        case .save:
+            [.houseworkTemplateSaveButton]
         }
     }
 

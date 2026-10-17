@@ -59,8 +59,11 @@ private extension HouseworkTemplateListContent {
                         isCollapsed: collapsedDays.isCollapsed(day),
                         items: draft.items(in: day)
                     )
+                    .tutorialSpotlightTarget(day == DayOfWeek.displayOrdered
+                        .first ? .houseworkTemplateFirstDaySection : nil)
                 }
                 monthlySection(draft.displayedMonthlyItems)
+                    .tutorialSpotlightTarget(.houseworkTemplateMonthlySection)
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space32)
@@ -209,6 +212,7 @@ private extension HouseworkTemplateListContent {
                 .font(.system(size: 24))
         }
         .floatingButtonStyle()
+        .tutorialSpotlightTarget(.houseworkTemplateAddButton)
     }
 
 }
@@ -238,6 +242,7 @@ private extension HouseworkTemplateListContent {
                 onTapSave()
             }
             .disabled(!hasUnsavedChanges)
+            .tutorialSpotlightTarget(.houseworkTemplateSaveButton)
         }
     }
 
