@@ -7,9 +7,9 @@
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定（シートの中でスポットライトの位置が合うかの確認が残っている）
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 設計確定
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -67,8 +67,11 @@ Issueの表から、方針整理（2026-10-17）で次のとおり絞った。
 |---|---|---|---|---|
 | 1 | テンプレートを作る | 空の表示 | 「テンプレートを作成する」ボタン | まずテンプレートを作成すると、家事を登録できるようになる |
 | 2 | 家事を追加する | サンプルの一覧 | ＋ボタン | ＋から、曜日や毎月の日にちを選んで家事を追加できる |
-| 3 | 自動で並ぶ | サンプルの一覧 | 曜日のセクション1つと「毎月」のセクション | 登録した家事は、その曜日・その日の家事ボードに自動で並ぶ |
-| 4 | 保存して反映 | サンプルの一覧 | 右上の✓ボタン | 変更は✓で保存するまでボードに反映されない。保存するとパートナーとも共有される |
+| 3 | 自動で並ぶ | サンプルの一覧 | 先頭の曜日（月曜日）のセクション | 登録した家事は、その曜日・その日の家事ボードに自動で並ぶ |
+| 4 | 保存して反映 | サンプルの一覧 | ナビゲーションバー全体（右上の✓を含む） | 変更は✓で保存するまでボードに反映されない。保存するとパートナーとも共有される |
+
+- 3では「毎月」のセクションも切り抜く予定だったが、画面の下にあり説明のカードと重なるため切り抜かない（本文で触れる）
+- 4の✓は、ナビゲーションバーにボタンを1つだけ置いているため、iOS 26以降はシステムのボタンとして描かれ、`tutorialSpotlightTarget`を付けても（`HStack`で包んでも）位置を測れない。✓の見た目を変えずに済むよう、`tutorialSpotlightNavigationBarTarget`でバーごと切り抜く
 
 - 説明の文言は`ux-writing.md`に沿って敬体・結果ベースで書き、英訳も同じ変更で入れる
 - 文言の細部は実装時に決め、PRで確認する
@@ -174,13 +177,11 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 - `ScreenTutorialAnalyticsAction`を足し、`doc/analytics_events.md`に追記する
 - 独立した画面ではないため`screen_view`は送らない
 
-### 確認が必要な技術的リスク
+### 確認した技術的リスク
 
 `tutorialSpotlight`は、切り抜くUIの位置をウィンドウの座標（`TutorialSpotlightWindowFrameReader`）で測り、
-重ねる側の位置（`.global`）を引いて切り抜く。**シートは画面の上端から下がった位置に出るため、
-シートの中で`.global`がウィンドウの座標と一致するかが分かっていない**。ずれる場合は、重ねる側もUIKitで
-ウィンドウの座標を測るように`TutorialSpotlightOverlay`を直す。実装の最初にシミュレータで確かめる。
-家事テンプレートはフルスクリーンで出すため、この問題は起きない見込み。
+重ねる側の位置（`.global`）を引いて切り抜く。シートの中で両者の座標がずれないかを心配していたが、
+シミュレータ（iOS 27）で家事登録シートの切り抜きが対象のUIとずれない（1〜2pt以内）ことを確かめた。
 
 ### ファイル配置
 
@@ -218,29 +219,30 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 - [x] 家事登録シートのステップ（2つの入力方法 / まとめて登録 / いつもの家事に保存）
 - [x] 家事テンプレート画面は状態に関係なく、作成から保存までをサンプルの画面で説明する
 - [x] 家事テンプレート画面のステップ（作成 / 追加 / 自動で並ぶ / 保存）
-- [ ] シートの中でスポットライトの切り抜きの位置が合うか、シミュレータで確かめる
+- [x] シートの中でスポットライトの切り抜きの位置が合うか、シミュレータで確かめる
 
 ### Phase 2: 実装
 
-- [ ] refactor: `TutorialStep`プロトコルを切り出し、`RegistrationTutorialStep`を準拠させる
-- [ ] refactor: `RegistrationTutorialCard`から`TutorialCard`を切り出す
-- [ ] refactor: `HouseworkTemplateView`の一覧部分を`HouseworkTemplateListContent`に切り出す
-- [ ] （シートで位置がずれた場合）fix: `TutorialSpotlightOverlay`の座標をウィンドウ基準で測る
-- [ ] feat: `ScreenTutorial`・ステップ・`ScreenTutorialStateClient`・`ScreenTutorialStore`・Analytics（ユニットテスト含む）
-- [ ] feat: 家事登録シートのチュートリアル
-- [ ] feat: 家事テンプレート画面のチュートリアル
-- [ ] feat: デバッグメニューに記録を消す項目
-- [ ] docs: `doc/analytics_events.md`に`screen_tutorial`を追記
-- [ ] Preview（カードの各ステップ、`HouseworkTemplateTutorialView`の各ステップ）
+- [x] refactor: `TutorialStep`プロトコルを切り出し、`RegistrationTutorialStep`を準拠させる
+- [x] refactor: `RegistrationTutorialCard`から`TutorialCard`を切り出す
+- [x] refactor: `HouseworkTemplateView`の一覧部分を`HouseworkTemplateListContent`に切り出す
+- [x] fix: 保存のステップでナビゲーションバーを切り抜く（`tutorialSpotlightNavigationBarTarget`を追加）
+- [x] fix: 自動で並ぶステップで、カードが「毎月」の切り抜きを隠さないようにする
+- [x] feat: `ScreenTutorial`・ステップ・`ScreenTutorialStateClient`・`ScreenTutorialStore`・Analytics（ユニットテスト含む）
+- [x] feat: 家事登録シートのチュートリアル
+- [x] feat: 家事テンプレート画面のチュートリアル
+- [x] feat: デバッグメニューに記録を消す項目
+- [x] docs: `doc/analytics_events.md`に`screen_tutorial`を追記
+- [x] Preview（カードの各ステップ、`HouseworkTemplateTutorialView`の各ステップ）
 
 ### Phase 3: 検証
 
-- [ ] `swift build` でビルド通過
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] ユニットテスト実行（追加分含む）通過
-- [ ] `make check-translations` 通過
+- [x] `swift build` でビルド通過
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] ユニットテスト実行（追加分含む）通過
+- [x] `make check-translations` 通過
 - [ ] スナップショットテスト（Prefire経由で自動生成）通過 / 必要なら参照画像を更新
-- [ ] シミュレータで動作確認（`simulator-e2e-check`。iPhone SEでも切り抜きとカードが重ならないか）
+- [x] シミュレータで動作確認（`simulator-e2e-check`。iPhone 18 Pro / iOS 27。iPhone SEのような小さい画面はVRTのカードのみで、実機の重なりは未確認）
 
 ### Phase 4: PR
 
