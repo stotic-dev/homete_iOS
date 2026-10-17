@@ -8,6 +8,10 @@
 submit_for_review(false)
 run_precheck_before_submit(false)
 force(true)
+# 既定ではASCに上がっているスクリーンショットを残したまま足すだけで、差し替え・ファイル名の変更をすると
+# 古いものが残る。fastlane/screenshots/ にあるロケールのスクリーンショットを全部消してから上げ直す
+# （ファイルが無いロケールのスクリーンショットは消さない）
+overwrite_screenshots(true)
 submission_information(
     { export_compliance_uses_encryption: false }
 )

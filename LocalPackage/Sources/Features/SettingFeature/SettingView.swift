@@ -123,6 +123,8 @@ struct SettingView: View {
             .padding(.vertical, .space16)
         }
         .navigationTitle(.localized("設定"))
+        // ホーム・家事ボード・分析のタブとそろえて、画面の地はミルク色にする
+        .background(.backgroundScreen)
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
         .trailingToolbarItem {

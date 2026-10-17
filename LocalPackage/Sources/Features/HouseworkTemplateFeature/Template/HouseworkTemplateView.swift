@@ -78,6 +78,9 @@ struct HouseworkTemplateView: View {
                 }
             }
         }
+        // 白い曜日のカードが地に溶けないよう、ほかのタブと同じミルク色を地に敷く
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.backgroundScreen)
         .navigationTitle(.localized("家事テンプレート"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
