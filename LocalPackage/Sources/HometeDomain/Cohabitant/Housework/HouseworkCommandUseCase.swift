@@ -45,6 +45,7 @@ public struct HouseworkCommandUseCase: Sendable {
     ///   - comment: 完了通知に添えるコメント。空なら添えない
     ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す
     ///   - delivery: 通知の送信を待つかどうか
+    ///   - onWritten: 書き込みがサーバーに届いたときに呼ぶ。通知を送り終えるのを待つときに、書き込みにかかった時間だけを測るため
     public func complete( // swiftlint:disable:this function_parameter_count function_body_length
         current: HouseworkItem,
         now: Date,
@@ -57,7 +58,8 @@ public struct HouseworkCommandUseCase: Sendable {
         isRegistered: Bool,
         step: HouseworkAnalyticsStep,
         notify: Bool = true,
-        delivery: HouseworkNotificationDelivery = .background
+        delivery: HouseworkNotificationDelivery = .background,
+        onWritten: @Sendable () -> Void = {}
     ) async throws {
         let executorType = HouseworkAnalyticsExecutorType(executors: executors, reporterId: reporter.id)
         let analyticsAction = { (isSuccess: Bool) -> HouseworkAnalyticsAction in
@@ -74,6 +76,7 @@ public struct HouseworkCommandUseCase: Sendable {
             analyticsClient.log(.housework(analyticsAction(false)))
             throw error
         }
+        onWritten()
         analyticsClient.log(.housework(analyticsAction(true)))
 
         guard notify else { return }
@@ -128,6 +131,7 @@ public struct HouseworkCommandUseCase: Sendable {
     ///   - current: ありがとうを送る家事。呼び出し側が見つけた最新の記録を渡す
     ///   - comment: 添えるコメント。コメントなしで送る場合は`nil`
     ///   - delivery: 通知の送信を待つかどうか
+    ///   - onWritten: 書き込みがサーバーに届いたときに呼ぶ。何も記録しないときは呼ばない
     /// - Returns: この家事に初めてありがとうを記録したかどうか。コメントの書き足し・編集だった場合や、
     ///   未完了に戻されていたなどで何も記録しなかった場合は`false`
     @discardableResult
@@ -138,7 +142,8 @@ public struct HouseworkCommandUseCase: Sendable {
         now: Date,
         cohabitantId: String,
         step: HouseworkAnalyticsStep,
-        delivery: HouseworkNotificationDelivery = .background
+        delivery: HouseworkNotificationDelivery = .background,
+        onWritten: @Sendable () -> Void = {}
     ) async throws -> Bool {
         // 未完了へ戻された家事は、ありがとうを消す仕様なので記録しない
         guard current.state == .completed else { return false }
@@ -154,6 +159,7 @@ public struct HouseworkCommandUseCase: Sendable {
             analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: false)))
             throw error
         }
+        onWritten()
         analyticsClient.log(.housework(thanksAnalyticsAction(isEditing: isEditing, step: step, isSuccess: true)))
 
         if let comment, currentThanks?.comment == nil {

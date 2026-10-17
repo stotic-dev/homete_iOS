@@ -570,6 +570,25 @@ extension HouseworkIntentServiceTest {
         #expect(actual == .pendingSync(houseworkTitle: "皿洗い"))
     }
 
+    @Test("書き込みがサーバーに届いていれば、同居人への通知に待つ時間より長くかかっても完了にしたことを返す")
+    func completeHouseworkSlowNotification() async throws {
+        // Arrange
+
+        var sut = makeSUT(
+            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", point: 20, expiredAt: expiredAt)],
+            pushNotificationClient: .init { _, _ in try await Task.sleep(for: .milliseconds(100)) }
+        )
+        sut.writeTimeout = .milliseconds(10)
+
+        // Act
+
+        let actual = try await sut.completeHousework(title: "洗濯", now: now)
+
+        // Assert
+
+        #expect(actual == .completed(point: 20))
+    }
+
 }
 
 private extension HouseworkIntentServiceTest {

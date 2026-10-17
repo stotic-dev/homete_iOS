@@ -48,7 +48,7 @@ struct HouseworkIntentService {
         let point = target.originalItem.point
         let item = target.originalItem
         let isRegistered = target.isRegistered
-        let isDelivered = try await awaitWrite {
+        let isDelivered = try await awaitWrite { onWritten in
             try await commandUseCase.complete(
                 current: item,
                 now: now,
@@ -60,7 +60,8 @@ struct HouseworkIntentService {
                 cohabitantId: session.cohabitantId,
                 isRegistered: isRegistered,
                 step: .appIntent,
-                delivery: .awaiting
+                delivery: .awaiting,
+                onWritten: onWritten
             )
         }
         // アプリを開いていないと家事の購読でふりかえり通知を予約できないため、ここで予約する。
@@ -89,7 +90,7 @@ struct HouseworkIntentService {
         let trimmedComment = comment?.trimmingCharacters(in: .whitespacesAndNewlines)
         let thanksComment = trimmedComment?.isEmpty == false ? trimmedComment : nil
         let recordedResult = OSAllocatedUnfairLock(initialState: false)
-        let isDelivered = try await awaitWrite {
+        let isDelivered = try await awaitWrite { onWritten in
             let isRecorded = try await commandUseCase.sendThanks(
                 current: target,
                 sender: session.account,
@@ -97,7 +98,8 @@ struct HouseworkIntentService {
                 now: now,
                 cohabitantId: session.cohabitantId,
                 step: .appIntent,
-                delivery: .awaiting
+                delivery: .awaiting,
+                onWritten: onWritten
             )
             recordedResult.withLock { $0 = isRecorded }
         }
@@ -177,8 +179,13 @@ private extension HouseworkIntentService {
     /// Firestoreはオフラインでも書き込みを端末に保存してオンラインになったら反映するが、書き込みはサーバーの応答まで返らない。
     /// 待ち続けるとSiriには失敗と出るのに後で記録されて食い違うため、`writeTimeout`を過ぎたら待つのをやめる。
     /// 書き込みは止めず、続き（Analytics・同居人への通知）はプロセスが動いている間に終われば行われる。
+    /// 時間を測るのは書き込みが届くまでで、届いた後の同居人への通知は時間に関係なく送り終えるまで待つ。
+    /// 通知が遅いだけで、記録できているのに「オンラインになったら反映」と伝えないようにするため。
+    /// - Parameter operation: 書き込みが届いたら、受け取ったクロージャを呼ぶ
     /// - Returns: 書き込みがサーバーに届いたら`true`、`writeTimeout`を過ぎたら`false`
-    func awaitWrite(_ operation: @escaping @Sendable () async throws -> Void) async throws -> Bool {
+    func awaitWrite(
+        _ operation: @escaping @Sendable (_ onWritten: @escaping @Sendable () -> Void) async throws -> Void
+    ) async throws -> Bool {
         let pending = OSAllocatedUnfairLock<CheckedContinuation<Bool, any Error>?>(initialState: nil)
         let resume = { @Sendable (result: Result<Bool, any Error>) in
             let continuation = pending.withLock { continuation in
@@ -196,8 +203,7 @@ private extension HouseworkIntentService {
             }
             Task {
                 do {
-                    try await operation()
-                    timer.cancel()
+                    try await operation { timer.cancel() }
                     resume(.success(true))
                 } catch {
                     timer.cancel()
