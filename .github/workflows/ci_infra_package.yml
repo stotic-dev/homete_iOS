@@ -1,0 +1,55 @@
+name: infra_package_build
+
+# InfraPackage（HometeInfrastructure・AppRoot）はユニットテストを持たず、local_package_test ではビルドされない。
+# HometeDomainのプロトコルやFeatureの公開APIを変えたときに実装側の追従漏れをXcode Cloudより手前で見つけるため、
+# LocalPackageのソース・マニフェストの変更でもビルドする（ADR-0046）
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "InfraPackage/**"
+      - "LocalPackage/Sources/**"
+      - "LocalPackage/Package.swift"
+      - "LocalPackage/Package.resolved"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "InfraPackage/**"
+      - "LocalPackage/Sources/**"
+      - "LocalPackage/Package.swift"
+      - "LocalPackage/Package.resolved"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
+
+      - name: Show Swift version
+        run: swift --version
+
+      # キャッシュの考え方は ci_local_package.yml と同じ。中身を変えたらキーの v<N> を上げる
+      - name: Cache InfraPackage
+        uses: actions/cache@v4
+        with:
+          path: |
+            InfraPackage/.build/checkouts
+            InfraPackage/.build/repositories
+            InfraPackage/.build/artifacts
+            InfraPackage/.build/workspace-state.json
+          key: infra-package-v1-${{ runner.os }}-${{ hashFiles('InfraPackage/Package.resolved') }}
+          restore-keys: |
+            infra-package-v1-${{ runner.os }}-
+
+      - name: Build InfraPackage
+        run: make build-infra-package
