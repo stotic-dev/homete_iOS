@@ -143,12 +143,42 @@
         }
       }
     },
+    "2つの入力方法" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Ways to Add"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "「いつもの家事」では、保存しておいた家事をタップするだけで選べます。はじめての家事は「新しく入力」から名前を入れて追加できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In \"Go-to Chores,\" just tap a chore you've saved to pick it. For a new chore, enter its name in \"Enter New.\""
+          }
+        }
+      }
+    },
+    "「続けて入力する」を押すと、入力した家事がたまっていきます。右上のボタンで、ためた家事をまとめて登録できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap \"Add Another\" to keep adding chores to the list. Then use the button at the top right to add them all at once."
           }
         }
       }
@@ -462,6 +492,16 @@
         }
       }
     },
+    "まとめて登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Several at Once"
+          }
+        }
+      }
+    },
     "もう一度やった" : {
       "localizations" : {
         "en" : {
@@ -498,6 +538,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add the chores you'll do, and they'll show up here."
+          }
+        }
+      }
+    },
+    "オンにして登録すると、次からは「いつもの家事」でタップするだけで選べます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn this on when adding, and next time you can pick the chore with a single tap in \"Go-to Chores.\""
           }
         }
       }

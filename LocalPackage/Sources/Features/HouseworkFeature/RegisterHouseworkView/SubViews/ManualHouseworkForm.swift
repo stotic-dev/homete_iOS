@@ -32,6 +32,7 @@ struct ManualHouseworkForm: View {
             VStack(alignment: .leading, spacing: .space24) {
                 houseworkSection()
                 saveAsFrequentSection()
+                    .tutorialSpotlightTarget(.registerHouseworkSaveAsFrequent)
                 if !history.isEmpty {
                     entryHistorySection()
                 }
