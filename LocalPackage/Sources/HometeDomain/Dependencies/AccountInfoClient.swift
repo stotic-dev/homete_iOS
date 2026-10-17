@@ -22,21 +22,22 @@ public struct AccountInfoClient: Sendable {
     public let removeSnapshotListener: @Sendable (_ listenerId: String) async -> Void
 
     public init(
-        insertOrUpdate: @Sendable @escaping (Account) async throws -> Void = { _ in },
-        fetch: @Sendable @escaping (String) async throws -> Account? = { _ in nil },
-        updateFcmToken: @Sendable @escaping (_ accountId: String, _ fcmToken: String) async throws -> Void = { _, _ in
-        },
-        addSnapshotListener: @Sendable @escaping (
+        insertOrUpdate: (@Sendable (Account) async throws -> Void)? = nil,
+        fetch: (@Sendable (String) async throws -> Account?)? = nil,
+        updateFcmToken: (@Sendable (_ accountId: String, _ fcmToken: String) async throws -> Void)? = nil,
+        addSnapshotListener: (@Sendable (
             _: String,
             _: String
-        ) async -> AsyncThrowingStream<Account?, Error> = { _, _ in .init { $0.finish() } },
-        removeSnapshotListener: @Sendable @escaping (_ listenerId: String) async -> Void = { _ in }
+        ) async -> AsyncThrowingStream<Account?, Error>)? = nil,
+        removeSnapshotListener: (@Sendable (_ listenerId: String) async -> Void)? = nil
     ) {
-        self.insertOrUpdate = insertOrUpdate
-        self.fetch = fetch
-        self.updateFcmToken = updateFcmToken
-        self.addSnapshotListener = addSnapshotListener
-        self.removeSnapshotListener = removeSnapshotListener
+        // デフォルト引数にクロージャを書くと、Xcode 26系（Swift 6.2〜6.3）のビルドで並列に呼ばれたときに
+        // asyncフレームが壊れてクラッシュする。そのためデフォルト値はnilにして、既定の実装は本体で代入する
+        self.insertOrUpdate = insertOrUpdate ?? { _ in }
+        self.fetch = fetch ?? { _ in nil }
+        self.updateFcmToken = updateFcmToken ?? { _, _ in }
+        self.addSnapshotListener = addSnapshotListener ?? { _, _ in .init { $0.finish() } }
+        self.removeSnapshotListener = removeSnapshotListener ?? { _ in }
     }
 
 }
