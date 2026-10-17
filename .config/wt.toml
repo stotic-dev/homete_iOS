@@ -16,6 +16,8 @@ post-start = [
   # make test-packages-fast と同じフラグでテストターゲットまでビルドする（テスト自体は流さない）。
   # カバレッジの有無でビルド成果物が別物になり全体を作り直すため、ローカルで使うカバレッジなしに揃える
   { build-package-tests = "scripts/with-local-package-lock.sh {{ worktree_path }}/LocalPackage -- swift build --package-path {{ worktree_path }}/LocalPackage --disable-sandbox --build-tests" },
+  # InfraPackageは別の .build を使う。Firebase・AdMobなどのxcframeworkを持つのはこちらなので、署名検証もここで済ませておく
+  { build-infra-package = "make build-infra-package" },
 ]
 
 # pre-startのテーブルは上から順に直列で実行される。
