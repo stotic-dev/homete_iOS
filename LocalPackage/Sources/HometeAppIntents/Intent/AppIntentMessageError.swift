@@ -45,6 +45,9 @@ extension AppIntentEnvironment {
         } catch let failure as AppIntentFailure {
             analyticsClient.log(.appIntent(intent, result: .init(failure)))
             throw AppIntentMessageError(failure)
+        } catch let interruption as AppIntentUserInteractionInterrupted {
+            // 聞き返した選択肢をユーザーが選ばずに閉じたときは、実行の失敗として数えない
+            throw interruption.underlyingError
         } catch {
             analyticsClient.log(.appIntent(intent, result: .failure))
             throw error
@@ -61,5 +64,14 @@ extension AppIntentEnvironment {
             throw AppIntentMessageError(failure)
         }
     }
+
+}
+
+/// Siriの聞き返し（選択肢から選んでもらうなど）が、ユーザーが選ばずに閉じるなどで終わった
+///
+/// `AppIntentEnvironment.perform`は`app_intent`イベントを送らず、元のエラーを投げ直してOSに任せる。
+struct AppIntentUserInteractionInterrupted: Error {
+
+    let underlyingError: any Error
 
 }

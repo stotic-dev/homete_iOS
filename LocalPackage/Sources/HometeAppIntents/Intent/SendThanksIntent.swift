@@ -83,10 +83,14 @@ private extension SendThanksIntent {
             return candidates.first
 
         default:
-            return try await $target.requestDisambiguation(
-                among: candidates,
-                dialog: .init(.localized("どの家事にありがとうを伝えますか？"))
-            )
+            do {
+                return try await $target.requestDisambiguation(
+                    among: candidates,
+                    dialog: .init(.localized("どの家事にありがとうを伝えますか？"))
+                )
+            } catch {
+                throw AppIntentUserInteractionInterrupted(underlyingError: error)
+            }
         }
     }
 
