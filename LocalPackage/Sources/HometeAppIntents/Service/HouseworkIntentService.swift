@@ -216,6 +216,8 @@ private extension HouseworkIntentService {
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
             calendar: calendar,
+            // アプリはRevenueCatのエンタイトルメント（`SubscriptionStore`）で判定するが、IntentではRevenueCatを使わない。
+            // 保持期限の判定用にアカウントへ保存している値を使う。購入・解約の直後で反映前なら、保持期限がずれうる
             storagePolicy: HouseworkStoragePolicy(isPremium: session.account.isPremium)
         )
     }

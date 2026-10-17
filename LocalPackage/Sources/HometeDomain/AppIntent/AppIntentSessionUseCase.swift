@@ -102,7 +102,9 @@ public struct AppIntentSessionUseCase: Sendable {
     }
 
     /// グループのメンバーと、その名前を取得する
-    /// - Note: グループのドキュメントは購読でしか読めないため、最初に届いた値だけ使って購読をやめる
+    /// - Note: グループのドキュメントは購読でしか読めないため、最初に届いた値だけ使って購読をやめる。
+    ///         最初の値は端末のキャッシュから届くことがあり、メンバーが入れ替わった直後は古い一覧になりうる。
+    ///         名前を出すためだけに使うので、サーバーの値を待たずにそのまま使う
     public func fetchMembers(session: AppIntentSession) async throws -> CohabitantMemberList {
         let listenerId = "appIntentCohabitant-\(UUID().uuidString)"
         let stream = await cohabitantClient.addSnapshotListener(listenerId, session.cohabitantId)
