@@ -63,7 +63,6 @@ private extension HouseworkTemplateListContent {
                         .first ? .houseworkTemplateFirstDaySection : nil)
                 }
                 monthlySection(draft.displayedMonthlyItems)
-                    .tutorialSpotlightTarget(.houseworkTemplateMonthlySection)
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space32)

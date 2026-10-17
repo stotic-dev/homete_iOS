@@ -14,8 +14,6 @@ extension TutorialSpotlightID {
     static let houseworkTemplateAddButton = Self("housework_template_add_button")
     /// 先頭の曜日のセクション
     static let houseworkTemplateFirstDaySection = Self("housework_template_first_day_section")
-    /// 毎月の家事のセクション
-    static let houseworkTemplateMonthlySection = Self("housework_template_monthly_section")
     /// 保存ボタン
     static let houseworkTemplateSaveButton = Self("housework_template_save_button")
 

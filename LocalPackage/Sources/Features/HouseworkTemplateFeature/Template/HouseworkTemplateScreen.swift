@@ -146,7 +146,8 @@ private extension HouseworkTemplateScreen {
             [.houseworkTemplateAddButton]
 
         case .autoPlacement:
-            [.houseworkTemplateFirstDaySection, .houseworkTemplateMonthlySection]
+            // 「毎月」のセクションは画面の下にあり、説明のカードを置く空きが無くなるため切り抜かない
+            [.houseworkTemplateFirstDaySection]
 
         case .save:
             [.houseworkTemplateSaveButton]
