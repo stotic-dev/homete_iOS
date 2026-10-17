@@ -38,6 +38,8 @@ struct FrequentHouseworkManagementView: View {
 
     var body: some View {
         content()
+            // ほかの画面と地の色をそろえ、白い行を浮かせる
+            .background(.backgroundScreen)
             .navigationTitle(.localized("いつもの家事"))
             .inlineNavigationBarTitleDisplayMode()
             .leadingToolbarItem {
@@ -97,6 +99,7 @@ private extension FrequentHouseworkManagementView {
                     FrequentHouseworkLimitHeader(status: limitStatus) {
                         onTapUpgrade()
                     }
+                    .listRowBackground(Color.backgroundCard)
                 }
             }
             ForEach(sections) { section in
@@ -112,9 +115,11 @@ private extension FrequentHouseworkManagementView {
                         orderedIds.move(fromOffsets: source, toOffset: destination)
                         onMove(orderedIds)
                     }
+                    .listRowBackground(Color.backgroundCard)
                 }
             }
         }
+        .scrollContentBackground(.hidden)
     }
 
     func itemRow(_ item: FrequentHouseworkItem, isUsable: Bool) -> some View {

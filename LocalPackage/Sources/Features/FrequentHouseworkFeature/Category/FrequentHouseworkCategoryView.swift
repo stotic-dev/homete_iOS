@@ -30,6 +30,9 @@ struct FrequentHouseworkCategoryView: View {
             presetSection()
             customSection()
         }
+        // いつもの家事と地の色をそろえ、白い行を浮かせる
+        .scrollContentBackground(.hidden)
+        .background(.backgroundScreen)
         .navigationTitle(.localized("カテゴリ"))
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {
@@ -63,6 +66,7 @@ private extension FrequentHouseworkCategoryView {
             }
             .deleteDisabled(true)
             .moveDisabled(true)
+            .listRowBackground(Color.backgroundCard)
         }
     }
 
@@ -72,6 +76,7 @@ private extension FrequentHouseworkCategoryView {
                 Text("カテゴリを追加すると、いつもの家事をカテゴリごとにまとめられます。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.textSecondary)
+                    .listRowBackground(Color.backgroundCard)
             } else {
                 ForEach(customCategories) { category in
                     categoryRow(category)
@@ -84,6 +89,7 @@ private extension FrequentHouseworkCategoryView {
                     orderedIds.move(fromOffsets: source, toOffset: destination)
                     onMove(orderedIds)
                 }
+                .listRowBackground(Color.backgroundCard)
             }
         }
     }
