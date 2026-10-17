@@ -1,5 +1,5 @@
 #!/bin/bash
-# ProjectTools / LocalPackage のSwiftPM依存を取得する（git clone / checkoutの作成・更新）。
+# ProjectTools / LocalPackage / InfraPackage のSwiftPM依存を取得する（git clone / checkoutの作成・更新）。
 #
 # 背景: Claude Codeのサンドボックスは、プロジェクト配下の `.git/config` と `.git/hooks` への
 # 書き込みを必ず拒否する（gitフック注入対策の必須deny。allowWriteでは開けない）。
@@ -23,3 +23,7 @@ swift package resolve --package-path "$ROOT/ProjectTools" --scratch-path "$ROOT/
 echo "LocalPackageの依存を取得中..."
 "$ROOT/scripts/with-local-package-lock.sh" "$ROOT/LocalPackage" -- \
     swift package resolve --package-path "$ROOT/LocalPackage"
+
+echo "InfraPackageの依存を取得中..."
+"$ROOT/scripts/with-local-package-lock.sh" "$ROOT/InfraPackage" -- \
+    swift package resolve --package-path "$ROOT/InfraPackage"

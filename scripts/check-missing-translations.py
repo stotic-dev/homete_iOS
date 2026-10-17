@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LocalPackageのString Catalogで、英訳が無い文言と使われなくなった文言を一覧にする。
+"""LocalPackage・InfraPackageのString Catalogで、英訳が無い文言と使われなくなった文言を一覧にする。
 
 キーは日本語の文言そのものなので、日本語を書き換えると古いキーが残り（stale）、新しいキーには訳が無い状態になる。
 どちらかがあれば終了コード1を返す。
@@ -14,7 +14,12 @@ LANGUAGE = "en"
 
 def main() -> int:
     problems = []
-    for path in sorted(glob.glob("LocalPackage/Sources/**/Localizable.xcstrings", recursive=True)):
+    paths = [
+        path
+        for package in ("LocalPackage", "InfraPackage")
+        for path in glob.glob(f"{package}/Sources/**/Localizable.xcstrings", recursive=True)
+    ]
+    for path in sorted(paths):
         strings = json.load(open(path, encoding="utf-8"))["strings"]
         for key, entry in strings.items():
             if not key or entry.get("shouldTranslate") is False:
