@@ -76,6 +76,16 @@ struct HouseworkDateList: Equatable {
         return calendar.date(byAdding: .day, value: -backwardSelectableDays, to: anchorDay)
     }
 
+    /// 選択できる日付の範囲（両端の日の0時）
+    ///
+    /// カレンダーから日付を選ぶときに、日付セルと同じ範囲だけを選べるようにするために使う
+    func selectableRange(calendar: Calendar) -> ClosedRange<Date> {
+        let anchorDay = calendar.startOfDay(for: anchorDate)
+        let oldest = oldestSelectableDate(calendar: calendar) ?? anchorDay
+        let newest = calendar.date(byAdding: .day, value: Self.forwardSelectableOffset, to: anchorDay) ?? anchorDay
+        return oldest ... newest
+    }
+
 }
 
 private extension HouseworkDateList {
