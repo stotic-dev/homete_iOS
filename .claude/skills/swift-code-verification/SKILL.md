@@ -16,9 +16,10 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 
 | 変更内容 | 必要な検証 |
 |---|---|
-| Swift実装（`LocalPackage/Sources/`、`homete/`） | 手順1〜3すべて（テスト省略不可） |
+| Swift実装（`LocalPackage/Sources/`、`homete/`） | 手順1〜3すべて（テスト省略不可）。`public`なAPI（Clientプロトコル・Featureの公開View など）を変えたら、手順1でInfraPackageもビルドする |
+| Swift実装（`InfraPackage/Sources/`） | 手順1（InfraPackage）＋手順2。InfraPackageにはユニットテストが無く、`make test-packages-fast`はInfraPackageをビルドしないので手順3は効かない |
 | テストコードのみ（`LocalPackage/Tests/`） | 手順3（テスト実行がビルドを兼ねる）＋手順2 |
-| `LocalPackage/Package.swift`・`ProjectTools/`・`.swiftlint.yml`・`.swiftformat`・SwiftGen設定 | 影響するビルド・lint・formatを流す（ビルド設定なので実際に通るかが確認対象） |
+| `LocalPackage/Package.swift`・`InfraPackage/Package.swift`・`ProjectTools/`・`.swiftlint.yml`・`.swiftformat`・SwiftGen設定 | 影響するビルド・lint・formatを流す（ビルド設定なので実際に通るかが確認対象） |
 | Swiftに影響しないもの（`.config/wt.toml` などのツール設定、`.claude/`、`doc/`・`CLAUDE.md`、`firebase/functions/`、GitHub Actions、Swiftビルドから呼ばれないスクリプト） | **このスキルの検証は不要** |
 
 Swiftに影響しない変更では、ビルドやテストの代わりに**変更したもの自体が動くか**を最小限で確かめる。例:
@@ -220,6 +221,15 @@ python3 scripts/swiftpm-build-lock.py "${LOCAL_PACKAGE_PATH}/.build"
 ```bash
 swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 ```
+
+**InfraPackage（`HometeInfrastructure`・`AppRoot`）を変更した場合、またはLocalPackageの`public`なAPIを変えた場合:**
+
+```bash
+make build-infra-package
+```
+
+InfraPackageは`AppRoot`経由で全Featureに依存しているので、LocalPackage側の変更で壊れるのはこちら。テストでは気付けず、CIでも`ci_infra_package.yml`まで落ちない。
+`.build`はLocalPackageと別（`InfraPackage/.build`）なので、新しいworktreeでの初回ビルドはFirebase・AdMobのxcframeworkの署名検証でサンドボックス内だと落ちる（`The signature of "….xcframework" cannot be verified`）。初回だけサンドボックス外で流せば、以降はサンドボックス内で通る。
 
 **メインターゲット（`homete/`配下）を変更した場合のみ:**
 
