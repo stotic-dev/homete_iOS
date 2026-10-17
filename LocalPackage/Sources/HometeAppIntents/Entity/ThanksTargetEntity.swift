@@ -44,14 +44,23 @@ struct ThanksTargetQuery: EntityStringQuery {
 
     @Dependency var environment: AppIntentEnvironment
 
+    /// 候補から外れた家事（送信済み・未完了に戻されたなど）も、名前の無いEntityとして返す
+    ///
+    /// 返さないと、家事を指定して実行したときにIntentへたどり着く前に失敗し、Siriには汎用の失敗が出る。
+    /// Intentの実行時に伝えられるかを確かめ、伝えられない理由をユーザーに伝える。
     func entities(for identifiers: [String]) async throws -> [ThanksTargetEntity] {
-        try await suggestedEntities().filter { identifiers.contains($0.id) }
+        let candidates = try await suggestedEntities()
+        return identifiers.map { id in
+            candidates.first { $0.id == id } ?? .init(id: id, title: "", executorNames: [])
+        }
     }
 
     func suggestedEntities() async throws -> [ThanksTargetEntity] {
-        try await environment.houseworkService
-            .thanksCandidates(now: .now)
-            .map(ThanksTargetEntity.init)
+        try await environment.resolveEntities {
+            try await environment.houseworkService
+                .thanksCandidates(now: .now)
+                .map(ThanksTargetEntity.init)
+        }
     }
 
     func entities(matching string: String) async throws -> [ThanksTargetEntity] {

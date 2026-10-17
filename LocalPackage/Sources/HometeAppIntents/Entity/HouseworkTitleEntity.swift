@@ -39,9 +39,11 @@ public struct HouseworkTitleQuery: EntityStringQuery {
     }
 
     public func suggestedEntities() async throws -> [HouseworkTitleEntity] {
-        try await environment.houseworkService
-            .incompleteTitles(now: .now)
-            .map(HouseworkTitleEntity.init(id:))
+        try await environment.resolveEntities {
+            try await environment.houseworkService
+                .incompleteTitles(now: .now)
+                .map(HouseworkTitleEntity.init(id:))
+        }
     }
 
     public func entities(matching string: String) async throws -> [HouseworkTitleEntity] {

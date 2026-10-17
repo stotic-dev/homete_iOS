@@ -51,4 +51,15 @@ extension AppIntentEnvironment {
         }
     }
 
+    /// Entityの候補を出す処理（Query）を実行し、実行できなかった理由をユーザーに伝える文言に変えて投げる
+    ///
+    /// 候補はIntentを実行する前にSiriやショートカットAppから何度も呼ばれるため、`app_intent`イベントは送らない。
+    nonisolated(nonsending) func resolveEntities<Value>(_ operation: () async throws -> Value) async throws -> Value {
+        do {
+            return try await operation()
+        } catch let failure as AppIntentFailure {
+            throw AppIntentMessageError(failure)
+        }
+    }
+
 }
