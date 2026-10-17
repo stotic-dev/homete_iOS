@@ -1,6 +1,18 @@
 # マルチモジュール構成
 
 > この構成を採用した背景・目的・意思決定の経緯は [ADR-0001](adr/0001-spm-multimodule-structure.md) を参照。
+> `HometeInfrastructure`・`AppRoot`を`InfraPackage`に分けている経緯は [ADR-0046](adr/0046-split-infra-package-from-local-package.md) を参照。
+
+## パッケージ構成
+
+| パッケージ | 置くもの | 外部依存 |
+|---|---|---|
+| `LocalPackage/` | Domain・UI・Resources・Feature・`HometeLocalNotification`・`HometeSnapshotTestSupport`。ユニットテストはすべてここ | SwiftGenPlugin、Prefire、swift-snapshot-testing（軽いものだけ） |
+| `InfraPackage/` | `HometeInfrastructure`・`AppRoot`。`../LocalPackage`をパス依存で参照する | Firebase、AdMob、UMP、RevenueCat、GRDB |
+
+LocalPackageにFirebaseなどの重い依存を持ち込まない。ユニットテスト（`make test-packages-fast`）がそれらを解決・ビルドするようになり、切り出した意味がなくなるため。重い外部SDKが必要な実装は`InfraPackage`に置く。
+
+InfraPackageにはユニットテストが無く、`make test-packages-fast`ではビルドされない。`HometeDomain`のClientプロトコルやFeatureの公開APIを変えたら`make build-infra-package`で追従漏れを確かめる（CIでは`ci_infra_package.yml`が同じことをする）。
 
 ## モジュール構成
 
@@ -17,15 +29,15 @@
 | `HomeFeature` | ホーム画面・招待リンクからのグループ参加 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
-| `HometeInfrastructure` | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
+| `HometeInfrastructure`（InfraPackage） | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `HometeAppIntents` | Siri・Spotlight・ショートカットAppから実行するApp Intent・Entity・ドネーションの liveValue。Firebase の実装はアプリから`AppDependencyManager`経由で受け取るため`HometeInfrastructure`に依存させない（[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)） | `HometeDomain`, `HouseworkFeature`, `ContributionFeature` |
-| `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification`, `HometeAppIntents` |
+| `AppRoot`（InfraPackage） | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeInfrastructure`, `HometeLocalNotification`, `HometeAppIntents` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`）・App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要がある） | `AppRoot`, `HometeInfrastructure`, `HometeAppIntents` |
 | `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
 | `HometeSnapshotTestSupport` | VRT（`hometeSnapshotTests`）が使う SnapshotTesting・Prefire を提供する。アプリ本体からは依存しない | Prefire, swift-snapshot-testing |
 
-外部ライブラリは `LocalPackage/Package.swift` からだけ参照し、xcodeproj から直接参照しない。xcodeproj 側にもバージョン指定を持つと、dependabot が `Package.swift` だけを更新したときに指定が食い違い、Xcode Cloud の依存解決が失敗するため。アプリ本体・拡張・テストのターゲットで外部ライブラリが必要になったら、LocalPackage のモジュール経由で使う。
+外部ライブラリは `LocalPackage/Package.swift`・`InfraPackage/Package.swift` からだけ参照し、xcodeproj から直接参照しない。xcodeproj 側にもバージョン指定を持つと、dependabot が `Package.swift` だけを更新したときに指定が食い違い、Xcode Cloud の依存解決が失敗するため。アプリ本体・拡張・テストのターゲットで外部ライブラリが必要になったら、LocalPackage・InfraPackage のモジュール経由で使う。
 
 ### ディレクトリ構成
 
@@ -53,7 +65,7 @@ Features/
   ├── CohabitantRegistrationFeature/  ← P2P 登録（Multipeer Connectivity）を隔離
   └── FrequentHouseworkFeature/       ← いつもの家事（単発登録・テンプレートの両方から使う）
 
-HometeInfrastructure/
+InfraPackage/Sources/HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）
   ├── Services（FirestoreService, SignInWithAppleService...）
   ├── LocalDatabase（端末内SQLite。AppDatabase + 各テーブルのService）
@@ -68,7 +80,7 @@ HometeAppIntents/
   ├── Service（家事を探して完了にする・ありがとうを伝える判定。App Intentsに依存しない）
   └── IntentDonationClient.liveValue・HometeAppIntentsConfigurator（依存の登録）
 
-AppRoot/
+InfraPackage/Sources/AppRoot/
   ├── RootView / AppTabView / LaunchScreenView
   ├── DependenciesInjectLayer
   └── RouteResolverInjection
@@ -156,7 +168,7 @@ graph TD
 ```
 
 > **ルール:**
-> - 外部ライブラリへの依存は `HometeInfrastructure` のみが持つ。Feature モジュールは外部ライブラリに直接依存しない
+> - 重い外部ライブラリ（Firebase など）への依存は `HometeInfrastructure` のみが持つ。Feature モジュールは外部ライブラリに直接依存しない
 > - `HometeInfrastructure` が Client の `liveValue` を実装し、`AppRoot` の `DependenciesInjectLayer` が Environment 経由で各 Feature に DI する
 > - Feature モジュール間の直接依存は禁止。Feature 間の画面遷移は必ず RouteResolver パターンを使用する
 > - Feature 内部の画面遷移は RouteResolver を使用しない。Feature 専用のルート enum を定義して管理する
@@ -293,6 +305,6 @@ Store は `HometeDomain` に配置する。理由:
 ## 補足・制約事項
 
 - **ProjectTools**（SwiftLint / Danger）は現行のローカルパッケージ形式のまま変更不要
-- **Firebase iOS SDK** 等のサードパーティ依存はメインターゲット（Services 層）が保持する
+- **Firebase iOS SDK** 等のサードパーティ依存は `InfraPackage` の `HometeInfrastructure` が保持する
 - **Swift 6 strict concurrency** との整合性（actor 分離、Sendable 等）は各 Phase で確認する
 - **Feature 間の循環依存**を防ぐため、Feature 間の画面遷移は必ず RouteResolver パターンを使用する

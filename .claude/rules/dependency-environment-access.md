@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "InfraPackage/Sources/**/*.swift"
 ---
 
 # Environmentからの依存取得ルール

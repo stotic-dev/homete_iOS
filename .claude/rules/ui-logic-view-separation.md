@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "InfraPackage/Sources/**/*.swift"
 ---
 
 # UIのみのViewとロジックを持つViewに分ける
