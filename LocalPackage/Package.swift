@@ -22,12 +22,14 @@ let package = Package(
         lib("HometeLocalNotification"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
-        lib("AppRoot")
+        lib("AppRoot"),
+        lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
         .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.7"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
@@ -147,6 +149,18 @@ let package = Package(
                 "HometeLocalNotification"
             ],
             resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
+
+        // MARK: Test Support
+
+        // VRT（hometeSnapshotTests）専用。アプリ本体からは依存しない
+        .target(
+            name: "HometeSnapshotTestSupport",
+            dependencies: [
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing", condition: .when(platforms: [.iOS])),
+            ],
             plugins: [swiftLintPlugin()]
         ),
 
