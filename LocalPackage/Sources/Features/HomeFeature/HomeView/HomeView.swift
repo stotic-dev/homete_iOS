@@ -61,9 +61,6 @@ public struct HomeView: View {
                 .homeNavigationBar {
                     isShowSetting = true
                 }
-                .sheet(isPresented: $isShowSetting) {
-                    router.resolve(.setting)
-                }
             }
             .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
         }
@@ -106,6 +103,7 @@ private extension HomeView {
         .task {
             await didAppearRegisteredContent()
         }
+        // 設定から開く画面（家事テンプレートなど）がStoreを使うため、Storeの注入より内側で出す
         .sheet(isPresented: $isShowSetting) {
             router.resolve(.setting)
         }
@@ -127,6 +125,9 @@ private extension HomeView {
         )
         .task {
             await didAppearNotRegisteredContent()
+        }
+        .sheet(isPresented: $isShowSetting) {
+            router.resolve(.setting)
         }
         // 着地ページでコピーしてからApp Store経由で戻ってくるため、復帰のたびにクリップボードを確認し直す
         .onChange(of: scenePhase) {
