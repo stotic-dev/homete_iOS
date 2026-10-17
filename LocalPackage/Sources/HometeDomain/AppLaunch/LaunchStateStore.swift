@@ -203,8 +203,9 @@ private extension LaunchStateStore {
 
     func updateFcmTokenIfNeeded() async {
         guard let fcmToken else { return }
-        await accountStore.updateFcmTokenIfNeeded(fcmToken)
+        // 保存中にアカウントの更新が届いて入り直しても、同じトークンを二重に保存しないよう先に捨てる
         self.fcmToken = nil
+        await accountStore.registerFcmToken(fcmToken)
     }
 
 }

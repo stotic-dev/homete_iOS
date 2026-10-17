@@ -132,8 +132,8 @@ struct CohabitantRegistrationStoreTest {
     @Test("グループへの参加が要求されたら招待トークンで参加し、参加先を自分のアカウントに反映してからリーダーへ完了を送信する")
     func send_effectJoinCohabitant() async {
         // Arrange
-        let account = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: nil)
-        let expectedAccount = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: cohabitantId)
+        let account = Account(id: myAccountId, userName: "me", cohabitantId: nil)
+        let expectedAccount = Account(id: myAccountId, userName: "me", cohabitantId: cohabitantId)
         let expectedMessage = CohabitantRegistrationMessage(type: .complete)
         let accountStore = AccountStore(account: account)
 
@@ -201,8 +201,8 @@ struct CohabitantRegistrationStoreTest {
     @Test("アカウントの取り直しが要求されたら取り直し、全員へ完了を送信して登録完了にする")
     func send_effectReloadAccount() async {
         // Arrange
-        let account = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: nil)
-        let joinedAccount = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: cohabitantId)
+        let account = Account(id: myAccountId, userName: "me", cohabitantId: nil)
+        let joinedAccount = Account(id: myAccountId, userName: "me", cohabitantId: cohabitantId)
         let expectedMessage = CohabitantRegistrationMessage(type: .complete)
         let expectedState = State(phase: .completed, connectedPeers: [peerB])
         let accountStore = AccountStore(
@@ -241,7 +241,7 @@ struct CohabitantRegistrationStoreTest {
     @Test("アカウントの取り直しに失敗しても、全員へ完了を送信して登録完了にする")
     func send_effectReloadAccount_failed() async {
         // Arrange
-        let account = Account(id: myAccountId, userName: "me", fcmToken: nil, cohabitantId: nil)
+        let account = Account(id: myAccountId, userName: "me", cohabitantId: nil)
         let expectedMessage = CohabitantRegistrationMessage(type: .complete)
         let expectedState = State(phase: .completed, connectedPeers: [peerB])
         let store = TestBox<CohabitantRegistrationStore?>(value: nil)

@@ -98,6 +98,20 @@ public final actor FirestoreService {
         try await batch.commit()
     }
 
+    /// 複数のドキュメントへの書き込みをまとめてコミットし、サーバーの応答を待たずに返す（全件成功か全件失敗のどちらかになる）
+    ///
+    /// 書き込みは端末内に積まれ、オフラインならつながったときに送られる。
+    /// 結果を待つ必要がない書き込みで、オフライン時に呼び出し元を止めないために使う。失敗はログに出すだけ
+    /// - Parameter writes: 書き込みを`WriteBatch`へ積む
+    public func commitBatchWithoutWaitingForServer(_ writes: (Firestore, WriteBatch) -> Void) {
+        let batch = firestore.batch()
+        writes(firestore, batch)
+        batch.commit { error in
+            guard let error else { return }
+            print("failed to commit batch: \(error)")
+        }
+    }
+
     public func delete(predicate: (Firestore) -> DocumentReference) async throws {
         try await predicate(firestore).delete()
     }
