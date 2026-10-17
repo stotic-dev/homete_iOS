@@ -548,6 +548,10 @@ struct AnalyticsEventTest {
                 ["step": "board_storage_limit", "action": "shown"]
             ),
             (
+                PaywallAnalyticsAction.shown(step: .boardDatePicker),
+                ["step": "board_date_picker", "action": "shown"]
+            ),
+            (
                 PaywallAnalyticsAction.shown(step: .templateAd),
                 ["step": "template_ad", "action": "shown"]
             ),

@@ -24,22 +24,25 @@ struct HouseworkDateHeaderContent: View {
     /// `scrollPosition(id:)`で最初のレイアウトから選択日に合わせる。
     @State private var scrolledDate: Date?
 
+    let onTapYearMonth: () -> Void
     let onTapStorageLimit: () -> Void
 
     /// 日付セルの高さ。`LazyHStack`は縦方向に提案された高さいっぱいまで広がるため明示する
     private static let cellHeight: CGFloat = 64
 
-    init(dateList: Binding<HouseworkDateList>, onTapStorageLimit: @escaping () -> Void) {
+    init(
+        dateList: Binding<HouseworkDateList>,
+        onTapYearMonth: @escaping () -> Void,
+        onTapStorageLimit: @escaping () -> Void
+    ) {
         _dateList = dateList
+        self.onTapYearMonth = onTapYearMonth
         self.onTapStorageLimit = onTapStorageLimit
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space4) {
-            Text(yearMonthText)
-                .font(with: .headLineS)
-                .foregroundStyle(.textPrimary)
-                .padding(.horizontal, .space8)
+            yearMonthButton()
             ScrollView(.horizontal, showsIndicators: false) {
                 // 保存期間に応じて日付セルが数十〜数百件になるためLazyHStackで遅延生成する
                 LazyHStack(spacing: .space8) {
@@ -77,6 +80,26 @@ struct HouseworkDateHeaderContent: View {
 }
 
 private extension HouseworkDateHeaderContent {
+
+    /// タップでカレンダーを開く年月のラベル
+    func yearMonthButton() -> some View {
+        Button(action: onTapYearMonth) {
+            HStack(spacing: .space4) {
+                Text(yearMonthText)
+                    .font(with: .headLineS)
+                Image(systemName: "chevron.down")
+                    .font(with: .caption)
+                    .accessibilityHidden(true)
+            }
+            .foregroundStyle(.textPrimary)
+            .padding(.horizontal, .space8)
+            // 文字だけだとタップできる範囲が狭いため、上下にも広げる
+            .frame(minHeight: 44)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(.localized("カレンダーから日付を選べます"))
+    }
 
     var yearMonthText: String {
         let format = Date.FormatStyle(
@@ -126,6 +149,7 @@ private extension HouseworkDateHeaderContent {
             calendar: .japanese,
             storagePolicy: .free
         )),
+        onTapYearMonth: {},
         onTapStorageLimit: {}
     )
     .setupEnvironmentForPreview()
@@ -140,6 +164,7 @@ private extension HouseworkDateHeaderContent {
             calendar: .japanese,
             storagePolicy: .premium
         )),
+        onTapYearMonth: {},
         onTapStorageLimit: {}
     )
     .setupEnvironmentForPreview()
