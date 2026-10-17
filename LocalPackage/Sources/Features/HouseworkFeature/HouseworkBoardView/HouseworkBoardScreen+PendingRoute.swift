@@ -23,6 +23,9 @@ extension HouseworkBoardScreen {
             .onChange(of: houseworkTemplateListStore?.loadState) {
                 openPendingRoute(store: store)
             }
+            .onChange(of: isPresentingModal) {
+                openPendingRoute(store: store)
+            }
     }
 
     func openPendingRoute(store: HouseworkListStore) {
@@ -32,8 +35,11 @@ extension HouseworkBoardScreen {
 
     /// App Intentから完了シートを開く家事が見つかったら、今日の未完了の一覧に切り替えてシートを出す
     /// - Note: 今日の未完了の家事に同じ名前が無ければ（すでに完了していた場合を含む）、家事ボードを開くだけにする。
-    ///         同じ名前の家事が複数あるときは、ダッシュボードの未完了の家事と同じ並びの先頭を開く
+    ///         同じ名前の家事が複数あるときは、ダッシュボードの未完了の家事と同じ並びの先頭を開く。
+    ///         ボードの上に別のシートを出している間は、シートを重ねて出せないため、閉じるまで待つ。
+    ///         入力中のシートや購入中のペイウォールを勝手に閉じないよう、こちらからは閉じない
     func openPendingHouseworkComplete(store: HouseworkListStore) {
+        guard !isPresentingModal else { return }
         let isLoading = store.loadState == .loading || houseworkTemplateListStore?.loadState == .loading
         guard let item = pendingRouteStore.takeHouseworkCompleteItem(isLoading: isLoading, find: { title in
             TodayHouseworkSummary.make(
@@ -71,6 +77,20 @@ extension HouseworkBoardScreen {
             selectedHouseworkState = item.state
         }
         navigationPath.path = [.houseworkDetail(.init(originalItem: item, isRegistered: true))]
+    }
+
+}
+
+private extension HouseworkBoardScreen {
+
+    /// ボードの上にシートやフルスクリーンカバーを出しているか
+    var isPresentingModal: Bool {
+        isPresentingAddHouseworkView
+            || completingItem != nil
+            || thankingItem != nil
+            || addingHelperItem != nil
+            || isShowHouseworkTemplate
+            || isShowPaywall
     }
 
 }
