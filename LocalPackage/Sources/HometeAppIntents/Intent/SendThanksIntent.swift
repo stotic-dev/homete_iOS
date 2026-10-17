@@ -52,6 +52,11 @@ public struct SendThanksIntent: AppIntent {
 
         case .noCandidate:
             return .result(dialog: .init(.localized("今は、ありがとうを伝えられる家事はありません")))
+
+        case let .pendingSync(houseworkTitle):
+            return .result(dialog: .init(.localized(
+                "通信がつながりにくいため、\(houseworkTitle)へのありがとうはオンラインになってから届きます"
+            )))
         }
     }
 
@@ -96,6 +101,9 @@ private extension SendThanksOutcome {
 
         case .notFound, .noCandidate:
             .notFound
+
+        case .pendingSync:
+            .pendingSync
         }
     }
 

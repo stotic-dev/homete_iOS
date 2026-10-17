@@ -669,6 +669,7 @@ struct AnalyticsEventTest {
             (.completeHousework, .noCohabitant, "complete_housework", "no_cohabitant"),
             (.completeHousework, .updateRequired, "complete_housework", "update_required"),
             (.completeHousework, .failure, "complete_housework", "failure"),
+            (.sendThanks, .pendingSync, "send_thanks", "pending_sync"),
         ]
     )
     func appIntent(

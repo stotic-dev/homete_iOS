@@ -44,6 +44,11 @@ public struct CompleteHouseworkIntent: AppIntent {
 
         case .alreadyCompleted:
             return .result(dialog: .init(.localized("\(title)はもう終わっています")))
+
+        case .pendingSync:
+            return .result(dialog: .init(.localized(
+                "おつかれさまでした。通信がつながりにくいため、\(title)の記録はオンラインになってから反映されます"
+            )))
         }
     }
 
@@ -61,6 +66,9 @@ private extension CompleteHouseworkOutcome {
 
         case .alreadyCompleted:
             .alreadyCompleted
+
+        case .pendingSync:
+            .pendingSync
         }
     }
 

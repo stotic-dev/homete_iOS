@@ -31,6 +31,16 @@
         }
       }
     },
+    "おつかれさまでした。通信がつながりにくいため、%@の記録はオンラインになってから反映されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nice work! You're offline, so %@ will be recorded once you're back online."
+          }
+        }
+      }
+    },
     "この家事には、ありがとうを伝えられません" : {
       "localizations" : {
         "en" : {
@@ -117,6 +127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records yet this month."
+          }
+        }
+      }
+    },
+    "通信がつながりにくいため、%@へのありがとうはオンラインになってから届きます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're offline, so your thanks for %@ will be sent once you're back online."
           }
         }
       }

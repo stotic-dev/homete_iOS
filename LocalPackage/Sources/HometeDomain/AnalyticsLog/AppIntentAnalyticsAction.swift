@@ -29,6 +29,8 @@ public enum AppIntentAnalyticsResult: String, Equatable, Sendable, CaseIterable 
     case notFound = "not_found"
     /// 家事がすでに完了していた
     case alreadyCompleted = "already_completed"
+    /// 通信できず、書き込みを端末に保存した（オンラインになったら反映される）
+    case pendingSync = "pending_sync"
     /// ログインしていなかった
     case notLoggedIn = "not_logged_in"
     /// 同居人グループに所属していなかった

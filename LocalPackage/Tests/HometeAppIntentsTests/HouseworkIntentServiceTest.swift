@@ -265,6 +265,68 @@ struct HouseworkIntentServiceTest {
         #expect(actual == .notFound)
     }
 
+    // MARK: - 通信できないとき
+
+    @Test("完了の書き込みがサーバーに届くのを待ちきれなければ、オンラインになったら反映されることを返す")
+    func completeHouseworkPendingSync() async throws {
+        // Arrange
+
+        var sut = makeSUT(
+            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", expiredAt: expiredAt)],
+            houseworkClient: { fetchItems in
+                .init(
+                    // オフラインのFirestoreのように、サーバーの応答まで返らない
+                    insertOrUpdateItemHandler: { _, _ in try await Task.sleep(for: .seconds(60)) },
+                    fetchItemsHandler: fetchItems
+                )
+            }
+        )
+        sut.writeTimeout = .milliseconds(10)
+
+        // Act
+
+        let actual = try await sut.completeHousework(title: "洗濯", now: now)
+
+        // Assert
+
+        #expect(actual == .pendingSync)
+    }
+
+    @Test("ありがとうの書き込みがサーバーに届くのを待ちきれなければ、オンラインになったら届くことを返す")
+    func sendThanksPendingSync() async throws {
+        // Arrange
+
+        var sut = makeSUT(
+            items: [
+                .makeForTest(
+                    id: "dish",
+                    indexedDate: today,
+                    title: "皿洗い",
+                    state: .completed,
+                    executorId: "partner",
+                    executedAt: now,
+                    expiredAt: expiredAt
+                ),
+            ],
+            houseworkClient: { fetchItems in
+                .init(
+                    // オフラインのFirestoreのように、サーバーの応答まで返らない
+                    upsertThanksHandler: { _, _, _, _ in try await Task.sleep(for: .seconds(60)) },
+                    fetchItemsHandler: fetchItems
+                )
+            }
+        )
+        sut.writeTimeout = .milliseconds(10)
+
+        // Act
+
+        let actual = try await sut.sendThanks(houseworkId: "dish", comment: nil, now: now)
+
+        // Assert
+
+        #expect(actual == .pendingSync(houseworkTitle: "皿洗い"))
+    }
+
 }
 
 private extension HouseworkIntentServiceTest {

@@ -7,6 +7,7 @@ import ContributionFeature
 import Foundation
 import HometeDomain
 import HouseworkFeature
+import os
 
 /// App Intentで、家事を探して完了にする・ありがとうを伝える・今月のがんばりを集計する
 ///
@@ -18,6 +19,8 @@ struct HouseworkIntentService {
     let commandUseCase: HouseworkCommandUseCase
     let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
     let calendar: Calendar
+    /// 書き込みがサーバーに届くのを待つ時間。過ぎたら、オンラインになったら反映されることを伝えて返す
+    var writeTimeout: Duration = .seconds(10)
 
     /// 今日の未完了の家事の名前（同じ名前は1つにまとめ、ダッシュボードの未完了の家事と同じ順に並べる）
     func incompleteTitles(now: Date) async throws -> [String] {
@@ -43,22 +46,27 @@ struct HouseworkIntentService {
         }
 
         let point = target.originalItem.point
-        try await commandUseCase.complete(
-            current: target.originalItem,
-            now: now,
-            reporter: session.account,
-            executors: [.solo(userId: session.account.id, point: point)],
-            effort: .normal,
-            executorNames: [session.account.userName],
-            comment: "",
-            cohabitantId: session.cohabitantId,
-            isRegistered: target.isRegistered,
-            step: .appIntent,
-            delivery: .awaiting
-        )
-        // アプリを開いていないと家事の購読でふりかえり通知を予約できないため、ここで予約する
+        let item = target.originalItem
+        let isRegistered = target.isRegistered
+        let isDelivered = try await awaitWrite {
+            try await commandUseCase.complete(
+                current: item,
+                now: now,
+                reporter: session.account,
+                executors: [.solo(userId: session.account.id, point: point)],
+                effort: .normal,
+                executorNames: [session.account.userName],
+                comment: "",
+                cohabitantId: session.cohabitantId,
+                isRegistered: isRegistered,
+                step: .appIntent,
+                delivery: .awaiting
+            )
+        }
+        // アプリを開いていないと家事の購読でふりかえり通知を予約できないため、ここで予約する。
+        // 書き込みが端末に保存されただけでも、完了にしたことに変わりはないので予約する
         await dailyCompletionReminderUseCase.syncToday(hasCompletedHousework: true, now: now, calendar: calendar)
-        return .completed(point: point)
+        return isDelivered ? .completed(point: point) : .pendingSync
     }
 
     /// ありがとうを伝えられる家事（今日と昨日に同居人が終えた家事のうち、まだ自分が送っていないもの）
@@ -79,16 +87,22 @@ struct HouseworkIntentService {
         }
 
         let trimmedComment = comment?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let isRecorded = try await commandUseCase.sendThanks(
-            current: target,
-            sender: session.account,
-            comment: trimmedComment?.isEmpty == false ? trimmedComment : nil,
-            now: now,
-            cohabitantId: session.cohabitantId,
-            step: .appIntent,
-            delivery: .awaiting
-        )
-        return isRecorded ? .sent(houseworkTitle: candidate.title) : .notFound
+        let thanksComment = trimmedComment?.isEmpty == false ? trimmedComment : nil
+        let recordedResult = OSAllocatedUnfairLock(initialState: false)
+        let isDelivered = try await awaitWrite {
+            let isRecorded = try await commandUseCase.sendThanks(
+                current: target,
+                sender: session.account,
+                comment: thanksComment,
+                now: now,
+                cohabitantId: session.cohabitantId,
+                step: .appIntent,
+                delivery: .awaiting
+            )
+            recordedResult.withLock { $0 = isRecorded }
+        }
+        guard isDelivered else { return .pendingSync(houseworkTitle: candidate.title) }
+        return recordedResult.withLock { $0 } ? .sent(houseworkTitle: candidate.title) : .notFound
     }
 
     /// 今月のメンバーごとのがんばり
@@ -120,6 +134,8 @@ enum CompleteHouseworkOutcome: Equatable {
     case notFound
     /// その名前の家事は、今日はもう終わっている
     case alreadyCompleted
+    /// 通信できず、書き込みを端末に保存した。オンラインになったら反映される
+    case pendingSync
 
 }
 
@@ -132,6 +148,8 @@ enum SendThanksOutcome: Equatable {
     case notFound
     /// 家事を指定せずに実行したが、ありがとうを伝えられる家事が1件も無かった
     case noCandidate
+    /// 通信できず、書き込みを端末に保存した。オンラインになったら反映される
+    case pendingSync(houseworkTitle: String)
 
 }
 
@@ -153,6 +171,41 @@ struct ThanksCandidate: Equatable {
 }
 
 private extension HouseworkIntentService {
+
+    /// 書き込みを待つ
+    ///
+    /// Firestoreはオフラインでも書き込みを端末に保存してオンラインになったら反映するが、書き込みはサーバーの応答まで返らない。
+    /// 待ち続けるとSiriには失敗と出るのに後で記録されて食い違うため、`writeTimeout`を過ぎたら待つのをやめる。
+    /// 書き込みは止めず、続き（Analytics・同居人への通知）はプロセスが動いている間に終われば行われる。
+    /// - Returns: 書き込みがサーバーに届いたら`true`、`writeTimeout`を過ぎたら`false`
+    func awaitWrite(_ operation: @escaping @Sendable () async throws -> Void) async throws -> Bool {
+        let pending = OSAllocatedUnfairLock<CheckedContinuation<Bool, any Error>?>(initialState: nil)
+        let resume = { @Sendable (result: Result<Bool, any Error>) in
+            let continuation = pending.withLock { continuation in
+                defer { continuation = nil }
+                return continuation
+            }
+            continuation?.resume(with: result)
+        }
+        let timeout = writeTimeout
+        return try await withCheckedThrowingContinuation { continuation in
+            pending.withLock { $0 = continuation }
+            let timer = Task {
+                try await Task.sleep(for: timeout)
+                resume(.success(false))
+            }
+            Task {
+                do {
+                    try await operation()
+                    timer.cancel()
+                    resume(.success(true))
+                } catch {
+                    timer.cancel()
+                    resume(.failure(error))
+                }
+            }
+        }
+    }
 
     func todaySummary(session: AppIntentSession, now: Date) async throws -> TodayHouseworkSummary {
         let today = calendar.startOfDay(for: now)
