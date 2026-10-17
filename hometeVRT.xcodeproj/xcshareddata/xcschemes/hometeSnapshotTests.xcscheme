@@ -30,7 +30,7 @@
                BlueprintIdentifier = "BC1BB2672E909B8C001D168F"
                BuildableName = "hometeSnapshotTests.xctest"
                BlueprintName = "hometeSnapshotTests"
-               ReferencedContainer = "container:homete.xcodeproj">
+               ReferencedContainer = "container:hometeVRT.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -41,7 +41,7 @@
                BlueprintIdentifier = "04B783662F4996770080EFAC"
                BuildableName = "hometeSnapshotTestsForCI.xctest"
                BlueprintName = "hometeSnapshotTestsForCI"
-               ReferencedContainer = "container:homete.xcodeproj">
+               ReferencedContainer = "container:hometeVRT.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
