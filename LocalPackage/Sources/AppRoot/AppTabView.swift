@@ -352,7 +352,9 @@ private extension AppTabView {
         )
         houseworkTemplateListStore = .init(
             houseworkTemplateClient: appDependencies.houseworkTemplateClient,
-            analyticsClient: appDependencies.analyticsClient
+            analyticsClient: appDependencies.analyticsClient,
+            intentDonationClient: appDependencies.intentDonationClient,
+            calendar: calendar
         )
         frequentHouseworkStore = .init(
             frequentHouseworkClient: appDependencies.frequentHouseworkClient,
