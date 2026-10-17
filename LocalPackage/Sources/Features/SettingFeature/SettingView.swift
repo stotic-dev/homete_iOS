@@ -11,17 +11,32 @@ import SwiftUI
 
 public struct SettingViewScreen: View {
 
+    @Environment(\.routeResolver) var router
+
     @State var navigationPath = AppNavigationPath<SettingRoute>()
+    @State var isShowHouseworkTemplate = false
+    @State var isShowFrequentHousework = false
 
     public init() {}
 
     public var body: some View {
         NavigationStack(path: $navigationPath.path) {
-            SettingView()
-                .navigationDestination(for: SettingRoute.self) { route in
-                    navigationHandler(route)
-                }
-                .environment(\.settingNavigationPath, navigationPath)
+            SettingView(
+                isShowHouseworkTemplate: $isShowHouseworkTemplate,
+                isShowFrequentHousework: $isShowFrequentHousework
+            )
+            .navigationDestination(for: SettingRoute.self) { route in
+                navigationHandler(route)
+            }
+            .environment(\.settingNavigationPath, navigationPath)
+        }
+        // NavigationStackの中で出すと、出した画面がシートを出した直後に作り直されて
+        // `@State`ごと初期化され、追加・編集のシートがすぐ閉じてしまう。NavigationStackの外から出す
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(isPresented: $isShowFrequentHousework) {
+            router.resolve(.frequentHouseworkManagement)
         }
     }
 
@@ -71,12 +86,15 @@ struct SettingView: View {
 
     @State var isPresentedLogoutConfirmAlert = false
     @State var isPresentedAccountDeletionConfirmAlert = false
-    @State var isShowHouseworkTemplate = false
-    @State var isShowFrequentHousework = false
+    @Binding var isShowHouseworkTemplate: Bool
+    @Binding var isShowFrequentHousework: Bool
     @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
 
-    init() {}
+    init(isShowHouseworkTemplate: Binding<Bool>, isShowFrequentHousework: Binding<Bool>) {
+        _isShowHouseworkTemplate = isShowHouseworkTemplate
+        _isShowFrequentHousework = isShowFrequentHousework
+    }
 
     var body: some View {
         // 表示項目が画面高さを超えるとナビゲーションバー領域にコンテンツが食い込むためScrollViewで包む
@@ -146,12 +164,6 @@ struct SettingView: View {
             accountDeletionAlertActions(plan: subscriptionStore.plan)
         } message: {
             Text(accountDeletionAlertMessage(plan: subscriptionStore.plan))
-        }
-        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
-            router.resolve(.houseworkTemplate)
-        }
-        .fullScreenCoverOnIOS(isPresented: $isShowFrequentHousework) {
-            router.resolve(.frequentHouseworkManagement)
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
@@ -347,7 +359,7 @@ private extension SettingView {
 
 #if DEBUG
 #Preview("SettingView_グループ未登録") {
-    SettingView()
+    SettingView(isShowHouseworkTemplate: .constant(false), isShowFrequentHousework: .constant(false))
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
@@ -361,7 +373,7 @@ private extension SettingView {
 }
 
 #Preview("SettingView_グループ登録済み") {
-    SettingView()
+    SettingView(isShowHouseworkTemplate: .constant(false), isShowFrequentHousework: .constant(false))
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
@@ -385,7 +397,7 @@ private extension SettingView {
 }
 
 #Preview("SettingView_プレミアム登録済み") {
-    SettingView()
+    SettingView(isShowHouseworkTemplate: .constant(false), isShowFrequentHousework: .constant(false))
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore(entitlementInfo: .init(
@@ -415,7 +427,7 @@ private extension SettingView {
 }
 
 #Preview("SettingView_プレミアム登録済み_解約済み") {
-    SettingView()
+    SettingView(isShowHouseworkTemplate: .constant(false), isShowFrequentHousework: .constant(false))
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore(entitlementInfo: .init(
