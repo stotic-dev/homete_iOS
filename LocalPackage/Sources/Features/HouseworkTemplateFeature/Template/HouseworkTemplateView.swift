@@ -53,23 +53,22 @@ struct HouseworkTemplateView: View {
                 }
             } else if let templateId = templateListStore.selectedTemplateId,
                       let initialDraft {
-                ZStack {
-                    mainContent()
-                    addItemButton()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                        .padding(.trailing, .space24)
-                        // 直下に広告バナーが来るため、誤タップを防ぐ余白を取る
-                        .padding(.bottom, .space24)
-                }
-                #if os(iOS)
-                .toolbar {
-                    trailingNavigationItem(
-                        templateId: templateId,
-                        initialDraft: initialDraft,
-                        isEditing: initialDraft.hasUnsavedChanges(comparedTo: draft)
-                    )
-                }
-                #endif
+                HouseworkTemplateListContent(
+                    collapsedDays: $collapsedDays,
+                    draft: draft,
+                    hasUnsavedChanges: initialDraft.hasUnsavedChanges(comparedTo: draft),
+                    onTapItem: { item in presentingDetailItem = item },
+                    onTapEdit: { item in presentingEditModal = item },
+                    onTapDelete: { itemId, day in tappedDeleteItemButton(itemId: itemId, from: day) },
+                    onDropItem: { itemId, destination in onDropItem(itemId: itemId, to: destination) },
+                    onTapAdd: { presentingAddModal = true },
+                    onTapReset: { presentingResetAlert = true },
+                    onTapSave: {
+                        Task {
+                            await tappedSaveButton(templateId: templateId)
+                        }
+                    }
+                )
             } else {
                 HouseworkTemplateEmptyView {
                     Task {
@@ -155,174 +154,6 @@ struct HouseworkTemplateView: View {
 
 }
 
-// MARK: - メインコンテンツ
-
-private extension HouseworkTemplateView {
-
-    func mainContent() -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: .space16) {
-                ForEach(DayOfWeek.displayOrdered) { day in
-                    daySection(
-                        day,
-                        isCollapsed: collapsedDays.isCollapsed(day),
-                        items: draft.items(in: day)
-                    )
-                }
-                monthlySection(draft.displayedMonthlyItems)
-            }
-            .padding(.horizontal, .space16)
-            .padding(.top, .space32)
-            // 最後の項目が追加ボタンに隠れないよう、ボタンの高さと下の余白ぶん空ける
-            .padding(.bottom, .space64 + .space24)
-        }
-    }
-
-    func daySection(_ day: DayOfWeek, isCollapsed: Bool, items: [HouseworkTemplateItem]) -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            dayHeader(day, itemCount: items.count, isCollapsed: isCollapsed)
-            if !isCollapsed {
-                VStack(spacing: .space8) {
-                    if !items.isEmpty {
-                        ForEach(items, id: \.id) { item in
-                            itemRow(item, in: day)
-                        }
-                    } else {
-                        emptyDayRow()
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.space8)
-                .background {
-                    RoundedRectangle(radius: .radius12)
-                        .fill(.backgroundCard)
-                }
-                .dropDestination(for: String.self) { ids, _ in
-                    guard let droppedId = ids.first else { return false }
-                    onDropItem(itemId: .init(id: droppedId), to: day)
-                    return true
-                }
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
-        .clipped()
-//        .animation(.default, value: isCollapsed)
-    }
-
-    func dayHeader(_ day: DayOfWeek, itemCount: Int, isCollapsed: Bool) -> some View {
-        Button {
-            withAnimation {
-                tappedDayHeaderButton(day)
-            }
-        } label: {
-            HStack(spacing: .space8) {
-                Image(systemName: "chevron.right")
-                    .font(with: .caption)
-                    .foregroundStyle(.textPrimary)
-                    .rotationEffect(.degrees(isCollapsed ? 0 : 90))
-                Text(day.fullLabel)
-                    .font(with: .headLineS)
-                    .foregroundStyle(.textPrimary)
-                if isCollapsed,
-                   itemCount > 0 {
-                    Text("(\(itemCount))")
-                        .font(with: .caption)
-                        .foregroundStyle(.textPrimary)
-                }
-                Spacer()
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .dropDestination(for: String.self) { ids, _ in
-            guard let droppedId = ids.first else { return false }
-            onDropItem(itemId: .init(id: droppedId), to: day)
-            if isCollapsed {
-                withAnimation {
-                    collapsedDays.toggle(day)
-                }
-            }
-            return true
-        }
-    }
-
-    func emptyDayRow() -> some View {
-        Text("家事なし", bundle: #bundle)
-            .font(with: .caption)
-            .foregroundStyle(.textPrimary)
-            .padding(.vertical, .space8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    func itemRow(_ item: HouseworkTemplateItem, in day: DayOfWeek) -> some View {
-        HouseworkTemplateItemRow(item: item)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                presentingDetailItem = item
-            }
-            .draggable(item.id.id)
-            .contextMenu {
-                Button(.localized("編集")) {
-                    presentingEditModal = item
-                }
-                Button(.localized("削除"), role: .destructive) {
-                    tappedDeleteItemButton(itemId: item.id, from: day)
-                }
-            }
-    }
-
-    func monthlySection(_ monthlyItems: [HouseworkTemplateMonthlyItem]) -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("毎月", bundle: #bundle)
-                .font(with: .headLineS)
-                .foregroundStyle(.textPrimary)
-            VStack(spacing: .space8) {
-                if !monthlyItems.isEmpty {
-                    ForEach(monthlyItems) { monthlyItem in
-                        monthlyItemRow(monthlyItem)
-                    }
-                } else {
-                    emptyDayRow()
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.space8)
-            .background {
-                RoundedRectangle(radius: .radius12)
-                    .fill(.backgroundCard)
-            }
-        }
-    }
-
-    /// 毎月の家事の行。曜日間のドラッグ&ドロップは毎週の家事だけの機能なので、ドラッグはできない
-    func monthlyItemRow(_ monthlyItem: HouseworkTemplateMonthlyItem) -> some View {
-        HouseworkTemplateItemRow(item: monthlyItem.item, recurrenceLabel: monthlyItem.rule.label)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                presentingDetailItem = monthlyItem.item
-            }
-            .contextMenu {
-                Button(.localized("編集")) {
-                    presentingEditModal = monthlyItem.item
-                }
-                Button(.localized("削除"), role: .destructive) {
-                    tappedDeleteItemButton(itemId: monthlyItem.id)
-                }
-            }
-    }
-
-    func addItemButton() -> some View {
-        Button {
-            presentingAddModal = true
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 24))
-        }
-        .floatingButtonStyle()
-    }
-
-}
-
 // MARK: - ナビゲーションバー
 
 private extension HouseworkTemplateView {
@@ -335,37 +166,6 @@ private extension HouseworkTemplateView {
         }
         .foregroundStyle(.textPrimary)
     }
-
-    #if os(iOS)
-    @ToolbarContentBuilder
-    func trailingNavigationItem(
-        templateId: String,
-        initialDraft: HouseworkTemplateDraft,
-        isEditing: Bool
-    ) -> some ToolbarContent {
-        if draft.hasUnsavedChanges(comparedTo: initialDraft) {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    presentingResetAlert = true
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .foregroundStyle(.textPrimary)
-            }
-        }
-        if #available(iOS 26.0, *) {
-            ToolbarSpacer()
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            NavigationBarPrimaryActionButton(systemImage: "checkmark") {
-                Task {
-                    await tappedSaveButton(templateId: templateId)
-                }
-            }
-            .disabled(!isEditing)
-        }
-    }
-    #endif
 
 }
 
@@ -470,10 +270,6 @@ private extension HouseworkTemplateView {
         guard let initialDraft,
               initialDraft.hasUnsavedChanges(comparedTo: draft) else { return }
         presentingConflictDraftAlert = true
-    }
-
-    func tappedDayHeaderButton(_ day: DayOfWeek) {
-        collapsedDays.toggle(day)
     }
 
 }
