@@ -22,6 +22,9 @@
 | `AppRoot` | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeLocalNotification` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`） | `AppRoot`, `HometeInfrastructure` |
 | `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
+| `HometeSnapshotTestSupport` | VRT（`hometeSnapshotTests`）が使う SnapshotTesting・Prefire を提供する。アプリ本体からは依存しない | Prefire, swift-snapshot-testing |
+
+外部ライブラリは `LocalPackage/Package.swift` からだけ参照し、xcodeproj から直接参照しない。xcodeproj 側にもバージョン指定を持つと、dependabot が `Package.swift` だけを更新したときに指定が食い違い、Xcode Cloud の依存解決が失敗するため。アプリ本体・拡張・テストのターゲットで外部ライブラリが必要になったら、LocalPackage のモジュール経由で使う。
 
 ### ディレクトリ構成
 
@@ -53,6 +56,7 @@ HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）
   ├── Services（FirestoreService, SignInWithAppleService...）
   ├── LocalDatabase（端末内SQLite。AppDatabase + 各テーブルのService）
+  ├── FirebaseConfigurator / MessagingConfigurator（アプリ起動時の初期化）
   └── AppDependencies+liveValue
 
 HometeLocalNotification/
