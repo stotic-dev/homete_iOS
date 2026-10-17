@@ -309,6 +309,51 @@ describe("Account/Private（FCMトークン）", () => {
     );
   });
 
+  it("本人でもPrivateにfcm以外のドキュメントは作れない", async () => {
+    // deleteuserdataが消すのはfcmだけなので、それ以外を作られると退会後も残る
+    await assertFails(
+      setDoc(
+        doc(
+          aliceDb(),
+          accountPath(ALICE),
+          ClientCollections.ACCOUNT_PRIVATE,
+          "other"
+        ),
+        {token: "token"}
+      )
+    );
+  });
+
+  it("FCMトークンにtoken以外のフィールドは書き込めない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), accountFcmTokenPath(ALICE)),
+        {token: "token", extra: "x".repeat(1000)}
+      )
+    );
+  });
+
+  it("FCMトークンは文字列でなければ書き込めない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: 123})
+    );
+  });
+
+  it("FCMトークンは空文字では書き込めない", async () => {
+    await assertFails(
+      setDoc(doc(aliceDb(), accountFcmTokenPath(ALICE)), {token: ""})
+    );
+  });
+
+  it("FCMトークンは長すぎると書き込めない", async () => {
+    await assertFails(
+      setDoc(
+        doc(aliceDb(), accountFcmTokenPath(ALICE)),
+        {token: "x".repeat(4097)}
+      )
+    );
+  });
+
   it("本人でも自分のFCMトークンは削除できない", async () => {
     // 退会時の削除は deleteuserdata が Admin SDK で行う
     await assertFails(deleteDoc(doc(aliceDb(), accountFcmTokenPath(ALICE))));
