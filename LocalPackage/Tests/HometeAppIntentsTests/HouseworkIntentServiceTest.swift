@@ -15,8 +15,8 @@ struct HouseworkIntentServiceTest {
     private let today = Date.previewDate(year: 2026, month: 10, day: 12)
     private let expiredAt = Date.previewDate(year: 2027, month: 10, day: 12)
     private let createdAt = Date.previewDate(year: 2026, month: 10, day: 11)
-    private let own = Account(id: "own", userName: "たろう", fcmToken: nil, cohabitantId: "cohabitant")
-    private let partner = Account(id: "partner", userName: "はなこ", fcmToken: nil, cohabitantId: "cohabitant")
+    private let own = Account(id: "own", userName: "たろう", cohabitantId: "cohabitant")
+    private let partner = Account(id: "partner", userName: "はなこ", cohabitantId: "cohabitant")
 
 }
 

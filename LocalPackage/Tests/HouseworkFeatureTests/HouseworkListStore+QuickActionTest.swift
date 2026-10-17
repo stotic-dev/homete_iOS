@@ -32,7 +32,7 @@ extension HouseworkListStoreQuickActionTest.CompleteCase {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let now = Date()
         let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let expected = inputItem.updateProperties(
@@ -72,7 +72,7 @@ extension HouseworkListStoreQuickActionTest.CompleteCase {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let now = Date()
         let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let expected = inputItem.updateProperties(
@@ -117,7 +117,7 @@ extension HouseworkListStoreQuickActionTest.RemoveCase {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let inputItem = HouseworkItem.makeForTest(id: 1, state: .incomplete)
         let expected = inputItem.updateProperties(state: .notTodo)
 
@@ -156,7 +156,7 @@ extension HouseworkListStoreQuickActionTest.SendThanksCase {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let inputNow = Date(timeIntervalSince1970: 1000)
         let inputItem = HouseworkItem.makeForTest(
             id: 1,
@@ -210,7 +210,7 @@ extension HouseworkListStoreQuickActionTest.ReturnToIncompleteCase {
         // Arrange
 
         let inputCohabitantId = "cohabitantId"
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let inputItem = HouseworkItem.makeForTest(
             id: 1,
             state: .completed,
@@ -255,7 +255,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
     func performBulk_complete_writesOnce() async throws {
         // Arrange
 
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let now = Date.previewDate(year: 2026, month: 9, day: 1)
         let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
@@ -301,7 +301,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
     func performBulk_sendThanks_writesOnceAndReturnsTrue() async throws {
         // Arrange
 
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
             HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: .completed, executorId: "otherUserId"),
@@ -356,7 +356,7 @@ extension HouseworkListStoreQuickActionTest.PerformBulkCase {
     ) async throws {
         // Arrange
 
-        let inputAccount = Account(id: "ownUserId", userName: "own", fcmToken: nil, cohabitantId: nil)
+        let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
         let indexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
         let inputItems = [
             HouseworkItem.makeForTest(id: 1, indexedDate: indexedDate, state: inputState),

@@ -37,6 +37,8 @@ public struct IncompleteHouseworkListView: View {
             storagePolicy: storagePolicy
         )
         )
+        // ホームからの遷移で地の色が変わらないよう、ホームと同じミルク色にする
+        .background(.backgroundScreen)
         .navigationTitle(.localized("未完了の家事"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
@@ -73,6 +75,7 @@ private extension IncompleteHouseworkListView {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
     }
 

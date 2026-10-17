@@ -23,7 +23,6 @@ struct AccountTest {
         let expected = Account(
             id: "id",
             userName: "userName",
-            fcmToken: nil,
             cohabitantId: "cohabitantId",
             isPremium: false
         )
@@ -47,7 +46,6 @@ struct AccountTest {
         let expected = Account(
             id: "id",
             userName: "userName",
-            fcmToken: "fcmToken",
             cohabitantId: "cohabitantId",
             isPremium: true
         )

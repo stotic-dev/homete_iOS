@@ -1,4 +1,5 @@
 import {
+  createLegacyTestAccount,
   createTestAccount,
   createTestCohabitant,
 } from "../helpers/testData";
@@ -10,6 +11,7 @@ import {
   isValidNotificationData,
   notifyOtherCohabitants,
 } from "../../src/models/CohabitantNotifier";
+import {FirestoreHelper} from "../../src/models/FirestoreHelper";
 
 describe("CohabitantNotifier E2E Tests", () => {
   let testCounter = 0;
@@ -77,6 +79,59 @@ describe("CohabitantNotifier E2E Tests", () => {
     expect(sent).toHaveLength(1);
     expect(sent[0].tokens).toEqual(["token-with"]);
   });
+
+  it("Account本体にFCMトークンを持つ旧アプリのメンバーにも通知が送られる",
+    async () => {
+      // Arrange
+      const senderId = `notify-legacy-sender-${testCounter}`;
+      const currentId = `notify-legacy-current-${testCounter}`;
+      const legacyId = `notify-legacy-legacy-${testCounter}`;
+      const cohabitantId = `notify-legacy-cohabitant-${testCounter}`;
+      await createTestAccount(senderId, cohabitantId, "token-sender");
+      await createTestAccount(currentId, cohabitantId, "token-current");
+      await createLegacyTestAccount(legacyId, cohabitantId, "token-legacy");
+      await createTestCohabitant(cohabitantId, [senderId, currentId, legacyId]);
+      const {sender, sent} = makeRecordingSender();
+
+      // Act
+      await notifyOtherCohabitants(
+        cohabitantId,
+        senderId,
+        notification,
+        sender
+      );
+
+      // Assert
+      expect(sent).toHaveLength(1);
+      expect(sent[0].tokens).toEqual(["token-current", "token-legacy"]);
+    });
+
+  it("新しいパスにFCMトークンがあれば、Account本体の古いトークンより優先する",
+    async () => {
+      // Arrange
+      const senderId = `notify-prefer-sender-${testCounter}`;
+      const receiverId = `notify-prefer-receiver-${testCounter}`;
+      const cohabitantId = `notify-prefer-cohabitant-${testCounter}`;
+      await createTestAccount(senderId, cohabitantId, "token-sender");
+      await createLegacyTestAccount(receiverId, cohabitantId, "token-stale");
+      await new FirestoreHelper().fcmTokenRef(receiverId).set({
+        token: "token-latest",
+      });
+      await createTestCohabitant(cohabitantId, [senderId, receiverId]);
+      const {sender, sent} = makeRecordingSender();
+
+      // Act
+      await notifyOtherCohabitants(
+        cohabitantId,
+        senderId,
+        notification,
+        sender
+      );
+
+      // Assert
+      expect(sent).toHaveLength(1);
+      expect(sent[0].tokens).toEqual(["token-latest"]);
+    });
 
   it("本人しか居ないグループでは送信せずに空の結果を返す", async () => {
     // Arrange

@@ -10,7 +10,7 @@ import SwiftUI
 
 public extension EnvironmentValues {
 
-    @Entry var loginContext = LoginContext(account: .init(id: "", userName: "", fcmToken: nil, cohabitantId: nil))
+    @Entry var loginContext = LoginContext(account: .init(id: "", userName: "", cohabitantId: nil))
 
 }
 
@@ -32,7 +32,6 @@ public extension View {
             .init(account: .init(
                 id: ownUserId,
                 userName: "own",
-                fcmToken: nil,
                 cohabitantId: "cohabitantId"
             ))
         )

@@ -42,6 +42,8 @@ struct HouseworkTemplateItemDetailView: View {
             .padding(.vertical, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
+        // テンプレートからの遷移で地の色が変わらないよう、テンプレートと同じミルク色にする
+        .background(.backgroundScreen)
         .navigationTitle(item.title)
         .inlineNavigationBarTitleDisplayMode()
         .trailingToolbarItem {

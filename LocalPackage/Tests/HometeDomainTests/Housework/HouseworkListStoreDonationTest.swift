@@ -12,7 +12,7 @@ import Testing
 struct HouseworkListStoreDonationTest {
 
     private let inputCohabitantId = "cohabitantId"
-    private let inputAccount = Account(id: "own", userName: "たろう", fcmToken: nil, cohabitantId: "cohabitantId")
+    private let inputAccount = Account(id: "own", userName: "たろう", cohabitantId: "cohabitantId")
 
     @Test("家事を1件完了にすると、家事の名前でドネーションする")
     func complete_donatesHouseworkTitle() async throws {

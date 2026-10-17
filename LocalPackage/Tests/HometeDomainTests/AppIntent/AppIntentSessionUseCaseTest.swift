@@ -9,7 +9,7 @@ import Testing
 
 struct AppIntentSessionUseCaseTest {
 
-    private let account = Account(id: "own", userName: "たろう", fcmToken: nil, cohabitantId: "cohabitant")
+    private let account = Account(id: "own", userName: "たろう", cohabitantId: "cohabitant")
 
     @Test("ログイン中でグループに所属していれば、アカウントとグループを返す")
     func resolve() async throws {
@@ -59,7 +59,7 @@ struct AppIntentSessionUseCaseTest {
 
         let sut = makeSUT(
             authId: "own",
-            account: .init(id: "own", userName: "たろう", fcmToken: nil, cohabitantId: nil)
+            account: .init(id: "own", userName: "たろう", cohabitantId: nil)
         )
 
         // Act & Assert
@@ -103,7 +103,7 @@ struct AppIntentSessionUseCaseTest {
         // Arrange
 
         let accounts = [
-            "partner": Account(id: "partner", userName: "はなこ", fcmToken: nil, cohabitantId: "cohabitant"),
+            "partner": Account(id: "partner", userName: "はなこ", cohabitantId: "cohabitant"),
         ]
         let sut = AppIntentSessionUseCase(
             accountAuthClient: .init(),

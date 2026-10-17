@@ -12,6 +12,14 @@ public extension Firestore {
             .document(id)
     }
 
+    /// 本人だけが読めるFCMトークンの参照を取得する
+    /// - Note: パスはFunctions（`FirestoreCollections.ACCOUNT_PRIVATE_FCM`）と合わせる。ずれると通知が届かなくなる
+    func accountFcmTokenRef(accountId: String) -> DocumentReference {
+        accountRef(id: accountId)
+            .collection(CollectionPath.accountPrivate.rawValue)
+            .document("fcm")
+    }
+
     /// 同居人の参照を取得する
     func cohabitantRef(id: String) -> DocumentReference {
         collection(CollectionPath.cohabitant.rawValue)

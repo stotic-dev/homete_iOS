@@ -96,11 +96,10 @@ struct CohabitantJoinStoreTest {
     @Test("参加に成功した場合、完了状態になりアカウントのグループIDが同期される")
     func join_success() async {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let expectedAccount = Account(
             id: "testId",
             userName: "testUser",
-            fcmToken: nil,
             cohabitantId: "joinedCohabitantId"
         )
         let accountStore = AccountStore(account: initialAccount)
@@ -125,11 +124,10 @@ struct CohabitantJoinStoreTest {
     @Test("すでに参加済みのグループだった場合、参加済み状態になりアカウントのグループIDが同期される")
     func join_alreadyMember() async {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let expectedAccount = Account(
             id: "testId",
             userName: "testUser",
-            fcmToken: nil,
             cohabitantId: "joinedCohabitantId"
         )
         let accountStore = AccountStore(account: initialAccount)
@@ -192,7 +190,7 @@ struct CohabitantJoinStoreTest {
     @Test("参加に失敗した場合、アカウントのグループIDは更新されない")
     func join_failure_doesNotUpdateAccount() async {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let accountStore = AccountStore(account: initialAccount)
         let sut = CohabitantJoinStore(
             token: "test-token",

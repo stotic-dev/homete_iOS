@@ -16,8 +16,12 @@ struct LicenseListView: View {
             ForEach(OSSLicense.all) { license in
                 licenseRow(license)
             }
+            .listRowBackground(Color.clear)
         }
         .listStyle(.plain)
+        // 設定からの遷移で地の色が変わらないよう、設定と同じミルク色にする
+        .scrollContentBackground(.hidden)
+        .background(.backgroundScreen)
         .navigationTitle(.localized("ライセンス"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()

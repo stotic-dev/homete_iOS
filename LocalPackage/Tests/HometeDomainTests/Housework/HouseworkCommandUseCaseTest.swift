@@ -14,7 +14,7 @@ struct HouseworkCommandUseCaseTest {
 
     private let now = Date.previewDate(year: 2026, month: 10, day: 12, hour: 9)
     private let today = Date.previewDate(year: 2026, month: 10, day: 12)
-    private let own = Account(id: "own", userName: "たろう", fcmToken: nil, cohabitantId: "cohabitant")
+    private let own = Account(id: "own", userName: "たろう", cohabitantId: "cohabitant")
 
 }
 

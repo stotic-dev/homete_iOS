@@ -40,6 +40,8 @@ public struct ThanksTargetListView: View {
             now: now,
             calendar: calendar
         ))
+        // ホームからの遷移で地の色が変わらないよう、ホームと同じミルク色にする
+        .background(.backgroundScreen)
         .navigationTitle(.localized("ありがとうを伝える"))
         .inlineNavigationBarTitleDisplayMode()
         .softTopScrollEdgeEffect()
@@ -82,6 +84,7 @@ private extension ThanksTargetListView {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
     }
 
