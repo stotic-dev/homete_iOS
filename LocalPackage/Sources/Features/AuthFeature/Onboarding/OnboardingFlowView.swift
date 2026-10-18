@@ -109,7 +109,7 @@ private extension OnboardingFlowView {
 
     func finishOnboarding() {
         guard let registeredAccount else { return }
-        launchStateProxy(.loggedIn(context: .init(account: registeredAccount)))
+        launchStateProxy(.loggedIn(context: .init(account: registeredAccount, isAnonymous: authInfo.isAnonymous)))
     }
 
 }

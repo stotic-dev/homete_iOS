@@ -46,6 +46,9 @@ public struct RootView: View {
                     AppTabView()
                         .environment(\.loginContext, context)
                         .transition(.scale)
+                case .accountLinkRequired:
+                    // 匿名のままグループに参加している。連携を終えるまでホームに入れないため、閉じる導線を出さない
+                    AccountLinkScreen(entry: .required)
                 case .notLoggedIn:
                     LoginView()
                 }

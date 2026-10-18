@@ -13,12 +13,26 @@ public enum LaunchState: Equatable {
     case preLoggedIn(auth: AccountAuthResult)
     /// ログイン済み
     case loggedIn(context: LoginContext)
+    /// 匿名のままグループに参加している。Appleアカウントと連携するまで先に進ませない
+    case accountLinkRequired(context: LoginContext)
     /// 未ログイン
     case notLoggedIn
 
     public var isLoggedIn: Bool {
         if case .loggedIn = self { return true }
         return false
+    }
+
+    /// アカウントを読み込み済みの状態か
+    /// - Note: Apple連携を求めている間も、アカウントの変化（グループからの脱退など）は反映し続ける
+    var hasLoadedAccount: Bool {
+        switch self {
+        case .loggedIn, .accountLinkRequired:
+            true
+
+        case .launching, .preLoggedIn, .notLoggedIn:
+            false
+        }
     }
 
 }
