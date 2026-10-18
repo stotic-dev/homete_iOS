@@ -14,7 +14,6 @@ public struct HouseworkMemoEditScreen: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.routeResolver) var router
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(SubscriptionStore.self) var subscriptionStore
 
     @State var draft: HouseworkMemoDraft
@@ -44,8 +43,7 @@ public struct HouseworkMemoEditScreen: View {
         .presentationDetents([.large])
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .houseworkMemoLimit)) }
         )
     }
 
@@ -73,12 +71,7 @@ private extension HouseworkMemoEditScreen {
     }
 
     func showPaywall() {
-        analyticsClient.log(.paywall(.shown(step: .houseworkMemoLimit)))
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .houseworkMemoLimit, isPremium: subscriptionStore.isPremium)))
     }
 
 }

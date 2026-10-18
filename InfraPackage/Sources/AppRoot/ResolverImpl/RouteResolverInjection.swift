@@ -29,8 +29,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     HouseworkTemplateScreen.make()
                 case .frequentHouseworkManagement:
                     FrequentHouseworkManagementScreen()
-                case .paywall:
-                    PaywallGate()
+                case let .paywall(step):
+                    PaywallGate(step: step)
                 case let .accountLink(entry):
                     AccountLinkSheet(entry: entry)
                 #if DEBUG

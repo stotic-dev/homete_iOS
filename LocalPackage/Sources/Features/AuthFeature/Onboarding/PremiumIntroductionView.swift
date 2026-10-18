@@ -12,7 +12,6 @@ struct PremiumIntroductionView: View {
 
     @Environment(\.routeResolver) var router
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
-    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @State var isShowPaywall = false
 
@@ -72,7 +71,7 @@ struct PremiumIntroductionView: View {
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
             onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .onboarding)) }
         )
         .trackScreenView(.onboardingPremiumIntroduction)
     }
@@ -116,7 +115,6 @@ private extension PremiumIntroductionView {
     }
 
     func tappedShowPaywallButton() {
-        analyticsClient.log(.paywall(.shown(step: .onboarding)))
         isShowPaywall = true
     }
 
@@ -127,7 +125,6 @@ private extension PremiumIntroductionView {
 
     /// Paywallを閉じた後は、購入有無に関わらず次のステップへ進む
     func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .onboarding, isPremium: subscriptionStore.isPremium)))
         onNext()
     }
 
