@@ -6,6 +6,8 @@ name: Sync Metadata
 # 既にあればメタデータの更新のみ行う（Fastfileのsync_metadataレーン参照）。
 # fastlane/creative_assets配下のクリエイティブアセット（プロダクトページヘッダー・検索結果）は
 # deliverが対応していないため、メタデータの同期後にASC APIを直接叩いて配置する（doc/adr/0045）。
+# fastlane/app_previews配下のアプリプレビュー（動画）も同じくdeliverが対応していないため、
+# ASC APIを直接叩いてアップロードする（doc/adr/0050）。
 # release-merged.yml（PRマージ時）からは起動しない（doc/adr/0027）。
 # リリースPRのブランチ（release/*）にメタデータ・スクリーンショットの変更がpushされたときは
 # 自動で同期する（doc/adr/0032）。それ以外は workflow_dispatch で手動実行する。
@@ -28,6 +30,7 @@ on:
       - "fastlane/metadata/**"
       - "fastlane/screenshots/**"
       - "fastlane/creative_assets/**"
+      - "fastlane/app_previews/**"
 
 # 同じリリースブランチへ連続でpushされても deliver が並走しないよう直列化する。
 # 実行中のものはキャンセルしない（ASCへの反映途中で止めないため）。
@@ -86,6 +89,13 @@ jobs:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: scripts/appstoreconnect.sh creative-assets sync "$NORMALIZED_VERSION" fastlane/creative_assets
+
+      # deliverの後に流す。対象バージョンが無い場合はsync_metadataが作成するため
+      - name: Sync app previews to App Store Connect
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: scripts/appstoreconnect.sh app-previews sync "$NORMALIZED_VERSION" fastlane/app_previews
 
       - name: Create summary
         if: always()
