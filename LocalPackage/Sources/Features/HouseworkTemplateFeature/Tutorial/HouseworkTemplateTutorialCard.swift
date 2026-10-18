@@ -86,34 +86,3 @@ private extension HouseworkTemplateTutorialCard {
     }
 
 }
-
-#Preview("HouseworkTemplateTutorialCard_作成", traits: .sizeThatFitsLayout) {
-    HouseworkTemplateTutorialCard(step: .create, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}
-
-#Preview("HouseworkTemplateTutorialCard_追加", traits: .sizeThatFitsLayout) {
-    HouseworkTemplateTutorialCard(step: .addItem, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}
-
-#Preview("HouseworkTemplateTutorialCard_作成済みで追加", traits: .sizeThatFitsLayout) {
-    HouseworkTemplateTutorialCard(
-        step: .addItem,
-        steps: [.addItem, .autoPlacement, .save],
-        onTapNext: {},
-        onTapBack: {},
-        onTapClose: {}
-    )
-    .padding(.space16)
-}
-
-#Preview("HouseworkTemplateTutorialCard_自動で並ぶ", traits: .sizeThatFitsLayout) {
-    HouseworkTemplateTutorialCard(step: .autoPlacement, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}
-
-#Preview("HouseworkTemplateTutorialCard_保存", traits: .sizeThatFitsLayout) {
-    HouseworkTemplateTutorialCard(step: .save, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}

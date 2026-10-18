@@ -11,10 +11,16 @@ import SwiftUI
 ///
 /// テンプレートの有無で本番の画面に出るUIが変わるため、本番の状態に左右されずに説明できるよう、
 /// 本番と同じ`HouseworkTemplateEmptyView`・`HouseworkTemplateListContent`にサンプルの値を渡して表示する。
-/// 操作はスポットライト側で受け止めるため、タップには何も割り当てない。
+/// スポットライトで説明するUIを切り抜き、ステップごとの説明のカードを重ねる。
+/// 操作はスポットライト側で受け止めるため、サンプルの画面のタップには何も割り当てない。
 struct HouseworkTemplateTutorialView: View {
 
     let step: HouseworkTemplateTutorialStep
+    /// 今回出すステップ。テンプレートを作成済みなら作成のステップを除く
+    var steps = HouseworkTemplateTutorialStep.allCases
+    let onTapNext: () -> Void
+    let onTapBack: () -> Void
+    let onTapClose: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -29,11 +35,38 @@ struct HouseworkTemplateTutorialView: View {
                 }
                 .tutorialSpotlightNavigationBarTarget(.houseworkTemplateNavigationBar)
         }
+        .tutorialSpotlight(isPresented: true, targets: spotlightTargets) {
+            HouseworkTemplateTutorialCard(
+                step: step,
+                steps: steps,
+                onTapNext: onTapNext,
+                onTapBack: onTapBack,
+                onTapClose: onTapClose
+            )
+        }
     }
 
 }
 
 private extension HouseworkTemplateTutorialView {
+
+    /// ステップごとに切り抜くUI
+    var spotlightTargets: [TutorialSpotlightID] {
+        switch step {
+        case .create:
+            [.houseworkTemplateCreateButton]
+
+        case .addItem:
+            [.houseworkTemplateAddButton]
+
+        case .autoPlacement:
+            // 「毎月」のセクションは画面の下にあり、説明のカードを置く空きが無くなるため切り抜かない
+            [.houseworkTemplateFirstDaySection]
+
+        case .save:
+            [.houseworkTemplateNavigationBar]
+        }
+    }
 
     @ViewBuilder
     var content: some View {
@@ -93,17 +126,33 @@ private extension HouseworkTemplateTutorialView {
 
 #if DEBUG
 #Preview("HouseworkTemplateTutorialView_作成") {
-    HouseworkTemplateTutorialView(step: .create)
+    HouseworkTemplateTutorialView(step: .create, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
 }
 
 #Preview("HouseworkTemplateTutorialView_追加") {
-    HouseworkTemplateTutorialView(step: .addItem)
+    HouseworkTemplateTutorialView(step: .addItem, onTapNext: {}, onTapBack: {}, onTapClose: {})
+        .apply(theme: .init())
+}
+
+#Preview("HouseworkTemplateTutorialView_作成済みで追加") {
+    HouseworkTemplateTutorialView(
+        step: .addItem,
+        steps: [.addItem, .autoPlacement, .save],
+        onTapNext: {},
+        onTapBack: {},
+        onTapClose: {}
+    )
+    .apply(theme: .init())
+}
+
+#Preview("HouseworkTemplateTutorialView_自動で並ぶ") {
+    HouseworkTemplateTutorialView(step: .autoPlacement, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
 }
 
 #Preview("HouseworkTemplateTutorialView_保存") {
-    HouseworkTemplateTutorialView(step: .save)
+    HouseworkTemplateTutorialView(step: .save, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
 }
 #endif

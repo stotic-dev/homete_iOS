@@ -42,17 +42,10 @@ public struct HouseworkTemplateScreen: View {
     public var body: some View {
         ZStack {
             templateContent()
-                // 後ろに隠れた本番の画面のUIが、チュートリアルの画面と同じ識別子で位置を伝えないようにする
-                .excludedFromTutorialSpotlight()
+            // スポットライトはチュートリアルの画面の中で閉じるので、後ろの本番の画面のUIは切り抜かれない
             if let step = tutorialStore.currentStep {
-                HouseworkTemplateTutorialView(step: step)
+                tutorialView(step: step)
             }
-        }
-        .tutorialSpotlight(
-            isPresented: tutorialStore.currentStep != nil,
-            targets: tutorialStore.currentStep.map(spotlightTargets) ?? []
-        ) {
-            tutorialCard()
         }
         .animation(.default, value: tutorialStore.currentStep)
         .commonError(content: $commonErrorContent)
@@ -115,44 +108,24 @@ private extension HouseworkTemplateScreen {
         .environment(templateEditStore)
     }
 
-    @ViewBuilder
-    func tutorialCard() -> some View {
-        if let step = tutorialStore.currentStep {
-            HouseworkTemplateTutorialCard(
-                step: step,
-                steps: tutorialStore.steps,
-                onTapNext: {
-                    Task {
-                        await tutorialStore.next(from: step)
-                    }
-                },
-                onTapBack: {
-                    tutorialStore.back(from: step)
-                },
-                onTapClose: {
-                    Task {
-                        await tutorialStore.close()
-                    }
+    func tutorialView(step: HouseworkTemplateTutorialStep) -> some View {
+        HouseworkTemplateTutorialView(
+            step: step,
+            steps: tutorialStore.steps,
+            onTapNext: {
+                Task {
+                    await tutorialStore.next(from: step)
                 }
-            )
-        }
-    }
-
-    func spotlightTargets(_ step: HouseworkTemplateTutorialStep) -> [TutorialSpotlightID] {
-        switch step {
-        case .create:
-            [.houseworkTemplateCreateButton]
-
-        case .addItem:
-            [.houseworkTemplateAddButton]
-
-        case .autoPlacement:
-            // 「毎月」のセクションは画面の下にあり、説明のカードを置く空きが無くなるため切り抜かない
-            [.houseworkTemplateFirstDaySection]
-
-        case .save:
-            [.houseworkTemplateNavigationBar]
-        }
+            },
+            onTapBack: {
+                tutorialStore.back(from: step)
+            },
+            onTapClose: {
+                Task {
+                    await tutorialStore.close()
+                }
+            }
+        )
     }
 
 }
