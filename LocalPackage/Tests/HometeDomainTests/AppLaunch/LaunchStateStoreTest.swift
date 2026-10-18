@@ -372,4 +372,29 @@ struct LaunchStateStoreTest {
         #expect(store.launchState == .loggedIn(context: LoginContext(account: loadedAccount)))
     }
 
+    @Test("オンボーディング中にApple連携を終えたら、ログイン済みに進まず匿名でなくなった認証で会員登録画面のままになる")
+    func syncAuthChangeLinkedWhilePreLoggedIn() async {
+        // Arrange: 匿名で始めて会員登録画面に入り、アカウントを登録した後
+
+        let registeredAccount = makeAccount()
+        let fetchCalls = TestLockedArray<Void>()
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in
+            await fetchCalls.append(())
+            // 1回目（匿名で始めた直後）は未登録、2回目（連携の後）は登録済み
+            return await fetchCalls.values.count == 1 ? nil : registeredAccount
+        }))
+        let store = makeStore(accountStore: accountStore)
+        store.syncAuthChange(anonymousAuth)
+        await store.waitForSync()
+
+        // Act
+
+        store.syncAuthChange(signedInAuth)
+        await store.waitForSync()
+
+        // Assert
+
+        #expect(store.launchState == .preLoggedIn(auth: AccountAuthResult(id: "testAccountId", isAnonymous: false)))
+    }
+
 }

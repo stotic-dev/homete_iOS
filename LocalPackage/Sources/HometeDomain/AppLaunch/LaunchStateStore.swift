@@ -187,6 +187,13 @@ private extension LaunchStateStore {
         }
         isAnonymous = authResult.isAnonymous
 
+        // オンボーディング中のApple連携は、uidが同じまま匿名でなくなったこととして届く。
+        // アカウントは登録済みだが、残りのステップ（通知許可・プラン紹介）を終えるまではオンボーディングが状態を持つ
+        if case let .preLoggedIn(currentAuth) = launchState, currentAuth.id == authResult.id {
+            launchState = .preLoggedIn(auth: authResult)
+            return
+        }
+
         guard let account = loadedAccount else {
             guard !Task.isCancelled else { return }
             launchState = .preLoggedIn(auth: authResult)
