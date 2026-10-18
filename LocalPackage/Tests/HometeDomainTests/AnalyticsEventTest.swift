@@ -657,6 +657,36 @@ struct AnalyticsEventTest {
     }
 
     @Test(
+        "画面を初めて開いたときのチュートリアルに関する行動を、screen/action/stepのパラメータを持つscreen_tutorialイベントに変換する",
+        arguments: [
+            (
+                ScreenTutorialAnalyticsAction.completed(screen: .registerHousework),
+                ["screen": "register_housework", "action": "completed"]
+            ),
+            (
+                ScreenTutorialAnalyticsAction.completed(screen: .houseworkTemplate),
+                ["screen": "housework_template", "action": "completed"]
+            ),
+            (
+                ScreenTutorialAnalyticsAction.skipped(screen: .registerHousework, step: "input_source"),
+                ["screen": "register_housework", "action": "skipped", "step": "input_source"]
+            ),
+            (
+                ScreenTutorialAnalyticsAction.skipped(screen: .houseworkTemplate, step: "add_item"),
+                ["screen": "housework_template", "action": "skipped", "step": "add_item"]
+            ),
+        ]
+    )
+    func screenTutorial(
+        action: ScreenTutorialAnalyticsAction,
+        expectedParameters: [String: String]
+    ) {
+        let actual = AnalyticsEvent.screenTutorial(action)
+
+        #expect(actual == AnalyticsEvent(name: "screen_tutorial", parameters: expectedParameters))
+    }
+
+    @Test(
         "App Intentの実行を、action/resultのパラメータを持つapp_intentイベントに変換する",
         arguments: [
             (

@@ -17,6 +17,7 @@ struct DebugMenuView: View {
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
     @Environment(\.appDependencies.appReviewStateClient) var appReviewStateClient
+    @Environment(\.appDependencies.screenTutorialStateClient) var screenTutorialStateClient
     /// 設定画面はタブの画面から開くため、通常は必ず注入されている
     @Environment(RegistrationTutorialStore.self) var registrationTutorialStore: RegistrationTutorialStore?
 
@@ -53,6 +54,12 @@ struct DebugMenuView: View {
                     }
                 }
                 Text("設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+                Button(.localized("画面ごとのチュートリアルの記録を消す"), role: .destructive) {
+                    resetScreenTutorials()
+                }
+                Text("家事登録シートと家事テンプレート画面を次に開いたときに、チュートリアルがもう一度表示されます。", bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.textSecondary)
             }
@@ -211,6 +218,14 @@ private extension DebugMenuView {
     func saveAppReviewState(_ state: AppReviewState) {
         appReviewStateClient.save(state)
         appReviewState = state
+    }
+
+    func resetScreenTutorials() {
+        Task {
+            for screen in ScreenTutorial.allCases {
+                await screenTutorialStateClient.saveHasSeen(screen, false)
+            }
+        }
     }
 
 }

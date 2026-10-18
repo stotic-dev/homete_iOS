@@ -27,6 +27,7 @@ public struct RegisterHouseworkView: View {
     @Environment(\.frequentHouseworkContext) var frequentHouseworkContext
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.appDependencies.houseworkEntryHistoryClient) var houseworkEntryHistoryClient
+    @Environment(\.appDependencies.screenTutorialStateClient) var screenTutorialStateClient
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
     @Environment(\.calendar) var calendar
@@ -46,6 +47,8 @@ public struct RegisterHouseworkView: View {
     @State var isPresentingMemoEditSheet = false
 
     @State var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
+    /// 初めて開いたときに出すチュートリアル。Environmentの依存から作るため、表示されてから用意する
+    @State var tutorialStore: ScreenTutorialStore<RegisterHouseworkTutorialStep>?
 
     let dailyHouseworkList: DailyHouseworkList
     let step: HouseworkAnalyticsStep
@@ -92,7 +95,18 @@ public struct RegisterHouseworkView: View {
             // ボタンの出現でフォームが跳ねないようにする
             .animation(.default, value: pendingEntries.isEmpty)
         }
-        .interactiveDismissDisabled(draft.hasInput)
+        // チュートリアルの表示中は、カードのボタンで閉じてもらう
+        .interactiveDismissDisabled(draft.hasInput || tutorialStep != nil)
+        .tutorialSpotlight(
+            isPresented: tutorialStep != nil,
+            targets: tutorialStep.map(spotlightTargets) ?? []
+        ) {
+            tutorialCard()
+        }
+        .animation(.default, value: tutorialStep)
+        .onChange(of: tutorialStep) { _, newStep in
+            onChangeTutorialStep(newStep)
+        }
         .sheet(isPresented: $isPresentingPendingList) {
             PendingEntriesSheet(
                 entries: pendingEntries,
@@ -145,6 +159,9 @@ public struct RegisterHouseworkView: View {
         }
         .task {
             await loadEntryHistory()
+        }
+        .task {
+            await startTutorialIfNeeded()
         }
         .trackScreenView(.houseworkRegister)
     }
@@ -204,6 +221,30 @@ private extension RegisterHouseworkView {
     }
     #endif
 
+    @ViewBuilder
+    func tutorialCard() -> some View {
+        if let tutorialStore,
+           let step = tutorialStore.currentStep {
+            RegisterHouseworkTutorialCard(
+                step: step,
+                steps: tutorialStore.steps,
+                onTapNext: {
+                    Task {
+                        await tutorialStore.next(from: step)
+                    }
+                },
+                onTapBack: {
+                    tutorialStore.back(from: step)
+                },
+                onTapClose: {
+                    Task {
+                        await tutorialStore.close()
+                    }
+                }
+            )
+        }
+    }
+
     func registerButton() -> some View {
         NavigationBarPrimaryActionButton(systemImage: "paperplane.fill") {
             tappedRegisterButton()
@@ -239,6 +280,7 @@ private extension RegisterHouseworkView {
         }
         .floatingButtonStyle()
         .disabled(!draft.canQueueCurrentInput)
+        .tutorialSpotlightTarget(.registerHouseworkQueueButton)
     }
 
     func pendingEntriesButton() -> some View {
@@ -266,6 +308,23 @@ private extension RegisterHouseworkView {
         }
     }
 
+    var tutorialStep: RegisterHouseworkTutorialStep? {
+        tutorialStore?.currentStep
+    }
+
+    func spotlightTargets(_ step: RegisterHouseworkTutorialStep) -> [TutorialSpotlightID] {
+        switch step {
+        case .inputSource:
+            [.registerSourcePicker]
+
+        case .queue:
+            [.registerHouseworkQueueButton]
+
+        case .saveAsFrequent:
+            [.registerHouseworkSaveAsFrequent]
+        }
+    }
+
     var saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState {
         draft.saveAsFrequentState(context: frequentHouseworkContext, limitPolicy: limitPolicy)
     }
@@ -284,6 +343,29 @@ private extension RegisterHouseworkView {
             calendar: calendar
         )
         selectedTab = .initial(hasFrequentHousework: !frequentHouseworkContext.isEmpty)
+    }
+
+    /// - Note: 無料プランでいつもの家事が上限に達していると、保存のスイッチの代わりにプランの案内が出て
+    ///         説明どおりに操作できないため、いつもの家事に保存するステップを除く
+    func startTutorialIfNeeded() async {
+        let store = tutorialStore ?? ScreenTutorialStore(
+            stateClient: screenTutorialStateClient,
+            analyticsClient: analyticsClient
+        )
+        tutorialStore = store
+        let isFrequentLimitReached = limitPolicy.isLimitReached(currentCount: frequentHouseworkContext.items.count)
+        await store.startIfNeeded(skipping: isFrequentLimitReached ? [.saveAsFrequent] : [])
+    }
+
+    /// 「続けて入力する」と「いつもの家事に保存する」は「新しく入力」にしかないため、説明するときに切り替える
+    func onChangeTutorialStep(_ step: RegisterHouseworkTutorialStep?) {
+        switch step {
+        case .queue, .saveAsFrequent:
+            selectedTab = .manual
+
+        case .inputSource, nil:
+            break
+        }
     }
 
     func tappedCancelButton() {
@@ -555,6 +637,80 @@ extension RegisterHouseworkView {
     .environment(SubscriptionStore())
     #if canImport(Prefire)
         .snapshot(perceptualPrecision: 0.95)
+    #endif
+}
+
+// - Note: チュートリアルのスポットライトは、切り抜くUIが位置を伝えてから描き直されるため、少し待ってから撮る
+#Preview("RegisterHouseworkView_チュートリアル_入力方法") {
+    RegisterHouseworkView(
+        selectedTab: .frequent,
+        tutorialStore: .init(currentStep: .inputSource),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(\.frequentHouseworkContext, RegisterHouseworkView.previewFrequentHouseworkContext())
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_まとめて登録") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .queue),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_上限でまとめて登録") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .queue, steps: [.inputSource, .queue]),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_いつもの家事に保存") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .saveAsFrequent),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
     #endif
 }
 

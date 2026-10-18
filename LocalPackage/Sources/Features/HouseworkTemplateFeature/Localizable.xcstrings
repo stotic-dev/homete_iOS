@@ -11,6 +11,17 @@
         }
       }
     },
+    "お風呂掃除" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean Bathroom"
+          }
+        }
+      }
+    },
     "くり返し" : {
       "localizations" : {
         "en" : {
@@ -41,6 +52,16 @@
         }
       }
     },
+    "はじめに「テンプレートを作成する」を押すと、くり返す家事を登録できるようになります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First, tap \"Create a Template.\" Then you can add chores that repeat."
+          }
+        }
+      }
+    },
     "ほかのメンバーがテンプレートを編集しています。同時に保存すると、編集した内容が消えることがあります。" : {
       "localizations" : {
         "en" : {
@@ -61,12 +82,44 @@
         }
       }
     },
+    "ゴミ出し" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Out Trash"
+          }
+        }
+      }
+    },
+    "シーツの洗濯" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wash Sheets"
+          }
+        }
+      }
+    },
     "テンプレートはまだありません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No templates yet"
+          }
+        }
+      }
+    },
+    "テンプレートを作る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a Template"
           }
         }
       }
@@ -107,6 +160,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Another member updated the templates in a way that conflicts with your changes, so your changes need to be discarded. Continue?"
+          }
+        }
+      }
+    },
+    "保存して反映する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save to Apply"
           }
         }
       }
@@ -181,6 +244,16 @@
         }
       }
     },
+    "家事を追加する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Chores"
+          }
+        }
+      }
+    },
     "家事テンプレート" : {
       "localizations" : {
         "en" : {
@@ -191,12 +264,33 @@
         }
       }
     },
+    "家事ボードに自動で並ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added to Your List Automatically"
+          }
+        }
+      }
+    },
     "戻す" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Revert"
+          }
+        }
+      }
+    },
+    "掃除機がけ" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacuum"
           }
         }
       }
@@ -230,6 +324,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your current edits will be discarded."
+          }
+        }
+      }
+    },
+    "登録した家事は、その曜日やその日の家事ボードに自動で並びます。毎回登録しなくて済みます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores you add show up on your chore list on those days automatically, so you don't have to add them each time."
           }
         }
       }
@@ -274,6 +378,16 @@
         }
       }
     },
+    "追加や変更は、右上の✓で保存するまで家事ボードに反映されません。保存すると、パートナーにも共有されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changes won't appear on your chore list until you save them with ✓ at the top right. Once saved, they're shared with your partner too."
+          }
+        }
+      }
+    },
     "週単位で繰り返す家事を登録できます" : {
       "localizations" : {
         "en" : {
@@ -290,6 +404,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "＋から、くり返す曜日や毎月の日にちを選んで家事を追加できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap + to add a chore and choose which days of the week or which day of the month it repeats."
           }
         }
       }
