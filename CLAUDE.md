@@ -288,6 +288,11 @@ launching → notLoggedIn → Sign In with Apple
    - PR作成直後の1回目は`create-release-pr.yml`が`workflow_dispatch`で起動する。`[ci skip]`付きのbotコミットでは走らないので、必要なら手動実行する
    - 意図しない差分の確認は`release-snapshot-review`スキルで行う。経緯は[ADR-0039](doc/adr/0039-release-snapshot-diff-with-reg-cli.md)
 
+9. **`merge-main-into-release.yml`** - リリースPRのブランチへ最新のmainを取り込む（手動実行のみ）
+   - `release_branch`入力が空なら、オープンなリリースPRから取り込み先を解決する（1件に定まらなければ失敗）
+   - mergeで取り込み、force pushはしない。コンフリクトしたら失敗するので、ローカルで解消してpushする
+   - GITHUB_TOKENのpushでは他のワークフローが発火しないため、`release-snapshot-diff.yml`と、メタデータに変更が入ったときの`sync-metadata.yml`をここから起動する。Xcode Cloudは通常どおり起動する
+
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 
 | エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
@@ -312,6 +317,8 @@ launching → notLoggedIn → Sign In with Apple
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info.plist` をデコード配置
    - `ci_pre_xcodebuild.sh`: `$CI_BUILD_NUMBER` を `agvtool` で全Targetに反映
    - `ci_post_xcodebuild.sh`: archive成功時に `v{version}` の git タグを作成（`$GITHUB_TOKEN` 設定時のみpush）
+
+ビルドの状態・失敗したテスト・ログ・xcresultは `scripts/xcode-cloud.sh`（App Store Connect API）で取れる。手順は `xcode-cloud-check` スキル。Claude Codeのサンドボックス外で動く設定にしてあり、単独で呼ぶ（[ADR-0049](doc/adr/0049-xcode-cloud-cli-outside-claude-sandbox.md)）。
 
 **コード署名:**
 - Xcode Cloudが自動管理（証明書・プロビジョニングプロファイルとも）

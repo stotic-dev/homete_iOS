@@ -30,6 +30,7 @@ public extension AppDependencies {
         notificationGuideStateClient: .liveValue,
         appReviewStateClient: .liveValue,
         registrationTutorialStateClient: .liveValue,
+        screenTutorialStateClient: .liveValue,
         pasteboardClient: livePasteboardClient,
         dailyCompletionReminderClient: .liveValue,
         remoteConfigClient: .liveValue,

@@ -23,6 +23,8 @@ public struct HouseworkTemplateScreen: View {
     @CommonError var commonErrorContent
 
     @State var templateEditStore: HouseworkTemplateEditStore
+    /// 初めて開いたときに出すチュートリアル
+    @State var tutorialStore: ScreenTutorialStore<HouseworkTemplateTutorialStep>
     @State var initialDraft: HouseworkTemplateDraft?
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
@@ -31,34 +33,30 @@ public struct HouseworkTemplateScreen: View {
     public static func make() -> some View {
         DependenciesInjectLayer {
             HouseworkTemplateScreen(
-                templateEditStore: .init(houseworkTemplateClient: $0.houseworkTemplateClient)
+                templateEditStore: .init(houseworkTemplateClient: $0.houseworkTemplateClient),
+                tutorialStore: .init(stateClient: $0.screenTutorialStateClient, analyticsClient: $0.analyticsClient)
             )
         }
     }
 
     public var body: some View {
-        NavigationStack {
-            HouseworkTemplateView(
-                initialDraft: $initialDraft,
-                draft: $editingDraft,
-                editorContext: $editorContext,
-                isShowAd: AdDisplayPolicy.shouldShowAds(
-                    isPremium: subscriptionStore.isPremium,
-                    isEnabled: isAdsEnabled
-                ),
-                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
-                loadFailure: loadFailure,
-                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
-                onRetry: { await retry() }
-            )
+        ZStack {
+            templateContent()
+            // スポットライトはチュートリアルの画面の中で閉じるので、後ろの本番の画面のUIは切り抜かれない
+            if let step = tutorialStore.currentStep {
+                tutorialView(step: step)
+            }
         }
-        .environment(templateEditStore)
+        .animation(.default, value: tutorialStore.currentStep)
         .commonError(content: $commonErrorContent)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
+        .task(id: tutorialPrerequisiteLoadStates) {
+            await startTutorialIfNeeded()
+        }
         .task {
             await onAppear()
         }
@@ -87,9 +85,73 @@ public struct HouseworkTemplateScreen: View {
 
 }
 
+// MARK: - UI定義
+
+private extension HouseworkTemplateScreen {
+
+    func templateContent() -> some View {
+        NavigationStack {
+            HouseworkTemplateView(
+                initialDraft: $initialDraft,
+                draft: $editingDraft,
+                editorContext: $editorContext,
+                isShowAd: AdDisplayPolicy.shouldShowAds(
+                    isPremium: subscriptionStore.isPremium,
+                    isEnabled: isAdsEnabled
+                ),
+                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
+                loadFailure: loadFailure,
+                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
+                onRetry: { await retry() }
+            )
+        }
+        .environment(templateEditStore)
+    }
+
+    func tutorialView(step: HouseworkTemplateTutorialStep) -> some View {
+        HouseworkTemplateTutorialView(
+            step: step,
+            steps: tutorialStore.steps,
+            onTapNext: {
+                Task {
+                    await tutorialStore.next(from: step)
+                }
+            },
+            onTapBack: {
+                tutorialStore.back(from: step)
+            },
+            onTapClose: {
+                Task {
+                    await tutorialStore.close()
+                }
+            }
+        )
+    }
+
+}
+
 // MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateScreen {
+
+    /// チュートリアルを出せるかを決める読み込みの状態。変わるたびに出せるかを判断し直す
+    var tutorialPrerequisiteLoadStates: [ListenerLoadState] {
+        [houseworkTemplateListStore.loadState, templateEditStore.loadState]
+    }
+
+    /// テンプレートの有無が分かってから、チュートリアルを出す
+    /// - Note: 作成済みなら作成のステップは要らないので除く。
+    ///         読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らないため待つ。
+    ///         作成済みなら編集の準備が済むまで待つ。準備に失敗するとエラーの表示に切り替わり、
+    ///         その上でチュートリアルを最後まで見ると、使えない画面のまま見たことになってしまうため
+    func startTutorialIfNeeded() async {
+        guard houseworkTemplateListStore.loadState == .loaded else { return }
+
+        let hasTemplate = houseworkTemplateListStore.selectedTemplateId != nil
+        guard !hasTemplate || templateEditStore.loadState == .loaded else { return }
+
+        await tutorialStore.startIfNeeded(skipping: hasTemplate ? [.create] : [])
+    }
 
     func tappedRemoveAdsLink() {
         analyticsClient.log(.advertisement(step: .template))

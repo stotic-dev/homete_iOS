@@ -406,6 +406,37 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 **分析での使い方:** `completed`と`skipped`の比率で、案内が最後まで読まれているかが分かる。`skipped`を`step`で分けると、
 どのステップで離脱しているかが分かり、ステップの数や順番を見直す材料になる。
 
+### `screen_tutorial`
+
+家事登録シート・家事テンプレート画面を初めて開いたときに一度だけ出す、その画面の使い方を説明するチュートリアルでの行動。表示は画面に重ねるオーバーレイで、独立した画面ではないため`screen_view`は送らない。
+
+途中でアプリを終了されたときは見たことにせず、次に画面を開いたときに出し直す。このときイベントは送らない。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `ScreenTutorialAnalyticsAction`、`ScreenTutorialStore` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `screen` | ○ | `register_housework` / `housework_template` | チュートリアルを出した画面 |
+| `action` | ○ | `completed` / `skipped` | 最後まで見たか、途中で閉じたか |
+| `step` | — | 下表 | 閉じたときに表示していたステップ。`skipped`のときのみ付与 |
+
+| `screen` | `step`の値 |
+|---|---|
+| `register_housework` | `input_source` / `queue` / `save_as_frequent` |
+| `housework_template` | `create` / `add_item` / `auto_placement` / `save` |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | `step` | 送信タイミング |
+|---|---|---|
+| `completed` | — | 最後のステップで「はじめる」をタップした |
+| `skipped` | 表示中のステップ | 途中のステップで「閉じる」をタップした |
+
+**分析での使い方:** `screen`ごとに`completed`と`skipped`の比率を見ると、案内が最後まで読まれているかが分かる。
+`skipped`を`step`で分けると、どのステップで離脱しているかが分かり、ステップの数や順番を見直す材料になる。
+
 ### `cohabitant_invitation`
 
 招待リンク（Universal Link / カスタムURLスキーム / クリップボード）による同居人グループの招待・参加における行動。

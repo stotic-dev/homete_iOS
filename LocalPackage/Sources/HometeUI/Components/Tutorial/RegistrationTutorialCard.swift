@@ -8,8 +8,7 @@ import SwiftUI
 
 /// グループ登録の直後のチュートリアルで、ステップごとに「どこで何ができるか」を説明するカード
 ///
-/// 説明の対象のUIは`tutorialSpotlight`で切り抜いて見せ、このカードはその上に重ねる。
-/// 操作はさせず、説明だけにとどめる。タブバーの項目は位置を取得できず切り抜けないため、
+/// タブバーの項目は位置を取得できず切り抜けないため、
 /// タブと同じアイコンと「どこから開けるか」の一文で場所を伝える。
 public struct RegistrationTutorialCard: View {
 
@@ -31,85 +30,17 @@ public struct RegistrationTutorialCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: .space16) {
-            header
-            HStack(alignment: .top, spacing: .space16) {
-                icon
-                VStack(alignment: .leading, spacing: .space8) {
-                    Text(title)
-                        .font(with: .headLineS)
-                        .foregroundStyle(.textPrimary)
-                    Text(message)
-                        .font(with: .body)
-                        .foregroundStyle(.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Label {
-                        Text(location)
-                    } icon: {
-                        Image(systemName: "hand.point.up.left")
-                    }
-                    .font(with: .caption)
-                    .foregroundStyle(.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            footer
-        }
-        .sectionCardStyle()
-        .id(step)
-        .transition(.opacity)
-        .accessibilityElement(children: .contain)
-        .accessibilityAddTraits(.isModal)
-    }
-
-}
-
-// MARK: UI定義
-
-private extension RegistrationTutorialCard {
-
-    var header: some View {
-        HStack {
-            Text(verbatim: "\(step.index + 1) / \(RegistrationTutorialStep.allCases.count)")
-                .font(with: .boldCaption)
-                .foregroundStyle(.textSecondary)
-                .accessibilityLabel(
-                    .localized(
-                        "全\(RegistrationTutorialStep.allCases.count)ステップ中\(step.index + 1)ステップ目",
-                        comment: "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ"
-                    )
-                )
-            Spacer()
-            Button(.localized("閉じる"), action: onTapClose)
-                .font(with: .caption)
-                .foregroundStyle(.textSecondary)
-        }
-    }
-
-    /// 「次へ」はステップによらず同じ位置に置き、続けて押せるようにする
-    var footer: some View {
-        HStack(spacing: .space8) {
-            if !isFirstStep {
-                Button(.localized("前へ"), action: onTapBack)
-                    .subPrimaryButtonStyle()
-            }
-            Spacer()
-            Button(isLastStep ? .localized("はじめる") : .localized("次へ"), action: onTapNext)
-                .primaryButtonStyle()
-        }
-    }
-
-    var icon: some View {
-        Image(systemName: systemImage)
-            .font(.title2)
-            .foregroundStyle(iconForegroundStyle)
-            .frame(width: .space48, height: .space48)
-            .background {
-                Circle()
-                    .fill(.backgroundScreen)
-            }
-            .accessibilityHidden(true)
+        TutorialCard(
+            step: step,
+            systemImage: systemImage,
+            iconForegroundStyle: iconForegroundStyle,
+            title: title,
+            message: message,
+            location: location,
+            onTapNext: onTapNext,
+            onTapBack: onTapBack,
+            onTapClose: onTapClose
+        )
     }
 
 }
@@ -117,14 +48,6 @@ private extension RegistrationTutorialCard {
 // MARK: 表示の属性
 
 private extension RegistrationTutorialCard {
-
-    var isFirstStep: Bool {
-        step.previous == nil
-    }
-
-    var isLastStep: Bool {
-        step.next == nil
-    }
 
     var systemImage: String {
         switch step {

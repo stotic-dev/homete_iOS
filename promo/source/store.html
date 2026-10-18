@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>homeau App Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=block" rel="stylesheet">
+<style>
+:root{
+  --screen:#FBF8F2; --card:#fff; --accent:#2A8454; --accentSub:#E3F3E8; --textAccent:#1F6B44;
+  --reward:#F2B035; --rewardSub:#FFF1D2; --textReward:#8A5A00; --thanks:#EC7290; --thanksSub:#FDE7EC;
+  --textThanks:#B23A5A; --text:#262833; --text2:#66736A; --eyebrow:#D9822B; --seg:#D8E6DD;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:886px;height:1920px;overflow:hidden;background:var(--screen)}
+body{font-family:"Zen Maru Gothic",sans-serif;color:var(--text)}
+/* everything is laid out in iPhone points (393x852) and scaled to 886x1920 */
+#stage{position:absolute;left:0;top:0;width:393px;height:852px;transform:scale(2.25445);transform-origin:0 0;overflow:hidden;background:var(--screen)}
+.scr{position:absolute;inset:0;background:var(--screen);opacity:0}
+.abs{position:absolute}
+.sb{position:absolute;left:0;right:0;top:0;height:54px;display:flex;justify-content:space-between;align-items:center;padding:6px 30px 0 46px;font:600 17px -apple-system,"Zen Maru Gothic";z-index:5}
+.sb svg{display:block}
+.navbtn{position:absolute;top:62px;height:44px;border-radius:22px;background:rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(0,0,0,.08),inset 0 0 0 1px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;gap:10px}
+.title{position:absolute;top:62px;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+.dates{position:absolute;top:150px;left:0;right:0;display:flex;justify-content:center;gap:12px}
+.d{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;background:var(--accentSub)}
+.d.today{background:var(--accent);color:#fff;font-size:15px}
+.d.f{opacity:.45;width:44px;height:44px;margin-top:4px}
+.seg{position:absolute;left:16px;right:16px;height:34px;border-radius:17px;background:var(--seg);display:flex;padding:2px;font-size:13px}
+.seg div{flex:1;display:flex;align-items:center;justify-content:center;border-radius:15px;color:var(--text2);position:relative;z-index:1}
+.seg .knob{position:absolute;top:2px;bottom:2px;border-radius:15px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1);z-index:0}
+.row{position:absolute;left:16px;right:16px;height:62px;border-radius:16px;background:#fff;display:flex;align-items:center;padding:0 14px;gap:14px}
+.pt{width:44px;height:44px;border-radius:50%;background:var(--rewardSub);color:var(--textReward);font-weight:900;font-size:19px;display:flex;align-items:center;justify-content:center;flex:none}
+.nm{flex:1;font-weight:700;font-size:16px}
+.ck{width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.more{color:var(--text2);font-weight:900;letter-spacing:2px}
+.fab{position:absolute;right:20px;bottom:120px;width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;font-size:36px;font-weight:500;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.tabbar{position:absolute;left:96px;right:96px;bottom:30px;height:64px;border-radius:32px;background:rgba(255,255,255,.9);box-shadow:0 2px 10px rgba(0,0,0,.1),inset 0 0 0 1px rgba(0,0,0,.05);display:flex;padding:4px}
+.tab{flex:1;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;gap:3px}
+.tab.on{background:#EDEAE4;color:var(--accent)}
+.home-ind{position:absolute;left:130px;right:130px;bottom:8px;height:5px;border-radius:3px;background:#222}
+.card{position:absolute;left:16px;right:16px;background:#fff;border-radius:22px}
+.bar{height:12px;border-radius:6px;background:var(--accentSub);overflow:hidden;display:flex}
+.mrow{display:flex;justify-content:space-between;align-items:center;font-size:15px;margin-top:10px}
+.mrow b{font-weight:900}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:10px}
+.tap{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(60,60,60,.22);border:3px solid rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(0,0,0,.08);opacity:0;z-index:30}
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.25);opacity:0;z-index:9}
+.sheet{position:absolute;left:0;right:0;top:60px;bottom:0;background:#fff;border-radius:34px 34px 0 0;transform:translateY(900px);box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:10}
+.circbtn{position:absolute;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+/* caption overlay */
+.cap{position:absolute;left:18px;right:18px;bottom:184px;background:rgba(255,255,255,.96);border-radius:24px;padding:16px 18px 18px;text-align:center;box-shadow:0 10px 30px rgba(60,40,10,.18);opacity:0;z-index:40}
+.cap .eb{font-size:12px;font-weight:700;color:var(--eyebrow);letter-spacing:.1em;margin-bottom:6px}
+.cap .t{font-size:24px;font-weight:900;line-height:1.35}
+.heart{position:absolute;color:var(--thanks);line-height:1}
+/* title / end */
+.full{position:absolute;inset:0;opacity:0;background:linear-gradient(170deg,#F7ECDF 0%,#F3E2CE 100%);z-index:50;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(40px)}
+.big{position:absolute;left:0;right:0;text-align:center;font-weight:900;font-size:36px;line-height:1.35}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ===== B: 家事ボード ===== -->
+<div class="scr" id="board">
+  <div class="sb"><span>9:41</span><span id="sbi"></span></div>
+  <div class="navbtn" style="right:16px;width:110px">選択 <svg width="22" height="18" viewBox="0 0 22 18"><rect x="1" y="1" width="20" height="16" rx="3" fill="none" stroke="#262833" stroke-width="1.6"/><path d="M5 6h12M5 9h12M5 12h8" stroke="#262833" stroke-width="1.6"/></svg></div>
+  <div class="abs" style="left:18px;top:118px;font-weight:700;font-size:17px">2026年10月</div>
+  <div class="dates"><div class="d f">16</div><div class="d">17</div><div class="d today">今日</div><div class="d">19</div><div class="d f">20</div></div>
+  <div class="seg" style="top:222px"><span class="knob" id="bKnob" style="left:2px;width:calc(50% - 2px)"></span><div style="font-weight:700;color:var(--text)">未完了</div><div>完了</div></div>
+  <div id="bRows">
+    <div class="row" id="br0" style="top:272px"><div class="pt">20</div><div class="nm">洗濯</div><div class="ck" id="bck0"></div><div class="more">•••</div></div>
+    <div class="row" id="br1" style="top:346px"><div class="pt">39</div><div class="nm">掃除</div><div class="ck"></div><div class="more">•••</div></div>
+    <div class="row" id="br2" style="top:420px"><div class="pt">50</div><div class="nm">お弁当準備</div><div class="ck"></div><div class="more">•••</div></div>
+    <div class="row" id="br3" style="top:494px"><div class="pt">20</div><div class="nm">生ゴミ出し</div><div class="ck"></div><div class="more">•••</div></div>
+  </div>
+  <div class="fab">+</div>
+  <div class="tabbar"><div class="tab"><svg width="20" height="22" viewBox="0 0 20 22"><rect x="2" y="3" width="16" height="18" rx="3" fill="#262833"/><rect x="6" y="1" width="8" height="4" rx="1.5" fill="#262833" stroke="#fff" stroke-width="1"/><path d="M6 10h8M6 13h8M6 16h5" stroke="#fff" stroke-width="1.6"/></svg><span>ダッシュボード</span></div><div class="tab on"><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="#2A8454" stroke-width="1.8"/><circle cx="8" cy="10" r="2.2" fill="#2A8454"/><circle cx="14" cy="10" r="2.2" fill="#2A8454"/><path d="M4.5 16c1-2 2.4-3 3.5-3s2.5 1 3 2c.5-1 1.9-2 3-2s2.5 1 3.5 3" fill="#2A8454"/></svg><span>家事</span></div></div>
+  <div class="home-ind"></div>
+  <div class="dim" id="bDim"></div>
+  <!-- 完了にするシート -->
+  <div class="sheet" id="cSheet">
+    <div class="circbtn" style="left:16px;top:14px;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.12)"><svg width="18" height="18"><path d="M3 3l12 12M15 3L3 15" stroke="#262833" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="abs" style="left:0;right:0;top:24px;text-align:center;font-weight:700;font-size:17px">完了にする</div>
+    <div class="circbtn" id="cOk" style="right:16px;top:14px;background:var(--accent)"><svg width="22" height="18"><path d="M2 9l6 6L20 3" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="abs" style="left:18px;top:104px;font-weight:700;font-size:15px">どれくらいがんばりましたか <span style="display:inline-flex;width:17px;height:17px;border-radius:50%;border:1.5px solid #7FB596;color:#7FB596;font-size:11px;align-items:center;justify-content:center">?</span></div>
+    <div class="seg" style="top:136px"><span class="knob" id="cKnob" style="left:2px;width:calc(33.3% - 2px)"></span><div id="e0" style="font-weight:700;color:var(--text)">ふつう</div><div id="e1">がんばった</div><div id="e2">すごくがんばった</div></div>
+    <div class="abs" id="cPts" style="left:20px;top:178px;font-size:13px;color:var(--text2);opacity:0">20pt → <b style="color:var(--textReward)">24pt</b></div>
+    <div class="abs" style="left:18px;top:212px;font-weight:700;font-size:15px">担当者</div>
+    <div class="abs" style="left:18px;right:18px;top:242px;font-size:15px">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid #E6E2DA"><svg width="18" height="18"><circle cx="9" cy="9" r="9" fill="#2A8454"/><path d="M5 9l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg><span style="flex:1">たいち</span><span style="color:var(--text2)" id="cAlloc">100%・20pt</span></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px"><svg width="18" height="18"><circle cx="9" cy="9" r="8" fill="none" stroke="#66736A" stroke-width="1.5"/></svg><span>はなこ</span></div>
+    </div>
+  </div>
+  <!-- ほめっとのごほうび -->
+  <div class="abs" id="praise" style="left:16px;right:16px;bottom:316px;height:150px;opacity:0;z-index:20;background:#fff;border-radius:26px;box-shadow:0 10px 30px rgba(60,40,10,.16)">
+    
+    <img class="abs" id="praiseChar" src="assets/homette_praise.png" style="left:12px;top:8px;width:126px">
+    <div class="abs" id="praiseBubble" style="left:140px;top:52px;background:var(--screen);border-radius:18px;padding:12px 16px;font-weight:700;font-size:15px;box-shadow:0 2px 10px rgba(0,0,0,.08)">やったね、洗濯おわり！</div>
+    <div class="abs" id="plus" style="left:150px;top:22px;font-weight:900;font-size:28px;color:var(--reward)">+24pt</div>
+  </div>
+</div>
+
+<!-- ===== C: はなこのダッシュボード → ありがとうを伝える ===== -->
+<div class="scr" id="dashH">
+  <div class="sb"><span>9:41</span><span class="sbi"></span></div>
+  <div class="circbtn" style="right:16px;top:62px;background:rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.1)"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="none" stroke="#262833" stroke-width="1.7" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8.3 5.1l1.6 1.3-2 3.4-2-.7a7.6 7.6 0 0 1-2 1.2l-.3 2.1h-4l-.3-2.1a7.6 7.6 0 0 1-2-1.2l-2 .7-2-3.4 1.6-1.3a7.7 7.7 0 0 1 0-2.4L2.4 10l2-3.4 2 .7a7.6 7.6 0 0 1 2-1.2l.3-2.1h4l.3 2.1a7.6 7.6 0 0 1 2 1.2l2-.7 2 3.4-1.6 1.2a7.700 7.700 0 0 1 0 2.4z"/></svg></div>
+  <div class="card" style="top:126px;padding:16px">
+    <div style="display:flex;gap:12px;align-items:center"><img src="assets/homette_point.png" style="width:52px"><div style="font-size:14px;line-height:1.6;font-weight:500">今日も1日おつかれさまです。おうちのことを支えあえていて、すてきですね</div></div>
+    <div style="height:1px;background:#EEE9E0;margin:14px 0"></div>
+    <div style="display:flex;gap:10px;font-size:14px;line-height:1.6;font-weight:500"><span style="color:var(--accent);font-size:16px">♥</span><span>たいちさんが1件の家事をしてくれました。ありがとうを伝えてみませんか？</span></div>
+    <div id="hBtn" style="margin-top:12px;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;border-radius:22px;padding:10px 18px;font-weight:700;font-size:15px;box-shadow:0 3px 0 #1F6B44">ありがとうを伝える</div>
+  </div>
+  <div class="card" style="top:350px;padding:18px">
+    <div style="display:flex;justify-content:space-between;font-weight:900;font-size:19px"><span>今日の家事</span><span>1<span style="font-size:14px;color:var(--text2)">/4</span></span></div>
+    <div class="bar" style="margin-top:14px"><div style="width:25%;background:var(--accent)"></div></div>
+    <div class="mrow" style="margin-top:16px"><span><span class="dot" style="background:var(--accent)"></span>たいち</span><b>1件・24pt</b></div>
+    <div class="mrow"><span><span class="dot" style="background:var(--reward)"></span>はなこ</span><b>0件・0pt</b></div>
+  </div>
+  <div class="tabbar"><div class="tab on"><svg width="20" height="22" viewBox="0 0 20 22"><rect x="2" y="3" width="16" height="18" rx="3" fill="#2A8454"/><rect x="6" y="1" width="8" height="4" rx="1.5" fill="#2A8454" stroke="#EDEAE4" stroke-width="1"/><path d="M6 10h8M6 13h8M6 16h5" stroke="#fff" stroke-width="1.6"/></svg><span>ダッシュボード</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="#262833" stroke-width="1.8"/><circle cx="8" cy="10" r="2.2" fill="#262833"/><circle cx="14" cy="10" r="2.2" fill="#262833"/></svg><span style="color:var(--text)">家事</span></div></div>
+  <div class="home-ind"></div>
+  <!-- ありがとうを伝える画面（push） -->
+  <div class="scr" id="thxList" style="opacity:1;transform:translateX(400px);box-shadow:-6px 0 20px rgba(0,0,0,.08)">
+    <div class="sb"><span>9:41</span><span class="sbi"></span></div>
+    <div class="circbtn" style="left:16px;top:62px;background:rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.1)"><svg width="12" height="20"><path d="M10 2L2 10l8 8" stroke="#262833" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></div>
+    <div class="title">ありがとうを伝える</div>
+    <div class="abs" style="left:16px;right:16px;top:150px;display:flex;align-items:center;gap:14px">
+      <div class="pt">20</div><div style="flex:1"><div style="font-weight:700;font-size:16px">洗濯</div><div style="font-size:12px;font-weight:700;margin-top:4px">👤︎ たいちさん</div></div>
+      <div id="thxHeart" style="width:30px;text-align:center;font-size:22px;color:var(--accent)">♡</div>
+    </div>
+    <div class="abs" style="left:16px;right:16px;top:230px;display:flex;align-items:center;gap:14px">
+      <div class="pt">39</div><div style="flex:1"><div style="font-weight:700;font-size:16px">掃除</div><div style="font-size:12px;font-weight:700;margin-top:4px">👤︎ たいちさん</div></div>
+      <div style="width:30px;text-align:center;font-size:22px;color:var(--thanks)">♥</div>
+    </div>
+    <div class="abs" id="hearts" style="inset:0;pointer-events:none"></div>
+    <img class="abs" id="thxChar" src="assets/homette_holdHeart.png" style="left:136px;top:430px;width:120px;opacity:0">
+  </div>
+</div>
+
+<!-- ===== D: たいちのダッシュボード ===== -->
+<div class="scr" id="dashT">
+  <div class="sb"><span>9:41</span><span class="sbi"></span></div>
+  <div class="circbtn" style="right:16px;top:62px;background:rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.1)"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="none" stroke="#262833" stroke-width="1.7" d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8.3 5.1l1.6 1.3-2 3.4-2-.7a7.6 7.6 0 0 1-2 1.2l-.3 2.1h-4l-.3-2.1a7.6 7.6 0 0 1-2-1.2l-2 .7-2-3.4 1.6-1.3a7.7 7.7 0 0 1 0-2.4L2.4 10l2-3.4 2 .7a7.6 7.6 0 0 1 2-1.2l.3-2.1h4l.3 2.1a7.6 7.6 0 0 1 2 1.2l2-.7 2 3.4-1.6 1.2a7.700 7.700 0 0 1 0 2.4z"/></svg></div>
+  <div class="card" id="tCard" style="top:126px;padding:16px">
+    <div style="display:flex;gap:12px;align-items:center"><img src="assets/homette_point.png" style="width:52px"><div style="font-size:14px;line-height:1.6;font-weight:500">今日も洗濯おつかれさまです。毎日の積み重ねが、心地よい暮らしにつながっています</div></div>
+    <div style="height:1px;background:#EEE9E0;margin:14px 0"></div>
+    <div id="tThx" style="display:flex;gap:12px;align-items:center"><img src="assets/homette_thanks.png" style="width:52px"><div style="background:var(--thanksSub);color:var(--textThanks);border-radius:16px;padding:10px 14px;font-size:14px;font-weight:700;line-height:1.5">はなこさんから「ありがとう」が<br>届いたよ</div></div>
+  </div>
+  <div class="card" style="top:376px;padding:18px">
+    <div style="font-weight:900;font-size:19px">10月のがんばり</div>
+    <div class="bar" style="margin-top:14px;background:#F1EEE6"><div id="mA" style="width:0;background:var(--accent)"></div><div id="mB" style="width:0;background:var(--reward)"></div></div>
+    <div class="mrow" style="margin-top:16px"><span><span class="dot" style="background:var(--accent)"></span>たいち</span><b id="vA">0件・0pt</b></div>
+    <div class="mrow"><span><span class="dot" style="background:var(--reward)"></span>はなこ</span><b id="vB">0件・0pt</b></div>
+  </div>
+  <div class="tabbar"><div class="tab on"><svg width="20" height="22" viewBox="0 0 20 22"><rect x="2" y="3" width="16" height="18" rx="3" fill="#2A8454"/><path d="M6 10h8M6 13h8M6 16h5" stroke="#fff" stroke-width="1.6"/></svg><span>ダッシュボード</span></div><div class="tab"><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="#262833" stroke-width="1.8"/><circle cx="8" cy="10" r="2.2" fill="#262833"/><circle cx="14" cy="10" r="2.2" fill="#262833"/></svg><span style="color:var(--text)">家事</span></div></div>
+  <div class="home-ind"></div>
+</div>
+
+<!-- ===== E: 家事テンプレート ===== -->
+<div class="scr" id="tmpl" style="background:#fff">
+  <div class="sb"><span>9:41</span><span class="sbi"></span></div>
+  <div class="circbtn" style="left:16px;top:62px;background:rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.1)"><svg width="12" height="20"><path d="M10 2L2 10l8 8" stroke="#262833" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg></div>
+  <div class="title" id="tmplInline" style="opacity:0">家事テンプレート</div>
+  <div class="abs" style="inset:0;clip-path:inset(108px 0 0 0)"><div id="tmplBody" class="abs" style="left:0;right:0;top:0">
+    <div class="abs" style="left:18px;top:112px;font-weight:900;font-size:32px">家事テンプレート</div>
+    <div id="tmplList" class="abs" style="left:0;right:0;top:170px"></div>
+  </div></div>
+  <div class="fab" style="bottom:60px">+</div>
+  <div class="home-ind"></div>
+</div>
+
+<!-- captions -->
+<div class="cap" id="cap1"><div class="eb">家事の記録</div><div class="t">やった家事は、<br>タップで記録。</div></div>
+<div class="cap" id="cap2"><div class="eb">ごほうび</div><div class="t">ほめっとが、<br>すぐにほめてくれる。</div></div>
+<div class="cap" id="cap3"><div class="eb">ありがとう</div><div class="t">してもらった家事に、<br>「ありがとう」を伝えよう。</div></div>
+<div class="cap" id="cap4"><div class="eb">ふりかえり</div><div class="t">ふたりのがんばりが、<br>ちゃんと見える。</div></div>
+<div class="cap" id="cap5"><div class="eb">テンプレート</div><div class="t">くり返す家事は、<br>テンプレートにおまかせ。</div></div>
+
+<div class="tap" id="tap"></div>
+
+<!-- ===== A: タイトル ===== -->
+<div class="full" id="intro">
+  <div class="blob" style="left:-120px;top:-100px;width:320px;height:320px;background:#E9B67E;opacity:.55"></div>
+  <div class="blob" style="left:240px;top:640px;width:280px;height:280px;background:#F2C48E;opacity:.45"></div>
+  <div class="big" style="top:150px"><span id="i1" style="display:inline-block">毎日の家事、</span><br><span id="i2" style="display:inline-block">だれか見てくれてる？</span></div>
+  <img class="abs" id="puzzled" src="assets/homette_puzzled.png" style="left:76px;top:360px;width:240px">
+</div>
+
+<!-- ===== F: エンド ===== -->
+<div class="full" id="end" style="background:linear-gradient(170deg,#FFFBE8 0%,#F8EBCB 100%)">
+  <div class="blob" style="left:-100px;top:-80px;width:300px;height:300px;background:#F2C48E;opacity:.5"></div>
+  <div class="abs" id="icon" style="left:111px;top:200px;width:171px;height:171px;border-radius:40px;background:#FFFBE0;box-shadow:0 12px 28px rgba(120,80,20,.22);display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="assets/homette_praise.png" style="width:142px"></div>
+  <div class="abs" id="word" style="left:0;right:0;top:400px;text-align:center;font-size:62px;font-weight:900;color:#3A2A18">homeau</div>
+  <div class="abs" id="tag" style="left:0;right:0;top:490px;text-align:center;font-size:24px;font-weight:700;color:#5A4630;line-height:1.5">家事をがんばったら、<br>ほめてもらおう</div>
+  <img class="abs" id="endChar" src="assets/homette_wave.png" style="left:250px;top:660px;width:130px">
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const p=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const ei=x=>x*x*x;
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c=1.70158,c3=c+1;return 1+c3*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const spring=x=>1-Math.exp(-7*x)*Math.cos(9*x); // iOS風のシート
+
+// status bar icons
+const SBI='<svg width="72" height="14" viewBox="0 0 72 14"><g fill="#111"><rect x="0" y="9" width="3" height="4" rx="1"/><rect x="5" y="6" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="13" rx="1"/><path d="M30 12.5l2.2-2.4a3.2 3.2 0 0 0-4.4 0zM25.6 7.8l1.4 1.5a4.6 4.6 0 0 1 6 0l1.4-1.5a6.7 6.7 0 0 0-8.8 0zM23.4 5.4l1.4 1.5a7.9 7.9 0 0 1 10.4 0l1.4-1.5a9.9 9.9 0 0 0-13.2 0z"/><rect x="44" y="1" width="24" height="12" rx="3.5" fill="none" stroke="#111" stroke-opacity=".4"/><rect x="46" y="3" width="20" height="8" rx="2"/><rect x="69" y="5" width="2" height="4" rx="1" fill-opacity=".4"/></g></svg>';
+$('sbi').innerHTML=SBI;document.querySelectorAll('.sbi').forEach(e=>e.innerHTML=SBI);
+
+// template list
+const T=[['月曜日',[['掃除',39],['生ゴミ出し',20],['お弁当準備',50]]],['火曜日',[['掃除',39],['プラゴミ出し',20]]],['水曜日',[['掃除',39],['お弁当準備',50]]],['木曜日',[['掃除',39],['生ゴミ出し',20]]],['金曜日',[['掃除',39],['お弁当準備',50]]]];
+let y=0,h='';for(const [d,items] of T){h+=`<div class="abs" style="left:18px;top:${y}px;font-weight:700;font-size:15px">⌄ ${d}</div>`;y+=34;
+  for(const [n,v] of items){h+=`<div class="abs" style="left:24px;right:24px;top:${y}px;height:52px;border-radius:14px;background:#FBF8F2;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 18px"><b style="font-size:15px">${n}</b><div class="pt" style="width:40px;height:40px;font-size:18px">${v}</div></div>`;y+=60;}
+  y+=12;}
+$('tmplList').innerHTML=h;
+
+// hearts
+const H=[];for(let i=0;i<18;i++){const e=document.createElement('div');e.className='heart';e.textContent='♥';$('hearts').appendChild(e);
+  const ang=-Math.PI/2+(i/18-0.5)*Math.PI*1.7;H.push({e,ang,dist:70+((i*37)%80),size:14+((i*13)%20),delay:(i%6)*0.04});}
+
+// center of an element in stage coords
+function ctr(id){const r=$(id).getBoundingClientRect(),s=2.25445;return [(r.left+r.width/2)/s,(r.top+r.height/2)/s]}
+// taps: [time, elementId]
+const TAPS=[[3.3,'bck0'],[4.55,'e1'],[5.35,'cOk'],[10.05,'hBtn'],[11.55,'thxHeart']];
+function tap(t){
+  const el=$('tap');el.style.opacity=0;
+  for(const [tt,id] of TAPS){const q=p(t,tt-.3,tt+.35);if(q>0&&q<1){const [x,y]=ctr(id);
+    const a=eo(p(t,tt-.3,tt-.1)),o=p(t,tt+.1,tt+.35);el.style.left=x+'px';el.style.top=y+'px';
+    el.style.opacity=a*(1-o);el.style.transform=`scale(${1.3-.3*a-.15*Math.sin(p(t,tt-.1,tt+.1)*Math.PI)+o*.6})`;}}
+}
+function cap(id,t,a,b){const i=eo(p(t,a,a+.4)),o=ei(p(t,b-.3,b));$(id).style.opacity=i*(1-o);$(id).style.transform=`translateY(${(1-i)*16}px)`}
+function show(id,t,a,b,fade=.4){$(id).style.opacity=cl(p(t,a,a+fade))*(1-cl(p(t,b-fade,b)))}
+
+window.render=function(t){
+  // --- A: intro 0-2.3 (dissolve out 1.9-2.3)
+  $('intro').style.opacity=1-p(t,1.9,2.3);
+  [['i1',0],['i2',.5]].forEach(([id,s])=>{const x=eo(p(t,s,s+.45));$(id).style.opacity=x;$(id).style.transform=`translateY(${(1-x)*14}px)`});
+  const pz=back(p(t,.1,.6));$('puzzled').style.opacity=cl(p(t,.1,.3));
+  $('puzzled').style.transform=`translateY(${Math.sin(t*3)*4}px) scale(${.6+.4*pz}) rotate(${Math.sin(t*2.2)*3}deg)`;
+
+  // --- B: board 1.9-8.8
+  show('board',t,1.9,8.8,.01); $('board').style.opacity=t>=1.9&&t<8.8?1:0;
+  cap('cap1',t,2.4,5.75); cap('cap2',t,5.85,8.6);
+  const done=t>=3.35; const ck=$('bck0');
+  ck.style.background=done?'var(--accent)':'transparent';
+  ck.innerHTML=done?'<svg width="14" height="12"><path d="M1.5 6l4 4L12.5 2" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>':'';
+  ck.style.transform=`scale(${done?1+.3*Math.sin(p(t,3.35,3.6)*Math.PI):1})`;
+  // sheet up 3.55, down 5.45
+  const su=spring(p(t,3.55,4.25)), sd=eio(p(t,5.45,5.85));
+  $('cSheet').style.transform=`translateY(${(1-su)*900+sd*900}px)`;
+  $('bDim').style.opacity=cl(p(t,3.55,3.85))*(1-p(t,5.45,5.8));
+  // effort: がんばった at 4.6
+  const ef=eio(p(t,4.6,4.85)); const W=(393-32-4)/3;
+  $('cKnob').style.left=(2+ef*W)+'px';
+  $('e0').style.fontWeight=ef>.5?500:700;$('e0').style.color=ef>.5?'var(--text2)':'var(--text)';
+  $('e1').style.fontWeight=ef>.5?700:500;$('e1').style.color=ef>.5?'var(--text)':'var(--text2)';
+  $('cPts').style.opacity=eo(p(t,4.75,5.0));$('cAlloc').textContent=ef>.5?'100%・24pt':'100%・20pt';
+  // row leaves list (moves to 完了) after sheet closes
+  const rl=eio(p(t,5.75,6.15)), rs=eio(p(t,6.0,6.4));
+  $('br0').style.opacity=1-rl;$('br0').style.transform=`translateX(${-rl*40}px) scale(${1-rl*.05})`;
+  ['br1','br2','br3'].forEach(id=>$(id).style.transform=`translateY(${-rs*74}px)`);
+  // praise 5.95-8.4
+  const pr=back(p(t,5.95,6.45));
+  $('praise').style.opacity=cl(p(t,5.95,6.15))*(1-p(t,8.1,8.5));
+  $('praise').style.transform=`translateY(${(1-pr)*40}px) scale(${.92+.08*pr})`;$('praiseChar').style.transform=`translateY(${(1-pr)*30+Math.sin(t*3.2)*3}px) scale(${.7+.3*pr}) rotate(${Math.sin(t*4)*3}deg)`;
+  const bb=back(p(t,6.25,6.6));$('praiseBubble').style.opacity=cl(p(t,6.25,6.4));$('praiseBubble').style.transform=`scale(${.6+.4*bb})`;
+  const pl=p(t,6.4,7.6);$('plus').style.opacity=Math.min(1,Math.sin(pl*Math.PI)*1.6);$('plus').style.transform=`translateY(${-pl*16}px) scale(${.8+.3*eo(p(t,6.4,6.7))})`;
+
+  // --- C: はなこ 8.8-14.6 (dissolve in)
+  $('dashH').style.opacity=cl(p(t,8.4,8.8))*(t<14.6?1:0);
+  cap('cap3',t,9.0,14.3);
+  const push=eio(p(t,10.25,10.7));$('thxList').style.transform=`translateX(${(1-push)*400}px)`;
+  const hb=t>=10.05&&t<10.25;$('hBtn').style.filter=hb?'brightness(.9)':'none';
+  // heart tapped 11.6
+  const hd=t>=11.6;$('thxHeart').textContent=hd?'♥':'♡';$('thxHeart').style.color=hd?'var(--thanks)':'var(--accent)';
+  $('thxHeart').style.transform=`scale(${hd?1+.5*Math.sin(p(t,11.6,11.9)*Math.PI):1})`;
+  H.forEach(o=>{const q=p(t,11.65+o.delay,12.9+o.delay);const r=eo(q)*o.dist;
+    o.e.style.left=(196+Math.cos(o.ang)*r*1.4-o.size/2)+'px';o.e.style.top=(420+Math.sin(o.ang)*r-o.size/2-q*24)+'px';
+    o.e.style.fontSize=o.size+'px';o.e.style.opacity=q>0?(1-ei(q)):0;o.e.style.transform=`scale(${.4+eo(q)})`});
+  const tc=back(p(t,11.7,12.2));$('thxChar').style.opacity=cl(p(t,11.7,11.9))*(1-p(t,13.9,14.3));
+  $('thxChar').style.transform=`translateY(${(1-tc)*60+Math.sin(t*3)*3}px) scale(${.6+.4*tc})`;
+
+  // --- D: たいち 14.3-17.8
+  $('dashT').style.opacity=cl(p(t,14.2,14.6))*(t<17.9?1:0);
+  cap('cap4',t,14.6,17.6);
+  const th=back(p(t,14.7,15.2));$('tThx').style.transform=`scale(${.85+.15*th})`;$('tThx').style.opacity=cl(p(t,14.7,14.9));
+  const g=eio(p(t,15.3,16.4));$('mA').style.width=(51*g)+'%';$('mB').style.width=(48*g)+'%';
+  $('vA').textContent=`${Math.round(18*g)}件・${Math.round(462*g)}pt`;$('vB').textContent=`${Math.round(17*g)}件・${Math.round(440*g)}pt`;
+
+  // --- E: template 17.6-21.0
+  $('tmpl').style.opacity=cl(p(t,17.5,17.9))*(t<21.2?1:0);
+  cap('cap5',t,17.9,20.8);
+  const sc=eio(p(t,18.4,20.4))*170;$('tmplBody').style.transform=`translateY(${-sc}px)`;$('tmplInline').style.opacity=cl((sc-40)/20);
+
+  // --- F: end 20.8-23
+  $('end').style.opacity=cl(p(t,20.7,21.1));
+  const ic=back(p(t,20.9,21.4));$('icon').style.transform=`scale(${ic})`;
+  const w=eo(p(t,21.15,21.6));$('word').style.opacity=w;$('word').style.transform=`translateY(${(1-w)*20}px)`;
+  const tg=eo(p(t,21.4,21.85));$('tag').style.opacity=tg;$('tag').style.transform=`translateY(${(1-tg)*16}px)`;
+  const ec=back(p(t,21.7,22.2));$('endChar').style.transform=`translateY(${(1-ec)*200}px) rotate(${Math.sin(t*4)*4}deg)`;
+
+  tap(t);
+};
+window.DURATION=23;
+render(0);
+</script>
+</body>
+</html>
