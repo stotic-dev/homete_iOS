@@ -70,7 +70,9 @@ struct HouseworkIntentService {
         return isDelivered ? .completed(point: point) : .pendingSync
     }
 
-    /// ありがとうを伝えられる家事（今日と昨日に同居人が終えた家事のうち、まだ自分が送っていないもの）
+    /// ありがとうを伝えられる家事（今日に同居人が終えた家事のうち、まだ自分が送っていないもの）
+    ///
+    /// アプリのありがとうを伝えられる家事の一覧と同じく、今日の家事だけを対象にする
     func thanksCandidates(now: Date) async throws -> [ThanksCandidate] {
         let session = try await sessionUseCase.resolve(requiresLatestVersion: false)
         return try await thanksCandidates(session: session, now: now)
@@ -230,8 +232,7 @@ private extension HouseworkIntentService {
 
     func thanksCandidates(session: AppIntentSession, now: Date) async throws -> [ThanksCandidate] {
         let today = calendar.startOfDay(for: now)
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        async let stored = sessionUseCase.fetchHousework(session: session, days: [yesterday, today], calendar: calendar)
+        async let stored = sessionUseCase.fetchHousework(session: session, days: [today], calendar: calendar)
         async let members = sessionUseCase.fetchMembers(session: session)
         let (items, memberList) = try await (stored, members)
 

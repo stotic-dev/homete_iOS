@@ -9,9 +9,11 @@ import SwiftUI
 
 /// ありがとうを伝えられる家事の一覧
 ///
-/// ダッシュボードの感謝の促しから開く。今日と昨日に同居人が終えた家事を並べ、
+/// ダッシュボードの感謝の促しから開く。今日に同居人が終えた家事を並べ、
 /// ハートのタップでありがとうだけを、行のタップでメッセージを添えて伝えられる。
 /// 送った家事も一覧から消さず、送信済みの表示に切り替える（送った直後に行が消えて戸惑わないように）。
+/// 末尾には、昨日より前の家事を並べる過去のありがとう漏れの一覧へのリンクを置く。
+/// ホームの過去の促しを出し切った後も、過去の一覧に行けるようにするため。
 public struct ThanksTargetListView: View {
 
     @Environment(\.calendar) var calendar
@@ -28,8 +30,11 @@ public struct ThanksTargetListView: View {
     /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
     @State var hasPendingThanksFeedback = false
 
-    public static func make() -> some View {
-        ThanksTargetListView()
+    /// 過去のありがとう漏れの一覧へのリンクをタップした
+    let onTapPastList: () -> Void
+
+    public static func make(onTapPastList: @escaping () -> Void) -> some View {
+        ThanksTargetListView(onTapPastList: onTapPastList)
     }
 
     public var body: some View {
@@ -68,9 +73,12 @@ private extension ThanksTargetListView {
     @ViewBuilder
     func contentView(summary: ThanksPromptSummary) -> some View {
         if summary.thankableItems.isEmpty {
-            Text("ありがとうを伝えられる家事はありません", bundle: #bundle)
-                .font(with: .body)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: .space16) {
+                Text("ありがとうを伝えられる家事はありません", bundle: #bundle)
+                    .font(with: .body)
+                pastListLink()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List {
                 ForEach(summary.thankableItems) { item in
@@ -82,10 +90,33 @@ private extension ThanksTargetListView {
                         .listRowSeparator(.hidden)
                     #endif
                 }
+                pastListLink()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, .space8)
+                    .listRowBackground(Color.clear)
+                #if os(iOS)
+                    .listRowSeparator(.hidden)
+                #endif
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
+    }
+
+    /// 過去のありがとう漏れの一覧へのリンク。今日の家事の邪魔をしないよう、控えめな見た目にする
+    func pastListLink() -> some View {
+        Button {
+            onTapPastList()
+        } label: {
+            HStack(spacing: .space4) {
+                Text("昨日までの家事を見る", bundle: #bundle)
+                Image(systemName: "chevron.right")
+                    .accessibilityHidden(true)
+            }
+            .font(with: .caption)
+            .foregroundStyle(.textSecondary)
+        }
+        .buttonStyle(.plain)
     }
 
     func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
@@ -146,7 +177,7 @@ private extension ThanksTargetListView {
 #Preview("ThanksTargetListView_未送信と送信済み") {
     let today = Date.previewDate(year: 2026, month: 5, day: 18)
     NavigationStack {
-        ThanksTargetListView.make()
+        ThanksTargetListView.make(onTapPastList: {})
     }
     .environment(\.now, today)
     .environment(\.cohabitantMembers, .init(
@@ -190,7 +221,7 @@ private extension ThanksTargetListView {
 
 #Preview("ThanksTargetListView_家事なし") {
     NavigationStack {
-        ThanksTargetListView.make()
+        ThanksTargetListView.make(onTapPastList: {})
     }
     .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
     .environment(HouseworkListStore())

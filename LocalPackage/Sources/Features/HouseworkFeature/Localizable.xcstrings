@@ -355,6 +355,16 @@
         }
       }
     },
+    "この1週間で、まだありがとうを伝えていない家事はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chores from the past week are waiting for your thanks"
+          }
+        }
+      }
+    },
     "この家事は%lldptなので、担当者は%lld人まで選べます" : {
       "localizations" : {
         "ja" : {
@@ -1042,6 +1052,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a Date"
+          }
+        }
+      }
+    },
+    "昨日までの家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier Chores"
+          }
+        }
+      }
+    },
+    "昨日までの家事を見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Earlier Chores"
           }
         }
       }
