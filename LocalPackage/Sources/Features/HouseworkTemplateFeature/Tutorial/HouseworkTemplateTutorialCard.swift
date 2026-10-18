@@ -11,6 +11,8 @@ import SwiftUI
 struct HouseworkTemplateTutorialCard: View {
 
     let step: HouseworkTemplateTutorialStep
+    /// 今回出すステップ。テンプレートを作成済みなら作成のステップを除く
+    var steps = HouseworkTemplateTutorialStep.allCases
     let onTapNext: () -> Void
     let onTapBack: () -> Void
     let onTapClose: () -> Void
@@ -18,6 +20,7 @@ struct HouseworkTemplateTutorialCard: View {
     var body: some View {
         TutorialCard(
             step: step,
+            steps: steps,
             systemImage: systemImage,
             iconForegroundStyle: .textAccent,
             title: title,
@@ -92,6 +95,17 @@ private extension HouseworkTemplateTutorialCard {
 #Preview("HouseworkTemplateTutorialCard_追加", traits: .sizeThatFitsLayout) {
     HouseworkTemplateTutorialCard(step: .addItem, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
+}
+
+#Preview("HouseworkTemplateTutorialCard_作成済みで追加", traits: .sizeThatFitsLayout) {
+    HouseworkTemplateTutorialCard(
+        step: .addItem,
+        steps: [.addItem, .autoPlacement, .save],
+        onTapNext: {},
+        onTapBack: {},
+        onTapClose: {}
+    )
+    .padding(.space16)
 }
 
 #Preview("HouseworkTemplateTutorialCard_自動で並ぶ", traits: .sizeThatFitsLayout) {

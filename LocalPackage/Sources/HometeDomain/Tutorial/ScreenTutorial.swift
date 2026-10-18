@@ -37,7 +37,7 @@ public enum RegisterHouseworkTutorialStep: String, ScreenTutorialStep {
 }
 
 /// 家事テンプレート画面のチュートリアルのステップ
-/// - Note: テンプレートの有無に関係なく、作成から保存までの流れを順に説明する
+/// - Note: 作成から保存までの流れを順に説明する。テンプレートを作成済みなら`create`は飛ばす
 public enum HouseworkTemplateTutorialStep: String, ScreenTutorialStep {
 
     /// テンプレートを作成する

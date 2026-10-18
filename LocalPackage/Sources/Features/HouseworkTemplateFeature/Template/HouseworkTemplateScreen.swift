@@ -61,8 +61,8 @@ public struct HouseworkTemplateScreen: View {
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
-        .task {
-            await tutorialStore.startIfNeeded()
+        .task(id: houseworkTemplateListStore.loadState) {
+            await startTutorialIfNeeded()
         }
         .task {
             await onAppear()
@@ -120,6 +120,7 @@ private extension HouseworkTemplateScreen {
         if let step = tutorialStore.currentStep {
             HouseworkTemplateTutorialCard(
                 step: step,
+                steps: tutorialStore.steps,
                 onTapNext: {
                     Task {
                         await tutorialStore.next(from: step)
@@ -159,6 +160,16 @@ private extension HouseworkTemplateScreen {
 // MARK: - プレゼンテーションロジック
 
 private extension HouseworkTemplateScreen {
+
+    /// テンプレートの有無が分かってから、チュートリアルを出す
+    /// - Note: 作成済みなら作成のステップは要らないので除く。
+    ///         読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らないため待つ
+    func startTutorialIfNeeded() async {
+        guard houseworkTemplateListStore.loadState == .loaded else { return }
+
+        let hasTemplate = houseworkTemplateListStore.selectedTemplateId != nil
+        await tutorialStore.startIfNeeded(skipping: hasTemplate ? [.create] : [])
+    }
 
     func tappedRemoveAdsLink() {
         analyticsClient.log(.advertisement(step: .template))

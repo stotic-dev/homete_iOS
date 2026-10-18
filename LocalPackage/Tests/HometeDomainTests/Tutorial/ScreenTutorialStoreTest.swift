@@ -30,6 +30,21 @@ struct ScreenTutorialStoreTest {
         #expect(await loadedScreens.values == [.registerHousework])
     }
 
+    @Test("飛ばすステップを渡したら、そのステップを除いて最初のステップから出す")
+    func startIfNeeded_skipping_startsWithoutSkippedSteps() async {
+        // Arrange
+        let sut = ScreenTutorialStore<HouseworkTemplateTutorialStep>(
+            stateClient: .init(loadHasSeen: { _ in false })
+        )
+
+        // Act
+        await sut.startIfNeeded(skipping: [.create])
+
+        // Assert
+        #expect(sut.currentStep == .addItem)
+        #expect(sut.steps == [.addItem, .autoPlacement, .save])
+    }
+
     @Test("見たことがあれば出さない")
     func startIfNeeded_seen_doesNotStart() async {
         // Arrange
@@ -156,6 +171,21 @@ struct ScreenTutorialStoreTest {
 
         // Assert
         #expect(sut.currentStep == .create)
+    }
+
+    @Test("ステップを飛ばして出しているときは、飛ばしたステップへ戻さない")
+    func back_skippedPreviousStep_doesNothing() {
+        // Arrange
+        let sut = ScreenTutorialStore(
+            currentStep: HouseworkTemplateTutorialStep.addItem,
+            steps: [.addItem, .autoPlacement, .save]
+        )
+
+        // Act
+        sut.back(from: .addItem)
+
+        // Assert
+        #expect(sut.currentStep == .addItem)
     }
 
     @Test("表示中のステップと違うステップから戻そうとしたら、何もしない")

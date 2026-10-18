@@ -9,7 +9,7 @@ import SwiftUI
 
 /// 家事テンプレート画面のチュートリアルで、本番の画面の上に重ねて表示する画面
 ///
-/// テンプレートの有無で本番の画面に出るUIが変わるため、状態に関係なく作成から保存までを説明できるよう、
+/// テンプレートの有無で本番の画面に出るUIが変わるため、本番の状態に左右されずに説明できるよう、
 /// 本番と同じ`HouseworkTemplateEmptyView`・`HouseworkTemplateListContent`にサンプルの値を渡して表示する。
 /// 操作はスポットライト側で受け止めるため、タップには何も割り当てない。
 struct HouseworkTemplateTutorialView: View {

@@ -13,6 +13,7 @@ import SwiftUI
 public struct TutorialCard<Step: TutorialStep>: View {
 
     let step: Step
+    let steps: [Step]
     let systemImage: String
     let iconForegroundStyle: Color
     let title: LocalizedStringResource
@@ -24,6 +25,7 @@ public struct TutorialCard<Step: TutorialStep>: View {
 
     /// - Parameters:
     ///   - step: 表示するステップ。何ステップ目か・最初か最後かをここから決める
+    ///   - steps: 今回出すステップ。画面の状態によって一部のステップを除くときに渡す
     ///   - systemImage: タイトルの横に出すアイコン
     ///   - iconForegroundStyle: アイコンの色
     ///   - title: 何の説明か
@@ -31,6 +33,7 @@ public struct TutorialCard<Step: TutorialStep>: View {
     ///   - location: どこから使えるか。説明している画面の中にあるUIなら不要
     public init(
         step: Step,
+        steps: [Step] = Step.allCases,
         systemImage: String,
         iconForegroundStyle: Color,
         title: LocalizedStringResource,
@@ -41,6 +44,7 @@ public struct TutorialCard<Step: TutorialStep>: View {
         onTapClose: @escaping () -> Void
     ) {
         self.step = step
+        self.steps = steps
         self.systemImage = systemImage
         self.iconForegroundStyle = iconForegroundStyle
         self.title = title
@@ -80,7 +84,7 @@ public struct TutorialCard<Step: TutorialStep>: View {
             footer
         }
         .sectionCardStyle()
-        .id(step.index)
+        .id(stepIndex)
         .transition(.opacity)
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isModal)
@@ -94,12 +98,12 @@ private extension TutorialCard {
 
     var header: some View {
         HStack {
-            Text(verbatim: "\(step.index + 1) / \(stepCount)")
+            Text(verbatim: "\(stepIndex + 1) / \(stepCount)")
                 .font(with: .boldCaption)
                 .foregroundStyle(.textSecondary)
                 .accessibilityLabel(
                     .localized(
-                        "全\(stepCount)ステップ中\(step.index + 1)ステップ目",
+                        "全\(stepCount)ステップ中\(stepIndex + 1)ステップ目",
                         comment: "チュートリアルの何ステップ目か。1つめは全体のステップ数、2つめは今のステップ"
                     )
                 )
@@ -141,16 +145,20 @@ private extension TutorialCard {
 
 private extension TutorialCard {
 
+    var stepIndex: Int {
+        step.index(in: steps)
+    }
+
     var stepCount: Int {
-        Step.allCases.count
+        steps.count
     }
 
     var isFirstStep: Bool {
-        step.previous == nil
+        step.previous(in: steps) == nil
     }
 
     var isLastStep: Bool {
-        step.next == nil
+        step.next(in: steps) == nil
     }
 
 }

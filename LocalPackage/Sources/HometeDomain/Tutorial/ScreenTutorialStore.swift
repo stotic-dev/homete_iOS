@@ -16,6 +16,8 @@ public final class ScreenTutorialStore<Step: ScreenTutorialStep> {
 
     /// 表示中のステップ。表示していないときはnil
     public private(set) var currentStep: Step?
+    /// 今回出すステップ。画面の状態によって説明が要らないステップを除いたもので、表示順に並ぶ
+    public private(set) var steps: [Step]
 
     // MARK: Dependencies
 
@@ -24,20 +26,24 @@ public final class ScreenTutorialStore<Step: ScreenTutorialStep> {
 
     public init(
         currentStep: Step? = nil,
+        steps: [Step] = Step.allCases,
         stateClient: ScreenTutorialStateClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue
     ) {
         self.currentStep = currentStep
+        self.steps = steps
         self.stateClient = stateClient
         self.analyticsClient = analyticsClient
     }
 
     /// まだ見ていなければ、最初のステップから出す
-    public func startIfNeeded() async {
+    /// - Parameter skippedSteps: 画面の状態から説明が要らないステップ。今回は出さない
+    public func startIfNeeded(skipping skippedSteps: [Step] = []) async {
         guard currentStep == nil,
               await !stateClient.loadHasSeen(Step.screen) else { return }
 
-        currentStep = Step.allCases.first
+        steps = Step.allCases.filter { !skippedSteps.contains($0) }
+        currentStep = steps.first
     }
 
     /// 次のステップへ進める。最後のステップなら終える
@@ -46,7 +52,7 @@ public final class ScreenTutorialStore<Step: ScreenTutorialStep> {
     public func next(from step: Step) async {
         guard currentStep == step else { return }
 
-        if let nextStep = step.next {
+        if let nextStep = step.next(in: steps) {
             currentStep = nextStep
             return
         }
@@ -59,7 +65,7 @@ public final class ScreenTutorialStore<Step: ScreenTutorialStep> {
     ///   （ボタンを素早く2回押したときに、ステップを飛ばさないようにする）
     public func back(from step: Step) {
         guard currentStep == step,
-              let previousStep = step.previous else { return }
+              let previousStep = step.previous(in: steps) else { return }
 
         currentStep = previousStep
     }
