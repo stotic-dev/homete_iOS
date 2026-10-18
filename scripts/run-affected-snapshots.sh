@@ -78,6 +78,9 @@ rm -rf "$ARTIFACTS_DIR"
 status=0
 # TEST_RUNNER_ を付けた環境変数はテストプロセスに渡る。参照PNGの場所は明示しないと、生成コードのある
 # DerivedData側を見てしまい、全件「参照が無い」で失敗する（generateTestTemplate.stencil の snapshotDirectoryOverride）
+# 参照スナップショットを記録するXcode Cloudのランナーは太平洋時間で動いている。タイムゾーンが違うと、
+# 東京時間で固定した日付（previewDate）が表示上1日ずれて差分になるのでそろえる
+TEST_RUNNER_TZ=America/Los_Angeles \
 TEST_RUNNER_SNAPSHOT_REFERENCE_DIR="$REPO_ROOT/$SNAPSHOT_DIR" \
 TEST_RUNNER_SNAPSHOT_ARTIFACTS="$ARTIFACTS_DIR" \
     xcodebuild test-without-building "${xcodebuild_common[@]}" "${only_testing[@]}" -quiet || status=$?

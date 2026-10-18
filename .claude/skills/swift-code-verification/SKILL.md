@@ -314,6 +314,7 @@ VRTの設定（`hometeVRT.xcodeproj`・`.prefire.yml`・テンプレートなど
 - **iOS 27.0のiPhone 16でしか流さない。** 参照スナップショットはXcode CloudのiOS 27.0で記録しており、マイナーバージョンが
   違うだけで描画に差分が出る。iOS 27.0のiPhone 16が無ければエラーで止まるので、他のシミュレータで代用しない。
   ランタイムが無ければユーザーに入れてもらうか、ローカルVRTは飛ばしてCIに任せる
+- テストのタイムゾーンを、Xcode Cloudのランナーと同じ太平洋時間（`America/Los_Angeles`）にする。東京時間で固定した日付（`previewDate`）の表示が1日ずれるのを防ぐため
 - `hometeVRT.xcodeproj` をbuild-for-testingし、Prefireが生成したテストのうち対象モジュールのプレビューだけを `-only-testing` で流す
 - **参照スナップショットは書き換えない。** 参照の無い新しいプレビューは、ライブラリが参照PNGを書き出したうえで失敗する。
   書き出されたPNGはスクリプトが消す（参照の記録はCIが `chore: VRT参照スナップショットを自動更新` で行う）。
