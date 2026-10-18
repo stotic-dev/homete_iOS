@@ -51,6 +51,8 @@ public struct WelcomeScreen: View {
             .navigationDestination(for: WelcomeRoute.self) { route in
                 navigationHandler(route)
             }
+            // NavigationStackに付けると、ログイン画面から戻ったときに送られない。戻るたびに送るよう、1枚目の画面に付ける
+            .trackScreenView(.welcome)
         }
         // ログイン前でも招待リンクは開けるため、表示中に開かれたら読み込み直す
         .task(id: pendingInvitationStore.pendingToken) {
@@ -62,7 +64,6 @@ public struct WelcomeScreen: View {
         .onChange(of: accountLoadFailure, initial: true) {
             onChangeAccountLoadFailure()
         }
-        .trackScreenView(.welcome)
     }
 
 }
