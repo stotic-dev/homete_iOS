@@ -11,6 +11,8 @@ import SwiftUI
 struct RegisterHouseworkTutorialCard: View {
 
     let step: RegisterHouseworkTutorialStep
+    /// 今回出すステップ。いつもの家事が上限に達していれば、いつもの家事に保存するステップを除く
+    var steps = RegisterHouseworkTutorialStep.allCases
     let onTapNext: () -> Void
     let onTapBack: () -> Void
     let onTapClose: () -> Void
@@ -18,6 +20,7 @@ struct RegisterHouseworkTutorialCard: View {
     var body: some View {
         TutorialCard(
             step: step,
+            steps: steps,
             systemImage: systemImage,
             iconForegroundStyle: .textAccent,
             title: title,
@@ -83,6 +86,17 @@ private extension RegisterHouseworkTutorialCard {
 #Preview("RegisterHouseworkTutorialCard_まとめて登録", traits: .sizeThatFitsLayout) {
     RegisterHouseworkTutorialCard(step: .queue, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .padding(.space16)
+}
+
+#Preview("RegisterHouseworkTutorialCard_上限でまとめて登録", traits: .sizeThatFitsLayout) {
+    RegisterHouseworkTutorialCard(
+        step: .queue,
+        steps: [.inputSource, .queue],
+        onTapNext: {},
+        onTapBack: {},
+        onTapClose: {}
+    )
+    .padding(.space16)
 }
 
 #Preview("RegisterHouseworkTutorialCard_いつもの家事に保存", traits: .sizeThatFitsLayout) {

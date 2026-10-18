@@ -227,6 +227,7 @@ private extension RegisterHouseworkView {
            let step = tutorialStore.currentStep {
             RegisterHouseworkTutorialCard(
                 step: step,
+                steps: tutorialStore.steps,
                 onTapNext: {
                     Task {
                         await tutorialStore.next(from: step)
@@ -344,13 +345,16 @@ private extension RegisterHouseworkView {
         selectedTab = .initial(hasFrequentHousework: !frequentHouseworkContext.isEmpty)
     }
 
+    /// - Note: 無料プランでいつもの家事が上限に達していると、保存のスイッチの代わりにプランの案内が出て
+    ///         説明どおりに操作できないため、いつもの家事に保存するステップを除く
     func startTutorialIfNeeded() async {
         let store = tutorialStore ?? ScreenTutorialStore(
             stateClient: screenTutorialStateClient,
             analyticsClient: analyticsClient
         )
         tutorialStore = store
-        await store.startIfNeeded()
+        let isFrequentLimitReached = limitPolicy.isLimitReached(currentCount: frequentHouseworkContext.items.count)
+        await store.startIfNeeded(skipping: isFrequentLimitReached ? [.saveAsFrequent] : [])
     }
 
     /// 「続けて入力する」と「いつもの家事に保存する」は「新しく入力」にしかないため、説明するときに切り替える
