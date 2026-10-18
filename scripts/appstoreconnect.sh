@@ -130,6 +130,17 @@ Usage: appstoreconnect.sh <command> [args...]
     ※ リポジトリから消したファイルの配置は外しません。外すときはASCで手動で外してください
     ※ ASC_APP_ID を指定しない場合は ASC_BUNDLE_ID（デフォルト: taichi.satou.hometekure）からアプリを引きます
 
+アプリプレビュー（ADR-0050）:
+  app-previews sync <version> [dir]
+    dir（デフォルト: fastlane/app_previews）配下の <locale>/<previewType>-<順番>-<名前>.mp4 を、
+    指定バージョン（X.Y.Z）の同じロケールの、previewType の枠に載せます（.mov / .m4v も可）。
+      例: ja/IPHONE_67-01-overview.mp4 → ja の IPHONE_67（6.9インチ。小さい画面には自動で縮小して使われる）
+    1つの枠に3本まで。ファイル名の順番に並べます。
+    動画のMD5をASCの sourceFileChecksum と比べ、同じ動画が同じ順番で載っていれば何もしません（冪等）。
+    違えば、要らない動画を外してから足りない動画をアップロードし、処理が終わるのを待って並べ替えます。
+    ※ ファイルが無いロケール・previewType の枠には触りません
+    ※ 処理は最大30分待ち、それでも終わらなければ警告を出して終了します（失敗した場合はエラー）
+
 Env:
   ASC_KEY_ID        App Store Connect APIキーのKey ID (必須)
   ASC_ISSUER_ID     App Store Connect APIキーのIssuer ID (必須)
@@ -952,6 +963,196 @@ sync_creative_assets() {
   done
 }
 
+# ---- アプリプレビュー（ADR-0050） ----
+
+# アプリプレビューの種類（previewType）。ファイル名の先頭に付けて、どの枠に載せるかを決める
+APP_PREVIEW_TYPES="IPHONE_67 IPHONE_65 IPHONE_61 IPHONE_58 IPHONE_55 IPHONE_47 IPHONE_40 IPHONE_35 IPAD_PRO_3GEN_129 IPAD_PRO_3GEN_11 IPAD_PRO_129 IPAD_105 IPAD_97"
+
+# 拡張子からMIMEタイプを返す
+app_preview_mime_type() {
+  case "${1##*.}" in
+    mp4) echo "video/mp4" ;;
+    mov) echo "video/quicktime" ;;
+    m4v) echo "video/x-m4v" ;;
+  esac
+}
+
+file_md5() {
+  md5 -q "$1" 2>/dev/null || md5sum "$1" | awk '{print $1}'
+}
+
+# アプリプレビューをアップロードする。IDは UPLOADED_PREVIEW_ID に入れる
+# 使い方: upload_app_preview <app_preview_set_id> <file_path>
+upload_app_preview() {
+  local set_id="$1"
+  local file_path="$2"
+  local file_name file_size reserve_body reserve_json preview_id
+
+  file_name=$(basename "$file_path")
+  file_size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path")
+
+  reserve_body=$(jq -n \
+    --arg fileName "$file_name" \
+    --argjson fileSize "$file_size" \
+    --arg mimeType "$(app_preview_mime_type "$file_path")" \
+    --arg setId "$set_id" \
+    '{data:{type:"appPreviews",
+      attributes:({fileName:$fileName,fileSize:$fileSize} + (if $mimeType == "" then {} else {mimeType:$mimeType} end)),
+      relationships:{appPreviewSet:{data:{type:"appPreviewSets",id:$setId}}}}}')
+  reserve_json=$(call POST /v1/appPreviews "$reserve_body")
+  preview_id=$(echo "$reserve_json" | jq -r '.data.id')
+
+  send_upload_operations "$reserve_json" "$file_path"
+
+  call PATCH "/v1/appPreviews/${preview_id}" \
+    "$(jq -n --arg id "$preview_id" --arg checksum "$(file_md5 "$file_path")" \
+      '{data:{type:"appPreviews",id:$id,attributes:{uploaded:true,sourceFileChecksum:$checksum}}}')" > /dev/null
+
+  UPLOADED_PREVIEW_ID="$preview_id"
+}
+
+# アプリプレビューの処理が終わるまで待つ。失敗したら終了する。
+# Appleの説明では処理に最大24時間かかるため、30分（10秒 × 180回）で終わらなければ警告だけ出して進む
+# 使い方: wait_app_preview <app_preview_id> <file_path>
+wait_app_preview() {
+  local preview_id="$1"
+  local file_path="$2"
+  local state preview_json
+
+  for _ in $(seq 1 180); do
+    preview_json=$(call GET "/v1/appPreviews/${preview_id}?fields%5BappPreviews%5D=videoDeliveryState,assetDeliveryState")
+    # assetDeliveryState は非推奨だが、videoDeliveryState が返らない場合に備えて見る
+    state=$(echo "$preview_json" | jq -r '(.data.attributes.videoDeliveryState // .data.attributes.assetDeliveryState).state // empty')
+    case "$state" in
+      COMPLETE)
+        return
+        ;;
+      FAILED)
+        echo "$preview_json" | jq '(.data.attributes.videoDeliveryState // .data.attributes.assetDeliveryState).errors' >&2
+        echo "エラー: ${file_path} の処理に失敗しました。動画の仕様（解像度・長さ・フレームレート・音声）を確認してください" >&2
+        exit 1
+        ;;
+      *)
+        sleep 10
+        ;;
+    esac
+  done
+  echo "警告: ${file_path} の処理が30分以内に終わりませんでした（state: ${state}）。ASCで処理の結果を確認してください" >&2
+}
+
+# 使い方: sync_app_previews <version> [dir]
+sync_app_previews() {
+  local version="$1"
+  local dir="${2:-fastlane/app_previews}"
+
+  if [ -z "$version" ] || [ ! -d "$dir" ]; then
+    echo "エラー: app-previews sync <version> [dir] の形式で指定してください（dir: ${dir}）" >&2
+    exit 1
+  fi
+
+  # ASCに触る前に、ファイル名と本数を確かめる（途中まで同期して止まらないように）
+  local file name preview_type locale_dir
+  for file in "$dir"/*/*; do
+    [ -f "$file" ] || continue
+    name=$(basename "$file")
+    preview_type="${name%%-*}"
+    if [ -z "$(app_preview_mime_type "$file")" ] || [[ " ${APP_PREVIEW_TYPES} " != *" ${preview_type} "* ]] || [ "$preview_type" = "$name" ]; then
+      echo "エラー: ${file} のファイル名は <previewType>-<順番>-<名前>.mp4（.mov / .m4v）にしてください（previewType: ${APP_PREVIEW_TYPES}）" >&2
+      exit 1
+    fi
+  done
+  for preview_type in $APP_PREVIEW_TYPES; do
+    for locale_dir in "$dir"/*/; do
+      if [ "$(find "$locale_dir" -maxdepth 1 -type f -name "${preview_type}-*" | wc -l)" -gt 3 ]; then
+        echo "エラー: ${locale_dir} の ${preview_type} が4本以上あります（1つの枠に載せられるのは3本まで）" >&2
+        exit 1
+      fi
+    done
+  done
+
+  local app_id version_id localizations_json
+  app_id=$(resolve_app_id)
+  resolve_version_id "$app_id" "$version"
+  version_id="$VERSION_ID"
+  localizations_json=$(call GET "/v1/appStoreVersions/${version_id}/appStoreVersionLocalizations?fields%5BappStoreVersionLocalizations%5D=locale&limit=200")
+
+  local locale localization_id files sets_json set_id existing_json desired_json
+  local preview_id order_ids new_ids entry checksum kept_id
+  for locale_dir in "$dir"/*/; do
+    locale=$(basename "$locale_dir")
+    localization_id=$(echo "$localizations_json" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id')
+    if [ -z "$localization_id" ]; then
+      echo "警告: バージョン ${version} にロケール ${locale} が無いため ${locale_dir} をスキップします" >&2
+      continue
+    fi
+
+    # ファイルが無い種類の枠には触らない（Deliverfile の overwrite_screenshots と同じ扱い）
+    for preview_type in $APP_PREVIEW_TYPES; do
+      files=$(find "$locale_dir" -maxdepth 1 -type f -name "${preview_type}-*" | sort)
+      [ -n "$files" ] || continue
+
+      desired_json=$(while IFS= read -r file; do
+        jq -n --arg file "$file" --arg checksum "$(file_md5 "$file")" '{file:$file,checksum:$checksum}'
+      done <<< "$files" | jq -s -c '.')
+
+      sets_json=$(call GET "/v1/appStoreVersionLocalizations/${localization_id}/appPreviewSets?filter%5BpreviewType%5D=${preview_type}&fields%5BappPreviewSets%5D=previewType")
+      set_id=$(echo "$sets_json" | jq -r '.data[0].id // empty')
+      if [ -z "$set_id" ]; then
+        set_id=$(call POST /v1/appPreviewSets "$(jq -n --arg type "$preview_type" --arg localizationId "$localization_id" \
+          '{data:{type:"appPreviewSets",attributes:{previewType:$type},
+            relationships:{appStoreVersionLocalization:{data:{type:"appStoreVersionLocalizations",id:$localizationId}}}}}')" | jq -r '.data.id')
+      fi
+
+      # 枠に載っている動画を、並び順のまま [{id, checksum, state}] にまとめる
+      existing_json=$(call GET "/v1/appPreviewSets/${set_id}/appPreviews?fields%5BappPreviews%5D=fileName,sourceFileChecksum,videoDeliveryState,assetDeliveryState&limit=50" | jq -c '
+        [.data[] | {id, checksum: (.attributes.sourceFileChecksum // ""),
+          state: ((.attributes.videoDeliveryState // .attributes.assetDeliveryState).state // "")}]')
+
+      if [ "$(jq -n --argjson existing "$existing_json" --argjson desired "$desired_json" \
+        '($existing | map(.checksum)) == ($desired | map(.checksum)) and all($existing[]; .state != "FAILED")')" = "true" ]; then
+        echo "変更なし: ${locale} / ${preview_type}" >&2
+        continue
+      fi
+
+      # 1つの枠に載せられるのは3本までで、先に足すと上限を超えることがあるため、要らない動画を先に外す。
+      # 同じ中身が複数あるときや、処理に失敗したものも外す
+      for preview_id in $(jq -n -r --argjson existing "$existing_json" --argjson desired "$desired_json" '
+        ($desired | map(.checksum)) as $wanted
+        | $existing | to_entries[] | .key as $k | .value as $v
+        | select($v.state == "FAILED" or ($wanted | index($v.checksum) | not)
+          or ([$existing[:$k][] | select(.state != "FAILED") | .checksum] | index($v.checksum)))
+        | $v.id'); do
+        call DELETE "/v1/appPreviews/${preview_id}" > /dev/null
+        echo "外しました: ${locale} / ${preview_type}（preview: ${preview_id}）" >&2
+      done
+
+      order_ids=()
+      new_ids=()
+      while IFS= read -r file; do
+        checksum=$(file_md5 "$file")
+        kept_id=$(echo "$existing_json" | jq -r --arg c "$checksum" '[.[] | select(.checksum == $c and .state != "FAILED")][0].id // empty')
+        if [ -n "$kept_id" ]; then
+          order_ids+=("$kept_id")
+          continue
+        fi
+        echo "アップロード中: ${file}" >&2
+        upload_app_preview "$set_id" "$file"
+        order_ids+=("$UPLOADED_PREVIEW_ID")
+        new_ids+=("${UPLOADED_PREVIEW_ID}:${file}")
+      done <<< "$files"
+
+      for entry in "${new_ids[@]}"; do
+        wait_app_preview "${entry%%:*}" "${entry#*:}"
+        echo "アップロードしました: ${entry#*:} → ${locale} / ${preview_type}" >&2
+      done
+
+      # ファイル名の順番に並べる
+      call PATCH "/v1/appPreviewSets/${set_id}/relationships/appPreviews" \
+        "$(printf '%s\n' "${order_ids[@]}" | jq -R . | jq -s -c '{data: map({type:"appPreviews",id:.})}')" > /dev/null
+    done
+  done
+}
+
 # subscriptionの現在の価格を "territory<TAB>pricePointId<TAB>customerPrice" 形式で出力する
 # territory は include に明示しないと relationships に含まれないため注意（実機確認済み）
 # 使い方: list_subscription_prices <subscription_id>
@@ -1531,6 +1732,15 @@ main() {
     creative-assets)
       if [ "${1:-}" = "sync" ]; then
         sync_creative_assets "${2:-}" "${3:-}"
+      else
+        usage
+        exit 1
+      fi
+      ;;
+
+    app-previews)
+      if [ "${1:-}" = "sync" ]; then
+        sync_app_previews "${2:-}" "${3:-}"
       else
         usage
         exit 1
