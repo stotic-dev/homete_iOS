@@ -1,7 +1,7 @@
 # 初回インストール時のオンボーディング改善 実装方針
 
 > 関連Issue: [#461 匿名認証とApple連携の基盤](https://github.com/stotic-dev/homete_iOS/issues/461)、[#462 ログイン前の説明画面](https://github.com/stotic-dev/homete_iOS/issues/462)、[#463 パートナー登録のステップとやることリスト](https://github.com/stotic-dev/homete_iOS/issues/463)
-> ブランチ: `feat/461-anonymous-auth-link-apple`
+> ブランチ: `feat/461-anonymous-auth-link-apple`（#461）、`feat/462-welcome-anonymous-start`（#462）
 > 匿名認証の採用経緯: [ADR-0051](../adr/0051-start-with-anonymous-auth-and-link-apple-later.md)
 
 ## ステータス
@@ -310,10 +310,10 @@ enum OnboardingStep: Hashable, CaseIterable {
 
 **#462: 説明画面**
 
-- [ ] 説明画面（3枚・「はじめる」・「すでにアカウントをお持ちの方」）
-- [ ] `RootView`: `.notLoggedIn`で説明画面を出す
-- [ ] 招待者名の表示、`fetchcohabitantinvitation`の未認証対応
-- [ ] Analytics: 説明画面の画面イベント、匿名サインインの`login`
+- [x] 説明画面（3枚・「はじめる」・「すでにアカウントをお持ちの方」）
+- [x] `RootView`: `.notLoggedIn`で説明画面を出す
+- [x] 招待者名の表示、`fetchcohabitantinvitation`の未認証対応
+- [x] Analytics: 説明画面の画面イベント、匿名サインインの`login`
 
 **#463: パートナー登録のステップとやることリスト**
 

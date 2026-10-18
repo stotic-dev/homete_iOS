@@ -157,7 +157,7 @@ View → Store（AppDependenciesを受け取る）
 - `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する。アプリは通知の種類を`data`に載せ、受け取った端末がその言語で文面を組み立て直す（[doc/localization.md](doc/localization.md)）
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 - `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
-- `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）
+- `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）。招待の概要を返す`fetchcohabitantinvitation`だけは、ログイン前の説明画面で招待者名を出すため未認証でも呼べる
 - `deleteanonymousaccount` - 呼び出し元の匿名アカウントを削除する（v2 callable）。匿名のアカウントは再認証できず、時間がたつと端末から削除できないため、退会と既存のアカウントへの切り替えで使う。Appleと連携済みのユーザーは`failed-precondition`で拒否する
 - `cleanupanonymousaccounts` - 最後に使われてから30日たった匿名アカウントを毎日削除する（v2 scheduled、Cloud Scheduler）。後片付けは`deleteuserdata`に任せる（[ADR-0051](doc/adr/0051-start-with-anonymous-auth-and-link-apple-later.md)）
 - `debugrevokerefreshtokens` - **STG限定**。呼び出し元自身のリフレッシュトークンを失効させ、トークン失効による自動サインアウトを再現する（v2 callable）
@@ -217,7 +217,7 @@ stg / prod とも**強制適用済み**（Firestoreはコンソール、Function
 
 **起動状態マシン** （`HometeDomain/AppLaunch/LaunchState.swift` の enum を `AppRoot/RootView.swift` が分岐）:
 ```
-launching → notLoggedIn → Sign In with Apple
+launching → notLoggedIn → 説明画面（「はじめる」で匿名サインイン / 「すでにアカウントをお持ちの方」でSign In with Apple）
          ↓
          preLoggedIn(auth) → 登録画面
          ↓

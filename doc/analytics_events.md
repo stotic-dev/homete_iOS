@@ -83,7 +83,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|
 | `launch` | `LaunchScreenView` |
 | `force_update` | `ForceUpdateView`（最低バージョンを下回ったときの強制アップデート画面） |
-| `login` | `LoginView` |
+| `welcome` | `WelcomeScreen`（ログイン前の説明画面。未ログインで起動すると出る） |
+| `login` | `LoginView`（説明画面の「すでにアカウントをお持ちの方」から開く） |
 | `registration_account` | `RegistrationAccountView` |
 | `account_link` | `AccountLinkScreen`（Apple連携の画面。全画面・設定・Paywallの前などで共通） |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
@@ -129,12 +130,13 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | 項目 | 内容 |
 |---|---|
-| 送信タイミング | Sign in with Apple による認証処理が完了したとき（成功・失敗とも） |
-| 実装 | `AccountAuthStore` |
+| 送信タイミング | Sign in with Apple、または説明画面の「はじめる」での匿名サインインが完了したとき（成功・失敗とも） |
+| 実装 | `AccountAuthStore`、`LoginMethod` |
 
 | パラメータ | 値 | 説明 |
 |---|---|---|
 | `result` | `success` / `failure` | 認証に成功したかどうか |
+| `method` | `apple` / `anonymous` | サインインの方法。匿名で始めた人とAppleでログインした人を分けて見る（[ADR-0051](adr/0051-start-with-anonymous-auth-and-link-apple-later.md)） |
 
 ### `account_link`
 
