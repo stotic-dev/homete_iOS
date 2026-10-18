@@ -697,6 +697,24 @@ resolve_app_id() {
   echo "$app_id"
 }
 
+# iOSのバージョン（X.Y.Z）のIDを VERSION_ID に入れる。無ければ終了する
+# コマンド置換の中では exit で止まらないため、標準出力では返さない
+# 使い方: resolve_version_id <app_id> <version>
+resolve_version_id() {
+  local app_id="$1"
+  local version="$2"
+  local version_json version_state
+
+  version_json=$(call GET "/v1/apps/${app_id}/appStoreVersions?filter%5BversionString%5D=${version}&filter%5Bplatform%5D=IOS&fields%5BappStoreVersions%5D=versionString,appVersionState")
+  VERSION_ID=$(echo "$version_json" | jq -r '.data[0].id // empty')
+  version_state=$(echo "$version_json" | jq -r '.data[0].attributes.appVersionState // empty')
+  if [ -z "$VERSION_ID" ]; then
+    echo "エラー: バージョン ${version} がApp Store Connectにありません（先に fastlane sync_metadata で作成してください）" >&2
+    exit 1
+  fi
+  echo "バージョン ${version}（${version_state}）に同期します" >&2
+}
+
 # 画像をアセットライブラリへ用意し、処理が終わるまで待つ。
 # 同じreferenceName（=同じ中身）の画像が前回の実行でアップロード済みならそれを使い、無ければアップロードする。
 # 処理待ちで失敗した後に再実行しても、同じ画像をアップロードし直さず続きから待てるようにするため
@@ -726,6 +744,33 @@ prepare_library_image() {
   wait_library_image "$image_id" "$file_path"
 }
 
+# 予約したアセットの uploadOperations どおりに、ファイルを分割してアップロードする
+# 使い方: send_upload_operations <予約のレスポンスJSON> <file_path>
+send_upload_operations() {
+  local reserve_json="$1"
+  local file_path="$2"
+
+  echo "$reserve_json" | jq -c '.data.attributes.uploadOperations[]' | while read -r op; do
+    local op_method op_url op_offset op_length header_args header_line
+    op_method=$(echo "$op" | jq -r '.method')
+    op_url=$(echo "$op" | jq -r '.url')
+    op_offset=$(echo "$op" | jq -r '.offset')
+    op_length=$(echo "$op" | jq -r '.length')
+
+    header_args=()
+    while IFS= read -r header_line; do
+      header_args+=(-H "$header_line")
+    done < <(echo "$op" | jq -r '.requestHeaders[]? | "\(.name): \(.value)"')
+
+    # アップロード先は一時的なURLで、APIのトークンは送らない
+    tail -c +"$((op_offset + 1))" "$file_path" | head -c "$op_length" |
+      curl -sS --fail -X "$op_method" "$op_url" "${header_args[@]}" --data-binary @- -o /dev/null || exit 1
+  done || {
+    echo "エラー: ${file_path} のアップロードに失敗しました" >&2
+    exit 1
+  }
+}
+
 # 画像をアセットライブラリへアップロードする。IDは UPLOADED_IMAGE_ID に入れる
 # 使い方: upload_library_image <asset_library_id> <file_path> <reference_name>
 upload_library_image() {
@@ -749,25 +794,7 @@ upload_library_image() {
   reserve_json=$(call POST /v1/appAssetLibraryImages "$reserve_body")
   image_id=$(echo "$reserve_json" | jq -r '.data.id')
 
-  echo "$reserve_json" | jq -c '.data.attributes.uploadOperations[]' | while read -r op; do
-    local op_method op_url op_offset op_length header_args header_line
-    op_method=$(echo "$op" | jq -r '.method')
-    op_url=$(echo "$op" | jq -r '.url')
-    op_offset=$(echo "$op" | jq -r '.offset')
-    op_length=$(echo "$op" | jq -r '.length')
-
-    header_args=()
-    while IFS= read -r header_line; do
-      header_args+=(-H "$header_line")
-    done < <(echo "$op" | jq -r '.requestHeaders[]? | "\(.name): \(.value)"')
-
-    # アップロード先は一時的なURLで、APIのトークンは送らない
-    tail -c +"$((op_offset + 1))" "$file_path" | head -c "$op_length" |
-      curl -sS --fail -X "$op_method" "$op_url" "${header_args[@]}" --data-binary @- -o /dev/null || exit 1
-  done || {
-    echo "エラー: ${file_path} のアップロードに失敗しました" >&2
-    exit 1
-  }
+  send_upload_operations "$reserve_json" "$file_path"
 
   call PATCH "/v1/appAssetLibraryImages/${image_id}" \
     "$(jq -n --arg id "$image_id" '{data:{type:"appAssetLibraryImages",id:$id,attributes:{uploaded:true}}}')" > /dev/null
@@ -835,17 +862,10 @@ sync_creative_assets() {
     exit 1
   fi
 
-  local app_id version_json version_id version_state library_json library_id localizations_json
+  local app_id version_id library_json library_id localizations_json
   app_id=$(resolve_app_id)
-
-  version_json=$(call GET "/v1/apps/${app_id}/appStoreVersions?filter%5BversionString%5D=${version}&filter%5Bplatform%5D=IOS&fields%5BappStoreVersions%5D=versionString,appVersionState")
-  version_id=$(echo "$version_json" | jq -r '.data[0].id // empty')
-  version_state=$(echo "$version_json" | jq -r '.data[0].attributes.appVersionState // empty')
-  if [ -z "$version_id" ]; then
-    echo "エラー: バージョン ${version} がApp Store Connectにありません（先に fastlane sync_metadata で作成してください）" >&2
-    exit 1
-  fi
-  echo "バージョン ${version}（${version_state}）に同期します" >&2
+  resolve_version_id "$app_id" "$version"
+  version_id="$VERSION_ID"
 
   library_json=$(call GET "/v1/apps/${app_id}/assetLibrary")
   library_id=$(echo "$library_json" | jq -r '.data.id')
