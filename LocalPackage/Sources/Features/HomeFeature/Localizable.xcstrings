@@ -122,6 +122,7 @@
       }
     },
     "%lld件・%lldpt" : {
+      "comment" : "メンバーが終えた家事の件数と、もらったポイント",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -129,10 +130,10 @@
             "value" : "%1$lld done · %2$lldpt"
           }
         }
-      },
-      "comment" : "メンバーが終えた家事の件数と、もらったポイント"
+      }
     },
     "%lld件中%lld件終わりました" : {
+      "comment" : "1つめは今日の家事の数、2つめは終わった家事の数",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -140,8 +141,7 @@
             "value" : "%2$lld of %1$lld done"
           }
         }
-      },
-      "comment" : "1つめは今日の家事の数、2つめは終わった家事の数"
+      }
     },
     "AIが作成したコメントです" : {
       "localizations" : {
@@ -159,6 +159,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "About AI-written comments"
+          }
+        }
+      }
+    },
+    "Appleアカウントで保存する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save with Apple Account"
           }
         }
       }
@@ -264,12 +274,12 @@
         }
       }
     },
-    "まだパートナーが登録されていません" : {
+    "もう一度送る" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No partner added yet"
+            "value" : "Send Again"
           }
         }
       }
@@ -350,6 +360,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set Up Templates"
+          }
+        }
+      }
+    },
+    "パートナーの参加を待っています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for Your Partner to Join"
           }
         }
       }
@@ -435,6 +455,16 @@
         }
       }
     },
+    "保存する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        }
+      }
+    },
     "別のグループに参加中のため、この招待では参加できません。" : {
       "localizations" : {
         "en" : {
@@ -465,6 +495,16 @@
         }
       }
     },
+    "完了すると、家事の記録と共有ができるようになります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once you're done, you can track and share chores."
+          }
+        }
+      }
+    },
     "家事のテンプレートはまだありません" : {
       "localizations" : {
         "en" : {
@@ -481,6 +521,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Written by on-device AI based on your chore history. Your history never leaves your device."
+          }
+        }
+      }
+    },
+    "家事を始める前に" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Before You Start"
           }
         }
       }
@@ -605,12 +655,42 @@
         }
       }
     },
+    "機種変更しても、家事の記録を引き継げます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your chore history, even when you switch phones."
+          }
+        }
+      }
+    },
     "毎週やる家事をテンプレートにしておくと、家事ボードに自動で並びます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save your weekly chores as templates, and they'll appear on the chore board automatically."
+          }
+        }
+      }
+    },
+    "登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
+    },
+    "送った招待リンクから参加すると、家事を分け合えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once your partner joins from the invite link, you can share the chores."
           }
         }
       }
