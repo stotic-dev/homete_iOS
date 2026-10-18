@@ -47,7 +47,10 @@ public struct RootView: View {
                         .environment(\.loginContext, context)
                         .transition(.scale)
                 case .notLoggedIn:
-                    LoginView()
+                    LoginView(
+                        accountLoadFailure: launchStateStore.accountLoadFailure,
+                        onReceiveAccountLoadFailure: { launchStateStore.clearAccountLoadFailure() }
+                    )
                 }
             }
         }

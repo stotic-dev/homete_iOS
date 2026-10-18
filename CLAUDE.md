@@ -191,9 +191,9 @@ Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定�
 2. Firebaseコンソールの**stgプロジェクト（`homete-ios-dev-e3ef7`）** → App Check → アプリ タブ → `taichi.satou.hometekure.dev` の ⋮ → デバッグトークンを管理 → 登録する
 3. 控えたトークンを `homete/Resouces/Secret_dev.xcconfig` の `APP_CHECK_DEBUG_TOKEN` に設定する
 
-3をやると、`homete.xcscheme` の環境変数 `AppCheckDebugToken`（値は `$(APP_CHECK_DEBUG_TOKEN)`）経由で全端末・全シミュレータが同じトークンを使うようになり、**コンソールへの登録は最初の1回だけで済む**。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
+3をやると、Debug構成のビルドだけInfo.plistの `AppCheckDebugToken` にトークンが埋め込まれ、起動時に`AppCheckConfigurator`がSDKの読む環境変数へ設定する。全端末・全シミュレータが同じトークンを使うので、**コンソールへの登録は最初の1回だけで済む**。Xcodeを通さずホーム画面から起動しても効く（スキームの環境変数で渡していた頃は、ホーム画面から起動すると未登録のトークンになって全部拒否されていた）。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
 
-デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み。共有スキームには変数名だけが載る）。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
+デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み）。Stg構成も`Secret_dev.xcconfig`を参照するが、Info.plistへ渡す`APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST`はDebug構成にだけ定義しているので、TestFlight・App Storeのビルドには埋め込まれない。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
 
 FirestoreとCallable関数で有効化の仕組みが違うので混同しないこと。
 
@@ -287,6 +287,11 @@ launching → notLoggedIn → Sign In with Apple
    - `release/*` → `main` のPRへのpushで、前回リリースタグと現在の参照スナップショットをreg-cliで比較（ubuntu）。レポートをartifactにし、PRのコメントを上書き更新する
    - PR作成直後の1回目は`create-release-pr.yml`が`workflow_dispatch`で起動する。`[ci skip]`付きのbotコミットでは走らないので、必要なら手動実行する
    - 意図しない差分の確認は`release-snapshot-review`スキルで行う。経緯は[ADR-0039](doc/adr/0039-release-snapshot-diff-with-reg-cli.md)
+
+9. **`merge-main-into-release.yml`** - リリースPRのブランチへ最新のmainを取り込む（手動実行のみ）
+   - `release_branch`入力が空なら、オープンなリリースPRから取り込み先を解決する（1件に定まらなければ失敗）
+   - mergeで取り込み、force pushはしない。コンフリクトしたら失敗するので、ローカルで解消してpushする
+   - GITHUB_TOKENのpushでは他のワークフローが発火しないため、`release-snapshot-diff.yml`と、メタデータに変更が入ったときの`sync-metadata.yml`をここから起動する。Xcode Cloudは通常どおり起動する
 
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 

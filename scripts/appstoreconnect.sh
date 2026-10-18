@@ -822,7 +822,7 @@ wait_library_image() {
 
   # アップロード直後はUPLOAD_COMPLETE。仕様の検査などが終わると配置できる状態に進む。
   # 本物のASCでは5分を超えることがあったため、30分（10秒 × 180回）まで待つ
-  local state image_json
+  local state image_json spec_id=""
   for _ in $(seq 1 180); do
     image_json=$(call GET "/v1/appAssetLibraryImages/${image_id}?fields%5BappAssetLibraryImages%5D=state,stateDetails,specId")
     state=$(echo "$image_json" | jq -r '.data.attributes.state')
@@ -836,13 +836,20 @@ wait_library_image() {
         exit 1
         ;;
       *)
+        # 検査の途中ではUPLOAD_COMPLETE以外のstateでもspecIdが空のことがある。
+        # 空のまま返すと配置グループを引けないため、specIdが付くまで待つ
+        spec_id=$(echo "$image_json" | jq -r '.data.attributes.specId // empty')
+        if [ -z "$spec_id" ]; then
+          sleep 10
+          continue
+        fi
         UPLOADED_IMAGE_ID="$image_id"
-        UPLOADED_IMAGE_SPEC_ID=$(echo "$image_json" | jq -r '.data.attributes.specId // empty')
+        UPLOADED_IMAGE_SPEC_ID="$spec_id"
         return
         ;;
     esac
   done
-  echo "エラー: ${file_path} の処理が30分以内に終わりませんでした（state: ${state}）。再実行すると、アップロード済みの画像の処理を続けて待ちます" >&2
+  echo "エラー: ${file_path} の処理が30分以内に終わりませんでした（state: ${state}、specId: ${spec_id:-なし}）。再実行すると、アップロード済みの画像の処理を続けて待ちます" >&2
   exit 1
 }
 
