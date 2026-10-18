@@ -52,7 +52,7 @@ struct HouseworkDatePickerView: View {
                 .datePickerStyle(.graphical)
                 .labelsHidden()
                 if hasStorageLimit {
-                    storageLimitButton()
+                    storageLimitCallout()
                 }
             }
             .padding(.horizontal, .space16)
@@ -89,24 +89,27 @@ private extension HouseworkDatePickerView {
         return selectableRange.lowerBound.formatted(format)
     }
 
-    func storageLimitButton() -> some View {
-        Button(action: onTapStorageLimit) {
-            HStack(spacing: .space8) {
-                Image(systemName: "lock.fill")
-                    .accessibilityHidden(true)
+    /// カレンダーの下に埋もれないよう、背景で囲んで案内する
+    func storageLimitCallout() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Label {
                 Text("\(oldestSelectableDateText)より前の家事は、プレミアムプランで見られます", bundle: #bundle)
-                    .multilineTextAlignment(.leading)
-                Spacer(minLength: .zero)
-                Image(systemName: "chevron.right")
-                    .accessibilityHidden(true)
+                    .font(with: .boldCaption)
+                    .foregroundStyle(.textPrimary)
+            } icon: {
+                Image(systemName: "lock.fill")
+                    .font(with: .caption)
+                    .foregroundStyle(.textAccent)
             }
-            .font(with: .caption)
-            .foregroundStyle(.textSecondary)
-            .padding(.horizontal, .space8)
-            .frame(minHeight: 44)
-            .contentShape(.rect)
+            Button(.localized("プレミアムプランを見る"), action: onTapStorageLimit)
+                .font(with: .boldCaption)
         }
-        .buttonStyle(.plain)
+        .padding(.space16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            RoundedRectangle(radius: .radius12)
+                .fill(.fillAccentSubtle)
+        }
     }
 
 }
