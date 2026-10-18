@@ -16,7 +16,10 @@ public enum AppRoute: Hashable, Sendable {
     /// いつもの家事の管理画面
     case frequentHouseworkManagement
     /// プレミアムプランのPaywall画面
+    /// - Note: 匿名のアカウントは購入の前にAppleアカウントとの連携を求め、連携しなければPaywallを出さない
     case paywall
+    /// 匿名のアカウントをAppleアカウントと連携する画面（シートで出し、閉じられる）
+    case accountLink(entry: AccountLinkEntry)
     #if DEBUG
     /// オンボーディング（アカウント登録→Paywall）の確認用デバッグ画面
     case debugOnboarding

@@ -2,6 +2,7 @@
 //  RouteResolverInjection.swift
 //
 
+import AuthFeature
 import CohabitantRegistrationFeature
 import FrequentHouseworkFeature
 import HomeFeature
@@ -29,10 +30,9 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 case .frequentHouseworkManagement:
                     FrequentHouseworkManagementScreen()
                 case .paywall:
-                    // PaywallScreenはHometeInfrastructureにあり、HometeUIに依存しない。
-                    // 計測のためだけに依存を増やさず、画面を組み立てるここでModifierを付ける
-                    PaywallScreen()
-                        .trackScreenView(.paywall)
+                    PaywallGate()
+                case let .accountLink(entry):
+                    AccountLinkSheet(entry: entry)
                 #if DEBUG
                 case .debugOnboarding:
                     DebugOnboardingScreen()
