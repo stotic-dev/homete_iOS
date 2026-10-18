@@ -27,14 +27,11 @@ public final class AccountStore {
 
     /// アカウント情報をロードし、オンメモリにキャッシュする
     /// - Returns: ロードしたアカウント情報を返す（アカウントがない場合はnilを返す）
+    /// - Throws: 取得に失敗した場合（App Checkの検証失敗・権限エラー・通信エラーなど）。
+    ///           アカウントが無いこととは区別し、未登録として会員登録へ進ませない
     @discardableResult
-    public func load(_ auth: AccountAuthResult) async -> Account? {
-        do {
-            account = try await accountInfoClient.fetch(auth.id)
-        } catch {
-            print("failed to fetch account info: \(error)")
-        }
-
+    public func load(_ auth: AccountAuthResult) async throws -> Account? {
+        account = try await accountInfoClient.fetch(auth.id)
         return account
     }
 
