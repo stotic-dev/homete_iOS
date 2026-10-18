@@ -20,6 +20,7 @@
 		0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeature */; };
 		04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */ = {isa = PBXBuildFile; productRef = 04FD07782F77AEA500BEC61C /* ProjectToolsDummy */; };
 		2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */ = {isa = PBXBuildFile; productRef = 5735E0CC5DF34B1AADF7A805 /* AppRoot */; };
+		0AA7C00500000000000000A1 /* HometeAppIntents in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C00500000000000000A2 /* HometeAppIntents */; };
 		6E0DD1334786A0EFEF7B2E47 /* hometeNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE93ECCD98AD81DE182613EE /* hometeNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA2B58F7BF24F54E5B54FA89 /* HometeLocalNotification in Frameworks */ = {isa = PBXBuildFile; productRef = 535152FA786C3EF10199AC4D /* HometeLocalNotification */; };
 		B7FEC780BA78A9E533B6AFE4 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = A3B833DF798387E007B09FB3 /* HometeDomain */; };
@@ -62,6 +63,7 @@
 /* Begin PBXFileReference section */
 		0AA7C0010000000000000006 /* hometeVRTHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hometeVRTHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
+		0AA7C0040000000000000001 /* InfraPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = InfraPackage; sourceTree = "<group>"; };
 		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
 		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2E7BCD045508457FA0F6004C /* AppRoot in Frameworks */,
+				0AA7C00500000000000000A1 /* HometeAppIntents in Frameworks */,
 				04FD07792F77AEA500BEC61C /* ProjectToolsDummy in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -196,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				04B371962F404CBF00820C62 /* LocalPackage */,
+				0AA7C0040000000000000001 /* InfraPackage */,
 				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
 				04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */,
 				BC7469462DBCBE71007E4222 /* PrivacyInfo.xcprivacy */,
@@ -327,6 +331,7 @@
 			name = homete;
 			packageProductDependencies = (
 				5735E0CC5DF34B1AADF7A805 /* AppRoot */,
+				0AA7C00500000000000000A2 /* HometeAppIntents */,
 				04FD07782F77AEA500BEC61C /* ProjectToolsDummy */,
 			);
 			productName = homete;
@@ -370,6 +375,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+				0AA7C0040000000000000002 /* XCLocalSwiftPackageReference "InfraPackage" */,
 				04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -1189,6 +1195,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = LocalPackage;
 		};
+		0AA7C0040000000000000002 /* XCLocalSwiftPackageReference "InfraPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = InfraPackage;
+		};
 		04FD07772F77AEA500BEC61C /* XCLocalSwiftPackageReference "ProjectTools" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ProjectTools;
@@ -1265,6 +1275,10 @@
 		5735E0CC5DF34B1AADF7A805 /* AppRoot */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AppRoot;
+		};
+		0AA7C00500000000000000A2 /* HometeAppIntents */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeAppIntents;
 		};
 		A3B833DF798387E007B09FB3 /* HometeDomain */ = {
 			isa = XCSwiftPackageProductDependency;

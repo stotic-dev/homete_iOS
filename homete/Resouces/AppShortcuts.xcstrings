@@ -1,0 +1,101 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Complete ${housework} in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Complete ${housework} in ${applicationName}",
+              "Finish ${housework} in ${applicationName}",
+              "Complete a chore in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で${housework}を完了",
+              "${applicationName}で${housework}を完了にする",
+              "${applicationName}で${housework}を終えた",
+              "${applicationName}で家事を完了",
+              "${applicationName}で家事を完了にする"
+            ]
+          }
+        }
+      }
+    },
+    "Open analytics in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Open analytics in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でがんばりを分析",
+              "${applicationName}でがんばりの分析を開く"
+            ]
+          }
+        }
+      }
+    },
+    "Say thanks in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Say thanks in ${applicationName}",
+              "Send thanks in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}でありがとうを伝える",
+              "${applicationName}でありがとう"
+            ]
+          }
+        }
+      }
+    },
+    "Show this month in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Show this month in ${applicationName}",
+              "Show this month's effort in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で今月のがんばりを見る",
+              "${applicationName}で今月のがんばり"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

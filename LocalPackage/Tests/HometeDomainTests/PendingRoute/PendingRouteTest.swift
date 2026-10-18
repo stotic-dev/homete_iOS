@@ -1,12 +1,12 @@
 //
-//  NotificationRouteTest.swift
+//  PendingRouteTest.swift
 //  LocalPackage
 //
 
 @testable import HometeDomain
 import Testing
 
-struct NotificationRouteTest {
+struct PendingRouteTest {
 
     @Test("ありがとうの通知は、ありがとうが届いた家事の詳細画面を開く")
     func initUserInfo_thanksNotification_returnsHouseworkDetail() {
@@ -16,7 +16,7 @@ struct NotificationRouteTest {
 
         // Act
 
-        let actual = NotificationRoute(userInfo: userInfo)
+        let actual = PendingRoute(userInfo: userInfo)
 
         // Assert
 
@@ -33,7 +33,7 @@ struct NotificationRouteTest {
     func initUserInfo_otherNotification_returnsNil(userInfo: [String: String]) {
         // Act
 
-        let actual = NotificationRoute(userInfo: userInfo)
+        let actual = PendingRoute(userInfo: userInfo)
 
         // Assert
 

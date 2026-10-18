@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package test-packages test-packages-fast check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package build-infra-package test-packages test-packages-fast check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret
 
 .DEFAULT_GOAL := setup-project
 
@@ -23,6 +23,10 @@ resolve-packages: ## SwiftPM依存を取得（Claude Codeのサンドボック�
 build-local-package: ## LocalPackageをiOSシミュレーター向けにビルド（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+
+build-infra-package: ## InfraPackage（HometeInfrastructure・AppRoot）をiOSシミュレーター向けにビルド。HometeDomainのプロトコルを変えたときの実装側の追従漏れはここで分かる
+	scripts/with-local-package-lock.sh $(CURDIR)/InfraPackage -- \
+		swift build --package-path $(CURDIR)/InfraPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 
 test-packages: ## LocalPackageのテストを実行（自worktree内の多重実行はロックで直列化、他worktreeには影響しない）
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
@@ -50,7 +54,7 @@ format: ## プロダクション+テストコード全体にSwiftFormatを実行
 		--allow-writing-to-package-directory \
 		--allow-writing-to-directory $(CURDIR) \
 		swiftformat --config .swiftformat \
-		homete hometeSnapshotTests LocalPackage
+		homete hometeSnapshotTests LocalPackage InfraPackage
 
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh

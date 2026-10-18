@@ -1,7 +1,7 @@
 /**
  * iOSクライアントが実際に読み書きするFirestoreコレクション名。
  *
- * `LocalPackage/Sources/HometeInfrastructure/Firestore/Reference/`
+ * `InfraPackage/Sources/HometeInfrastructure/Firestore/Reference/`
  * `CollectionPath.swift` の定義をテスト側に写したもの。
  *
  * プロダクションコード（`src/models/FirestoreCollections.ts`）の定数を

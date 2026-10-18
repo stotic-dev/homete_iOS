@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "InfraPackage/Sources/**/*.swift"
 ---
 
 # プレゼンテーションロジックの置き場所

@@ -177,16 +177,17 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `housework`
 
-家事の登録・完了・もう一度やった・手伝った人の追加・ありがとう・未完了に戻す・削除・メモの編集における行動。すべて`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・もう一度やった・手伝った人の追加・ありがとう・未完了に戻す・削除・メモの編集における行動。`HouseworkListStore`に送信箇所を集約する。
+完了・ありがとうは、App Intentと共有する`HouseworkCommandUseCase`から送る。
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `HouseworkAnalyticsAction`、`HouseworkListStore` |
+| 実装 | `HouseworkAnalyticsAction`、`HouseworkListStore`、`HouseworkCommandUseCase` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
-| `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む） |
+| `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む）。`app_intent`はアプリを開かずに実行したApp Intent（Siri・Spotlight・ショートカットApp） |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`はすごくがんばった |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
@@ -203,10 +204,10 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `action` | `step` | 送信タイミング |
 |---|---|---|
 | `register` | `dashboard` / `board` | 「家事を追加」から新規の家事を登録した（起点はダッシュボード・家事ボードのどちらもありうる）。まとめて登録した場合も家事1件につき1イベント送り、`source`で入力元を区別する |
-| `complete` | `dashboard` / `board` / `detail` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`で、`item_count`を付けて1回だけ送る） |
+| `complete` | `dashboard` / `board` / `detail` / `app_intent` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`で、`item_count`を付けて1回だけ送る。`app_intent`はアプリを開かずに完了にしたときで、常に`executor_type=self`・`effort=normal`） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
 | `add_helper` | `board` / `detail` | 完了した家事に手伝った人を追加した（家事ボードのクイックアクション、または家事詳細の「手伝った人を追加」から開くハーフモーダル）。家事の合計ポイントは変えず、追加後の担当者で配分し直す。1件ずつ配分を決める操作なので複数選択の一括操作にはない |
-| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` | 完了した家事に「ありがとう」を伝えた（家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 完了した家事に「ありがとう」を伝えた（`app_intent`はアプリを開かずに伝えたとき。家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
 | `edit_thanks` | `thanks` / `comment_prompt` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面、またはありがとうを伝えられる家事の一覧から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
@@ -592,6 +593,37 @@ OSの制限（1年に最大3回）やユーザーの設定で、ダイアログ�
 
 **分析での使い方:** `trigger`ごとの件数と、App Store Connectの評価数の推移を合わせて見ると、どのきっかけが評価につながっているかの目安になる。
 ダイアログを出せたかは取れないため、厳密な転換率にはならない。
+
+### `app_intent`
+
+App Intent（Siri・Spotlight・ショートカットApp・アクションボタン、OSの提案）を実行した。アプリの外の入口がどれだけ使われているかを見るためのイベント。
+設計は[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `AppIntentAnalyticsIntent`・`AppIntentAnalyticsResult`、`HometeAppIntents`の各Intent |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `action` | ○ | `complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics` | 実行したIntent。キーを増やさないため、他のイベントと同じ`action`に載せる |
+| `result` | ○ | `success` / `not_found` / `already_completed` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
+
+送信されるパターンと、その送信タイミング:
+
+| `action` | 送信タイミング |
+|---|---|
+| `complete_housework` | アプリを開かずに家事を完了にしようとした。今日の家事に同じ名前が無ければ`not_found`、もう終わっていれば`already_completed`。通信できず、書き込みを端末に保存して返したときは`pending_sync`（書き込みが10秒待ってもサーバーに届かなかった。オンラインになったら反映される。同居人への通知にかかる時間は含めない） |
+| `open_housework_complete` | アプリを開いて家事の完了シートを出すIntentを実行した（常に`success`。シートを出せたかは含めない） |
+| `send_thanks` | アプリを開かずにありがとうを伝えようとした。伝えられる家事が無い・送信済みなら`not_found`、通信できず端末に保存して返したときは`pending_sync`。伝える家事をSiriが聞き返し、選ばずに閉じたときは送らない |
+| `show_contribution_summary` | 今月のがんばりをSiriの結果に出した |
+| `open_contribution_analytics` | アプリを開いてがんばりの分析画面を出すIntentを実行した（常に`success`） |
+
+ログインしていない・グループに所属していない・強制アップデートが必要なバージョンのときは、それぞれ`not_logged_in` / `no_cohabitant` / `update_required`になる。
+
+家事の完了・ありがとうは、書き込めたときに`housework`イベント（`step=app_intent`）も送る。`pending_sync`のときは、プロセスが動いている間に書き込みがサーバーに届いた場合だけ送られる。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
+
+**分析での使い方:** `action`ごとの件数で、どのIntentが使われているかが分かる。`housework`の`complete`・`send_thanks`のうち`step=app_intent`の割合が、アプリを開かずに記録された割合（このIntentの主指標）になる。
+`not_found`が多い場合は、OSの提案やSiriで指定された家事が今日の家事に無い（名前の変更・登録していない）と読める。
 
 ## イベントを追加するときの手順
 

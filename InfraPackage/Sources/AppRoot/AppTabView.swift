@@ -18,7 +18,7 @@ struct AppTabView: View {
     @Environment(\.now) var now
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
-    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
+    @Environment(PendingRouteStore.self) var pendingRouteStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(RegistrationTutorialStore.self) var registrationTutorialStore
     @Environment(\.routeResolver) var router
@@ -93,8 +93,8 @@ struct AppTabView: View {
                     await registrationTutorialStore.didChangeCohabitant(from: oldValue, to: newValue)
                 }
             }
-            .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
-                onChangePendingNotificationRoute()
+            .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
+                onChangePendingRoute()
             }
             .environment(\.cohabitantMembers, cohabitantStore.members)
             .environment(
@@ -309,20 +309,20 @@ private extension AppTabView {
         await startObserveTemplateIfNeeded()
     }
 
-    /// 通知から開く画面があれば、その画面を持つタブに切り替える
-    /// - Note: 画面を開くのは切り替えた先のタブが行う。家事の読み込みを待ってから開く必要があるため
-    func onChangePendingNotificationRoute() {
-        switch pendingNotificationRouteStore.pendingRoute {
-        case .houseworkDetail:
-            // グループに所属していないと家事を開けないため、後から急に画面が開かないよう破棄する
-            guard loginContext.hasCohabitant else {
-                pendingNotificationRouteStore.clear()
-                return
-            }
+    /// 通知やApp Intentから開く画面があれば、その画面を持つタブに切り替える
+    /// - Note: 画面は家事の読み込みを待って切り替え先のタブが開く。グループ未所属なら開けないので破棄する
+    func onChangePendingRoute() {
+        guard let route = pendingRouteStore.pendingRoute else { return }
+        guard loginContext.hasCohabitant else {
+            pendingRouteStore.clear()
+            return
+        }
+        switch route {
+        case .houseworkDetail, .houseworkComplete:
             type = .homework
 
-        case nil:
-            break
+        case .contributionAnalytics:
+            type = .dashboard
         }
     }
 
@@ -347,11 +347,14 @@ private extension AppTabView {
             houseworkManager: appDependencies.houseworkManager,
             analyticsClient: appDependencies.analyticsClient,
             dailyCompletionReminderUseCase: appDependencies.dailyCompletionReminderUseCase,
+            intentDonationClient: appDependencies.intentDonationClient,
             calendar: calendar
         )
         houseworkTemplateListStore = .init(
             houseworkTemplateClient: appDependencies.houseworkTemplateClient,
-            analyticsClient: appDependencies.analyticsClient
+            analyticsClient: appDependencies.analyticsClient,
+            intentDonationClient: appDependencies.intentDonationClient,
+            calendar: calendar
         )
         frequentHouseworkStore = .init(
             frequentHouseworkClient: appDependencies.frequentHouseworkClient,
@@ -392,7 +395,7 @@ private extension AppTabView {
         .environment(CohabitantStore())
         .environment(PendingInvitationStore())
         .environment(RegistrationTutorialStore())
-        .environment(PendingNotificationRouteStore())
+        .environment(PendingRouteStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif

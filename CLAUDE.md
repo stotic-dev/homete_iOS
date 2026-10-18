@@ -23,6 +23,9 @@ make test-packages-fast
 # LocalPackageをiOSシミュレーター向けにビルド
 make build-local-package
 
+# InfraPackage（HometeInfrastructure・AppRoot）をビルド。テストではビルドされないので、HometeDomainやFeatureの公開APIを変えたら流す
+make build-infra-package
+
 # SwiftFormatを全体にかける
 make format
 
@@ -98,20 +101,21 @@ Services（Firestore、SignInWithApple、P2P、NotificationCenter）
 Domain Models（Codable構造体）
 ```
 
-**マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/` に置かれている。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
+**マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/` と `InfraPackage/` に置かれている。Firebase・AdMob・RevenueCat・GRDBなど重い外部依存を持つモジュールだけを `InfraPackage/` に分け、ユニットテストのある `LocalPackage/` には持ち込まない（[ADR-0046](doc/adr/0046-split-infra-package-from-local-package.md)）。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
 
 **主要ディレクトリ:**
 - `LocalPackage/Sources/HometeDomain/` - ドメインモデル・Clientプロトコル・Store・UseCase（最下層、依存なし）
 - `LocalPackage/Sources/Features/` - 機能別SwiftUIビュー（Auth / Home / Housework / HouseworkTemplate / Setting / Contribution）
 - `LocalPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ
-- `LocalPackage/Sources/HometeInfrastructure/` - Clientの`liveValue`実装とService（Firestore、SignInWithApple、Purchase、Advertisement）
+- `InfraPackage/Sources/HometeInfrastructure/` - Clientの`liveValue`実装とService（Firestore、SignInWithApple、Purchase、Advertisement）
 - `LocalPackage/Sources/HometeResources/` - アセットとSwiftGen生成コード
-- `LocalPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
+- `InfraPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
 
 **エントリーポイント:**
-- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化（メインターゲットにある実装コードはこれだけ）
+- `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化、App Intentの依存の登録
+- `homete/AppIntents/HometeAppShortcuts.swift` - App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要があるため、メインターゲットに置く）。Intent本体は`LocalPackage/Sources/HometeAppIntents/`。Intentのタイトルなどのメタデータの文言はアプリ本体の`homete/Resouces/Localizable.xcstrings`から引かれ、フレーズの日本語は`homete/Resouces/AppShortcuts.xcstrings`に入れる（[ADR-0044](doc/adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - `hometeNotificationService/NotificationService.swift` - Notification Service Extension。同居人から届く家事の完了通知を受けて、今日のふりかえり通知を予約する。アプリが終了していても起動する（[ADR-0021](doc/adr/0021-daily-completion-reminder-on-device.md)）
-- `LocalPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
+- `InfraPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
 - `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
 
 ### Dependency Injectionパターン
@@ -133,7 +137,7 @@ View → Store（AppDependenciesを受け取る）
 
 ### Firebase連携
 
-**Firestoreサービス** (`LocalPackage/Sources/HometeInfrastructure/Firestore/FirestoreService.swift`):
+**Firestoreサービス** (`InfraPackage/Sources/HometeInfrastructure/Firestore/FirestoreService.swift`):
 - スレッドセーフのためにactorベース
 - 汎用CRUD: `fetch()`, `insertOrUpdate()`, `delete()`
 - `AsyncStream`を使ったリアルタイムリスナー
@@ -156,7 +160,7 @@ View → Store（AppDependenciesを受け取る）
 - App Checkの保護対象外
 
 **認証:**
-- `LocalPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
+- `InfraPackage/Sources/HometeInfrastructure/SignInWithApple/`経由でSign in with Apple（プロトコルは`HometeDomain/SignInWithApple/`）
 - `AccountAuthClient`がFirebase Auth操作をラップ
 
 **App Check** （詳細は [ADR-0014](doc/adr/0014-firebase-app-check.md)）:
@@ -211,9 +215,9 @@ launching → notLoggedIn → Sign In with Apple
 ### テスト戦略
 
 **ユニットテスト** (`LocalPackage/Tests/`):
-- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`
+- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
 - 実行: `make test-packages-fast`（`swift test`。xcodebuildは使わない）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
-- Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記4ターゲットを含む）
+- Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記のターゲットを含む）
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
 
 **スナップショットテスト** (`hometeSnapshotTests/`):
@@ -245,24 +249,27 @@ launching → notLoggedIn → Sign In with Apple
 2. **`ci_local_package.yml`** - LocalPackageのユニットテスト
    - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
 
-3. **`functions-e2e-test.yml`** - Firebase Functionsテスト
+3. **`ci_infra_package.yml`** - InfraPackageのビルド（`make build-infra-package`）
+   - `InfraPackage/**`とLocalPackageのソース・マニフェストへの変更でトリガー。`AppRoot`が全Featureに依存するため、LocalPackage側の変更でも追従漏れを確かめる
+
+4. **`functions-e2e-test.yml`** - Firebase Functionsテスト
    - `firebase/functions/**` / `firebase/firestore.rules`への変更でトリガー（PR / mainまたはrelease/*へのpush）
    - ESLintとE2Eテスト、Firestoreセキュリティルールのユニットテスト（`test/rules`）を実行
    - Node.js 21とJava 21を使用
 
-4. **`deploy-functions.yml`** - Firebase Functionsのデプロイ
+5. **`deploy-functions.yml`** - Firebase Functionsのデプロイ
    - `functions-e2e-test.yml`の完了を`workflow_run`で受けて発火し、mainへのpushかつ成功時のみSTGへデプロイ
    - `firebase deploy --only functions --project <エイリアス>`（`firebase.json`のpredeployでlint+buildが走る）
    - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
 
-5. **`deploy-firestore.yml`** - Firestoreインデックス・セキュリティルールのデプロイ
+6. **`deploy-firestore.yml`** - Firestoreインデックス・セキュリティルールのデプロイ
    - `firebase/firestore.indexes.json` / `firebase/firestore.rules`のmainへのpushでSTGへデプロイ
    - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
    - デプロイ前に`test-rules`ジョブでEmulator上のルールテスト（`firebase/functions/test/rules`）を実行し、通過時のみデプロイする（手動実行の本番デプロイも同じ関門を通る）。経緯は[ADR-0015](doc/adr/0015-gate-firestore-deploy-on-rules-tests.md)
 
-6. **`create-release-note.yaml`** - リリースノート生成
+7. **`create-release-note.yaml`** - リリースノート生成
 
-7. **`release-snapshot-diff.yml`** - リリースPRで前バージョンとのスナップショット比較
+8. **`release-snapshot-diff.yml`** - リリースPRで前バージョンとのスナップショット比較
    - `release/*` → `main` のPRへのpushで、前回リリースタグと現在の参照スナップショットをreg-cliで比較（ubuntu）。レポートをartifactにし、PRのコメントを上書き更新する
    - PR作成直後の1回目は`create-release-pr.yml`が`workflow_dispatch`で起動する。`[ci skip]`付きのbotコミットでは走らないので、必要なら手動実行する
    - 意図しない差分の確認は`release-snapshot-review`スキルで行う。経緯は[ADR-0039](doc/adr/0039-release-snapshot-diff-with-reg-cli.md)
@@ -304,7 +311,7 @@ launching → notLoggedIn → Sign In with Apple
 - `.swiftlint.yml`で設定
 - `force_unwrapping`、`multiline_arguments`、`trailing_closure`などのopt-inルールを有効化
 - `identifier_name`、`statement_position`などのルールを無効化
-- `ProjectTools`・`DangerTools`・`LocalPackage/.build`・`LocalPackage/Package.swift`・`vendor`を除外し、それ以外をlint
+- `ProjectTools`・`DangerTools`・`LocalPackage/.build`・`LocalPackage/Package.swift`・`InfraPackage/.build`・`InfraPackage/Package.swift`・`vendor`を除外し、それ以外をlint
 
 ### Xcode 26対応
 
@@ -410,9 +417,9 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
   - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`、`task-closure-capture.md`
-  - `LocalPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-attributes-in-view.md`、`ui-logic-view-separation.md`
+  - `LocalPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-attributes-in-view.md`、`ui-logic-view-separation.md`
   - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
-  - `LocalPackage/Sources/**/*.swift` / `LocalPackage/Tests/**/*.swift`: `localization.md`
+  - `LocalPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift` / `LocalPackage/Tests/**/*.swift`: `localization.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
   - `adr.md` / `git-commit.md` は`paths:`を持たない（技術選定・コミット粒度はファイル種別に紐づかないため意図的に常時ロード）
 
@@ -422,19 +429,19 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 1. **Views**: `LocalPackage/Sources/Features/<機能名>Feature/` に追加
 2. **ドメインモデル**: ドメイン領域別に `LocalPackage/Sources/HometeDomain/` のサブフォルダに追加
-3. **Clients**: `LocalPackage/Sources/HometeDomain/Dependencies/` でプロトコルと`.previewValue`を定義し、`.liveValue`は `LocalPackage/Sources/HometeInfrastructure/` に実装
-4. **Services**: `LocalPackage/Sources/HometeInfrastructure/` のサブフォルダにインフラコードを追加
+3. **Clients**: `LocalPackage/Sources/HometeDomain/Dependencies/` でプロトコルと`.previewValue`を定義し、`.liveValue`は `InfraPackage/Sources/HometeInfrastructure/` に実装
+4. **Services**: `InfraPackage/Sources/HometeInfrastructure/` のサブフォルダにインフラコードを追加
 5. **Stores**: `LocalPackage/Sources/HometeDomain/` の該当ドメインフォルダにObservable状態管理クラスを追加（機能固有のものは Feature 配下の `Model/` でもよい）
 6. **共通UI**: `LocalPackage/Sources/HometeUI/` に追加
 7. **Tests**: `LocalPackage/Tests/<対象モジュール>Tests/` に対象モジュールの構造をミラー
 
-新しいモジュールを足す場合は `LocalPackage/Package.swift` と [doc/multimodules_structure.md](doc/multimodules_structure.md) の両方を更新する。
+新しいモジュールを足す場合は `LocalPackage/Package.swift`（重い外部依存を持つなら `InfraPackage/Package.swift`）と [doc/multimodules_structure.md](doc/multimodules_structure.md) の両方を更新する。
 
 常にDependency Injectionパターンを使用 - ViewからServiceに直接アクセスしない。
 
 ## 主要な依存関係
 
-**iOS（SPM）:** バージョンは`LocalPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
+**iOS（SPM）:** バージョンは`LocalPackage/Package.swift`・`InfraPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
 - Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
 - swift-snapshot-testing 1.18.7
 - Prefire 5.9.0

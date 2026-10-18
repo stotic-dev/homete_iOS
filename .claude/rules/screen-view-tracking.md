@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "InfraPackage/Sources/**/*.swift"
 ---
 
 # 画面追加時のscreen_view送信ルール

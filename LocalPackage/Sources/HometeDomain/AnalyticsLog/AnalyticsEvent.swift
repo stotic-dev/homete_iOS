@@ -197,4 +197,14 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// App Intent（Siri・Spotlight・ショートカットApp）を実行した
+    /// - Note: Intentごとにイベント名を増やさず、どのIntentかを`action`、結果を`result`パラメータで区別する。
+    ///         家事の完了・ありがとうは`housework`イベント（`step=app_intent`）も送るが、こちらはアプリの外の入口の使われ方を見るためのもの
+    static func appIntent(_ intent: AppIntentAnalyticsIntent, result: AppIntentAnalyticsResult) -> Self {
+        .init(
+            name: "app_intent",
+            parameters: ["action": intent.rawValue, "result": result.rawValue]
+        )
+    }
+
 }

@@ -34,6 +34,7 @@ public struct AppDependencies: Sendable {
     public let remoteConfigClient: RemoteConfigClient
     public let encouragementCommentClient: EncouragementCommentClient
     public let encouragementCommentCacheClient: EncouragementCommentCacheClient
+    public let intentDonationClient: IntentDonationClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     public let houseworkManager: HouseworkManager
@@ -70,6 +71,7 @@ public struct AppDependencies: Sendable {
         remoteConfigClient: RemoteConfigClient = .previewValue,
         encouragementCommentClient: EncouragementCommentClient = .previewValue,
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
+        intentDonationClient: IntentDonationClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
@@ -97,6 +99,7 @@ public struct AppDependencies: Sendable {
         self.remoteConfigClient = remoteConfigClient
         self.encouragementCommentClient = encouragementCommentClient
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
+        self.intentDonationClient = intentDonationClient
         self.debugAuthClient = debugAuthClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)

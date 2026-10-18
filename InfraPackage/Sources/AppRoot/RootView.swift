@@ -21,7 +21,7 @@ public struct RootView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
-    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
+    @Environment(PendingRouteStore.self) var pendingRouteStore
     @Environment(LaunchStateStore.self) var launchStateStore
     @Environment(AdvertisementStore.self) var advertisementStore
     @Environment(ForceUpdateStore.self) var forceUpdateStore
@@ -84,10 +84,10 @@ public struct RootView: View {
 
 public extension RootView {
 
-    /// - Parameter pendingNotificationRouteStore: タップされた通知から開く画面。通知のタップを受け取る`AppDelegate`と共有する
+    /// - Parameter pendingRouteStore: タップされた通知から開く画面。通知のタップを受け取る`AppDelegate`と共有する
     static func make(
         dependencies: AppDependencies,
-        pendingNotificationRouteStore: PendingNotificationRouteStore
+        pendingRouteStore: PendingRouteStore
     ) -> some View {
         DependenciesInjectLayer {
             let accountAuthStore = AccountAuthStore(
@@ -145,7 +145,7 @@ public extension RootView {
             .environment(cohabitantStore)
             .environment(subscriptionStore)
             .environment(pendingInvitationStore)
-            .environment(pendingNotificationRouteStore)
+            .environment(pendingRouteStore)
             .environment(launchStateStore)
             .environment(advertisementStore)
             .environment(forceUpdateStore)
@@ -203,7 +203,7 @@ private extension RootView {
     /// - Note: 起動時はログイン済みなら`launching`から直接`loggedIn`になるため、起動のきっかけになった通知は消さない
     func onChangeLaunchState() {
         guard case .notLoggedIn = launchStateStore.launchState else { return }
-        pendingNotificationRouteStore.clear()
+        pendingRouteStore.clear()
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {
