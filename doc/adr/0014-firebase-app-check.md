@@ -64,7 +64,11 @@ Debug Providerの素の挙動は、インストールごとにUUIDを生成し�
 
 このままだとシミュレータを消去するたびにトークンが変わり、そのつどFirebaseコンソールに登録し直すことになる。開発機とシミュレータの数だけ登録が増えるため運用が回らない。
 
-`GACAppCheckDebugProvider` は環境変数 `AppCheckDebugToken`（旧名 `FIRAAppCheckDebugToken`）をローカル生成トークンより優先して読むので、これで固定値を渡して全環境で1つのトークンを共有する。値は共有スキームに直接書かず、`$(APP_CHECK_DEBUG_TOKEN)` の展開を経由してgitignore済みの `Secret_dev.xcconfig` に置く。デバッグトークンはApp Attestの検証を迂回する合鍵であり、リポジトリに載せるとstg環境が誰でも叩ける状態になるため。
+`GACAppCheckDebugProvider` は環境変数 `AppCheckDebugToken`（旧名 `FIRAAppCheckDebugToken`）をローカル生成トークンより優先して読むので、これで固定値を渡して全環境で1つのトークンを共有する。値はgitignore済みの `Secret_dev.xcconfig` の `APP_CHECK_DEBUG_TOKEN` に置く。
+
+当初は共有スキームの環境変数（`AppCheckDebugToken=$(APP_CHECK_DEBUG_TOKEN)`）で渡していたが、スキームの環境変数はXcodeから起動したときにしか渡らない。Xcodeでインストールした後にホーム画面から起動すると、SDKがインストールごとのトークンを生成してApp Checkに弾かれ、ログインもできなくなった。そこで、Debug構成のビルドだけInfo.plistの `AppCheckDebugToken` にトークンを埋め込み、`AppCheckConfigurator` が `FirebaseApp.configure()` の前に環境変数へ設定する形に改めた。
+
+Info.plistへは `APP_CHECK_DEBUG_TOKEN` を直接展開せず、Debug構成にだけ定義した `APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST` を経由する。Stg構成（TestFlight）も同じ `Secret_dev.xcconfig` を参照するため、直接展開するとCIのsecretにトークンが入っていた場合に配布するビルドへ合鍵が埋め込まれるため。加えて実行時もDebug Providerを使うビルドでしかトークンを設定しない。デバッグトークンはApp Attestの検証を迂回する合鍵であり、リポジトリに載せるとstg環境が誰でも叩ける状態になるため。
 
 環境変数が空文字ならSDKはローカル生成トークンにフォールバックするので、`APP_CHECK_DEBUG_TOKEN` を設定していない環境でも壊れない。
 
