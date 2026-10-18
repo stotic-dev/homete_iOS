@@ -56,6 +56,7 @@ Issueの表から、方針整理（2026-10-17）で次のとおり絞った。
 
 - 2・3は「新しく入力」タブにしかないUIのため、ステップ2に進んだときに「新しく入力」タブへ切り替える
   - いつもの家事が登録済みのユーザーは「いつもの家事」タブで開くので、ステップ1はそのタブのまま見せる
+- 無料プランでいつもの家事が上限に達しているときは、ステップ3を飛ばして2ステップにする。トグルの代わりにプランの案内が出ており、説明どおりに操作できないため
 
 #### 家事テンプレート画面のステップ
 
@@ -156,7 +157,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 
 - `NavigationStack`の外側に`.tutorialSpotlight`を付け、ナビゲーションバーの項目も切り抜けるようにする
 - タブ・「続けて入力する」・トグルに`.tutorialSpotlightTarget(_:)`を付ける（`RegisterSourceTabs` / `ManualHouseworkForm`）
-- `onAppear`で`startIfNeeded()`。ステップが`.queue`に変わったら`selectedTab = .manual`にする
+- `onAppear`で`startIfNeeded()`。いつもの家事が上限に達していれば`startIfNeeded(skipping: [.saveAsFrequent])`。ステップが`.queue`に変わったら`selectedTab = .manual`にする
 - 表示中は`interactiveDismissDisabled`
 
 ### 6. 家事テンプレート画面
@@ -164,8 +165,10 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 - `HouseworkTemplateView`は`HouseworkTemplateListStore`をEnvironmentから引いており、UIのみのViewになっていない。
   一覧部分（曜日・毎月のセクション、＋ボタン、✓ボタン）をUIのみの`HouseworkTemplateListContent`に切り出す（リファクタとして先に積む。`ui-logic-view-separation.md`）
 - `HouseworkTemplateTutorialView`（新規）で、ステップ1は`HouseworkTemplateEmptyView`、ステップ2〜4は`HouseworkTemplateListContent`にサンプルの家事を渡して描く
-- `HouseworkTemplateScreen`に`.tutorialSpotlight`を付け、表示中は本番の画面の上に`HouseworkTemplateTutorialView`を重ねる。後ろの本番の画面には`.excludedFromTutorialSpotlight()`を付ける
-- テンプレートの読み込みが終わってから出す。読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らず、ステップ1を飛ばすかどうかを決められないため（`.task(id: loadState)`で待つ。読み込みに失敗したら出さず、リトライで読み込めた時点で出す）
+- `HouseworkTemplateTutorialView`自身が`.tutorialSpotlight`と説明のカードを持ち、`HouseworkTemplateScreen`は表示中に本番の画面の上へ重ねるだけにする。
+  スポットライトがチュートリアルの画面の中で閉じるので、後ろの本番の画面のUIは切り抜かれない。PreviewもScreenと同じ見た目（切り抜きとカード込み）を撮れる
+- テンプレートの読み込みが終わってから出す。読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らず、ステップ1を飛ばすかどうかを決められないため（`.task(id:)`で待つ。読み込みに失敗したら出さず、リトライで読み込めた時点で出す）
+- テンプレートを作成済みなら、編集の準備（`HouseworkTemplateEditStore.startEditing`）が済むまで待つ。準備に失敗するとエラーの表示に切り替わり、その上でチュートリアルを最後まで見ると、使えない画面のまま見たことになってしまうため
 
 ### 7. Analytics（`screen_tutorial`イベント）
 
@@ -205,7 +208,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 | 新規View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Template/SubViews/HouseworkTemplateListContent.swift` | 一覧部分のUIのみのView |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Template/HouseworkTemplateView.swift` | `HouseworkTemplateListContent`を使う |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Template/HouseworkTemplateScreen.swift` | スポットライトとStore |
-| 新規View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Tutorial/HouseworkTemplateTutorialView.swift` | サンプルの値で描く画面 |
+| 新規View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Tutorial/HouseworkTemplateTutorialView.swift` | サンプルの値で描く画面と、スポットライト・カード |
 | 新規View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Tutorial/HouseworkTemplateTutorialCard.swift` | ステップごとの文言・アイコン |
 | 修正View | `LocalPackage/Sources/Features/SettingFeature/Debug/DebugMenuView.swift` | 記録を消す項目 |
 | 修正Doc | `doc/analytics_events.md` | `screen_tutorial`を追記 |
