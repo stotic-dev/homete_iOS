@@ -1077,7 +1077,7 @@ sync_app_previews() {
   localizations_json=$(call GET "/v1/appStoreVersions/${version_id}/appStoreVersionLocalizations?fields%5BappStoreVersionLocalizations%5D=locale&limit=200")
 
   local locale localization_id files sets_json set_id existing_json desired_json
-  local preview_id order_ids new_ids entry checksum kept_id
+  local preview_id plan_json order_ids new_ids entry index kept_id
   for locale_dir in "$dir"/*/; do
     locale=$(basename "$locale_dir")
     localization_id=$(echo "$localizations_json" | jq -r --arg locale "$locale" '.data[] | select(.attributes.locale == $locale) | .id')
@@ -1114,23 +1114,29 @@ sync_app_previews() {
         continue
       fi
 
-      # 1つの枠に載せられるのは3本までで、先に足すと上限を超えることがあるため、要らない動画を先に外す。
-      # 同じ中身が複数あるときや、処理に失敗したものも外す
-      for preview_id in $(jq -n -r --argjson existing "$existing_json" --argjson desired "$desired_json" '
-        ($desired | map(.checksum)) as $wanted
-        | $existing | to_entries[] | .key as $k | .value as $v
-        | select($v.state == "FAILED" or ($wanted | index($v.checksum) | not)
-          or ([$existing[:$k][] | select(.state != "FAILED") | .checksum] | index($v.checksum)))
-        | $v.id'); do
+      # 載っている動画を、ファイルの順に同じ中身のものへ1つずつ割り当てる（1つの動画を2つのファイルに使わない）。
+      # 割り当てなかった動画（要らないもの・処理に失敗したもの・同じ中身で余ったもの）は外す
+      plan_json=$(jq -n -c --argjson existing "$existing_json" --argjson desired "$desired_json" '
+        reduce $desired[] as $d ({keep: [], used: []};
+          .used as $used
+          | ([$existing[] | select(.state != "FAILED" and .checksum == $d.checksum)
+              | .id | select(. as $id | $used | any(.[]; . == $id) | not)][0]) as $id
+          | .keep += [$id // ""] | .used += (if $id then [$id] else [] end))
+        | .used as $used
+        | {keep, delete: [$existing[].id | select(. as $id | $used | any(.[]; . == $id) | not)]}')
+
+      # 1つの枠に載せられるのは3本までで、先に足すと上限を超えることがあるため、要らない動画を先に外す
+      for preview_id in $(echo "$plan_json" | jq -r '.delete[]'); do
         call DELETE "/v1/appPreviews/${preview_id}" > /dev/null
         echo "外しました: ${locale} / ${preview_type}（preview: ${preview_id}）" >&2
       done
 
       order_ids=()
       new_ids=()
+      index=0
       while IFS= read -r file; do
-        checksum=$(file_md5 "$file")
-        kept_id=$(echo "$existing_json" | jq -r --arg c "$checksum" '[.[] | select(.checksum == $c and .state != "FAILED")][0].id // empty')
+        kept_id=$(echo "$plan_json" | jq -r --argjson i "$index" '.keep[$i]')
+        index=$((index + 1))
         if [ -n "$kept_id" ]; then
           order_ids+=("$kept_id")
           continue
