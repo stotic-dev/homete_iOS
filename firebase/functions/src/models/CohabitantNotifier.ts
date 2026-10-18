@@ -179,10 +179,7 @@ export async function notifyOtherCohabitants(
     return {tokens: [], successCount: 0, failureCount: 0};
   }
 
-  const accounts = await firestoreHelper.getAccountsByUserIds(recipientIds);
-  const tokens = accounts
-    .map((account) => account.fcmToken)
-    .filter((token): token is string => !!token);
+  const tokens = await firestoreHelper.getFcmTokensByUserIds(recipientIds);
 
   if (tokens.length === 0) {
     logger.info("No FCM tokens found for any of the recipients.", {

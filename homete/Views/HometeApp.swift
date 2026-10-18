@@ -5,9 +5,9 @@
 //  Created by 佐藤汰一 on 2025/04/22.
 //
 
+import AppIntents
 import AppRoot
-import FirebaseCore
-import FirebaseMessaging
+import HometeAppIntents
 import HometeDomain
 import HometeInfrastructure
 import SwiftUI
@@ -16,10 +16,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     let isXcodePreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != nil
     let isUnitTestMode = ProcessInfo.processInfo.arguments.contains("isUnitTestMode")
-    /// タップされた通知から開く画面
+    /// タップされた通知やApp Intentから開く画面
     /// - Note: アプリが終了している状態で通知をタップすると、画面を組み立てる前に通知のタップが届くため、
     ///         画面側ではなくここで受け取って保持する
-    let pendingNotificationRouteStore = PendingNotificationRouteStore()
+    let pendingRouteStore = PendingRouteStore()
 
     func application(
         _: UIApplication,
@@ -32,15 +32,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // Initialize RevenueCat
         setupRevenueCat()
 
+        setupAppIntents()
+
         UNUserNotificationCenter.current().delegate = self
-        Messaging.messaging().delegate = self
+        MessagingConfigurator.configure()
 
         return true
     }
 
     func application(_: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        guard Messaging.messaging().apnsToken != deviceToken else { return }
-        Messaging.messaging().setAPNSToken(deviceToken, type: .unknown)
+        MessagingConfigurator.setAPNSToken(deviceToken)
     }
 
 }
@@ -61,16 +62,15 @@ private extension AppDelegate {
                     withExtension: "plist"
                 )?
                     .path()
-            ),
-                let firebaseOption = FirebaseOptions(contentsOfFile: devPlistFilePath) else { return }
-            FirebaseApp.configure(options: firebaseOption)
+            ) else { return }
+            FirebaseConfigurator.configure(optionsFilePath: devPlistFilePath)
         }
         #else
-        FirebaseApp.configure()
+        FirebaseConfigurator.configure()
         #endif
 
         // プレビュー・ユニットテストではFirebaseを初期化しないため、Remote Configも設定しない
-        guard FirebaseApp.app() != nil else { return }
+        guard FirebaseConfigurator.isConfigured else { return }
         RemoteConfigConfigurator.configure(minimumFetchInterval: remoteConfigMinimumFetchInterval)
     }
 
@@ -104,20 +104,23 @@ private extension AppDelegate {
         RevenueCatClient.shared.initialize()
     }
 
-}
-
-// MARK: - Delegate Conformances
-
-extension AppDelegate: MessagingDelegate {
-
-    nonisolated func messaging(_: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("didReceiveRegistrationToken: \(fcmToken ?? "nil")")
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .didReceiveFcmToken, object: fcmToken)
-        }
+    /// App Intentが使う依存を登録する
+    /// - Note: アプリを開かないIntentもアプリのプロセスを起動して実行されるため、Firebaseの初期化と同じく起動時に行う。
+    ///         家事の名前の読み直しは、家事を読み込んだとき（`HouseworkListStore`）に頼む
+    func setupAppIntents() {
+        // プレビュー・ユニットテストではFirebaseを初期化しないため、Firebaseを使うIntentも登録しない
+        guard FirebaseConfigurator.isConfigured else { return }
+        HometeAppIntentsConfigurator.configure(
+            dependencies: .liveValue,
+            pendingRouteStore: pendingRouteStore,
+            currentAppVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+            updateAppShortcutParameters: { HometeAppShortcuts.updateAppShortcutParameters() }
+        )
     }
 
 }
+
+// MARK: - Delegate Conformances
 
 extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
@@ -136,9 +139,9 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
         _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard let route = NotificationRoute(userInfo: response.notification.request.content.userInfo) else { return }
+        guard let route = PendingRoute(userInfo: response.notification.request.content.userInfo) else { return }
 
-        pendingNotificationRouteStore.store(route)
+        pendingRouteStore.store(route)
     }
 
 }
@@ -157,7 +160,7 @@ struct HometeApp: App {
             } else {
                 RootView.make(
                     dependencies: .liveValue,
-                    pendingNotificationRouteStore: delegate.pendingNotificationRouteStore
+                    pendingRouteStore: delegate.pendingRouteStore
                 )
             }
         }

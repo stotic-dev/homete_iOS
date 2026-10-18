@@ -23,12 +23,24 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          # PRでは変更に関係するテストターゲットだけ流すので、ベースブランチとの分岐点まで履歴を取る
+          fetch-depth: 0
 
       - name: Select Xcode version
         run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
 
       - name: Show Swift version
         run: swift --version
+
+      # 変更されたターゲットと、それに依存するターゲットのテストだけを流す（ADR-0048）。
+      # mainへのpushと手動実行では全テストを流す
+      - name: Detect affected test targets
+        id: affected
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 scripts/affected-modules.py summary --base "origin/${{ github.base_ref }}"
+          echo "filter=$(python3 scripts/affected-modules.py test-filter --base "origin/${{ github.base_ref }}")" >> "$GITHUB_OUTPUT"
 
       # workspace-state.json が無いと、SwiftPMは復元したcheckoutsを使わず依存の解決とチェックアウトをやり直す。
       # xcframeworkなどのバイナリ依存は artifacts に置かれるので、これもキャッシュしないと毎回ダウンロードされる。
@@ -51,17 +63,22 @@ jobs:
       - name: Check Prefire previews
         run: make check-previews
 
-      - name: Run tests with coverage
+      - name: Run affected tests with coverage
+        if: github.event_name == 'pull_request' && steps.affected.outputs.filter != ''
+        run: make test-affected BASE="origin/${{ github.base_ref }}" COVERAGE=1
+
+      - name: Run all tests with coverage
+        if: github.event_name != 'pull_request'
         run: make test-packages
 
       - name: Setup Node.js
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && steps.affected.outputs.filter != ''
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Danger
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && steps.affected.outputs.filter != ''
         run: npm install -g danger
 
       # PRのキャッシュは他のPRから読めないため、mainへのpushでもビルドしてmainにキャッシュを残す。
@@ -80,7 +97,7 @@ jobs:
         run: swift build --package-path DangerTools --scratch-path DangerTools/.build
 
       - name: Run Danger (Coverage)
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && steps.affected.outputs.filter != ''
         working-directory: DangerTools
         run: swift run danger-swift ci --dangerfile DangerfileCoverage.swift --cwd .. --id "danger-coverage"
         env:

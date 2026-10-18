@@ -1,7 +1,7 @@
 /**
  * iOSクライアントが実際に読み書きするFirestoreコレクション名。
  *
- * `LocalPackage/Sources/HometeInfrastructure/Firestore/Reference/`
+ * `InfraPackage/Sources/HometeInfrastructure/Firestore/Reference/`
  * `CollectionPath.swift` の定義をテスト側に写したもの。
  *
  * プロダクションコード（`src/models/FirestoreCollections.ts`）の定数を
@@ -11,6 +11,7 @@
  */
 export const ClientCollections = {
   ACCOUNT: "Account",
+  ACCOUNT_PRIVATE: "Private",
   COHABITANT: "Cohabitant",
   HOUSEWORKS: "Houseworks",
   HOUSEWORK_TEMPLATES: "HouseworkTemplates",
@@ -110,6 +111,15 @@ export function frequentHouseworkCategoriesPath(cohabitantId: string): string {
  */
 export function accountPath(userId: string): string {
   return `${ClientCollections.ACCOUNT}/${userId}`;
+}
+
+/**
+ * 本人だけが読み書きできるFCMトークンのドキュメントのパスを取得
+ * @param {string} userId - ユーザーID
+ * @return {string} FCMトークンのドキュメントへのパス
+ */
+export function accountFcmTokenPath(userId: string): string {
+  return `${accountPath(userId)}/${ClientCollections.ACCOUNT_PRIVATE}/fcm`;
 }
 
 /**

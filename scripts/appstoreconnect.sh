@@ -1528,4 +1528,7 @@ main() {
   esac
 }
 
-main "$@"
+# 他のスクリプト（scripts/xcode-cloud.sh）から source したときは、JWT生成や call だけを使えるよう main を走らせない
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  main "$@"
+fi

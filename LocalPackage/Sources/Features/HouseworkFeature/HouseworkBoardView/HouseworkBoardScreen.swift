@@ -25,7 +25,7 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.cohabitantMembers) var members
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(CohabitantStore.self) var cohabitantStore
-    @Environment(PendingNotificationRouteStore.self) var pendingNotificationRouteStore
+    @Environment(PendingRouteStore.self) var pendingRouteStore
 
     @State var houseworkBoardList: HouseworkBoardList = .init(items: [])
     @State var dateList = HouseworkDateList()
@@ -34,6 +34,11 @@ public struct HouseworkBoardScreen: View {
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
+    @State var isPresentingDatePicker = false
+    /// カレンダーからPaywallを開く操作。カレンダーを閉じきってからPaywallを出す
+    @State var hasPendingDatePickerPaywall = false
+    /// Paywallを開いた起点。閉じたときのログに使う
+    @State var paywallStep = PaywallAnalyticsStep.boardStorageLimit
     @State var isSelecting = false
     /// 複数選択モードで選択中の家事のID
     @State var selectedHouseworkIDs: Set<String> = []
@@ -68,7 +73,7 @@ public struct HouseworkBoardScreen: View {
 
     public var body: some View {
         if let houseworkListStore {
-            board(houseworkListStore: houseworkListStore)
+            openingPendingRoute(board(houseworkListStore: houseworkListStore), store: houseworkListStore)
                 .environment(houseworkListStore)
                 .environment(houseworkTemplateListStore)
                 .onAppear {
@@ -132,6 +137,10 @@ private extension HouseworkBoardScreen {
             .sheet(item: $addingHelperItem) { item in
                 HouseworkAddHelperSheet(item: item, step: .board)
             }
+            // シートの上にPaywallを重ねられないため、閉じきってから出す
+            .sheet(isPresented: $isPresentingDatePicker, onDismiss: dismissedDatePicker) {
+                datePicker()
+            }
             .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
                 router.resolve(.houseworkTemplate)
             }
@@ -144,14 +153,7 @@ private extension HouseworkBoardScreen {
                 withAnimation {
                     updateHouseboardList(with: houseworkListStore)
                 }
-                openPendingHouseworkDetail(store: houseworkListStore)
-            }
-            // 通知から開く家事は、起動直後だとまだ読み込まれていないため、家事が届くたびに探し直す
-            .onChange(of: pendingNotificationRouteStore.pendingRoute, initial: true) {
-                openPendingHouseworkDetail(store: houseworkListStore)
-            }
-            .onChange(of: houseworkListStore.loadState) {
-                openPendingHouseworkDetail(store: houseworkListStore)
+                openPendingRoute(store: houseworkListStore)
             }
             .onChange(of: dateList.selectedDate) {
                 withAnimation {
@@ -190,7 +192,8 @@ private extension HouseworkBoardScreen {
                         await sendThanks(to: item, store: houseworkListStore)
                     }
                 },
-                onTapStorageLimit: { tappedStorageLimitCell() },
+                onTapYearMonth: { isPresentingDatePicker = true },
+                onTapStorageLimit: { showPaywall(from: .boardStorageLimit) },
                 onTapHouseworkTemplate: { isShowHouseworkTemplate = true },
                 onTapBulkAction: { performBulk($0, store: houseworkListStore) },
                 rowMenu: { item in
@@ -348,38 +351,26 @@ private extension HouseworkBoardScreen {
         }
     }
 
-    /// 通知から開く家事が見つかったら、その家事の詳細画面を開く
-    /// - Note: 別の画面を開いていても、通知の家事の詳細だけが積まれた状態にする。
-    ///         詳細から戻ったときにその家事が見えるよう、ボードもその家事の日付と状態に切り替える。
-    ///         シートやフルスクリーンカバーは閉じず、その裏に詳細画面を積む。購入中のペイウォールや入力中の
-    ///         シートを通知で勝手に閉じないためで、ダッシュボード側のシートなどはそもそもここから閉じられない
-    func openPendingHouseworkDetail(store: HouseworkListStore) {
-        guard let item = pendingNotificationRouteStore.takeHouseworkDetailItem(
-            in: store.items,
-            loadState: store.loadState
-        ) else { return }
-
-        isSelecting = false
-        dateList.selectDate(item.indexedDate.value, calendar: calendar)
-        if HouseworkState.pageableCases.contains(item.state) {
-            selectedHouseworkState = item.state
-        }
-        navigationPath.path = [.houseworkDetail(.init(originalItem: item, isRegistered: true))]
-    }
-
     func dismissedThanksView() {
         guard hasPendingThanksFeedback else { return }
         hasPendingThanksFeedback = false
         thanksFeedbackCount += 1
     }
 
-    func tappedStorageLimitCell() {
-        analyticsClient.log(.paywall(.shown(step: .boardStorageLimit)))
+    func dismissedDatePicker() {
+        guard hasPendingDatePickerPaywall else { return }
+        hasPendingDatePickerPaywall = false
+        showPaywall(from: .boardDatePicker)
+    }
+
+    func showPaywall(from step: PaywallAnalyticsStep) {
+        analyticsClient.log(.paywall(.shown(step: step)))
+        paywallStep = step
         isShowPaywall = true
     }
 
     func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
+        analyticsClient.log(.paywall(.closed(step: paywallStep, isPremium: subscriptionStore.isPremium)))
     }
 
 }

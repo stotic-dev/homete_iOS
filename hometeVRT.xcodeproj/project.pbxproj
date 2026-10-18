@@ -1,0 +1,745 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0AA7C0030000000000000001 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeDomain */; };
+		0AA7C0030000000000000002 /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000002 /* HometeResources */; };
+		0AA7C0030000000000000003 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000003 /* HometeUI */; };
+		0AA7C0030000000000000004 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeature */; };
+		0AA7C0030000000000000005 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeature */; };
+		0AA7C0030000000000000006 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeature */; };
+		0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeature */; };
+		0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeature */; };
+		0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeature */; };
+		0AA7C003000000000000000A /* ContributionFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeature */; };
+		0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeature */; };
+		0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000C /* HometeSnapshotTestSupport */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0AA7C001000000000000000B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BCC853ED2DB74BBC00C9A44B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0AA7C0010000000000000001;
+			remoteInfo = hometeVRTHost;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0AA7C0010000000000000006 /* hometeVRTHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hometeVRTHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		04B371962F404CBF00820C62 /* LocalPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = LocalPackage; sourceTree = "<group>"; };
+		04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = hometeSnapshotTestsForCI.xctestplan; sourceTree = "<group>"; };
+		BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = hometeSnapshotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = snapshotTesting.xctestplan; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0AA7C001000000000000000D /* Exceptions for "hometeVRTHost" folder in "hometeVRTHost" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0AA7C0010000000000000001 /* hometeVRTHost */;
+		};
+		04B7923F2F525C2D0080EFAC /* Exceptions for "Sources" folder in "hometeSnapshotTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = BC1BB2672E909B8C001D168F /* hometeSnapshotTests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		0AA7C0010000000000000005 /* hometeVRTHost */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0AA7C001000000000000000D /* Exceptions for "hometeVRTHost" folder in "hometeVRTHost" target */,
+			);
+			path = hometeVRTHost;
+			sourceTree = "<group>";
+		};
+		BC1BB2692E909B8C001D168F /* Sources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04B7923F2F525C2D0080EFAC /* Exceptions for "Sources" folder in "hometeSnapshotTests" target */,
+			);
+			path = hometeSnapshotTests/Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0AA7C0010000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC1BB2652E909B8C001D168F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */,
+				0AA7C0030000000000000001 /* HometeDomain in Frameworks */,
+				0AA7C0030000000000000002 /* HometeResources in Frameworks */,
+				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
+				0AA7C0030000000000000004 /* AuthFeature in Frameworks */,
+				0AA7C0030000000000000005 /* SettingFeature in Frameworks */,
+				0AA7C0030000000000000006 /* HomeFeature in Frameworks */,
+				0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */,
+				0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */,
+				0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */,
+				0AA7C003000000000000000A /* ContributionFeature in Frameworks */,
+				0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BCC853EC2DB74BBC00C9A44B = {
+			isa = PBXGroup;
+			children = (
+				04B371962F404CBF00820C62 /* LocalPackage */,
+				BC1BB4912E90FE4B001D168F /* snapshotTesting.xctestplan */,
+				04B7862D2F4C11800080EFAC /* hometeSnapshotTestsForCI.xctestplan */,
+				BC1BB2692E909B8C001D168F /* Sources */,
+				0AA7C0010000000000000005 /* hometeVRTHost */,
+				BCC853F62DB74BBC00C9A44B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BCC853F62DB74BBC00C9A44B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */,
+				0AA7C0010000000000000006 /* hometeVRTHost.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0AA7C0010000000000000001 /* hometeVRTHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0AA7C0010000000000000007 /* Build configuration list for PBXNativeTarget "hometeVRTHost" */;
+			buildPhases = (
+				0AA7C0010000000000000002 /* Sources */,
+				0AA7C0010000000000000003 /* Frameworks */,
+				0AA7C0010000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0AA7C0010000000000000005 /* hometeVRTHost */,
+			);
+			name = hometeVRTHost;
+			packageProductDependencies = (
+			);
+			productName = hometeVRTHost;
+			productReference = 0AA7C0010000000000000006 /* hometeVRTHost.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BC1BB2672E909B8C001D168F /* hometeSnapshotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC1BB26E2E909B8C001D168F /* Build configuration list for PBXNativeTarget "hometeSnapshotTests" */;
+			buildPhases = (
+				BC1BB2642E909B8C001D168F /* Sources */,
+				BC1BB2652E909B8C001D168F /* Frameworks */,
+				BC1BB2662E909B8C001D168F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				04B783712F4996860080EFAC /* PBXTargetDependency */,
+				0AA7C001000000000000000C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BC1BB2692E909B8C001D168F /* Sources */,
+			);
+			name = hometeSnapshotTests;
+			packageProductDependencies = (
+				0AA7C002000000000000000C /* HometeSnapshotTestSupport */,
+				0AA7C0020000000000000001 /* HometeDomain */,
+				0AA7C0020000000000000002 /* HometeResources */,
+				0AA7C0020000000000000003 /* HometeUI */,
+				0AA7C0020000000000000004 /* AuthFeature */,
+				0AA7C0020000000000000005 /* SettingFeature */,
+				0AA7C0020000000000000006 /* HomeFeature */,
+				0AA7C0020000000000000007 /* CohabitantRegistrationFeature */,
+				0AA7C0020000000000000008 /* HouseworkFeature */,
+				0AA7C0020000000000000009 /* HouseworkTemplateFeature */,
+				0AA7C002000000000000000A /* ContributionFeature */,
+				0AA7C002000000000000000B /* FrequentHouseworkFeature */,
+			);
+			productName = hometeSnapshotTests;
+			productReference = BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BCC853ED2DB74BBC00C9A44B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					BC1BB2672E909B8C001D168F = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = 0AA7C0010000000000000001;
+					};
+					0AA7C0010000000000000001 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = BCC853F02DB74BBC00C9A44B /* Build configuration list for PBXProject "hometeVRT" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ja,
+			);
+			mainGroup = BCC853EC2DB74BBC00C9A44B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BC1BB2672E909B8C001D168F /* hometeSnapshotTests */,
+				0AA7C0010000000000000001 /* hometeVRTHost */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0AA7C0010000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC1BB2662E909B8C001D168F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0AA7C0010000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC1BB2642E909B8C001D168F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0AA7C001000000000000000C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0AA7C0010000000000000001 /* hometeVRTHost */;
+			targetProxy = 0AA7C001000000000000000B /* PBXContainerItemProxy */;
+		};
+		04B783712F4996860080EFAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 04B783702F4996860080EFAC /* PrefireTestsPlugin */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0AA7C0010000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeVRTHost/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.vrthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0AA7C0010000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeVRTHost/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.vrthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		0AA7C001000000000000000A /* Stg */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeVRTHost/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.vrthost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Stg;
+		};
+		04B961F02FB8235200ECAB4B /* Stg */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Stg;
+		};
+		04B961F22FB8235200ECAB4B /* Stg */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hometeVRTHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hometeVRTHost";
+			};
+			name = Stg;
+		};
+		BC1BB26F2E909B8C001D168F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hometeVRTHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hometeVRTHost";
+			};
+			name = Debug;
+		};
+		BC1BB2702E909B8C001D168F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = hometeSnapshotTests/Sources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometeSnapshotTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/hometeVRTHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/hometeVRTHost";
+			};
+			name = Release;
+		};
+		BCC854142DB74BBF00C9A44B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		BCC854152DB74BBF00C9A44B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 56LYVN6DMF;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0AA7C0010000000000000007 /* Build configuration list for PBXNativeTarget "hometeVRTHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0AA7C0010000000000000008 /* Debug */,
+				0AA7C0010000000000000009 /* Release */,
+				0AA7C001000000000000000A /* Stg */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BC1BB26E2E909B8C001D168F /* Build configuration list for PBXNativeTarget "hometeSnapshotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BC1BB26F2E909B8C001D168F /* Debug */,
+				BC1BB2702E909B8C001D168F /* Release */,
+				04B961F22FB8235200ECAB4B /* Stg */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BCC853F02DB74BBC00C9A44B /* Build configuration list for PBXProject "hometeVRT" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BCC854142DB74BBF00C9A44B /* Debug */,
+				BCC854152DB74BBF00C9A44B /* Release */,
+				04B961F02FB8235200ECAB4B /* Stg */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackage;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0AA7C0020000000000000001 /* HometeDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeDomain;
+		};
+		0AA7C0020000000000000002 /* HometeResources */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeResources;
+		};
+		0AA7C0020000000000000003 /* HometeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeUI;
+		};
+		0AA7C0020000000000000004 /* AuthFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuthFeature;
+		};
+		0AA7C0020000000000000005 /* SettingFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SettingFeature;
+		};
+		0AA7C0020000000000000006 /* HomeFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HomeFeature;
+		};
+		0AA7C0020000000000000007 /* CohabitantRegistrationFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CohabitantRegistrationFeature;
+		};
+		0AA7C0020000000000000008 /* HouseworkFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HouseworkFeature;
+		};
+		0AA7C0020000000000000009 /* HouseworkTemplateFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HouseworkTemplateFeature;
+		};
+		0AA7C002000000000000000A /* ContributionFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ContributionFeature;
+		};
+		0AA7C002000000000000000B /* FrequentHouseworkFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FrequentHouseworkFeature;
+		};
+		0AA7C002000000000000000C /* HometeSnapshotTestSupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = HometeSnapshotTestSupport;
+		};
+		04B783702F4996860080EFAC /* PrefireTestsPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "plugin:PrefireTestsPlugin";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = BCC853ED2DB74BBC00C9A44B /* Project object */;
+}

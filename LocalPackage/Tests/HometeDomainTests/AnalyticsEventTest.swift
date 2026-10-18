@@ -213,6 +213,10 @@ struct AnalyticsEventTest {
                 ["action": "send_thanks", "step": "comment_prompt", "result": "success"]
             ),
             (
+                HouseworkAnalyticsAction.sendThanks(step: .appIntent, isSuccess: true),
+                ["action": "send_thanks", "step": "app_intent", "result": "success"]
+            ),
+            (
                 HouseworkAnalyticsAction.editThanks(step: .thanks, isSuccess: true),
                 ["action": "edit_thanks", "step": "thanks", "result": "success"]
             ),
@@ -544,6 +548,10 @@ struct AnalyticsEventTest {
                 ["step": "board_storage_limit", "action": "shown"]
             ),
             (
+                PaywallAnalyticsAction.shown(step: .boardDatePicker),
+                ["step": "board_date_picker", "action": "shown"]
+            ),
+            (
                 PaywallAnalyticsAction.shown(step: .templateAd),
                 ["step": "template_ad", "action": "shown"]
             ),
@@ -646,6 +654,40 @@ struct AnalyticsEventTest {
         let actual = AnalyticsEvent.registrationTutorial(action)
 
         #expect(actual == AnalyticsEvent(name: "registration_tutorial", parameters: expectedParameters))
+    }
+
+    @Test(
+        "App Intentの実行を、action/resultのパラメータを持つapp_intentイベントに変換する",
+        arguments: [
+            (
+                AppIntentAnalyticsIntent.completeHousework,
+                AppIntentAnalyticsResult.success,
+                "complete_housework",
+                "success"
+            ),
+            (.openHouseworkComplete, .success, "open_housework_complete", "success"),
+            (.sendThanks, .notFound, "send_thanks", "not_found"),
+            (.showContributionSummary, .notLoggedIn, "show_contribution_summary", "not_logged_in"),
+            (.openContributionAnalytics, .success, "open_contribution_analytics", "success"),
+            (.completeHousework, .alreadyCompleted, "complete_housework", "already_completed"),
+            (.completeHousework, .noCohabitant, "complete_housework", "no_cohabitant"),
+            (.completeHousework, .updateRequired, "complete_housework", "update_required"),
+            (.completeHousework, .failure, "complete_housework", "failure"),
+            (.sendThanks, .pendingSync, "send_thanks", "pending_sync"),
+        ]
+    )
+    func appIntent(
+        intent: AppIntentAnalyticsIntent,
+        result: AppIntentAnalyticsResult,
+        expectedIntent: String,
+        expectedResult: String
+    ) {
+        let actual = AnalyticsEvent.appIntent(intent, result: result)
+
+        #expect(actual == AnalyticsEvent(
+            name: "app_intent",
+            parameters: ["action": expectedIntent, "result": expectedResult]
+        ))
     }
 
 }

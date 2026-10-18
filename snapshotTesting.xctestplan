@@ -18,7 +18,7 @@
       }
     ],
     "targetForVariableExpansion" : {
-      "containerPath" : "container:homete.xcodeproj",
+      "containerPath" : "container:hometeVRT.xcodeproj",
       "identifier" : "0AA7C0010000000000000001",
       "name" : "hometeVRTHost"
     },
@@ -27,7 +27,7 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:homete.xcodeproj",
+        "containerPath" : "container:hometeVRT.xcodeproj",
         "identifier" : "BC1BB2672E909B8C001D168F",
         "name" : "hometeSnapshotTests"
       }

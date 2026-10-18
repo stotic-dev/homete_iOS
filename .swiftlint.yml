@@ -4,6 +4,8 @@ excluded:
   - DangerTools
   - LocalPackage/.build
   - LocalPackage/Package.swift
+  - InfraPackage/.build
+  - InfraPackage/Package.swift
   - vendor
 
 # Enabled/disabled rules

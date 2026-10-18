@@ -48,27 +48,19 @@ public final class AccountStore {
     }
 
     public func registerAccount(auth: AccountAuthResult, userName: UserName) async throws -> Account {
-        let newAccount = Account(id: auth.id, userName: userName.value, fcmToken: nil, cohabitantId: nil)
+        let newAccount = Account(id: auth.id, userName: userName.value, cohabitantId: nil)
         try await accountInfoClient.insertOrUpdate(newAccount)
         account = newAccount
         return newAccount
     }
 
-    public func updateFcmTokenIfNeeded(_ fcmToken: String) async {
-        // 保持しているFCMトークンと異なるFCMトークンに変わった場合は、アカウント情報も新しいトークンに更新する
-        guard let account,
-              account.fcmToken != fcmToken else { return }
+    /// FCMトークンをログイン中のアカウントに紐づけて保存する
+    /// - Note: トークンはAccount本体に持たないため、保持しているアカウント情報は変わらない
+    public func registerFcmToken(_ fcmToken: String) async {
+        guard let account else { return }
 
         do {
-            let updatedAccount = Account(
-                id: account.id,
-                userName: account.userName,
-                fcmToken: fcmToken,
-                cohabitantId: account.cohabitantId,
-                isPremium: account.isPremium
-            )
-            try await accountInfoClient.insertOrUpdate(updatedAccount)
-            self.account = updatedAccount
+            try await accountInfoClient.updateFcmToken(account.id, fcmToken)
         } catch {
             print("failed to update fcmToken: \(error)")
         }
@@ -128,7 +120,6 @@ public final class AccountStore {
         self.account = Account(
             id: account.id,
             userName: account.userName,
-            fcmToken: account.fcmToken,
             cohabitantId: cohabitantId,
             isPremium: account.isPremium
         )

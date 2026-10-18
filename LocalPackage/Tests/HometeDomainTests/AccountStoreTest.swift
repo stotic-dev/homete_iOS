@@ -18,7 +18,6 @@ struct AccountStoreTest {
         let inputAccount = Account(
             id: inputAccountId,
             userName: "testUserName",
-            fcmToken: "testToken",
             cohabitantId: nil
         )
 
@@ -42,11 +41,10 @@ struct AccountStoreTest {
     @Test("アカウント情報を再取得し、Firestore上のアカウントでオンメモリの状態を更新する")
     func reload() async throws {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let fetchedAccount = Account(
             id: "testId",
             userName: "testUser",
-            fcmToken: "token",
             cohabitantId: "cohabitantId"
         )
 
@@ -69,7 +67,7 @@ struct AccountStoreTest {
     @Test("アカウント情報を再取得し、Firestore上にアカウントが無い場合はaccountNotFoundを投げる")
     func reload_accountNotFoundInFirestore() async {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let accountInfoClient = AccountInfoClient(fetch: { _ in nil })
         let store = AccountStore(accountInfoClient: accountInfoClient, account: initialAccount)
 
@@ -103,11 +101,10 @@ struct AccountStoreTest {
     @Test("グループIDのみを差し替える場合、Firestoreへは書き込まずオンメモリの状態だけ更新する")
     func applyCohabitantId() {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: "token", cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let expectedAccount = Account(
             id: "testId",
             userName: "testUser",
-            fcmToken: "token",
             cohabitantId: "joinedCohabitantId"
         )
         let accountInfoClient = AccountInfoClient(insertOrUpdate: { _ in
@@ -122,39 +119,52 @@ struct AccountStoreTest {
         #expect(store.account == expectedAccount)
     }
 
-    @Test("サーバーにログイン情報がありFCMトークンが更新されている場合アカウントに紐づくFCMトークンを更新")
-    func updateFcmTokenIfNeeded() async {
+    @Test("FCMトークンをログイン中のアカウントに紐づけて保存し、保持しているアカウント情報は変えない")
+    func registerFcmToken() async {
         await confirmation(expectedCount: 1) { confirmation in
             // Arrange
-            let inputFcmToken = "token"
-            let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
-            let expectedAccount = Account(
-                id: initialAccount.id,
-                userName: initialAccount.userName,
-                fcmToken: inputFcmToken,
-                cohabitantId: nil
+            let inputAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
+            let accountInfoClient = AccountInfoClient(
+                insertOrUpdate: { _ in
+                    Issue.record("FCMトークンはAccount本体に書き込まない")
+                },
+                updateFcmToken: { accountId, fcmToken in
+                    confirmation()
+                    #expect((accountId, fcmToken) == ("testId", "token"))
+                }
             )
-            let accountInfoClient = AccountInfoClient(insertOrUpdate: {
-                confirmation()
-                #expect($0 == expectedAccount)
-            })
             let store = AccountStore(
                 accountInfoClient: accountInfoClient,
-                account: initialAccount
+                account: inputAccount
             )
 
             // Act
-            await store.updateFcmTokenIfNeeded(inputFcmToken)
+            await store.registerFcmToken("token")
 
             // Assert
-            #expect(store.account == expectedAccount)
+            #expect(store.account == inputAccount)
         }
+    }
+
+    @Test("アカウントを保持していない場合はFCMトークンを保存しない")
+    func registerFcmTokenWithoutAccount() async {
+        // Arrange
+        let accountInfoClient = AccountInfoClient(updateFcmToken: { _, _ in
+            Issue.record()
+        })
+        let store = AccountStore(accountInfoClient: accountInfoClient)
+
+        // Act
+        await store.registerFcmToken("token")
+
+        // Assert
+        #expect(store.account == nil)
     }
 
     @Test("保持しているアカウント情報をクリアする")
     func clear() {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let store = AccountStore(account: initialAccount)
 
         // Act
@@ -167,11 +177,10 @@ struct AccountStoreTest {
     @Test("アカウントの購読を開始すると、サーバー側で更新された内容がオンメモリに反映される")
     func startObservingIfNeededAppliesServerUpdate() async {
         // Arrange
-        let initialAccount = Account(id: "testId", userName: "testUser", fcmToken: nil, cohabitantId: nil)
+        let initialAccount = Account(id: "testId", userName: "testUser", cohabitantId: nil)
         let expectedAccount = Account(
             id: "testId",
             userName: "testUser",
-            fcmToken: nil,
             cohabitantId: "joinedCohabitantId"
         )
         let (stream, continuation) = AsyncThrowingStream<Account?, Error>.makeStream()

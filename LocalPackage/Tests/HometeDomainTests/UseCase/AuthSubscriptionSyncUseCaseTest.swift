@@ -38,14 +38,12 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let inputAccount = Account(
                 id: inputAuthResult.id,
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: nil
             )
             // エンタイトルメントがプレミアムのため、ロードしたアカウントに同期される
             let expectedAccount = Account(
                 id: inputAuthResult.id,
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: nil,
                 isPremium: true
             )
@@ -92,7 +90,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let inputAccount = Account(
                 id: inputAuthResult.id,
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: nil
             )
             let accountInfoClient = AccountInfoClient(
@@ -143,7 +140,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let previousAccount = Account(
                 id: "previousAccountId",
                 userName: "previousUserName",
-                fcmToken: nil,
                 cohabitantId: nil
             )
             let newAuthResult = AccountAuthResult(id: "newAccountId")
@@ -176,7 +172,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
             let staleAccount = Account(
                 id: staleAuthResult.id,
                 userName: "staleUserName",
-                fcmToken: nil,
                 cohabitantId: nil
             )
             let accountInfoClient = AccountInfoClient(
@@ -219,7 +214,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
             let staleAccount = Account(
                 id: "previousAccountId",
                 userName: "previousUserName",
-                fcmToken: nil,
                 cohabitantId: nil
             )
             let purchaseClient = PurchaseClient(logOut: {
@@ -340,14 +334,12 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             let inputAccount = Account(
                 id: "testAccountId",
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: inputCohabitantId,
                 isPremium: false
             )
             let expectedAccount = Account(
                 id: "testAccountId",
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: inputCohabitantId,
                 isPremium: true
             )
@@ -385,7 +377,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             let inputAccount = Account(
                 id: "testAccountId",
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: inputCohabitantId,
                 isPremium: false
             )
@@ -416,7 +407,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             let accountStore = AccountStore(account: Account(
                 id: "testAccountId",
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: nil,
                 isPremium: true
             ))
@@ -445,7 +435,6 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
             let accountStore = AccountStore(account: Account(
                 id: "testAccountId",
                 userName: "testUserName",
-                fcmToken: nil,
                 cohabitantId: "cohabitantId",
                 isPremium: true
             ))

@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(scripts/xcode-cloud.sh *)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -41,6 +44,9 @@
     ]
   },
   "sandbox": {
+    "excludedCommands": [
+      "scripts/xcode-cloud.sh *"
+    ],
     "network": {
       "allowedDomains": [
         "github.com",

@@ -5,6 +5,12 @@ export interface Account {
     id: string;
     userName?: string;
     cohabitantId?: string;
+    /**
+     * 旧バージョンのアプリが書き込むFCMトークン
+     *
+     * 新しいアプリは`Account/{uid}/Private/fcm`へ書き込み、このフィールドを消す（#241）。
+     * 旧アプリの利用者に通知を届けるためだけに読む。
+     */
     fcmToken?: string;
     isPremium: boolean;
 }
@@ -18,6 +24,13 @@ export class AccountFields {
   static readonly COHABITANT_ID = "cohabitantId";
   static readonly FCM_TOKEN = "fcmToken";
   static readonly IS_PREMIUM = "isPremium";
+}
+
+/**
+ * `Account/{uid}/Private/fcm`ドキュメントのフィールド名定数
+ */
+export class AccountFcmTokenFields {
+  static readonly TOKEN = "token";
 }
 
 /**

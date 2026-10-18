@@ -16,7 +16,7 @@ struct LaunchStateStoreTest {
     private let signedOutAuth = AccountAuthInfo(result: nil, alreadyLoadedAtInitiate: true)
 
     private func makeAccount(id: String = "testAccountId", cohabitantId: String? = nil) -> Account {
-        Account(id: id, userName: "testUserName", fcmToken: nil, cohabitantId: cohabitantId)
+        Account(id: id, userName: "testUserName", cohabitantId: cohabitantId)
     }
 
     private func makeStore(
@@ -257,19 +257,19 @@ struct LaunchStateStoreTest {
         #expect(store.launchState == .loggedIn(context: LoginContext(account: updatedAccount)))
     }
 
-    @Test("受け取ったFCMトークンは、ログイン後にアカウントへ反映される")
+    @Test("受け取ったFCMトークンは、ログイン後にアカウントへ紐づけて保存される")
     func receiveFcmTokenIsAppliedOnSignIn() async {
-        await confirmation("FCMトークン付きでアカウントが更新される") { confirmation in
+        await confirmation("ログインしたアカウントのFCMトークンとして保存される") { confirmation in
             // Arrange
 
             let inputFcmToken = "testFcmToken"
             let loadedAccount = makeAccount()
             let accountInfoClient = AccountInfoClient(
-                insertOrUpdate: { account in
-                    #expect(account.fcmToken == inputFcmToken)
+                fetch: { _ in loadedAccount },
+                updateFcmToken: { accountId, fcmToken in
+                    #expect((accountId, fcmToken) == (loadedAccount.id, inputFcmToken))
                     confirmation()
-                },
-                fetch: { _ in loadedAccount }
+                }
             )
             let accountStore = AccountStore(accountInfoClient: accountInfoClient)
             let store = makeStore(accountStore: accountStore)

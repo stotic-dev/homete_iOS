@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "InfraPackage/Sources/**/*.swift"
 ---
 
 # 表示の属性はViewに書く

@@ -18,24 +18,17 @@ let package = Package(
         lib("CohabitantRegistrationFeature"),
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
-        lib("HometeInfrastructure"),
         lib("HometeLocalNotification"),
+        lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
-        lib("AppRoot")
+        lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "5.9.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "12.0.0"),
-        .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
-        .package(
-            url: "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git",
-            from: "3.0.0"
-        ),
-        .package(url: "https://github.com/RevenueCat/purchases-ios-spm.git", from: "5.81.2"),
-        .package(url: "https://github.com/groue/GRDB.swift", from: "7.0.0"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.1.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.6"),
     ],
     targets: [
 
@@ -77,7 +70,7 @@ let package = Package(
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature"),
 
-        // MARK: Infrastructure / Root
+        // MARK: Others
 
         .target(
             name: "HouseworkTemplateFeature",
@@ -99,53 +92,30 @@ let package = Package(
                 .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
             ]
         ),
-        .target(
-            name: "HometeInfrastructure",
-            dependencies: [
-                "HometeDomain",
-                .product(name: "FirebaseAppCheck", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseFunctions", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
-                .product(name: "GoogleMobileAds", package: "swift-package-manager-google-mobile-ads", condition: .when(platforms: [.iOS])),
-                .product(
-                    name: "GoogleUserMessagingPlatform",
-                    package: "swift-package-manager-google-user-messaging-platform",
-                    condition: .when(platforms: [.iOS])
-                ),
-                .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
-                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
-                .product(name: "GRDB", package: "GRDB.swift")
-            ],
-            resources: [localizableStrings()],
-            plugins: [swiftLintPlugin()]
-        ),
         // Notification Service Extensionからも使うため、Firebaseなど重い依存を持たせない
         .target(
             name: "HometeLocalNotification",
             dependencies: ["HometeDomain"],
             plugins: [swiftLintPlugin()]
         ),
+        // Siri・Spotlight・ショートカットAppから実行するApp Intent。Firebaseの実装はアプリから受け取るため、
+        // HometeInfrastructureに依存させない
         .target(
-            name: "AppRoot",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "AuthFeature",
-                "SettingFeature",
-                "HomeFeature",
-                "CohabitantRegistrationFeature",
-                "HouseworkFeature",
-                "HouseworkTemplateFeature",
-                "ContributionFeature",
-                "FrequentHouseworkFeature",
-                "HometeInfrastructure",
-                "HometeLocalNotification"
-            ],
+            name: "HometeAppIntents",
+            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeature"],
             resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
+
+        // MARK: Test Support
+
+        // VRT（hometeSnapshotTests）専用。アプリ本体からは依存しない
+        .target(
+            name: "HometeSnapshotTestSupport",
+            dependencies: [
+                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing", condition: .when(platforms: [.iOS])),
+            ],
             plugins: [swiftLintPlugin()]
         ),
 
@@ -174,6 +144,11 @@ let package = Package(
         .testTarget(
             name: "FrequentHouseworkFeatureTests",
             dependencies: ["FrequentHouseworkFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "HometeAppIntentsTests",
+            dependencies: ["HometeAppIntents"],
             plugins: [swiftLintPlugin()]
         )
     ]
