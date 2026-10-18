@@ -1,0 +1,131 @@
+name: Merge Main Into Release
+
+# リリースPR（release/* → main）の作成後にmainへ入った変更を、手動実行でリリースブランチへ取り込む。
+# 履歴を書き換えないようmergeで取り込み、force pushはしない。コンフリクトしたら止めてローカルでの解消を促す。
+#
+# GITHUB_TOKENでのpushでは push / pull_request イベントのワークフローが発火しないため、
+# release-snapshot-diff.yml（doc/adr/0039）と、メタデータに変更が入った場合の sync-metadata.yml
+# （doc/adr/0032）はここから workflow_dispatch で起動する。Xcode CloudはGitHub Appのwebhookで
+# 起動するので、このpushでも通常どおりビルドが走る。
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: "取り込み先のリリースブランチ（例: release/v1.1.0）。空ならオープンなリリースPRから解決する"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: read
+  # release-snapshot-diff.yml・sync-metadata.yml をworkflow_dispatchで起動するため
+  actions: write
+
+jobs:
+  merge-main:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      INPUT_RELEASE_BRANCH: ${{ inputs.release_branch }}
+    steps:
+      # mergeでリリースブランチとmainの両方の履歴を辿るため、全ブランチを深さ無制限で取得する
+      - uses: actions/checkout@v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve release branch
+        run: |
+          RELEASE_BRANCH="$INPUT_RELEASE_BRANCH"
+          if [ -z "$RELEASE_BRANCH" ]; then
+            BRANCHES=$(
+              gh pr list --base main --state open --json headRefName \
+                --jq '.[] | select(.headRefName | startswith("release/")) | .headRefName'
+            )
+            COUNT=$(printf '%s' "$BRANCHES" | grep -c . || true)
+            if [ "$COUNT" -ne 1 ]; then
+              echo "::error::オープンなリリースPRが1件に定まりません（${COUNT}件）。release_branch を指定して再実行してください"
+              exit 1
+            fi
+            RELEASE_BRANCH="$BRANCHES"
+          fi
+
+          VERSION="${RELEASE_BRANCH#release/v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::release/vX.Y.Z 形式のブランチを指定してください（入力: $RELEASE_BRANCH）"
+            exit 1
+          fi
+          if ! git ls-remote --exit-code --heads origin "$RELEASE_BRANCH" > /dev/null; then
+            echo "::error::$RELEASE_BRANCH がリモートに存在しません"
+            exit 1
+          fi
+          {
+            echo "RELEASE_BRANCH=$RELEASE_BRANCH"
+            echo "VERSION=$VERSION"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure git
+        run: |
+          git config user.email "taichis844@gmail.com"
+          git config user.name "stotic-dev"
+
+      - name: Merge main
+        id: merge
+        run: |
+          git checkout -B "$RELEASE_BRANCH" "origin/$RELEASE_BRANCH"
+          BEFORE_SHA=$(git rev-parse HEAD)
+
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "::notice::$RELEASE_BRANCH は最新のmainを取り込み済みです"
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git merge --no-ff origin/main -m "chore: 最新のmainをrelease/v${VERSION}に取り込み"; then
+            echo "::error::コンフリクトしたため取り込めませんでした。ローカルで git merge origin/main してコンフリクトを解消し、$RELEASE_BRANCH へpushしてください"
+            git diff --name-only --diff-filter=U | sed 's/^/  conflict: /'
+            exit 1
+          fi
+
+          {
+            echo "merged=true"
+            echo "before_sha=$BEFORE_SHA"
+          } >> "$GITHUB_OUTPUT"
+
+      # 取り込み中にリリースブランチへpushされていたらnon-fast-forwardで拒否される。その場合は再実行する
+      - name: Push release branch
+        if: steps.merge.outputs.merged == 'true'
+        run: git push origin "$RELEASE_BRANCH"
+
+      - name: Trigger snapshot diff
+        if: steps.merge.outputs.merged == 'true'
+        run: |
+          gh workflow run release-snapshot-diff.yml \
+            --ref "$RELEASE_BRANCH" \
+            -f release_branch="$RELEASE_BRANCH"
+
+      # sync-metadata.yml の push トリガーと同じパスに変更が入ったときだけ同期する
+      - name: Trigger metadata sync
+        if: steps.merge.outputs.merged == 'true'
+        env:
+          BEFORE_SHA: ${{ steps.merge.outputs.before_sha }}
+        run: |
+          if git diff --quiet "$BEFORE_SHA" HEAD -- \
+            fastlane/metadata fastlane/screenshots fastlane/creative_assets fastlane/app_previews; then
+            echo "メタデータ・スクリーンショットの変更はないため、同期は起動しません"
+            exit 0
+          fi
+          gh workflow run sync-metadata.yml \
+            --ref "$RELEASE_BRANCH" \
+            -f version="$VERSION"
+
+      - name: Create summary
+        if: always()
+        run: |
+          {
+            echo "## Merge Main Into Release"
+            echo ""
+            echo "- **Branch**: \`${RELEASE_BRANCH:-（未解決）}\`"
+            echo "- **Merged**: ${{ steps.merge.outputs.merged || 'false' }}"
+            echo "- **Result**: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
