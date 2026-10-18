@@ -89,27 +89,13 @@ private extension HouseworkDatePickerView {
         return selectableRange.lowerBound.formatted(format)
     }
 
-    /// カレンダーの下に埋もれないよう、背景で囲んで案内する
     func storageLimitCallout() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Label {
-                Text("\(oldestSelectableDateText)より前の家事は、プレミアムプランで見られます", bundle: #bundle)
-                    .font(with: .boldCaption)
-                    .foregroundStyle(.textPrimary)
-            } icon: {
-                Image(systemName: "lock.fill")
-                    .font(with: .caption)
-                    .foregroundStyle(.textAccent)
-            }
-            Button(.localized("プレミアムプランを見る"), action: onTapStorageLimit)
-                .font(with: .boldCaption)
-        }
-        .padding(.space16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            RoundedRectangle(radius: .radius12)
-                .fill(.fillAccentSubtle)
-        }
+        CalloutCard(
+            .localized("\(oldestSelectableDateText)より前の家事は、プレミアムプランで見られます"),
+            systemImage: "lock.fill",
+            actionTitle: .localized("プレミアムプランを見る"),
+            action: onTapStorageLimit
+        )
     }
 
 }
