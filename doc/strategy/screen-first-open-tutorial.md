@@ -192,7 +192,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Tutorial/ScreenTutorial.swift` | 対象の画面と、各画面のステップ |
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Tutorial/ScreenTutorialStore.swift` | 表示状態 |
 | 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/ScreenTutorialStateClient.swift` | 「見た」の記録 |
-| 新規Client実装 | `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplScreenTutorialStateClient.swift` | `UserDefaults`での実装 |
+| 新規Client実装 | `InfraPackage/Sources/AppRoot/Dependency/Impl/ImplScreenTutorialStateClient.swift` | `UserDefaults`での実装 |
 | 修正 | `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` ほか`liveValue` | Clientを足す |
 | 新規Analytics | `LocalPackage/Sources/HometeDomain/AnalyticsLog/ScreenTutorialAnalyticsAction.swift` | `screen_tutorial`のパラメータ |
 | 修正Analytics | `LocalPackage/Sources/HometeDomain/AnalyticsLog/AnalyticsEvent.swift` | イベントを足す |
@@ -259,4 +259,4 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
   - `LocalPackage/Sources/HometeUI/Components/Tutorial/RegistrationTutorialCard.swift`
   - `LocalPackage/Sources/HometeDomain/Tutorial/RegistrationTutorialStore.swift`
   - `LocalPackage/Sources/Features/HouseworkFeature/Tutorial/HouseworkBoardTutorialView.swift`
-  - `LocalPackage/Sources/AppRoot/AppTabView.swift`（第1段の組み込み）
+  - `InfraPackage/Sources/AppRoot/AppTabView.swift`（第1段の組み込み）
