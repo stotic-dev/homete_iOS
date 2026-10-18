@@ -59,7 +59,7 @@ Issueの表から、方針整理（2026-10-17）で次のとおり絞った。
 
 #### 家事テンプレート画面のステップ
 
-テンプレートの有無に関係なく、「作成 → 家事を追加 → 自動で並ぶ → 保存」の流れを最初から説明する。
+「作成 → 家事を追加 → 自動で並ぶ → 保存」の流れを順に説明する。テンプレートを作成済みなら作成の説明は要らないため、ステップ1を飛ばして3ステップで出す。
 画面の状態（空・作成済み・読み込み中）によって切り抜けるUIが変わるため、第1段の`HouseworkBoardTutorialView`と同じく、
 **サンプルの値で描いた画面を本番の画面の上に重ねて**説明する。
 
@@ -71,6 +71,7 @@ Issueの表から、方針整理（2026-10-17）で次のとおり絞った。
 | 4 | 保存して反映 | サンプルの一覧 | ナビゲーションバー全体（右上の✓を含む） | 変更は✓で保存するまでボードに反映されない。保存するとパートナーとも共有される |
 
 - 3では「毎月」のセクションも切り抜く予定だったが、画面の下にあり説明のカードと重なるため切り抜かない（本文で触れる）
+- 1を飛ばすかどうかは、`ScreenTutorialStore.startIfNeeded(skipping:)`に飛ばすステップを渡して決める。カードの「n / 全体」と「前へ」の有無も、飛ばした後のステップの並び（`steps`）から決める
 - 4の✓は、ナビゲーションバーにボタンを1つだけ置いているため、iOS 26以降はシステムのボタンとして描かれ、`tutorialSpotlightTarget`を付けても（`HStack`で包んでも）位置を測れない。✓の見た目を変えずに済むよう、`tutorialSpotlightNavigationBarTarget`でバーごと切り抜く
 
 - 説明の文言は`ux-writing.md`に沿って敬体・結果ベースで書き、英訳も同じ変更で入れる
@@ -164,7 +165,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
   一覧部分（曜日・毎月のセクション、＋ボタン、✓ボタン）をUIのみの`HouseworkTemplateListContent`に切り出す（リファクタとして先に積む。`ui-logic-view-separation.md`）
 - `HouseworkTemplateTutorialView`（新規）で、ステップ1は`HouseworkTemplateEmptyView`、ステップ2〜4は`HouseworkTemplateListContent`にサンプルの家事を渡して描く
 - `HouseworkTemplateScreen`に`.tutorialSpotlight`を付け、表示中は本番の画面の上に`HouseworkTemplateTutorialView`を重ねる。後ろの本番の画面には`.excludedFromTutorialSpotlight()`を付ける
-- テンプレートの読み込みを待たずに出す（サンプルの画面なので、本番の状態に左右されない）
+- テンプレートの読み込みが終わってから出す。読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らず、ステップ1を飛ばすかどうかを決められないため（`.task(id: loadState)`で待つ。読み込みに失敗したら出さず、リトライで読み込めた時点で出す）
 
 ### 7. Analytics（`screen_tutorial`イベント）
 
@@ -217,7 +218,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 - [x] 対象の画面を家事登録シートと家事テンプレート画面に絞る
 - [x] 既存のユーザーにも出す
 - [x] 家事登録シートのステップ（2つの入力方法 / まとめて登録 / いつもの家事に保存）
-- [x] 家事テンプレート画面は状態に関係なく、作成から保存までをサンプルの画面で説明する
+- [x] 家事テンプレート画面は、作成から保存までをサンプルの画面で説明する。テンプレートを作成済みなら作成のステップを飛ばす
 - [x] 家事テンプレート画面のステップ（作成 / 追加 / 自動で並ぶ / 保存）
 - [x] シートの中でスポットライトの切り抜きの位置が合うか、シミュレータで確かめる
 
