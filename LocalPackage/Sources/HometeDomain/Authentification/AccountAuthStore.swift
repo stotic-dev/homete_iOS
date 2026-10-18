@@ -50,18 +50,50 @@ public final class AccountAuthStore {
         }
     }
 
-    public func logOut() {
-        currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
-        analyticsClient.log(.logout())
+    /// 匿名認証で始める
+    /// - Note: サインインした結果は、認証状態のリスナーから`currentAuth`に届く
+    public func startAnonymously() async throws {
+        let authInfo = try await accountAuthClient.signInAnonymously()
+        analyticsClient.setId(authInfo.id)
+    }
+
+    /// 匿名のアカウントをAppleアカウントと連携する
+    /// - Throws: すでに別のアカウントで使われているAppleアカウントなら`AccountLinkError.credentialAlreadyInUse`。
+    ///           受け取った認証情報は`switchToExistingAccount(_:)`に渡す
+    public func linkWithApple(_ signInResult: SignInWithAppleResult) async throws {
+        let linkedAuth = try await accountAuthClient.linkWithApple(signInResult.tokenId, signInResult.nonce)
+        // 連携してもuidは変わらないため、認証状態のリスナーは呼ばれない。匿名でなくなったことをここで反映する
+        currentAuth = .init(result: linkedAuth, alreadyLoadedAtInitiate: true)
+    }
+
+    /// 匿名のアカウントを削除して、連携しようとしたAppleアカウントで使っていたアカウントへ切り替える
+    /// - Note: 匿名で登録した内容は引き継がない
+    public func switchToExistingAccount(_ credential: ExistingAccountCredential) async throws {
+        try await accountAuthClient.deleteAnonymousAccount()
 
         do {
-            try accountAuthClient.signOut()
+            let authInfo = try await accountAuthClient.signInWithExistingCredential(credential)
+            analyticsClient.setId(authInfo.id)
+            analyticsClient.log(.login(isSuccess: true))
         } catch {
-            print("occurred error: \(error)")
+            analyticsClient.log(.login(isSuccess: false))
+            // 匿名のアカウントはもう無いため、サインアウトしてログイン画面からやり直してもらう
+            signOut()
+            throw error
         }
     }
 
+    public func logOut() {
+        signOut()
+        analyticsClient.log(.logout())
+    }
+
     public func deleteAccount() async throws {
+        if currentAuth.result?.isAnonymous == true {
+            try await deleteAnonymousAccount()
+            return
+        }
+
         // 1. 再認証
         let nonce = nonceGenerationClient()
         let signInWithAppleResult = try await signInWithAppleClient.reauthentication(nonce)
@@ -83,6 +115,24 @@ public final class AccountAuthStore {
 }
 
 private extension AccountAuthStore {
+
+    func signOut() {
+        currentAuth = .init(result: nil, alreadyLoadedAtInitiate: true)
+
+        do {
+            try accountAuthClient.signOut()
+        } catch {
+            print("occurred error: \(error)")
+        }
+    }
+
+    /// 匿名のアカウントは再認証の手段が無く、Appleのトークンも持たないため、削除だけ行う
+    func deleteAnonymousAccount() async throws {
+        try await accountAuthClient.deleteAnonymousAccount()
+        analyticsClient.log(.deleteAccount())
+        // サーバー側で削除しても、端末にはサインインした状態が残るためサインアウトする
+        signOut()
+    }
 
     func listen() async {
         for await value in listener.values {
