@@ -69,19 +69,31 @@ jobs:
           git config user.email "taichis844@gmail.com"
           git config user.name "stotic-dev"
 
+      # before_sha..after_sha は、メタデータ同期の要否を判定するための「取り込みで入った差分」
       - name: Merge main
         id: merge
+        env:
+          MERGE_MESSAGE: "chore: 最新のmainをrelease/v${{ env.VERSION }}に取り込み"
         run: |
           git checkout -B "$RELEASE_BRANCH" "origin/$RELEASE_BRANCH"
           BEFORE_SHA=$(git rev-parse HEAD)
 
+          # 取り込み済みでも、前回の実行がpush後の後続ワークフローの起動で失敗していた場合に
+          # 再実行で起動し直せるよう、直近にこのワークフローが作ったmergeコミットの差分を判定対象にする
           if git merge-base --is-ancestor origin/main HEAD; then
             echo "::notice::$RELEASE_BRANCH は最新のmainを取り込み済みです"
-            echo "merged=false" >> "$GITHUB_OUTPUT"
+            LAST_MERGE=$(git log --first-parent --merges -1 --format=%H --fixed-strings --grep="$MERGE_MESSAGE" HEAD)
+            {
+              echo "merged=false"
+              if [ -n "$LAST_MERGE" ]; then
+                echo "before_sha=$(git rev-parse "${LAST_MERGE}^1")"
+                echo "after_sha=$LAST_MERGE"
+              fi
+            } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if ! git merge --no-ff origin/main -m "chore: 最新のmainをrelease/v${VERSION}に取り込み"; then
+          if ! git merge --no-ff origin/main -m "$MERGE_MESSAGE"; then
             echo "::error::コンフリクトしたため取り込めませんでした。ローカルで git merge origin/main してコンフリクトを解消し、$RELEASE_BRANCH へpushしてください"
             git diff --name-only --diff-filter=U | sed 's/^/  conflict: /'
             exit 1
@@ -90,6 +102,7 @@ jobs:
           {
             echo "merged=true"
             echo "before_sha=$BEFORE_SHA"
+            echo "after_sha=$(git rev-parse HEAD)"
           } >> "$GITHUB_OUTPUT"
 
       # 取り込み中にリリースブランチへpushされていたらnon-fast-forwardで拒否される。その場合は再実行する
@@ -97,8 +110,8 @@ jobs:
         if: steps.merge.outputs.merged == 'true'
         run: git push origin "$RELEASE_BRANCH"
 
+      # 取り込み済みのときも起動する。比較はブランチの最新状態に対して行い、PRコメントも上書きするので重複して困らない
       - name: Trigger snapshot diff
-        if: steps.merge.outputs.merged == 'true'
         run: |
           gh workflow run release-snapshot-diff.yml \
             --ref "$RELEASE_BRANCH" \
@@ -106,11 +119,12 @@ jobs:
 
       # sync-metadata.yml の push トリガーと同じパスに変更が入ったときだけ同期する
       - name: Trigger metadata sync
-        if: steps.merge.outputs.merged == 'true'
+        if: steps.merge.outputs.before_sha != ''
         env:
           BEFORE_SHA: ${{ steps.merge.outputs.before_sha }}
+          AFTER_SHA: ${{ steps.merge.outputs.after_sha }}
         run: |
-          if git diff --quiet "$BEFORE_SHA" HEAD -- \
+          if git diff --quiet "$BEFORE_SHA" "$AFTER_SHA" -- \
             fastlane/metadata fastlane/screenshots fastlane/creative_assets fastlane/app_previews; then
             echo "メタデータ・スクリーンショットの変更はないため、同期は起動しません"
             exit 0
