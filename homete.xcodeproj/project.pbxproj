@@ -628,6 +628,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
+				APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST = "$(APP_CHECK_DEBUG_TOKEN)";
 				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
