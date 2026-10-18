@@ -50,7 +50,9 @@ public struct RootView: View {
                     // 匿名のままグループに参加している。連携を終えるまでホームに入れないため、閉じる導線を出さない
                     AccountLinkScreen(entry: .required)
                 case .notLoggedIn:
-                    LoginView()
+                    // アプリの価値が伝わる前にログインで離脱しないよう、先に説明画面を出す。
+                    // すでにアカウントを持っている人は、説明画面からApple IDでのログインへ進む
+                    WelcomeScreen()
                 }
             }
         }

@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
+    "%@さんから招待が届いています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has sent you an invitation"
+          }
+        }
+      }
+    },
     "%@へようこそ" : {
       "localizations" : {
         "en" : {
@@ -83,6 +93,16 @@
         }
       }
     },
+    "ありがとうを送り合えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say Thanks to Each Other"
+          }
+        }
+      }
+    },
     "このAppleアカウントは、すでに%@で使われています" : {
       "localizations" : {
         "en" : {
@@ -99,6 +119,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This name will also appear on your partner's screen.\nYou can change it anytime."
+          }
+        }
+      }
+    },
+    "すでにアカウントをお持ちの方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I Already Have an Account"
           }
         }
       }
@@ -123,12 +153,42 @@
         }
       }
     },
+    "はじめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Started"
+          }
+        }
+      }
+    },
+    "はじめると、[利用規約](https://stotic-dev.github.io/homete_iOS/terms.html)と[プライバシーポリシー](https://stotic-dev.github.io/homete_iOS/privacy.html)に同意したことになります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By getting started, you agree to the [Terms of Use](https://stotic-dev.github.io/homete_iOS/terms.html) and [Privacy Policy](https://stotic-dev.github.io/homete_iOS/privacy.html)."
+          }
+        }
+      }
+    },
     "まずはあなたのニックネームを教えてください" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "First, tell us your nickname"
+          }
+        }
+      }
+    },
+    "やった家事を、かんたんに記録できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log Your Chores in a Tap"
           }
         }
       }
@@ -163,6 +223,26 @@
         }
       }
     },
+    "パートナーから招待が届いています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner has sent you an invitation"
+          }
+        }
+      }
+    },
+    "パートナーが家事を終えると通知が届きます。ひとこと添えて、ありがとうを伝えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You'll be notified when your partner finishes a chore. Say thanks with a short note."
+          }
+        }
+      }
+    },
     "パートナーと共有した家事を、機種変更しても引き継げるようになります" : {
       "localizations" : {
         "en" : {
@@ -179,6 +259,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep the chores you share with your partner, even when you switch phones. Once saved, you can start logging chores."
+          }
+        }
+      }
+    },
+    "パートナーと家事を分け合えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Chores with Your Partner"
           }
         }
       }
@@ -269,6 +359,32 @@
         }
       }
     },
+    "全%lldページ中%lldページ目" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page %2$lld of %1$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "全%1$lldページ中%2$lldページ目"
+          }
+        }
+      }
+    },
+    "家事のリストを共有すると、だれがやるか、もう終わったかがひと目で分かります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share your chore list to see at a glance who's on it and what's already done."
+          }
+        }
+      }
+    },
     "広告が表示されません" : {
       "localizations" : {
         "en" : {
@@ -285,6 +401,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Register"
+          }
+        }
+      }
+    },
+    "終わった家事を記録すると、だれがどれだけがんばったか、あとから振り返れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log finished chores to look back on how much effort everyone put in."
           }
         }
       }
