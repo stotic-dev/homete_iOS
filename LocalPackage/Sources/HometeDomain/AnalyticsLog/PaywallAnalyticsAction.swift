@@ -17,6 +17,8 @@ public enum PaywallAnalyticsStep: String, Equatable, Sendable {
     case boardAd = "board_ad"
     /// 家事ボードの保存期間上限セル（`HouseworkStorageLimitCell`）
     case boardStorageLimit = "board_storage_limit"
+    /// 家事ボードの日付を選ぶカレンダーにある、保存期間の上限の案内（`HouseworkDatePickerView`）
+    case boardDatePicker = "board_date_picker"
     /// 家事テンプレート画面の広告バナー下リンク
     case templateAd = "template_ad"
     /// 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`）

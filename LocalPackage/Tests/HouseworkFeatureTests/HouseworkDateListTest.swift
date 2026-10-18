@@ -91,6 +91,29 @@ struct HouseworkDateListTest {
         #expect(sut.oldestSelectableDate(calendar: Self.calendar) == expected)
     }
 
+    // MARK: - selectableRange
+
+    @Test(
+        "選択できる範囲は、プランで遡れる日数前からanchorDateの7日後までになる",
+        arguments: [
+            (HouseworkStoragePolicy.free, -30),
+            (HouseworkStoragePolicy.premium, -365),
+        ]
+    )
+    func selectableRange(storagePolicy: HouseworkStoragePolicy, oldestOffset: Int) throws {
+        // Arrange
+        let sut = makeSut(selectedDate: Self.anchorDate, storagePolicy: storagePolicy)
+        let anchorDay = Self.calendar.startOfDay(for: Self.anchorDate)
+        let oldest = try #require(Self.calendar.date(byAdding: .day, value: oldestOffset, to: anchorDay))
+        let newest = try #require(Self.calendar.date(byAdding: .day, value: 7, to: anchorDay))
+
+        // Act
+        let actual = sut.selectableRange(calendar: Self.calendar)
+
+        // Assert
+        #expect(actual == oldest ... newest)
+    }
+
     // MARK: - selectedDateのクランプ
 
     @Test("プレミアムから無料に切り替わった場合、選択中の日付は選択可能な最古の日付に丸められる")
