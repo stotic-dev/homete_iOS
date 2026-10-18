@@ -270,7 +270,7 @@ cmd_wait() {
     esac
   done
 
-  local ids deadline id attrs pending results
+  local ids deadline remaining id attrs pending results
   ids=$(resolve_build_ids "$target")
   deadline=$(( $(date +%s) + timeout ))
 
@@ -290,11 +290,13 @@ cmd_wait() {
     if [ "$pending" -eq 0 ]; then
       break
     fi
-    if [ "$(date +%s)" -ge "$deadline" ]; then
+    remaining=$(( deadline - $(date +%s) ))
+    if [ "$remaining" -le 0 ]; then
       echo "打ち切り: ${timeout}秒たっても完了しませんでした" >&2
       exit 124
     fi
-    sleep "$interval"
+    # --timeout が --interval より短くても打ち切りを守れるよう、残り時間より長くは眠らない
+    sleep $(( remaining < interval ? remaining : interval ))
   done
 
   echo
