@@ -44,6 +44,8 @@ public final class LaunchStateStore {
     /// 最後に反映した認証が匿名かどうか
     /// - Note: アカウント情報の変化は認証を伴わずに届くため、そのときの判定のために退避しておく
     @ObservationIgnored private var isAnonymous = false
+    /// 最後に反映した認証のユーザーID。サインアウトを挟まずにユーザーが切り替わったことを見分けるために使う
+    @ObservationIgnored private var signedInUserId: String?
 
     private let accountStore: AccountStore
     private let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
@@ -183,10 +185,19 @@ private extension LaunchStateStore {
 
     func applyAuthChange(_ auth: AccountAuthInfo) async {
         guard let authResult = auth.result else {
+            signedInUserId = nil
             launchState = .notLoggedIn
             await authSubscriptionSyncUseCase.syncOnSignedOut()
             return
         }
+
+        // 匿名のアカウントから既存のアカウントへ切り替えると、サインアウトを挟まずにユーザーIDだけが変わって届く。
+        // 前のアカウントの購読が残ると、新しいアカウントの変化を取りこぼし、古いアカウントの値で上書きされるため、先に片付ける
+        if let signedInUserId, signedInUserId != authResult.id {
+            await authSubscriptionSyncUseCase.syncOnUserSwitched()
+            guard !Task.isCancelled else { return }
+        }
+        signedInUserId = authResult.id
 
         let loadedAccount: Account?
         do {
@@ -232,6 +243,7 @@ private extension LaunchStateStore {
     func signOutOnAccountLoadFailure(_ error: any Error) async {
         print("failed to load account, signing out: \(error)")
         accountLoadFailure = .make(error)
+        signedInUserId = nil
         launchState = .notLoggedIn
         await authSubscriptionSyncUseCase.syncOnSignedOut()
         do {
