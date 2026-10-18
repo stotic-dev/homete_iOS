@@ -31,6 +31,9 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          # PRでは変更がInfraPackageに届くかを判定するので、ベースブランチとの分岐点まで履歴を取る
+          fetch-depth: 0
 
       - name: Select Xcode version
         run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
@@ -38,8 +41,21 @@ jobs:
       - name: Show Swift version
         run: swift --version
 
+      # テストやHometeSnapshotTestSupportだけの変更など、InfraPackageが依存しないターゲットしか
+      # 変わっていなければビルドしない（ADR-0048）。mainへのpushと手動実行では常にビルドする
+      - name: Detect whether InfraPackage is affected
+        id: affected
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python3 scripts/affected-modules.py summary --base "origin/${{ github.base_ref }}"
+            echo "infra=$(python3 scripts/affected-modules.py infra --base "origin/${{ github.base_ref }}")" >> "$GITHUB_OUTPUT"
+          else
+            echo "infra=yes" >> "$GITHUB_OUTPUT"
+          fi
+
       # キャッシュの考え方は ci_local_package.yml と同じ。中身を変えたらキーの v<N> を上げる
       - name: Cache InfraPackage
+        if: steps.affected.outputs.infra == 'yes'
         uses: actions/cache@v4
         with:
           path: |
@@ -52,4 +68,5 @@ jobs:
             infra-package-v1-${{ runner.os }}-
 
       - name: Build InfraPackage
+        if: steps.affected.outputs.infra == 'yes'
         run: make build-infra-package
