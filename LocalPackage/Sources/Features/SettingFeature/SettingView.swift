@@ -73,6 +73,7 @@ struct SettingView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(SentInvitationStore.self) var sentInvitationStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
@@ -168,7 +169,7 @@ struct SettingView: View {
             content: { invitation in
                 if let url = invitation.url {
                     ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
-                        hasSharedInvitation = isCompleted
+                        completedShareSheet(invitation, isCompleted: isCompleted)
                     }
                 }
             }
@@ -351,6 +352,14 @@ private extension SettingView {
 
     func dismissedPaywall() {
         analyticsClient.log(.paywall(.closed(step: .setting, isPremium: subscriptionStore.isPremium)))
+    }
+
+    func completedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
+        hasSharedInvitation = isCompleted
+        guard isCompleted else { return }
+        Task {
+            await sentInvitationStore.save(invitation, accountId: loginContext.account.id)
+        }
     }
 
     /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。

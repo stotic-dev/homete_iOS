@@ -108,6 +108,7 @@ public extension RootView {
                 analyticsClient: $0.analyticsClient
             )
             let pendingInvitationStore = PendingInvitationStore()
+            let sentInvitationStore = SentInvitationStore(sentInvitationClient: $0.sentInvitationClient)
             let subscriptionStore = SubscriptionStore(
                 purchaseClient: $0.purchaseClient,
                 analyticsClient: $0.analyticsClient
@@ -118,7 +119,8 @@ public extension RootView {
                 subscriptionStore: subscriptionStore,
                 houseworkManager: $0.houseworkManager,
                 houseworkClient: $0.houseworkClient,
-                analyticsClient: $0.analyticsClient
+                analyticsClient: $0.analyticsClient,
+                sentInvitationStore: sentInvitationStore
             )
             let advertisementStore = AdvertisementStore(remoteConfigClient: $0.remoteConfigClient)
             let forceUpdateStore = ForceUpdateStore(
@@ -151,6 +153,7 @@ public extension RootView {
             .environment(cohabitantStore)
             .environment(subscriptionStore)
             .environment(pendingInvitationStore)
+            .environment(sentInvitationStore)
             .environment(pendingRouteStore)
             .environment(launchStateStore)
             .environment(advertisementStore)

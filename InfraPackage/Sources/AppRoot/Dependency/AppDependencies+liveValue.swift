@@ -17,6 +17,7 @@ public extension AppDependencies {
         accountInfoClient: .liveValue,
         cohabitantClient: .liveValue,
         cohabitantInvitationClient: .liveValue,
+        sentInvitationClient: .liveValue,
         houseworkClient: .liveValue,
         cohabitantPushNotificationClient: .liveValue,
         signInWithAppleClient: .liveValue,

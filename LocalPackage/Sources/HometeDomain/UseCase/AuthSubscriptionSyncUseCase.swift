@@ -13,6 +13,7 @@ public struct AuthSubscriptionSyncUseCase {
     private let houseworkClient: HouseworkClient
     private let analyticsClient: AnalyticsClient
     private let retentionSyncStateStore: HouseworkRetentionSyncStateStore
+    private let sentInvitationStore: SentInvitationStore
 
     public init(
         accountStore: AccountStore,
@@ -20,7 +21,8 @@ public struct AuthSubscriptionSyncUseCase {
         subscriptionStore: SubscriptionStore,
         houseworkManager: HouseworkManager,
         houseworkClient: HouseworkClient = .previewValue,
-        analyticsClient: AnalyticsClient = .previewValue
+        analyticsClient: AnalyticsClient = .previewValue,
+        sentInvitationStore: SentInvitationStore = .init()
     ) {
         self.init(
             accountStore: accountStore,
@@ -29,7 +31,8 @@ public struct AuthSubscriptionSyncUseCase {
             houseworkManager: houseworkManager,
             houseworkClient: houseworkClient,
             analyticsClient: analyticsClient,
-            retentionSyncStateStore: .init()
+            retentionSyncStateStore: .init(),
+            sentInvitationStore: sentInvitationStore
         )
     }
 
@@ -40,7 +43,8 @@ public struct AuthSubscriptionSyncUseCase {
         houseworkManager: HouseworkManager,
         houseworkClient: HouseworkClient,
         analyticsClient: AnalyticsClient = .previewValue,
-        retentionSyncStateStore: HouseworkRetentionSyncStateStore
+        retentionSyncStateStore: HouseworkRetentionSyncStateStore,
+        sentInvitationStore: SentInvitationStore = .init()
     ) {
         self.accountStore = accountStore
         self.cohabitantStore = cohabitantStore
@@ -49,6 +53,7 @@ public struct AuthSubscriptionSyncUseCase {
         self.houseworkClient = houseworkClient
         self.analyticsClient = analyticsClient
         self.retentionSyncStateStore = retentionSyncStateStore
+        self.sentInvitationStore = sentInvitationStore
     }
 
     /// サインイン成功時にアカウント情報をロードし、サブスクリプション状態を同期する
@@ -89,6 +94,8 @@ public struct AuthSubscriptionSyncUseCase {
         await cohabitantStore.clear()
         await houseworkManager.clearOnSignedOut()
         await subscriptionStore.logOut()
+        // 次にログインした人の未参加ホームに、前のアカウントが送った招待を出さない
+        await sentInvitationStore.clear()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
         analyticsClient.setUserProperty(.cleared(.cohabitantMemberCount))
         analyticsClient.setUserProperty(.cleared(.isAnonymous))

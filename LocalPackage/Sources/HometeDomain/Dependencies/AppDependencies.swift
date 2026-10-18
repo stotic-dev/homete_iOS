@@ -15,6 +15,7 @@ public struct AppDependencies: Sendable {
     public let accountInfoClient: AccountInfoClient
     public let cohabitantClient: CohabitantClient
     public let cohabitantInvitationClient: CohabitantInvitationClient
+    public let sentInvitationClient: SentInvitationClient
     public let houseworkClient: HouseworkClient
     public let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     public let signInWithAppleClient: SignInWithAppleClient
@@ -52,6 +53,7 @@ public struct AppDependencies: Sendable {
         accountInfoClient: AccountInfoClient = .previewValue,
         cohabitantClient: CohabitantClient = .previewValue,
         cohabitantInvitationClient: CohabitantInvitationClient = .previewValue,
+        sentInvitationClient: SentInvitationClient = .previewValue,
         houseworkClient: HouseworkClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         signInWithAppleClient: SignInWithAppleClient = .previewValue,
@@ -80,6 +82,7 @@ public struct AppDependencies: Sendable {
         self.accountInfoClient = accountInfoClient
         self.cohabitantClient = cohabitantClient
         self.cohabitantInvitationClient = cohabitantInvitationClient
+        self.sentInvitationClient = sentInvitationClient
         self.houseworkClient = houseworkClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.signInWithAppleClient = signInWithAppleClient
