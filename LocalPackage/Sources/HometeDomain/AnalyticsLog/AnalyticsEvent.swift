@@ -25,10 +25,14 @@ public struct AnalyticsEvent: Equatable {
 
 public extension AnalyticsEvent {
 
-    static func login(isSuccess: Bool) -> Self {
+    /// - Parameter method: どの方法でサインインしたか。匿名で始めた人とAppleでログインした人を分けて見るために送る
+    static func login(isSuccess: Bool, method: LoginMethod = .apple) -> Self {
         .init(
             name: "login",
-            parameters: ["result": isSuccess ? "success" : "failure"]
+            parameters: [
+                "result": isSuccess ? "success" : "failure",
+                "method": method.rawValue,
+            ]
         )
     }
 

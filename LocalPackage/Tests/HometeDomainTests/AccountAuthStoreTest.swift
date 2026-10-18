@@ -8,6 +8,7 @@
 @testable import HometeDomain
 import Testing
 
+// swiftlint:disable type_body_length
 @MainActor
 struct AccountAuthStoreTest {
 
@@ -44,6 +45,60 @@ struct AccountAuthStoreTest {
             )
 
             try await store.login(.init(tokenId: inputTokenId, nonce: inputNonce, authorizationCode: "code"))
+        }
+    }
+
+    @Test("匿名で始めると匿名サインインを行い、成功したら匿名のログインとしてログを送信する")
+    func startAnonymously() async throws {
+        try await confirmation(expectedCount: 3) { confirmation in
+            // Arrange
+            let store = AccountAuthStore(
+                accountAuthClient: .init(
+                    makeListener: { .defaultValue() },
+                    signInAnonymously: {
+                        confirmation()
+                        return .init(id: "anonymousId", isAnonymous: true)
+                    }
+                ),
+                analyticsClient: .init(
+                    setId: { id in
+                        confirmation()
+                        #expect(id == "anonymousId")
+                    },
+                    log: { event in
+                        confirmation()
+                        #expect(event == .login(isSuccess: true, method: .anonymous))
+                    }
+                )
+            )
+
+            // Act
+            try await store.startAnonymously()
+        }
+    }
+
+    @Test("匿名サインインに失敗したら、匿名のログインの失敗としてログを送信してエラーを投げる")
+    func startAnonymously_failed() async {
+        await confirmation(expectedCount: 1) { confirmation in
+            // Arrange
+            let store = AccountAuthStore(
+                accountAuthClient: .init(
+                    makeListener: { .defaultValue() },
+                    signInAnonymously: { throw DomainError.failAuth }
+                ),
+                analyticsClient: .init(
+                    setId: { _ in Issue.record() },
+                    log: { event in
+                        confirmation()
+                        #expect(event == .login(isSuccess: false, method: .anonymous))
+                    }
+                )
+            )
+
+            // Act
+            await #expect(throws: DomainError.failAuth) {
+                try await store.startAnonymously()
+            }
         }
     }
 
@@ -264,3 +319,5 @@ struct AccountAuthStoreTest {
     }
 
 }
+
+// swiftlint:enable type_body_length
