@@ -93,6 +93,16 @@
         }
       }
     },
+    "あとで登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Later"
+          }
+        }
+      }
+    },
     "ありがとうを送り合えます" : {
       "localizations" : {
         "en" : {
@@ -243,6 +253,16 @@
         }
       }
     },
+    "パートナーが隣にいる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Partner Is Nearby"
+          }
+        }
+      }
+    },
     "パートナーと共有した家事を、機種変更しても引き継げるようになります" : {
       "localizations" : {
         "en" : {
@@ -269,6 +289,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share Chores with Your Partner"
+          }
+        }
+      }
+    },
+    "パートナーを登録すると、家事を分け合えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your partner to share the chores."
           }
         }
       }
@@ -385,12 +415,52 @@
         }
       }
     },
+    "届いた招待リンクから、パートナーのグループに参加できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join your partner's group from the invite link you received."
+          }
+        }
+      }
+    },
     "広告が表示されません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No ads"
+          }
+        }
+      }
+    },
+    "招待リンクが見つかりませんでした。届いた招待リンクをもう一度開いてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't find an invite link. Please open the invite link you received again."
+          }
+        }
+      }
+    },
+    "招待リンクを受け取った" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I Received an Invite Link"
+          }
+        }
+      }
+    },
+    "招待リンクを送る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send an Invite Link"
           }
         }
       }
@@ -425,12 +495,42 @@
         }
       }
     },
+    "誰と使いますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who will you use it with?"
+          }
+        }
+      }
+    },
     "購入したプランを、機種変更しても引き継げるようになります" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep your purchased plan, even when you switch phones."
+          }
+        }
+      }
+    },
+    "近くにいるパートナーと、その場で登録できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a partner who's right next to you."
+          }
+        }
+      }
+    },
+    "離れていても、リンクから参加してもらえます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner can join from the link, even if you're apart."
           }
         }
       }

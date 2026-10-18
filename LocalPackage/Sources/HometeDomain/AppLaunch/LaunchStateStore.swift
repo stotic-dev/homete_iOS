@@ -242,9 +242,7 @@ private extension LaunchStateStore {
         let context = LoginContext(account: account, isAnonymous: isAnonymous)
         analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
         analyticsClient.setUserProperty(.isAnonymous(context.isAnonymous))
-        launchState = context.requiresAccountLink
-            ? .accountLinkRequired(context: context)
-            : .loggedIn(context: context)
+        launchState = .entered(context)
     }
 
     func updateFcmTokenIfNeeded() async {

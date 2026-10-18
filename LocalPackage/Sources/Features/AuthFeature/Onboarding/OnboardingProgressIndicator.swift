@@ -58,9 +58,9 @@ private extension OnboardingProgressIndicator {
         ForEach(OnboardingStep.allCases, id: \.self) { step in
             OnboardingProgressIndicator(steps: OnboardingStep.allCases, currentStep: step)
         }
-        // 通知の権限が決定済みで、通知のステップがスキップされる場合
+        // Apple連携が不要で、通知の権限が決定済みのため通知のステップもスキップされる場合
         OnboardingProgressIndicator(
-            steps: [.registration, .premiumIntroduction],
+            steps: [.registration, .partnerRegistration, .premiumIntroduction],
             currentStep: .premiumIntroduction
         )
     }
