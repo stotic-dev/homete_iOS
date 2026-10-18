@@ -46,6 +46,15 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 匿名のアカウントをAppleアカウントと連携する行動
+    /// - Note: 起点と結果を`entry` / `result`パラメータで区別する。意図は`AccountLinkAnalyticsAction`を参照
+    static func accountLink(_ action: AccountLinkAnalyticsAction) -> Self {
+        .init(
+            name: "account_link",
+            parameters: action.parameters
+        )
+    }
+
     /// オンボーディング中の行動
     /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
     ///         意図は`OnboardingAnalyticsAction`を参照

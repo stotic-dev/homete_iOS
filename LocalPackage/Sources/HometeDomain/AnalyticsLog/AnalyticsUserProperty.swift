@@ -15,6 +15,8 @@ public enum AnalyticsUserProperty: Equatable, Sendable {
     case hasCohabitant(Bool)
     /// 同居人グループのメンバー数（自分を含む）
     case cohabitantMemberCount(Int)
+    /// 匿名認証のまま（Appleアカウントと未連携）かどうか
+    case isAnonymous(Bool)
     /// 指定したプロパティを未設定に戻す
     /// - Note: ユーザープロパティはSDK側にアプリ再インストールまで残るため、ログアウト・退会時に明示的に
     ///         消さないと、ログアウト後のイベントや次にログインしたユーザーへ前ユーザーの値が引き継がれる
@@ -28,6 +30,7 @@ public enum AnalyticsUserPropertyName: String, Sendable {
     case isPremium = "is_premium"
     case hasCohabitant = "has_cohabitant"
     case cohabitantMemberCount = "cohabitant_member_count"
+    case isAnonymous = "is_anonymous"
 
 }
 
@@ -44,6 +47,9 @@ public extension AnalyticsUserProperty {
         case .cohabitantMemberCount:
             AnalyticsUserPropertyName.cohabitantMemberCount.rawValue
 
+        case .isAnonymous:
+            AnalyticsUserPropertyName.isAnonymous.rawValue
+
         case let .cleared(name):
             name.rawValue
         }
@@ -59,6 +65,9 @@ public extension AnalyticsUserProperty {
             "\(value)"
 
         case let .cohabitantMemberCount(value):
+            "\(value)"
+
+        case let .isAnonymous(value):
             "\(value)"
 
         case .cleared:

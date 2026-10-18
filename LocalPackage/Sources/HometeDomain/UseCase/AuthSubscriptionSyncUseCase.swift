@@ -91,6 +91,7 @@ public struct AuthSubscriptionSyncUseCase {
         await subscriptionStore.logOut()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
         analyticsClient.setUserProperty(.cleared(.cohabitantMemberCount))
+        analyticsClient.setUserProperty(.cleared(.isAnonymous))
         analyticsClient.clearId()
     }
 

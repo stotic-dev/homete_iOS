@@ -291,33 +291,38 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
     func syncOnSignedOutClearsAnalyticsUser() async {
         await confirmation("has_cohabitantをクリアする") { clearedHasCohabitant in
             await confirmation("cohabitant_member_countをクリアする") { clearedMemberCount in
-                await confirmation("ユーザーIDをクリアする") { clearedId in
-                    let analyticsClient = AnalyticsClient(
-                        clearId: {
-                            clearedId()
-                        },
-                        setUserProperty: { property in
-                            switch property {
-                            case .cleared(.hasCohabitant):
-                                clearedHasCohabitant()
+                await confirmation("is_anonymousをクリアする") { clearedIsAnonymous in
+                    await confirmation("ユーザーIDをクリアする") { clearedId in
+                        let analyticsClient = AnalyticsClient(
+                            clearId: {
+                                clearedId()
+                            },
+                            setUserProperty: { property in
+                                switch property {
+                                case .cleared(.hasCohabitant):
+                                    clearedHasCohabitant()
 
-                            case .cleared(.cohabitantMemberCount):
-                                clearedMemberCount()
+                                case .cleared(.cohabitantMemberCount):
+                                    clearedMemberCount()
 
-                            default:
-                                Issue.record("想定外のユーザープロパティが送信された: \(property)")
+                                case .cleared(.isAnonymous):
+                                    clearedIsAnonymous()
+
+                                default:
+                                    Issue.record("想定外のユーザープロパティが送信された: \(property)")
+                                }
                             }
-                        }
-                    )
-                    let useCase = AuthSubscriptionSyncUseCase(
-                        accountStore: AccountStore(),
-                        cohabitantStore: CohabitantStore(),
-                        subscriptionStore: SubscriptionStore(),
-                        houseworkManager: .init(houseworkClient: .previewValue),
-                        analyticsClient: analyticsClient
-                    )
+                        )
+                        let useCase = AuthSubscriptionSyncUseCase(
+                            accountStore: AccountStore(),
+                            cohabitantStore: CohabitantStore(),
+                            subscriptionStore: SubscriptionStore(),
+                            houseworkManager: .init(houseworkClient: .previewValue),
+                            analyticsClient: analyticsClient
+                        )
 
-                    await useCase.syncOnSignedOut()
+                        await useCase.syncOnSignedOut()
+                    }
                 }
             }
         }

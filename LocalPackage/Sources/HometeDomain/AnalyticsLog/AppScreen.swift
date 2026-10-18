@@ -14,6 +14,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case forceUpdate = "force_update"
     /// Sign in with Appleのログイン画面
     case login
+    /// 匿名のアカウントをAppleアカウントと連携する画面
+    case accountLink = "account_link"
     /// アカウント登録画面
     case registrationAccount = "registration_account"
     /// オンボーディングのプレミアムプラン特典説明
