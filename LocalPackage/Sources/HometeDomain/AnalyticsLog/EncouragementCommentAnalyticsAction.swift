@@ -20,6 +20,8 @@ public enum EncouragementCommentAnalyticsKind: String, Equatable, Sendable {
     case neutral
     /// 同居人への感謝の促し
     case thanksPrompt = "thanks_prompt"
+    /// 昨日から7日前までの家事について、同居人への感謝の促し
+    case pastThanksPrompt = "past_thanks_prompt"
     /// 自分の家事に届いたありがとう
     case receivedThanks = "received_thanks"
 

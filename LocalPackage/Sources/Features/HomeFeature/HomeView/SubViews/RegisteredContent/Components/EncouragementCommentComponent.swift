@@ -12,8 +12,9 @@ import SwiftUI
 ///
 /// 家事やメンバーが変わるたびにStoreへ最新の状況を渡し、ねぎらいのコメントを決め直させる。
 /// 感謝の促しと届いたありがとうはその場で計算するため、ありがとうが届いたり送ったりすればすぐに件数が変わる。
-/// 上の段には感謝の促しかねぎらいのどちらか1つを出す（`DashboardLeadMessage`）。
-/// 届いたありがとうは下の段に、ホームが出るたびに1回と数えて1日に3回まで出し、×で閉じたらその日は出さない。
+/// 上の段には感謝の促し・過去の促し・ねぎらいのうち1つを出す（`DashboardLeadMessage`）。
+/// 過去の促しは、ホームが出るたびに1回と数えて1日に2回まで出す。
+/// 届いたありがとうは下の段に、同じ数え方で1日に3回まで出し、×で閉じたらその日は出さない。
 struct EncouragementCommentComponent: View {
 
     @Environment(EncouragementCommentStore.self) var encouragementCommentStore
@@ -29,10 +30,13 @@ struct EncouragementCommentComponent: View {
     @Environment(\.scenePhase) var scenePhase
 
     @AppStorage(key: .receivedThanksDisplayRecord) var storedReceivedThanksRecord = ReceivedThanksDisplayRecord()
+    @AppStorage(key: .pastThanksPromptDisplayRecord) var storedPastThanksPromptRecord = PastThanksPromptDisplayRecord()
     /// ホームが出た回の通し番号。タブの切り替え・push先からの戻り・アプリへの復帰で進める
     @State var appearance = 0
     /// 届いたありがとうを出した回として数えた、ホームが出た回の通し番号。表示中に上限に達しても消さないために使う
     @State var receivedThanksCountedAppearance: Int?
+    /// 過去の促しを出した回として数えた、ホームが出た回の通し番号。表示中に上限に達しても消さないために使う
+    @State var pastThanksPromptCountedAppearance: Int?
 
     static func make() -> some View {
         EncouragementCommentComponent()
@@ -40,6 +44,13 @@ struct EncouragementCommentComponent: View {
 
     var body: some View {
         let thanksPrompt = ThanksPromptSummary.make(
+            storedAllItems: houseworkListStore.items,
+            members: members,
+            ownUserId: ownUserId,
+            now: now,
+            calendar: calendar
+        )
+        let pastThanksPrompt = PastThanksPromptSummary.make(
             storedAllItems: houseworkListStore.items,
             members: members,
             ownUserId: ownUserId,
@@ -58,7 +69,14 @@ struct EncouragementCommentComponent: View {
             now: now,
             calendar: calendar
         )
-        let leadMessage = DashboardLeadMessage.select(thanksPrompt: thanksPrompt)
+        let leadMessage = DashboardLeadMessage.select(
+            thanksPrompt: thanksPrompt,
+            pastThanksPrompt: pastThanksPrompt,
+            canShowPastThanksPrompt: storedPastThanksPromptRecord
+                .reconciled(now: now, calendar: calendar)
+                .canShow(isCountedInCurrentAppearance: pastThanksPromptCountedAppearance == appearance)
+        )
+        let isPastThanksPromptShown = if case .pastThanksPrompt = leadMessage { true } else { false }
         let isReceivedThanksShown = receivedThanksRecord.canShow(
             receivedThanks,
             isCountedInCurrentAppearance: receivedThanksCountedAppearance == appearance
@@ -68,6 +86,7 @@ struct EncouragementCommentComponent: View {
             comment: encouragementCommentStore.comment,
             receivedThanks: isReceivedThanksShown ? receivedThanks : nil,
             onTapThanks: tappedThanksButton,
+            onTapPastThanks: tappedPastThanksButton,
             onTapDismissReceivedThanks: { dismissReceivedThanks(receivedThanks) },
             onRate: ratedComment
         )
@@ -80,9 +99,12 @@ struct EncouragementCommentComponent: View {
 
             appearance += 1
         }
-        // 届いたありがとうを実際に出したときだけ数える
-        .task(id: ReceivedThanksCountTrigger(appearance: appearance, isShown: isReceivedThanksShown)) {
+        // 届いたありがとう・過去の促しは、実際に出したときだけ数える
+        .task(id: DisplayCountTrigger(appearance: appearance, isShown: isReceivedThanksShown)) {
             countReceivedThanksIfShown(isReceivedThanksShown, receivedThanks: receivedThanks)
+        }
+        .task(id: DisplayCountTrigger(appearance: appearance, isShown: isPastThanksPromptShown)) {
+            countPastThanksPromptIfShown(isPastThanksPromptShown)
         }
         .task(id: updateTrigger) {
             await encouragementCommentStore.update(
@@ -146,8 +168,8 @@ private extension EncouragementCommentComponent {
         .count
     }
 
-    /// 届いたありがとうを出した回として数えるきっかけになる値
-    struct ReceivedThanksCountTrigger: Equatable {
+    /// 届いたありがとう・過去の促しを出した回として数えるきっかけになる値
+    struct DisplayCountTrigger: Equatable {
 
         let appearance: Int
         let isShown: Bool
@@ -162,6 +184,16 @@ private extension EncouragementCommentComponent {
         record.recordShown()
         storedReceivedThanksRecord = record
         receivedThanksCountedAppearance = appearance
+    }
+
+    /// 過去の促しを出していれば、ホームが出た回ごとに1回だけ数える
+    func countPastThanksPromptIfShown(_ isShown: Bool) {
+        guard isShown, pastThanksPromptCountedAppearance != appearance else { return }
+
+        var record = storedPastThanksPromptRecord.reconciled(now: now, calendar: calendar)
+        record.recordShown()
+        storedPastThanksPromptRecord = record
+        pastThanksPromptCountedAppearance = appearance
     }
 
     func dismissReceivedThanks(_ receivedThanks: ReceivedThanksSummary) {
@@ -184,6 +216,9 @@ private extension EncouragementCommentComponent {
         switch leadMessage {
         case .thanksPrompt:
             kinds.append(.thanksPrompt)
+
+        case .pastThanksPrompt:
+            kinds.append(.pastThanksPrompt)
 
         case .encouragement:
             if let comment = encouragementCommentStore.comment {
@@ -217,6 +252,11 @@ private extension EncouragementCommentComponent {
     func tappedThanksButton() {
         analyticsClient.log(.encouragementComment(.tapped(kind: .thanksPrompt, step: .dashboard)))
         navigationPath.push(.thanksTargetList)
+    }
+
+    func tappedPastThanksButton() {
+        analyticsClient.log(.encouragementComment(.tapped(kind: .pastThanksPrompt, step: .dashboard)))
+        navigationPath.push(.pastThanksTargetList)
     }
 
 }
