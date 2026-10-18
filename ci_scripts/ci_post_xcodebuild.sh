@@ -79,7 +79,7 @@ case "$CI_WORKFLOW" in
         #
         # そこで、gitチェックアウトが存在する build-for-testing 側の ci_post_xcodebuild.sh から、
         # 直前のビルドで既に生成済みの -testProductsPath を使い、自前で
-        # `SNAPSHOT_TESTING_RECORD=failed` で `xcodebuild test-without-building` を実行する。
+        # `TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed` で `xcodebuild test-without-building` を実行する。
         # 同一ランナー内で完結するため、書き込みがそのまま git 差分として検出できる
         # （検証ステップ1・Build 212で確認済み）。差分があれば通常のcommitメッセージでcommitし、
         # PRブランチへpushする（検証ステップ2）。
@@ -165,11 +165,13 @@ case "$CI_WORKFLOW" in
             echo "✓ Checked out real HEAD of $CI_PULL_REQUEST_SOURCE_BRANCH (merge previewから離脱): $(git rev-parse HEAD)"
         fi
 
-        # SNAPSHOT_TESTING_RECORD はワークフロー全体（自己呼び出し版・Xcode Cloud公式の
-        # 別ランナー版）で共有される xctestplan の環境変数のため、ここで明示的に failed を
-        # 指定し、ワークフロー側の設定値に依存させない。
+        # xctestplan の $(SNAPSHOT_TESTING_RECORD) は build-for-testing の時点で展開されて
+        # xctestrun に焼き込まれるため、test-without-building を呼ぶシェルで値を付けてもテストに届かない
+        # （ワークフローに変数が無いと空になってキーごと消え、既定の missing で動く）。
+        # TEST_RUNNER_ 接頭辞の変数は xcodebuild が接頭辞を外してテストプロセスへ渡すので、
+        # こちらで failed を指定し、ワークフロー側の設定値に依存させない。
         echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
-        SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
+        TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
             -destination "platform=iOS Simulator,id=$DEVICE_ID" \
             -testProductsPath "$TEST_PRODUCTS_PATH" \
             -testPlan hometeSnapshotTestsForCI \

@@ -40,6 +40,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case contributionAnalytics = "contribution_analytics"
     /// 家事ボード
     case houseworkBoard = "housework_board"
+    /// 家事ボードで日付を選ぶカレンダー（年月ラベルから開くハーフモーダル）
+    case houseworkDatePicker = "housework_date_picker"
     /// 家事の詳細
     case houseworkDetail = "housework_detail"
     /// 家事の登録

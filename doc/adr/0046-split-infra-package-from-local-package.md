@@ -59,7 +59,7 @@ LocalPackageが解決するパッケージは23個から6個（Prefire・swift-s
 * Domainの変更で実装側が追従していないと、ユニットテストではなく`infra_package_build`で落ちるようになる。
   ローカルで確かめるには`make build-infra-package`を別に流す必要がある
 * Xcode Cloud（VRT）の依存解決は、これだけでは減らない。Xcodeはプロジェクト単位でパッケージを解決するので、
-  `homete.xcodeproj`がInfraPackageを参照する限り取得される。VRT専用のプロジェクトに分けて解決する（後続の対応）
+  `homete.xcodeproj`がInfraPackageを参照する限り取得される。VRT専用のプロジェクトに分けて解決した（[ADR-0047](0047-vrt-dedicated-xcode-project.md)）
 
 ## 参考
 

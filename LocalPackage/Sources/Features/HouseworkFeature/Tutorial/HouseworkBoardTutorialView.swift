@@ -49,6 +49,7 @@ public struct HouseworkBoardTutorialView: View {
                 onTapItem: { _ in },
                 onTapComplete: { _ in },
                 onTapThanks: { _ in },
+                onTapYearMonth: {},
                 onTapStorageLimit: {},
                 onTapHouseworkTemplate: {},
                 onTapBulkAction: { _ in },

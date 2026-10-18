@@ -27,8 +27,8 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.0.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.18.7"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.1.0"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.6"),
     ],
     targets: [
 

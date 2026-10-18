@@ -16,14 +16,24 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 ### iOS開発
 
 ```bash
-# LocalPackageのユニットテスト（最も使う。xcodebuildは使わない）
+# 変更に関係するモジュールと、必要なビルド・テスト・VRTを表示（起点は BASE=<ref>、既定は origin/main）
+make affected
+
+# 変更に関係するLocalPackageのターゲットだけiOS向けにビルドし、影響が届くならInfraPackageもビルド
+make build-affected
+
+# 変更に関係するテストターゲットだけ実行（最も使う。xcodebuildは使わない）
+make test-affected
+
+# 直接変えたHometeUI・Featureのプレビューだけ、iOS 27.0のiPhone 16でVRTを流す（参照スナップショットは更新しない）
+make snapshot-affected
+
+# 全ターゲットが対象の版。判定が当てにならないときや頼まれたときだけ使う
 # FILTER=<テストターゲット/Suite名>で絞れる。カバレッジ付きの make test-packages はCI用
 make test-packages-fast
-
-# LocalPackageをiOSシミュレーター向けにビルド
 make build-local-package
 
-# InfraPackage（HometeInfrastructure・AppRoot）をビルド。テストではビルドされないので、HometeDomainやFeatureの公開APIを変えたら流す
+# InfraPackage（HometeInfrastructure・AppRoot）をビルド。make build-affected が必要なときに呼ぶ
 make build-infra-package
 
 # SwiftFormatを全体にかける
@@ -216,18 +226,20 @@ launching → notLoggedIn → Sign In with Apple
 
 **ユニットテスト** (`LocalPackage/Tests/`):
 - テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
-- 実行: `make test-packages-fast`（`swift test`。xcodebuildは使わない）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
+- 実行: `make test-affected`（`swift test --filter`。xcodebuildは使わない）。変更されたターゲットと、それに依存するターゲットのテストだけを流す（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
 - Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記のターゲットを含む）
-- CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）
+- CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）。PRでは関係するテストだけ、mainへのpushでは全テストを流す
 
 **スナップショットテスト** (`hometeSnapshotTests/`):
-- ライブラリ: PointFreeのswift-snapshot-testing 1.18.7（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
+- プロジェクトはVRT専用の `hometeVRT.xcodeproj`（`homete.xcodeproj` には無い）。参照するパッケージはLocalPackageだけで、Firebaseなどを解決しない（[ADR-0047](doc/adr/0047-vrt-dedicated-xcode-project.md)）。同じLocalPackageを参照するため、`homete.xcodeproj` とは同時に開けない
+- ライブラリ: PointFreeのswift-snapshot-testing 1.19.6（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
 - テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
 - Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `LocalPackage/Sources`
-- テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` とテストターゲットのリンク設定の両方を更新する
+- テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` と `hometeVRT.xcodeproj` のテストターゲットのリンク設定の両方を更新する
 - `AppRoot` はVRT対象外。スナップショットを撮りたいViewは `HometeUI` かFeature配下に置く
 - 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
+- ローカルでは、直接変えたHometeUI・Featureのプレビューだけ`make snapshot-affected`で流せる。必ずiOS 27.0のiPhone 16で流す（CIとマイナーバージョンまでそろえないと描画に差分が出る）。参照スナップショットの更新はCIに任せる（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）
 
 **シミュレータでの簡易E2E確認**（`.claude/skills/simulator-e2e-check/`）:
 - Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
@@ -248,9 +260,11 @@ launching → notLoggedIn → Sign In with Apple
 
 2. **`ci_local_package.yml`** - LocalPackageのユニットテスト
    - `LocalPackage/**`への変更でトリガー（macos-26 / Xcode 26.4.1）
+   - PRでは`scripts/affected-modules.py`で割り出した、変更に関係するテストターゲットだけを流す。mainへのpushでは全テスト
 
 3. **`ci_infra_package.yml`** - InfraPackageのビルド（`make build-infra-package`）
    - `InfraPackage/**`とLocalPackageのソース・マニフェストへの変更でトリガー。`AppRoot`が全Featureに依存するため、LocalPackage側の変更でも追従漏れを確かめる
+   - PRでは、変更がInfraPackageのターゲットまで届くときだけビルドする（テストやHometeSnapshotTestSupportだけの変更ではビルドしない）
 
 4. **`functions-e2e-test.yml`** - Firebase Functionsテスト
    - `firebase/functions/**` / `firebase/firestore.rules`への変更でトリガー（PR / mainまたはrelease/*へのpush）
@@ -289,7 +303,7 @@ launching → notLoggedIn → Sign In with Apple
 
 1. **`VRT`** - スナップショットテスト
    - `ci_post_clone.sh`: SPMプラグイン検証スキップ + スナップショット参照ファイル確認
-   - スキームは `hometeSnapshotTests`（`homete` スキームだとアプリ本体がビルドされ高速化の効果が出ない）
+   - プロジェクトは `hometeVRT.xcodeproj`、スキームは `hometeSnapshotTests`。`homete.xcodeproj` だとアプリが参照するInfraPackageの依存まで解決される
 
 2. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info-dev.plist` をデコード配置
@@ -443,8 +457,8 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 **iOS（SPM）:** バージョンは`LocalPackage/Package.swift`・`InfraPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
 - Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
-- swift-snapshot-testing 1.18.7
-- Prefire 5.9.0
+- swift-snapshot-testing 1.19.6
+- Prefire 6.1.0
 
 **Firebase Functions（npm）:**
 - firebase-admin 12.6.0

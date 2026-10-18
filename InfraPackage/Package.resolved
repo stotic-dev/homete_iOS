@@ -1,5 +1,5 @@
 {
-  "originHash" : "5d567c2781141f433147aa24f950a498051c6ec2933873872e5590d24ba0fdbf",
+  "originHash" : "fbd8e9507c9d55838bd33a5cea06b639f52076cb774aedbce160ea6711f9ca00",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "b4dd93fb351c33749006329dfb416c29cb3243d9",
-        "version" : "6.0.0"
+        "revision" : "df2ea9cfd4d80419ab03c492f9e3a9f5aabd174b",
+        "version" : "6.1.0"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
       "state" : {
-        "revision" : "e45bb84b726885492ce4e7ee94ddb252d171a205",
-        "version" : "5.92.0"
+        "revision" : "95ad250230efa7fc3e811c158ed264832aed2e79",
+        "version" : "5.95.0"
       }
     },
     {
@@ -177,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "a8b7c5e0ed33d8ab8887d1654d9b59f2cbad529b",
-        "version" : "1.18.7"
+        "revision" : "28e5de025e3fd98991791bfbf83023ab3708da03",
+        "version" : "1.19.6"
       }
     },
     {

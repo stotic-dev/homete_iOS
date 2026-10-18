@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WORKSPACE_DIR="homete.xcodeproj"
-BUILD_SCHEME="homete"
+WORKSPACE_DIR="hometeVRT.xcodeproj"
+BUILD_SCHEME="hometeSnapshotTests"
 SPM_CLONE_PATH="SourcePackages"
 
 xcodebuild -project "${WORKSPACE_DIR}" -scheme "${BUILD_SCHEME}" -configuration Debug -clonedSourcePackagesDirPath "${SPM_CLONE_PATH}" -resolvePackageDependencies
