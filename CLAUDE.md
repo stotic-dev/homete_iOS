@@ -193,9 +193,9 @@ Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定�
 2. Firebaseコンソールの**stgプロジェクト（`homete-ios-dev-e3ef7`）** → App Check → アプリ タブ → `taichi.satou.hometekure.dev` の ⋮ → デバッグトークンを管理 → 登録する
 3. 控えたトークンを `homete/Resouces/Secret_dev.xcconfig` の `APP_CHECK_DEBUG_TOKEN` に設定する
 
-3をやると、`homete.xcscheme` の環境変数 `AppCheckDebugToken`（値は `$(APP_CHECK_DEBUG_TOKEN)`）経由で全端末・全シミュレータが同じトークンを使うようになり、**コンソールへの登録は最初の1回だけで済む**。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
+3をやると、Debug構成のビルドだけInfo.plistの `AppCheckDebugToken` にトークンが埋め込まれ、起動時に`AppCheckConfigurator`がSDKの読む環境変数へ設定する。全端末・全シミュレータが同じトークンを使うので、**コンソールへの登録は最初の1回だけで済む**。Xcodeを通さずホーム画面から起動しても効く（スキームの環境変数で渡していた頃は、ホーム画面から起動すると未登録のトークンになって全部拒否されていた）。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
 
-デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み。共有スキームには変数名だけが載る）。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
+デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み）。Stg構成も`Secret_dev.xcconfig`を参照するが、Info.plistへ渡す`APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST`はDebug構成にだけ定義しているので、TestFlight・App Storeのビルドには埋め込まれない。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
 
 FirestoreとCallable関数で有効化の仕組みが違うので混同しないこと。
 

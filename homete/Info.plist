@@ -2,6 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Debug構成だけ値が入る。Stg・Releaseでは空になり、配布するビルドにデバッグトークンを埋め込まない -->
+	<key>AppCheckDebugToken</key>
+	<string>$(APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST)</string>
 	<key>AppGroupIdentifier</key>
 	<string>$(APP_GROUP_IDENTIFIER)</string>
 	<key>CFBundleDisplayName</key>

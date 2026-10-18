@@ -50,7 +50,10 @@ public struct RootView: View {
                     // 匿名のままグループに参加している。連携を終えるまでホームに入れないため、閉じる導線を出さない
                     AccountLinkScreen(entry: .required)
                 case .notLoggedIn:
-                    LoginView()
+                    LoginView(
+                        accountLoadFailure: launchStateStore.accountLoadFailure,
+                        onReceiveAccountLoadFailure: { launchStateStore.clearAccountLoadFailure() }
+                    )
                 }
             }
         }

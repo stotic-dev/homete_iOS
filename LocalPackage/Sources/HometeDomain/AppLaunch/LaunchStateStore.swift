@@ -26,6 +26,12 @@ import Observation
 public final class LaunchStateStore {
 
     public private(set) var launchState: LaunchState
+    /// サインイン後にアカウントを取得できず、ログイン画面へ戻したときのエラー
+    ///
+    /// ログイン画面から入り直して失敗すると`launchState`は`notLoggedIn`のまま変わらず、ログイン画面も
+    /// 作り直されない。画面の切り替えでローディングを畳めないため、失敗はこの値で別に伝える。
+    /// 同じ失敗が続いても変化として届くよう、受け取った側が`clearAccountLoadFailure()`で消す
+    public private(set) var accountLoadFailure: DomainError?
 
     /// 未着手の世代。認証が切り替わったときは捨てて、最新の認証だけを積み直す
     @ObservationIgnored private var pendingKinds: [SyncKind] = []
@@ -90,6 +96,11 @@ public final class LaunchStateStore {
     ///         届かない遷移のために用意している
     public func update(_ launchState: LaunchState) {
         self.launchState = launchState
+    }
+
+    /// アカウントの取得失敗を受け取ったことを伝える
+    public func clearAccountLoadFailure() {
+        accountLoadFailure = nil
     }
 
     /// 積まれた反映処理がすべて終わるのを待つ
@@ -220,6 +231,7 @@ private extension LaunchStateStore {
     ///         サインアウトの通知は後から届くが、画面と後片付けはここで先に反映しておく
     func signOutOnAccountLoadFailure(_ error: any Error) async {
         print("failed to load account, signing out: \(error)")
+        accountLoadFailure = .make(error)
         launchState = .notLoggedIn
         await authSubscriptionSyncUseCase.syncOnSignedOut()
         do {

@@ -39,6 +39,9 @@ public struct LoadErrorView: View {
             .primaryButtonStyle()
         }
         .padding(.horizontal, .space16)
+        // 置かれた画面いっぱいに広げて中央に出す。中身の大きさのままだと、
+        // 呼び出し側で付けた画面の地の色が中身の周りにしか塗られない
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
 }
