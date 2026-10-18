@@ -77,29 +77,3 @@ private extension RegisterHouseworkTutorialCard {
     }
 
 }
-
-#Preview("RegisterHouseworkTutorialCard_入力方法", traits: .sizeThatFitsLayout) {
-    RegisterHouseworkTutorialCard(step: .inputSource, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}
-
-#Preview("RegisterHouseworkTutorialCard_まとめて登録", traits: .sizeThatFitsLayout) {
-    RegisterHouseworkTutorialCard(step: .queue, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}
-
-#Preview("RegisterHouseworkTutorialCard_上限でまとめて登録", traits: .sizeThatFitsLayout) {
-    RegisterHouseworkTutorialCard(
-        step: .queue,
-        steps: [.inputSource, .queue],
-        onTapNext: {},
-        onTapBack: {},
-        onTapClose: {}
-    )
-    .padding(.space16)
-}
-
-#Preview("RegisterHouseworkTutorialCard_いつもの家事に保存", traits: .sizeThatFitsLayout) {
-    RegisterHouseworkTutorialCard(step: .saveAsFrequent, onTapNext: {}, onTapBack: {}, onTapClose: {})
-        .padding(.space16)
-}

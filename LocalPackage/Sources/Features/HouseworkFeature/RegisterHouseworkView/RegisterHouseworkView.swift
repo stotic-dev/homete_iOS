@@ -640,6 +640,80 @@ extension RegisterHouseworkView {
     #endif
 }
 
+// - Note: チュートリアルのスポットライトは、切り抜くUIが位置を伝えてから描き直されるため、少し待ってから撮る
+#Preview("RegisterHouseworkView_チュートリアル_入力方法") {
+    RegisterHouseworkView(
+        selectedTab: .frequent,
+        tutorialStore: .init(currentStep: .inputSource),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(\.frequentHouseworkContext, RegisterHouseworkView.previewFrequentHouseworkContext())
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_まとめて登録") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .queue),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_上限でまとめて登録") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .queue, steps: [.inputSource, .queue]),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
+#Preview("RegisterHouseworkView_チュートリアル_いつもの家事に保存") {
+    RegisterHouseworkView(
+        selectedTab: .manual,
+        tutorialStore: .init(currentStep: .saveAsFrequent),
+        dailyHouseworkList: RegisterHouseworkView.previewDailyHouseworkList(),
+        step: .board
+    )
+    .environment(HouseworkListStore(
+        houseworkClient: .previewValue,
+        cohabitantPushNotificationClient: .previewValue
+    ))
+    .environment(HouseworkTemplateListStore(loadState: .loaded))
+    .environment(SubscriptionStore())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5, perceptualPrecision: 0.95)
+    #endif
+}
+
 #Preview("RegisterHouseworkView_通信中") {
     RegisterHouseworkView(
         loadingState: .init(store: .init(isLoading: true)),

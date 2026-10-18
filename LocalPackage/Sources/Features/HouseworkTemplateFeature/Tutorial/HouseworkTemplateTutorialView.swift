@@ -6,6 +6,9 @@
 import HometeDomain
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 /// 家事テンプレート画面のチュートリアルで、本番の画面の上に重ねて表示する画面
 ///
@@ -125,14 +128,21 @@ private extension HouseworkTemplateTutorialView {
 }
 
 #if DEBUG
+// - Note: スポットライトは、切り抜くUIが位置を伝えてから描き直されるため、少し待ってから撮る
 #Preview("HouseworkTemplateTutorialView_作成") {
     HouseworkTemplateTutorialView(step: .create, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5)
+    #endif
 }
 
 #Preview("HouseworkTemplateTutorialView_追加") {
     HouseworkTemplateTutorialView(step: .addItem, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5)
+    #endif
 }
 
 #Preview("HouseworkTemplateTutorialView_作成済みで追加") {
@@ -144,15 +154,24 @@ private extension HouseworkTemplateTutorialView {
         onTapClose: {}
     )
     .apply(theme: .init())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5)
+    #endif
 }
 
 #Preview("HouseworkTemplateTutorialView_自動で並ぶ") {
     HouseworkTemplateTutorialView(step: .autoPlacement, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5)
+    #endif
 }
 
 #Preview("HouseworkTemplateTutorialView_保存") {
     HouseworkTemplateTutorialView(step: .save, onTapNext: {}, onTapBack: {}, onTapClose: {})
         .apply(theme: .init())
+    #if canImport(Prefire)
+        .snapshot(delay: 0.5)
+    #endif
 }
 #endif
