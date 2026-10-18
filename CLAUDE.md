@@ -458,7 +458,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 **iOS（SPM）:** バージョンは`LocalPackage/Package.swift`・`InfraPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
 - Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
 - swift-snapshot-testing 1.18.7
-- Prefire 5.9.0
+- Prefire 6.1.0
 
 **Firebase Functions（npm）:**
 - firebase-admin 12.6.0
