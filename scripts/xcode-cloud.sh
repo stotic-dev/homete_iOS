@@ -10,6 +10,8 @@
 # 経緯は doc/adr/0048-xcode-cloud-cli-outside-claude-sandbox.md。
 
 set -e
+# fetch_all などをパイプの前段に置いたとき、APIの失敗を空の結果として通さないようにする
+set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -242,7 +244,8 @@ cmd_download() {
       echo "↓ [${file_type}] ${file_name}"
       curl -sS --fail -L -o "$zip" "$url"
 
-      if zipinfo "$zip" 2>/dev/null | grep -q '^l'; then
+      # grep -q は一致した時点で読むのをやめ、pipefail下では前段のSIGPIPEで判定が反転するため、awkで最後まで読む
+      if zipinfo "$zip" 2>/dev/null | awk '/^l/ { found = 1 } END { exit !found }'; then
         echo "  ⚠ シンボリックリンクを含むため展開しません: $zip" >&2
         continue
       fi
@@ -299,7 +302,7 @@ cmd_wait() {
     show_build "$id"
   done
 
-  if printf '%s' "$results" | grep -v '^$' | grep -qv '^SUCCEEDED$'; then
+  if printf '%s' "$results" | awk 'NF && $0 != "SUCCEEDED" { failed = 1 } END { exit !failed }'; then
     exit 1
   fi
 }
