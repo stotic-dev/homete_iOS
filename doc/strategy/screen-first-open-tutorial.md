@@ -83,7 +83,9 @@ Issueの表から、方針整理（2026-10-17）で次のとおり絞った。
 - 見せ方の部品（`tutorialSpotlight`）は第1段のものを使う
 - 「見たか」の記録は、第1段の`RegistrationTutorialStateClient`とは意味が逆（第1段は「まだ見終わっていない」をtrueで持ち、未設定なら出さない。こちらは「見た」をtrueで持ち、未設定なら出す）なので、別のClientにする
 - Analyticsは新しいイベントを1つ足し、画面はパラメータで区別する（[ADR-0009](../adr/0009-analytics-event-parameter-design.md)）
-- テスト: Store・ステップの順番はユニットテスト、カード・サンプル画面はPreview（VRT）で確かめる
+- テスト: Store・ステップの順番はユニットテスト、見た目はPreview（VRT）で確かめる
+  - Previewはカード単体ではなく、本番と同じスポットライトとカードを重ねた画面で撮る（家事登録シートは`RegisterHouseworkView`にチュートリアルを表示中のStoreを渡す）
+  - スポットライトは切り抜くUIの位置を受け取ってから描き直すため、`.snapshot(delay:)`を付けて、表示したまま待ってから撮る（`generateTestTemplate.stencil`）
 
 ## 設計方針
 
@@ -237,7 +239,7 @@ public final class ScreenTutorialStore<Step: TutorialStep> {
 - [x] feat: 家事テンプレート画面のチュートリアル
 - [x] feat: デバッグメニューに記録を消す項目
 - [x] docs: `doc/analytics_events.md`に`screen_tutorial`を追記
-- [x] Preview（カードの各ステップ、`HouseworkTemplateTutorialView`の各ステップ）
+- [x] Preview（`HouseworkTemplateTutorialView`・`RegisterHouseworkView`で、スポットライトとカードを重ねた各ステップ）
 
 ### Phase 3: 検証
 
