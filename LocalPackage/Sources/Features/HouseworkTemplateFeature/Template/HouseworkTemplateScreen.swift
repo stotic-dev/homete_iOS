@@ -61,7 +61,7 @@ public struct HouseworkTemplateScreen: View {
             onDismiss: { dismissedPaywall() },
             content: { router.resolve(.paywall) }
         )
-        .task(id: houseworkTemplateListStore.loadState) {
+        .task(id: tutorialPrerequisiteLoadStates) {
             await startTutorialIfNeeded()
         }
         .task {
@@ -161,13 +161,22 @@ private extension HouseworkTemplateScreen {
 
 private extension HouseworkTemplateScreen {
 
+    /// チュートリアルを出せるかを決める読み込みの状態。変わるたびに出せるかを判断し直す
+    var tutorialPrerequisiteLoadStates: [ListenerLoadState] {
+        [houseworkTemplateListStore.loadState, templateEditStore.loadState]
+    }
+
     /// テンプレートの有無が分かってから、チュートリアルを出す
     /// - Note: 作成済みなら作成のステップは要らないので除く。
-    ///         読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らないため待つ
+    ///         読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らないため待つ。
+    ///         作成済みなら編集の準備が済むまで待つ。準備に失敗するとエラーの表示に切り替わり、
+    ///         その上でチュートリアルを最後まで見ると、使えない画面のまま見たことになってしまうため
     func startTutorialIfNeeded() async {
         guard houseworkTemplateListStore.loadState == .loaded else { return }
 
         let hasTemplate = houseworkTemplateListStore.selectedTemplateId != nil
+        guard !hasTemplate || templateEditStore.loadState == .loaded else { return }
+
         await tutorialStore.startIfNeeded(skipping: hasTemplate ? [.create] : [])
     }
 
