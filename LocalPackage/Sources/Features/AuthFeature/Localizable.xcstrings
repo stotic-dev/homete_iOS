@@ -31,6 +31,16 @@
         }
       }
     },
+    "Appleアカウントで保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save with Apple Account"
+          }
+        }
+      }
+    },
     "homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。" : {
       "localizations" : {
         "en" : {
@@ -73,12 +83,32 @@
         }
       }
     },
+    "このAppleアカウントは、すでに%@で使われています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Apple Account is already used with %@"
+          }
+        }
+      }
+    },
     "この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "This name will also appear on your partner's screen.\nYou can change it anytime."
+          }
+        }
+      }
+    },
+    "そのアカウントでログインしますか？ここまでに登録したニックネームとパートナーは引き継がれず、削除されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log in with that account? The nickname and partner you have set up so far will not carry over and will be deleted."
           }
         }
       }
@@ -113,12 +143,42 @@
         }
       }
     },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
     "ダッシュボードのバナー広告が消え、家事の記録に集中できます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banner ads are removed from the Dashboard, so you can focus on your chores."
+          }
+        }
+      }
+    },
+    "パートナーと共有した家事を、機種変更しても引き継げるようになります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the chores you share with your partner, even when you switch phones."
+          }
+        }
+      }
+    },
+    "パートナーと共有した家事を、機種変更しても引き継げるようになります。保存すると、家事の記録を始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep the chores you share with your partner, even when you switch phones. Once saved, you can start logging chores."
           }
         }
       }
@@ -163,6 +223,16 @@
         }
       }
     },
+    "ログインする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log In"
+          }
+        }
+      }
+    },
     "今後追加される機能もすべて使えます" : {
       "localizations" : {
         "en" : {
@@ -185,16 +255,16 @@
     },
     "全%lldステップ中%lldステップ目" : {
       "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "全%1$lldステップ中%2$lldステップ目"
-          }
-        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Step %2$lld of %1$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "全%1$lldステップ中%2$lldステップ目"
           }
         }
       }
@@ -225,6 +295,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "By continuing, you agree to the [Terms of Use](https://stotic-dev.github.io/homete_iOS/terms.html) and [Privacy Policy](https://stotic-dev.github.io/homete_iOS/privacy.html)."
+          }
+        }
+      }
+    },
+    "購入したプランを、機種変更しても引き継げるようになります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your purchased plan, even when you switch phones."
           }
         }
       }
