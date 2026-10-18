@@ -8,15 +8,17 @@ import HometeUI
 import HouseworkFeature
 import SwiftUI
 
-/// ダッシュボードの先頭に出す、ねぎらいのコメントと、それに添える感謝の促しか届いたありがとう
+/// ダッシュボードの先頭に出すカード。上の段に感謝の促しかねぎらいのコメントを、下の段に届いたありがとうを出す
 ///
 /// 何を出すかは呼び出し側が決め、このカードは渡された値を描いてタップを伝えるだけにする。
 struct EncouragementCommentCard: View {
 
+    /// 上の段に出すメッセージ
+    let leadMessage: DashboardLeadMessage
     /// ねぎらいのコメント。生成を待っている間は`nil`
     let comment: EncouragementComment?
-    /// ねぎらいに添えて出すメッセージ。出さなければ`nil`
-    let thanksMessage: DashboardThanksMessage?
+    /// 自分の家事に届いたありがとう。出さなければ`nil`
+    let receivedThanks: ReceivedThanksSummary?
     let onTapThanks: () -> Void
     /// 届いたありがとうを×で閉じた
     let onTapDismissReceivedThanks: () -> Void
@@ -29,18 +31,16 @@ struct EncouragementCommentCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
-            commentContent()
-            switch thanksMessage {
+            switch leadMessage {
             case let .thanksPrompt(thanksPrompt):
-                Divider()
                 thanksPromptContent(thanksPrompt)
 
-            case let .receivedThanks(receivedThanks):
+            case .encouragement:
+                commentContent()
+            }
+            if let receivedThanks {
                 Divider()
                 receivedThanksContent(receivedThanks)
-
-            case nil:
-                EmptyView()
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -263,14 +263,11 @@ private extension EncouragementAICommentPopover {
 }
 
 #if DEBUG
-#Preview("EncouragementCommentCard_ねぎらいと感謝の促し", traits: .sizeThatFitsLayout) {
+#Preview("EncouragementCommentCard_感謝の促し", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
-        comment: .init(
-            text: "今日も洗い物と洗濯、おつかれさまです。3日続けて家事をしていて、すてきですね",
-            kind: .selfPraise,
-            source: .generated
-        ),
-        thanksMessage: .thanksPrompt(.init(thankableItems: [], notSentCount: 3, executorNames: ["はなこ"])),
+        leadMessage: .thanksPrompt(.init(thankableItems: [], notSentCount: 3, executorNames: ["はなこ"])),
+        comment: nil,
+        receivedThanks: nil,
         onTapThanks: {},
         onTapDismissReceivedThanks: {},
         onRate: { _ in }
@@ -280,12 +277,9 @@ private extension EncouragementAICommentPopover {
 
 #Preview("EncouragementCommentCard_複数人への感謝の促し", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
-        comment: .init(
-            text: "今日の家事、ぜんぶ片づきましたね。みんなで回せた一日に、おつかれさまです",
-            kind: .selfPraise,
-            source: .fixed
-        ),
-        thanksMessage: .thanksPrompt(.init(thankableItems: [], notSentCount: 5, executorNames: ["はなこ", "じろう"])),
+        leadMessage: .thanksPrompt(.init(thankableItems: [], notSentCount: 5, executorNames: ["はなこ", "じろう"])),
+        comment: nil,
+        receivedThanks: nil,
         onTapThanks: {},
         onTapDismissReceivedThanks: {},
         onRate: { _ in }
@@ -295,12 +289,13 @@ private extension EncouragementAICommentPopover {
 
 #Preview("EncouragementCommentCard_ねぎらいのみ", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
+        leadMessage: .encouragement,
         comment: .init(
             text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
             kind: .neutral,
             source: .fixed
         ),
-        thanksMessage: nil,
+        receivedThanks: nil,
         onTapThanks: {},
         onTapDismissReceivedThanks: {},
         onRate: { _ in }
@@ -310,12 +305,25 @@ private extension EncouragementAICommentPopover {
 
 #Preview("EncouragementCommentCard_ありがとうが届いた", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
+        leadMessage: .encouragement,
         comment: .init(
             text: "今日も洗い物と洗濯、おつかれさまです。3日続けて家事をしていて、すてきですね",
             kind: .selfPraise,
             source: .generated
         ),
-        thanksMessage: .receivedThanks(.init(count: 2, senderNames: ["はなこ"], latestSentAt: nil)),
+        receivedThanks: .init(count: 2, senderNames: ["はなこ"], latestSentAt: nil),
+        onTapThanks: {},
+        onTapDismissReceivedThanks: {},
+        onRate: { _ in }
+    )
+    .padding(.space16)
+}
+
+#Preview("EncouragementCommentCard_感謝の促しとありがとうが届いた", traits: .sizeThatFitsLayout) {
+    EncouragementCommentCard(
+        leadMessage: .thanksPrompt(.init(thankableItems: [], notSentCount: 1, executorNames: ["はなこ"])),
+        comment: nil,
+        receivedThanks: .init(count: 1, senderNames: ["はなこ"], latestSentAt: nil),
         onTapThanks: {},
         onTapDismissReceivedThanks: {},
         onRate: { _ in }
@@ -325,8 +333,9 @@ private extension EncouragementAICommentPopover {
 
 #Preview("EncouragementCommentCard_生成中", traits: .sizeThatFitsLayout) {
     EncouragementCommentCard(
+        leadMessage: .encouragement,
         comment: nil,
-        thanksMessage: nil,
+        receivedThanks: nil,
         onTapThanks: {},
         onTapDismissReceivedThanks: {},
         onRate: { _ in }

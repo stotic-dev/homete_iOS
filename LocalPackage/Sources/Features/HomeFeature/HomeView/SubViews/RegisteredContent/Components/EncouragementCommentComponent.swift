@@ -12,9 +12,8 @@ import SwiftUI
 ///
 /// 家事やメンバーが変わるたびにStoreへ最新の状況を渡し、ねぎらいのコメントを決め直させる。
 /// 感謝の促しと届いたありがとうはその場で計算するため、ありがとうが届いたり送ったりすればすぐに件数が変わる。
-/// ねぎらいに添えるのは、そのうち優先度の高い1つだけ（`DashboardThanksMessage`）。
-/// 届いたありがとうは、ホームが出るたびに1回と数えて1日に3回まで出し、×で閉じたらその日は出さない。
-/// 優先度で隠れて出さなかった回は数えない。
+/// 上の段には感謝の促しかねぎらいのどちらか1つを出す（`DashboardLeadMessage`）。
+/// 届いたありがとうは下の段に、ホームが出るたびに1回と数えて1日に3回まで出し、×で閉じたらその日は出さない。
 struct EncouragementCommentComponent: View {
 
     @Environment(EncouragementCommentStore.self) var encouragementCommentStore
@@ -59,16 +58,15 @@ struct EncouragementCommentComponent: View {
             now: now,
             calendar: calendar
         )
-        let thanksMessage = DashboardThanksMessage.select(
-            thanksPrompt: thanksPrompt,
-            receivedThanks: receivedThanksRecord.canShow(
-                receivedThanks,
-                isCountedInCurrentAppearance: receivedThanksCountedAppearance == appearance
-            ) ? receivedThanks : nil
+        let leadMessage = DashboardLeadMessage.select(thanksPrompt: thanksPrompt)
+        let isReceivedThanksShown = receivedThanksRecord.canShow(
+            receivedThanks,
+            isCountedInCurrentAppearance: receivedThanksCountedAppearance == appearance
         )
         EncouragementCommentCard(
+            leadMessage: leadMessage,
             comment: encouragementCommentStore.comment,
-            thanksMessage: thanksMessage,
+            receivedThanks: isReceivedThanksShown ? receivedThanks : nil,
             onTapThanks: tappedThanksButton,
             onTapDismissReceivedThanks: { dismissReceivedThanks(receivedThanks) },
             onRate: ratedComment
@@ -82,12 +80,9 @@ struct EncouragementCommentComponent: View {
 
             appearance += 1
         }
-        // 届いたありがとうを実際に出したときだけ数え、優先度で隠れている間は数えない
-        .task(id: ReceivedThanksCountTrigger(
-            appearance: appearance,
-            isShown: thanksMessage?.isReceivedThanks == true
-        )) {
-            countReceivedThanksIfShown(thanksMessage, receivedThanks: receivedThanks)
+        // 届いたありがとうを実際に出したときだけ数える
+        .task(id: ReceivedThanksCountTrigger(appearance: appearance, isShown: isReceivedThanksShown)) {
+            countReceivedThanksIfShown(isReceivedThanksShown, receivedThanks: receivedThanks)
         }
         .task(id: updateTrigger) {
             await encouragementCommentStore.update(
@@ -99,12 +94,12 @@ struct EncouragementCommentComponent: View {
             )
         }
         // ダッシュボードを表示するたびと、出すコメントの種類が変わったときに送る。
-        // ねぎらいの生成を待つ間に添えるメッセージだけ先に送ると、生成後にもう一度送って二重に数えてしまうため、
+        // ねぎらいを出すときに、生成を待つ間に届いたありがとうだけ先に送ると、生成後にもう一度送って二重に数えてしまうため、
         // ねぎらいが決まってからまとめて送る
-        .task(id: shownKinds(thanksMessage: thanksMessage)) {
-            guard encouragementCommentStore.comment != nil else { return }
+        .task(id: shownKinds(leadMessage: leadMessage, isReceivedThanksShown: isReceivedThanksShown)) {
+            guard leadMessage != .encouragement || encouragementCommentStore.comment != nil else { return }
 
-            for kind in shownKinds(thanksMessage: thanksMessage) {
+            for kind in shownKinds(leadMessage: leadMessage, isReceivedThanksShown: isReceivedThanksShown) {
                 analyticsClient.log(.encouragementComment(.shown(kind: kind, step: .dashboard)))
             }
         }
@@ -160,9 +155,8 @@ private extension EncouragementCommentComponent {
     }
 
     /// 届いたありがとうを出していれば、ホームが出た回ごとに1回だけ数える
-    func countReceivedThanksIfShown(_ thanksMessage: DashboardThanksMessage?, receivedThanks: ReceivedThanksSummary) {
-        guard thanksMessage?.isReceivedThanks == true,
-              receivedThanksCountedAppearance != appearance else { return }
+    func countReceivedThanksIfShown(_ isShown: Bool, receivedThanks: ReceivedThanksSummary) {
+        guard isShown, receivedThanksCountedAppearance != appearance else { return }
 
         var record = storedReceivedThanksRecord.reconciled(with: receivedThanks, now: now, calendar: calendar)
         record.recordShown()
@@ -182,20 +176,22 @@ private extension EncouragementCommentComponent {
     }
 
     /// カードに出しているコメントの種類
-    func shownKinds(thanksMessage: DashboardThanksMessage?) -> [EncouragementCommentAnalyticsKind] {
+    func shownKinds(
+        leadMessage: DashboardLeadMessage,
+        isReceivedThanksShown: Bool
+    ) -> [EncouragementCommentAnalyticsKind] {
         var kinds: [EncouragementCommentAnalyticsKind] = []
-        if let comment = encouragementCommentStore.comment {
-            kinds.append(analyticsKind(of: comment))
-        }
-        switch thanksMessage {
+        switch leadMessage {
         case .thanksPrompt:
             kinds.append(.thanksPrompt)
 
-        case .receivedThanks:
+        case .encouragement:
+            if let comment = encouragementCommentStore.comment {
+                kinds.append(analyticsKind(of: comment))
+            }
+        }
+        if isReceivedThanksShown {
             kinds.append(.receivedThanks)
-
-        case nil:
-            break
         }
         return kinds
     }
