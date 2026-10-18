@@ -168,6 +168,9 @@ import SnapshotTesting
 
     private func assertSnapshot<Content: SwiftUI.View>(for prefireSnapshot: PrefireSnapshot<Content>) -> String? {
         let (previewView, preferences) = prefireSnapshot.loadViewWithPreferences()
+        if preferences.delay > 0 {
+            return assertSnapshotAfterDelay(of: previewView, for: prefireSnapshot, preferences: preferences)
+        }
 
         // perceptualPrecision は一律 0.98（deltaE <= 2、人間の知覚限界未満）でキャップする。
         // ローカルと Xcode Cloud では macOS ビルド差により CoreGraphics の
@@ -205,6 +208,65 @@ import SnapshotTesting
             )
         #endif
         return failure
+    }
+
+    /// `.snapshot(delay:)`を付けたプレビューを、表示したまま指定の秒数だけ待ってから撮る
+    ///
+    /// ライブラリの`.image`は、撮るたびにViewを作り直してその場で描く。表示した後にレイアウトの結果を受けて描き直すView
+    /// （切り抜くUIの位置を受け取ってから描くチュートリアルのスポットライトなど）は、描き直す前の状態が撮られてしまう。
+    /// そこで同じ画面をキーウィンドウに表示したまま待ち、描き直した後の画面を描いて、画像としてライブラリに比べさせる。
+    /// 置き方はライブラリの`.image(drawHierarchyInKeyWindow: true)`にそろえる（セーフエリアの影響を受けないよう画面の外に置く）。
+    private func assertSnapshotAfterDelay<Content: SwiftUI.View>(
+        of previewView: PrefireSnapshotView,
+        for prefireSnapshot: PrefireSnapshot<Content>,
+        preferences: PreferenceKeys
+    ) -> String? {
+        let config = prefireSnapshot.device.imageConfig
+        guard prefireSnapshot.isScreen, let size = config.size else {
+            return "`.snapshot(delay:)`は、画面全体を撮るプレビューにだけ付けられます"
+        }
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow) else {
+            return "`.snapshot(delay:)`は、ホストアプリのキーウィンドウで撮るため、キーウィンドウが必要です"
+        }
+        let traits = UITraitCollection(traitsFrom: [config.traits, prefireSnapshot.traits])
+
+        let hostingController = UIHostingController(rootView: previewView)
+        let container = UIViewController()
+        // 中身を置く前に大きさを決める。後から変えると、中身が元の大きさとの差の分だけ縮む
+        container.view.frame = CGRect(origin: .zero, size: size)
+        container.addChild(hostingController)
+        container.view.addSubview(hostingController.view)
+        hostingController.view.frame = container.view.bounds
+        hostingController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        container.setOverrideTraitCollection(traits, forChild: hostingController)
+        hostingController.didMove(toParent: container)
+
+        window.frame.size = size
+        window.rootViewController = container
+        container.view.frame = CGRect(origin: CGPoint(x: 10_000, y: 10_000), size: size)
+        container.view.layoutIfNeeded()
+        defer { window.rootViewController = nil }
+
+        RunLoop.main.run(until: Date(timeIntervalSinceNow: preferences.delay))
+
+        let bounds = container.view.bounds
+        let image = UIGraphicsImageRenderer(bounds: bounds, format: .init(for: traits)).image { _ in
+            container.view.drawHierarchy(in: bounds, afterScreenUpdates: true)
+        }
+        return verifySnapshot(
+            of: image,
+            as: .image(
+                precision: preferences.precision,
+                perceptualPrecision: min(preferences.perceptualPrecision, 0.98),
+                scale: traits.displayScale
+            ),
+            snapshotDirectory: snapshotDirectoryOverride{% if argument.file %},
+            file: file{% endif %},
+            testName: prefireSnapshot.name
+        )
     }
 
     /// Check environments to avoid problems with snapshots on different devices or OS.
