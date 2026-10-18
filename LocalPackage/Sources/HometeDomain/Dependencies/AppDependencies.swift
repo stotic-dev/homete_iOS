@@ -28,6 +28,7 @@ public struct AppDependencies: Sendable {
     public let notificationGuideStateClient: NotificationGuideStateClient
     public let appReviewStateClient: AppReviewStateClient
     public let registrationTutorialStateClient: RegistrationTutorialStateClient
+    public let screenTutorialStateClient: ScreenTutorialStateClient
     public let pasteboardClient: PasteboardClient
     public let dailyCompletionReminderClient: DailyCompletionReminderClient
     public let remoteConfigClient: RemoteConfigClient
@@ -64,6 +65,7 @@ public struct AppDependencies: Sendable {
         notificationGuideStateClient: NotificationGuideStateClient = .previewValue,
         appReviewStateClient: AppReviewStateClient = .previewValue,
         registrationTutorialStateClient: RegistrationTutorialStateClient = .previewValue,
+        screenTutorialStateClient: ScreenTutorialStateClient = .previewValue,
         pasteboardClient: PasteboardClient = .previewValue,
         dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
         remoteConfigClient: RemoteConfigClient = .previewValue,
@@ -91,6 +93,7 @@ public struct AppDependencies: Sendable {
         self.notificationGuideStateClient = notificationGuideStateClient
         self.appReviewStateClient = appReviewStateClient
         self.registrationTutorialStateClient = registrationTutorialStateClient
+        self.screenTutorialStateClient = screenTutorialStateClient
         self.pasteboardClient = pasteboardClient
         self.dailyCompletionReminderClient = dailyCompletionReminderClient
         self.remoteConfigClient = remoteConfigClient

@@ -28,6 +28,7 @@ struct HouseworkTemplateEmptyView: View {
                 onCreate()
             }
             .primaryButtonStyle()
+            .tutorialSpotlightTarget(.houseworkTemplateCreateButton)
         }
         .padding(.horizontal, .space24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

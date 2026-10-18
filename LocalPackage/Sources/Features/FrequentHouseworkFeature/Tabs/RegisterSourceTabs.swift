@@ -36,6 +36,7 @@ public struct RegisterSourceTabs<FrequentContent: View, ManualContent: View>: Vi
                 }
             }
             .pickerStyle(.segmented)
+            .tutorialSpotlightTarget(.registerSourcePicker)
             .padding(.horizontal, .space16)
             pages()
         }

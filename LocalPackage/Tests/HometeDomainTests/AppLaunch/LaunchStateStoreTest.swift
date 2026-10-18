@@ -72,6 +72,34 @@ struct LaunchStateStoreTest {
         #expect(store.launchState == .preLoggedIn(auth: AccountAuthResult(id: "testAccountId")))
     }
 
+    @Test("サインイン済みでアカウントの取得に失敗した場合は、会員登録画面に進まずサインアウトする")
+    func syncAuthChangeAccountLoadFailure() async {
+        await confirmation("Firebase Authからサインアウトする") { signedOut in
+            // Arrange: App Checkの検証失敗などで、アカウントの有無を判定できない状況
+
+            let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in throw DomainError.other }))
+            let store = LaunchStateStore(
+                accountStore: accountStore,
+                authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase(
+                    accountStore: accountStore,
+                    cohabitantStore: CohabitantStore(),
+                    subscriptionStore: SubscriptionStore(purchaseClient: .previewValue),
+                    houseworkManager: .init(houseworkClient: .previewValue)
+                ),
+                accountAuthClient: .init(signOut: { signedOut() })
+            )
+
+            // Act
+
+            store.syncAuthChange(signedInAuth)
+            await store.waitForSync()
+
+            // Assert
+
+            #expect(store.launchState == .notLoggedIn)
+        }
+    }
+
     @Test("サインアウトの通知を受けたら未ログインになる")
     func syncAuthChangeNotLoggedIn() async {
         // Arrange

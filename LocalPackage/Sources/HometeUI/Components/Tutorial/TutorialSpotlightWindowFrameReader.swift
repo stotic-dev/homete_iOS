@@ -15,6 +15,8 @@ struct TutorialSpotlightWindowFrameReader: UIViewRepresentable {
 
     /// 変わったら測り直す値。SwiftUIの上での位置を渡し、スクロールなどで動いたことを拾う
     let trigger: CGRect?
+    /// 自分ではなく、自分を表示しているナビゲーションバーの位置を測るか
+    var measuresNavigationBar = false
     let onChange: (CGRect) -> Void
 
     func makeUIView(context _: Context) -> ReaderView {
@@ -25,12 +27,14 @@ struct TutorialSpotlightWindowFrameReader: UIViewRepresentable {
 
     func updateUIView(_ uiView: ReaderView, context _: Context) {
         uiView.onChange = onChange
+        uiView.measuresNavigationBar = measuresNavigationBar
         uiView.measureAfterLayout()
     }
 
     final class ReaderView: UIView {
 
         var onChange: ((CGRect) -> Void)?
+        var measuresNavigationBar = false
 
         override func layoutSubviews() {
             super.layoutSubviews()
@@ -52,7 +56,27 @@ struct TutorialSpotlightWindowFrameReader: UIViewRepresentable {
         private func measure() {
             guard let window else { return }
 
-            onChange?(convert(bounds, to: window))
+            guard measuresNavigationBar else {
+                onChange?(convert(bounds, to: window))
+                return
+            }
+            guard let navigationBar = enclosingNavigationBar() else { return }
+
+            onChange?(navigationBar.convert(navigationBar.bounds, to: window))
+        }
+
+        /// 自分を表示している画面の`UINavigationController`のバー
+        /// - Note: `NavigationStack`は内部で`UINavigationController`に載るため、レスポンダチェーンをたどって見つける
+        private func enclosingNavigationBar() -> UINavigationBar? {
+            var responder: UIResponder? = self
+            while let current = responder {
+                if let viewController = current as? UIViewController,
+                   let navigationController = viewController.navigationController {
+                    return navigationController.navigationBar
+                }
+                responder = current.next
+            }
+            return nil
         }
 
     }

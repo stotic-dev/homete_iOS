@@ -128,6 +128,16 @@ public extension AnalyticsEvent {
         )
     }
 
+    /// 画面を初めて開いたときに出すチュートリアルに関する行動
+    /// - Note: 画面や行動ごとにイベント名を増やさず、`screen` / `action` / `step` パラメータで区別する。
+    ///         意図は`ScreenTutorialAnalyticsAction`を参照
+    static func screenTutorial(_ action: ScreenTutorialAnalyticsAction) -> Self {
+        .init(
+            name: "screen_tutorial",
+            parameters: action.parameters
+        )
+    }
+
     /// プッシュ通知の権限リクエストに関する行動
     /// - Note: 行動ごとにイベント名を増やさず、`step` / `action` / `result` パラメータで区別する。
     ///         意図は`NotificationPermissionAnalyticsAction`を参照

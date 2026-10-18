@@ -58,8 +58,9 @@ public struct AuthSubscriptionSyncUseCase {
     /// この世代のTaskをキャンセルするので、**awaitを挟むたびにキャンセルを確認して打ち切る**。
     /// 確認を省くと、無効になったユーザーIDで購読を張ったり課金情報を紐付けたりしてしまう。
     /// - Returns: ロードに成功したアカウント（アカウント未登録、または途中で打ち切った場合はnil）
-    public func syncOnSignedIn(_ authResult: AccountAuthResult) async -> Account? {
-        guard let account = await accountStore.load(authResult) else { return nil }
+    /// - Throws: アカウントの取得に失敗した場合。未登録（nil）とは区別する
+    public func syncOnSignedIn(_ authResult: AccountAuthResult) async throws -> Account? {
+        guard let account = try await accountStore.load(authResult) else { return nil }
         // ロードした内容は無効なユーザーのものなので、キャッシュごと破棄する
         guard !Task.isCancelled else {
             accountStore.clear()
