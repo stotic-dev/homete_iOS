@@ -35,3 +35,4 @@ export * from "./deleteUserData";
 export * from "./syncHouseworkRetention";
 export * from "./cohabitantInvitation";
 export * from "./debugRevokeRefreshTokens";
+export * from "./anonymousAccount";
