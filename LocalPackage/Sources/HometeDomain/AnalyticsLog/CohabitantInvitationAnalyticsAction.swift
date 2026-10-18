@@ -119,5 +119,7 @@ public enum CohabitantInvitationIssueScreen: String, Equatable, Sendable {
     case cohabitantRegistration = "cohabitant_registration"
     /// 設定画面の「メンバー招待」
     case setting
+    /// オンボーディングのパートナー登録の「招待リンクを送る」
+    case onboarding
 
 }

@@ -12,6 +12,8 @@ public enum OnboardingAnalyticsAction: Equatable, Sendable {
     case premiumIntroductionShown
     /// 特典説明画面からPaywallを開かずに次へ進んだ
     case premiumIntroductionSkipped
+    /// パートナー登録の選択肢から方法を選んだ
+    case partnerRegistrationSelected(PartnerRegistrationChoice)
 
 }
 
@@ -27,10 +29,16 @@ extension OnboardingAnalyticsAction {
 private extension OnboardingAnalyticsAction {
 
     /// どの画面での行動かを示す
-    /// - Note: 現状は特典説明画面の行動のみのため固定値。通知権限の案内は`NotificationPermissionAnalyticsAction`が、
-    ///         Paywallの表示・クローズは`PaywallAnalyticsAction`が担当する
+    /// - Note: 通知権限の案内は`NotificationPermissionAnalyticsAction`が、Paywallの表示・クローズは
+    ///         `PaywallAnalyticsAction`が、Apple連携は`AccountLinkAnalyticsAction`が担当する
     var step: String {
-        "premium_introduction"
+        switch self {
+        case .premiumIntroductionShown, .premiumIntroductionSkipped:
+            "premium_introduction"
+
+        case .partnerRegistrationSelected:
+            "partner_registration"
+        }
     }
 
     /// 画面内で何が起きたかを示す
@@ -41,6 +49,9 @@ private extension OnboardingAnalyticsAction {
 
         case .premiumIntroductionSkipped:
             "skipped"
+
+        case let .partnerRegistrationSelected(choice):
+            choice.rawValue
         }
     }
 

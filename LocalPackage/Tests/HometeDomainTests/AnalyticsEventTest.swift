@@ -74,6 +74,22 @@ struct AnalyticsEventTest {
                 OnboardingAnalyticsAction.premiumIntroductionSkipped,
                 ["step": "premium_introduction", "action": "skipped"]
             ),
+            (
+                OnboardingAnalyticsAction.partnerRegistrationSelected(.invite),
+                ["step": "partner_registration", "action": "invite"]
+            ),
+            (
+                OnboardingAnalyticsAction.partnerRegistrationSelected(.nearby),
+                ["step": "partner_registration", "action": "nearby"]
+            ),
+            (
+                OnboardingAnalyticsAction.partnerRegistrationSelected(.invited),
+                ["step": "partner_registration", "action": "invited"]
+            ),
+            (
+                OnboardingAnalyticsAction.partnerRegistrationSelected(.later),
+                ["step": "partner_registration", "action": "later"]
+            ),
         ]
     )
     func onboarding(action: OnboardingAnalyticsAction, expectedParameters: [String: String]) {
@@ -106,6 +122,10 @@ struct AnalyticsEventTest {
             (
                 CohabitantInvitationAnalyticsAction.issued(screen: .setting, isSuccess: true),
                 ["action": "issue", "step": "setting", "result": "success"]
+            ),
+            (
+                CohabitantInvitationAnalyticsAction.issued(screen: .onboarding, isSuccess: true),
+                ["action": "issue", "step": "onboarding", "result": "success"]
             ),
             (
                 CohabitantInvitationAnalyticsAction.issued(screen: .setting, isSuccess: false),
