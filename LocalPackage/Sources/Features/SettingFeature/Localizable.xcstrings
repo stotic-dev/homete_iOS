@@ -13,6 +13,16 @@
     "2週間後のありがとう" : {
       "shouldTranslate" : false
     },
+    "Appleアカウントで保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save with Apple Account"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {
