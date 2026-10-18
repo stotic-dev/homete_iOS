@@ -1,4 +1,4 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret
+.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
 
 .DEFAULT_GOAL := setup-project
 
@@ -75,6 +75,9 @@ check-translations: ## String Catalogの英訳の抜けと、使われなくな�
 
 copy-xcode-cloud-secret: ## Xcode Cloudに貼るSECRET_XCCONFIGをクリップボードへコピー。ENV=devでSECRET_XCCONFIG_DEV（例: make copy-xcode-cloud-secret ENV=dev）
 	scripts/copy-xcode-cloud-secret.sh $(or $(ENV),prod)
+
+xcode-cloud: ## Xcode Cloudのビルドの状態・issue・テスト結果・artifactを確認（例: make xcode-cloud ARGS="status 458"。コマンド一覧は make xcode-cloud ARGS=help）
+	scripts/xcode-cloud.sh $(ARGS)
 
 install-hooks: ## git hooks（pre-commitでSwiftFormat実行）を有効化
 	git config core.hooksPath scripts/git-hooks
