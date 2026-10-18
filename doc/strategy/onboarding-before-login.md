@@ -1,15 +1,15 @@
 # 初回インストール時のオンボーディング改善 実装方針
 
 > 関連Issue: [#461 匿名認証とApple連携の基盤](https://github.com/stotic-dev/homete_iOS/issues/461)、[#462 ログイン前の説明画面](https://github.com/stotic-dev/homete_iOS/issues/462)、[#463 パートナー登録のステップとやることリスト](https://github.com/stotic-dev/homete_iOS/issues/463)
-> ブランチ: `feat/461-anonymous-auth-link-apple`（#461）、`feat/462-welcome-anonymous-start`（#462）
+> ブランチ: `feat/461-anonymous-auth-link-apple`（#461）、`feat/462-welcome-anonymous-start`（#462）、`feat/463-onboarding-partner-step`（#463）
 > 匿名認証の採用経緯: [ADR-0051](../adr/0051-start-with-anonymous-auth-and-link-apple-later.md)
 
 ## ステータス
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -213,8 +213,12 @@ enum OnboardingStep: Hashable, CaseIterable {
 
 - `accountLink`は「匿名」かつ「パートナー登録で招待の共有・P2P登録・参加のどれかを終えた」ときだけ並びに入れる。パートナー登録の結果を受けて`steps`を組み立て直す
 - ステップの並びを決める処理は、Viewから切り出してユニットテストできる形にする（今の`loadSteps`の通知の判定もここに寄せる）
-- パートナー登録の選択肢画面から`CohabitantRegistrationView`（CohabitantRegistrationFeature）と参加確認（HomeFeatureの`CohabitantJoinContent`）を出すため、AuthFeatureからはRouteResolver経由で解決する（Feature同士を直接依存させない）
-- 参加確認をHomeFeatureの外から使うことになるので、`CohabitantJoinView`の置き場所（`CohabitantRegistrationFeature`へ移すか）を実装時に判断する
+  - AuthFeatureにはテストターゲットが無いため、`OnboardingStep`ごとHometeDomainへ移し、`OnboardingStep.steps(isAnonymous:shouldGuideNotification:hasRegisteredPartner:)`で並びを決める
+  - 「匿名か」はオンボーディングを始めたときの値で決める。連携すると認証は匿名でなくなるが、連携のステップを並びに残したまま次へ進めるため
+- パートナー登録の選択肢画面から`CohabitantRegistrationView`（CohabitantRegistrationFeature）と参加確認（HomeFeatureの`CohabitantJoinView`）を出すため、AuthFeatureからはRouteResolver経由で解決する（Feature同士を直接依存させない）
+- `CohabitantJoinView`はHomeFeatureに置いたまま、ログイン後と同じく`AppRoute.cohabitantJoin`のフルスクリーンで出す。閉じた時点でグループIDが入っていれば参加したとみなす
+- オンボーディング中のApple連携は、uidが同じまま匿名でなくなったこととして認証の変化で届く。`LaunchStateStore`は`.preLoggedIn`のまま認証だけ差し替え、残りのステップ（通知許可・プラン紹介）を終えるまでログイン済みに進めない
+- オンボーディングを終えるときは、パートナー登録で入ったグループIDと連携後の認証を反映した最新のアカウントで入り直す（`LaunchState.entered(_:)`）
 
 ### 4. 共通のApple連携の画面
 
@@ -227,8 +231,10 @@ enum OnboardingStep: Hashable, CaseIterable {
 ### 5. 未参加ホームのやることリスト（HomeFeature）
 
 - `NotRegisteredContent`をやることリストに作り替える。表示する項目は「匿名かどうか」「有効な招待を送っているか」から決める
-- 最後に送った招待は`CohabitantInvitation`（トークン・有効期限）を`UserDefaults`に保存するClientを足して持つ。発行するのはオンボーディング・同居人登録画面・設定の3か所なので、保存は発行するUseCase（またはClient）側でまとめて行う
-- ログアウト・退会で保存した招待を消す
+- 最後に送った招待は`CohabitantInvitation`（トークン・有効期限）を`UserDefaults`に保存するClient（`SentInvitationClient`）を足して持つ。送るのはオンボーディング・同居人登録画面・設定の3か所なので、保存は`SentInvitationStore`にまとめる
+  - 保存するのは発行した時点ではなく**共有を完了した時点**。共有をキャンセルした招待で「参加を待っています」を出さないため。また、パートナー登録の画面の中から招待を送ったかを、保存した招待が変わったかで見分けられる（匿名なら直後にApple連携を求める）
+  - 匿名のアカウントから既存のアカウントへ切り替えるとサインアウトを経ずにアカウントが変わるため、送ったアカウントのIDも保存し、ログイン中のアカウントが送った招待だけを出す
+- ログアウト・退会で保存した招待を消す（`AuthSubscriptionSyncUseCase.syncOnSignedOut`）
 
 ### 6. Functions
 
@@ -317,12 +323,12 @@ enum OnboardingStep: Hashable, CaseIterable {
 
 **#463: パートナー登録のステップとやることリスト**
 
-- [ ] `OnboardingStep`の追加・並べ替えと、並びを決めるロジックの切り出し
-- [ ] パートナー登録の選択肢画面（招待・P2P・招待された・あとで）、招待リンクから来た人の参加確認
-- [ ] 最後に送った招待の保存（オンボーディング・同居人登録画面・設定の発行で保存、ログアウト・退会で削除）
-- [ ] 未参加ホームのやることリスト（参加待ち・もう一度送る）
-- [ ] Analytics: パートナー登録の選択、画面イベント
-- [ ] Previewの追加・修正
+- [x] `OnboardingStep`の追加・並べ替えと、並びを決めるロジックの切り出し
+- [x] パートナー登録の選択肢画面（招待・P2P・招待された・あとで）、招待リンクから来た人の参加確認
+- [x] 最後に送った招待の保存（オンボーディング・同居人登録画面・設定の共有で保存、ログアウト・退会で削除）
+- [x] 未参加ホームのやることリスト（参加待ち・もう一度送る）
+- [x] Analytics: パートナー登録の選択、画面イベント
+- [x] Previewの追加・修正
 
 ### Phase 3: 検証
 
