@@ -4,6 +4,7 @@
 
 import FirebaseAppCheck
 import FirebaseCore
+import Foundation
 
 /// Firebase App Checkのプロバイダを登録する。
 ///
@@ -15,12 +16,26 @@ public enum AppCheckConfigurator {
     ///   App AttestはシミュレータでもXcodeの開発用署名でも動かないため、ローカルビルドでは
     ///   Debug Providerを使う（デバッグトークンの登録手順はCLAUDE.mdを参照）。
     ///   TestFlight・App Store配布のビルドでは必ずfalseを渡すこと。
-    public static func configure(usesDebugProvider: Bool) {
+    /// - Parameter debugToken: Firebaseコンソールに登録済みのデバッグトークン。Debug Providerを使うときだけ参照する。
+    ///   空なら、SDKがインストールごとに生成するトークンにフォールバックする。
+    public static func configure(usesDebugProvider: Bool, debugToken: String = "") {
+        if usesDebugProvider, !debugToken.isEmpty {
+            // SDKはこの環境変数をローカル生成のトークンより優先して読む。Xcodeのスキームで渡すと
+            // ホーム画面から起動したときに渡らないため、ビルドに埋め込んだ値をここで設定する
+            setenv(debugTokenEnvironmentKey, debugToken, 1)
+        }
         let factory: any AppCheckProviderFactory = usesDebugProvider
             ? AppCheckDebugProviderFactory()
             : AppAttestProviderFactory()
         AppCheck.setAppCheckProviderFactory(factory)
     }
+
+}
+
+private extension AppCheckConfigurator {
+
+    /// Debug Providerがデバッグトークンを読む環境変数名
+    static let debugTokenEnvironmentKey = "AppCheckDebugToken"
 
 }
 

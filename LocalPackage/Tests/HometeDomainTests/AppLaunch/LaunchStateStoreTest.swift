@@ -104,6 +104,41 @@ struct LaunchStateStoreTest {
         }
     }
 
+    @Test("サインイン済みでアカウントの取得に失敗した場合は、取得に失敗したことを伝える")
+    func syncAuthChangeAccountLoadFailureIsPublished() async {
+        // Arrange: ログイン画面から入り直して失敗すると画面が切り替わらないため、失敗を別に伝える必要がある
+
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in throw DomainError.noNetwork }))
+        let store = makeStore(accountStore: accountStore)
+
+        // Act
+
+        store.syncAuthChange(signedInAuth)
+        await store.waitForSync()
+
+        // Assert
+
+        #expect(store.accountLoadFailure == .noNetwork)
+    }
+
+    @Test("アカウントの取得失敗を受け取ったと伝えたら、失敗が消える")
+    func clearAccountLoadFailure() async {
+        // Arrange: 同じ失敗が続いても変化として届くよう、受け取った側が消す
+
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in throw DomainError.other }))
+        let store = makeStore(accountStore: accountStore)
+        store.syncAuthChange(signedInAuth)
+        await store.waitForSync()
+
+        // Act
+
+        store.clearAccountLoadFailure()
+
+        // Assert
+
+        #expect(store.accountLoadFailure == nil)
+    }
+
     @Test("サインアウトの通知を受けたら未ログインになる")
     func syncAuthChangeNotLoggedIn() async {
         // Arrange
@@ -370,6 +405,42 @@ struct LaunchStateStoreTest {
         // Assert
 
         #expect(store.launchState == .loggedIn(context: LoginContext(account: loadedAccount)))
+    }
+
+    @Test("サインアウトを挟まずに別のユーザーへ切り替わったら、前のユーザーの購読を止めてから切り替え先を購読する")
+    func syncAuthChangeUserSwitched() async {
+        let anonymousAccount = makeAccount()
+        let existingAccount = makeAccount(id: "existingAccountId")
+        let existingAuth = AccountAuthInfo(
+            result: AccountAuthResult(id: "existingAccountId"),
+            alreadyLoadedAtInitiate: true
+        )
+
+        await confirmation(expectedCount: 1) { removed in
+            // Arrange
+
+            let accountStore = AccountStore(
+                accountInfoClient: .init(
+                    fetch: { accountId in
+                        accountId == "existingAccountId" ? existingAccount : anonymousAccount
+                    },
+                    addSnapshotListener: { _, _ in .makeStream().stream },
+                    removeSnapshotListener: { _ in removed() }
+                )
+            )
+            let store = makeStore(accountStore: accountStore)
+            store.syncAuthChange(anonymousAuth)
+            await store.waitForSync()
+
+            // Act
+
+            store.syncAuthChange(existingAuth)
+            await store.waitForSync()
+
+            // Assert
+
+            #expect(store.launchState == .loggedIn(context: LoginContext(account: existingAccount)))
+        }
     }
 
 }

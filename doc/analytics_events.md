@@ -574,7 +574,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `PaywallAnalyticsAction`、`PremiumIntroductionView` / `RegisteredContent` / `HouseworkBoardView` / `HouseworkTemplateScreen` / `ContributionAnalyticsScreen` / `SettingView` / `SubscriptionManagementView` |
+| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:)`で渡す） |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
@@ -598,13 +598,15 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen` / `FrequentHouseworkImportScreen`） |
 | `housework_memo_limit` | 家事メモの文字数上限の案内（無料プランで上限を超えたときにメモの編集シートに出る「プレミアムプランを見る」。`HouseworkMemoEditScreen`） |
 
-匿名のアカウントは、Paywallを開く前にApple連携の画面を出す（`PaywallGate`）。この場合も起点では`shown`を送るため、
-連携せずに閉じると`shown`の後に`closed(not_purchased)`が送られ、Paywall自体は表示されていない。
+`action: shown`はPaywallが表示されたとき、`action: closed`（`result`付き）はPaywallが閉じたときに、`PaywallGate`が送る。
+起点の画面は`step`を渡すだけで、イベントは送らない。
+
+匿名のアカウントは、Paywallを出す前にApple連携の画面を出す（`PaywallGate`）。連携の画面を出している間は
+Paywallを表示していないので、`shown` / `closed`は送らない。連携を終えてPaywallに切り替わった時点で`shown`を送る。
 連携の結果は`account_link`イベントの`entry: paywall`で見る。
 
-`step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
-閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）
-に2つの起点があるため、開いた時点の起点を保持しておき、閉じたときに同じ`step`で送信する。
+`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）に2つの起点があるため、
+開いた時点の起点を保持して`step`に渡す。
 
 **分析での使い方:** `step`ごとに`shown`を分母に`closed(purchased)`を追うと、導線別の課金転換率が分かる。
 現状オンボーディングのみで計測できていたファネルが全8導線に広がるため、どの導線を強化すべきかの判断材料になる。

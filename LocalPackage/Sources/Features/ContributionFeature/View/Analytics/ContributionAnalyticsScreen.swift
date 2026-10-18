@@ -58,8 +58,7 @@ public struct ContributionAnalyticsScreen: View {
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: paywallStep)) }
         )
     }
 
@@ -78,12 +77,7 @@ private extension ContributionAnalyticsScreen {
 
     func showPaywall(from step: PaywallAnalyticsStep) {
         paywallStep = step
-        analyticsClient.log(.paywall(.shown(step: step)))
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: paywallStep, isPremium: subscriptionStore.isPremium)))
     }
 
     func onChangeContribution() async {

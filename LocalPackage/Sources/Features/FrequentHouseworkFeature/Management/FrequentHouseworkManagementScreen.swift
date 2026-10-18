@@ -15,7 +15,6 @@ public struct FrequentHouseworkManagementScreen: View {
     @Environment(\.frequentHouseworkContext) var context
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.loginContext.cohabitantId) var cohabitantId
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.routeResolver) var router
     @Environment(FrequentHouseworkStore.self) var store: FrequentHouseworkStore?
     @Environment(SubscriptionStore.self) var subscriptionStore
@@ -76,8 +75,7 @@ public struct FrequentHouseworkManagementScreen: View {
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .frequentHouseworkLimit)) }
         )
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
@@ -203,15 +201,7 @@ private extension FrequentHouseworkManagementScreen {
     }
 
     func showPaywall() {
-        analyticsClient.log(.paywall(.shown(step: .frequentHouseworkLimit)))
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(
-            step: .frequentHouseworkLimit,
-            isPremium: subscriptionStore.isPremium
-        )))
     }
 
 }

@@ -190,8 +190,7 @@ struct SettingView: View {
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .setting)) }
         )
         .trackScreenView(.setting)
     }
@@ -341,16 +340,11 @@ private extension SettingView {
     func tappedPremiumPlanItem() {
         switch subscriptionStore.plan {
         case .free:
-            analyticsClient.log(.paywall(.shown(step: .setting)))
             isShowPaywall = true
 
         case .subscription:
             navigationPath.push(.subscriptionManagement)
         }
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .setting, isPremium: subscriptionStore.isPremium)))
     }
 
     /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
