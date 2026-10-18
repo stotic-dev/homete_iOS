@@ -232,7 +232,7 @@ launching → notLoggedIn → Sign In with Apple
 
 **スナップショットテスト** (`hometeSnapshotTests/`):
 - プロジェクトはVRT専用の `hometeVRT.xcodeproj`（`homete.xcodeproj` には無い）。参照するパッケージはLocalPackageだけで、Firebaseなどを解決しない（[ADR-0047](doc/adr/0047-vrt-dedicated-xcode-project.md)）。同じLocalPackageを参照するため、`homete.xcodeproj` とは同時に開けない
-- ライブラリ: PointFreeのswift-snapshot-testing 1.18.7（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
+- ライブラリ: PointFreeのswift-snapshot-testing 1.19.6（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
 - テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
 - Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `LocalPackage/Sources`
 - テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` と `hometeVRT.xcodeproj` のテストターゲットのリンク設定の両方を更新する
@@ -457,7 +457,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 **iOS（SPM）:** バージョンは`LocalPackage/Package.swift`・`InfraPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
 - Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
-- swift-snapshot-testing 1.18.7
+- swift-snapshot-testing 1.19.6
 - Prefire 6.1.0
 
 **Firebase Functions（npm）:**
