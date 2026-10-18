@@ -9,7 +9,7 @@ Xcode MCPではXcode Cloudの状態もログも取れない。App Store Connect 
 
 ## 実行のしかた（サンドボックス）
 
-`scripts/xcode-cloud.sh` は `.claude/settings.json` の `sandbox.excludedCommands` に登録してあり、**サンドボックス外で、許可プロンプトなしで動く設定済み**。`dangerouslyDisableSandbox` は不要（付けると許可プロンプトで止まる）。秘密鍵（`private_keys/`）の読み取りとApp Store Connect・artifactのダウンロード先への通信のためにサンドボックス外で動かしている。経緯は [ADR-0048](../../../doc/adr/0048-xcode-cloud-cli-outside-claude-sandbox.md)。
+`scripts/xcode-cloud.sh` は `.claude/settings.json` の `sandbox.excludedCommands` に登録してあり、**サンドボックス外で、許可プロンプトなしで動く設定済み**。`dangerouslyDisableSandbox` は不要（付けると許可プロンプトで止まる）。秘密鍵（`private_keys/`）の読み取りとApp Store Connect・artifactのダウンロード先への通信のためにサンドボックス外で動かしている。経緯は [ADR-0049](../../../doc/adr/0049-xcode-cloud-cli-outside-claude-sandbox.md)。
 
 除外が効くのは**このスクリプトを単独で呼んだときだけ**。次の形だと呼び出し全体がサンドボックス内に留まり、鍵が読めずに失敗する:
 

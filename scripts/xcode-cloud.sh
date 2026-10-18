@@ -7,7 +7,7 @@
 #
 # Claude Codeからは `.claude/settings.json` の sandbox.excludedCommands でサンドボックス外に出している
 # （秘密鍵の読み取りとApp Store Connect・artifactのダウンロード先への通信のため）。
-# 経緯は doc/adr/0048-xcode-cloud-cli-outside-claude-sandbox.md。
+# 経緯は doc/adr/0049-xcode-cloud-cli-outside-claude-sandbox.md。
 
 set -e
 # fetch_all などをパイプの前段に置いたとき、APIの失敗を空の結果として通さないようにする

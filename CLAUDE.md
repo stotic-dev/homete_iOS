@@ -313,7 +313,7 @@ launching → notLoggedIn → Sign In with Apple
    - `ci_pre_xcodebuild.sh`: `$CI_BUILD_NUMBER` を `agvtool` で全Targetに反映
    - `ci_post_xcodebuild.sh`: archive成功時に `v{version}` の git タグを作成（`$GITHUB_TOKEN` 設定時のみpush）
 
-ビルドの状態・失敗したテスト・ログ・xcresultは `scripts/xcode-cloud.sh`（App Store Connect API）で取れる。手順は `xcode-cloud-check` スキル。Claude Codeのサンドボックス外で動く設定にしてあり、単独で呼ぶ（[ADR-0048](doc/adr/0048-xcode-cloud-cli-outside-claude-sandbox.md)）。
+ビルドの状態・失敗したテスト・ログ・xcresultは `scripts/xcode-cloud.sh`（App Store Connect API）で取れる。手順は `xcode-cloud-check` スキル。Claude Codeのサンドボックス外で動く設定にしてあり、単独で呼ぶ（[ADR-0049](doc/adr/0049-xcode-cloud-cli-outside-claude-sandbox.md)）。
 
 **コード署名:**
 - Xcode Cloudが自動管理（証明書・プロビジョニングプロファイルとも）

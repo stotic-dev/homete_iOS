@@ -23,7 +23,7 @@ Claude Code の設定（`settings.json` / `settings.local.json` / `.claude/rules
 
 - 個人用の `allow` 許可ルール → `.claude/settings.local.json`
 - チーム全員に効かせたい `deny`（秘匿ファイルの読み書き禁止など） → `.claude/settings.json`（コミット対象）
-- `sandbox.excludedCommands` に入れたコマンドを無確認で通す `allow` → 除外とセットで `.claude/settings.json`（片方だけだと許可プロンプトが出る。例: `scripts/xcode-cloud.sh`、[ADR-0048](../../doc/adr/0048-xcode-cloud-cli-outside-claude-sandbox.md)）
+- `sandbox.excludedCommands` に入れたコマンドを無確認で通す `allow` → 除外とセットで `.claude/settings.json`（片方だけだと許可プロンプトが出る。例: `scripts/xcode-cloud.sh`、[ADR-0049](../../doc/adr/0049-xcode-cloud-cli-outside-claude-sandbox.md)）
 
 `sandbox.excludedCommands` は呼び出しの全コマンドが一致したときだけサンドボックス外になり、パイプ・リダイレクト・`cd`・`$(...)` を含む呼び出しはサンドボックス内に留まる。除外するのはスクリプトのパスのような狭いパターンに限り、`make *` や `make <target> *`（別ターゲットや `-f` まで一致する）のような広いパターンは入れない。
 
