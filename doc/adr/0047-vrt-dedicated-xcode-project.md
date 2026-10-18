@@ -24,7 +24,23 @@ ADR-0046で重い外部依存をInfraPackageに分けたので、VRTが必要と
 * オブジェクトIDは`homete.xcodeproj`のものを引き継ぐ。スキーム・テストプランが参照するターゲットIDが変わらないようにするため
 * `hometeVRT.xcodeproj`はリポジトリ直下に置く。Xcode Cloudはプロジェクトと同じ階層から`ci_scripts/`を探すので、
   既存のスクリプトと`.prefire.yml`の`${PROJECT_DIR}`をそのまま使える
-* Xcode Cloudの`VRT`ワークフローの参照先は、App Store Connectで`hometeVRT.xcodeproj`に切り替える（手作業）
+* Xcode Cloudは`hometeVRT.xcodeproj`用に新しいプロダクトを作り、そこに`VRT`ワークフローを置く。
+  古いプロダクト（`homete.xcodeproj`）の`VRT`ワークフローはマージ時に止める
+
+### Xcode Cloudのプロダクトの作り方
+
+既存プロダクトのワークフローは、別のプロジェクトを参照するように変えられない（エラーになる）。
+新しいプロダクトをXcodeのGet Startedから作ると、依存パッケージのリポジトリ（swift-snapshot-testing・
+swift-syntax・xctest-dynamic-overlay・swift-custom-dump）への接続を求められる。公開リポジトリでも
+`Connect...`はそのアカウントにXcode CloudのGitHub Appを入れようとするので、他人のリポジトリでは失敗し、先へ進めない。
+
+一方、作成後のビルドでは公開リポジトリの接続は求められない（`homete.xcodeproj`のプロダクトも、
+同じ依存を接続せずにビルドしている）。そこで、一時的に`hometeVRT.xcodeproj`からLocalPackageへの参照
+（パッケージ参照とファイル一覧のLocalPackageフォルダ）を外し、依存が無い状態でプロダクトを作ってから元に戻した。
+プロダクトを作り直すときも同じ手順を取る。
+
+ワークフロー名は`ci_scripts/`の分岐に合わせて`VRT`にし、環境変数`GH_APP_ID`・`GH_APP_PRIVATE_KEY_BASE64`・
+`GITHUB_REPOSITORY`（参照スナップショットの自動コミット用）を設定する。
 
 ## 考慮した選択肢
 
