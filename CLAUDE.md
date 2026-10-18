@@ -158,6 +158,8 @@ View → Store（AppDependenciesを受け取る）
 - `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
 - `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
 - `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）
+- `deleteanonymousaccount` - 呼び出し元の匿名アカウントを削除する（v2 callable）。匿名のアカウントは再認証できず、時間がたつと端末から削除できないため、退会と既存のアカウントへの切り替えで使う。Appleと連携済みのユーザーは`failed-precondition`で拒否する
+- `cleanupanonymousaccounts` - 最後に使われてから30日たった匿名アカウントを毎日削除する（v2 scheduled、Cloud Scheduler）。後片付けは`deleteuserdata`に任せる（[ADR-0051](doc/adr/0051-start-with-anonymous-auth-and-link-apple-later.md)）
 - `debugrevokerefreshtokens` - **STG限定**。呼び出し元自身のリフレッシュトークンを失効させ、トークン失効による自動サインアウトを再現する（v2 callable）
   - コードは両プロジェクトにデプロイされるが、実行時に`GCLOUD_PROJECT`を見てSTG以外では`permission-denied`で拒否する
   - 失効対象は`request.auth`のユーザー自身のみ。引数でユーザーIDを受け取らないので、他人をサインアウトさせる余地がない
@@ -220,6 +222,8 @@ launching → notLoggedIn → Sign In with Apple
          preLoggedIn(auth) → 登録画面
          ↓
          loggedIn(context) → メインアプリ（AppTabView）
+         ↓ 匿名のままグループに参加している
+         accountLinkRequired(context) → Apple連携の画面（全画面、スキップ不可）
 ```
 
 ### テスト戦略

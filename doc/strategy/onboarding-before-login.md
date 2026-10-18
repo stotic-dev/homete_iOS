@@ -130,7 +130,8 @@
 
 ### 放置された匿名アカウントの削除
 
-- 最終サインインから30日たった匿名アカウント（Apple未連携）を、定期実行のFunctionで削除する
+- 最後に使われてから30日たった匿名アカウント（Apple未連携）を、定期実行のFunctionで削除する
+  - 匿名のアカウントは使い続けてもサインインし直さないため、最終サインイン日時ではなくIDトークンの最終更新日時（`lastRefreshTime`）で判定する
 - Account・グループの後片付けは、既存の`deleteuserdata`（Authの削除トリガー）に任せる
 
 ### 非機能要件 / 制約
@@ -233,7 +234,8 @@ enum OnboardingStep: Hashable, CaseIterable {
 
 - `fetchcohabitantinvitation`: `request.auth`を必須でなくする。未認証ならログにuidを出さないだけで、返す内容は同じ
   - App Checkは強制適用済みで、トークンは推測できない値のため、未認証で招待者名を返しても新たに漏れる情報は無い
-- 新規: 匿名アカウントの掃除（定期実行）。`listUsers`で`providerData`が空（匿名）かつ`lastSignInTime`が30日より前のユーザーを削除する
+- 新規: 匿名アカウントの掃除（定期実行の`cleanupanonymousaccounts`）。`listUsers`で`providerData`が空（匿名）かつ最後に使われた日時（`lastRefreshTime`）が30日より前のユーザーを1件ずつ削除する（`deleteUsers`では削除トリガーが呼ばれない）
+- 新規: 匿名アカウントの削除（callableの`deleteanonymousaccount`）。匿名のアカウントは再認証できず、時間がたつと端末から削除できないため、退会と既存のアカウントへの切り替えはこれで削除する
 
 ### ファイル配置
 
@@ -288,7 +290,7 @@ enum OnboardingStep: Hashable, CaseIterable {
 - [x] 参加待ちの判定は端末に保存した最後の招待で行う
 - [x] 放置された匿名アカウントは最終サインインから30日で削除する
 - [x] 説明画面は3枚。招待リンクから来た人には招待者名を出す
-- [ ] ADR-0051の承認
+- [x] ADR-0051の承認
 - [x] Issueの起票（#461 / #462 / #463）
 
 ### Phase 2: 実装
@@ -296,15 +298,15 @@ enum OnboardingStep: Hashable, CaseIterable {
 **#461: 匿名認証とApple連携の基盤**
 
 - [ ] Firebaseコンソールで匿名認証を有効にする（stg / prod）
-- [ ] `AccountAuthResult.isAnonymous`、`AccountAuthClient.signInAnonymously` / `linkWithApple`（liveValueを含む）
-- [ ] `AccountAuthStore`: 匿名で始める・連携・既存アカウントへの切り替え・匿名の退会
-- [ ] `LaunchState.accountLinkRequired`と`LaunchStateStore`の判定、`LoginContext.isAnonymous`
-- [ ] 共通のApple連携の画面（衝突時の確認を含む）
-- [ ] `RootView`: `.accountLinkRequired`で連携の画面を全画面で出す
-- [ ] 設定: 匿名のときのログアウトの置き換え・退会・招待発行後の連携
-- [ ] Paywallの各起点: 匿名なら先にApple連携
-- [ ] Functions: 匿名アカウントの掃除（定期実行）
-- [ ] Analytics: Apple連携のイベント、`is_anonymous`
+- [x] `AccountAuthResult.isAnonymous`、`AccountAuthClient.signInAnonymously` / `linkWithApple`（liveValueを含む）
+- [x] `AccountAuthStore`: 匿名で始める・連携・既存アカウントへの切り替え・匿名の退会
+- [x] `LaunchState.accountLinkRequired`と`LaunchStateStore`の判定、`LoginContext.isAnonymous`
+- [x] 共通のApple連携の画面（衝突時の確認を含む）
+- [x] `RootView`: `.accountLinkRequired`で連携の画面を全画面で出す
+- [x] 設定: 匿名のときのログアウトの置き換え・退会・招待発行後の連携
+- [x] Paywallの各起点: 匿名なら先にApple連携
+- [x] Functions: 匿名アカウントの掃除（定期実行）
+- [x] Analytics: Apple連携のイベント、`is_anonymous`
 
 **#462: 説明画面**
 

@@ -1,6 +1,6 @@
 ## タイトル: 匿名認証で始めて、パートナー登録の後にAppleアカウントと連携する
 
-* **ステータス: 提案済**
+* **ステータス: 承認済**
 * 意思決定者: 佐藤汰一
 * 日付: 2026-10-18
 * 技術的背景: [Issue #461](https://github.com/stotic-dev/homete_iOS/issues/461)、[doc/strategy/onboarding-before-login.md](../strategy/onboarding-before-login.md)、[ADR-0017](0017-create-cohabitant-on-invitation-join.md)
@@ -20,7 +20,10 @@
 * パートナー登録を後回しにした人は匿名のまま未参加ホームに入れる。匿名でグループに参加した状態は、起動状態（`LaunchState.accountLinkRequired`）で連携の画面に固定し、ホームに入れない
 * 購入の前には必ずApple連携を求める
 * Apple IDが既存のアカウントで使われていたら、匿名のアカウントを削除してから既存のアカウントでログインする（匿名で作った内容は引き継がない）
-* 最終サインインから30日たった匿名アカウントは、定期実行のFunctionで削除する。データの後片付けは既存の`deleteuserdata`に任せる
+* 匿名のアカウントの削除（退会・既存のアカウントへの切り替え）は、callable（`deleteanonymousaccount`）でサーバー側から行う。匿名のアカウントは再認証できず、最後のサインインから時間がたつと端末からの削除が`requires-recent-login`で失敗するため
+* 最後に使われてから30日たった匿名アカウントは、定期実行のFunction（`cleanupanonymousaccounts`）で削除する。データの後片付けは既存の`deleteuserdata`に任せる
+  * 匿名のアカウントは使い続けてもサインインし直さず、最終サインイン日時が作成時のまま動かない。使われているかはIDトークンの最終更新日時（`lastRefreshTime`）で判定する
+  * `deleteUsers`でまとめて削除すると削除トリガーが呼ばれないため、1件ずつ削除する
 
 ## 考慮した選択肢
 
@@ -47,6 +50,7 @@
 * Apple連携の画面で離脱した人は、匿名のままグループに入っていることがある。その場合、相手のグループには30日間使われないメンバーが残る
 * 既存のApple IDと衝突したら、匿名で作った内容（グループを含む）は捨てることになる
 * 匿名認証のプロバイダをstg / prodの両方で有効にする必要がある
+* 定期実行のFunctionのために、Cloud Schedulerを使う
 
 ## 参考
 
