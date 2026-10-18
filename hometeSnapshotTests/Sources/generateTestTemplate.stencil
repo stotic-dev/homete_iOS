@@ -30,16 +30,20 @@ import SnapshotTesting
 
     /// Xcode Cloud では CI_PRIMARY_REPOSITORY_PATH 配下の ci_scripts/__Snapshots__ を参照する。
     ///
-    /// ローカルでも明示的に指定する。参照PNGは hometeSnapshotTests/__Snapshots__ にあるが、
-    /// この生成ファイルは hometeSnapshotTests/Sources/ に置かれるため、verifySnapshot の
-    /// デフォルト（#filePath 基準の __Snapshots__）だと Sources/__Snapshots__ を見てしまい、
-    /// 参照PNGを二重に作ってしまう。__Snapshots__ を Sources/ の外に出しているのは、
-    /// テストターゲットの同期グループに含めて .xctest バンドルへ61MBのPNGをコピーさせない
-    /// ためである（doc/adr/0029)。
+    /// ローカルは SNAPSHOT_REFERENCE_DIR で参照PNGの場所（hometeSnapshotTests/__Snapshots__/PreviewTests.generated）
+    /// を渡す（scripts/run-affected-snapshots.sh が渡す）。Prefire 6 ではこの生成ファイルがビルドプラグインの出力として
+    /// DerivedData に置かれるため、#filePath から辿るとリポジトリの参照PNGに届かず、DerivedData 側に参照を新しく記録して
+    /// 全件「No reference was found」で失敗してしまう。
+    /// __Snapshots__ を Sources/ の外に出しているのは、テストターゲットの同期グループに含めて .xctest バンドルへ
+    /// 61MBのPNGをコピーさせないためである（doc/adr/0029)。
     private var snapshotDirectoryOverride: String? {
         if ProcessInfo.processInfo.environment["CI_XCODE_CLOUD"] == "TRUE",
            let repositoryPath = ProcessInfo.processInfo.environment["CI_PRIMARY_REPOSITORY_PATH"] {
             return "\(repositoryPath)/ci_scripts/__Snapshots__"
+        }
+        if let referenceDirectory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"],
+           !referenceDirectory.isEmpty {
+            return referenceDirectory
         }
         return URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

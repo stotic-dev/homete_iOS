@@ -1,26 +1,51 @@
 ---
 name: swift-code-verification
-description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。ビルド・SwiftLint・ユニットテストを順番に実行する（VRT/スナップショットテストはCIに任せてローカルでは実行しない）。Swiftファイルを編集・作成・削除した直後に必ず使う。ビルド・テストを流すか迷ったとき（Package.swiftやツール設定の変更など）も、影響範囲から要否を判断するためにこのスキルを参照する。
+description: homete iOSプロジェクトのSwiftコード変更後の検証フロー。`make affected` で変更に関係するモジュールを割り出し、そのモジュールだけをビルド・SwiftLint・ユニットテストする（全体ビルド・全テストは流さない）。HometeUI・FeatureのViewを変えたときは、そのモジュールのプレビューだけローカルでVRTを流す（iOS 27.0のiPhone 16限定）。Swiftファイルを編集・作成・削除した直後に必ず使う。ビルド・テストを流すか迷ったとき（Package.swiftやツール設定の変更など）も、影響範囲から要否を判断するためにこのスキルを参照する。
 ---
 
 # Swiftコード変更後の検証スキル
 
 ## 対象タイミング
 
-Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず以下の検証を順番に実行する。
-**Swiftのコードを変更した場合、ユニットテスト（手順3）は省略不可。必ず実行すること。**
+Swiftファイル（`*.swift`）を編集・作成・削除した後は、以下の検証を順番に実行する。
+**変更に関係するテストターゲットがある限り、ユニットテスト（手順3）は省略不可。**
 
-### 影響範囲による要否の判断（実行前に必ず見極める）
+### 影響範囲を割り出してから流す（全体ビルド・全テストはしない）
 
-検証は1回が高コスト（初回ビルドは10分以上、`make test-packages-fast` は6ターゲット）。変更がSwiftのビルド結果に影響しないのにフル検証を流すと、待ち時間が丸ごと無駄になる。**流す前に「この変更でビルド・テストの結果が変わりうるか」を考え、必要な手順だけを選ぶ。**
+検証は1回が高コスト（初回ビルドは10分以上）。マルチモジュールなので、変更が届くモジュールはパッケージの依存関係から決まる。
+関係ないモジュールまでビルド・テストすると、待ち時間が丸ごと無駄になる。**最初に `make affected` を流し、出た範囲だけを検証する。**
 
-| 変更内容 | 必要な検証 |
+```bash
+make affected   # BASE=<ref> で起点を変えられる（既定は origin/main。分岐点以降のコミット＋未コミットの変更を見る）
+```
+
+```
+変更されたターゲット: HouseworkFeature
+テスト: HometeAppIntentsTests, HouseworkFeatureTests
+iOS向けビルド: HomeFeature, HometeAppIntents
+InfraPackageのビルド: 要
+アプリ本体のビルド: 不要
+ローカルVRT: HouseworkFeature
+```
+
+判定は `scripts/affected-modules.py` が行う。変更されたターゲットと、それに推移的に依存するターゲット（LocalPackage・InfraPackageの
+`Package.swift`から読む）を影響範囲とする。たとえば `HouseworkFeature` を変えると、依存している `HometeAppIntents` のテストも流れる。
+`HometeDomain` を変えればほぼ全部が対象になるが、それは実際に全部へ届くからで、絞れないのは正しい。
+
+各行と、それを受けて流すコマンド:
+
+| 行 | 流すもの |
 |---|---|
-| Swift実装（`LocalPackage/Sources/`、`homete/`） | 手順1〜3すべて（テスト省略不可）。`public`なAPI（Clientプロトコル・Featureの公開View など）を変えたら、手順1でInfraPackageもビルドする |
-| Swift実装（`InfraPackage/Sources/`） | 手順1（InfraPackage）＋手順2。InfraPackageにはユニットテストが無く、`make test-packages-fast`はInfraPackageをビルドしないので手順3は効かない |
-| テストコードのみ（`LocalPackage/Tests/`） | 手順3（テスト実行がビルドを兼ねる）＋手順2 |
-| `LocalPackage/Package.swift`・`InfraPackage/Package.swift`・`ProjectTools/`・`.swiftlint.yml`・`.swiftformat`・SwiftGen設定 | 影響するビルド・lint・formatを流す（ビルド設定なので実際に通るかが確認対象） |
-| Swiftに影響しないもの（`.config/wt.toml` などのツール設定、`.claude/`、`doc/`・`CLAUDE.md`、`firebase/functions/`、GitHub Actions、Swiftビルドから呼ばれないスクリプト） | **このスキルの検証は不要** |
+| iOS向けビルド / InfraPackageのビルド | 手順1の `make build-affected`（両方まとめて面倒を見る） |
+| アプリ本体のビルド: 要 | 手順1の `xcodebuild`（`homete/`・`hometeNotificationService/`・`homete.xcodeproj` を変えたときだけ） |
+| テスト | 手順3の `make test-affected` |
+| ローカルVRT | 手順4の `make snapshot-affected`（Viewの見た目に関わる変更のときだけ） |
+
+全部「なし」「不要」なら、Swiftのビルドに影響しない変更なので、このスキルの検証は不要。`.claude/`・`doc/`・`CLAUDE.md`・
+`firebase/functions/`・GitHub Actions・ツール設定などがこれに当たる。
+
+`make build-local-package` / `make test-packages-fast` は全ターゲットが対象なので、`make affected` の判定が当てにならない場合
+（`scripts/affected-modules.py` 自体を直したときなど）や、ユーザーに頼まれたときだけ使う。
 
 Swiftに影響しない変更では、ビルドやテストの代わりに**変更したもの自体が動くか**を最小限で確かめる。例:
 
@@ -146,7 +171,7 @@ LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.bui
 
 ## 出力の絞り方（再実行しないために）
 
-検証コマンドは1回が高コスト（ビルド約80秒、`make test-packages-fast` は6つのテストターゲットを順に実行）。
+検証コマンドは1回が高コスト（ビルド約80秒、テストはテストターゲットを順に実行）。
 **絞り方を誤って結果が読めず「もう一度流す」のは、待ち時間が丸ごと無駄になる。** 実行する前にフィルタを決め、
 どう転んでも1回で合否を判定できる形にする。
 
@@ -157,25 +182,24 @@ LocalPackage/.build/artifacts/.../swiftlint lint --cache-path "LocalPackage/.bui
 
 ```bash
 LOG="$TMPDIR/verify-test.log"
-make test-packages-fast 2>&1 | tee "$LOG" | grep -E "Test run with|✘|error:|failed"
+make test-affected 2>&1 | tee "$LOG" | grep -E "テスト対象|Test run with|✘|error:|failed"
 # 情報が足りなければ、再実行せず保存済みログを読む
 grep -n -B5 -A20 "✘" "$LOG"
 ```
 
 ### `tail` を合否判定に使わない
 
-`make test-packages-fast` はテストターゲットごとに `Test run with N tests in M suites passed` を出す。
+`make test-affected` / `make test-packages-fast` はテストターゲットごとに `Test run with N tests in M suites passed` を出す。
 `tail -25` だと最後のターゲットの出力しか映らず、**残りが通ったのか落ちたのか分からない**。
 `tail` が妥当なのは、末尾にだけ結論が出るコマンド（`swift build` の `Build complete!` など）に限る。
 
 ### コマンド別の推奨フィルタ
 
-- `swift build` / `make build-local-package`
-  → `grep -E "error:|Build complete"`。`Build complete!` が出ていれば OK
-- `make test-packages-fast` / `swift test`
-  → `grep -E "Test run with|✘|error:"`。`Test run with ... passed` がテストターゲットの数だけ並べば OK
-  （現在は HometeDomainTests / HouseworkFeatureTests / HouseworkTemplateFeatureTests / SettingFeatureTests /
-  ContributionFeatureTests / FrequentHouseworkFeatureTests の6行。1行でも欠けていたらログ本体を確認する）
+- `make build-affected` / `swift build`
+  → `grep -E "^===|error:|Build complete|InfraPackage"`。ビルドしたターゲットの数だけ `Build complete!` が出ていれば OK
+- `make test-affected` / `swift test`
+  → `grep -E "テスト対象|Test run with|✘|error:"`。`Test run with ... passed` が、`テスト対象` に出たテストターゲットの
+  数だけ並べば OK（1行でも欠けていたらログ本体を確認する）
 - `swiftlint lint`
   → 元々短いので絞らなくてよい。絞るなら `grep -E "warning:|error:"` で、自分が触ったファイルの行が無いことを見る
 - `xcodebuild ... -quiet`
@@ -194,7 +218,7 @@ grep はマッチ0件で終了コード1を返すため、コマンド全体が�
 
 **worktreeで並列作業している場合、他worktreeのプロセスを誤って kill しないよう、`--package-path` は必ず現在のworktreeの絶対パスで指定する**（相対パス `LocalPackage` だとどのworktreeでもコマンドライン文字列が同じになり、`pkill -f` が他worktreeのプロセスまで巻き込んでしまう）。以降の手順1・3のコマンドも同様に絶対パスを使うこと。
 
-**`make test-packages-fast` / `make build-local-package` は `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages-fast`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。
+**`make test-affected` / `make build-affected` などLocalPackageを触るmakeターゲットは `$(CURDIR)` 基準のロック（`scripts/with-local-package-lock.sh`）で排他制御されるので、make 経由なら手順0は不要。** 同じworktreeで既に別の `make test-packages-fast`/`build-local-package` が走っている場合は pkill せず完了を待つ（誤って現在進行中のプロセスを殺さないため）。真にstale（保持プロセスが死んでいる）なロックだけを自動で掃除する。
 
 make 経由なら、他プロセスがビルドロックを握っている場合に実行前へ次の警告が出る。**これが出たら待ち時間はハングではなくロック待ちなので、タイムアウトまで放置せず PID を kill する。**
 
@@ -216,22 +240,20 @@ python3 scripts/swiftpm-build-lock.py "${LOCAL_PACKAGE_PATH}/.build"
 
 ### 1. ビルド確認
 
-**LocalPackage配下のファイルを変更した場合（通常）:**
-
 ```bash
-swift build --package-path "$(pwd)/LocalPackage" --disable-sandbox --sdk $(xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+make build-affected
 ```
 
-**InfraPackage（`HometeInfrastructure`・`AppRoot`）を変更した場合、またはLocalPackageの`public`なAPIを変えた場合:**
+`make affected` の「iOS向けビルド」に出たLocalPackageのターゲットを、iOSシミュレーター向けに1つずつ `swift build --target` する。
+他の対象の依存に含まれるターゲットは省くので、ビルドの範囲は影響範囲と同じになる。続けて、影響範囲がInfraPackageに届いていれば
+`make build-infra-package` も流す。
 
-```bash
-make build-infra-package
-```
+InfraPackageは`AppRoot`経由で全Featureに依存しているので、LocalPackage側の変更で壊れるのはこちら。テストでは気付けない。
+`.build`はLocalPackageと別（`InfraPackage/.build`）なので、新しいworktreeでの初回ビルドや依存の更新後は、Firebase・AdMobの
+xcframeworkの署名検証でサンドボックス内だと落ちる（`The signature of "….xcframework" cannot be verified`）。
+初回だけ `make build-infra-package` をサンドボックス外で流せば、以降はサンドボックス内で通る。
 
-InfraPackageは`AppRoot`経由で全Featureに依存しているので、LocalPackage側の変更で壊れるのはこちら。テストでは気付けず、CIでも`ci_infra_package.yml`まで落ちない。
-`.build`はLocalPackageと別（`InfraPackage/.build`）なので、新しいworktreeでの初回ビルドはFirebase・AdMobのxcframeworkの署名検証でサンドボックス内だと落ちる（`The signature of "….xcframework" cannot be verified`）。初回だけサンドボックス外で流せば、以降はサンドボックス内で通る。
-
-**メインターゲット（`homete/`配下）を変更した場合のみ:**
+**「アプリ本体のビルド: 要」のときだけ（`homete/`・`hometeNotificationService/`・`homete.xcodeproj` を変更した場合）:**
 
 ```bash
 xcodebuild build \
@@ -255,29 +277,54 @@ ProjectTools/.build/artifacts/projecttools/SwiftLintPluginBinary/SwiftLintBinary
 
 なお手順1のビルドが通っていれば SwiftLintPlugin が同じ lint を実行済みなので、この手順は「ビルド対象外のファイル（`homete/` 配下など）も含めて全体を確認する」ためのもの。
 
-### 3. ユニットテスト実行（省略不可）
+### 3. ユニットテスト実行（対象があれば省略不可）
 
 ```bash
-make test-packages-fast
+make test-affected
 ```
 
-特定のテストだけ流したいときは `FILTER=<テストターゲット名またはSuite名>` を付ける（例: `make test-packages-fast FILTER=HouseworkFeatureTests`）。
+`make affected` の「テスト」に出たテストターゲットだけを `swift test --filter` で実行する。対象が無ければ何も流さずに終わる
+（そのときは変更を確かめるテストが存在しないということなので、手順1のビルドが通れば十分）。
 
-ローカルではカバレッジ付きの `make test-packages` を使わない。カバレッジの有無でビルド成果物が別物になり、切り替えるたびにLocalPackage全体のビルドがやり直しになる（差分ビルド約20秒が約4分になる）。カバレッジはCI（Dangerのレポート）だけで取る。
+SwiftPMはテストを1つのテストバンドルにまとめるので、`--filter` で絞っても**ビルドは全テストターゲット分**かかる。
+ただし差分ビルドなので、変更していないモジュールはコンパイルし直さない。絞れるのは実行の方で、関係ないテストの実行と失敗の読み解きを省ける。
+
+特定のSuiteだけ流したいときは `make test-packages-fast FILTER=<テストターゲット名またはSuite名>` を使う
+（例: `make test-packages-fast FILTER=HouseworkFeatureTests`）。
+
+ローカルではカバレッジを付けない（`make test-packages` や `COVERAGE=1` は使わない）。カバレッジの有無でビルド成果物が別物になり、
+切り替えるたびにLocalPackage全体のビルドがやり直しになる（差分ビルド約20秒が約4分になる）。カバレッジはCI（Dangerのレポート）だけで取る。
+
+CI（`ci_local_package.yml`）もPRでは同じ判定で `make test-affected COVERAGE=1` を流す。mainへのpushでは全テストを流す。
 
 ### 4. UIデグレ確認（VRT / スナップショットテスト）
 
-**ローカルでは実行しない。** VRT は Xcode Cloud の `VRT` ワークフローで回す運用になっているので、SwiftUI の View を変更した場合も**参照スナップショットの更新はCIに任せる**。
+```bash
+make snapshot-affected
+```
 
-ローカル実行を避ける理由:
+**流すのは、`make affected` の「ローカルVRT」にモジュールが出ていて、かつViewの見た目に関わる変更をしたときだけ。**
+StoreやUseCaseなどロジックだけの変更では流さない。全プレビューの確認と参照スナップショットの更新はXcode Cloudの`VRT`ワークフローの役目で、
+ローカルは「直接変えたモジュールのプレビューが崩れていないか」をPRの前に確かめるためのもの。そのため、対象は
+**直接変更したHometeUI・Featureのプレビューだけ**にしている（HometeUIやHometeDomainを変えても、依存するFeatureのプレビューまでは広げない）。
+VRTの設定（`hometeVRT.xcodeproj`・`.prefire.yml`・テンプレートなど）を変えたときは全プレビューが対象になる。
 
-- 完走に数十分かかる上、`homete/Resouces/Secret_dev.xcconfig` と iOS 27 シミュレータが揃っていないと途中で落ちる
-- 途中で止めると、走り切った分の PNG だけが `hometeSnapshotTests/__Snapshots__/PreviewTests.generated/` に生成され、**参照スナップショットが中途半端な状態でコミットされる**
-- 参照の更新は CI が `chore: VRT参照スナップショットを自動更新` のコミットで行うため、ローカル生成分と競合する
+`scripts/run-affected-snapshots.sh` が次のことをする:
 
-もしローカル実行で PNG を生成してしまったら、コミット前に `git status` で確認して**削除する**。
+- **iOS 27.0のiPhone 16でしか流さない。** 参照スナップショットはXcode CloudのiOS 27.0で記録しており、マイナーバージョンが
+  違うだけで描画に差分が出る。iOS 27.0のiPhone 16が無ければエラーで止まるので、他のシミュレータで代用しない。
+  ランタイムが無ければユーザーに入れてもらうか、ローカルVRTは飛ばしてCIに任せる
+- テストのタイムゾーンを、Xcode Cloudのランナーと同じ太平洋時間（`America/Los_Angeles`）にする。東京時間で固定した日付（`previewDate`）の表示が1日ずれるのを防ぐため
+- `hometeVRT.xcodeproj` をbuild-for-testingし、Prefireが生成したテストのうち対象モジュールのプレビューだけを `-only-testing` で流す
+- **参照スナップショットは書き換えない。** 参照の無い新しいプレビューは、ライブラリが参照PNGを書き出したうえで失敗する。
+  書き出されたPNGはスクリプトが消す（参照の記録はCIが `chore: VRT参照スナップショットを自動更新` で行う）。
+  新しく足したプレビューの「No reference was found」は想定どおりの失敗なので、直す必要はない
+- 差分が出たときの画像は `~/Library/Developer/Xcode/DerivedData/hometeVRT-affected/SnapshotFailures` に出る
 
-View を変更した場合にやることは「PR を出して CI の VRT 結果を見る」だけでよい。既存スナップショットとの差分は Danger が PR にレポートする。
+xcodebuildはClaudeのサンドボックス内だと `sandbox_apply: Operation not permitted` で落ちるので、サンドボックス外で流す。
+
+差分が出たら、意図した見た目の変更か、デグレかを差分画像で見分ける。意図した変更ならそのままPRを出し、CIに参照を更新させる。
+デグレなら直してから流し直す。
 
 ---
 

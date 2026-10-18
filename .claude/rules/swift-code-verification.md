@@ -7,23 +7,21 @@ paths:
 
 Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず `swift-code-verification` スキルに従って検証を実行すること。
 
-検証フロー（ビルド → SwiftLint → ユニットテスト）の詳細は当該スキルに集約されている:
+検証フロー（影響範囲の判定 → ビルド → SwiftLint → ユニットテスト → 必要ならローカルVRT）の詳細は当該スキルに集約されている:
 - `.claude/skills/swift-code-verification/SKILL.md`
 
-**Swiftのコードを変更した場合、ユニットテストは省略不可。必ず実行すること。**
+**最初に `make affected` で影響範囲を割り出し、その範囲だけを検証する。** 全体ビルド（`make build-local-package`）や全テスト（`make test-packages-fast`）は流さず、`make build-affected` / `make test-affected` を使う。
+変更に関係するテストターゲットがある限り、ユニットテストは省略不可。全部「なし」ならSwiftのビルドに影響しない変更なので、変更したもの自体の動作だけを最小限で確かめる。
 
-**流す前に影響範囲で要否を見極める。** テストコードのみの変更なら手順を絞れるし、Swiftのビルドに影響しない変更（ツール設定・ドキュメント・Functionsなど）ではビルド・テスト自体が不要。その場合は変更したもの自体の動作だけを最小限で確かめる。判断表はスキル参照。
-
-**同じ検証コマンドを2回流さない。** 検証は1回が高コスト（ビルド約80秒、`make test-packages-fast` は6テストターゲット）
-なので、出力は `tee` でログに残してからフィルタし、絞り方が足りなければ再実行ではなく保存済みログを読み直す。
+**同じ検証コマンドを2回流さない。** 検証は1回が高コストなので、出力は `tee` でログに残してからフィルタし、絞り方が足りなければ再実行ではなく保存済みログを読み直す。
 `tail` はテスト結果の判定には使わない（最後のターゲットしか映らず他が見えない）。フィルタの具体例はスキル参照。
 
-**VRT（スナップショットテスト）はローカルで実行しない。** Xcode Cloud の `VRT` ワークフローで回す運用のため、SwiftUIのViewを変更した場合も参照スナップショットの更新はCIに任せる。理由と、誤って生成してしまったPNGの扱いはスキル参照。
+**VRT（スナップショットテスト）は、直接変えたHometeUI・FeatureのViewの見た目に関わる変更のときだけ `make snapshot-affected` でローカル実行する。** 必ずiOS 27.0のiPhone 16で流す（CIと同じマイナーバージョンでないと描画に差分が出る。他のシミュレータで代用しない）。参照スナップショットの更新はCIに任せる。詳細はスキル参照。
 
 許可ツール（プロジェクトの `.claude/settings.local.json` に登録済み）:
 - `Bash(swift build:*)`, `Bash(swift test:*)`, `Bash(xcodebuild:*)`, `Bash(ProjectTools/.build/arm64-apple-macosx/debug/swiftlint lint:*)`
 - **サンドボックスは有効**（`sandbox.enabled: true`）。SwiftPM系コマンドには **`--disable-sandbox` フラグ**を付けて、Claudeのサンドボックス**内**で実行すること。`dangerouslyDisableSandbox: true` は原則使わない（allowルールを迂回して必ず許可プロンプトが出るため、自律実行が止まる）。理由と許可済みキャッシュパス、および Build Tool Plugin が `.build` に書けない既知症状の切り分け・例外条件はスキル参照
-- `make build-local-package` / `make test-packages-fast` / `make format` には `--disable-sandbox` が既に入っている
+- `make build-affected` / `make test-affected` / `make format` などSwiftPMを呼ぶmakeターゲットには `--disable-sandbox` が既に入っている（`make snapshot-affected` はxcodebuildを使うのでサンドボックス外で流す）
 
 ## 自動検証（Stopフック）
 

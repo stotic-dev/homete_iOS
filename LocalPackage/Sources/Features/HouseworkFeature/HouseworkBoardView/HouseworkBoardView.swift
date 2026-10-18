@@ -33,6 +33,7 @@ struct HouseworkBoardView<RowMenu: View>: View {
     let onTapItem: (HouseworkBoardItem) -> Void
     let onTapComplete: (HouseworkBoardItem) -> Void
     let onTapThanks: (HouseworkBoardItem) -> Void
+    let onTapYearMonth: () -> Void
     let onTapStorageLimit: () -> Void
     let onTapHouseworkTemplate: () -> Void
     let onTapBulkAction: (HouseworkQuickAction) -> Void
@@ -108,7 +109,11 @@ private extension HouseworkBoardView {
 
     func boardContent(bottomSafeAreaInset: CGFloat) -> some View {
         VStack(spacing: .space16) {
-            HouseworkDateHeaderContent(dateList: $dateList, onTapStorageLimit: onTapStorageLimit)
+            HouseworkDateHeaderContent(
+                dateList: $dateList,
+                onTapYearMonth: onTapYearMonth,
+                onTapStorageLimit: onTapStorageLimit
+            )
             VStack(spacing: .space16) {
                 HouseworkBoardSegmentedControl(selectedHouseworkState: $selectedHouseworkState)
                 TabView(selection: $selectedHouseworkState) {
@@ -202,6 +207,7 @@ private extension HouseworkBoardView {
             onTapItem: { _ in },
             onTapComplete: { _ in },
             onTapThanks: { _ in },
+            onTapYearMonth: {},
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
             onTapBulkAction: { _ in },
@@ -245,6 +251,7 @@ private extension HouseworkBoardView {
             onTapItem: { _ in },
             onTapComplete: { _ in },
             onTapThanks: { _ in },
+            onTapYearMonth: {},
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
             onTapBulkAction: { _ in },
@@ -298,6 +305,7 @@ private extension HouseworkBoardView {
             onTapItem: { _ in },
             onTapComplete: { _ in },
             onTapThanks: { _ in },
+            onTapYearMonth: {},
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
             onTapBulkAction: { _ in },
@@ -329,6 +337,7 @@ private extension HouseworkBoardView {
             onTapItem: { _ in },
             onTapComplete: { _ in },
             onTapThanks: { _ in },
+            onTapYearMonth: {},
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
             onTapBulkAction: { _ in },
@@ -367,6 +376,7 @@ private extension HouseworkBoardView {
             onTapItem: { _ in },
             onTapComplete: { _ in },
             onTapThanks: { _ in },
+            onTapYearMonth: {},
             onTapStorageLimit: {},
             onTapHouseworkTemplate: {},
             onTapBulkAction: { _ in },

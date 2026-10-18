@@ -95,6 +95,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる家事の一覧。ダッシュボードの感謝の促しから開く） |
 | `contribution_analytics` | `ContributionAnalyticsView` |
 | `housework_board` | `HouseworkBoardScreen` |
+| `housework_date_picker` | `HouseworkDatePickerView`（家事ボードの年月ラベルから開く、日付を選ぶカレンダーのハーフモーダル） |
 | `housework_detail` | `HouseworkDetailView` |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
@@ -508,7 +509,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` / `housework_memo_limit` | Paywallへの起点 |
+| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `board_date_picker` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` / `housework_memo_limit` | Paywallへの起点 |
 | `action` | ○ | `shown` / `closed` | 表示 / クローズのどちらか |
 | `result` | — | `purchased` / `not_purchased` | `closed`のみ付与。閉じた時点でプレミアムが有効なら`purchased` |
 
@@ -520,6 +521,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `dashboard_ad` | ダッシュボードの広告バナー下「広告を非表示にする」リンク（`RegisteredContent`） |
 | `board_ad` | 家事分析画面の広告バナー下「広告を非表示にする」リンク（`ContributionAnalyticsScreen`）。`advertisement`イベントの`step: contribution_analytics`と同じ導線だが、`paywall`イベントの`step`名は本Issue設計時点の命名をそのまま踏襲しており「家事ボード」ではない点に注意 |
 | `board_storage_limit` | 家事ボードの保存期間上限セル（`HouseworkStorageLimitCell`） |
+| `board_date_picker` | 家事ボードの日付を選ぶカレンダーにある、保存期間の上限の案内（`HouseworkDatePickerView`） |
 | `template_ad` | 家事テンプレート画面の広告バナー下「広告を非表示にする」リンク（`HouseworkTemplateScreen`） |
 | `contribution_storage_limit` | 家事分析画面の保存期間上限表示（`StoragePeriodLimitView`） |
 | `setting` | 設定画面の「プレミアムプランに登録」項目（`SettingView`） |

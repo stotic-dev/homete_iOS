@@ -34,6 +34,11 @@ public struct HouseworkBoardScreen: View {
     @State var isPresentingAddHouseworkView = false
     @State var isShowHouseworkTemplate = false
     @State var isShowPaywall = false
+    @State var isPresentingDatePicker = false
+    /// カレンダーからPaywallを開く操作。カレンダーを閉じきってからPaywallを出す
+    @State var hasPendingDatePickerPaywall = false
+    /// Paywallを開いた起点。閉じたときのログに使う
+    @State var paywallStep = PaywallAnalyticsStep.boardStorageLimit
     @State var isSelecting = false
     /// 複数選択モードで選択中の家事のID
     @State var selectedHouseworkIDs: Set<String> = []
@@ -132,6 +137,10 @@ private extension HouseworkBoardScreen {
             .sheet(item: $addingHelperItem) { item in
                 HouseworkAddHelperSheet(item: item, step: .board)
             }
+            // シートの上にPaywallを重ねられないため、閉じきってから出す
+            .sheet(isPresented: $isPresentingDatePicker, onDismiss: dismissedDatePicker) {
+                datePicker()
+            }
             .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
                 router.resolve(.houseworkTemplate)
             }
@@ -183,7 +192,8 @@ private extension HouseworkBoardScreen {
                         await sendThanks(to: item, store: houseworkListStore)
                     }
                 },
-                onTapStorageLimit: { tappedStorageLimitCell() },
+                onTapYearMonth: { isPresentingDatePicker = true },
+                onTapStorageLimit: { showPaywall(from: .boardStorageLimit) },
                 onTapHouseworkTemplate: { isShowHouseworkTemplate = true },
                 onTapBulkAction: { performBulk($0, store: houseworkListStore) },
                 rowMenu: { item in
@@ -347,13 +357,20 @@ private extension HouseworkBoardScreen {
         thanksFeedbackCount += 1
     }
 
-    func tappedStorageLimitCell() {
-        analyticsClient.log(.paywall(.shown(step: .boardStorageLimit)))
+    func dismissedDatePicker() {
+        guard hasPendingDatePickerPaywall else { return }
+        hasPendingDatePickerPaywall = false
+        showPaywall(from: .boardDatePicker)
+    }
+
+    func showPaywall(from step: PaywallAnalyticsStep) {
+        analyticsClient.log(.paywall(.shown(step: step)))
+        paywallStep = step
         isShowPaywall = true
     }
 
     func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .boardStorageLimit, isPremium: subscriptionStore.isPremium)))
+        analyticsClient.log(.paywall(.closed(step: paywallStep, isPremium: subscriptionStore.isPremium)))
     }
 
 }
