@@ -58,6 +58,133 @@ resolve_github_app_token() {
     echo "$INSTALLATION_TOKEN"
 }
 
+# doc/adr/0005: スナップショットテストを記録モード（failed）で流し、変わった参照PNGを
+# PRブランチへcommit・pushする。引数は xcodebuild に渡すアクションとオプション
+# （-destination・-collect-test-diagnostics・記録モードの指定はこの関数で付ける）。
+#
+# 注意: Xcode Cloud の PR ビルドは、PR ブランチの実 HEAD ではなくターゲットブランチ
+# （main）との「マージプレビューコミット」を checkout している（実測で確認済み）。
+# そのため、記録処理の前に PR ブランチの実 HEAD へ checkout し直してから記録・commit・push
+# する。これにより push が main を巻き込んだマージコミットにならず、実HEADのみを親とする
+# 単一コミットになる。
+#
+# doc/adr/0030: このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、
+# コミットメッセージに [ci skip] を付ける（Xcode Cloudが公式サポートするスキップ指示）。
+# GitHub Actions側のスキップ指示は push / pull_request イベントにしか効かないため、
+# Dangerワークフロー（ci_danger.yml）は pull_request_target に切り替えてスキップ対象から
+# 外してある。これによりVRTビルドだけを止め、Dangerによるbefore/after画像差分の報告は
+# このbot commitに対しても走る。
+#
+# xcodebuild の終了コードは VRT_RUN_STATUS に入れる（シミュレータが見つからず流せなかったときは1）。
+# 終了コードをどう扱うかは呼び出し側で決める。commit・pushの失敗は set -e でそのまま落とす。
+record_and_push_snapshots() {
+    VRT_RUN_STATUS=0
+
+    echo "CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
+    echo "SNAPSHOT_TESTING_RECORD=$SNAPSHOT_TESTING_RECORD"
+    echo "CI_XCODE_CLOUD=$CI_XCODE_CLOUD"
+
+    cd "$CI_PRIMARY_REPOSITORY_PATH"
+
+    if [ -d .git ]; then
+        echo "✓ .git exists on this runner ($CI_XCODEBUILD_ACTION)"
+    else
+        echo "✗ .git NOT found (unexpected on $CI_XCODEBUILD_ACTION runner)"
+    fi
+
+    DEVICE_LINE=$(xcrun simctl list devices available | grep -m1 "iPhone 16 (")
+    DEVICE_ID=$(echo "$DEVICE_LINE" | grep -oE '[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}')
+
+    if [ -z "$DEVICE_ID" ]; then
+        echo "✗ iPhone 16 simulator not found. Skipping VRT record run."
+        VRT_RUN_STATUS=1
+        return 0
+    fi
+    echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
+
+    SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
+    CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
+
+    # fork PR は secret 環境変数（GH_APP_PRIVATE_KEY_BASE64等）が渡らずpush先も他人のリポジトリに
+    # なるため対象外。PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
+    # 記録処理より前に判定し、pushする場合は記録前に実HEADへcheckoutし直す（後述）。
+    PUSH_ENABLED=1
+    if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
+        echo "Skipping commit/push (not associated with a pull request)"
+        PUSH_ENABLED=0
+    elif [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
+        echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
+        PUSH_ENABLED=0
+    elif [ -z "$GITHUB_REPOSITORY" ]; then
+        echo "WARNING: GITHUB_REPOSITORY is not set. Skipping commit/push."
+        PUSH_ENABLED=0
+    elif ! GITHUB_TOKEN=$(resolve_github_app_token); then
+        echo "WARNING: Failed to obtain GitHub App installation token. Skipping commit/push."
+        PUSH_ENABLED=0
+    else
+        echo "✓ Obtained GitHub App installation access token"
+    fi
+
+    if [ "$PUSH_ENABLED" = "1" ]; then
+        REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+        # Xcode Cloud の PR ビルドは PR ブランチの実 HEAD ではなく、ターゲットブランチ（main）との
+        # マージプレビューコミットを checkout している（実測で確認済み）。記録処理より前に
+        # PR ブランチの実 HEAD へ checkout し直しておくことで、後続の `git commit` + `git push HEAD:...`
+        # が自然に「実HEADのみを親とする単一コミット」になり、mainを巻き込むマージコミットが
+        # PRブランチへ混入するのを防ぐ。
+        git fetch "$REMOTE_URL" "$CI_PULL_REQUEST_SOURCE_BRANCH"
+        git checkout -B "$CI_PULL_REQUEST_SOURCE_BRANCH" FETCH_HEAD
+        echo "✓ Checked out real HEAD of $CI_PULL_REQUEST_SOURCE_BRANCH (merge previewから離脱): $(git rev-parse HEAD)"
+    fi
+
+    # xctestplan の $(SNAPSHOT_TESTING_RECORD) は build-for-testing の時点で展開されて
+    # xctestrun に焼き込まれるため、test-without-building を呼ぶシェルで値を付けてもテストに届かない
+    # （ワークフローに変数が無いと空になってキーごと消え、既定の missing で動く）。
+    # TEST_RUNNER_ 接頭辞の変数は xcodebuild が接頭辞を外してテストプロセスへ渡すので、
+    # こちらで failed を指定し、ワークフロー側の設定値に依存させない。
+    echo "--- xcodebuild $1 (self-invoked on $CI_XCODEBUILD_ACTION runner) ---"
+    TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild "$@" \
+        -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+        -collect-test-diagnostics never \
+        || VRT_RUN_STATUS=$?
+
+    git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
+
+    echo "--- git status (short) for snapshot dirs ---"
+    git status --short -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
+
+    # git diff --stat は追跡済みファイルの変更しか見ないため、新規（missing→記録）ファイルを
+    # 見落とす。git add 後の --cached --quiet でステージ済み差分の有無を判定する。
+    if git diff --cached --quiet -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"; then
+        echo "No snapshot changes to commit."
+        return 0
+    fi
+
+    echo "--- git diff --cached --stat for snapshot dirs ---"
+    git diff --cached --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
+
+    if [ "$PUSH_ENABLED" != "1" ]; then
+        echo "Snapshot changes detected, but push is skipped (see above)."
+        return 0
+    fi
+
+    # Xcode CloudではGit設定がされていないため最低限の設定を行う
+    git config user.email "taichis844@gmail.com"
+    git config user.name "stotic-dev"
+
+    git commit -m "$(cat <<'COMMIT_MSG'
+chore: VRT参照スナップショットを自動更新 [ci skip]
+
+doc/adr/0005: Xcode Cloud上で記録した参照PNGの自動commitです。
+PRコメントのDangerによるbefore/after画像差分でレビューしてください。
+COMMIT_MSG
+)"
+
+    git push "$REMOTE_URL" "HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH"
+    echo "✓ Pushed snapshot updates to $CI_PULL_REQUEST_SOURCE_BRANCH"
+}
+
 case "$CI_WORKFLOW" in
     "Upload For AppStore")
         echo "=== Upload For AppStore workflow ==="
@@ -83,34 +210,9 @@ case "$CI_WORKFLOW" in
         # 同一ランナー内で完結するため、書き込みがそのまま git 差分として検出できる
         # （検証ステップ1・Build 212で確認済み）。差分があれば通常のcommitメッセージでcommitし、
         # PRブランチへpushする（検証ステップ2）。
-        #
-        # 注意: Xcode Cloud の PR ビルドは、PR ブランチの実 HEAD ではなくターゲットブランチ
-        # （main）との「マージプレビューコミット」を checkout している（実測で確認済み）。
-        # そのため、記録処理の前に PR ブランチの実 HEAD へ checkout し直してから記録・commit・push
-        # する。これにより push が main を巻き込んだマージコミットにならず、実HEADのみを親とする
-        # 単一コミットになる。
-        #
-        # doc/adr/0030: このpush自体が新たなVRTビルドを誘発して無限ループにならないよう、
-        # コミットメッセージに [ci skip] を付ける（Xcode Cloudが公式サポートするスキップ指示）。
-        # GitHub Actions側のスキップ指示は push / pull_request イベントにしか効かないため、
-        # Dangerワークフロー（ci_danger.yml）は pull_request_target に切り替えてスキップ対象から
-        # 外してある。これによりVRTビルドだけを止め、Dangerによるbefore/after画像差分の報告は
-        # このbot commitに対しても走る。
         if [ "$CI_XCODEBUILD_ACTION" != "build-for-testing" ]; then
             echo "Skipping VRT CLI re-run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
-        fi
-
-        echo "CI_PRIMARY_REPOSITORY_PATH=$CI_PRIMARY_REPOSITORY_PATH"
-        echo "SNAPSHOT_TESTING_RECORD=$SNAPSHOT_TESTING_RECORD"
-        echo "CI_XCODE_CLOUD=$CI_XCODE_CLOUD"
-
-        cd "$CI_PRIMARY_REPOSITORY_PATH"
-
-        if [ -d .git ]; then
-            echo "✓ .git exists on this runner (build-for-testing)"
-        else
-            echo "✗ .git NOT found (unexpected on build-for-testing runner)"
         fi
 
         TEST_PRODUCTS_PATH="/Volumes/workspace/TestProducts.xctestproducts"
@@ -120,101 +222,15 @@ case "$CI_WORKFLOW" in
         fi
         echo "✓ $TEST_PRODUCTS_PATH exists"
 
-        DEVICE_LINE=$(xcrun simctl list devices available | grep -m1 "iPhone 16 (")
-        DEVICE_ID=$(echo "$DEVICE_LINE" | grep -oE '[0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}')
-
-        if [ -z "$DEVICE_ID" ]; then
-            echo "✗ iPhone 16 simulator not found. Skipping VRT record run."
-            exit 0
-        fi
-        echo "Using simulator: $DEVICE_ID ($DEVICE_LINE)"
-
-        SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
-        CI_SCRIPTS_SNAPSHOT_DIR="ci_scripts/__Snapshots__"
-
-        # fork PR は secret 環境変数（GH_APP_PRIVATE_KEY_BASE64等）が渡らずpush先も他人のリポジトリに
-        # なるため対象外。PRに紐付かないビルド（例: mainへの直push起点）も対象外とする。
-        # 記録処理より前に判定し、pushする場合は記録前に実HEADへcheckoutし直す（後述）。
-        PUSH_ENABLED=1
-        if [ -z "$CI_PULL_REQUEST_NUMBER" ]; then
-            echo "Skipping commit/push (not associated with a pull request)"
-            PUSH_ENABLED=0
-        elif [ "$CI_PULL_REQUEST_SOURCE_REPO" != "$CI_PULL_REQUEST_TARGET_REPO" ]; then
-            echo "Skipping commit/push (fork PR: $CI_PULL_REQUEST_SOURCE_REPO != $CI_PULL_REQUEST_TARGET_REPO)"
-            PUSH_ENABLED=0
-        elif [ -z "$GITHUB_REPOSITORY" ]; then
-            echo "WARNING: GITHUB_REPOSITORY is not set. Skipping commit/push."
-            PUSH_ENABLED=0
-        elif ! GITHUB_TOKEN=$(resolve_github_app_token); then
-            echo "WARNING: Failed to obtain GitHub App installation token. Skipping commit/push."
-            PUSH_ENABLED=0
-        else
-            echo "✓ Obtained GitHub App installation access token"
-        fi
-
-        if [ "$PUSH_ENABLED" = "1" ]; then
-            REMOTE_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-            # Xcode Cloud の PR ビルドは PR ブランチの実 HEAD ではなく、ターゲットブランチ（main）との
-            # マージプレビューコミットを checkout している（実測で確認済み）。記録処理より前に
-            # PR ブランチの実 HEAD へ checkout し直しておくことで、後続の `git commit` + `git push HEAD:...`
-            # が自然に「実HEADのみを親とする単一コミット」になり、mainを巻き込むマージコミットが
-            # PRブランチへ混入するのを防ぐ。
-            git fetch "$REMOTE_URL" "$CI_PULL_REQUEST_SOURCE_BRANCH"
-            git checkout -B "$CI_PULL_REQUEST_SOURCE_BRANCH" FETCH_HEAD
-            echo "✓ Checked out real HEAD of $CI_PULL_REQUEST_SOURCE_BRANCH (merge previewから離脱): $(git rev-parse HEAD)"
-        fi
-
-        # xctestplan の $(SNAPSHOT_TESTING_RECORD) は build-for-testing の時点で展開されて
-        # xctestrun に焼き込まれるため、test-without-building を呼ぶシェルで値を付けてもテストに届かない
-        # （ワークフローに変数が無いと空になってキーごと消え、既定の missing で動く）。
-        # TEST_RUNNER_ 接頭辞の変数は xcodebuild が接頭辞を外してテストプロセスへ渡すので、
-        # こちらで failed を指定し、ワークフロー側の設定値に依存させない。
-        echo "--- xcodebuild test-without-building (self-invoked on build-for-testing runner) ---"
-        TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild test-without-building \
-            -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+        record_and_push_snapshots test-without-building \
             -testProductsPath "$TEST_PRODUCTS_PATH" \
             -testPlan hometeSnapshotTestsForCI \
-            -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult \
-            -collect-test-diagnostics never \
-            || echo "xcodebuild test-without-building exited non-zero (isRecordingSnapshotsが真ならXCTFailは抑止されるはずなので要調査)"
+            -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult
 
-        git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
-
-        echo "--- git status (short) for snapshot dirs ---"
-        git status --short -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
-
-        # git diff --stat は追跡済みファイルの変更しか見ないため、新規（missing→記録）ファイルを
-        # 見落とす。git add 後の --cached --quiet でステージ済み差分の有無を判定する。
-        if git diff --cached --quiet -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"; then
-            echo "No snapshot changes to commit."
-            echo "==========================="
-            exit 0
+        # 合否はXcode Cloud公式のテストアクションで判定するので、ここでは落とさない
+        if [ "$VRT_RUN_STATUS" -ne 0 ]; then
+            echo "xcodebuild test-without-building exited non-zero (isRecordingSnapshotsが真ならXCTFailは抑止されるはずなので要調査)"
         fi
-
-        echo "--- git diff --cached --stat for snapshot dirs ---"
-        git diff --cached --stat -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR" || true
-
-        if [ "$PUSH_ENABLED" != "1" ]; then
-            echo "Snapshot changes detected, but push is skipped (see above)."
-            echo "==========================="
-            exit 0
-        fi
-
-        # Xcode CloudではGit設定がされていないため最低限の設定を行う
-        git config user.email "taichis844@gmail.com"
-        git config user.name "stotic-dev"
-
-        git commit -m "$(cat <<'COMMIT_MSG'
-chore: VRT参照スナップショットを自動更新 [ci skip]
-
-doc/adr/0005: Xcode Cloud上で記録した参照PNGの自動commitです。
-PRコメントのDangerによるbefore/after画像差分でレビューしてください。
-COMMIT_MSG
-)"
-
-        git push "$REMOTE_URL" "HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH"
-        echo "✓ Pushed snapshot updates to $CI_PULL_REQUEST_SOURCE_BRANCH"
         echo "==========================="
         ;;
 
