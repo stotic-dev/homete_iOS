@@ -234,6 +234,38 @@ case "$CI_WORKFLOW" in
         echo "==========================="
         ;;
 
+    "VRT_light")
+        echo "=== VRT_light workflow ==="
+
+        # doc/adr/0052: VRTのテストアクションを使わず、Buildアクション（空のhometeVRTHostだけを
+        # ビルドする）の後でスナップショットテストを1回だけ流し、記録・commit・pushまで済ませる。
+        # VRTは記録用と判定用に同じテストを2回流し、別ランナーの準備と結果のアップロードも
+        # 待つので、その分を省く。テストのビルドもここで行う（Buildアクションは
+        # generic/platform=iOS 向けで、シミュレータ向けの成果物を使い回せないため）。
+        if [ "$CI_XCODEBUILD_ACTION" != "build" ]; then
+            echo "Skipping VRT_light run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
+            exit 0
+        fi
+
+        record_and_push_snapshots test \
+            -project hometeVRT.xcodeproj \
+            -scheme hometeSnapshotTests \
+            -testPlan hometeSnapshotTestsForCI \
+            -derivedDataPath "${CI_DERIVED_DATA_PATH:-/Volumes/workspace/DerivedData}" \
+            -resultBundlePath /Volumes/workspace/vrt-light-resultbundle.xcresult \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -skipPackagePluginValidation \
+            -skipMacroValidation
+
+        # 記録モードでは不一致でもXCTFailしないので、ここで落ちるのはビルドの失敗やクラッシュ。
+        # このワークフローにはテストアクションが無いので、ここで落とさないと誰も気付かない
+        if [ "$VRT_RUN_STATUS" -ne 0 ]; then
+            echo "✗ xcodebuild test exited with $VRT_RUN_STATUS"
+            exit 1
+        fi
+        echo "==========================="
+        ;;
+
     *)
         echo "Skipping ci_post_xcodebuild.sh (CI_WORKFLOW=$CI_WORKFLOW)"
         ;;
