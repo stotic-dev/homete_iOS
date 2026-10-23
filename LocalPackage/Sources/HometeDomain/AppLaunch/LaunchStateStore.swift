@@ -26,6 +26,12 @@ import Observation
 public final class LaunchStateStore {
 
     public private(set) var launchState: LaunchState
+    /// サインイン後にアカウントを取得できず、ログイン画面へ戻したときのエラー
+    ///
+    /// ログイン画面から入り直して失敗すると`launchState`は`notLoggedIn`のまま変わらず、ログイン画面も
+    /// 作り直されない。画面の切り替えでローディングを畳めないため、失敗はこの値で別に伝える。
+    /// 同じ失敗が続いても変化として届くよう、受け取った側が`clearAccountLoadFailure()`で消す
+    public private(set) var accountLoadFailure: DomainError?
 
     /// 未着手の世代。認証が切り替わったときは捨てて、最新の認証だけを積み直す
     @ObservationIgnored private var pendingKinds: [SyncKind] = []
@@ -38,6 +44,8 @@ public final class LaunchStateStore {
     /// 最後に反映した認証が匿名かどうか
     /// - Note: アカウント情報の変化は認証を伴わずに届くため、そのときの判定のために退避しておく
     @ObservationIgnored private var isAnonymous = false
+    /// 最後に反映した認証のユーザーID。サインアウトを挟まずにユーザーが切り替わったことを見分けるために使う
+    @ObservationIgnored private var signedInUserId: String?
 
     private let accountStore: AccountStore
     private let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
@@ -90,6 +98,11 @@ public final class LaunchStateStore {
     ///         届かない遷移のために用意している
     public func update(_ launchState: LaunchState) {
         self.launchState = launchState
+    }
+
+    /// アカウントの取得失敗を受け取ったことを伝える
+    public func clearAccountLoadFailure() {
+        accountLoadFailure = nil
     }
 
     /// 積まれた反映処理がすべて終わるのを待つ
@@ -172,10 +185,19 @@ private extension LaunchStateStore {
 
     func applyAuthChange(_ auth: AccountAuthInfo) async {
         guard let authResult = auth.result else {
+            signedInUserId = nil
             launchState = .notLoggedIn
             await authSubscriptionSyncUseCase.syncOnSignedOut()
             return
         }
+
+        // 匿名のアカウントから既存のアカウントへ切り替えると、サインアウトを挟まずにユーザーIDだけが変わって届く。
+        // 前のアカウントの購読が残ると、新しいアカウントの変化を取りこぼし、古いアカウントの値で上書きされるため、先に片付ける
+        if let signedInUserId, signedInUserId != authResult.id {
+            await authSubscriptionSyncUseCase.syncOnUserSwitched()
+            guard !Task.isCancelled else { return }
+        }
+        signedInUserId = authResult.id
 
         let loadedAccount: Account?
         do {
@@ -227,6 +249,8 @@ private extension LaunchStateStore {
     ///         サインアウトの通知は後から届くが、画面と後片付けはここで先に反映しておく
     func signOutOnAccountLoadFailure(_ error: any Error) async {
         print("failed to load account, signing out: \(error)")
+        accountLoadFailure = .make(error)
+        signedInUserId = nil
         launchState = .notLoggedIn
         await authSubscriptionSyncUseCase.syncOnSignedOut()
         do {

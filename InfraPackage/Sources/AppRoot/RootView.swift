@@ -52,7 +52,10 @@ public struct RootView: View {
                 case .notLoggedIn:
                     // アプリの価値が伝わる前にログインで離脱しないよう、先に説明画面を出す。
                     // すでにアカウントを持っている人は、説明画面からApple IDでのログインへ進む
-                    WelcomeScreen()
+                    WelcomeScreen(
+                        accountLoadFailure: launchStateStore.accountLoadFailure,
+                        onReceiveAccountLoadFailure: { launchStateStore.clearAccountLoadFailure() }
+                    )
                 }
             }
         }

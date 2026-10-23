@@ -21,6 +21,17 @@
         }
       }
     },
+    "%lldpt" : {
+      "comment" : "見本のメンバーがもらったポイント",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
+    },
     "10文字以内で入力してください" : {
       "localizations" : {
         "en" : {
@@ -103,6 +114,16 @@
         }
       }
     },
+    "ありがとう、助かったよ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks, that really helped!"
+          }
+        }
+      }
+    },
     "ありがとうを送り合えます" : {
       "localizations" : {
         "en" : {
@@ -153,6 +174,16 @@
         }
       }
     },
+    "たろう" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taro"
+          }
+        }
+      }
+    },
     "はじめまして！" : {
       "localizations" : {
         "en" : {
@@ -179,6 +210,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "By getting started, you agree to the [Terms of Use](https://stotic-dev.github.io/homete_iOS/terms.html) and [Privacy Policy](https://stotic-dev.github.io/homete_iOS/privacy.html)."
+          }
+        }
+      }
+    },
+    "はなこ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanako"
+          }
+        }
+      }
+    },
+    "はなこさんが「お風呂掃除」を終えました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanako finished “Clean Bathroom”"
           }
         }
       }
@@ -363,6 +414,26 @@
         }
       }
     },
+    "今日の家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today's Chores"
+          }
+        }
+      }
+    },
+    "今週の分担" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Week's Share"
+          }
+        }
+      }
+    },
     "例：たろう" : {
       "localizations" : {
         "en" : {
@@ -465,6 +536,26 @@
         }
       }
     },
+    "掃除機がけ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacuum"
+          }
+        }
+      }
+    },
+    "洗濯" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laundry"
+          }
+        }
+      }
+    },
     "登録" : {
       "localizations" : {
         "en" : {
@@ -531,6 +622,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your partner can join from the link, even if you're apart."
+          }
+        }
+      }
+    },
+    "食器洗い" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wash Dishes"
           }
         }
       }

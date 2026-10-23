@@ -23,7 +23,18 @@ public struct WelcomeScreen: View {
     @State var selectedPage: WelcomePage = .record
     @State var invitationStore: WelcomeInvitationStore?
 
-    public init() {}
+    /// サインインの後にアカウントを取得できなかったときのエラー。受け取ったら`onReceiveAccountLoadFailure`で伝える
+    let accountLoadFailure: DomainError?
+    /// `accountLoadFailure`を表示に反映したことを伝える
+    let onReceiveAccountLoadFailure: () -> Void
+
+    public init(
+        accountLoadFailure: DomainError? = nil,
+        onReceiveAccountLoadFailure: @escaping () -> Void = {}
+    ) {
+        self.accountLoadFailure = accountLoadFailure
+        self.onReceiveAccountLoadFailure = onReceiveAccountLoadFailure
+    }
 
     public var body: some View {
         NavigationStack(path: $navigationPath.path) {
@@ -40,6 +51,8 @@ public struct WelcomeScreen: View {
             .navigationDestination(for: WelcomeRoute.self) { route in
                 navigationHandler(route)
             }
+            // NavigationStackに付けると、ログイン画面から戻ったときに送られない。戻るたびに送るよう、1枚目の画面に付ける
+            .trackScreenView(.welcome)
         }
         // ログイン前でも招待リンクは開けるため、表示中に開かれたら読み込み直す
         .task(id: pendingInvitationStore.pendingToken) {
@@ -47,7 +60,10 @@ public struct WelcomeScreen: View {
         }
         .fullScreenLoadingIndicator(loadingState)
         .commonError(content: $commonErrorContent)
-        .trackScreenView(.welcome)
+        // 起動時にアカウントを取得できず説明画面になった場合も、理由が分かるよう表示時点の値を拾う
+        .onChange(of: accountLoadFailure, initial: true) {
+            onChangeAccountLoadFailure()
+        }
     }
 
 }
@@ -60,8 +76,20 @@ private extension WelcomeScreen {
     func navigationHandler(_ route: WelcomeRoute) -> some View {
         switch route {
         case .login:
-            LoginView()
+            LoginView(
+                accountLoadFailure: accountLoadFailure,
+                onReceiveAccountLoadFailure: onReceiveAccountLoadFailure
+            )
         }
+    }
+
+    /// 「はじめる」の後にアカウントを取得できなかったら、ローディングを畳んでエラーを出す
+    /// - Note: ログイン画面を開いているときは、Apple IDでのログインの失敗なので`LoginView`に任せる
+    func onChangeAccountLoadFailure() {
+        guard let accountLoadFailure, navigationPath.path.isEmpty else { return }
+        loadingState.isLoading = false
+        commonErrorContent = .init(error: accountLoadFailure)
+        onReceiveAccountLoadFailure()
     }
 
     func loadInvitation() async {

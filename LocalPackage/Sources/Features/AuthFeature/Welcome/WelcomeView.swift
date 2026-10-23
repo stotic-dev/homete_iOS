@@ -48,7 +48,7 @@ private extension WelcomeView {
                 invitationBanner
             }
             Spacer()
-            HometteView(hometteExpression(page), size: .large)
+            WelcomeIllustration(page: page)
             pageTitle(page)
                 .font(with: .headLineL)
                 .multilineTextAlignment(.center)
@@ -142,14 +142,6 @@ private extension WelcomeView {
             .tint(.textAccent)
         }
         .padding(.horizontal, .space16)
-    }
-
-    func hometteExpression(_ page: WelcomePage) -> HometteExpression {
-        switch page {
-        case .record: .wave
-        case .share: .point
-        case .thanks: .holdHeart
-        }
     }
 
     @ViewBuilder
