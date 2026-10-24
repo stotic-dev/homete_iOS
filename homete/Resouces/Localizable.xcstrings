@@ -55,6 +55,54 @@
         }
       }
     },
+    "${title}を登録する" : {
+      "comment" : "App Intentの引数のまとめ（ショートカットAppに出る）。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add ${title}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${title}を登録する"
+          }
+        }
+      }
+    },
+    "${title}を記録する" : {
+      "comment" : "App Intentの引数のまとめ（ショートカットAppに出る）。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log ${title}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${title}を記録する"
+          }
+        }
+      }
+    },
+    "Add Chore" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事を登録"
+          }
+        }
+      }
+    },
     "Analytics" : {
       "comment" : "App Shortcutsの短い名前",
       "extractionState" : "manual",
@@ -86,6 +134,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Homete"
+          }
+        }
+      }
+    },
+    "Log Chore" : {
+      "comment" : "App Shortcutsの短い名前",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事を記録"
           }
         }
       }
@@ -240,6 +300,42 @@
         }
       }
     },
+    "これからやる家事の名前を伝えると、アプリを開かずに今日の家事に追加します" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adds a chore you're about to do to today's list by name, without opening the app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これからやる家事の名前を伝えると、アプリを開かずに今日の家事に追加します"
+          }
+        }
+      }
+    },
+    "これからやる家事を登録する" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a Chore to Do"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これからやる家事を登録する"
+          }
+        }
+      }
+    },
     "サービスを利用するには、Appleアカウントでサインインする必要があります。" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -247,6 +343,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "サービスを利用するには、Appleアカウントでサインインする必要があります。"
+          }
+        }
+      }
+    },
+    "どの家事をしましたか？" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore did you do?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの家事をしましたか？"
           }
         }
       }
@@ -265,6 +379,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "どの家事を完了にしますか？"
+          }
+        }
+      }
+    },
+    "どの家事を登録しますか？" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to add?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの家事を登録しますか？"
           }
         }
       }
@@ -301,6 +433,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ひとこと"
+          }
+        }
+      }
+    },
+    "メモ" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモ"
+          }
+        }
+      }
+    },
+    "やった家事の名前を伝えると、アプリを開かずに記録します" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logs a chore you've done by name, without opening the app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やった家事の名前を伝えると、アプリを開かずに記録します"
+          }
+        }
+      }
+    },
+    "やった家事を記録する" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log a Chore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やった家事を記録する"
           }
         }
       }
@@ -366,6 +552,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "家事"
+          }
+        }
+      }
+    },
+    "家事の候補" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested Chore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事の候補"
+          }
+        }
+      }
+    },
+    "家事の名前" : {
+      "comment" : "App Intent（Siri・ショートカットApp）に出す文言。HometeAppIntentsパッケージで定義",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "家事の名前"
           }
         }
       }

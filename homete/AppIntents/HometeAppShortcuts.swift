@@ -33,6 +33,24 @@ struct HometeAppShortcuts: AppShortcutsProvider {
             systemImageName: "checkmark.circle"
         )
         AppShortcut(
+            intent: RecordHouseworkIntent(),
+            phrases: [
+                "Log a chore in \(.applicationName)",
+                "Record a chore in \(.applicationName)",
+            ],
+            shortTitle: "Log Chore",
+            systemImageName: "pencil.circle"
+        )
+        AppShortcut(
+            intent: RegisterHouseworkIntent(),
+            phrases: [
+                "Add a chore in \(.applicationName)",
+                "Add a chore to do in \(.applicationName)",
+            ],
+            shortTitle: "Add Chore",
+            systemImageName: "plus.circle"
+        )
+        AppShortcut(
             intent: SendThanksIntent(),
             phrases: [
                 "Say thanks in \(.applicationName)",

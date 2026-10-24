@@ -21,6 +21,8 @@ struct HouseworkIntentService {
     let calendar: Calendar
     /// 書き込みがサーバーに届くのを待つ時間。過ぎたら、オンラインになったら反映されることを伝えて返す
     var writeTimeout: Duration = .seconds(10)
+    /// 新しく作る家事のID
+    var idGenerator: @Sendable () -> String = { UUID().uuidString }
 
     /// 今日の未完了の家事の名前（同じ名前は1つにまとめ、ダッシュボードの未完了の家事と同じ順に並べる）
     func incompleteTitles(now: Date) async throws -> [String] {
@@ -45,29 +47,13 @@ struct HouseworkIntentService {
             return isCompleted ? .alreadyCompleted : .notFound
         }
 
-        let point = target.originalItem.point
-        let item = target.originalItem
-        let isRegistered = target.isRegistered
-        let isDelivered = try await awaitWrite { onWritten in
-            try await commandUseCase.complete(
-                current: item,
-                now: now,
-                reporter: session.account,
-                executors: [.solo(userId: session.account.id, point: point)],
-                effort: .normal,
-                executorNames: [session.account.userName],
-                comment: "",
-                cohabitantId: session.cohabitantId,
-                isRegistered: isRegistered,
-                step: .appIntent,
-                delivery: .awaiting,
-                onWritten: onWritten
-            )
-        }
-        // アプリを開いていないと家事の購読でふりかえり通知を予約できないため、ここで予約する。
-        // 書き込みが端末に保存されただけでも、完了にしたことに変わりはないので予約する
-        await dailyCompletionReminderUseCase.syncToday(hasCompletedHousework: true, now: now, calendar: calendar)
-        return isDelivered ? .completed(point: point) : .pendingSync
+        let isDelivered = try await complete(
+            target.originalItem,
+            isRegistered: target.isRegistered,
+            session: session,
+            now: now
+        )
+        return isDelivered ? .completed(point: target.originalItem.point) : .pendingSync
     }
 
     /// ありがとうを伝えられる家事（今日と昨日に同居人が終えた家事のうち、まだ自分が送っていないもの）
@@ -105,6 +91,102 @@ struct HouseworkIntentService {
         }
         guard isDelivered else { return .pendingSync(houseworkTitle: candidate.title) }
         return recordedResult.withLock { $0 } ? .sent(houseworkTitle: candidate.title) : .notFound
+    }
+
+    /// グループのいつもの家事（カテゴリ内の並び順）
+    func frequentItems() async throws -> [FrequentHouseworkItem] {
+        let session = try await sessionUseCase.resolve(requiresLatestVersion: false)
+        return await sessionUseCase.fetchFrequentHousework(session: session).orderedItems
+    }
+
+    /// 声で伝えた家事の名前から、今日の家事と、似ているいつもの家事を探す
+    ///
+    /// 記録・登録のIntentは、この結果から確認や提案の聞き返しを決める。
+    /// - Parameters:
+    ///   - title: 話しかけた家事の名前（「洗濯干した」など）
+    ///   - note: 登録で家事のメモに入れる補足。聞き返す前に、書ける文字数を超えていないかを確かめる
+    func voicePlan(title: String, note: String?, now: Date) async throws -> VoiceHouseworkPlan {
+        let session = try await sessionUseCase.resolve(requiresLatestVersion: true)
+        async let summary = todaySummary(session: session, now: now)
+        async let frequentContext = sessionUseCase.fetchFrequentHousework(session: session)
+        let normalizedTitle = FrequentHouseworkContext.normalize(title)
+        let todaySummary = try await summary
+        return await .init(
+            title: normalizedTitle,
+            todayMatch: .init(summary: todaySummary, title: normalizedTitle),
+            todaySuggestions: similarIncompleteTitles(todaySummary, title: normalizedTitle),
+            suggestions: frequentContext.similarItems(to: normalizedTitle),
+            isNoteTooLong: !isWithinMemoLimit(note: trimmed(note), session: session)
+        )
+    }
+
+    /// やった家事を記録する
+    ///
+    /// 今日の家事に同じ名前の未完了の家事があればそれを完了にし、無ければ新しく作って完了にする。
+    /// 担当者は自分だけ、頑張り度は「ふつう」にする（`completeHousework`と同じ）。
+    /// 新しく作る家事は、いつもの家事ならそのポイントとメモを、名前だけなら登録画面と同じ初期値のポイントを使う。
+    func recordHousework(_ target: VoiceHouseworkTarget, now: Date) async throws -> RecordHouseworkOutcome {
+        let session = try await sessionUseCase.resolve(requiresLatestVersion: true)
+        async let summary = todaySummary(session: session, now: now)
+        async let resolved = resolve(target, session: session)
+        let (todaySummary, resolvedTarget) = try await (summary, resolved)
+        switch TodayHouseworkMatch(summary: todaySummary, title: resolvedTarget.title) {
+        case let .incomplete(item):
+            let isDelivered = try await complete(
+                item.originalItem,
+                isRegistered: item.isRegistered,
+                session: session,
+                now: now
+            )
+            return isDelivered
+                ? .completed(title: item.title, point: item.originalItem.point)
+                : .pendingSync(title: item.title)
+
+        case let .completed(title):
+            return .alreadyCompleted(title: title)
+
+        case nil:
+            let item = makeNewItem(resolvedTarget, session: session, now: now, note: "")
+            let isDelivered = try await complete(item, isRegistered: false, session: session, now: now)
+            return isDelivered ? .completed(title: item.title, point: item.point) : .pendingSync(title: item.title)
+        }
+    }
+
+    /// これからやる家事を、今日の家事に登録する
+    ///
+    /// 今日の家事に同じ名前の未完了の家事があれば、重ねて登録しない。完了した家事なら、もう一度やるものとして登録する。
+    /// 登録したことは同居人へ通知しない（家事の追加画面と同じ）。
+    /// - Parameter note: 家事のメモに入れる、話しかけた内容の補足（「牛乳と卵」など）。いつもの家事のメモがあれば、その後ろに足す
+    func registerHousework(
+        _ target: VoiceHouseworkTarget,
+        note: String?,
+        now: Date
+    ) async throws -> RegisterHouseworkOutcome {
+        let session = try await sessionUseCase.resolve(requiresLatestVersion: true)
+        async let summary = todaySummary(session: session, now: now)
+        async let resolved = resolve(target, session: session)
+        let (todaySummary, resolvedTarget) = try await (summary, resolved)
+        if case let .incomplete(item) = TodayHouseworkMatch(summary: todaySummary, title: resolvedTarget.title) {
+            return .alreadyRegistered(title: item.title)
+        }
+
+        let trimmedNote = trimmed(note)
+        guard isWithinMemoLimit(note: trimmedNote, session: session) else {
+            return .memoLimitExceeded
+        }
+        let item = makeNewItem(resolvedTarget, session: session, now: now, note: trimmedNote)
+        let source: HouseworkRegisterSource = resolvedTarget.isFrequent ? .frequent : .manual
+        let isDelivered = try await awaitWrite { onWritten in
+            try await commandUseCase.register(
+                newItems: [.init(item: item, source: source)],
+                createdAt: now,
+                cohabitantId: session.cohabitantId,
+                step: .appIntent,
+                memoLimitPolicy: HouseworkMemoLimitPolicy(isPremium: session.account.isPremium),
+                onWritten: onWritten
+            )
+        }
+        return isDelivered ? .registered(title: item.title) : .pendingSync(title: item.title)
     }
 
     /// 今月のメンバーごとのがんばり
@@ -173,6 +255,36 @@ struct ThanksCandidate: Equatable {
 }
 
 private extension HouseworkIntentService {
+
+    /// 家事を自分だけを担当者にして「ふつう」で完了にし、ふりかえり通知の予約にも反映する
+    /// - Returns: 書き込みがサーバーに届いたら`true`
+    func complete(
+        _ item: HouseworkItem,
+        isRegistered: Bool,
+        session: AppIntentSession,
+        now: Date
+    ) async throws -> Bool {
+        let isDelivered = try await awaitWrite { onWritten in
+            try await commandUseCase.complete(
+                current: item,
+                now: now,
+                reporter: session.account,
+                executors: [.solo(userId: session.account.id, point: item.point)],
+                effort: .normal,
+                executorNames: [session.account.userName],
+                comment: "",
+                cohabitantId: session.cohabitantId,
+                isRegistered: isRegistered,
+                step: .appIntent,
+                delivery: .awaiting,
+                onWritten: onWritten
+            )
+        }
+        // アプリを開いていないと家事の購読でふりかえり通知を予約できないため、ここで予約する。
+        // 書き込みが端末に保存されただけでも、完了にしたことに変わりはないので予約する
+        await dailyCompletionReminderUseCase.syncToday(hasCompletedHousework: true, now: now, calendar: calendar)
+        return isDelivered
+    }
 
     /// 書き込みを待つ
     ///

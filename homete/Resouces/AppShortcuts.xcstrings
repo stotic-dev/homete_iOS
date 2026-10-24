@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Add a chore in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Add a chore in ${applicationName}",
+              "Add a chore to do in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で家事を登録",
+              "${applicationName}にこれからやる家事を登録",
+              "${applicationName}に家事を追加"
+            ]
+          }
+        }
+      }
+    },
     "Complete ${housework} in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
@@ -23,6 +47,30 @@
               "${applicationName}で${housework}を終えた",
               "${applicationName}で家事を完了",
               "${applicationName}で家事を完了にする"
+            ]
+          }
+        }
+      }
+    },
+    "Log a chore in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Log a chore in ${applicationName}",
+              "Record a chore in ${applicationName}"
+            ]
+          }
+        },
+        "ja" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "${applicationName}で家事を記録",
+              "${applicationName}でやった家事を記録",
+              "${applicationName}に家事を記録して"
             ]
           }
         }
