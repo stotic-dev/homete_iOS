@@ -114,7 +114,7 @@ struct HouseworkIntentService {
         let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? today
         let elapsedDays = calendar.dateComponents([.day], from: startOfMonth, to: today).day ?? 0
         let days = (0 ... elapsedDays).compactMap { calendar.date(byAdding: .day, value: $0, to: startOfMonth) }
-        async let stored = sessionUseCase.fetchHousework(session: session, days: days, calendar: calendar)
+        async let stored = sessionUseCase.fetchHousework(session: session, days: days)
         async let members = sessionUseCase.fetchMembers(session: session)
         return try await .make(
             items: stored.value.flatMap(\.items),
@@ -215,7 +215,7 @@ private extension HouseworkIntentService {
 
     func todaySummary(session: AppIntentSession, now: Date) async throws -> TodayHouseworkSummary {
         let today = calendar.startOfDay(for: now)
-        async let stored = sessionUseCase.fetchHousework(session: session, days: [today], calendar: calendar)
+        async let stored = sessionUseCase.fetchHousework(session: session, days: [today])
         async let templateContext = sessionUseCase.fetchTemplateContext(session: session)
         return try await .make(
             storedAllItems: stored,
@@ -231,7 +231,7 @@ private extension HouseworkIntentService {
     func thanksCandidates(session: AppIntentSession, now: Date) async throws -> [ThanksCandidate] {
         let today = calendar.startOfDay(for: now)
         let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        async let stored = sessionUseCase.fetchHousework(session: session, days: [yesterday, today], calendar: calendar)
+        async let stored = sessionUseCase.fetchHousework(session: session, days: [yesterday, today])
         async let members = sessionUseCase.fetchMembers(session: session)
         let (items, memberList) = try await (stored, members)
 
