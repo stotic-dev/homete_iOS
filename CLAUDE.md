@@ -293,6 +293,11 @@ launching → notLoggedIn → Sign In with Apple
    - mergeで取り込み、force pushはしない。コンフリクトしたら失敗するので、ローカルで解消してpushする
    - GITHUB_TOKENのpushでは他のワークフローが発火しないため、`release-snapshot-diff.yml`と、メタデータに変更が入ったときの`sync-metadata.yml`をここから起動する。Xcode Cloudは通常どおり起動する
 
+10. **`sync-package-resolved.yml`** - xcodeproj側の`Package.resolved`をInfraPackage・LocalPackageの解決結果にそろえる
+   - xcodeprojでビルドすると使われるのはルート（xcodeproj）の`Package.resolved`だけなので、dependabotがパッケージ側だけ更新してもアプリの版は上がらない
+   - dependabotのPRでは`pull_request_target`で`scripts/sync-package-resolved.py`を流し、そろえるコミットを積む
+   - 手で依存を上げたら`python3 scripts/sync-package-resolved.py`でそろえる。経緯は[ADR-0053](doc/adr/0053-sync-xcodeproj-package-resolved-on-dependabot-prs.md)
+
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 
 | エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
@@ -309,11 +314,16 @@ launching → notLoggedIn → Sign In with Apple
 1. **`VRT`** - スナップショットテスト
    - `ci_post_clone.sh`: SPMプラグイン検証スキップ + スナップショット参照ファイル確認
    - プロジェクトは `hometeVRT.xcodeproj`、スキームは `hometeSnapshotTests`。`homete.xcodeproj` だとアプリが参照するInfraPackageの依存まで解決される
+   - テストプラン `hometeSnapshotTestsForCI` で失敗時の診断収集を止めている（`diagnosticCollectionPolicy` は `"Never"`。`"never"` だとテストプランが読めない）
 
-2. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
+2. **`VRT_light`** - スナップショットテストを1回だけ流す版（[ADR-0052](doc/adr/0052-vrt-light-workflow-with-build-action.md)）
+   - Buildアクション（スキーム `hometeVRTHost`、空のホストアプリだけをビルド）のあと、`ci_post_xcodebuild.sh` が `xcodebuild test` を記録モードで流し、変わった参照PNGをcommit・pushする
+   - テスト結果はXcode Cloudの画面に出ず、`ci_post_xcodebuild.log` で見る。見た目の差分では失敗せず、xcodebuildが落ちたときだけ失敗する
+
+3. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info-dev.plist` をデコード配置
 
-3. **`Upload For AppStore`** - 本番App Storeアップロード
+4. **`Upload For AppStore`** - 本番App Storeアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info.plist` をデコード配置
    - `ci_pre_xcodebuild.sh`: `$CI_BUILD_NUMBER` を `agvtool` で全Targetに反映
    - `ci_post_xcodebuild.sh`: archive成功時に `v{version}` の git タグを作成（`$GITHUB_TOKEN` 設定時のみpush）

@@ -1,0 +1,63 @@
+name: sync-package-resolved
+
+# doc/adr/0053: xcodeprojでビルドすると使われるのはルート（xcodeproj）のPackage.resolvedだけで、
+# dependabotが更新するInfraPackage・LocalPackage側のPackage.resolvedはアプリに反映されない。
+# dependabotのPRには、xcodeproj側をそろえるコミットをこのワークフローが積む。
+on:
+  pull_request_target:
+    paths:
+      - "InfraPackage/Package.resolved"
+      - "LocalPackage/Package.resolved"
+
+concurrency:
+  group: sync-package-resolved-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    # pull_request_target は書き込み権限を持つので、同じリポジトリのdependabotのPRに限る。
+    # スクリプトはベースブランチ（main）のものを使い、PRのチェックアウトはデータとして読むだけにする
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout base
+        uses: actions/checkout@v4.2.2
+        with:
+          path: base
+          persist-credentials: false
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4.2.2
+        with:
+          # pushするのでSHAではなくブランチを取る
+          ref: ${{ github.event.pull_request.head.ref }}
+          path: head
+
+      - name: Sync Package.resolved
+        run: python3 -I base/scripts/sync-package-resolved.py --root head
+
+      # GITHUB_TOKENのpushでは他のワークフローは起動しない。xcodeproj側のPackage.resolvedを対象にする
+      # GitHub ActionsのCIは無いので困らない。Xcode Cloudは通常どおり起動する
+      - name: Commit and push
+        working-directory: head
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet; then
+            echo "xcodeproj側のPackage.resolvedはそろっている"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved \
+            hometeVRT.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+          git commit -m "chore: アプリ・VRTのPackage.resolvedをパッケージ側の解決結果にそろえる"
+          git push origin "HEAD:${HEAD_REF}"
