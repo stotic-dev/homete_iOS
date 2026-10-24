@@ -4,8 +4,34 @@
     "" : {
 
     },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
     "%lld回" : {
       "shouldTranslate" : false
+    },
+    "%lld文字以内で入力してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please keep it within %lld characters"
+          }
+        }
+      }
     },
     "1日1回の制限を外す" : {
       "shouldTranslate" : false
@@ -65,6 +91,56 @@
         }
       }
     },
+    "お問い合わせ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact Us"
+          }
+        }
+      }
+    },
+    "お問い合わせは24時間に5件まで送れます。時間をおいて、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can send up to 5 inquiries every 24 hours. Please try again later."
+          }
+        }
+      }
+    },
+    "お問い合わせはまだありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No inquiries yet"
+          }
+        }
+      }
+    },
+    "このお問い合わせは見つかりませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This inquiry couldn’t be found"
+          }
+        }
+      }
+    },
+    "このお問い合わせは見つかりませんでした。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This inquiry couldn’t be found."
+          }
+        }
+      }
+    },
     "このアプリについて" : {
       "localizations" : {
         "en" : {
@@ -95,6 +171,36 @@
         }
       }
     },
+    "ご要望" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature Request"
+          }
+        }
+      }
+    },
+    "その他" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        }
+      }
+    },
+    "どんなことについてですか" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What’s It About?"
+          }
+        }
+      }
+    },
     "なし" : {
       "shouldTranslate" : false
     },
@@ -120,6 +226,16 @@
     },
     "まだ記録がありません。ホーム画面を開くと記録が始まります。" : {
       "shouldTranslate" : false
+    },
+    "アカウント・お支払い" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account & Billing"
+          }
+        }
+      }
     },
     "アカウント登録からPaywallまでを表示" : {
       "shouldTranslate" : false
@@ -205,6 +321,16 @@
         }
       }
     },
+    "サポート" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Support"
+          }
+        }
+      }
+    },
     "サーバー側で自分のログイン情報を失効させます。STG環境限定で、本番では動きません。\n\n「アプリはこのまま」を選んだ後にアプリを終了して起動し直すと、起動直後に自動サインアウトされる状況を再現できます。「すぐにトークンを取り直す」を選ぶと、その場でログイン画面に戻ります。\n\nどちらの場合も、もう一度ログインすればそのまま使えるようになります。" : {
       "shouldTranslate" : false
     },
@@ -266,6 +392,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subscribe to Premium"
+          }
+        }
+      }
+    },
+    "メッセージは1時間に30件まで送れます。時間をおいて、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can send up to 30 messages per hour. Please try again later."
+          }
+        }
+      }
+    },
+    "メッセージを入力" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
           }
         }
       }
@@ -333,6 +479,26 @@
         }
       }
     },
+    "不具合" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bug Report"
+          }
+        }
+      }
+    },
+    "不具合やご要望、使い方で困ったことがあれば、こちらから運営に送れます。返信もこの画面で確認できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you run into a bug, have a request, or aren’t sure how something works, you can let us know here. Our replies will show up on this screen too."
+          }
+        }
+      }
+    },
     "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。" : {
       "localizations" : {
         "en" : {
@@ -343,14 +509,54 @@
         }
       }
     },
+    "以前のメッセージを表示" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Earlier Messages"
+          }
+        }
+      }
+    },
     "使い始めた日" : {
       "shouldTranslate" : false
     },
     "使い始めて2週間後のありがとうで出せる状態にする" : {
       "shouldTranslate" : false
     },
+    "使い方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to Use"
+          }
+        }
+      }
+    },
     "使ったきっかけ" : {
       "shouldTranslate" : false
+    },
+    "入力した内容を破棄しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard what you’ve written?"
+          }
+        }
+      }
+    },
+    "内容" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        }
+      }
     },
     "利用規約" : {
       "localizations" : {
@@ -365,8 +571,48 @@
     "受け取ったありがとう" : {
       "shouldTranslate" : false
     },
+    "受付日時: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received: %@"
+          }
+        }
+      }
+    },
+    "受付済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Received"
+          }
+        }
+      }
+    },
     "同居人の登録" : {
       "shouldTranslate" : false
+    },
+    "問い合わせる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact Us"
+          }
+        }
+      }
+    },
+    "困っていることや、そのときの操作をできるだけ詳しく書いてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell us what’s wrong and what you were doing at the time, in as much detail as you can"
+          }
+        }
+      }
     },
     "失効させて、すぐにトークンを取り直す" : {
       "shouldTranslate" : false
@@ -410,12 +656,52 @@
     "家事登録シートと家事テンプレート画面を次に開いたときに、チュートリアルがもう一度表示されます。" : {
       "shouldTranslate" : false
     },
+    "対応中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Progress"
+          }
+        }
+      }
+    },
+    "対応済み" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolved"
+          }
+        }
+      }
+    },
     "復元できる購入が見つかりませんでした" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No purchases to restore"
+          }
+        }
+      }
+    },
+    "新しく問い合わせる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Inquiry"
+          }
+        }
+      }
+    },
+    "時間をおいて、もう一度お試しください。入力した内容はそのまま残っています。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please try again later. What you wrote has been kept."
           }
         }
       }
@@ -439,6 +725,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Expires: %@"
+          }
+        }
+      }
+    },
+    "未読" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unread"
+          }
+        }
+      }
+    },
+    "未読%lld件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld unread"
+          }
+        }
+      }
+    },
+    "本文は2,000文字以内で入力してください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please keep your message within 2,000 characters."
           }
         }
       }
@@ -515,6 +831,16 @@
     "画面ごとのチュートリアルの記録を消す" : {
       "shouldTranslate" : false
     },
+    "破棄する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        }
+      }
+    },
     "自動更新" : {
       "localizations" : {
         "en" : {
@@ -573,6 +899,16 @@
     },
     "設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。" : {
       "shouldTranslate" : false
+    },
+    "認証に失敗しました。再度サインインをお試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication failed. Please sign in again."
+          }
+        }
+      }
     },
     "課金" : {
       "shouldTranslate" : false
@@ -669,12 +1005,93 @@
         }
       }
     },
+    "送信" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send"
+          }
+        }
+      }
+    },
+    "送信すると、アプリとOSのバージョン、端末の機種もあわせて運営に届きます。返信は、お問い合わせの一覧から確認できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your app version, OS version, and device model will be sent along with your message. You can check our replies in your list of inquiries."
+          }
+        }
+      }
+    },
+    "送信できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t Send"
+          }
+        }
+      }
+    },
+    "通信状態をご確認のうえ、もう一度お試しください。入力した内容はそのまま残っています。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try again. What you wrote has been kept."
+          }
+        }
+      }
+    },
     "通知設定" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "運営" : {
+      "comment" : "問い合わせの返信の送り手として出す、アプリの運営者",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "homeau Team"
+          }
+        }
+      }
+    },
+    "運営からの返信をお待ちください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for a reply from us"
+          }
+        }
+      }
+    },
+    "運営から新しい返信があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have a new reply"
+          }
+        }
+      }
+    },
+    "運営から返信がありました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’ve replied"
           }
         }
       }

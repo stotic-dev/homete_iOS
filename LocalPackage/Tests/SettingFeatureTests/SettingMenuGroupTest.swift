@@ -18,6 +18,7 @@ struct SettingMenuGroupTest {
             .frequentHousework,
             .notificationPermission,
             .premiumPlan,
+            .inquiry,
             .termsOfService,
             .privacyPolicy,
             .license,
@@ -33,6 +34,7 @@ struct SettingMenuGroupTest {
             .init(section: .group, items: [.memberInvitation]),
             .init(section: .housework, items: [.taskTemplate, .frequentHousework]),
             .init(section: .app, items: [.notificationPermission, .premiumPlan]),
+            .init(section: .support, items: [.inquiry]),
             .init(section: .about, items: [.termsOfService, .privacyPolicy, .license]),
         ]
         #expect(actual == expected)
@@ -45,7 +47,7 @@ struct SettingMenuGroupTest {
         let items: [SettingMenuItem] = [
             .notificationPermission,
             .premiumPlan,
-            .license,
+            .inquiry,
         ]
 
         // Act
@@ -56,7 +58,7 @@ struct SettingMenuGroupTest {
 
         let expected: [SettingMenuGroup] = [
             .init(section: .app, items: [.notificationPermission, .premiumPlan]),
-            .init(section: .about, items: [.license]),
+            .init(section: .support, items: [.inquiry]),
         ]
         #expect(actual == expected)
     }

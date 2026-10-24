@@ -15,6 +15,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case frequentHousework
     case notificationPermission
     case premiumPlan
+    case inquiry
     case termsOfService
     case privacyPolicy
     case license
@@ -60,6 +61,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
         case .notificationPermission, .premiumPlan:
             .app
 
+        case .inquiry:
+            .support
+
         case .termsOfService, .privacyPolicy, .license:
             .about
 
@@ -85,11 +89,10 @@ enum SettingMenuItem: Equatable, CaseIterable {
             .localized("通知設定")
 
         case .premiumPlan:
-            if case .free = plan {
-                .localized("プレミアムプランに登録")
-            } else {
-                .localized("ご登録中のプラン")
-            }
+            premiumPlanTitle(plan: plan)
+
+        case .inquiry:
+            .localized("お問い合わせ")
 
         case .termsOfService:
             .localized("利用規約")
@@ -124,6 +127,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
         case .premiumPlan:
             "crown.fill"
 
+        case .inquiry:
+            "envelope"
+
         case .termsOfService:
             "doc.text"
 
@@ -137,6 +143,18 @@ enum SettingMenuItem: Equatable, CaseIterable {
         case .debugMenu:
             "ladybug"
         #endif
+        }
+    }
+
+}
+
+private extension SettingMenuItem {
+
+    func premiumPlanTitle(plan: SubscriptionPlan) -> LocalizedStringResource {
+        if case .free = plan {
+            .localized("プレミアムプランに登録")
+        } else {
+            .localized("ご登録中のプラン")
         }
     }
 

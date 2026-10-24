@@ -13,6 +13,8 @@ enum SettingMenuSection: Equatable, CaseIterable {
     case housework
     /// 通知やプランなど、アプリ全体の設定
     case app
+    /// 運営への問い合わせ
+    case support
     /// 利用規約・ライセンスなど、アプリについての情報
     case about
     #if DEBUG

@@ -12,6 +12,8 @@ struct SettingMenuSectionContent: View {
 
     let group: SettingMenuGroup
     let plan: SubscriptionPlan
+    /// メニューに付ける件数のバッジ。0のときは付けない
+    let badgeCount: (SettingMenuItem) -> Int
     let onTap: (SettingMenuItem) -> Void
 
     var body: some View {
@@ -22,7 +24,7 @@ struct SettingMenuSectionContent: View {
                 .accessibilityAddTraits(.isHeader)
             VStack(spacing: .zero) {
                 ForEach(Array(group.items.enumerated()), id: \.element) { index, item in
-                    SettingMenuItemButton(item: item, plan: plan) {
+                    SettingMenuItemButton(item: item, plan: plan, badgeCount: badgeCount(item)) {
                         onTap(item)
                     }
                     if index < group.items.count - 1 {
@@ -55,6 +57,9 @@ private extension SettingMenuSectionContent {
         case .app:
             .localized("アプリの設定")
 
+        case .support:
+            .localized("サポート")
+
         case .about:
             .localized("このアプリについて")
 
@@ -73,6 +78,18 @@ private extension SettingMenuSectionContent {
     SettingMenuSectionContent(
         group: .init(section: .about, items: [.termsOfService, .privacyPolicy, .license]),
         plan: .free,
+        badgeCount: { _ in 0 },
+        onTap: { _ in }
+    )
+    .padding(.space16)
+    .background(.backgroundScreen)
+}
+
+#Preview("SettingMenuSectionContent_未読あり", traits: .sizeThatFitsLayout) {
+    SettingMenuSectionContent(
+        group: .init(section: .support, items: [.inquiry]),
+        plan: .free,
+        badgeCount: { _ in 2 },
         onTap: { _ in }
     )
     .padding(.space16)

@@ -12,12 +12,23 @@ import SwiftUI
 public struct SettingViewScreen: View {
 
     @Environment(\.routeResolver) var router
+    @Environment(\.scenePhase) var scenePhase
 
     @State var navigationPath = AppNavigationPath<SettingRoute>()
     @State var isShowHouseworkTemplate = false
     @State var isShowFrequentHousework = false
+    /// 導線のバッジと問い合わせの一覧で同じ状態を使う
+    @State var inquiryListStore: InquiryListStore
 
-    public init() {}
+    public static func make() -> some View {
+        DependenciesInjectLayer {
+            SettingViewScreen(inquiryListStore: .init(inquiryClient: $0.inquiryClient))
+        }
+    }
+
+    init(inquiryListStore: InquiryListStore) {
+        _inquiryListStore = State(initialValue: inquiryListStore)
+    }
 
     public var body: some View {
         NavigationStack(path: $navigationPath.path) {
@@ -29,6 +40,17 @@ public struct SettingViewScreen: View {
                 navigationHandler(route)
             }
             .environment(\.settingNavigationPath, navigationPath)
+        }
+        .environment(inquiryListStore)
+        .task {
+            // 導線に未読のバッジを出すため、設定画面を開いたら取得する
+            await inquiryListStore.refresh()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task {
+                await inquiryListStore.refresh()
+            }
         }
         // NavigationStackの中で出すと、出した画面がシートを出した直後に作り直されて
         // `@State`ごと初期化され、追加・編集のシートがすぐ閉じてしまう。NavigationStackの外から出す
@@ -59,6 +81,12 @@ private extension SettingViewScreen {
         case .notificationPermission:
             SettingNotificationScreen()
 
+        case .inquiryList:
+            InquiryListScreen()
+
+        case let .inquiryDetail(inquiryId):
+            InquiryDetailScreen(inquiryId: inquiryId)
+
         #if DEBUG
         case .debugMenu:
             DebugMenuView()
@@ -74,6 +102,7 @@ struct SettingView: View {
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(SentInvitationStore.self) var sentInvitationStore
+    @Environment(InquiryListStore.self) var inquiryListStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
@@ -111,6 +140,7 @@ struct SettingView: View {
                         SettingMenuSectionContent(
                             group: group,
                             plan: subscriptionStore.plan,
+                            badgeCount: badgeCount(for:),
                             onTap: tappedSettingMenuItem
                         )
                     }
@@ -202,6 +232,10 @@ private extension SettingView {
             isRegisteredGroup: loginContext.hasCohabitant,
             isAvailableInvitationLink: CohabitantInvitationLink.isAvailable
         ))
+    }
+
+    func badgeCount(for item: SettingMenuItem) -> Int {
+        item == .inquiry ? inquiryListStore.state.unreadCount : 0
     }
 
 }
@@ -314,6 +348,9 @@ private extension SettingView {
         case .premiumPlan:
             tappedPremiumPlanItem()
 
+        case .inquiry:
+            navigationPath.push(.inquiryList)
+
         case .termsOfService:
             if let url = URL(string: Constants.termsOfServiceURLString) {
                 openURL(url)
@@ -405,6 +442,7 @@ private extension SettingView {
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
+        .environment(InquiryListStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -418,6 +456,7 @@ private extension SettingView {
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
+        .environment(InquiryListStore())
         .environment(\.loginContext, .init(
             account: .init(id: "", userName: "Hoge", cohabitantId: nil),
             isAnonymous: true
@@ -429,6 +468,7 @@ private extension SettingView {
         .environment(AccountAuthStore())
         .environment(AccountStore())
         .environment(SubscriptionStore())
+        .environment(InquiryListStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -458,6 +498,7 @@ private extension SettingView {
             expirationDate: .previewDate(year: 2026, month: 6, day: 17, hour: 12),
             willRenew: true
         )))
+        .environment(InquiryListStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -487,6 +528,7 @@ private extension SettingView {
             expirationDate: .previewDate(year: 2026, month: 5, day: 28, hour: 12),
             willRenew: false
         )))
+        .environment(InquiryListStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
