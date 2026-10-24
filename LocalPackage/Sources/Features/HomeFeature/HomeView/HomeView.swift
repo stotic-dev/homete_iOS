@@ -194,8 +194,10 @@ private extension HomeView {
     }
 
     /// 送った招待のうち、有効期限内で相手の参加を待っているもの
+    /// - Note: 環境値の`now`は画面を作った時点のまま変わらない。アプリを開いたまま期限を過ぎても参加待ちを出し続けないよう、
+    ///         見るたびに今の時刻で判定する（バックグラウンドから戻ると`scenePhase`の変化で描き直される）
     var waitingInvitation: CohabitantInvitation? {
-        sentInvitationStore.waitingInvitation(accountId: loginContext.account.id, now: now)
+        sentInvitationStore.waitingInvitation(accountId: loginContext.account.id, now: .now)
     }
 
     func tappedRegisterPartner() {
