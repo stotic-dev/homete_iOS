@@ -39,8 +39,10 @@ public struct SettingViewScreen: View {
             .navigationDestination(for: SettingRoute.self) { route in
                 navigationHandler(route)
             }
-            .environment(\.settingNavigationPath, navigationPath)
         }
+        // pushした画面にも届くよう、NavigationStackの外から渡す。
+        // ルートのViewに付けると遷移先には届かず、遷移先からのpushが既定値の別のパスに積まれて何も起きない
+        .environment(\.settingNavigationPath, navigationPath)
         .environment(inquiryListStore)
         .task {
             // 導線に未読のバッジを出すため、設定画面を開いたら取得する
