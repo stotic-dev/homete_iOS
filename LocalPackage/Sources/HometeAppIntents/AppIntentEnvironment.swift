@@ -30,6 +30,7 @@ struct AppIntentEnvironment {
                 cohabitantClient: dependencies.cohabitantClient,
                 houseworkClient: dependencies.houseworkClient,
                 houseworkTemplateClient: dependencies.houseworkTemplateClient,
+                frequentHouseworkClient: dependencies.frequentHouseworkClient,
                 remoteConfigClient: dependencies.remoteConfigClient,
                 currentAppVersion: currentAppVersion
             ),

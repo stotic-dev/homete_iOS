@@ -224,6 +224,61 @@
         }
       }
     },
+    "この数日で、%@が%lld件の家事をしてくれました。ありがとうを伝えてみませんか？" : {
+      "comment" : "1つめは家事をした人の名前を並べたもの、2つめは家事の件数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over the past few days, %1$@ did %#@chores@ for you. Why not say thanks?"
+          },
+          "substitutions" : {
+            "chores" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg chore"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg chores"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "この数日で、%lld件の家事をしてもらいました。ありがとうを伝えてみませんか？" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Over the past few days, your housemates did %lld chore for you. Why not say thanks?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Over the past few days, your housemates did %lld chores for you. Why not say thanks?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "これからは、グループのメンバーと家事を分担し、協力していくことができます。" : {
       "localizations" : {
         "en" : {
@@ -491,6 +546,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set Up Chores"
+          }
+        }
+      }
+    },
+    "届いたありがとうを閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss thanks you received"
           }
         }
       }

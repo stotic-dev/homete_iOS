@@ -36,6 +36,14 @@ struct TutorialSpotlightWindowFrameReader: UIViewRepresentable {
         var onChange: ((CGRect) -> Void)?
         var measuresNavigationBar = false
 
+        /// 大きさを見張っているナビゲーションバー
+        private weak var observedNavigationBar: UINavigationBar?
+        /// ナビゲーションバーの大きさの変化の監視
+        ///
+        /// バーは、タイトルの表示の仕方が決まる前に大きいタイトルの高さで配置されてから縮むことがある。
+        /// 縮んでもこのViewの配置は変わらず測り直しが走らないため、バーの大きさが変わったときにも測り直す。
+        private var navigationBarObservation: NSKeyValueObservation?
+
         override func layoutSubviews() {
             super.layoutSubviews()
             measure()
@@ -62,7 +70,20 @@ struct TutorialSpotlightWindowFrameReader: UIViewRepresentable {
             }
             guard let navigationBar = enclosingNavigationBar() else { return }
 
+            observeSize(of: navigationBar)
             onChange?(navigationBar.convert(navigationBar.bounds, to: window))
+        }
+
+        private func observeSize(of navigationBar: UINavigationBar) {
+            guard observedNavigationBar !== navigationBar else { return }
+
+            observedNavigationBar = navigationBar
+            navigationBarObservation = navigationBar.layer.observe(\.bounds) { [weak self] _, _ in
+                MainActor.assumeIsolated {
+                    // バーの位置も確定してから測る
+                    self?.measureAfterLayout()
+                }
+            }
         }
 
         /// 自分を表示している画面の`UINavigationController`のバー

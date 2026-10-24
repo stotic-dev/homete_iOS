@@ -588,7 +588,7 @@ struct AnalyticsEventTest {
     }
 
     @Test(
-        "ねぎらいのコメントの表示・タップ・評価を、action/kind/step（評価はresultも）のパラメータを持つencouragement_commentイベントに変換する",
+        "ねぎらいのコメントの表示・タップ・閉じる・評価を、action/kind/step（評価はresultも）のパラメータを持つencouragement_commentイベントに変換する",
         arguments: [
             (
                 EncouragementCommentAnalyticsAction.shown(kind: .selfPraise, step: .dashboard),
@@ -603,8 +603,16 @@ struct AnalyticsEventTest {
                 ["action": "shown", "kind": "thanks_prompt", "step": "dashboard"]
             ),
             (
+                EncouragementCommentAnalyticsAction.shown(kind: .receivedThanks, step: .dashboard),
+                ["action": "shown", "kind": "received_thanks", "step": "dashboard"]
+            ),
+            (
                 EncouragementCommentAnalyticsAction.tapped(kind: .thanksPrompt, step: .dashboard),
                 ["action": "tapped", "kind": "thanks_prompt", "step": "dashboard"]
+            ),
+            (
+                EncouragementCommentAnalyticsAction.dismissed(kind: .receivedThanks, step: .dashboard),
+                ["action": "dismissed", "kind": "received_thanks", "step": "dashboard"]
             ),
             (
                 EncouragementCommentAnalyticsAction.rated(kind: .selfPraise, rating: .good, step: .dashboard),
@@ -704,6 +712,10 @@ struct AnalyticsEventTest {
             (.completeHousework, .updateRequired, "complete_housework", "update_required"),
             (.completeHousework, .failure, "complete_housework", "failure"),
             (.sendThanks, .pendingSync, "send_thanks", "pending_sync"),
+            (.recordHousework, .success, "record_housework", "success"),
+            (.recordHousework, .cancelled, "record_housework", "cancelled"),
+            (.registerHousework, .alreadyRegistered, "register_housework", "already_registered"),
+            (.registerHousework, .memoLimitExceeded, "register_housework", "memo_limit_exceeded"),
         ]
     )
     func appIntent(

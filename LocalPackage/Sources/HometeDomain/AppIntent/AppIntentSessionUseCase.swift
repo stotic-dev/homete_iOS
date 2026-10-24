@@ -16,6 +16,7 @@ public struct AppIntentSessionUseCase: Sendable {
     private let cohabitantClient: CohabitantClient
     private let houseworkClient: HouseworkClient
     private let houseworkTemplateClient: HouseworkTemplateClient
+    private let frequentHouseworkClient: FrequentHouseworkClient
     private let remoteConfigClient: RemoteConfigClient
     private let currentAppVersion: String
 
@@ -25,6 +26,7 @@ public struct AppIntentSessionUseCase: Sendable {
         cohabitantClient: CohabitantClient,
         houseworkClient: HouseworkClient,
         houseworkTemplateClient: HouseworkTemplateClient,
+        frequentHouseworkClient: FrequentHouseworkClient,
         remoteConfigClient: RemoteConfigClient,
         currentAppVersion: String
     ) {
@@ -33,6 +35,7 @@ public struct AppIntentSessionUseCase: Sendable {
         self.cohabitantClient = cohabitantClient
         self.houseworkClient = houseworkClient
         self.houseworkTemplateClient = houseworkTemplateClient
+        self.frequentHouseworkClient = frequentHouseworkClient
         self.remoteConfigClient = remoteConfigClient
         self.currentAppVersion = currentAppVersion
     }
@@ -118,6 +121,19 @@ public struct AppIntentSessionUseCase: Sendable {
             members.insert(.init(id: account.id, userName: account.userName))
         }
         return members
+    }
+
+    /// グループのいつもの家事を取得する
+    /// - Note: いつもの家事は購読でしか読めないため、最初に届いた値だけ使って購読をやめる。
+    ///         最初の値は端末のキャッシュから届くことがあり、同居人が追加した直後は古い一覧になりうる。
+    ///         似ている家事を提案するためだけに使うので、サーバーの値を待たずにそのまま使う。
+    ///         カスタムカテゴリは提案に使わないため取得しない
+    public func fetchFrequentHousework(session: AppIntentSession) async -> FrequentHouseworkContext {
+        let listenerId = "appIntentFrequentHousework-\(UUID().uuidString)"
+        let stream = await frequentHouseworkClient.addItemsSnapshotListener(listenerId, session.cohabitantId)
+        let items = await stream.first { _ in true } ?? []
+        await frequentHouseworkClient.removeListener(listenerId)
+        return .init(items: items)
     }
 
 }

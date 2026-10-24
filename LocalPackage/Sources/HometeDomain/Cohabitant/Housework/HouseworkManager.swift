@@ -44,7 +44,11 @@ public final actor HouseworkManager {
 
     private let houseworkObserveKey = "houseworkObserveKey"
     private let focusedDayObserveKey = "focusedDayHouseworkObserveKey"
-    private static let listenerOffset: Int = 3
+    /// リアルタイムリスナーで購読する期間（今日の前後N日）
+    ///
+    /// 過去のありがとう漏れの一覧で7日前までの家事にありがとうを送るため、送った結果がすぐ反映されるよう7日前まで購読する。
+    /// 未来側も、家事ボードで選べる7日後までそろえる
+    private static let listenerOffset: Int = 7
 
     // MARK: initialize
 

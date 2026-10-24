@@ -16,8 +16,8 @@ defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -b
 defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
 
 case "$CI_WORKFLOW" in
-    "VRT")
-        echo "=== VRT workflow ==="
+    "VRT" | "VRT_light")
+        echo "=== $CI_WORKFLOW workflow ==="
 
         # Secret_dev.xcconfigのデコードは不要。テストホストをhometeVRTHostに切り替えたことで
         # Google Mobile Ads SDKがリンクされなくなり、GADApplicationIdentifier未定義による

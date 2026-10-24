@@ -32,6 +32,40 @@ public struct HouseworkCommandUseCase: Sendable {
         self.calendar = calendar
     }
 
+    /// 家事をまとめて登録する
+    /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
+    ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
+    ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
+    /// - Parameters:
+    ///   - createdAt: 作成日時。まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
+    ///   - memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
+    ///   - onWritten: 書き込みがサーバーに届いたときに呼ぶ
+    /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（1件も書き込まない）
+    public func register(
+        newItems: [NewHouseworkEntry],
+        createdAt: Date,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
+        onWritten: @Sendable () -> Void = {}
+    ) async throws {
+        guard !newItems.isEmpty else { return }
+        do {
+            for entry in newItems {
+                try entry.validateMemo(limitPolicy: memoLimitPolicy)
+            }
+            try await houseworkClient.insertOrUpdateItems(
+                newItems.map { $0.item.updateCreatedAt(createdAt) },
+                cohabitantId
+            )
+        } catch {
+            logRegistered(newItems, step: step, isSuccess: false)
+            throw error
+        }
+        onWritten()
+        logRegistered(newItems, step: step, isSuccess: true)
+    }
+
     /// 家事を完了にする
     ///
     /// 同居人の端末でふりかえり通知を予約するため、今日の家事なら1日1回だけ完了通知を送る。
@@ -256,6 +290,12 @@ private extension HouseworkCommandUseCase {
             } catch {
                 print("failed to notify cohabitants of completed housework with comment: \(error)")
             }
+        }
+    }
+
+    func logRegistered(_ entries: [NewHouseworkEntry], step: HouseworkAnalyticsStep, isSuccess: Bool) {
+        for entry in entries {
+            analyticsClient.log(.housework(.register(step: step, source: entry.source, isSuccess: isSuccess)))
         }
     }
 
