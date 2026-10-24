@@ -40,6 +40,8 @@ public enum AppStorageCustomTypeKey: String {
     case collapsedHouseworkTemplateDays
     /// ホームのカードに、届いたありがとうを出した回数と×で隠した状態
     case receivedThanksDisplayRecord
+    /// ホームのカードに、過去の促しを出した回数
+    case pastThanksPromptDisplayRecord
 
 }
 

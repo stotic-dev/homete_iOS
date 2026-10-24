@@ -9,7 +9,7 @@ import HometeDomain
 /// 同居人がやってくれた家事のうち、ありがとうを伝えられるもの
 ///
 /// ダッシュボードの感謝の促しと、ありがとうを伝えられる家事の一覧で使う。
-/// 同居人が夜遅くにやった家事に翌朝も気づけるよう、今日と昨日の家事を対象にする。
+/// 今日の家事（家事の日付で判定）だけを対象にする。昨日より前の家事は`PastThanksPromptSummary`で扱う。
 public struct ThanksPromptSummary: Equatable, Sendable {
 
     /// ありがとうを伝えられる家事（まだ送っていない → 送った、の順。それぞれ完了日時の新しい順）
@@ -43,25 +43,50 @@ public extension ThanksPromptSummary {
         calendar: Calendar
     ) -> Self {
         let today = calendar.startOfDay(for: now)
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        let targetDays: Set<Date> = [today, yesterday]
-
-        let thankableItems = storedAllItems.value
-            .filter { targetDays.contains(calendar.startOfDay(for: $0.metaData.indexedDate.value)) }
-            .flatMap(\.items)
-            .map { HouseworkBoardItem(originalItem: $0, isRegistered: true) }
-            .filter { $0.isThankable(by: ownUserId) }
-            .sorted { isOrderedBefore($0, $1, ownUserId: ownUserId) }
+        let thankableItems = thankableItems(
+            on: [today],
+            storedAllItems: storedAllItems,
+            ownUserId: ownUserId,
+            calendar: calendar
+        )
         let notSentItems = thankableItems.filter { $0.sentThanks(ownUserId: ownUserId) == nil }
-        let notSentExecutorIds = Set(notSentItems.flatMap(\.executors).map(\.userId))
 
         return .init(
             thankableItems: thankableItems,
             notSentCount: notSentItems.count,
-            executorNames: members.others
-                .filter { $0.id != ownUserId && notSentExecutorIds.contains($0.id) }
-                .map(\.userName)
+            executorNames: executorNames(of: notSentItems, members: members, ownUserId: ownUserId)
         )
+    }
+
+}
+
+extension ThanksPromptSummary {
+
+    /// 指定した日（家事の日付）に同居人が終えた、ありがとうを伝えられる家事（まだ送っていない → 送った、の順。それぞれ完了日時の新しい順）
+    static func thankableItems(
+        on days: Set<Date>,
+        storedAllItems: StoredAllHouseworkList,
+        ownUserId: String,
+        calendar: Calendar
+    ) -> [HouseworkBoardItem] {
+        storedAllItems.value
+            .filter { days.contains(calendar.startOfDay(for: $0.metaData.indexedDate.value)) }
+            .flatMap(\.items)
+            .map { HouseworkBoardItem(originalItem: $0, isRegistered: true) }
+            .filter { $0.isThankable(by: ownUserId) }
+            .sorted { isOrderedBefore($0, $1, ownUserId: ownUserId) }
+    }
+
+    /// まだ送っていない家事を担当した、自分以外のメンバーの名前（メンバー一覧の順）
+    static func executorNames(
+        of notSentItems: [HouseworkBoardItem],
+        members: CohabitantMemberList,
+        ownUserId: String
+    ) -> [String] {
+        let notSentExecutorIds = Set(notSentItems.flatMap(\.executors).map(\.userId))
+        return members.others
+            .filter { $0.id != ownUserId && notSentExecutorIds.contains($0.id) }
+            .map(\.userName)
     }
 
 }
