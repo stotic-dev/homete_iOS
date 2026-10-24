@@ -45,7 +45,7 @@ struct ThanksPromptSummaryTest {
         #expect(actual == .init(thankableItems: [], notSentCount: 0, executorNames: []))
     }
 
-    @Test("今日と昨日に同居人が終えた家事を、未送信 → 送信済みの順、完了日時の新しい順に並べ、一昨日の家事は含めない")
+    @Test("今日に同居人が終えた家事を、未送信 → 送信済みの順、完了日時の新しい順に並べ、昨日の家事は含めない")
     func make_thankableItems_returnsSortedItems() {
         // Arrange
         let sentItem = HouseworkItem.makeForTest(
@@ -56,30 +56,30 @@ struct ThanksPromptSummaryTest {
             executedAt: .previewDate(year: 2026, month: 10, day: 6, hour: 7),
             thanks: ["own": .init(comment: nil, sentAt: .distantPast)]
         )
-        let todayItem = HouseworkItem.makeForTest(
+        let latestItem = HouseworkItem.makeForTest(
             id: 2,
             indexedDate: .previewDate(year: 2026, month: 10, day: 6),
             state: .completed,
             executorId: "partnerA",
             executedAt: .previewDate(year: 2026, month: 10, day: 6, hour: 6)
         )
-        let yesterdayItem = HouseworkItem.makeForTest(
+        let earlierItem = HouseworkItem.makeForTest(
             id: 3,
+            indexedDate: .previewDate(year: 2026, month: 10, day: 6),
+            state: .completed,
+            executorId: "partnerA",
+            executedAt: .previewDate(year: 2026, month: 10, day: 6, hour: 1)
+        )
+        let yesterdayItem = HouseworkItem.makeForTest(
+            id: 4,
             indexedDate: .previewDate(year: 2026, month: 10, day: 5),
             state: .completed,
             executorId: "partnerA",
-            executedAt: .previewDate(year: 2026, month: 10, day: 5, hour: 23)
-        )
-        let twoDaysAgoItem = HouseworkItem.makeForTest(
-            id: 4,
-            indexedDate: .previewDate(year: 2026, month: 10, day: 4),
-            state: .completed,
-            executorId: "partnerA"
+            executedAt: .previewDate(year: 2026, month: 10, day: 5, hour: 23, minute: 50)
         )
         let storedAllItems = StoredAllHouseworkList(value: [
-            .makeForTest(items: [sentItem, todayItem]),
+            .makeForTest(items: [sentItem, earlierItem, latestItem]),
             .makeForTest(items: [yesterdayItem]),
-            .makeForTest(items: [twoDaysAgoItem]),
         ])
 
         // Act
@@ -94,8 +94,8 @@ struct ThanksPromptSummaryTest {
         // Assert
         let expected = ThanksPromptSummary(
             thankableItems: [
-                .init(originalItem: todayItem, isRegistered: true),
-                .init(originalItem: yesterdayItem, isRegistered: true),
+                .init(originalItem: latestItem, isRegistered: true),
+                .init(originalItem: earlierItem, isRegistered: true),
                 .init(originalItem: sentItem, isRegistered: true),
             ],
             notSentCount: 2,

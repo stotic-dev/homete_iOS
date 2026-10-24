@@ -337,34 +337,34 @@ extension HouseworkIntentServiceTest {
         #expect(actual == expected)
     }
 
-    @Test("昨日の家事は候補に含め、一昨日の家事は含めない")
+    @Test("アプリの一覧と同じく今日の家事だけを候補にし、昨日の夜遅くに終えた家事は含めない")
     func thanksCandidatesDateBoundary() async throws {
         // Arrange
 
-        let yesterdayItem = HouseworkItem.makeForTest(
+        let todayItem = HouseworkItem.makeForTest(
             id: "dish",
-            indexedDate: .previewDate(year: 2026, month: 10, day: 11),
+            indexedDate: today,
             title: "皿洗い",
             state: .completed,
             executorId: "partner",
-            executedAt: .previewDate(year: 2026, month: 10, day: 11, hour: 23),
+            executedAt: .previewDate(year: 2026, month: 10, day: 12, hour: 0, minute: 10),
             expiredAt: expiredAt
         )
         let sut = makeSUT(
             items: [
-                yesterdayItem,
+                todayItem,
                 .makeForTest(
                     id: "laundry",
-                    indexedDate: .previewDate(year: 2026, month: 10, day: 10),
+                    indexedDate: .previewDate(year: 2026, month: 10, day: 11),
                     title: "洗濯",
                     state: .completed,
                     executorId: "partner",
-                    executedAt: .previewDate(year: 2026, month: 10, day: 10, hour: 20),
+                    executedAt: .previewDate(year: 2026, month: 10, day: 11, hour: 23, minute: 50),
                     expiredAt: expiredAt
                 ),
             ]
         )
-        let expected = [ThanksCandidate(item: yesterdayItem, executorNames: ["はなこ"])]
+        let expected = [ThanksCandidate(item: todayItem, executorNames: ["はなこ"])]
 
         // Act
 

@@ -42,7 +42,6 @@ struct ReceivedThanksSummaryTest {
             storedAllItems: storedAllItems,
             members: members,
             ownUserId: "own",
-            seenUntil: nil,
             now: now,
             calendar: calendar
         )
@@ -51,8 +50,8 @@ struct ReceivedThanksSummaryTest {
         #expect(actual == .init(count: 0, senderNames: [], latestSentAt: nil))
     }
 
-    @Test("今日と昨日に届いたありがとうを送った人ごとに数え、一昨日に届いたものは含めない")
-    func make_receivedThanks_countsThanksSinceYesterday() {
+    @Test("今日届いたありがとうを送った人ごとに数え、昨日までに届いたものは含めない")
+    func make_receivedThanks_countsOnlyTodayThanks() {
         // Arrange
         let todayItem = HouseworkItem.makeForTest(
             id: 1,
@@ -60,18 +59,20 @@ struct ReceivedThanksSummaryTest {
             executorId: "own",
             thanks: [
                 "partnerA": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 7)),
+                // 日付が変わる直前に届いたものは、昨日の分
                 "partnerB": .init(comment: "助かったよ", sentAt: .previewDate(year: 2026, month: 10, day: 5, hour: 23)),
             ]
         )
-        let twoDaysAgoItem = HouseworkItem.makeForTest(
+        // 前の日の家事に今日届いたものは、今日の分として数える
+        let yesterdayItem = HouseworkItem.makeForTest(
             id: 2,
             state: .completed,
             executorId: "own",
-            thanks: ["partnerB": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 10, day: 4, hour: 23))]
+            thanks: ["partnerB": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 0))]
         )
         let storedAllItems = StoredAllHouseworkList(value: [
             .makeForTest(items: [todayItem]),
-            .makeForTest(items: [twoDaysAgoItem]),
+            .makeForTest(items: [yesterdayItem]),
         ])
 
         // Act
@@ -79,7 +80,6 @@ struct ReceivedThanksSummaryTest {
             storedAllItems: storedAllItems,
             members: members,
             ownUserId: "own",
-            seenUntil: nil,
             now: now,
             calendar: calendar
         )
@@ -118,7 +118,6 @@ struct ReceivedThanksSummaryTest {
             storedAllItems: storedAllItems,
             members: members,
             ownUserId: "own",
-            seenUntil: nil,
             now: now,
             calendar: calendar
         )
@@ -127,39 +126,6 @@ struct ReceivedThanksSummaryTest {
         let expected = ReceivedThanksSummary(
             count: 2,
             senderNames: ["はなこ"],
-            latestSentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 7)
-        )
-        #expect(actual == expected)
-    }
-
-    @Test("前に見た日時までに届いたありがとうは数えず、その後に届いたものだけを数える")
-    func make_seenUntil_countsOnlyThanksAfterSeen() {
-        // Arrange
-        let item = HouseworkItem.makeForTest(
-            id: 1,
-            state: .completed,
-            executorId: "own",
-            thanks: [
-                "partnerA": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 6)),
-                "partnerB": .init(comment: nil, sentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 7)),
-            ]
-        )
-        let storedAllItems = StoredAllHouseworkList(value: [.makeForTest(items: [item])])
-
-        // Act
-        let actual = ReceivedThanksSummary.make(
-            storedAllItems: storedAllItems,
-            members: members,
-            ownUserId: "own",
-            seenUntil: .previewDate(year: 2026, month: 10, day: 6, hour: 6),
-            now: now,
-            calendar: calendar
-        )
-
-        // Assert
-        let expected = ReceivedThanksSummary(
-            count: 1,
-            senderNames: ["じろう"],
             latestSentAt: .previewDate(year: 2026, month: 10, day: 6, hour: 7)
         )
         #expect(actual == expected)

@@ -36,8 +36,10 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case cohabitantCompletion = "cohabitant_completion"
     /// 未完了の家事一覧
     case incompleteHouseworkList = "incomplete_housework_list"
-    /// ありがとうを伝えられる家事の一覧（ダッシュボードの感謝の促しから開く）
+    /// ありがとうを伝えられる今日の家事の一覧（ダッシュボードの感謝の促しから開く）
     case thanksTargetList = "thanks_target_list"
+    /// 過去のありがとう漏れの一覧（ダッシュボードの過去の促しと、ありがとうを伝えられる家事の一覧の末尾から開く）
+    case pastThanksTargetList = "past_thanks_target_list"
     /// 家事の貢献度分析
     case contributionAnalytics = "contribution_analytics"
     /// 家事ボード
