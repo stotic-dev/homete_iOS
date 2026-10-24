@@ -24,23 +24,6 @@ public enum AppStorageOptionalDataKey: String {
 
 }
 
-// MARK: - Double型の拡張
-
-public extension SwiftUI.AppStorage where Value == Double {
-
-    init(wrappedValue: Double, key: AppStorageDoubleKey) {
-        self.init(wrappedValue: wrappedValue, key.rawValue)
-    }
-
-}
-
-public enum AppStorageDoubleKey: String {
-
-    /// ホームで見た、自分の家事に最後に届いたありがとうの日時（1970年からの秒数）。まだ見ていなければ0
-    case receivedThanksSeenAt
-
-}
-
 // MARK: - カスタムオブジェクト用の拡張
 
 public extension SwiftUI.AppStorage where Value: RawRepresentable, Value.RawValue == String {
@@ -55,6 +38,10 @@ public enum AppStorageCustomTypeKey: String {
 
     /// 家事テンプレートで折りたたまれている曜日
     case collapsedHouseworkTemplateDays
+    /// ホームのカードに、届いたありがとうを出した回数と×で隠した状態
+    case receivedThanksDisplayRecord
+    /// ホームのカードに、過去の促しを出した回数
+    case pastThanksPromptDisplayRecord
 
 }
 

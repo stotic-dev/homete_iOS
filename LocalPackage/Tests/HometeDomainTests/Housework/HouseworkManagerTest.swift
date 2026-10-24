@@ -31,7 +31,7 @@ struct HouseworkManagerTest {
                     #expect(id == "houseworkObserveKey-1")
                     #expect(cohabitantId == inputCohabitantId)
                     #expect(anchorDate == now)
-                    #expect(offset == 3)
+                    #expect(offset == 7)
                     return stream
                 },
                 fetchItemsHandler: { cohabitantId, from, to in

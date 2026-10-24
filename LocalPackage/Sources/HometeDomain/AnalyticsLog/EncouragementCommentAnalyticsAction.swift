@@ -20,6 +20,10 @@ public enum EncouragementCommentAnalyticsKind: String, Equatable, Sendable {
     case neutral
     /// 同居人への感謝の促し
     case thanksPrompt = "thanks_prompt"
+    /// 昨日から7日前までの家事について、同居人への感謝の促し
+    case pastThanksPrompt = "past_thanks_prompt"
+    /// 自分の家事に届いたありがとう
+    case receivedThanks = "received_thanks"
 
 }
 
@@ -37,10 +41,12 @@ public enum EncouragementCommentAnalyticsRating: String, Equatable, Sendable {
 public enum EncouragementCommentAnalyticsAction: Equatable, Sendable {
 
     /// コメントを表示した
-    /// - Note: ねぎらいと感謝の促しを両方出したときは、それぞれ1イベント送る
+    /// - Note: ねぎらいと、添えて出したメッセージ（感謝の促しか届いたありがとう）は、それぞれ1イベント送る
     case shown(kind: EncouragementCommentAnalyticsKind, step: EncouragementCommentAnalyticsStep)
     /// 感謝の促しの「ありがとうを伝える」をタップした
     case tapped(kind: EncouragementCommentAnalyticsKind, step: EncouragementCommentAnalyticsStep)
+    /// 届いたありがとうを×で閉じた
+    case dismissed(kind: EncouragementCommentAnalyticsKind, step: EncouragementCommentAnalyticsStep)
     /// AIが作成したコメントを、ポップアップのgood/badで評価した
     case rated(
         kind: EncouragementCommentAnalyticsKind,
@@ -60,6 +66,9 @@ extension EncouragementCommentAnalyticsAction {
 
         case let .tapped(kind, step):
             ["action": "tapped", "kind": kind.rawValue, "step": step.rawValue]
+
+        case let .dismissed(kind, step):
+            ["action": "dismissed", "kind": kind.rawValue, "step": step.rawValue]
 
         case let .rated(kind, rating, step):
             ["action": "rated", "kind": kind.rawValue, "result": rating.rawValue, "step": step.rawValue]
