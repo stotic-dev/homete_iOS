@@ -20,7 +20,7 @@ struct AccountLinkView: View {
         VStack(spacing: .space16) {
             Spacer()
             HometteView(.point, size: .large)
-            Text("Appleアカウントで保存", bundle: #bundle)
+            Text("Appleでサインイン", bundle: #bundle)
                 .font(with: .headLineL)
             description
                 .font(with: .body)
@@ -54,16 +54,11 @@ private extension AccountLinkView {
     var description: some View {
         switch entry {
         case .paywall:
-            Text("購入したプランを、機種変更しても引き継げるようになります", bundle: #bundle)
+            Text("プランを購入するには、Appleでのサインインが必要です。機種変更しても、購入したプランを引き継げます", bundle: #bundle)
 
-        case .required:
-            Text(
-                "パートナーと共有した家事を、機種変更しても引き継げるようになります。保存すると、家事の記録を始められます",
-                bundle: #bundle
-            )
-
-        case .onboarding, .todo, .setting:
-            Text("パートナーと共有した家事を、機種変更しても引き継げるようになります", bundle: #bundle)
+        // パートナーの登録だけで始められると思われないよう、どこから開いても必要なことを伝える
+        case .required, .onboarding, .todo, .setting:
+            Text("家事の記録を始めるには、Appleでのサインインが必要です。機種変更しても、家事の記録を引き継げます", bundle: #bundle)
         }
     }
 

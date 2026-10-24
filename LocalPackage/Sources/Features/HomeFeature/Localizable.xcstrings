@@ -163,12 +163,12 @@
         }
       }
     },
-    "Appleアカウントで保存する" : {
+    "Appleでサインインする" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save with Apple Account"
+            "value" : "Sign in with Apple"
           }
         }
       }
@@ -354,6 +354,16 @@
         }
       }
     },
+    "サインイン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign In"
+          }
+        }
+      }
+    },
     "テンプレートを設定する" : {
       "localizations" : {
         "en" : {
@@ -374,6 +384,16 @@
         }
       }
     },
+    "パートナーの登録とAppleでのサインインを済ませると、家事の記録と共有を始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your partner and sign in with Apple to start tracking and sharing chores."
+          }
+        }
+      }
+    },
     "パートナーを招待すると、家事を分け合えます" : {
       "localizations" : {
         "en" : {
@@ -390,6 +410,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Partner"
+          }
+        }
+      }
+    },
+    "パートナーを登録すると、家事の記録と共有を始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your partner to start tracking and sharing chores."
           }
         }
       }
@@ -455,16 +485,6 @@
         }
       }
     },
-    "保存する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
-          }
-        }
-      }
-    },
     "別のグループに参加中のため、この招待では参加できません。" : {
       "localizations" : {
         "en" : {
@@ -495,16 +515,6 @@
         }
       }
     },
-    "完了すると、家事の記録と共有ができるようになります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Once you're done, you can track and share chores."
-          }
-        }
-      }
-    },
     "家事のテンプレートはまだありません" : {
       "localizations" : {
         "en" : {
@@ -521,6 +531,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Written by on-device AI based on your chore history. Your history never leaves your device."
+          }
+        }
+      }
+    },
+    "家事の記録を始めるには、サインインが必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need to sign in to start tracking chores."
           }
         }
       }
@@ -651,16 +671,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chores To Do"
-          }
-        }
-      }
-    },
-    "機種変更しても、家事の記録を引き継げます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep your chore history, even when you switch phones."
           }
         }
       }

@@ -35,9 +35,9 @@ struct NotRegisteredContent: View {
                     partnerRow
                     if isAnonymous {
                         todoRow(
-                            title: .localized("Appleアカウントで保存する"),
-                            description: .localized("機種変更しても、家事の記録を引き継げます"),
-                            buttonTitle: .localized("保存する"),
+                            title: .localized("Appleでサインインする"),
+                            description: .localized("家事の記録を始めるには、サインインが必要です"),
+                            buttonTitle: .localized("サインイン"),
                             action: onTapLinkAccount
                         )
                     }
@@ -64,11 +64,21 @@ private extension NotRegisteredContent {
             VStack(spacing: .space8) {
                 Text("家事を始める前に", bundle: #bundle)
                     .font(with: .headLineM)
-                Text("完了すると、家事の記録と共有ができるようになります", bundle: #bundle)
+                headerDescription
                     .font(with: .body)
                     .foregroundStyle(.textSecondary)
                     .multilineTextAlignment(.center)
             }
+        }
+    }
+
+    /// 匿名のときは、パートナーの登録だけで始められると思われないよう、サインインも要ることを書く
+    @ViewBuilder
+    var headerDescription: some View {
+        if isAnonymous {
+            Text("パートナーの登録とAppleでのサインインを済ませると、家事の記録と共有を始められます", bundle: #bundle)
+        } else {
+            Text("パートナーを登録すると、家事の記録と共有を始められます", bundle: #bundle)
         }
     }
 

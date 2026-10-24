@@ -13,12 +13,12 @@
     "2週間後のありがとう" : {
       "shouldTranslate" : false
     },
-    "Appleアカウントで保存" : {
+    "Appleでサインイン" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save with Apple Account"
+            "value" : "Sign in with Apple"
           }
         }
       }
@@ -343,6 +343,16 @@
     },
     "家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。" : {
       "shouldTranslate" : false
+    },
+    "家事の記録を始めるには、Appleでのサインインが必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To start tracking chores, you need to sign in with Apple."
+          }
+        }
+      }
     },
     "家事テンプレート" : {
       "localizations" : {

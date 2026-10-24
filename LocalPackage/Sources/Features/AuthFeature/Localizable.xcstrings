@@ -42,22 +42,22 @@
         }
       }
     },
+    "Appleでサインイン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with Apple"
+          }
+        }
+      }
+    },
     "Appleアカウントで、すぐに始められます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Get started right away with your Apple Account."
-          }
-        }
-      }
-    },
-    "Appleアカウントで保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save with Apple Account"
           }
         }
       }
@@ -314,26 +314,6 @@
         }
       }
     },
-    "パートナーと共有した家事を、機種変更しても引き継げるようになります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the chores you share with your partner, even when you switch phones."
-          }
-        }
-      }
-    },
-    "パートナーと共有した家事を、機種変更しても引き継げるようになります。保存すると、家事の記録を始められます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the chores you share with your partner, even when you switch phones. Once saved, you can start logging chores."
-          }
-        }
-      }
-    },
     "パートナーと家事を分け合えます" : {
       "localizations" : {
         "en" : {
@@ -360,6 +340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Plans"
+          }
+        }
+      }
+    },
+    "プランを購入するには、Appleでのサインインが必要です。機種変更しても、購入したプランを引き継げます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To purchase a plan, you need to sign in with Apple. Your plan will carry over even if you change phones."
           }
         }
       }
@@ -482,6 +472,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share your chore list to see at a glance who's on it and what's already done."
+          }
+        }
+      }
+    },
+    "家事の記録を始めるには、Appleでのサインインが必要です。機種変更しても、家事の記録を引き継げます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To start tracking chores, you need to sign in with Apple. Your chore history will carry over even if you change phones."
           }
         }
       }
@@ -612,16 +612,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Who will you use it with?"
-          }
-        }
-      }
-    },
-    "購入したプランを、機種変更しても引き継げるようになります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep your purchased plan, even when you switch phones."
           }
         }
       }

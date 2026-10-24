@@ -124,13 +124,19 @@ struct SettingView: View {
                 VStack(spacing: .space24) {
                     // 匿名のアカウントはログアウトすると二度と入れなくなるため、代わりにApple連携を出す
                     if loginContext.isAnonymous {
-                        Button {
-                            tappedAccountLinkButton()
-                        } label: {
-                            Text("Appleアカウントで保存", bundle: #bundle)
-                                .frame(maxWidth: .infinity)
+                        VStack(spacing: .space8) {
+                            Button {
+                                tappedAccountLinkButton()
+                            } label: {
+                                Text("Appleでサインイン", bundle: #bundle)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .primaryButtonStyle()
+                            Text("家事の記録を始めるには、Appleでのサインインが必要です", bundle: #bundle)
+                                .font(with: .caption)
+                                .foregroundStyle(.textSecondary)
+                                .multilineTextAlignment(.center)
                         }
-                        .primaryButtonStyle()
                     } else {
                         Button {
                             tappedLogoutRowButton()

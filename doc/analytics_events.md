@@ -156,8 +156,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|
 | `onboarding` | オンボーディングのApple連携のステップ（匿名でパートナー登録を終えた直後） |
 | `required` | 匿名のままグループに参加していて、全画面で連携を求めた（`RootView`の`.accountLinkRequired`） |
-| `todo` | 未参加ホームのやることリストの「保存する」、または匿名のまま未参加ホームから招待リンクを共有した直後 |
-| `setting` | 設定画面の「Appleアカウントで保存」、または設定から招待リンクを共有した直後 |
+| `todo` | 未参加ホームのやることリストの「サインイン」、または匿名のまま未参加ホームから招待リンクを共有した直後 |
+| `setting` | 設定画面の「Appleでサインイン」、または設定から招待リンクを共有した直後 |
 | `paywall` | 匿名のままPaywallの起点を踏んだとき（`PaywallGate`） |
 
 | `result` | 送信タイミング |
