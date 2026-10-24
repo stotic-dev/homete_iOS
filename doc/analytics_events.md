@@ -137,7 +137,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 値 | 説明 |
 |---|---|---|
 | `result` | `success` / `failure` | 認証に成功したかどうか |
-| `method` | `apple` / `anonymous` | サインインの方法。匿名で始めた人とAppleでログインした人を分けて見る（[ADR-0051](adr/0051-start-with-anonymous-auth-and-link-apple-later.md)） |
+| `method` | `apple` / `anonymous` | サインインの方法。匿名で始めた人とAppleでログインした人を分けて見る（[ADR-0054](adr/0054-start-with-anonymous-auth-and-link-apple-later.md)） |
 
 ### `account_link`
 
