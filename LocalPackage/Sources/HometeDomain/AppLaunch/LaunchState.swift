@@ -18,6 +18,14 @@ public enum LaunchState: Equatable {
     /// 未ログイン
     case notLoggedIn
 
+    /// ログインを終えてアプリに入るときの状態
+    /// - Note: 匿名のままグループに参加していたら、Apple連携を終えるまでホームに入れない
+    public static func entered(_ context: LoginContext) -> LaunchState {
+        context.requiresAccountLink
+            ? .accountLinkRequired(context: context)
+            : .loggedIn(context: context)
+    }
+
     public var isLoggedIn: Bool {
         if case .loggedIn = self { return true }
         return false

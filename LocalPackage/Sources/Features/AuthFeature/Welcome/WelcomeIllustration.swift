@@ -13,6 +13,7 @@ import SwiftUI
 /// 家事の名前・メンバーの名前・数値は、機能を伝えるための見本の値。
 struct WelcomeIllustration: View {
 
+    /// - Note: `.greeting`は図ではなく`WelcomeGreeting`で見せるため、渡さない
     let page: WelcomePage
 
     var body: some View {
@@ -41,6 +42,8 @@ private extension WelcomeIllustration {
     @ViewBuilder
     var illustration: some View {
         switch page {
+        case .greeting:
+            EmptyView()
         case .record:
             recordIllustration
         case .share:
@@ -52,7 +55,7 @@ private extension WelcomeIllustration {
 
     var hometteExpression: HometteExpression {
         switch page {
-        case .record: .wave
+        case .greeting, .record: .wave
         case .share: .point
         case .thanks: .holdHeart
         }

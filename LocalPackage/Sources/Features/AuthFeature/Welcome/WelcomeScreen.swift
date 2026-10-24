@@ -19,8 +19,9 @@ public struct WelcomeScreen: View {
     @CommonError var commonErrorContent
     @LoadingState var loadingState
 
-    @State var navigationPath = AppNavigationPath<WelcomeRoute>()
-    @State var selectedPage: WelcomePage = .record
+    /// すでにアカウントを持っている人のApple IDでのログインをシートで出しているか
+    @State var isPresentingLogin = false
+    @State var selectedPage: WelcomePage = .greeting
     @State var invitationStore: WelcomeInvitationStore?
 
     /// サインインの後にアカウントを取得できなかったときのエラー。受け取ったら`onReceiveAccountLoadFailure`で伝える
@@ -37,22 +38,23 @@ public struct WelcomeScreen: View {
     }
 
     public var body: some View {
-        NavigationStack(path: $navigationPath.path) {
-            WelcomeView(
-                selectedPage: $selectedPage,
-                invitation: invitationStore?.invitation ?? .none,
-                onTapStart: {
-                    tappedStart()
-                },
-                onTapExistingAccount: {
-                    tappedExistingAccount()
-                }
-            )
-            .navigationDestination(for: WelcomeRoute.self) { route in
-                navigationHandler(route)
+        WelcomeView(
+            selectedPage: $selectedPage,
+            invitation: invitationStore?.invitation ?? .none,
+            onTapStart: {
+                tappedStart()
+            },
+            onTapExistingAccount: {
+                tappedExistingAccount()
             }
-            // NavigationStackに付けると、ログイン画面から戻ったときに送られない。戻るたびに送るよう、1枚目の画面に付ける
-            .trackScreenView(.welcome)
+        )
+        .trackScreenView(.welcome)
+        // ログインは説明画面の続きではなく別の入口なので、説明画面の上にシートで重ね、下へスワイプして戻れるようにする
+        .sheet(isPresented: $isPresentingLogin) {
+            LoginView(
+                accountLoadFailure: accountLoadFailure,
+                onReceiveAccountLoadFailure: onReceiveAccountLoadFailure
+            )
         }
         // ログイン前でも招待リンクは開けるため、表示中に開かれたら読み込み直す
         .task(id: pendingInvitationStore.pendingToken) {
@@ -72,21 +74,10 @@ public struct WelcomeScreen: View {
 
 private extension WelcomeScreen {
 
-    @ViewBuilder
-    func navigationHandler(_ route: WelcomeRoute) -> some View {
-        switch route {
-        case .login:
-            LoginView(
-                accountLoadFailure: accountLoadFailure,
-                onReceiveAccountLoadFailure: onReceiveAccountLoadFailure
-            )
-        }
-    }
-
     /// 「はじめる」の後にアカウントを取得できなかったら、ローディングを畳んでエラーを出す
     /// - Note: ログイン画面を開いているときは、Apple IDでのログインの失敗なので`LoginView`に任せる
     func onChangeAccountLoadFailure() {
-        guard let accountLoadFailure, navigationPath.path.isEmpty else { return }
+        guard let accountLoadFailure, !isPresentingLogin else { return }
         loadingState.isLoading = false
         commonErrorContent = .init(error: accountLoadFailure)
         onReceiveAccountLoadFailure()
@@ -114,7 +105,7 @@ private extension WelcomeScreen {
     }
 
     func tappedExistingAccount() {
-        navigationPath.push(.login)
+        isPresentingLogin = true
     }
 
 }

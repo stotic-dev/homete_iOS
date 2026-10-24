@@ -73,6 +73,7 @@ struct SettingView: View {
     @Environment(AccountStore.self) var accountStore
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(SentInvitationStore.self) var sentInvitationStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var cohabitantMembers
     @Environment(\.routeResolver) var router
@@ -91,8 +92,6 @@ struct SettingView: View {
     @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
     @State var isShowAccountLink = false
-    /// 招待リンクの共有を完了した。共有シートを閉じた後に、匿名ならApple連携を求める
-    @State var hasSharedInvitation = false
 
     init(isShowHouseworkTemplate: Binding<Bool>, isShowFrequentHousework: Binding<Bool>) {
         _isShowHouseworkTemplate = isShowHouseworkTemplate
@@ -125,13 +124,19 @@ struct SettingView: View {
                 VStack(spacing: .space24) {
                     // 匿名のアカウントはログアウトすると二度と入れなくなるため、代わりにApple連携を出す
                     if loginContext.isAnonymous {
-                        Button {
-                            tappedAccountLinkButton()
-                        } label: {
-                            Text("Appleアカウントで保存", bundle: #bundle)
-                                .frame(maxWidth: .infinity)
+                        VStack(spacing: .space8) {
+                            Button {
+                                tappedAccountLinkButton()
+                            } label: {
+                                Text("Appleでサインイン", bundle: #bundle)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .primaryButtonStyle()
+                            Text("家事の記録を始めるには、Appleでのサインインが必要です", bundle: #bundle)
+                                .font(with: .caption)
+                                .foregroundStyle(.textSecondary)
+                                .multilineTextAlignment(.center)
                         }
-                        .primaryButtonStyle()
                     } else {
                         Button {
                             tappedLogoutRowButton()
@@ -162,15 +167,12 @@ struct SettingView: View {
         .trailingToolbarItem {
             leadingNavigationBarContent()
         }
-        .sheet(
+        .shareSheet(
             item: $sharingInvitation,
-            onDismiss: { dismissedShareSheet() },
-            content: { invitation in
-                if let url = invitation.url {
-                    ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
-                        hasSharedInvitation = isCompleted
-                    }
-                }
+            text: CohabitantInvitation.shareMessage,
+            url: \.url,
+            onFinish: { invitation, isCompleted in
+                finishedShareSheet(invitation, isCompleted: isCompleted)
             }
         )
         .sheet(isPresented: $isShowAccountLink) {
@@ -349,9 +351,11 @@ private extension SettingView {
 
     /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
     /// 共有を終えたその場で連携してもらう
-    func dismissedShareSheet() {
-        guard hasSharedInvitation else { return }
-        hasSharedInvitation = false
+    func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
+        guard isCompleted else { return }
+        Task {
+            await sentInvitationStore.save(invitation, accountId: loginContext.account.id)
+        }
         if loginContext.isAnonymous {
             isShowAccountLink = true
         }

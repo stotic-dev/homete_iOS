@@ -18,6 +18,9 @@ struct DebugMenuView: View {
     @Environment(\.appDependencies.debugAuthClient) var debugAuthClient
     @Environment(\.appDependencies.appReviewStateClient) var appReviewStateClient
     @Environment(\.appDependencies.screenTutorialStateClient) var screenTutorialStateClient
+    @Environment(\.appDependencies.houseworkEntryHistoryClient) var houseworkEntryHistoryClient
+    @Environment(\.appDependencies.debugLocalDataClient) var debugLocalDataClient
+    @Environment(AccountAuthStore.self) var accountAuthStore
     /// 設定画面はタブの画面から開くため、通常は必ず注入されている
     @Environment(RegistrationTutorialStore.self) var registrationTutorialStore: RegistrationTutorialStore?
 
@@ -28,6 +31,9 @@ struct DebugMenuView: View {
     @State var isShowRevokeResult = false
     @State var revokeResultMessage = ""
     @State var appReviewState: AppReviewState?
+    @State var isPresentedResetConfirmAlert = false
+    @State var resetFailureMessage: String?
+    @LoadingState var loadingState
 
     var body: some View {
         List {
@@ -36,6 +42,17 @@ struct DebugMenuView: View {
                     isShowOnboarding = true
                 }
                 Text("ダミーのアカウント・購読情報で動作します。実際のアカウント情報や購読状態は変更されません。", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+                Button(.localized("退会して、はじめから試す"), role: .destructive) {
+                    isPresentedResetConfirmAlert = true
+                }
+                Text("""
+                退会して、サーバーと端末に残したデータをすべて消します。2人以下のグループに参加していれば、グループごと消えます。\
+                消し終えると説明画面に戻り、オンボーディングをはじめから試せます。
+
+                Appleでサインインしているときは、退会の前にもう一度サインインを求められます。
+                """, bundle: #bundle)
                     .font(with: .caption)
                     .foregroundStyle(.textSecondary)
             }
@@ -116,6 +133,21 @@ struct DebugMenuView: View {
                 .foregroundStyle(.textSecondary)
             }
         }
+        .alert(.localized("退会して、すべてのデータを消しますか？"), isPresented: $isPresentedResetConfirmAlert) {
+            Button(.localized("消す"), role: .destructive) {
+                loadingState.task {
+                    await resetAllData()
+                }
+            }
+        } message: {
+            Text("消したデータは元に戻せません。", bundle: #bundle)
+        }
+        .alert(.localized("データを消せませんでした"), isPresented: isPresentingResetFailure) {
+            Button("OK") {}
+        } message: {
+            Text(resetFailureMessage ?? "")
+        }
+        .fullScreenLoadingIndicator(loadingState)
         .alert(.localized("ログイン情報の失効"), isPresented: $isShowRevokeResult) {
             Button("OK") {}
         } message: {
@@ -233,6 +265,35 @@ private extension DebugMenuView {
 // MARK: - プレゼンテーションロジック
 
 private extension DebugMenuView {
+
+    var isPresentingResetFailure: Binding<Bool> {
+        .init(
+            get: { resetFailureMessage != nil },
+            set: { isPresenting in
+                if !isPresenting {
+                    resetFailureMessage = nil
+                }
+            }
+        )
+    }
+
+    /// 退会してから、端末に残したデータを消す
+    /// - Note: 退会に失敗したら端末のデータは残す。消してしまうと、アカウントが残ったまま端末の記録だけが無くなる。
+    ///         退会するとサインアウトして説明画面に戻るが、この画面が閉じた後も最後まで消す
+    func resetAllData() async {
+        do {
+            try await accountAuthStore.deleteAccount()
+        } catch {
+            resetFailureMessage = "\(error)"
+            return
+        }
+        do {
+            try await houseworkEntryHistoryClient.save(.init(items: []))
+        } catch {
+            print("failed to remove housework entry history: \(error)")
+        }
+        await debugLocalDataClient.removeAll()
+    }
 
     /// サーバー側でログイン情報を失効させる
     /// - Note: 失効させただけではクライアントは気付かない。次にトークンを取り直すタイミング

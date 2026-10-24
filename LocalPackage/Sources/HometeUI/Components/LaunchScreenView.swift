@@ -13,7 +13,7 @@ public struct LaunchScreenView: View {
 
     public var body: some View {
         VStack(spacing: .space16) {
-            Text("Homete")
+            Text(verbatim: "homeau")
                 .font(with: .headLineL)
             HometteView(.normal, size: .large)
             Spacer()

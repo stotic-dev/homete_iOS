@@ -20,6 +20,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case accountLink = "account_link"
     /// アカウント登録画面
     case registrationAccount = "registration_account"
+    /// オンボーディングのパートナー登録の選択肢
+    case onboardingPartnerRegistration = "onboarding_partner_registration"
     /// オンボーディングのプレミアムプラン特典説明
     case onboardingPremiumIntroduction = "onboarding_premium_introduction"
     /// オンボーディングのプッシュ通知権限ガイド

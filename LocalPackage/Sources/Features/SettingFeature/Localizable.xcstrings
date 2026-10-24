@@ -13,12 +13,12 @@
     "2週間後のありがとう" : {
       "shouldTranslate" : false
     },
-    "Appleアカウントで保存" : {
+    "Appleでサインイン" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save with Apple Account"
+            "value" : "Sign in with Apple"
           }
         }
       }
@@ -187,6 +187,9 @@
     "デバッグメニュー" : {
       "shouldTranslate" : false
     },
+    "データを消せませんでした" : {
+      "shouldTranslate" : false
+    },
     "プライバシーポリシー" : {
       "localizations" : {
         "en" : {
@@ -344,6 +347,16 @@
     "家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。" : {
       "shouldTranslate" : false
     },
+    "家事の記録を始めるには、Appleでのサインインが必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To start tracking chores, you need to sign in with Apple."
+          }
+        }
+      }
+    },
     "家事テンプレート" : {
       "localizations" : {
         "en" : {
@@ -429,6 +442,12 @@
           }
         }
       }
+    },
+    "消したデータは元に戻せません。" : {
+      "shouldTranslate" : false
+    },
+    "消す" : {
+      "shouldTranslate" : false
     },
     "無料プラン" : {
       "localizations" : {
@@ -570,6 +589,15 @@
           }
         }
       }
+    },
+    "退会して、すべてのデータを消しますか？" : {
+      "shouldTranslate" : false
+    },
+    "退会して、はじめから試す" : {
+      "shouldTranslate" : false
+    },
+    "退会して、サーバーと端末に残したデータをすべて消します。2人以下のグループに参加していれば、グループごと消えます。消し終えると説明画面に戻り、オンボーディングをはじめから試せます。\n\nAppleでサインインしているときは、退会の前にもう一度サインインを求められます。" : {
+      "shouldTranslate" : false
     },
     "退会してもサブスクリプションは解約されず、料金の請求が続きます。先に解約手続きを行ってください。\nまた、あなたのデータは全て削除され、復元することはできません。現在参加しているグループが2名以下の場合は、グループごと削除されます。" : {
       "localizations" : {

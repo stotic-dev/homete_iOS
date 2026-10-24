@@ -42,6 +42,16 @@
         }
       }
     },
+    "Appleでサインイン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with Apple"
+          }
+        }
+      }
+    },
     "Appleアカウントで、すぐに始められます" : {
       "localizations" : {
         "en" : {
@@ -52,22 +62,22 @@
         }
       }
     },
-    "Appleアカウントで保存" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save with Apple Account"
-          }
-        }
-      }
-    },
     "homeauは無料のままでもすべての家事管理機能をお使いいただけます。\nもっと快適に使いたい方向けに、プレミアムプランをご用意しています。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Every chore management feature in homeau is free to use.\nFor an even better experience, we also offer a Premium Plan."
+          }
+        }
+      }
+    },
+    "homeauへようこそ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to homeau"
           }
         }
       }
@@ -104,6 +114,16 @@
         }
       }
     },
+    "あとで登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Later"
+          }
+        }
+      }
+    },
     "ありがとう、助かったよ" : {
       "localizations" : {
         "en" : {
@@ -130,16 +150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This Apple Account is already used with %@"
-          }
-        }
-      }
-    },
-    "この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This name will also appear on your partner's screen.\nYou can change it anytime."
           }
         }
       }
@@ -174,12 +184,23 @@
         }
       }
     },
-    "はじめまして！" : {
+    "なんと呼べばいいですか？" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nice to meet you!"
+            "value" : "What should we call you?"
+          }
+        }
+      }
+    },
+    "はじめまして、ほめっとだよ！" : {
+      "comment" : "マスコットのほめっとのあいさつ。くだけた口調",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi there, I'm Homette!"
           }
         }
       }
@@ -224,32 +245,12 @@
         }
       }
     },
-    "まずはあなたのニックネームを教えてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First, tell us your nickname"
-          }
-        }
-      }
-    },
     "やった家事を、かんたんに記録できます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log Your Chores in a Tap"
-          }
-        }
-      }
-    },
-    "アカウント登録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Account"
           }
         }
       }
@@ -274,12 +275,32 @@
         }
       }
     },
+    "ニックネームでも大丈夫です。パートナーの画面にも表示され、あとから変えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A nickname is fine. Your partner will see it too, and you can change it anytime."
+          }
+        }
+      }
+    },
     "パートナーから招待が届いています" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your partner has sent you an invitation"
+          }
+        }
+      }
+    },
+    "パートナーが参加するまでのあいだも、先に使い始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can start using the app while you wait for your partner to join."
           }
         }
       }
@@ -294,22 +315,12 @@
         }
       }
     },
-    "パートナーと共有した家事を、機種変更しても引き継げるようになります" : {
+    "パートナーが隣にいる" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep the chores you share with your partner, even when you switch phones."
-          }
-        }
-      }
-    },
-    "パートナーと共有した家事を、機種変更しても引き継げるようになります。保存すると、家事の記録を始められます" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep the chores you share with your partner, even when you switch phones. Once saved, you can start logging chores."
+            "value" : "My Partner Is Nearby"
           }
         }
       }
@@ -324,12 +335,42 @@
         }
       }
     },
+    "パートナーと家事を分け合って、おたがいのがんばりをほめ合えるアプリです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share chores with your partner and cheer each other on for every effort."
+          }
+        }
+      }
+    },
+    "パートナーを登録すると、家事を分け合えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your partner to share the chores."
+          }
+        }
+      }
+    },
     "プランを見る" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "View Plans"
+          }
+        }
+      }
+    },
+    "プランを購入するには、Appleでのサインインが必要です。機種変更しても、購入したプランを引き継げます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To purchase a plan, you need to sign in with Apple. Your plan will carry over even if you change phones."
           }
         }
       }
@@ -350,16 +391,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New Premium-only features come at no extra cost."
-          }
-        }
-      }
-    },
-    "ユーザー名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Username"
           }
         }
       }
@@ -456,12 +487,82 @@
         }
       }
     },
+    "家事の記録を始めるには、Appleでのサインインが必要です。機種変更しても、家事の記録を引き継げます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To start tracking chores, you need to sign in with Apple. Your chore history will carry over even if you change phones."
+          }
+        }
+      }
+    },
+    "届いた招待リンクから、パートナーのグループに参加できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join your partner's group from the invite link you received."
+          }
+        }
+      }
+    },
     "広告が表示されません" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No ads"
+          }
+        }
+      }
+    },
+    "招待リンクが見つかりませんでした。届いた招待リンクをもう一度開いてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't find an invite link. Please open the invite link you received again."
+          }
+        }
+      }
+    },
+    "招待リンクは送れましたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you send the invite link?"
+          }
+        }
+      }
+    },
+    "招待リンクを受け取った" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I Received an Invite Link"
+          }
+        }
+      }
+    },
+    "招待リンクを送りました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite Link Sent"
+          }
+        }
+      }
+    },
+    "招待リンクを送る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send an Invite Link"
           }
         }
       }
@@ -496,16 +597,6 @@
         }
       }
     },
-    "登録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Register"
-          }
-        }
-      }
-    },
     "終わった家事を記録すると、だれがどれだけがんばったか、あとから振り返れます" : {
       "localizations" : {
         "en" : {
@@ -526,12 +617,52 @@
         }
       }
     },
-    "購入したプランを、機種変更しても引き継げるようになります" : {
+    "誰と使いますか？" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep your purchased plan, even when you switch phones."
+            "value" : "Who will you use it with?"
+          }
+        }
+      }
+    },
+    "近くにいるパートナーと、その場で登録できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a partner who's right next to you."
+          }
+        }
+      }
+    },
+    "送ったので次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I sent it, continue"
+          }
+        }
+      }
+    },
+    "送ったら、パートナーの参加を待たずに次へ進めます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once it's sent, you can continue without waiting for your partner to join."
+          }
+        }
+      }
+    },
+    "離れていても、リンクから参加してもらえます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner can join from the link, even if you're apart."
           }
         }
       }

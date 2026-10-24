@@ -16,6 +16,8 @@ struct CohabitantRegistrationScanningStateView: View {
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.dismiss) var dismiss
     @Environment(\.connectedPeers) var connectedPeers
+    @Environment(\.loginContext.account.id) var accountId
+    @Environment(SentInvitationStore.self) var sentInvitationStore
     @LoadingState var loadingState
 
     @CommonError var errorContent
@@ -54,7 +56,7 @@ struct CohabitantRegistrationScanningStateView: View {
         .sheet(item: $sharingInvitation) { invitation in
             if let url = invitation.url {
                 ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { completed in
-                    onCompleteShareInvitation(completed)
+                    onCompleteShareInvitation(invitation, completed: completed)
                 }
             }
         }
@@ -94,9 +96,13 @@ private extension CohabitantRegistrationScanningStateView {
     /// 相手に共有できたら、この画面ですることは無くなるので登録画面ごと閉じる。
     /// 相手の参加は`AccountStore`の購読で受け取り、ホーム画面側が参加済みの表示に切り替わる。
     /// キャンセルした場合はP2P登録や再共有に進めるよう画面に留まる。
-    func onCompleteShareInvitation(_ completed: Bool) {
+    func onCompleteShareInvitation(_ invitation: CohabitantInvitation, completed: Bool) {
         guard completed else { return }
-        dismiss()
+        Task {
+            // 未参加ホームで「参加を待っています」を出せるよう、閉じる前に送った招待を記録する
+            await sentInvitationStore.save(invitation, accountId: accountId)
+            dismiss()
+        }
     }
 
 }

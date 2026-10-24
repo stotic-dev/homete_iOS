@@ -87,11 +87,12 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `login` | `LoginView`（説明画面の「すでにアカウントをお持ちの方」から開く） |
 | `registration_account` | `RegistrationAccountView` |
 | `account_link` | `AccountLinkScreen`（Apple連携の画面。全画面・設定・Paywallの前などで共通） |
+| `onboarding_partner_registration` | `PartnerRegistrationScreen`（オンボーディングのパートナー登録の選択肢） |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
 | `onboarding_notification_permission` | `OnboardingNotificationPermissionGuideView` |
 | `paywall` | `PaywallScreen`（`RouteResolverInjection`で付与） |
 | `dashboard` | `RegisteredContent` |
-| `dashboard_not_registered` | `NotRegisteredContent` |
+| `dashboard_not_registered` | `HomeView`（グループ未参加のホーム。「家事を始める前に」のやることリスト） |
 | `cohabitant_registration` | `CohabitantRegistrationView` |
 | `cohabitant_join` | `CohabitantJoinView` |
 | `cohabitant_completion` | `CohabitantCompletionView` |
@@ -154,10 +155,10 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | `entry` | 起点 |
 |---|---|
-| `onboarding` | オンボーディングのApple連携のステップ（#463で追加） |
+| `onboarding` | オンボーディングのApple連携のステップ（匿名でパートナー登録を終えた直後） |
 | `required` | 匿名のままグループに参加していて、全画面で連携を求めた（`RootView`の`.accountLinkRequired`） |
-| `todo` | 未参加ホームのやることリスト（#463で追加） |
-| `setting` | 設定画面の「Appleアカウントで保存」、または設定から招待リンクを共有した直後 |
+| `todo` | 未参加ホームのやることリストの「サインイン」、または匿名のまま未参加ホームから招待リンクを共有した直後 |
+| `setting` | 設定画面の「Appleでサインイン」、または設定から招待リンクを共有した直後 |
 | `paywall` | 匿名のままPaywallの起点を踏んだとき（`PaywallGate`） |
 
 | `result` | 送信タイミング |
@@ -190,25 +191,33 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 
 ### `onboarding`
 
-アカウント登録直後のオンボーディングの特典説明における行動。
+アカウント登録直後のオンボーディングのパートナー登録・特典説明における行動。
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `OnboardingAnalyticsAction`、`PremiumIntroductionView` |
+| 実装 | `OnboardingAnalyticsAction`、`PartnerRegistrationScreen` / `PremiumIntroductionView` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `premium_introduction` | どの画面での行動か（現状は特典説明画面のみ） |
-| `action` | ○ | `shown` / `skipped` | 何が起きたか |
+| `step` | ○ | `partner_registration` / `premium_introduction` | どの画面での行動か |
+| `action` | ○ | `invite` / `nearby` / `invited` / `later` / `shown` / `skipped` | 何が起きたか |
 
 送信されるパターンと、その送信タイミング:
 
 | `step` | `action` | 送信タイミング |
 |---|---|---|
+| `partner_registration` | `invite` | パートナー登録で「招待リンクを送る」をタップした |
+| `partner_registration` | `nearby` | パートナー登録で「パートナーが隣にいる」をタップした（P2Pでの登録画面を開く） |
+| `partner_registration` | `invited` | パートナー登録で「招待リンクを受け取った」をタップした（クリップボードの招待リンクを読み取る） |
+| `partner_registration` | `later` | パートナー登録で「あとで登録する」をタップした |
 | `premium_introduction` | `shown` | 特典説明画面が表示された |
 | `premium_introduction` | `skipped` | 「あとで決める」でPaywallを開かずに次へ進んだ |
 
-**分析での使い方:** `premium_introduction / shown` を分母に `skipped` の比率を見ると、特典説明自体で
+招待リンクから来た人には選択肢を出さずに参加確認を出すため、`partner_registration`は送らない（参加は`cohabitant_invitation`の`join`で見る）。
+選んだ後に登録を終えたかは、`invite`なら`cohabitant_invitation`の`issue(step: onboarding)`、`nearby`・`invited`なら`cohabitant_registration`の`completed`で見る。
+
+**分析での使い方:** `partner_registration`の`action`の比率を見ると、オンボーディングでどの登録方法が選ばれているか、
+`later`でパートナー登録を飛ばしている人がどれくらいいるかが分かる。`premium_introduction / shown` を分母に `skipped` の比率を見ると、特典説明自体で
 離脱しているユーザーの規模が分かる。Paywallの表示・クローズ（オンボーディング経由も含む）は`paywall`イベントを見る。
 
 > 通知権限の案内（オンボーディング・設定画面の両方）は`notification_permission`イベントに分離した。
@@ -485,12 +494,12 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `SettingView` / `RootView` / `CohabitantJoinStore` / `PasteboardInvitationStore` |
+| 実装 | `CohabitantInvitationAnalyticsAction`、`CohabitantRegistrationScanningStateView` / `SettingView` / `PartnerRegistrationScreen` / `RootView` / `CohabitantJoinStore` / `PasteboardInvitationStore` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `issue` / `open` / `pasteboard_check` / `join` | 招待リンクの発行 / 起動 / クリップボードの確認 / 参加のどれか |
-| `step` | — | `cohabitant_registration` / `setting` / `universal_link` / `custom_scheme` / `pasteboard` | 発行を開始した画面（`issue`）、または起動の経路（`open`）。画面・経路を起点とする行動のみ付与 |
+| `step` | — | `cohabitant_registration` / `setting` / `onboarding` / `universal_link` / `custom_scheme` / `pasteboard` | 発行を開始した画面（`issue`）、または起動の経路（`open`）。画面・経路を起点とする行動のみ付与 |
 | `result` | — | `success` / `already_member` / `failure` / `invalid_link` / `expired` / `already_joined` / `suggested` / `not_found` | 結果を伴う行動のみ付与 |
 
 送信されるパターンと、その送信タイミング:
@@ -499,6 +508,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 |---|---|---|---|
 | `issue` | `cohabitant_registration` | `success` / `failure` | 同居人登録画面の「リンクで招待」をタップし、招待トークンの発行が完了した |
 | `issue` | `setting` | `success` / `failure` | 設定画面の「メンバー招待」をタップし、招待トークンの発行が完了した |
+| `issue` | `onboarding` | `success` / `failure` | オンボーディングのパートナー登録で「招待リンクを送る」をタップし、招待トークンの発行が完了した |
 | `open` | `universal_link` | — | Universal Link（`https`）でアプリが起動した（ログイン前も含む） |
 | `open` | `custom_scheme` | — | 着地ページの「アプリで開く」（カスタムURLスキーム）でアプリが起動した |
 | `open` | `pasteboard` | — | クリップボードから招待リンクを読み取れた（参加待ちのトークンとして渡した） |
@@ -509,7 +519,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 | `join` | — | `invalid_link` / `expired` / `already_joined` / `failure` | 参加に失敗した（無効なリンク / 期限切れ / 別グループに参加済み / それ以外）。参加確認画面を開いた直後の招待情報の取得で失敗した場合も含む |
 
 **分析での使い方:** `issue(success)` を分母に `open` → `join(success)` を追うと招待リンクの成立率になる。
-`issue` の `step` で分けると、同居人登録画面と設定画面のどちらが招待の起点として機能しているかが分かる。
+`issue` の `step` で分けると、同居人登録画面・設定画面・オンボーディングのどれが招待の起点として機能しているかが分かる。
 `open` の `step` で分けると、Universal Link が発火しない WebView（LINE 等）からどの程度「アプリで開く」経由で到達しているか、
 未インストールからクリップボード経由で参加まで辿り着いたユーザーがどの程度いるかが分かる。
 `pasteboard_check(suggested)` に対する `open(pasteboard)` の比率が低ければ、無関係な URL で案内が出過ぎている（`detectPatterns` は URL 全般に反応する）ことを示す。

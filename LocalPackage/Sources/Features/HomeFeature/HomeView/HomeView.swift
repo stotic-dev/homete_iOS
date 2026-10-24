@@ -25,11 +25,17 @@ public struct HomeView: View {
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.scenePhase) var scenePhase
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
+    @Environment(SentInvitationStore.self) var sentInvitationStore
     @Environment(CohabitantStore.self) var cohabitantStore
 
     @State var isShowCohabitantRegistrationModal = false
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var isShowSetting = false
+    @State var isShowAccountLink = false
+    /// 「もう一度送る」で共有シートに出している招待
+    @State var resendingInvitation: CohabitantInvitation?
+    /// パートナー登録の画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
+    @State var sentInvitationTokenBeforeRegistration: String?
     @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
     let contributionStore: ContributionStore?
     let houseworkTemplateListStore: HouseworkTemplateListStore?
@@ -55,9 +61,11 @@ public struct HomeView: View {
                         notRegisteredContent()
                     }
                 }
-                .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistrationModal) {
-                    router.resolve(.cohabitantRegistration)
-                }
+                .fullScreenCoverOnIOS(
+                    isPresented: $isShowCohabitantRegistrationModal,
+                    onDismiss: { dismissedCohabitantRegistration() },
+                    content: { router.resolve(.cohabitantRegistration) }
+                )
                 .homeNavigationBar {
                     isShowSetting = true
                 }
@@ -115,8 +123,12 @@ private extension HomeView {
 
     func notRegisteredContent() -> some View {
         NotRegisteredContent(
-            isShowCohabitantRegistrationModal: $isShowCohabitantRegistrationModal,
+            isAnonymous: loginContext.isAnonymous,
+            isWaitingForPartner: waitingInvitation != nil,
             pasteboardInvitationState: pasteboardInvitationStore?.state ?? .idle,
+            onTapRegisterPartner: { tappedRegisterPartner() },
+            onTapResendInvitation: { tappedResendInvitation() },
+            onTapLinkAccount: { isShowAccountLink = true },
             onTapCheckPasteboard: {
                 Task {
                     await pasteboardInvitationStore?.readInvitation()
@@ -129,6 +141,17 @@ private extension HomeView {
         .sheet(isPresented: $isShowSetting) {
             router.resolve(.setting)
         }
+        .shareSheet(
+            item: $resendingInvitation,
+            text: CohabitantInvitation.shareMessage,
+            url: \.url,
+            onFinish: { invitation, isCompleted in
+                finishedShareSheet(invitation, isCompleted: isCompleted)
+            }
+        )
+        .sheet(isPresented: $isShowAccountLink) {
+            router.resolve(.accountLink(entry: .todo))
+        }
         // 着地ページでコピーしてからApp Store経由で戻ってくるため、復帰のたびにクリップボードを確認し直す
         .onChange(of: scenePhase) {
             guard scenePhase == .active else { return }
@@ -136,6 +159,7 @@ private extension HomeView {
                 await pasteboardInvitationStore?.checkIfNeeded()
             }
         }
+        .trackScreenView(.dashboardNotRegistered)
     }
 
 }
@@ -169,7 +193,44 @@ private extension HomeView {
         )
     }
 
+    /// 送った招待のうち、有効期限内で相手の参加を待っているもの
+    /// - Note: 環境値の`now`は画面を作った時点のまま変わらない。アプリを開いたまま期限を過ぎても参加待ちを出し続けないよう、
+    ///         見るたびに今の時刻で判定する（バックグラウンドから戻ると`scenePhase`の変化で描き直される）
+    var waitingInvitation: CohabitantInvitation? {
+        sentInvitationStore.waitingInvitation(accountId: loginContext.account.id, now: .now)
+    }
+
+    func tappedRegisterPartner() {
+        sentInvitationTokenBeforeRegistration = sentInvitationStore.sentInvitation?.token
+        isShowCohabitantRegistrationModal = true
+    }
+
+    /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
+    /// 登録画面の中から招待を送ったら、その場で連携してもらう
+    /// - Note: P2Pでの登録を終えた場合はグループに入り、起動状態がApple連携を求める画面に切り替わるため、ここでは出さない
+    func dismissedCohabitantRegistration() {
+        let hasSentInvitation = sentInvitationStore.sentInvitation?.token != sentInvitationTokenBeforeRegistration
+        guard loginContext.isAnonymous, hasSentInvitation else { return }
+        isShowAccountLink = true
+    }
+
+    func tappedResendInvitation() {
+        resendingInvitation = waitingInvitation
+    }
+
+    /// 共有を完了したら、匿名ならApple連携を求める
+    func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
+        guard isCompleted else { return }
+        Task {
+            await sentInvitationStore.save(invitation, accountId: loginContext.account.id)
+        }
+        if loginContext.isAnonymous {
+            isShowAccountLink = true
+        }
+    }
+
     func didAppearNotRegisteredContent() async {
+        await sentInvitationStore.loadIfNeeded()
         // グループに所属していない間は、脱退前のグループの購読とメンバーを残さない
         await cohabitantStore.clear()
         if pasteboardInvitationStore == nil {

@@ -11,15 +11,25 @@ import Prefire
 #endif
 
 /// アカウント登録直後のオンボーディングを順番に案内する画面
-/// - Note: 全ステップを終えた時点でログイン状態へ遷移する。各ステップは購入・権限許可を強制せずスキップできる
+/// - Note: 全ステップを終えた時点でログイン状態へ遷移する。購入・権限許可・パートナー登録は強制せずスキップできるが、
+///         匿名のままパートナー登録を終えた人のApple連携だけはスキップできない
 public struct OnboardingFlowView: View {
 
     @Environment(\.launchStateProxy) var launchStateProxy
     @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
+    @Environment(AccountStore.self) var accountStore
+    @Environment(AccountAuthStore.self) var accountAuthStore
 
     @State var step = OnboardingStep.registration
     /// 実際に案内するステップの並び（案内が不要なステップは除かれる）
-    @State var steps = OnboardingStep.allCases
+    @State var steps: [OnboardingStep]
+    /// 通知の権限が未決定で、通知の案内を出すか
+    @State var shouldGuideNotification = true
+    /// パートナー登録で、招待の共有・P2Pでの登録・招待への参加のどれかを終えたか
+    @State var hasRegisteredPartner = false
+    /// オンボーディングを始めたときに匿名だったか
+    /// - Note: 連携すると`authInfo`は匿名でなくなる。連携のステップを並びに残したまま次へ進めるよう、始めたときの値で並びを決める
+    @State var startedAnonymously: Bool
     /// 登録が完了したアカウント（オンボーディング完了時にログイン状態へ渡すために保持する）
     @State var registeredAccount: Account?
 
@@ -29,6 +39,12 @@ public struct OnboardingFlowView: View {
     public init(authInfo: AccountAuthResult, authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase) {
         self.authInfo = authInfo
         self.authSubscriptionSyncUseCase = authSubscriptionSyncUseCase
+        _startedAnonymously = State(initialValue: authInfo.isAnonymous)
+        _steps = State(initialValue: OnboardingStep.steps(
+            isAnonymous: authInfo.isAnonymous,
+            shouldGuideNotification: true,
+            hasRegisteredPartner: false
+        ))
     }
 
     public var body: some View {
@@ -42,6 +58,26 @@ public struct OnboardingFlowView: View {
                     ) { account in
                         completedRegistration(account)
                     }
+
+                case .partnerRegistration:
+                    if let registeredAccount {
+                        PartnerRegistrationScreen(account: registeredAccount) { hasRegisteredPartner in
+                            completedPartnerRegistration(hasRegisteredPartner: hasRegisteredPartner)
+                        }
+                        // P2Pでの登録画面は、ログイン後と同じくログイン中のアカウントを環境から読む
+                        .environment(
+                            \.loginContext,
+                            LoginContext(account: registeredAccount, isAnonymous: authInfo.isAnonymous)
+                        )
+                        .transition(stepTransition)
+                    }
+
+                case .accountLink:
+                    // 匿名のままパートナーと使い始めると、機種変更で共有した家事ごと失われるため、閉じる導線を出さない
+                    AccountLinkScreen(entry: .onboarding, onClose: nil) {
+                        moveToNextStep()
+                    }
+                    .transition(stepTransition)
 
                 case .premiumIntroduction:
                     PremiumIntroductionView {
@@ -60,6 +96,8 @@ public struct OnboardingFlowView: View {
             OnboardingProgressIndicator(steps: steps, currentStep: step)
         }
         .padding(.bottom, .space16)
+        // 各ステップの背景は進捗の上で切れるため、進捗の下と安全領域まで画面全体を同じ背景で塗る
+        .background(.backgroundScreen)
         .animation(.spring, value: step)
         .task {
             await loadSteps()
@@ -85,10 +123,17 @@ private extension OnboardingFlowView {
 
     /// 案内が不要なステップを除いて、進捗の分母を実際に表示する画面数と一致させる
     func loadSteps() async {
-        let shouldGuideNotification = await notificationPermissionUseCase.shouldGuideOnOnboarding()
-        guard !shouldGuideNotification else { return }
+        shouldGuideNotification = await notificationPermissionUseCase.shouldGuideOnOnboarding()
+        // 確認が返る前にパートナー登録を終えていることがある。その結果を捨てると、Apple連携のステップが並びから消える
+        rebuildSteps()
+    }
 
-        steps = OnboardingStep.allCases.filter { $0 != .notificationPermission }
+    func rebuildSteps() {
+        steps = OnboardingStep.steps(
+            isAnonymous: startedAnonymously,
+            shouldGuideNotification: shouldGuideNotification,
+            hasRegisteredPartner: hasRegisteredPartner
+        )
     }
 
     func completedRegistration(_ account: Account) {
@@ -96,20 +141,30 @@ private extension OnboardingFlowView {
         moveToNextStep()
     }
 
+    /// パートナー登録の結果を受けて並びを組み立て直してから次へ進む（匿名なら次はApple連携になる）
+    func completedPartnerRegistration(hasRegisteredPartner: Bool) {
+        self.hasRegisteredPartner = hasRegisteredPartner
+        rebuildSteps()
+        moveToNextStep()
+    }
+
     /// 次のステップへ進む。残りのステップがなければオンボーディングを完了する
     func moveToNextStep() {
-        let nextIndex = (steps.firstIndex(of: step) ?? 0) + 1
-        guard steps.indices.contains(nextIndex) else {
+        guard let nextStep = step.next(in: steps) else {
             finishOnboarding()
             return
         }
 
-        step = steps[nextIndex]
+        step = nextStep
     }
 
+    /// - Note: パートナー登録で参加・P2P登録をするとグループIDが入り、Apple連携をすると匿名でなくなる。
+    ///         どちらもオンボーディング中は起動状態に反映されないため、最新のアカウントと認証で入り直す。
+    ///         `authInfo`は連携の後の同期が終わるまで匿名のままなので、連携した時点で変わる`AccountAuthStore`の認証を見る
     func finishOnboarding() {
-        guard let registeredAccount else { return }
-        launchStateProxy(.loggedIn(context: .init(account: registeredAccount, isAnonymous: authInfo.isAnonymous)))
+        guard let account = accountStore.account ?? registeredAccount else { return }
+        let isAnonymous = accountAuthStore.currentAuth.result?.isAnonymous ?? authInfo.isAnonymous
+        launchStateProxy(.entered(LoginContext(account: account, isAnonymous: isAnonymous)))
     }
 
 }
@@ -127,6 +182,8 @@ private extension OnboardingFlowView {
         )
     )
     .environment(subscriptionStore)
+    .environment(AccountStore())
+    .environment(AccountAuthStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif

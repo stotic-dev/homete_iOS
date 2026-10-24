@@ -10,7 +10,7 @@ import HometeDomain
 import HometeUI
 import SwiftUI
 
-/// オンボーディング（アカウント登録→特典説明→通知権限）を実データに影響を与えずに確認するためのデバッグ画面
+/// オンボーディング（アカウント登録→パートナー登録→通知権限→特典説明）を実データに影響を与えずに確認するためのデバッグ画面
 /// - Note: Store類だけでなく`AppDependencies`と`RouteResolver`もこの画面用に差し替えている。
 ///         そのためFirestore・RevenueCatへの書き込み、Analyticsの送信、実機の通知権限ダイアログ表示、
 ///         APNsへの登録、本物のPaywall表示はいずれも発生しない
@@ -22,6 +22,8 @@ struct DebugOnboardingScreen: View {
     @State var accountStore = AccountStore()
     @State var cohabitantStore = CohabitantStore()
     @State var subscriptionStore = SubscriptionStore()
+    @State var pendingInvitationStore = PendingInvitationStore()
+    @State var sentInvitationStore = SentInvitationStore()
     /// 本物の起動状態を書き換えないためのダミー。ログイン状態への遷移要求はこのデバッグ画面を閉じる操作として扱う
     @State var launchState = LaunchState.launching
 
@@ -37,6 +39,10 @@ struct DebugOnboardingScreen: View {
                 )
             )
             .environment(subscriptionStore)
+            .environment(accountAuthStore)
+            .environment(accountStore)
+            .environment(pendingInvitationStore)
+            .environment(sentInvitationStore)
             .environment(\.launchStateProxy, .init(launchState: $launchState))
             // 全クライアントが`previewValue`（何もしない実装）の依存に差し替えて、実環境への副作用を遮断する
             .environment(\.appDependencies, .previewValue)

@@ -328,6 +328,36 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
         }
     }
 
+    @Test("サインアウト時に、前のアカウントが送った招待を消す")
+    func syncOnSignedOutClearsSentInvitation() async {
+        await confirmation("端末に保存した招待を消す") { cleared in
+            // Arrange
+
+            let sentInvitationStore = SentInvitationStore(sentInvitationClient: .init(clear: {
+                cleared()
+            }))
+            await sentInvitationStore.save(
+                CohabitantInvitation(token: "token", cohabitantId: nil, expiresAt: .distantFuture),
+                accountId: "previousAccountId"
+            )
+            let useCase = AuthSubscriptionSyncUseCase(
+                accountStore: AccountStore(),
+                cohabitantStore: CohabitantStore(),
+                subscriptionStore: SubscriptionStore(),
+                houseworkManager: .init(houseworkClient: .previewValue),
+                sentInvitationStore: sentInvitationStore
+            )
+
+            // Act
+
+            await useCase.syncOnSignedOut()
+
+            // Assert
+
+            #expect(sentInvitationStore.sentInvitation == nil)
+        }
+    }
+
 }
 
 extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
