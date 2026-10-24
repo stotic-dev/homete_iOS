@@ -38,6 +38,8 @@ public struct AppDependencies: Sendable {
     public let intentDonationClient: IntentDonationClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
+    /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
+    public let debugLocalDataClient: DebugLocalDataClient
     public let houseworkManager: HouseworkManager
     /// 広告の同意取得（ATT含む）とMobileAdsの初期化を行うUseCase
     public let adsSetupUseCase: AdsSetupUseCase
@@ -74,7 +76,8 @@ public struct AppDependencies: Sendable {
         encouragementCommentClient: EncouragementCommentClient = .previewValue,
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         intentDonationClient: IntentDonationClient = .previewValue,
-        debugAuthClient: DebugAuthClient = .previewValue
+        debugAuthClient: DebugAuthClient = .previewValue,
+        debugLocalDataClient: DebugLocalDataClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
@@ -104,6 +107,7 @@ public struct AppDependencies: Sendable {
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.intentDonationClient = intentDonationClient
         self.debugAuthClient = debugAuthClient
+        self.debugLocalDataClient = debugLocalDataClient
         houseworkManager = .init(houseworkClient: houseworkClient)
         adsSetupUseCase = .init(consentClient: consentClient, mobileAdsClient: mobileAdsClient)
         notificationPermissionUseCase = .init(

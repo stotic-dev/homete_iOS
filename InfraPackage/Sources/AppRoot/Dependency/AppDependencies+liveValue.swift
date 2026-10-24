@@ -38,7 +38,8 @@ public extension AppDependencies {
         encouragementCommentClient: .liveValue,
         encouragementCommentCacheClient: .liveValue,
         intentDonationClient: .liveValue,
-        debugAuthClient: liveDebugAuthClient
+        debugAuthClient: liveDebugAuthClient,
+        debugLocalDataClient: liveDebugLocalDataClient
     )
 
 }
@@ -58,6 +59,8 @@ private let livePasteboardClient: PasteboardClient = .previewValue
 // デバッグメニューからしか使わないため、リリースビルドには実装を持ち込まない
 #if DEBUG
 private let liveDebugAuthClient: DebugAuthClient = .liveValue
+private let liveDebugLocalDataClient: DebugLocalDataClient = .liveValue
 #else
 private let liveDebugAuthClient: DebugAuthClient = .previewValue
+private let liveDebugLocalDataClient: DebugLocalDataClient = .previewValue
 #endif
