@@ -354,14 +354,10 @@ private extension SettingView {
             navigationPath.push(.inquiryList)
 
         case .termsOfService:
-            if let url = URL(string: Constants.termsOfServiceURLString) {
-                openURL(url)
-            }
+            openExternalPage(Constants.termsOfServiceURLString)
 
         case .privacyPolicy:
-            if let url = URL(string: Constants.privacyPolicyURLString) {
-                openURL(url)
-            }
+            openExternalPage(Constants.privacyPolicyURLString)
 
         case .license:
             navigationPath.push(.licenseList)
@@ -371,6 +367,12 @@ private extension SettingView {
             navigationPath.push(.debugMenu)
         #endif
         }
+    }
+
+    /// 規約などのページを外部のブラウザで開く
+    func openExternalPage(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        openURL(url)
     }
 
     /// 招待リンクを発行して共有シートを開く
