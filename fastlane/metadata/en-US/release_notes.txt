@@ -1,12 +1,9 @@
 Thank you for using homeau.
 
-- Meet Homette, our new character. Homette cheers you on when you finish a chore or receive a "thank you"
-- Home now shows a few kind words based on how today's chores are going
-- A fresh new design. Home, the chore board, and the charts are easier to read, with soft colors and a color for each member
-- The app icon now features Homette
-- Right after you create your household, a short guide shows you how to get started
-- Tapping a "thank you" notification now opens that chore's details
-- homeau is now available in English
+- Use Siri or Shortcuts to complete a chore, say thanks, or check this month's effort
+- Tap the month on the chore board to pick a date from the calendar
+- The first time you open the chore entry screen or Chore Templates, a short guide shows you how to use it
+- Fixed an issue where the add and edit screens closed right away in Chore Templates and Go-to Chores opened from Settings
 - Other usability improvements and minor bug fixes
 
 A little reward for everyday chores.
