@@ -35,8 +35,8 @@
 
 ### 3. Firestore TTL の設定はリポジトリ上に存在しない
 
-- `firebase/firestore.indexes.json` の `fieldOverrides` は空配列
-- `firebase/functions/src/` に削除バッチ・スケジュール関数は存在しない（`notifyCohabitants` / `deleteUserData` のみ）
+- [`firebase/firestore.indexes.json`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.indexes.json) の `fieldOverrides` は空配列
+- [`firebase/functions/src/`](https://github.com/stotic-dev/homete_backend/tree/main/firebase/functions/src) に削除バッチ・スケジュール関数は存在しない（`notifyCohabitants` / `deleteUserData` のみ）
 - 一方 `doc/strategy/housework-points.md:191` には「`expiredAt` は Firestore TTL（自動削除）に使用されている」と記述あり
 
 **TTLポリシーは Firebase コンソール側の手動設定に依存している**と判断される。着手前にユーザーへ確認し、**TTLは設定済み**であることを確認済み（2026-08-11、stg）。したがって `expiredAt` の変更はそのまま実データの削除タイミングに反映される。
@@ -294,7 +294,7 @@ struct HouseworkDateList: Equatable {
 
 ### 6. プラン変更時の `expiredAt` 一括更新（Cloud Function）
 
-`firebase/functions/src/syncHouseworkRetention.ts` を新規追加する。既存の `notifyCohabitants.ts`（`onCall` v2 + 認証チェック）と同じパターンに揃える。
+[`firebase/functions/src/syncHouseworkRetention.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/syncHouseworkRetention.ts) を新規追加する。既存の `notifyCohabitants.ts`（`onCall` v2 + 認証チェック）と同じパターンに揃える。
 
 ```typescript
 interface SyncHouseworkRetentionRequest {
@@ -373,15 +373,15 @@ public extension EnvironmentValues {
 | 修正View | `.../Features/ContributionFeature/View/Analytics/ContributionAnalyticsView.swift` | ブロック表示の分岐追加 |
 | 修正View | `.../Features/ContributionFeature/View/Analytics/SubViews/AnalyticsPeriodHeader.swift` | 上限判定・オンデマンドフェッチ起動 |
 | 修正View | `.../Features/HomeFeature/HomeView/HomeView.swift` | `setupObserver` にポリシーを渡す |
-| 新規Function | `firebase/functions/src/syncHouseworkRetention.ts` | callable本体（認証・メンバー検証・プラン判定） |
-| 新規Function | `firebase/functions/src/models/HouseworkRetentionUpdater.ts` | `expiredAt` の一括再計算（テスト容易性のため分離） |
-| 新規Function | `firebase/functions/src/models/HouseworkRetention.ts` | 保持期限の定数と算出ロジック |
-| 修正Function | `firebase/functions/src/index.ts` | 新規Functionのexport |
-| 修正Function | `firebase/functions/src/models/Account.ts` | `isPremium` フィールド追加 |
-| 修正Function | `firebase/functions/src/models/FirestoreCollections.ts` | `Houseworks` サブコレクション追加 |
+| 新規Function | [`firebase/functions/src/syncHouseworkRetention.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/syncHouseworkRetention.ts) | callable本体（認証・メンバー検証・プラン判定） |
+| 新規Function | [`firebase/functions/src/models/HouseworkRetentionUpdater.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/HouseworkRetentionUpdater.ts) | `expiredAt` の一括再計算（テスト容易性のため分離） |
+| 新規Function | [`firebase/functions/src/models/HouseworkRetention.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/HouseworkRetention.ts) | 保持期限の定数と算出ロジック |
+| 修正Function | [`firebase/functions/src/index.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/index.ts) | 新規Functionのexport |
+| 修正Function | [`firebase/functions/src/models/Account.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/Account.ts) | `isPremium` フィールド追加 |
+| 修正Function | [`firebase/functions/src/models/FirestoreCollections.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/FirestoreCollections.ts) | `Houseworks` サブコレクション追加 |
 | 新規テスト | `LocalPackage/Tests/HometeDomainTests/Subscription/HouseworkStoragePolicyTest.swift` | 閲覧範囲・`expiredAt` の境界値 |
 | 修正テスト | `LocalPackage/Tests/HometeDomainTests/Housework/HouseworkManagerTest.swift` | プラン別フェッチ範囲・追加フェッチ |
-| 新規テスト | `firebase/functions/test/` | Function のE2Eテスト |
+| 新規テスト | [`firebase/functions/test/`](https://github.com/stotic-dev/homete_backend/tree/main/firebase/functions/test) | Function のE2Eテスト |
 
 ## タスク
 
@@ -482,4 +482,4 @@ Firestore のセキュリティルールは複数の `match` を **OR** で評�
   - `doc/strategy/billing-foundation.md` — 課金基盤の設計方針
   - `doc/strategy/housework-points.md` — `expiredAt` を1年に延長した際の経緯（L191）
   - `LocalPackage/Sources/HometeDomain/Subscription/SubscriptionStore.swift` — `isPremium` の取得元
-  - `firebase/functions/src/notifyCohabitants.ts` — callable Function の実装パターン
+  - [`firebase/functions/src/notifyCohabitants.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/notifyCohabitants.ts) — callable Function の実装パターン

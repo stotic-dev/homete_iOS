@@ -56,5 +56,5 @@
 
 * [Firebase: Authenticate with Firebase Anonymously on Apple Platforms](https://firebase.google.com/docs/auth/ios/anonymous-auth)
 * [Firebase: Link Multiple Auth Providers to an Account on Apple](https://firebase.google.com/docs/auth/ios/account-linking)
-* `firebase/firestore.rules`
-* `firebase/functions/src/deleteUserData.ts`
+* [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules)
+* [`firebase/functions/src/deleteUserData.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/deleteUserData.ts)

@@ -32,7 +32,7 @@
 |---|---|
 | `ci_danger.yml` | `pull_request_target`のため**起動する**（本ADRの目的） |
 | `ci_local_package.yml` | `paths: LocalPackage/**`で絞っており、そもそも起動対象外 |
-| `functions-e2e-test.yml` | `paths: firebase/**`で絞っており、起動対象外 |
+| `functions-e2e-test.yml` | `paths: firebase/**`で絞っており、起動対象外（その後 [homete_backend](https://github.com/stotic-dev/homete_backend) へ移したため、homete_iOS には無い） |
 | Xcode Cloud `VRT` | `[ci skip]`により**起動しない**（本ADRの目的） |
 
 ## 考慮した選択肢

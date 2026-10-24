@@ -24,7 +24,7 @@
 
 ### 機能要件
 
-#### 着地ページ（`firebase/hosting/public/invite/index.html`）
+#### 着地ページ（[`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html)）
 
 - Universal Links として開かれた場合は現状どおりアプリが直接起動する（AASA・rewrite は変更しない）
 - WebView や Safari で Web ページとして着地した場合、次の 2 導線を表示する
@@ -76,7 +76,7 @@
 
 ### 1. 着地ページ（Hosting）
 
-`firebase/hosting/public/invite/index.html` を作り替える。
+[`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html) を作り替える。
 
 ```html
 <head>
@@ -109,7 +109,7 @@ JS 側の責務:
 
 `canonicalURL` は `https://<host>/invite/<token>`（`openExternalBrowser` は付けない）。クリップボードから拾ったときにアプリが解析できればよいので余計なクエリは載せない。
 
-OGP 画像 `firebase/hosting/public/invite/ogp.png` は `homete/Assets.xcassets/AppIcon.appiconset/1024.png` を `sips` で 1200x630（背景 `#fdf9f3`）に加工して生成する。
+OGP 画像 [`firebase/hosting/public/invite/ogp.png`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/ogp.png) は `homete/Assets.xcassets/AppIcon.appiconset/1024.png` を `sips` で 1200x630（背景 `#fdf9f3`）に加工して生成する。
 
 `firebase.json` の `headers` に `ogp.png` のキャッシュ設定（`Cache-Control: public, max-age=86400`）を追加する。
 
@@ -156,7 +156,7 @@ public enum CohabitantInvitationLink {
 
 ### 4. Functions: 招待情報の取得
 
-`firebase/functions/src/cohabitantInvitation.ts` に `fetchcohabitantinvitation`（v2 callable）を追加する。
+[`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) に `fetchcohabitantinvitation`（v2 callable）を追加する。
 
 ```
 入力: { token: string }
@@ -318,12 +318,12 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 | 種別 | パス | 役割 |
 |---|---|---|
-| 修正（Hosting） | `firebase/hosting/public/invite/index.html` | 着地ページの作り替え（アプリで開く / App Store / Smart App Banner / OGP） |
-| 新規（Hosting） | `firebase/hosting/public/invite/ogp.png` | OGP 画像（アプリアイコンから生成） |
-| 修正 | `firebase/firebase.json` | `ogp.png` のキャッシュヘッダ |
-| 修正（Functions） | `firebase/functions/src/cohabitantInvitation.ts` | `fetchcohabitantinvitation` の追加 |
-| 修正（Functions） | `firebase/functions/src/models/InvitationManager.ts` | `fetchInvitation` の追加 |
-| 修正（テスト） | `firebase/functions/test/e2e/cohabitantInvitation.test.ts` | `fetchcohabitantinvitation` の E2E |
+| 修正（Hosting） | [`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html) | 着地ページの作り替え（アプリで開く / App Store / Smart App Banner / OGP） |
+| 新規（Hosting） | [`firebase/hosting/public/invite/ogp.png`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/ogp.png) | OGP 画像（アプリアイコンから生成） |
+| 修正 | [`firebase/firebase.json`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firebase.json) | `ogp.png` のキャッシュヘッダ |
+| 修正（Functions） | [`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) | `fetchcohabitantinvitation` の追加 |
+| 修正（Functions） | [`firebase/functions/src/models/InvitationManager.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/InvitationManager.ts) | `fetchInvitation` の追加 |
+| 修正（テスト） | [`firebase/functions/test/e2e/cohabitantInvitation.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/e2e/cohabitantInvitation.test.ts) | `fetchcohabitantinvitation` の E2E |
 | 修正 | `homete/Info.plist` | `CFBundleURLSchemes` に `$(INVITE_URL_SCHEME)` |
 | 修正 | `homete.xcodeproj/project.pbxproj` | `INVITE_URL_SCHEME` の Build Setting |
 | 修正（Domain） | `HometeDomain/Cohabitant/CohabitantInvitationLink.swift` | `openExternalBrowser=1` の付与、カスタムスキームの解析、`source(of:)` |
@@ -412,8 +412,8 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/274
 - PR: https://github.com/stotic-dev/homete_iOS/pull/275
 - 既存実装（参考）:
-  - `firebase/hosting/public/invite/index.html`
-  - `firebase/functions/src/cohabitantInvitation.ts` / `firebase/functions/src/models/InvitationManager.ts`
+  - [`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html)
+  - [`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) / [`firebase/functions/src/models/InvitationManager.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/InvitationManager.ts)
   - `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantInvitationLink.swift`
   - `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantJoinStore.swift`
   - `LocalPackage/Sources/Features/HomeFeature/JoinCohabitantView/CohabitantJoinView.swift`

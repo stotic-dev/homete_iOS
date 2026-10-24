@@ -260,8 +260,8 @@ enum OnboardingStep: Hashable, CaseIterable {
 | 修正View | `LocalPackage/Sources/Features/SettingFeature/SettingView.swift` | 匿名のときのログアウト・退会・招待 |
 | 修正View | Paywallを出している各起点 | 匿名ならApple連携を先に出す |
 | 修正Root | `InfraPackage/Sources/AppRoot/RootView.swift` | 説明画面・全画面のApple連携 |
-| 修正Functions | `firebase/functions/src/cohabitantInvitation.ts` | 未認証での招待の取得 |
-| 新規Functions | `firebase/functions/src/`（匿名アカウントの掃除） | 定期実行で削除 |
+| 修正Functions | [`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) | 未認証での招待の取得 |
+| 新規Functions | [`firebase/functions/src/`](https://github.com/stotic-dev/homete_backend/tree/main/firebase/functions/src)（匿名アカウントの掃除） | 定期実行で削除 |
 | 修正ドキュメント | `doc/analytics_events.md` | 下記のイベント |
 
 ### Analytics
@@ -354,6 +354,6 @@ enum OnboardingStep: Hashable, CaseIterable {
   - `LocalPackage/Sources/Features/AuthFeature/Onboarding/OnboardingFlowView.swift`
   - `LocalPackage/Sources/Features/HomeFeature/HomeView/SubViews/NotRegisteredContent.swift`
   - `LocalPackage/Sources/HometeUI/Components/Share/ShareSheet.swift`
-  - `firebase/functions/src/cohabitantInvitation.ts`
-  - `firebase/functions/src/deleteUserData.ts`
+  - [`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts)
+  - [`firebase/functions/src/deleteUserData.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/deleteUserData.ts)
 - 関連ADR: [ADR-0017](../adr/0017-create-cohabitant-on-invitation-join.md)、[ADR-0018](../adr/0018-deferred-deep-link-with-clipboard.md)

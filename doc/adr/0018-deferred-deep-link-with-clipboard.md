@@ -53,7 +53,7 @@
 
 ## 参考
 
-* `firebase/hosting/public/invite/index.html`
+* [`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html)
 * `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantInvitationLink.swift`
 * `LocalPackage/Sources/HometeDomain/Cohabitant/PasteboardInvitationStore.swift`
 * `LocalPackage/Sources/HometeInfrastructure/Pasteboard/ImplPasteboardClient.swift`

@@ -52,7 +52,7 @@
 
 ## 参考
 
-* `firebase/functions/src/models/InvitationManager.ts`
-* `firebase/functions/test/e2e/cohabitantInvitation.test.ts`
+* [`firebase/functions/src/models/InvitationManager.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/InvitationManager.ts)
+* [`firebase/functions/test/e2e/cohabitantInvitation.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/e2e/cohabitantInvitation.test.ts)
 * `LocalPackage/Sources/HometeDomain/Account/AccountStore.swift`
 * `LocalPackage/Sources/HometeDomain/UseCase/AuthSubscriptionSyncUseCase.swift`

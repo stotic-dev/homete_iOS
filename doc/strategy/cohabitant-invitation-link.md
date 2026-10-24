@@ -77,7 +77,7 @@ https://<本番ドメイン>/invite/<token>                     # prod（後日�
 
 ### 2. Firebase Hosting（AASA + フォールバックページ）
 
-`firebase/firebase.json` に `hosting` セクションを追加する。
+[`firebase/firebase.json`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firebase.json) に `hosting` セクションを追加する。
 
 ```json
 "hosting": {
@@ -95,7 +95,7 @@ https://<本番ドメイン>/invite/<token>                     # prod（後日�
 }
 ```
 
-`firebase/hosting/public/.well-known/apple-app-site-association`:
+[`firebase/hosting/public/.well-known/apple-app-site-association`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/.well-known/apple-app-site-association):
 
 ```json
 {
@@ -112,13 +112,13 @@ https://<本番ドメイン>/invite/<token>                     # prod（後日�
 }
 ```
 
-`firebase/hosting/public/invite/index.html`（未インストール時のみ表示される）:
+[`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html)（未インストール時のみ表示される）:
 
 - 「hometeのグループに招待されています」
 - ①App Storeでインストール → ②このリンクをもう一度タップ、の2ステップを明示
 - App Store の URL は未確定のため、確定後に差し替える（残課題）
 
-デプロイは `.github/workflows/deploy-hosting.yml` を新規追加し、`firebase/hosting/**` の main への push で `firebase deploy --only hosting` を実行する。認証は既存の `FIREBASE_SERVICE_ACCOUNT` secret を流用する。
+デプロイは `.github/workflows/deploy-hosting.yml` を新規追加し、[`firebase/hosting/**`](https://github.com/stotic-dev/homete_backend/tree/main/firebase/hosting) の main への push で `firebase deploy --only hosting` を実行する。認証は既存の `FIREBASE_SERVICE_ACCOUNT` secret を流用する。
 
 ### 3. Associated Domains（entitlements）
 
@@ -151,7 +151,7 @@ Apple Developer 上の App ID に **Associated Domains capability を有効化�
 
 ### 5. Cloud Functions
 
-`firebase/functions/src/cohabitantInvitation.ts` を新規作成し、`index.ts` から export する。
+[`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) を新規作成し、`index.ts` から export する。
 
 #### `issuecohabitantinvitation`（v2 callable）
 
@@ -295,17 +295,17 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
 
 | 種別 | パス | 役割 |
 |---|---|---|
-| 新規（Hosting） | `firebase/hosting/public/.well-known/apple-app-site-association` | AASA |
-| 新規（Hosting） | `firebase/hosting/public/invite/index.html` | 未インストール時のフォールバックページ |
-| 修正 | `firebase/firebase.json` | `hosting` セクション追加 |
+| 新規（Hosting） | [`firebase/hosting/public/.well-known/apple-app-site-association`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/.well-known/apple-app-site-association) | AASA |
+| 新規（Hosting） | [`firebase/hosting/public/invite/index.html`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/hosting/public/invite/index.html) | 未インストール時のフォールバックページ |
+| 修正 | [`firebase/firebase.json`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firebase.json) | `hosting` セクション追加 |
 | 新規（CI） | `.github/workflows/deploy-hosting.yml` | Hostingデプロイ |
-| 新規（Functions） | `firebase/functions/src/cohabitantInvitation.ts` | 招待発行・参加のcallable |
-| 修正（Functions） | `firebase/functions/src/index.ts` | export追加 |
-| 新規（Functions） | `firebase/functions/src/models/Invitation.ts` | 招待ドキュメントのモデル |
-| 新規（Functions） | `firebase/functions/src/models/InvitationManager.ts` | 招待発行・参加のロジック（callableから分離してテスト可能にする） |
-| 修正（Functions） | `firebase/functions/src/models/FirestoreCollections.ts` | `Invitation` コレクション追加 |
-| 修正（Functions） | `firebase/functions/src/models/Cohabitant.ts` | `id` フィールド追加（クライアントのリスナーが参照するため） |
-| 新規（テスト） | `firebase/functions/test/e2e/cohabitantInvitation.test.ts` | E2Eテスト |
+| 新規（Functions） | [`firebase/functions/src/cohabitantInvitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/cohabitantInvitation.ts) | 招待発行・参加のcallable |
+| 修正（Functions） | [`firebase/functions/src/index.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/index.ts) | export追加 |
+| 新規（Functions） | [`firebase/functions/src/models/Invitation.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/Invitation.ts) | 招待ドキュメントのモデル |
+| 新規（Functions） | [`firebase/functions/src/models/InvitationManager.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/InvitationManager.ts) | 招待発行・参加のロジック（callableから分離してテスト可能にする） |
+| 修正（Functions） | [`firebase/functions/src/models/FirestoreCollections.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/FirestoreCollections.ts) | `Invitation` コレクション追加 |
+| 修正（Functions） | [`firebase/functions/src/models/Cohabitant.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/Cohabitant.ts) | `id` フィールド追加（クライアントのリスナーが参照するため） |
+| 新規（テスト） | [`firebase/functions/test/e2e/cohabitantInvitation.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/e2e/cohabitantInvitation.test.ts) | E2Eテスト |
 | 修正 | `homete/hometeDebug.entitlements` | Associated Domains |
 | 新規（Domain） | `HometeDomain/Cohabitant/CohabitantInvitation.swift` | 招待モデル |
 | 新規（Domain） | `HometeDomain/Cohabitant/CohabitantInvitationLink.swift` | URL生成・解析 |
@@ -407,5 +407,5 @@ AppTabView が fullScreenCover で CohabitantJoinView を表示
   - `LocalPackage/Sources/Features/HomeFeature/RegisterCohabitantView/CohabitantRegistrationView.swift`
   - `LocalPackage/Sources/Features/HomeFeature/RegisterCohabitantView/SubViews/ProcessingState/CohabitantRegistrationProcessingLeader.swift`
   - `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplCohabitantPushNotificationClient.swift`
-  - `firebase/functions/src/notifyCohabitants.ts`
+  - [`firebase/functions/src/notifyCohabitants.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/notifyCohabitants.ts)
   - `doc/strategy/setting-create-group-and-add-member.md`

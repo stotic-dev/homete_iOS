@@ -68,13 +68,13 @@ P2P登録では、リーダーの端末が自分とフォロワー全員のuid�
 
 1. この変更を含むアプリを配信する
 2. Remote Configの`minimum_required_version`を、この変更を含むバージョンへ引き上げる（v1.1.0以降のアプリに効く）
-3. `deploy-firestore.yml`を`environment=prod`で手動実行し、本番のルールを反映する
+3. `deploy-firestore.yml`（現在は [homete_backend](https://github.com/stotic-dev/homete_backend) にある）を`environment=prod`で手動実行し、本番のルールを反映する
 
 STGへはmainへのマージでルールが自動デプロイされるため、マージ後はTestFlightの旧ビルドでP2P登録ができなくなる。
 
 ## 参考
 
-* `firebase/firestore.rules`
-* `firebase/functions/src/models/InvitationManager.ts`
+* [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules)
+* [`firebase/functions/src/models/InvitationManager.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/InvitationManager.ts)
 * `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantRegistration/CohabitantRegistrationStateMachine.swift`
 * `LocalPackage/Sources/HometeDomain/Cohabitant/CohabitantRegistration/CohabitantRegistrationMessage.swift`
