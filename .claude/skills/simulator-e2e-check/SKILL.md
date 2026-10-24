@@ -69,7 +69,7 @@ mcp__xcode__DeviceInteractionInstallAndRun
   interactionSessionKey: <StartWorkspaceSessionの戻り値>
 ```
 
-`commandLineArguments` / `environmentVariables` は**省略する**。スキーム `homete` に `-AppleLanguages (ja)` と `AppCheckDebugToken=$(APP_CHECK_DEBUG_TOKEN)` が設定されていて、省略すればそのまま引き継がれる。どうしても足す場合は `["$(inherited)", ...]` / `{"$(inherited)": "", ...}` の形にしないと既存の設定が消えてApp Checkが通らなくなる。
+`commandLineArguments` / `environmentVariables` は**省略する**。スキーム `homete` に `-AppleLanguages (ja)` が設定されていて、省略すればそのまま引き継がれる。どうしても足す場合は `["$(inherited)", ...]` の形にしないと既存の設定が消えて言語が変わる。App Checkのデバッグトークンはスキームではなくビルド時にInfo.plistへ埋め込まれるので、起動引数の影響は受けない。
 
 初回ビルドは120秒を超えてバックグラウンドタスクに落ちることがある。その場合は完了通知を待ち、失敗していたら（セッションが消えているので）新しい名前でセッションを張り直してからもう一度 `InstallAndRun` する。2回目以降はビルド済みなので数十秒で終わる。
 

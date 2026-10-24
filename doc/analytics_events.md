@@ -92,7 +92,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `cohabitant_join` | `CohabitantJoinView` |
 | `cohabitant_completion` | `CohabitantCompletionView` |
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
-| `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる家事の一覧。ダッシュボードの感謝の促しから開く） |
+| `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる今日の家事の一覧。ダッシュボードの感謝の促しから開く） |
+| `past_thanks_target_list` | `PastThanksTargetListScreen`（昨日から7日前までのありがとう漏れの一覧。ダッシュボードの過去の促しと、今日の一覧の末尾のリンクから開く） |
 | `contribution_analytics` | `ContributionAnalyticsView` |
 | `housework_board` | `HouseworkBoardScreen` |
 | `housework_date_picker` | `HouseworkDatePickerView`（家事ボードの年月ラベルから開く、日付を選ぶカレンダーのハーフモーダル） |
@@ -229,7 +230,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `encouragement_comment`
 
-ダッシュボードのコメントカード（自分へのねぎらいと、同居人への感謝の促し）に関する行動。設計は[ADR-0042](adr/0042-encouragement-comment-with-foundation-models.md)。
+ダッシュボードのコメントカード（上の段の自分へのねぎらい・同居人への感謝の促し・過去の促しのどれか、下の段の届いたありがとう）に関する行動。設計は[ADR-0042](adr/0042-encouragement-comment-with-foundation-models.md)。
 
 | 項目 | 内容 |
 |---|---|
@@ -237,8 +238,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `shown` / `tapped` / `rated` | 何が起きたか |
-| `kind` | ○ | `self_praise` / `neutral` / `thanks_prompt` | コメントの種類。`self_praise`は自分の実績へのねぎらい、`neutral`は自分の実績がまだない日の中立・励まし、`thanks_prompt`は同居人への感謝の促し |
+| `action` | ○ | `shown` / `tapped` / `dismissed` / `rated` | 何が起きたか |
+| `kind` | ○ | `self_praise` / `neutral` / `thanks_prompt` / `past_thanks_prompt` / `received_thanks` | コメントの種類。`self_praise`は自分の実績へのねぎらい、`neutral`は自分の実績がまだない日の中立・励まし、`thanks_prompt`は今日の家事についての同居人への感謝の促し、`past_thanks_prompt`は昨日から7日前までの家事についての感謝の促し（過去の促し）、`received_thanks`は自分の家事に届いたありがとう |
 | `result` | `rated`のみ | `good` / `bad` | AIが作成したコメントへの評価。他のイベントと同じ`result`キーを使い、カスタムディメンションを増やさない |
 | `step` | ○ | `dashboard` | コメントを出した場所（現状はダッシュボードのみ） |
 
@@ -246,14 +247,17 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 | `action` | `kind` | 送信タイミング |
 |---|---|---|
-| `shown` | `self_praise` / `neutral` / `thanks_prompt` | ダッシュボードを表示したとき、および出すコメントの種類が変わったとき。ねぎらいと感謝の促しを両方出している場合はそれぞれ1イベント送る。ねぎらいの生成を待っている間は、感謝の促しも含めて送らない（生成後にもう一度送って二重に数えないため） |
-| `tapped` | `thanks_prompt` | 感謝の促しの「ありがとうを伝える」をタップした（ありがとうを伝えられる家事の一覧へ遷移する） |
+| `shown` | `self_praise` / `neutral` / `thanks_prompt` / `past_thanks_prompt` / `received_thanks` | ダッシュボードを表示したとき、および出すコメントの種類が変わったとき。カードに出したものをそれぞれ1イベント送る。上の段は感謝の促し → 過去の促し → ねぎらいの順で出せるものの1つだけを出し、出さなかったものは送らない。過去の促しは1日2回までのため、出さなかった回は送らない。届いたありがとうは1日3回まで・×で閉じたらその日は出さないため、出さなかった回は送らない。ねぎらいを出すときは、生成を待っている間は届いたありがとうも含めて送らない（生成後にもう一度送って二重に数えないため） |
+| `tapped` | `thanks_prompt` | 感謝の促しの「ありがとうを伝える」をタップした（ありがとうを伝えられる今日の家事の一覧へ遷移する） |
+| `tapped` | `past_thanks_prompt` | 過去の促しの「ありがとうを伝える」をタップした（過去のありがとう漏れの一覧へ遷移する） |
+| `dismissed` | `received_thanks` | 届いたありがとうの×をタップした（その日は出さなくなる。その日のうちに新しいありがとうが届いたら、また出す） |
 | `rated` | `self_praise` | AIが作成したコメントの「AI」バッジから開いたポップアップで、「よかった」（`good`）か「いまいち」（`bad`）をタップした（`result`に入る）。同じコメントへの評価は1回だけ送る（コメントが作り直されたら再び評価できる） |
 
 ねぎらいをFoundation Modelsで生成したか、固定文言にしたかは`shown`のパラメータにしない（カスタムディメンションを増やさないため。必要になったら追加する）。`rated`はAIが作成したコメントでしか送られないので、生成した文の評価として扱える。生成した文そのものは送らない（家事のタイトルなど、家庭の記録が含まれるため）。
 
 **分析での使い方:** `housework`イベントの`send_thanks`のうち`step=comment_prompt`の割合が、感謝の促しを経由したありがとうの割合（主指標）になる。
-`shown`（`thanks_prompt`）に対する`tapped`の比率で、感謝の促しのタップ率が分かる。
+`shown`（`thanks_prompt`）に対する`tapped`の比率で、感謝の促しのタップ率が分かる。`past_thanks_prompt`も同じく過去の促しのタップ率が分かる。
+`shown`（`received_thanks`）に対する`dismissed`の比率で、届いたありがとうを自分で閉じる割合が分かる（高ければ、表示回数の上限を下げる判断材料にする）。
 `shown`の`self_praise` / `neutral`の比率で、自分の実績がある日にダッシュボードを見ている割合が分かる。
 `rated`の`result`（`good` / `bad`）の比率で、AIが作成したコメントの受け止められ方が分かる（プロンプトや禁止表現の見直しの判断材料にする）。
 

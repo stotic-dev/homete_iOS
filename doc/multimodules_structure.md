@@ -39,6 +39,8 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 
 外部ライブラリは `LocalPackage/Package.swift`・`InfraPackage/Package.swift` からだけ参照し、xcodeproj から直接参照しない。xcodeproj 側にもバージョン指定を持つと、dependabot が `Package.swift` だけを更新したときに指定が食い違い、Xcode Cloud の依存解決が失敗するため。アプリ本体・拡張・テストのターゲットで外部ライブラリが必要になったら、LocalPackage・InfraPackage のモジュール経由で使う。
 
+ただし、xcodeproj でビルドするときに使われる `Package.resolved` はルート（xcodeproj）側の1つだけで、InfraPackage・LocalPackage 側の `Package.resolved` は読まれない。両者の版は `scripts/sync-package-resolved.py` でそろえ、dependabot の PR では `sync-package-resolved.yml` が自動でそろえる（[ADR-0053](adr/0053-sync-xcodeproj-package-resolved-on-dependabot-prs.md)）。
+
 ### ディレクトリ構成
 
 ```

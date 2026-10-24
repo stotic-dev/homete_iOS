@@ -11,8 +11,10 @@ import SwiftUI
 /// ダッシュボードのコメントカード
 ///
 /// 家事やメンバーが変わるたびにStoreへ最新の状況を渡し、ねぎらいのコメントを決め直させる。
-/// 届いたありがとうと感謝の促しはその場で計算するため、ありがとうが届いたり送ったりすればすぐに件数が変わる。
-/// 届いたありがとうは一度見たら次からは出さない。ただし見ている途中で消えないよう、ホームを開き直したときに消す。
+/// 感謝の促しと届いたありがとうはその場で計算するため、ありがとうが届いたり送ったりすればすぐに件数が変わる。
+/// 上の段には感謝の促し・過去の促し・ねぎらいのうち1つを出す（`DashboardLeadMessage`）。
+/// 過去の促しは、ホームが出るたびに1回と数えて1日に2回まで出す。
+/// 届いたありがとうは下の段に、同じ数え方で1日に3回まで出し、×で閉じたらその日は出さない。
 struct EncouragementCommentComponent: View {
 
     @Environment(EncouragementCommentStore.self) var encouragementCommentStore
@@ -27,10 +29,16 @@ struct EncouragementCommentComponent: View {
     @Environment(\.registeredContentNavigationPath) var navigationPath
     @Environment(\.scenePhase) var scenePhase
 
-    @AppStorage(key: .receivedThanksSeenAt) var receivedThanksSeenAt: Double = 0
-    /// 届いたありがとうを数える基準にする、見た日時。ホームを開いたときの値に固定し、見たことを記録しても表示中は消さない。
-    /// 開く前の描画では`nil`で、そのときは保存してある値をそのまま使う
-    @State var fixedReceivedThanksSeenAt: Double?
+    @AppStorage(key: .receivedThanksDisplayRecord) var storedReceivedThanksRecord = ReceivedThanksDisplayRecord()
+    @AppStorage(key: .pastThanksPromptDisplayRecord) var storedPastThanksPromptRecord = PastThanksPromptDisplayRecord()
+    /// ホームが出た回の通し番号。タブの切り替え・push先からの戻り・アプリへの復帰で進める
+    @State var appearance = 0
+    /// アプリがバックグラウンドに入ったか。復帰したときだけホームが出た回として数えるために使う
+    @State var hasEnteredBackground = false
+    /// 届いたありがとうを出した回として数えた、ホームが出た回の通し番号。表示中に上限に達しても消さないために使う
+    @State var receivedThanksCountedAppearance: Int?
+    /// 過去の促しを出した回として数えた、ホームが出た回の通し番号。表示中に上限に達しても消さないために使う
+    @State var pastThanksPromptCountedAppearance: Int?
 
     static func make() -> some View {
         EncouragementCommentComponent()
@@ -44,38 +52,70 @@ struct EncouragementCommentComponent: View {
             now: now,
             calendar: calendar
         )
+        let pastThanksPrompt = PastThanksPromptSummary.make(
+            storedAllItems: houseworkListStore.items,
+            members: members,
+            ownUserId: ownUserId,
+            now: now,
+            calendar: calendar
+        )
         let receivedThanks = ReceivedThanksSummary.make(
             storedAllItems: houseworkListStore.items,
             members: members,
             ownUserId: ownUserId,
-            seenUntil: receivedThanksSeenUntil,
             now: now,
             calendar: calendar
         )
+        let receivedThanksRecord = storedReceivedThanksRecord.reconciled(
+            with: receivedThanks,
+            now: now,
+            calendar: calendar
+        )
+        let leadMessage = DashboardLeadMessage.select(
+            thanksPrompt: thanksPrompt,
+            pastThanksPrompt: pastThanksPrompt,
+            canShowPastThanksPrompt: storedPastThanksPromptRecord
+                .reconciled(now: now, calendar: calendar)
+                .canShow(isCountedInCurrentAppearance: pastThanksPromptCountedAppearance == appearance)
+        )
+        let isPastThanksPromptShown = if case .pastThanksPrompt = leadMessage { true } else { false }
+        let isReceivedThanksShown = receivedThanksRecord.canShow(
+            receivedThanks,
+            isCountedInCurrentAppearance: receivedThanksCountedAppearance == appearance
+        )
         EncouragementCommentCard(
+            leadMessage: leadMessage,
             comment: encouragementCommentStore.comment,
-            receivedThanks: receivedThanks.hasReceived ? receivedThanks : nil,
-            thanksPrompt: thanksPrompt.shouldPrompt ? thanksPrompt : nil,
+            receivedThanks: isReceivedThanksShown ? receivedThanks : nil,
             onTapThanks: tappedThanksButton,
+            onTapPastThanks: tappedPastThanksButton,
+            onTapDismissReceivedThanks: { dismissReceivedThanks(receivedThanks) },
             onRate: ratedComment
         )
-        // 見たことを記録する処理と、どちらが先に走っても開いたときの値に固定されるよう、まだ固定していないときだけ読む
         .onAppear {
-            if fixedReceivedThanksSeenAt == nil {
-                fixedReceivedThanksSeenAt = receivedThanksSeenAt
+            appearance += 1
+        }
+        // アプリに戻ってきたときも、ホームが出たものとして扱う。
+        // 権限やトラッキング同意のOSのダイアログを閉じたときもinactiveからactiveに戻るが、ホームは出たままなので数えない
+        .onChange(of: scenePhase) { _, newValue in
+            switch newValue {
+            case .background:
+                hasEnteredBackground = true
+
+            case .active where hasEnteredBackground:
+                hasEnteredBackground = false
+                appearance += 1
+
+            default:
+                break
             }
         }
-        .onDisappear {
-            fixedReceivedThanksSeenAt = nil
+        // 届いたありがとう・過去の促しは、実際に出したときだけ数える
+        .task(id: DisplayCountTrigger(appearance: appearance, isShown: isReceivedThanksShown)) {
+            countReceivedThanksIfShown(isReceivedThanksShown, receivedThanks: receivedThanks)
         }
-        // アプリに戻ってきたときも、ホームを開き直したものとして扱う
-        .onChange(of: scenePhase) { _, newValue in
-            guard newValue == .active else { return }
-
-            fixedReceivedThanksSeenAt = receivedThanksSeenAt
-        }
-        .task(id: receivedThanks.latestSentAt) {
-            markReceivedThanksAsSeen(receivedThanks)
+        .task(id: DisplayCountTrigger(appearance: appearance, isShown: isPastThanksPromptShown)) {
+            countPastThanksPromptIfShown(isPastThanksPromptShown)
         }
         .task(id: updateTrigger) {
             await encouragementCommentStore.update(
@@ -87,12 +127,12 @@ struct EncouragementCommentComponent: View {
             )
         }
         // ダッシュボードを表示するたびと、出すコメントの種類が変わったときに送る。
-        // ねぎらいの生成を待つ間に感謝の促しだけ先に送ると、生成後にもう一度送って二重に数えてしまうため、
+        // ねぎらいを出すときに、生成を待つ間に届いたありがとうだけ先に送ると、生成後にもう一度送って二重に数えてしまうため、
         // ねぎらいが決まってからまとめて送る
-        .task(id: shownKinds(thanksPrompt: thanksPrompt)) {
-            guard encouragementCommentStore.comment != nil else { return }
+        .task(id: shownKinds(leadMessage: leadMessage, isReceivedThanksShown: isReceivedThanksShown)) {
+            guard leadMessage != .encouragement || encouragementCommentStore.comment != nil else { return }
 
-            for kind in shownKinds(thanksPrompt: thanksPrompt) {
+            for kind in shownKinds(leadMessage: leadMessage, isReceivedThanksShown: isReceivedThanksShown) {
                 analyticsClient.log(.encouragementComment(.shown(kind: kind, step: .dashboard)))
             }
         }
@@ -139,30 +179,65 @@ private extension EncouragementCommentComponent {
         .count
     }
 
-    var receivedThanksSeenUntil: Date? {
-        let seenAt = fixedReceivedThanksSeenAt ?? receivedThanksSeenAt
-        return seenAt > 0 ? Date(timeIntervalSince1970: seenAt) : nil
+    /// 届いたありがとう・過去の促しを出した回として数えるきっかけになる値
+    struct DisplayCountTrigger: Equatable {
+
+        let appearance: Int
+        let isShown: Bool
+
     }
 
-    /// カードに出した、届いたありがとうを見たことにする
-    func markReceivedThanksAsSeen(_ receivedThanks: ReceivedThanksSummary) {
-        guard let latestSentAt = receivedThanks.latestSentAt?.timeIntervalSince1970,
-              latestSentAt > receivedThanksSeenAt else { return }
+    /// 届いたありがとうを出していれば、ホームが出た回ごとに1回だけ数える
+    func countReceivedThanksIfShown(_ isShown: Bool, receivedThanks: ReceivedThanksSummary) {
+        guard isShown, receivedThanksCountedAppearance != appearance else { return }
 
-        if fixedReceivedThanksSeenAt == nil {
-            fixedReceivedThanksSeenAt = receivedThanksSeenAt
+        var record = storedReceivedThanksRecord.reconciled(with: receivedThanks, now: now, calendar: calendar)
+        record.recordShown()
+        storedReceivedThanksRecord = record
+        receivedThanksCountedAppearance = appearance
+    }
+
+    /// 過去の促しを出していれば、ホームが出た回ごとに1回だけ数える
+    func countPastThanksPromptIfShown(_ isShown: Bool) {
+        guard isShown, pastThanksPromptCountedAppearance != appearance else { return }
+
+        var record = storedPastThanksPromptRecord.reconciled(now: now, calendar: calendar)
+        record.recordShown()
+        storedPastThanksPromptRecord = record
+        pastThanksPromptCountedAppearance = appearance
+    }
+
+    func dismissReceivedThanks(_ receivedThanks: ReceivedThanksSummary) {
+        analyticsClient.log(.encouragementComment(.dismissed(kind: .receivedThanks, step: .dashboard)))
+        var record = storedReceivedThanksRecord.reconciled(with: receivedThanks, now: now, calendar: calendar)
+        record.dismiss(receivedThanks)
+        withAnimation {
+            storedReceivedThanksRecord = record
+            // 閉じた後に新しいありがとうが届いて出し直すときは、その回をあらためて数える
+            receivedThanksCountedAppearance = nil
         }
-        receivedThanksSeenAt = latestSentAt
     }
 
     /// カードに出しているコメントの種類
-    func shownKinds(thanksPrompt: ThanksPromptSummary) -> [EncouragementCommentAnalyticsKind] {
+    func shownKinds(
+        leadMessage: DashboardLeadMessage,
+        isReceivedThanksShown: Bool
+    ) -> [EncouragementCommentAnalyticsKind] {
         var kinds: [EncouragementCommentAnalyticsKind] = []
-        if let comment = encouragementCommentStore.comment {
-            kinds.append(analyticsKind(of: comment))
-        }
-        if thanksPrompt.shouldPrompt {
+        switch leadMessage {
+        case .thanksPrompt:
             kinds.append(.thanksPrompt)
+
+        case .pastThanksPrompt:
+            kinds.append(.pastThanksPrompt)
+
+        case .encouragement:
+            if let comment = encouragementCommentStore.comment {
+                kinds.append(analyticsKind(of: comment))
+            }
+        }
+        if isReceivedThanksShown {
+            kinds.append(.receivedThanks)
         }
         return kinds
     }
@@ -188,6 +263,11 @@ private extension EncouragementCommentComponent {
     func tappedThanksButton() {
         analyticsClient.log(.encouragementComment(.tapped(kind: .thanksPrompt, step: .dashboard)))
         navigationPath.push(.thanksTargetList)
+    }
+
+    func tappedPastThanksButton() {
+        analyticsClient.log(.encouragementComment(.tapped(kind: .pastThanksPrompt, step: .dashboard)))
+        navigationPath.push(.pastThanksTargetList)
     }
 
 }
