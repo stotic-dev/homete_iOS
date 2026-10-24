@@ -198,6 +198,41 @@ struct AccountAuthStoreTest {
         #expect(actual == ["deleteAnonymousAccount", "signInWithExistingCredential"])
     }
 
+    @Test("既存のアカウントへ切り替えるときは、ログインのイベントを送る前に、匿名のアカウントのユーザープロパティを消す")
+    func switchToExistingAccount_clearUserProperties() async throws {
+        // Arrange
+        let calls = TestBox<[AnalyticsCall]>(value: [])
+        let store = AccountAuthStore(
+            accountAuthClient: .init(
+                makeListener: { .defaultValue() },
+                signInWithExistingCredential: { _ in
+                    .init(id: "existingId")
+                }
+            ),
+            analyticsClient: .init(
+                setUserProperty: { property in
+                    calls.value.append(.setUserProperty(property))
+                },
+                log: { event in
+                    calls.value.append(.log(event))
+                }
+            ),
+            currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+        )
+
+        // Act
+        try await store.switchToExistingAccount(.init(rawValue: "existingCredential"))
+
+        // Assert
+        let expected: [AnalyticsCall] = [
+            .setUserProperty(.cleared(.hasCohabitant)),
+            .setUserProperty(.cleared(.cohabitantMemberCount)),
+            .setUserProperty(.cleared(.isAnonymous)),
+            .log(.login(isSuccess: true)),
+        ]
+        #expect(calls.value == expected)
+    }
+
     @Test("既存のアカウントへのログインに失敗したら、匿名のアカウントは削除済みのためサインアウトする")
     func switchToExistingAccount_signInFailed() async {
         await confirmation(expectedCount: 2) { confirmation in
@@ -262,5 +297,13 @@ struct AccountAuthStoreTest {
             #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
         }
     }
+
+}
+
+/// 計測に送った順番を確かめるための記録
+private enum AnalyticsCall: Equatable {
+
+    case setUserProperty(AnalyticsUserProperty)
+    case log(AnalyticsEvent)
 
 }
