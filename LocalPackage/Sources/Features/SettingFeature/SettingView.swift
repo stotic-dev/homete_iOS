@@ -107,18 +107,12 @@ struct SettingView: View {
                     GroupMemberListView(members: cohabitantMembers.others)
                     Spacer()
                         .frame(height: .space16)
-                    VStack(spacing: .zero) {
-                        ForEach(
-                            SettingMenuItem.displayItems(
-                                isRegisteredGroup: loginContext.hasCohabitant,
-                                isAvailableInvitationLink: CohabitantInvitationLink.isAvailable
-                            ),
-                            id: \.self
-                        ) { item in
-                            SettingMenuItemButton(item: item, plan: subscriptionStore.plan) {
-                                tappedSettingMenuItem(item)
-                            }
-                        }
+                    ForEach(menuGroups) { group in
+                        SettingMenuSectionContent(
+                            group: group,
+                            plan: subscriptionStore.plan,
+                            onTap: tappedSettingMenuItem
+                        )
                     }
                 }
                 VStack(spacing: .space24) {
@@ -195,6 +189,19 @@ struct SettingView: View {
             content: { router.resolve(.paywall(step: .setting)) }
         )
         .trackScreenView(.setting)
+    }
+
+}
+
+// MARK: - 表示内容
+
+private extension SettingView {
+
+    var menuGroups: [SettingMenuGroup] {
+        SettingMenuGroup.make(from: SettingMenuItem.displayItems(
+            isRegisteredGroup: loginContext.hasCohabitant,
+            isAvailableInvitationLink: CohabitantInvitationLink.isAvailable
+        ))
     }
 
 }

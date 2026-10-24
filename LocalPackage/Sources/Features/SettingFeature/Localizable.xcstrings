@@ -65,6 +65,16 @@
         }
       }
     },
+    "このアプリについて" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About This App"
+          }
+        }
+      }
+    },
     "ご利用中のプラン:" : {
       "localizations" : {
         "en" : {
@@ -114,6 +124,16 @@
     "アカウント登録からPaywallまでを表示" : {
       "shouldTranslate" : false
     },
+    "アプリの設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Settings"
+          }
+        }
+      }
+    },
     "アプリ評価" : {
       "shouldTranslate" : false
     },
@@ -141,6 +161,16 @@
     },
     "オンボーディング" : {
       "shouldTranslate" : false
+    },
+    "グループ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group"
+          }
+        }
+      }
     },
     "グループメンバー" : {
       "localizations" : {
@@ -343,6 +373,16 @@
     },
     "失効させる（アプリはこのまま）" : {
       "shouldTranslate" : false
+    },
+    "家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chores"
+          }
+        }
+      }
     },
     "家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。" : {
       "shouldTranslate" : false
@@ -638,6 +678,9 @@
           }
         }
       }
+    },
+    "開発者向け" : {
+      "shouldTranslate" : false
     }
   },
   "version" : "1.1"

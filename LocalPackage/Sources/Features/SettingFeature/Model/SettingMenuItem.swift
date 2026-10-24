@@ -48,6 +48,28 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
+    /// 設定画面でまとめて表示する区分
+    var section: SettingMenuSection {
+        switch self {
+        case .memberInvitation:
+            .group
+
+        case .taskTemplate, .frequentHousework:
+            .housework
+
+        case .notificationPermission, .premiumPlan:
+            .app
+
+        case .termsOfService, .privacyPolicy, .license:
+            .about
+
+        #if DEBUG
+        case .debugMenu:
+            .developer
+        #endif
+        }
+    }
+
     func title(plan: SubscriptionPlan) -> LocalizedStringResource {
         switch self {
         case .memberInvitation:
