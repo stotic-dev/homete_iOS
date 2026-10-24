@@ -516,6 +516,16 @@
         }
       }
     },
+    "招待リンクは送れましたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you send the invite link?"
+          }
+        }
+      }
+    },
     "招待リンクを受け取った" : {
       "localizations" : {
         "en" : {
@@ -622,6 +632,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add a partner who's right next to you."
+          }
+        }
+      }
+    },
+    "送ったので次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I sent it, continue"
+          }
+        }
+      }
+    },
+    "送ったら、パートナーの参加を待たずに次へ進めます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Once it's sent, you can continue without waiting for your partner to join."
           }
         }
       }

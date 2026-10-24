@@ -25,6 +25,9 @@ struct PartnerRegistrationScreen: View {
 
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var sharingInvitation: CohabitantInvitation?
+    /// 共有シートを閉じたが、共有を完了したと分からなかった招待
+    /// - Note: 共有先のアプリによっては、送っても完了と伝えてこない。送った人が自分で次へ進めるよう、閉じた後も持っておく
+    @State var unconfirmedInvitation: CohabitantInvitation?
     @State var isShowCohabitantRegistration = false
     /// P2Pでの登録画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
     @State var sentInvitationTokenBeforeRegistration: String?
@@ -38,11 +41,13 @@ struct PartnerRegistrationScreen: View {
         PartnerRegistrationView(
             isInvitationAvailable: CohabitantInvitationLink.isAvailable,
             isInvitationNotFound: pasteboardInvitationStore?.state == .notFound,
+            isInvitationShareUnconfirmed: unconfirmedInvitation != nil,
             onTapInvite: {
                 loadingState.task {
                     await tappedInvite()
                 }
             },
+            onTapSentInvitation: { tappedSentInvitation() },
             onTapNearby: { tappedNearby() },
             onTapInvited: {
                 Task {
@@ -116,7 +121,21 @@ private extension PartnerRegistrationScreen {
 
     /// 共有を完了したら、相手の参加を待たずに次へ進む。キャンセルしたら選択肢に留まる
     func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
-        guard isCompleted else { return }
+        guard isCompleted else {
+            unconfirmedInvitation = invitation
+            return
+        }
+        completeInvitationShare(invitation)
+    }
+
+    /// 共有を完了したと分からなかった招待を、送ったと言われたら送ったものとして次へ進む
+    func tappedSentInvitation() {
+        guard let unconfirmedInvitation else { return }
+        completeInvitationShare(unconfirmedInvitation)
+    }
+
+    func completeInvitationShare(_ invitation: CohabitantInvitation) {
+        unconfirmedInvitation = nil
         Task {
             await sentInvitationStore.save(invitation, accountId: account.id)
         }

@@ -14,7 +14,11 @@ struct PartnerRegistrationView: View {
     let isInvitationAvailable: Bool
     /// 「招待された」でクリップボードを確認したが、招待リンクが見つからなかったか
     let isInvitationNotFound: Bool
+    /// 招待リンクの共有シートを閉じたが、共有を完了したと分からなかったか
+    let isInvitationShareUnconfirmed: Bool
     let onTapInvite: () -> Void
+    /// 共有を完了したと分からなかった招待を、送ったと伝えたとき
+    let onTapSentInvitation: () -> Void
     let onTapNearby: () -> Void
     let onTapInvited: () -> Void
     let onTapLater: () -> Void
@@ -31,6 +35,9 @@ struct PartnerRegistrationView: View {
                             description: .localized("離れていても、リンクから参加してもらえます"),
                             action: onTapInvite
                         )
+                        if isInvitationShareUnconfirmed {
+                            invitationSentConfirmation
+                        }
                     }
                     choiceButton(
                         systemImage: "person.2",
@@ -76,6 +83,32 @@ private extension PartnerRegistrationView {
                 .font(with: .body)
                 .foregroundStyle(.textSecondary)
                 .multilineTextAlignment(.center)
+        }
+    }
+
+    var invitationSentConfirmation: some View {
+        VStack(alignment: .leading, spacing: .space16) {
+            VStack(alignment: .leading, spacing: .space4) {
+                Text("招待リンクは送れましたか？", bundle: #bundle)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.textPrimary)
+                Text("送ったら、パートナーの参加を待たずに次へ進めます", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                onTapSentInvitation()
+            } label: {
+                Text("送ったので次へ", bundle: #bundle)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+        }
+        .padding(.space16)
+        .background {
+            RoundedRectangle(radius: .radius20)
+                .fill(.backgroundCard)
         }
     }
 
@@ -137,7 +170,9 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: true,
         isInvitationNotFound: false,
+        isInvitationShareUnconfirmed: false,
         onTapInvite: {},
+        onTapSentInvitation: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
@@ -148,7 +183,9 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: true,
         isInvitationNotFound: true,
+        isInvitationShareUnconfirmed: false,
         onTapInvite: {},
+        onTapSentInvitation: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
@@ -159,7 +196,22 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: false,
         isInvitationNotFound: false,
+        isInvitationShareUnconfirmed: false,
         onTapInvite: {},
+        onTapSentInvitation: {},
+        onTapNearby: {},
+        onTapInvited: {},
+        onTapLater: {}
+    )
+}
+
+#Preview("PartnerRegistrationView_共有したか分からない") {
+    PartnerRegistrationView(
+        isInvitationAvailable: true,
+        isInvitationNotFound: false,
+        isInvitationShareUnconfirmed: true,
+        onTapInvite: {},
+        onTapSentInvitation: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
