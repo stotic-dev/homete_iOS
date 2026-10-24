@@ -45,11 +45,15 @@ private extension WelcomeView {
 
     func pageContent(_ page: WelcomePage) -> some View {
         VStack(spacing: .space16) {
-            if page == .record {
+            if page == .greeting {
                 invitationBanner
             }
             Spacer()
-            WelcomeIllustration(page: page)
+            if page == .greeting {
+                WelcomeGreeting()
+            } else {
+                WelcomeIllustration(page: page)
+            }
             pageTitle(page)
                 .font(with: .headLineL)
                 .multilineTextAlignment(.center)
@@ -171,6 +175,8 @@ private extension WelcomeView {
     @ViewBuilder
     func pageTitle(_ page: WelcomePage) -> some View {
         switch page {
+        case .greeting:
+            Text("homeauへようこそ", bundle: #bundle)
         case .record:
             Text("やった家事を、かんたんに記録できます", bundle: #bundle)
         case .share:
@@ -183,6 +189,8 @@ private extension WelcomeView {
     @ViewBuilder
     func pageDescription(_ page: WelcomePage) -> some View {
         switch page {
+        case .greeting:
+            Text("パートナーと家事を分け合って、おたがいのがんばりをほめ合えるアプリです", bundle: #bundle)
         case .record:
             Text("終わった家事を記録すると、だれがどれだけがんばったか、あとから振り返れます", bundle: #bundle)
         case .share:
@@ -196,7 +204,7 @@ private extension WelcomeView {
 
 #Preview("WelcomeView_招待なし") {
     WelcomeView(
-        selectedPage: .constant(.record),
+        selectedPage: .constant(.greeting),
         invitation: .none,
         onTapStart: {},
         onTapExistingAccount: {}
@@ -205,7 +213,7 @@ private extension WelcomeView {
 
 #Preview("WelcomeView_招待あり") {
     WelcomeView(
-        selectedPage: .constant(.record),
+        selectedPage: .constant(.greeting),
         invitation: .invited(inviterName: "たろう"),
         onTapStart: {},
         onTapExistingAccount: {}
@@ -214,8 +222,17 @@ private extension WelcomeView {
 
 #Preview("WelcomeView_招待者名なし") {
     WelcomeView(
-        selectedPage: .constant(.record),
+        selectedPage: .constant(.greeting),
         invitation: .invited(inviterName: nil),
+        onTapStart: {},
+        onTapExistingAccount: {}
+    )
+}
+
+#Preview("WelcomeView_家事の記録") {
+    WelcomeView(
+        selectedPage: .constant(.record),
+        invitation: .none,
         onTapStart: {},
         onTapExistingAccount: {}
     )

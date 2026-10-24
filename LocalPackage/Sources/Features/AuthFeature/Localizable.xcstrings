@@ -72,6 +72,16 @@
         }
       }
     },
+    "homeauへようこそ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to homeau"
+          }
+        }
+      }
+    },
     "あと%lld文字" : {
       "localizations" : {
         "en" : {
@@ -180,6 +190,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Taro"
+          }
+        }
+      }
+    },
+    "はじめまして、ほめっとだよ！" : {
+      "comment" : "マスコットのほめっとのあいさつ。くだけた口調",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hi there, I'm Homette!"
           }
         }
       }
@@ -320,6 +341,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Share Chores with Your Partner"
+          }
+        }
+      }
+    },
+    "パートナーと家事を分け合って、おたがいのがんばりをほめ合えるアプリです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share chores with your partner and cheer each other on for every effort."
           }
         }
       }

@@ -20,7 +20,7 @@ public struct WelcomeScreen: View {
     @LoadingState var loadingState
 
     @State var navigationPath = AppNavigationPath<WelcomeRoute>()
-    @State var selectedPage: WelcomePage = .record
+    @State var selectedPage: WelcomePage = .greeting
     @State var invitationStore: WelcomeInvitationStore?
 
     /// サインインの後にアカウントを取得できなかったときのエラー。受け取ったら`onReceiveAccountLoadFailure`で伝える
