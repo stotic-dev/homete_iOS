@@ -2,7 +2,7 @@
 
 > 関連Issue: [#461 匿名認証とApple連携の基盤](https://github.com/stotic-dev/homete_iOS/issues/461)、[#462 ログイン前の説明画面](https://github.com/stotic-dev/homete_iOS/issues/462)、[#463 パートナー登録のステップとやることリスト](https://github.com/stotic-dev/homete_iOS/issues/463)
 > ブランチ: `feat/461-anonymous-auth-link-apple`
-> 匿名認証の採用経緯: [ADR-0051](../adr/0051-start-with-anonymous-auth-and-link-apple-later.md)
+> 匿名認証の採用経緯: [ADR-0054](../adr/0054-start-with-anonymous-auth-and-link-apple-later.md)
 
 ## ステータス
 
@@ -290,7 +290,7 @@ enum OnboardingStep: Hashable, CaseIterable {
 - [x] 参加待ちの判定は端末に保存した最後の招待で行う
 - [x] 放置された匿名アカウントは最終サインインから30日で削除する
 - [x] 説明画面は3枚。招待リンクから来た人には招待者名を出す
-- [x] ADR-0051の承認
+- [x] ADR-0054の承認
 - [x] Issueの起票（#461 / #462 / #463）
 
 ### Phase 2: 実装

@@ -139,7 +139,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 ### `account_link`
 
-匿名のアカウントをAppleアカウントと連携する行動（[ADR-0051](adr/0051-start-with-anonymous-auth-and-link-apple-later.md)）。
+匿名のアカウントをAppleアカウントと連携する行動（[ADR-0054](adr/0054-start-with-anonymous-auth-and-link-apple-later.md)）。
 
 | 項目 | 内容 |
 |---|---|
