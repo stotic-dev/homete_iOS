@@ -54,5 +54,5 @@ Issue #238で、`fastlane release`レーンの`Deliverfile`が`submit_for_review
 * `.github/workflows/sync-metadata.yml`
 * `scripts/trigger-xcode-cloud-build.sh`
 * `scripts/appstoreconnect.sh`
-* [ADR-0008](0008-deploy-functions-workflow.md)（workflow_run活用の前例）
+* [homete_backend の ADR-0008](https://github.com/stotic-dev/homete_backend/blob/main/docs/adr/0008-deploy-functions-workflow.md)（workflow_run活用の前例）
 * [ADR-0013](0013-cohabitant-invitation-universal-link.md)（招待リンクの仕様、review_information/notes.txtに反映）
