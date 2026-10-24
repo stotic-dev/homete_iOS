@@ -40,9 +40,9 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | プロパティ名 | 値 | 説明 | 設定タイミング |
 |---|---|---|---|
 | `is_premium` | `true` / `false` | プレミアム会員かどうか | `SubscriptionStore`のエンタイトルメント状態が変化したとき（ログイン後の取得・購読更新・復元・ログアウト） |
-| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時は削除 |
-| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時は削除 |
-| `is_anonymous` | `true` / `false` | 匿名認証のまま（Appleアカウントと未連携）かどうか | `LoginContext`が確定したとき（`LaunchStateStore`でログイン状態が決まるたび。Apple連携の後も含む）。ログアウト・退会時は削除 |
+| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
+| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
+| `is_anonymous` | `true` / `false` | 匿名認証のまま（Appleアカウントと未連携）かどうか | `LoginContext`が確定したとき（`LaunchStateStore`でログイン状態が決まるたび。Apple連携の後も含む）。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
 
 **分析での使い方:** `is_premium`でセグメントして`housework` / `housework_template`の利用頻度を比較すると、
 プレミアム機能が実際にどれだけ使われているかが分かる。`has_cohabitant`が`false`のユーザーは家事管理自体が
