@@ -162,28 +162,41 @@ private extension InquiryCreationView {
 
     func categorySection() -> some View {
         SectionCard(.localized("どんなことについてですか")) {
-            ForEach(Array(InquiryCategory.allCases.enumerated()), id: \.element) { index, item in
-                Button {
-                    category = item
-                } label: {
-                    HStack(spacing: .space8) {
+            // 選択肢を常に並べると場所をとるので、タップしたときだけメニューで出す
+            Menu {
+                Picker(selection: $category) {
+                    ForEach(InquiryCategory.allCases, id: \.self) { item in
                         Text(InquiryDisplayText.category(item))
-                            .font(with: .body)
-                            .foregroundStyle(.textPrimary)
-                        Spacer()
-                        if category == item {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.textAccent)
-                        }
+                            .tag(Optional(item))
                     }
-                    .contentShape(Rectangle())
+                } label: {
+                    EmptyView()
                 }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(category == item ? .isSelected : [])
-                if index < InquiryCategory.allCases.count - 1 {
-                    Divider()
+                .pickerStyle(.inline)
+            } label: {
+                HStack(spacing: .space8) {
+                    categoryLabel()
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(with: .caption)
+                        .foregroundStyle(.textSecondary)
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    func categoryLabel() -> some View {
+        if let category {
+            Text(InquiryDisplayText.category(category))
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+        } else {
+            Text("選択してください", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textSecondary)
         }
     }
 

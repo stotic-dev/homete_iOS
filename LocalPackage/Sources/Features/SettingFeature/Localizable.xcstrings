@@ -1096,6 +1096,16 @@
         }
       }
     },
+    "選択してください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        }
+      }
+    },
     "開発者向け" : {
       "shouldTranslate" : false
     }
