@@ -295,8 +295,8 @@ launching → notLoggedIn → Sign In with Apple
 
 10. **`sync-package-resolved.yml`** - xcodeproj側の`Package.resolved`をInfraPackage・LocalPackageの解決結果にそろえる
    - xcodeprojでビルドすると使われるのはルート（xcodeproj）の`Package.resolved`だけなので、dependabotがパッケージ側だけ更新してもアプリの版は上がらない
-   - dependabotのPRでは`pull_request_target`で`scripts/sync-package-resolved.py`を流し、そろえるコミットを積む。それ以外のPRではずれていたら失敗する
-   - 手で依存を上げたら`python3 scripts/sync-package-resolved.py`でそろえる。経緯は[ADR-0052](doc/adr/0052-sync-xcodeproj-package-resolved-on-dependabot-prs.md)
+   - dependabotのPRでは`pull_request_target`で`scripts/sync-package-resolved.py`を流し、そろえるコミットを積む
+   - 手で依存を上げたら`python3 scripts/sync-package-resolved.py`でそろえる。経緯は[ADR-0053](doc/adr/0053-sync-xcodeproj-package-resolved-on-dependabot-prs.md)
 
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 

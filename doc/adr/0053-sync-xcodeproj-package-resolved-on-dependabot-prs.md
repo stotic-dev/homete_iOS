@@ -18,7 +18,7 @@ dependabotはInfraPackage・LocalPackage側しか更新できないので、CI�
   * `hometeVRT.xcodeproj` ← `LocalPackage`
   * パッケージの追加・削除は扱わない。依存を増やす・減らすときはXcodeで解決し直す
 * `sync-package-resolved.yml`で、dependabotのPRには`pull_request_target`でそろえるコミットを積む。スクリプトはmainのものを使い、PRのチェックアウトはデータとして読むだけにする
-* dependabot以外のPRでは、`pull_request`で`--check`を流し、ずれていたら失敗させる
+* ずれが出るのはdependabotがパッケージ側だけを更新したときなので、dependabot以外のPRではチェックしない。手で依存を上げたときはスクリプトを手で流す
 
 ## 考慮した選択肢
 
@@ -38,7 +38,6 @@ Aは、JSONを書き換えるだけなのでubuntuで数秒で終わる。Python
 ### 決定にあたり考慮したメリット
 
 * dependabotのPRをマージすれば、リリースされるアプリの版も上がる
-* 手で依存を上げたPRでも、xcodeproj側の更新漏れをCIで検知できる
 
 ### 決定にあたり考慮したデメリット
 

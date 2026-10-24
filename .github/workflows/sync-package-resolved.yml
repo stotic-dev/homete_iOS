@@ -1,6 +1,6 @@
 name: sync-package-resolved
 
-# doc/adr/0052: xcodeprojでビルドすると使われるのはルート（xcodeproj）のPackage.resolvedだけで、
+# doc/adr/0053: xcodeprojでビルドすると使われるのはルート（xcodeproj）のPackage.resolvedだけで、
 # dependabotが更新するInfraPackage・LocalPackage側のPackage.resolvedはアプリに反映されない。
 # dependabotのPRには、xcodeproj側をそろえるコミットをこのワークフローが積む。
 on:
