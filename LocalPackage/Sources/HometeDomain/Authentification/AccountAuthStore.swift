@@ -53,8 +53,14 @@ public final class AccountAuthStore {
     /// 匿名認証で始める
     /// - Note: サインインした結果は、認証状態のリスナーから`currentAuth`に届く
     public func startAnonymously() async throws {
-        let authInfo = try await accountAuthClient.signInAnonymously()
-        analyticsClient.setId(authInfo.id)
+        do {
+            let authInfo = try await accountAuthClient.signInAnonymously()
+            analyticsClient.setId(authInfo.id)
+            analyticsClient.log(.login(isSuccess: true, method: .anonymous))
+        } catch {
+            analyticsClient.log(.login(isSuccess: false, method: .anonymous))
+            throw error
+        }
     }
 
     /// 匿名のアカウントをAppleアカウントと連携する

@@ -15,14 +15,21 @@ struct AnalyticsEventTest {
     @Test(
         "認証結果を、真偽値の文字列ではなくsuccess/failureのresultパラメータを持つloginイベントに変換する",
         arguments: [
-            (true, ["result": "success"]),
-            (false, ["result": "failure"]),
+            (true, ["result": "success", "method": "apple"]),
+            (false, ["result": "failure", "method": "apple"]),
         ]
     )
     func login(isSuccess: Bool, expectedParameters: [String: String]) {
         let actual = AnalyticsEvent.login(isSuccess: isSuccess)
 
         #expect(actual == AnalyticsEvent(name: "login", parameters: expectedParameters))
+    }
+
+    @Test("匿名でのサインインは、methodパラメータをanonymousにしたloginイベントに変換する")
+    func login_anonymous() {
+        let actual = AnalyticsEvent.login(isSuccess: true, method: .anonymous)
+
+        #expect(actual == AnalyticsEvent(name: "login", parameters: ["result": "success", "method": "anonymous"]))
     }
 
     @Test(

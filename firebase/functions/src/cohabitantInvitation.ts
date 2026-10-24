@@ -120,6 +120,10 @@ export const issuecohabitantinvitation = onCall(
  * 参加確認画面で「〇〇さんのグループに参加しますか？」と表示するために使う。
  * 無効・期限切れは joincohabitant と同じエラーで返し、参加ボタンを押す前に
  * クライアントが失敗表示へ倒せるようにする。
+ *
+ * ログイン前の説明画面でも招待者名を出すため、未認証でも呼べる（ADR-0054）。
+ * App Checkは強制適用済みで、トークンは推測できない値のため、
+ * 未認証で返しても新たに漏れる情報は無い。返す内容は認証の有無で変えない。
  */
 export const fetchcohabitantinvitation = onCall(
   appCheckOptions,
@@ -127,15 +131,8 @@ export const fetchcohabitantinvitation = onCall(
     data: InvitationTokenRequest;
     auth?: { uid: string };
   }) => {
-    if (!request.auth) {
-      logger.error("Authentication error: User is not authenticated.");
-      throw new HttpsError(
-        "unauthenticated",
-        "The function must be called while authenticated."
-      );
-    }
-
-    const userId = request.auth.uid;
+    // 未認証ならundefinedになり、ログにuidは出ない
+    const userId = request.auth?.uid;
     const {token} = request.data;
 
     if (!token) {

@@ -15,6 +15,8 @@ import {
   notifyCohabitantJoined,
 } from "../../src/models/InvitationManager";
 import {makeRecordingSender} from "../helpers/notification";
+import {fetchcohabitantinvitation} from "../../src/cohabitantInvitation";
+import {CallableRequest, HttpsError} from "firebase-functions/v2/https";
 
 describe("cohabitantInvitation E2E Tests", () => {
   let testCounter = 0;
@@ -239,6 +241,79 @@ describe("cohabitantInvitation E2E Tests", () => {
       );
       expect(error).toBeInstanceOf(InvitationError);
       expect(error.code).toBe("invitation-expired");
+    });
+  });
+
+  describe("fetchcohabitantinvitation", () => {
+    /**
+     * callableをHTTPを介さずに呼ぶ
+     * @param {string} token 招待トークン
+     * @param {string | undefined} uid 呼び出し元のユーザーID。未認証ならundefined
+     * @return {Promise<unknown>} callableの戻り値
+     */
+    async function callFetch(
+      token: string,
+      uid: string | undefined
+    ): Promise<unknown> {
+      const request = {
+        data: {token},
+        auth: uid ? {uid, token: {}} : undefined,
+      } as unknown as CallableRequest;
+      return fetchcohabitantinvitation.run(request);
+    }
+
+    it("未認証でも招待の概要を取得できる", async () => {
+      // Arrange
+      const ownerId = `callable-unauth-owner-${testCounter}`;
+      const cohabitantId = `callable-unauth-cohabitant-${testCounter}`;
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId, cohabitantId, undefined, false, "たろう");
+      await createTestCohabitant(cohabitantId, [ownerId]);
+      const invitation = await issueInvitation(ownerId, new Date());
+
+      // Act
+      const actual = await callFetch(invitation.token, undefined);
+
+      // Assert
+      expect(actual).toEqual({
+        inviterName: "たろう",
+        cohabitantId,
+        expiresAt: invitation.expiresAt,
+      });
+    });
+
+    it("認証済みなら、未認証と同じ招待の概要を返す", async () => {
+      // Arrange
+      const ownerId = `callable-auth-owner-${testCounter}`;
+      const callerId = `callable-auth-caller-${testCounter}`;
+      await createTestUser(ownerId, `${ownerId}@example.com`);
+      await createTestAccount(ownerId, undefined, undefined, false, "はなこ");
+      const invitation = await issueInvitation(ownerId, new Date());
+
+      // Act
+      const actual = await callFetch(invitation.token, callerId);
+
+      // Assert
+      expect(actual).toEqual({
+        inviterName: "はなこ",
+        cohabitantId: null,
+        expiresAt: invitation.expiresAt,
+      });
+    });
+
+    it("未認証で無効な招待を取得すると、招待固有のコード付きのnot-foundになる", async () => {
+      // Act
+      const error = (await callFetch(
+        `callable-missing-${testCounter}`,
+        undefined
+      ).catch((e) => e)) as HttpsError;
+
+      // Assert
+      expect(error).toBeInstanceOf(HttpsError);
+      expect(error.code).toBe("not-found");
+      expect(error.details).toEqual({
+        invitationErrorCode: "invitation-not-found",
+      });
     });
   });
 
