@@ -297,6 +297,11 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
    - mergeで取り込み、force pushはしない。コンフリクトしたら失敗するので、ローカルで解消してpushする
    - GITHUB_TOKENのpushでは他のワークフローが発火しないため、`release-snapshot-diff.yml`と、メタデータに変更が入ったときの`sync-metadata.yml`をここから起動する。Xcode Cloudは通常どおり起動する
 
+10. **`sync-package-resolved.yml`** - xcodeproj側の`Package.resolved`をInfraPackage・LocalPackageの解決結果にそろえる
+   - xcodeprojでビルドすると使われるのはルート（xcodeproj）の`Package.resolved`だけなので、dependabotがパッケージ側だけ更新してもアプリの版は上がらない
+   - dependabotのPRでは`pull_request_target`で`scripts/sync-package-resolved.py`を流し、そろえるコミットを積む
+   - 手で依存を上げたら`python3 scripts/sync-package-resolved.py`でそろえる。経緯は[ADR-0053](doc/adr/0053-sync-xcodeproj-package-resolved-on-dependabot-prs.md)
+
 **Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
 
 | エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
