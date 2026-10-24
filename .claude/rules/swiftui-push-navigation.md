@@ -40,6 +40,8 @@ extension EnvironmentValues {
 
 `NavigationStack`を持つViewに`@State var navigationPath = AppNavigationPath<XxxRoute>()`を持たせ、`NavigationStack(path: $navigationPath.path)`にバインドする。`.navigationDestination(for: XxxRoute.self)`は**このView1箇所だけ**に定義し、配下には`.environment(\.xxxNavigationPath, navigationPath)`で伝播する。
 
+`.environment(\.xxxNavigationPath, ...)`は**`NavigationStack`の外側**に付ける。ルートのView（`NavigationStack`の中身）に付けると、push した遷移先の画面には値が届かない。届かない画面の`navigationPath`は`@Entry`の既定値（`NavigationStack`とつながっていない別のインスタンス）になり、そこからの`push`は何も起きない。ルートからの遷移は動くので気づきにくい（設定 → ライセンス一覧 → ライセンス詳細が開かなかった）。
+
 ```swift
 public struct SettingViewScreen: View {
 
@@ -51,8 +53,9 @@ public struct SettingViewScreen: View {
                 .navigationDestination(for: SettingRoute.self) { route in
                     navigationHandler(route)
                 }
-                .environment(\.settingNavigationPath, navigationPath)
         }
+        // NavigationStackの外から渡し、pushした画面にも届ける
+        .environment(\.settingNavigationPath, navigationPath)
     }
 
 }

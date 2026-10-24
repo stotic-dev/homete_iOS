@@ -212,8 +212,9 @@ private extension HouseworkBoardScreen {
             .navigationDestination(for: HouseworkBoardRoute.self) { route in
                 navigationHandler(route)
             }
-            .environment(\.houseworkBoardNavigationPath, navigationPath)
         }
+        // pushした画面にも届くよう、NavigationStackの外から渡す
+        .environment(\.houseworkBoardNavigationPath, navigationPath)
     }
 
     @ViewBuilder

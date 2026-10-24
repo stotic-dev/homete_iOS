@@ -38,6 +38,7 @@ public extension AppDependencies {
         encouragementCommentClient: .liveValue,
         encouragementCommentCacheClient: .liveValue,
         intentDonationClient: .liveValue,
+        inquiryClient: .liveValue,
         debugAuthClient: liveDebugAuthClient,
         debugLocalDataClient: liveDebugLocalDataClient
     )

@@ -14,6 +14,8 @@ struct SettingMenuItemButton: View {
 
     let item: SettingMenuItem
     let plan: SubscriptionPlan
+    /// 件数のバッジ。0のときは付けない
+    var badgeCount = 0
     let action: () -> Void
 
     var body: some View {
@@ -25,6 +27,9 @@ struct SettingMenuItemButton: View {
                 Text(item.title(plan: plan))
                     .font(with: .body)
                 Spacer()
+                if badgeCount > 0 {
+                    countBadge()
+                }
             }
             .foregroundStyle(.textPrimary)
             .frame(maxWidth: .infinity)
@@ -34,9 +39,29 @@ struct SettingMenuItemButton: View {
 
 }
 
+// MARK: - UI定義
+
+private extension SettingMenuItemButton {
+
+    func countBadge() -> some View {
+        Text(badgeCount, format: .number)
+            .font(with: .boldCaption)
+            .foregroundStyle(.textOnDestructive)
+            .padding(.horizontal, .space8)
+            .padding(.vertical, .space4)
+            .background(.fillDestructive, in: Capsule())
+            .accessibilityLabel(Text("未読\(badgeCount)件", bundle: #bundle))
+    }
+
+}
+
 #if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     SettingMenuItemButton(item: .taskTemplate, plan: .free) {}
+}
+
+#Preview("SettingMenuItemButton_未読あり", traits: .sizeThatFitsLayout) {
+    SettingMenuItemButton(item: .inquiry, plan: .free, badgeCount: 3) {}
 }
 
 #Preview("プレミアムプラン_未登録", traits: .sizeThatFitsLayout) {

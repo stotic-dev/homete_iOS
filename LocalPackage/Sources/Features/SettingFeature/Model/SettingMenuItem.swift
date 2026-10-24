@@ -15,6 +15,7 @@ enum SettingMenuItem: Equatable, CaseIterable {
     case frequentHousework
     case notificationPermission
     case premiumPlan
+    case inquiry
     case termsOfService
     case privacyPolicy
     case license
@@ -48,6 +49,31 @@ enum SettingMenuItem: Equatable, CaseIterable {
         }
     }
 
+    /// 設定画面でまとめて表示する区分
+    var section: SettingMenuSection {
+        switch self {
+        case .memberInvitation:
+            .group
+
+        case .taskTemplate, .frequentHousework:
+            .housework
+
+        case .notificationPermission, .premiumPlan:
+            .app
+
+        case .inquiry:
+            .support
+
+        case .termsOfService, .privacyPolicy, .license:
+            .about
+
+        #if DEBUG
+        case .debugMenu:
+            .developer
+        #endif
+        }
+    }
+
     func title(plan: SubscriptionPlan) -> LocalizedStringResource {
         switch self {
         case .memberInvitation:
@@ -63,11 +89,10 @@ enum SettingMenuItem: Equatable, CaseIterable {
             .localized("通知設定")
 
         case .premiumPlan:
-            if case .free = plan {
-                .localized("プレミアムプランに登録")
-            } else {
-                .localized("ご登録中のプラン")
-            }
+            premiumPlanTitle(plan: plan)
+
+        case .inquiry:
+            .localized("お問い合わせ")
 
         case .termsOfService:
             .localized("利用規約")
@@ -102,6 +127,9 @@ enum SettingMenuItem: Equatable, CaseIterable {
         case .premiumPlan:
             "crown.fill"
 
+        case .inquiry:
+            "envelope"
+
         case .termsOfService:
             "doc.text"
 
@@ -115,6 +143,18 @@ enum SettingMenuItem: Equatable, CaseIterable {
         case .debugMenu:
             "ladybug"
         #endif
+        }
+    }
+
+}
+
+private extension SettingMenuItem {
+
+    func premiumPlanTitle(plan: SubscriptionPlan) -> LocalizedStringResource {
+        if case .free = plan {
+            .localized("プレミアムプランに登録")
+        } else {
+            .localized("ご登録中のプラン")
         }
     }
 
