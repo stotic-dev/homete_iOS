@@ -37,7 +37,7 @@ struct StoredAllHouseworkListTest {
         #expect(sortedActual == expected)
     }
 
-    @Test("リアルタイムリスナーの期間（前後3日）より前の家事も保持する")
+    @Test("リアルタイムリスナーの期間（前後7日）より前の家事も保持する")
     func makeMultiDateList_keepsItemsOutsideListenerPeriod() {
         // Arrange
 

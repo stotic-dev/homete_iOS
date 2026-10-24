@@ -13,7 +13,7 @@ struct HouseworkManagerFocusTest {
 
     private let inputCohabitantId = "cohabitantId"
     private static let now = Date.previewDate(year: 2026, month: 8, day: 11)
-    /// リアルタイムリスナーの期間（前後3日）より前の日
+    /// リアルタイムリスナーの期間（前後7日）より前の日
     private static let outOfListenerDay = Date.previewDate(year: 2026, month: 8, day: 1)
     /// リアルタイムリスナーの期間内の日
     private static let inListenerDay = Date.previewDate(year: 2026, month: 8, day: 8)
@@ -55,7 +55,7 @@ struct HouseworkManagerFocusTest {
 
         let requests = await recorder.requests
         let expectedRequests: [ListenerRequest] = [
-            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 3),
+            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 7),
             .init(cohabitantId: inputCohabitantId, anchorDate: Self.outOfListenerDay, offset: .zero),
         ]
         #expect(requests == expectedRequests)
@@ -87,7 +87,7 @@ struct HouseworkManagerFocusTest {
 
         let requests = await recorder.requests
         let expectedRequests: [ListenerRequest] = [
-            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 3),
+            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 7),
         ]
         #expect(requests == expectedRequests)
     }
@@ -141,7 +141,7 @@ struct HouseworkManagerFocusTest {
 
         let requests = await recorder.requests
         let expectedRequests: [ListenerRequest] = [
-            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 3),
+            .init(cohabitantId: inputCohabitantId, anchorDate: Self.now, offset: 7),
             .init(cohabitantId: inputCohabitantId, anchorDate: Self.outOfListenerDay, offset: .zero),
         ]
         #expect(requests == expectedRequests)
