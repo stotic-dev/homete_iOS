@@ -42,6 +42,8 @@ public final class WelcomeInvitationStore {
             return
         }
 
+        // 取得の間も前の招待者名が出続けないよう、先に消しておく
+        invitation = .none
         do {
             let summary = try await cohabitantInvitationClient.fetch(token)
             // 取得中に別のリンクが開かれた（.task(id:)がキャンセルされた）場合は、新しいトークンの結果に任せる

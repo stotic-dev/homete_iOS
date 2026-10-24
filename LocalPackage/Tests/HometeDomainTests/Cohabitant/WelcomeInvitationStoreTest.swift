@@ -84,4 +84,38 @@ struct WelcomeInvitationStoreTest {
         #expect(sut.invitation == .none)
     }
 
+    @Test("別の招待トークンを読み込んでいる間は、前の招待の案内を出さない")
+    func load_anotherTokenWhileFetching() async {
+        // Arrange
+        let (fetchStarted, fetchStartedContinuation) = AsyncStream<Void>.makeStream()
+        let (fetchResumed, fetchResumedContinuation) = AsyncStream<Void>.makeStream()
+        let sut = WelcomeInvitationStore(
+            cohabitantInvitationClient: .init(fetch: { token in
+                guard token == "token-b" else {
+                    return .init(inviterName: "たろう", expiresAt: Date(timeIntervalSince1970: 100))
+                }
+                fetchStartedContinuation.yield()
+                for await _ in fetchResumed {
+                    break
+                }
+                return .init(inviterName: "はなこ", expiresAt: Date(timeIntervalSince1970: 100))
+            })
+        )
+        await sut.load(token: "token-a")
+
+        // Act
+        let loading = Task {
+            await sut.load(token: "token-b")
+        }
+        for await _ in fetchStarted {
+            break
+        }
+
+        // Assert
+        #expect(sut.invitation == .none)
+
+        fetchResumedContinuation.yield()
+        await loading.value
+    }
+
 }
