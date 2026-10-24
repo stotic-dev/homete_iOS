@@ -52,7 +52,10 @@ private extension AppDelegate {
 
     func setupFirebase() {
         // App Checkのプロバイダ登録はFirebaseApp.configure()より前に行う必要がある。
-        AppCheckConfigurator.configure(usesDebugProvider: usesAppCheckDebugProvider)
+        AppCheckConfigurator.configure(
+            usesDebugProvider: usesAppCheckDebugProvider,
+            debugToken: Bundle.main.object(forInfoDictionaryKey: "AppCheckDebugToken") as? String ?? ""
+        )
 
         #if DEBUG
         if !isXcodePreview, !isUnitTestMode {

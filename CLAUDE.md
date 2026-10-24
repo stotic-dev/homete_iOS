@@ -191,9 +191,9 @@ Stg構成は開発用Firebaseプロジェクトを参照するためDEBUGを定�
 2. Firebaseコンソールの**stgプロジェクト（`homete-ios-dev-e3ef7`）** → App Check → アプリ タブ → `taichi.satou.hometekure.dev` の ⋮ → デバッグトークンを管理 → 登録する
 3. 控えたトークンを `homete/Resouces/Secret_dev.xcconfig` の `APP_CHECK_DEBUG_TOKEN` に設定する
 
-3をやると、`homete.xcscheme` の環境変数 `AppCheckDebugToken`（値は `$(APP_CHECK_DEBUG_TOKEN)`）経由で全端末・全シミュレータが同じトークンを使うようになり、**コンソールへの登録は最初の1回だけで済む**。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
+3をやると、Debug構成のビルドだけInfo.plistの `AppCheckDebugToken` にトークンが埋め込まれ、起動時に`AppCheckConfigurator`がSDKの読む環境変数へ設定する。全端末・全シミュレータが同じトークンを使うので、**コンソールへの登録は最初の1回だけで済む**。Xcodeを通さずホーム画面から起動しても効く（スキームの環境変数で渡していた頃は、ホーム画面から起動すると未登録のトークンになって全部拒否されていた）。素の挙動はインストールごとにUUIDを生成して`UserDefaults`に保存するため、シミュレータを消去するたびに再登録が必要になり運用が回らない。
 
-デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み。共有スキームには変数名だけが載る）。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
+デバッグトークンはApp Attestの検証を丸ごと迂回する合鍵なので、リポジトリにコミットしないこと（`Secret_dev.xcconfig`はgitignore済み）。Stg構成も`Secret_dev.xcconfig`を参照するが、Info.plistへ渡す`APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST`はDebug構成にだけ定義しているので、TestFlight・App Storeのビルドには埋め込まれない。prodプロジェクトには登録しない。`APP_CHECK_DEBUG_TOKEN`が未設定なら空文字に展開され、SDKはインストールごとのトークン生成にフォールバックする。
 
 FirestoreとCallable関数で有効化の仕組みが違うので混同しないこと。
 
@@ -314,11 +314,16 @@ launching → notLoggedIn → Sign In with Apple
 1. **`VRT`** - スナップショットテスト
    - `ci_post_clone.sh`: SPMプラグイン検証スキップ + スナップショット参照ファイル確認
    - プロジェクトは `hometeVRT.xcodeproj`、スキームは `hometeSnapshotTests`。`homete.xcodeproj` だとアプリが参照するInfraPackageの依存まで解決される
+   - テストプラン `hometeSnapshotTestsForCI` で失敗時の診断収集を止めている（`diagnosticCollectionPolicy` は `"Never"`。`"never"` だとテストプランが読めない）
 
-2. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
+2. **`VRT_light`** - スナップショットテストを1回だけ流す版（[ADR-0052](doc/adr/0052-vrt-light-workflow-with-build-action.md)）
+   - Buildアクション（スキーム `hometeVRTHost`、空のホストアプリだけをビルド）のあと、`ci_post_xcodebuild.sh` が `xcodebuild test` を記録モードで流し、変わった参照PNGをcommit・pushする
+   - テスト結果はXcode Cloudの画面に出ず、`ci_post_xcodebuild.log` で見る。見た目の差分では失敗せず、xcodebuildが落ちたときだけ失敗する
+
+3. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info-dev.plist` をデコード配置
 
-3. **`Upload For AppStore`** - 本番App Storeアップロード
+4. **`Upload For AppStore`** - 本番App Storeアップロード
    - `ci_post_clone.sh`: `GOOGLESERVICE_INFO` 環境変数から `homete/GoogleService-Info.plist` をデコード配置
    - `ci_pre_xcodebuild.sh`: `$CI_BUILD_NUMBER` を `agvtool` で全Targetに反映
    - `ci_post_xcodebuild.sh`: archive成功時に `v{version}` の git タグを作成（`$GITHUB_TOKEN` 設定時のみpush）
