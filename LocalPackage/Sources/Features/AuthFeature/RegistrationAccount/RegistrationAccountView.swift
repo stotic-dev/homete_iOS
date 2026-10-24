@@ -21,60 +21,41 @@ struct RegistrationAccountView: View {
     let onRegistered: (Account) -> Void
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: .space24) {
-                VStack(spacing: .space16) {
-                    // 入力中はキーボードで画面が狭くなるため、小さく出す
-                    HometteView(.wave, size: .small)
-                    Text("はじめまして！", bundle: #bundle)
-                        .font(with: .headLineM)
-                    Text("まずはあなたのニックネームを教えてください", bundle: #bundle)
-                        .font(with: .body)
-                        .foregroundStyle(.textSecondary)
-                }
-                VStack(spacing: .space8) {
-                    Text("ユーザー名", bundle: #bundle)
-                        .font(with: .headLineS)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    UserNameInputTextField(userName: $inputUserName)
-                    userNameCautionMessage()
-                }
-                Spacer(minLength: .space24)
-                Button {
-                    loadingState.task {
-                        await tappedRegistrationButton()
-                    }
-                } label: {
-                    Text("登録", bundle: #bundle)
-                        .padding(.vertical, .space8)
-                        .frame(maxWidth: .infinity)
-                }
-                .primaryButtonStyle()
-                .disabled(!inputUserName.canRegistration)
-                Spacer()
-                    .frame(height: .space24)
+        VStack(spacing: .space24) {
+            VStack(spacing: .space16) {
+                // 入力中はキーボードで画面が狭くなるため、小さく出す
+                HometteView(.wave, size: .small)
+                Text("なんと呼べばいいですか？", bundle: #bundle)
+                    .font(with: .headLineM)
+                    .multilineTextAlignment(.center)
+                Text("ニックネームでも大丈夫です。パートナーの画面にも表示され、あとから変えられます", bundle: #bundle)
+                    .font(with: .body)
+                    .foregroundStyle(.textSecondary)
+                    .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, .space16)
-            .navigationTitle(.localized("アカウント登録"))
-            .inlineNavigationBarTitleDisplayMode()
+            UserNameInputTextField(userName: $inputUserName)
+            Spacer(minLength: .space24)
+            Button {
+                loadingState.task {
+                    await tappedRegistrationButton()
+                }
+            } label: {
+                Text("次へ", bundle: #bundle)
+                    .padding(.vertical, .space8)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+            .disabled(!inputUserName.canRegistration)
+            Spacer()
+                .frame(height: .space24)
         }
+        // ほかのオンボーディングの画面と同じく、ナビゲーションバーを出さずに見出しで問いかける
+        .padding(.horizontal, .space16)
+        .padding(.top, .space48)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(.backgroundScreen)
         .fullScreenLoadingIndicator(loadingState)
         .trackScreenView(.registrationAccount)
-    }
-
-}
-
-private extension RegistrationAccountView {
-
-    func userNameCautionMessage() -> some View {
-        HStack(alignment: .top, spacing: .space8) {
-            Image(systemName: "exclamationmark.circle.fill")
-                .foregroundStyle(.fillDestructive)
-            Text("この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。", bundle: #bundle)
-                .font(with: .caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .fixedSize(horizontal: false, vertical: true)
     }
 
 }

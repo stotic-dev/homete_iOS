@@ -154,16 +154,6 @@
         }
       }
     },
-    "この名前はパートナーの画面でも表示されます。\n後からいつでも変更可能です。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This name will also appear on your partner's screen.\nYou can change it anytime."
-          }
-        }
-      }
-    },
     "すでにアカウントをお持ちの方" : {
       "localizations" : {
         "en" : {
@@ -194,6 +184,16 @@
         }
       }
     },
+    "なんと呼べばいいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What should we call you?"
+          }
+        }
+      }
+    },
     "はじめまして、ほめっとだよ！" : {
       "comment" : "マスコットのほめっとのあいさつ。くだけた口調",
       "localizations" : {
@@ -201,16 +201,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hi there, I'm Homette!"
-          }
-        }
-      }
-    },
-    "はじめまして！" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nice to meet you!"
           }
         }
       }
@@ -255,32 +245,12 @@
         }
       }
     },
-    "まずはあなたのニックネームを教えてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First, tell us your nickname"
-          }
-        }
-      }
-    },
     "やった家事を、かんたんに記録できます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Log Your Chores in a Tap"
-          }
-        }
-      }
-    },
-    "アカウント登録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Account"
           }
         }
       }
@@ -301,6 +271,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Banner ads are removed from the Dashboard, so you can focus on your chores."
+          }
+        }
+      }
+    },
+    "ニックネームでも大丈夫です。パートナーの画面にも表示され、あとから変えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A nickname is fine. Your partner will see it too, and you can change it anytime."
           }
         }
       }
@@ -401,16 +381,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New Premium-only features come at no extra cost."
-          }
-        }
-      }
-    },
-    "ユーザー名" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Username"
           }
         }
       }
@@ -603,16 +573,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Laundry"
-          }
-        }
-      }
-    },
-    "登録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Register"
           }
         }
       }
