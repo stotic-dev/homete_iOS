@@ -93,4 +93,50 @@ struct OnboardingStepTest {
         #expect(actual == expected)
     }
 
+    @Test("並びの中にあるステップの次は、並びの中の次のステップ")
+    func next_inSteps() {
+        // Act
+
+        let actual = OnboardingStep.partnerRegistration.next(in: [
+            .registration,
+            .partnerRegistration,
+            .accountLink,
+            .premiumIntroduction,
+        ])
+
+        // Assert
+
+        #expect(actual == .accountLink)
+    }
+
+    @Test("並びから外れたステップの次は、本来の順番で後ろにあるステップ")
+    func next_removedFromSteps() {
+        // Act
+
+        let actual = OnboardingStep.notificationPermission.next(in: [
+            .registration,
+            .partnerRegistration,
+            .premiumIntroduction,
+        ])
+
+        // Assert
+
+        #expect(actual == .premiumIntroduction)
+    }
+
+    @Test("最後のステップの次は無い")
+    func next_lastStep() {
+        // Act
+
+        let actual = OnboardingStep.premiumIntroduction.next(in: [
+            .registration,
+            .partnerRegistration,
+            .premiumIntroduction,
+        ])
+
+        // Assert
+
+        #expect(actual == nil)
+    }
+
 }

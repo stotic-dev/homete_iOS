@@ -148,13 +148,12 @@ private extension OnboardingFlowView {
 
     /// 次のステップへ進む。残りのステップがなければオンボーディングを完了する
     func moveToNextStep() {
-        let nextIndex = (steps.firstIndex(of: step) ?? 0) + 1
-        guard steps.indices.contains(nextIndex) else {
+        guard let nextStep = step.next(in: steps) else {
             finishOnboarding()
             return
         }
 
-        step = steps[nextIndex]
+        step = nextStep
     }
 
     /// - Note: パートナー登録で参加・P2P登録をするとグループIDが入り、Apple連携をすると匿名でなくなる。

@@ -51,4 +51,15 @@ public extension OnboardingStep {
         }
     }
 
+    /// `steps`の並びの中で、このステップの次に案内するステップ。残りが無ければ`nil`
+    /// - Note: 通知の権限の確認が後から返って案内が不要になったときなど、このステップが並びから外れていても、
+    ///         `allCases`の順番で次を探す。並びの中の位置で探すと見つからず、先頭のステップへ戻ってしまう
+    func next(in steps: [OnboardingStep]) -> OnboardingStep? {
+        let order = Self.allCases
+        guard let currentOrder = order.firstIndex(of: self) else { return nil }
+        return steps.first { step in
+            (order.firstIndex(of: step) ?? 0) > currentOrder
+        }
+    }
+
 }
