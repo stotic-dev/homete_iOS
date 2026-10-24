@@ -92,8 +92,6 @@ struct SettingView: View {
     @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
     @State var isShowAccountLink = false
-    /// 招待リンクの共有を完了した。共有シートを閉じた後に、匿名ならApple連携を求める
-    @State var hasSharedInvitation = false
 
     init(isShowHouseworkTemplate: Binding<Bool>, isShowFrequentHousework: Binding<Bool>) {
         _isShowHouseworkTemplate = isShowHouseworkTemplate
@@ -163,15 +161,12 @@ struct SettingView: View {
         .trailingToolbarItem {
             leadingNavigationBarContent()
         }
-        .sheet(
+        .shareSheet(
             item: $sharingInvitation,
-            onDismiss: { dismissedShareSheet() },
-            content: { invitation in
-                if let url = invitation.url {
-                    ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
-                        completedShareSheet(invitation, isCompleted: isCompleted)
-                    }
-                }
+            text: CohabitantInvitation.shareMessage,
+            url: \.url,
+            onFinish: { invitation, isCompleted in
+                finishedShareSheet(invitation, isCompleted: isCompleted)
             }
         )
         .sheet(isPresented: $isShowAccountLink) {
@@ -348,19 +343,13 @@ private extension SettingView {
         }
     }
 
-    func completedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
-        hasSharedInvitation = isCompleted
+    /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
+    /// 共有を終えたその場で連携してもらう
+    func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
         guard isCompleted else { return }
         Task {
             await sentInvitationStore.save(invitation, accountId: loginContext.account.id)
         }
-    }
-
-    /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
-    /// 共有を終えたその場で連携してもらう
-    func dismissedShareSheet() {
-        guard hasSharedInvitation else { return }
-        hasSharedInvitation = false
         if loginContext.isAnonymous {
             isShowAccountLink = true
         }

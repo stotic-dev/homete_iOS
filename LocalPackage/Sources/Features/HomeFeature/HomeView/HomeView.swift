@@ -34,8 +34,6 @@ public struct HomeView: View {
     @State var isShowAccountLink = false
     /// 「もう一度送る」で共有シートに出している招待
     @State var resendingInvitation: CohabitantInvitation?
-    /// 共有シートで共有を完了した。共有シートを閉じた後に、匿名ならApple連携を求める
-    @State var hasSharedInvitation = false
     /// パートナー登録の画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
     @State var sentInvitationTokenBeforeRegistration: String?
     @State var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
@@ -143,15 +141,12 @@ private extension HomeView {
         .sheet(isPresented: $isShowSetting) {
             router.resolve(.setting)
         }
-        .sheet(
+        .shareSheet(
             item: $resendingInvitation,
-            onDismiss: { dismissedShareSheet() },
-            content: { invitation in
-                if let url = invitation.url {
-                    ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
-                        completedShareSheet(invitation, isCompleted: isCompleted)
-                    }
-                }
+            text: CohabitantInvitation.shareMessage,
+            url: \.url,
+            onFinish: { invitation, isCompleted in
+                finishedShareSheet(invitation, isCompleted: isCompleted)
             }
         )
         .sheet(isPresented: $isShowAccountLink) {
@@ -221,19 +216,12 @@ private extension HomeView {
         resendingInvitation = waitingInvitation
     }
 
-    func completedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
-        hasSharedInvitation = isCompleted
+    /// 共有を完了したら、匿名ならApple連携を求める
+    func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
         guard isCompleted else { return }
         Task {
             await sentInvitationStore.save(invitation, accountId: loginContext.account.id)
         }
-    }
-
-    /// 共有を完了したら、匿名ならApple連携を求める
-    /// - Note: 共有シートが閉じきる前に連携のシートを出すと表示されないため、閉じた後に出す
-    func dismissedShareSheet() {
-        guard hasSharedInvitation else { return }
-        hasSharedInvitation = false
         if loginContext.isAnonymous {
             isShowAccountLink = true
         }

@@ -25,8 +25,6 @@ struct PartnerRegistrationScreen: View {
 
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var sharingInvitation: CohabitantInvitation?
-    /// 共有シートで共有を完了した。共有シートを閉じた後に次のステップへ進む
-    @State var hasSharedInvitation = false
     @State var isShowCohabitantRegistration = false
     /// P2Pでの登録画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
     @State var sentInvitationTokenBeforeRegistration: String?
@@ -53,15 +51,12 @@ struct PartnerRegistrationScreen: View {
             },
             onTapLater: { tappedLater() }
         )
-        .sheet(
+        .shareSheet(
             item: $sharingInvitation,
-            onDismiss: { dismissedShareSheet() },
-            content: { invitation in
-                if let url = invitation.url {
-                    ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
-                        completedShareSheet(invitation, isCompleted: isCompleted)
-                    }
-                }
+            text: CohabitantInvitation.shareMessage,
+            url: \.url,
+            onFinish: { invitation, isCompleted in
+                finishedShareSheet(invitation, isCompleted: isCompleted)
             }
         )
         .fullScreenCoverOnIOS(
@@ -119,19 +114,12 @@ private extension PartnerRegistrationScreen {
         }
     }
 
-    func completedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
-        hasSharedInvitation = isCompleted
+    /// 共有を完了したら、相手の参加を待たずに次へ進む。キャンセルしたら選択肢に留まる
+    func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
         guard isCompleted else { return }
         Task {
             await sentInvitationStore.save(invitation, accountId: account.id)
         }
-    }
-
-    /// 共有を完了したら、相手の参加を待たずに次へ進む。キャンセルしたら選択肢に留まる
-    /// - Note: 共有シートが閉じきる前に次のステップへ切り替えると、シートが残ったまま画面が変わるため、閉じた後に進む
-    func dismissedShareSheet() {
-        guard hasSharedInvitation else { return }
-        hasSharedInvitation = false
         onNext(true)
     }
 
