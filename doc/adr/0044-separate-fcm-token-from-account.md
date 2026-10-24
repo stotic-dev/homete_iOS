@@ -45,6 +45,6 @@ FCMトークンは通知の送信先そのものなので、本人以外が読�
 
 ## 参考
 
-* `firebase/firestore.rules`（`match /Account/{userId}` 配下の `Private`）
-* `firebase/functions/src/models/FirestoreHelper.ts`（`getFcmTokensByUserIds`）
+* [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules)（`match /Account/{userId}` 配下の `Private`）
+* [`firebase/functions/src/models/FirestoreHelper.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/models/FirestoreHelper.ts)（`getFcmTokensByUserIds`）
 * `LocalPackage/Sources/AppRoot/Dependency/Impl/ImplAccountInfoClient.swift`（`updateFcmToken`）

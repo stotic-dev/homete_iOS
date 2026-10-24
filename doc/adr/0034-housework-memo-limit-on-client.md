@@ -45,6 +45,6 @@
 
 ## 参考
 
-* `firebase/firestore.rules`
+* [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules)
 * [ADR-0022 毎月のテンプレートを1家事1ドキュメントにする](0022-monthly-housework-template-items.md)
 * [ADR-0023](0023-housework-multiple-executors-with-allocated-points.md) / [ADR-0026](0026-fix-housework-order-by-created-at.md): 旧アプリの上書きで項目が消える既存の問題

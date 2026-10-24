@@ -262,7 +262,7 @@ Cohabitant/{cohabitantId}
 - 並べ替えは、移動したセクション内の `sortOrder` を振り直して `WriteBatch` で一括更新する（1グループあたりの件数が少ないため）
 - 件数が少なく、選ぶ部品で常に使うので、グループ参加中は2つのコレクションを常時購読する
 
-#### セキュリティルール（`firebase/firestore.rules`）
+#### セキュリティルール（[`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules)）
 
 ```
 match /FrequentHouseworks/{itemId} {
@@ -278,7 +278,7 @@ match /FrequentHouseworkCategories/{categoryId} {
 }
 ```
 
-- `firebase/functions/test/rules/firestore.rules.test.ts` にメンバー／非メンバーの読み書きテストを追加する
+- [`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts) にメンバー／非メンバーの読み書きテストを追加する
 - アカウント削除時のデータ削除（`deleteUserData.ts`）は `recursiveDelete` でCohabitant配下をまとめて消しているため、処理の変更は不要。コメントの列挙だけ更新する
 
 ### 3. ドメイン（`HometeDomain/Cohabitant/FrequentHousework/`）
@@ -478,8 +478,8 @@ public struct FrequentHouseworkPicker: View {
 | 削除View | `.../Components/PromoteHouseworkTemplateBanner.swift` | カードに置き換え |
 | 修正View | `LocalPackage/Sources/Features/SettingFeature/SettingView.swift` | 「いつもの家事」の行 |
 | 修正 | `LocalPackage/Package.swift` | モジュール・テストターゲット・依存追加 |
-| 修正 | `firebase/firestore.rules` / `firebase/functions/test/rules/firestore.rules.test.ts` | ルールとテスト |
-| 修正 | `firebase/functions/src/deleteUserData.ts` | コメント更新のみ |
+| 修正 | [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules) / [`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts) | ルールとテスト |
+| 修正 | [`firebase/functions/src/deleteUserData.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/deleteUserData.ts) | コメント更新のみ |
 | 修正ドキュメント | `doc/analytics_events.md` / `doc/multimodules_structure.md` / `CLAUDE.md` | 追従 |
 
 ---
