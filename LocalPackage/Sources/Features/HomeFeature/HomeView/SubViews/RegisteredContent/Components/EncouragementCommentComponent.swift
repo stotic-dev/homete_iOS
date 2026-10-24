@@ -31,6 +31,8 @@ struct EncouragementCommentComponent: View {
     @AppStorage(key: .receivedThanksDisplayRecord) var storedReceivedThanksRecord = ReceivedThanksDisplayRecord()
     /// ホームが出た回の通し番号。タブの切り替え・push先からの戻り・アプリへの復帰で進める
     @State var appearance = 0
+    /// アプリがバックグラウンドに入ったか。復帰したときだけホームが出た回として数えるために使う
+    @State var hasEnteredBackground = false
     /// 届いたありがとうを出した回として数えた、ホームが出た回の通し番号。表示中に上限に達しても消さないために使う
     @State var receivedThanksCountedAppearance: Int?
 
@@ -74,11 +76,20 @@ struct EncouragementCommentComponent: View {
         .onAppear {
             appearance += 1
         }
-        // アプリに戻ってきたときも、ホームが出たものとして扱う
+        // アプリに戻ってきたときも、ホームが出たものとして扱う。
+        // 権限やトラッキング同意のOSのダイアログを閉じたときもinactiveからactiveに戻るが、ホームは出たままなので数えない
         .onChange(of: scenePhase) { _, newValue in
-            guard newValue == .active else { return }
+            switch newValue {
+            case .background:
+                hasEnteredBackground = true
 
-            appearance += 1
+            case .active where hasEnteredBackground:
+                hasEnteredBackground = false
+                appearance += 1
+
+            default:
+                break
+            }
         }
         // 届いたありがとうを実際に出したときだけ数える
         .task(id: ReceivedThanksCountTrigger(appearance: appearance, isShown: isReceivedThanksShown)) {
