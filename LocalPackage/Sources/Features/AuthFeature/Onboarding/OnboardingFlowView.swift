@@ -24,6 +24,8 @@ public struct OnboardingFlowView: View {
     @State var steps: [OnboardingStep]
     /// 通知の権限が未決定で、通知の案内を出すか
     @State var shouldGuideNotification = true
+    /// パートナー登録で、招待の共有・P2Pでの登録・招待への参加のどれかを終えたか
+    @State var hasRegisteredPartner = false
     /// オンボーディングを始めたときに匿名だったか
     /// - Note: 連携すると`authInfo`は匿名でなくなる。連携のステップを並びに残したまま次へ進めるよう、始めたときの値で並びを決める
     @State var startedAnonymously: Bool
@@ -119,10 +121,15 @@ private extension OnboardingFlowView {
     /// 案内が不要なステップを除いて、進捗の分母を実際に表示する画面数と一致させる
     func loadSteps() async {
         shouldGuideNotification = await notificationPermissionUseCase.shouldGuideOnOnboarding()
+        // 確認が返る前にパートナー登録を終えていることがある。その結果を捨てると、Apple連携のステップが並びから消える
+        rebuildSteps()
+    }
+
+    func rebuildSteps() {
         steps = OnboardingStep.steps(
             isAnonymous: startedAnonymously,
             shouldGuideNotification: shouldGuideNotification,
-            hasRegisteredPartner: false
+            hasRegisteredPartner: hasRegisteredPartner
         )
     }
 
@@ -133,11 +140,8 @@ private extension OnboardingFlowView {
 
     /// パートナー登録の結果を受けて並びを組み立て直してから次へ進む（匿名なら次はApple連携になる）
     func completedPartnerRegistration(hasRegisteredPartner: Bool) {
-        steps = OnboardingStep.steps(
-            isAnonymous: startedAnonymously,
-            shouldGuideNotification: shouldGuideNotification,
-            hasRegisteredPartner: hasRegisteredPartner
-        )
+        self.hasRegisteredPartner = hasRegisteredPartner
+        rebuildSteps()
         moveToNextStep()
     }
 
