@@ -23,7 +23,7 @@ public enum HouseworkTitleSimilarity {
 
     /// 2つの名前の類似度（0〜1）
     ///
-    /// そろえた名前が同じなら1、片方がもう片方を含むなら0.9、それ以外は2文字ずつの組（バイグラム）の重なりで測る。
+    /// そろえた名前が同じなら1、片方がもう片方を含むなら0.9、それ以外は2文字ずつの組（バイグラム）の重なり（Dice係数）で測る。
     public static func score(_ lhs: String, _ rhs: String) -> Double {
         let lhs = normalized(lhs)
         let rhs = normalized(rhs)
@@ -31,14 +31,13 @@ public enum HouseworkTitleSimilarity {
         if lhs == rhs {
             return 1
         }
-        if lhs.contains(rhs) || rhs.contains(lhs) {
+        // 1文字の名前は何にでも含まれやすいので、含むかどうかでは判定しない
+        if min(lhs.count, rhs.count) >= 2, lhs.contains(rhs) || rhs.contains(lhs) {
             return 0.9
         }
         let lhsBigrams = bigrams(lhs)
         let rhsBigrams = bigrams(rhs)
-        let common = lhsBigrams.reduce(into: 0) { count, bigram in
-            if rhsBigrams.contains(bigram) { count += 1 }
-        }
+        let common = lhsBigrams.intersection(rhsBigrams).count
         return Double(common * 2) / Double(lhsBigrams.count + rhsBigrams.count)
     }
 
@@ -47,10 +46,10 @@ public enum HouseworkTitleSimilarity {
 private extension HouseworkTitleSimilarity {
 
     /// 2文字ずつの組。1文字の名前はその文字だけを返す
-    static func bigrams(_ value: String) -> [String] {
+    static func bigrams(_ value: String) -> Set<String> {
         let characters = Array(value)
         guard characters.count > 1 else { return [value] }
-        return (0 ..< characters.count - 1).map { String(characters[$0 ... $0 + 1]) }
+        return Set((0 ..< characters.count - 1).map { String(characters[$0 ... $0 + 1]) })
     }
 
 }

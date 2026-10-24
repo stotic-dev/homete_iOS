@@ -52,6 +52,7 @@ struct HouseworkTitleSimilarityTest {
         arguments: [
             ("皿洗い", "洗濯"),
             ("買い物", "お風呂掃除"),
+            ("皿", "皿洗い"),
             ("", "洗濯"),
         ]
     )
