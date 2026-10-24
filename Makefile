@@ -1,21 +1,9 @@
-.PHONY: help lint deploy emulator test-e2e resolve-packages build-local-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
+.PHONY: help resolve-packages build-local-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
 
 .DEFAULT_GOAL := setup-project
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z0-9_-]+:.*## .*' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
-
-lint: ## ESLintを実行して自動修正
-	cd firebase/functions && npm run lint -- --fix && cd ../..
-
-deploy: ## FunctionsをSTGへデプロイ（本番はGitHub ActionsのDeploy Functionsをenvironment=prodで手動実行）
-	cd firebase/functions && npm run deploy && cd ../..
-
-emulator: ## エミュレーターを起動
-	cd firebase/functions && npm run serve && cd ../..
-
-test-e2e: ## E2Eテストを実行
-	cd firebase/functions && npm run test:e2e && cd ../..
 
 resolve-packages: ## SwiftPM依存を取得（Claude Codeのサンドボックスでは.git/configに書けないため、サンドボックス外で流す）
 	scripts/resolve-swift-packages.sh
