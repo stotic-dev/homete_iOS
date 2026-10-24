@@ -183,7 +183,7 @@ private extension AppIntentSessionUseCaseTest {
         minimumRequiredVersion: String = ""
     ) -> AppIntentSessionUseCase {
         .init(
-            accountAuthClient: .init(currentAuth: { authId.map(AccountAuthResult.init(id:)) }),
+            accountAuthClient: .init(currentAuth: { authId.map { AccountAuthResult(id: $0) } }),
             accountInfoClient: .init(fetch: { _ in account }),
             cohabitantClient: .init(),
             houseworkClient: .init(),

@@ -40,12 +40,14 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | プロパティ名 | 値 | 説明 | 設定タイミング |
 |---|---|---|---|
 | `is_premium` | `true` / `false` | プレミアム会員かどうか | `SubscriptionStore`のエンタイトルメント状態が変化したとき（ログイン後の取得・購読更新・復元・ログアウト） |
-| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時は削除 |
-| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時は削除 |
+| `has_cohabitant` | `true` / `false` | 同居人グループに参加済みかどうか | `LoginContext`が確定したとき（`RootView`でログイン状態が決まるたび）。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
+| `cohabitant_member_count` | 数値の文字列 | 同居人グループのメンバー数（自分を含む） | `CohabitantStore`がグループのスナップショットを受信し、メンバー一覧を更新したとき。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
+| `is_anonymous` | `true` / `false` | 匿名認証のまま（Appleアカウントと未連携）かどうか | `LoginContext`が確定したとき（`LaunchStateStore`でログイン状態が決まるたび。Apple連携の後も含む）。ログアウト・退会時と、匿名から既存のアカウントへ切り替えたときは削除 |
 
 **分析での使い方:** `is_premium`でセグメントして`housework` / `housework_template`の利用頻度を比較すると、
 プレミアム機能が実際にどれだけ使われているかが分かる。`has_cohabitant`が`false`のユーザーは家事管理自体が
-成立していないため、他の指標から除外して見る必要がある。
+成立していないため、他の指標から除外して見る必要がある。`is_anonymous`で分けると、匿名で始めた人と
+Appleでログインした人のファネル（ニックネーム登録 → パートナー登録 → Apple連携 → グループ参加）を比べられる。
 
 ### ログアウト・退会時のリセット
 
@@ -56,7 +58,7 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 
 | 対象 | リセット方法 |
 |---|---|
-| `has_cohabitant` / `cohabitant_member_count` | `AnalyticsUserProperty.cleared(_:)`（`nil`を送りGA4側のプロパティを削除する） |
+| `has_cohabitant` / `cohabitant_member_count` / `is_anonymous` | `AnalyticsUserProperty.cleared(_:)`（`nil`を送りGA4側のプロパティを削除する） |
 | ユーザーID（Analytics / Crashlytics） | `AnalyticsClient.clearId` |
 | `is_premium` | 削除せず`false`に更新（`SubscriptionStore.logOut()`）。匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため |
 
@@ -83,6 +85,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `force_update` | `ForceUpdateView`（最低バージョンを下回ったときの強制アップデート画面） |
 | `login` | `LoginView` |
 | `registration_account` | `RegistrationAccountView` |
+| `account_link` | `AccountLinkScreen`（Apple連携の画面。全画面・設定・Paywallの前などで共通） |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
 | `onboarding_notification_permission` | `OnboardingNotificationPermissionGuideView` |
 | `paywall` | `PaywallScreen`（`RouteResolverInjection`で付与） |
@@ -133,6 +136,39 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | パラメータ | 値 | 説明 |
 |---|---|---|
 | `result` | `success` / `failure` | 認証に成功したかどうか |
+
+### `account_link`
+
+匿名のアカウントをAppleアカウントと連携する行動（[ADR-0054](adr/0054-start-with-anonymous-auth-and-link-apple-later.md)）。
+
+| 項目 | 内容 |
+|---|---|
+| 実装 | `AccountLinkAnalyticsAction`、`AccountLinkScreen` |
+
+| パラメータ | 必須 | 値 | 説明 |
+|---|---|---|---|
+| `entry` | ○ | `onboarding` / `required` / `todo` / `setting` / `paywall` | 連携を求めた場所 |
+| `result` | ○ | `success` / `cancel` / `conflict_switched` / `failure` | 連携の結果 |
+
+| `entry` | 起点 |
+|---|---|
+| `onboarding` | オンボーディングのApple連携のステップ（#463で追加） |
+| `required` | 匿名のままグループに参加していて、全画面で連携を求めた（`RootView`の`.accountLinkRequired`） |
+| `todo` | 未参加ホームのやることリスト（#463で追加） |
+| `setting` | 設定画面の「Appleアカウントで保存」、または設定から招待リンクを共有した直後 |
+| `paywall` | 匿名のままPaywallの起点を踏んだとき（`PaywallGate`） |
+
+| `result` | 送信タイミング |
+|---|---|
+| `success` | 連携に成功した |
+| `cancel` | 連携せずに画面を閉じた、または既存のアカウントへの切り替えの確認で「キャンセル」を選んだ |
+| `conflict_switched` | Appleアカウントがすでに使われていて、匿名のアカウントを削除してそのアカウントへ切り替えた |
+| `failure` | 連携、または既存のアカウントへの切り替えに失敗した |
+
+Sign in with Appleのシートをキャンセルしたときは何も送らない（OSのシートのキャンセルは画面側で区別できないため）。
+
+**分析での使い方:** `entry`ごとに`success`の比率を見ると、どこで連携を求めると離脱しにくいかが分かる。
+`required`の`success`が低いなら、グループに参加した後で止まっている人が多い。
 
 ### `logout`
 
@@ -540,7 +576,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `PaywallAnalyticsAction`、`PremiumIntroductionView` / `RegisteredContent` / `HouseworkBoardView` / `HouseworkTemplateScreen` / `ContributionAnalyticsScreen` / `SettingView` / `SubscriptionManagementView` |
+| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:)`で渡す） |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
@@ -564,9 +600,15 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen` / `FrequentHouseworkImportScreen`） |
 | `housework_memo_limit` | 家事メモの文字数上限の案内（無料プランで上限を超えたときにメモの編集シートに出る「プレミアムプランを見る」。`HouseworkMemoEditScreen`） |
 
-`step`ごとに`action: shown`がPaywallを開いたタイミングで、`action: closed`（`result`付き）がPaywallを
-閉じたタイミングで送信される。`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）
-に2つの起点があるため、開いた時点の起点を保持しておき、閉じたときに同じ`step`で送信する。
+`action: shown`はPaywallが表示されたとき、`action: closed`（`result`付き）はPaywallが閉じたときに、`PaywallGate`が送る。
+起点の画面は`step`を渡すだけで、イベントは送らない。
+
+匿名のアカウントは、Paywallを出す前にApple連携の画面を出す（`PaywallGate`）。連携の画面を出している間は
+Paywallを表示していないので、`shown` / `closed`は送らない。連携を終えてPaywallに切り替わった時点で`shown`を送る。
+連携の結果は`account_link`イベントの`entry: paywall`で見る。
+
+`board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）に2つの起点があるため、
+開いた時点の起点を保持して`step`に渡す。
 
 **分析での使い方:** `step`ごとに`shown`を分母に`closed(purchased)`を追うと、導線別の課金転換率が分かる。
 現状オンボーディングのみで計測できていたファネルが全8導線に広がるため、どの導線を強化すべきかの判断材料になる。

@@ -20,10 +20,8 @@ public struct HouseworkBoardScreen: View {
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.appDependencies.houseworkManager) var houseworkManager
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @Environment(\.loginContext) var loginContext
     @Environment(\.cohabitantMembers) var members
-    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(PendingRouteStore.self) var pendingRouteStore
 
@@ -150,8 +148,7 @@ private extension HouseworkBoardScreen {
             }
             .fullScreenCoverOnIOS(
                 isPresented: $isShowPaywall,
-                onDismiss: { dismissedPaywall() },
-                content: { router.resolve(.paywall) }
+                content: { router.resolve(.paywall(step: paywallStep)) }
             )
             .onChange(of: houseworkListStore.items) {
                 withAnimation {
@@ -368,13 +365,8 @@ private extension HouseworkBoardScreen {
     }
 
     func showPaywall(from step: PaywallAnalyticsStep) {
-        analyticsClient.log(.paywall(.shown(step: step)))
         paywallStep = step
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: paywallStep, isPremium: subscriptionStore.isPremium)))
     }
 
 }

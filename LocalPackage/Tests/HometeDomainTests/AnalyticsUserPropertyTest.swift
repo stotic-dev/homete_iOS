@@ -16,6 +16,8 @@ struct AnalyticsUserPropertyTest {
             (AnalyticsUserProperty.hasCohabitant(true), "has_cohabitant", "true"),
             (AnalyticsUserProperty.hasCohabitant(false), "has_cohabitant", "false"),
             (AnalyticsUserProperty.cohabitantMemberCount(2), "cohabitant_member_count", "2"),
+            (AnalyticsUserProperty.isAnonymous(true), "is_anonymous", "true"),
+            (AnalyticsUserProperty.isAnonymous(false), "is_anonymous", "false"),
         ]
     )
     func nameAndValue(property: AnalyticsUserProperty, expectedName: String, expectedValue: String) {
@@ -29,6 +31,7 @@ struct AnalyticsUserPropertyTest {
             (AnalyticsUserPropertyName.isPremium, "is_premium"),
             (AnalyticsUserPropertyName.hasCohabitant, "has_cohabitant"),
             (AnalyticsUserPropertyName.cohabitantMemberCount, "cohabitant_member_count"),
+            (AnalyticsUserPropertyName.isAnonymous, "is_anonymous"),
         ]
     )
     func clearedNameAndValue(name: AnalyticsUserPropertyName, expectedName: String) {

@@ -90,6 +90,9 @@ struct SettingView: View {
     @Binding var isShowFrequentHousework: Bool
     @State var sharingInvitation: CohabitantInvitation?
     @State var isShowPaywall = false
+    @State var isShowAccountLink = false
+    /// 招待リンクの共有を完了した。共有シートを閉じた後に、匿名ならApple連携を求める
+    @State var hasSharedInvitation = false
 
     init(isShowHouseworkTemplate: Binding<Bool>, isShowFrequentHousework: Binding<Bool>) {
         _isShowHouseworkTemplate = isShowHouseworkTemplate
@@ -120,13 +123,24 @@ struct SettingView: View {
                     }
                 }
                 VStack(spacing: .space24) {
-                    Button {
-                        tappedLogoutRowButton()
-                    } label: {
-                        Text("ログアウト", bundle: #bundle)
-                            .frame(maxWidth: .infinity)
+                    // 匿名のアカウントはログアウトすると二度と入れなくなるため、代わりにApple連携を出す
+                    if loginContext.isAnonymous {
+                        Button {
+                            tappedAccountLinkButton()
+                        } label: {
+                            Text("Appleアカウントで保存", bundle: #bundle)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .primaryButtonStyle()
+                    } else {
+                        Button {
+                            tappedLogoutRowButton()
+                        } label: {
+                            Text("ログアウト", bundle: #bundle)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .subPrimaryButtonStyle()
                     }
-                    .subPrimaryButtonStyle()
                     Button {
                         tappedAccountDeletionRowButton()
                     } label: {
@@ -148,10 +162,19 @@ struct SettingView: View {
         .trailingToolbarItem {
             leadingNavigationBarContent()
         }
-        .sheet(item: $sharingInvitation) { invitation in
-            if let url = invitation.url {
-                ShareSheet(text: CohabitantInvitation.shareMessage, url: url)
+        .sheet(
+            item: $sharingInvitation,
+            onDismiss: { dismissedShareSheet() },
+            content: { invitation in
+                if let url = invitation.url {
+                    ShareSheet(text: CohabitantInvitation.shareMessage, url: url) { isCompleted in
+                        hasSharedInvitation = isCompleted
+                    }
+                }
             }
+        )
+        .sheet(isPresented: $isShowAccountLink) {
+            router.resolve(.accountLink(entry: .setting))
         }
         .commonError(content: $errorContent)
         .fullScreenLoadingIndicator(loadingState)
@@ -167,8 +190,7 @@ struct SettingView: View {
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .setting)) }
         )
         .trackScreenView(.setting)
     }
@@ -318,7 +340,6 @@ private extension SettingView {
     func tappedPremiumPlanItem() {
         switch subscriptionStore.plan {
         case .free:
-            analyticsClient.log(.paywall(.shown(step: .setting)))
             isShowPaywall = true
 
         case .subscription:
@@ -326,8 +347,18 @@ private extension SettingView {
         }
     }
 
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .setting, isPremium: subscriptionStore.isPremium)))
+    /// 匿名のまま招待を送ると、相手が参加した時点でApple連携の画面から先に進めなくなる。
+    /// 共有を終えたその場で連携してもらう
+    func dismissedShareSheet() {
+        guard hasSharedInvitation else { return }
+        hasSharedInvitation = false
+        if loginContext.isAnonymous {
+            isShowAccountLink = true
+        }
+    }
+
+    func tappedAccountLinkButton() {
+        isShowAccountLink = true
     }
 
     func tappedLogoutRowButton() {
@@ -369,6 +400,17 @@ private extension SettingView {
             // グループ未参加の状態を表すため、空文字ではなくnilにする
             cohabitantId: nil
         )))
+}
+
+#Preview("SettingView_匿名") {
+    SettingView(isShowHouseworkTemplate: .constant(false), isShowFrequentHousework: .constant(false))
+        .environment(AccountAuthStore())
+        .environment(AccountStore())
+        .environment(SubscriptionStore())
+        .environment(\.loginContext, .init(
+            account: .init(id: "", userName: "Hoge", cohabitantId: nil),
+            isAnonymous: true
+        ))
 }
 
 #Preview("SettingView_グループ登録済み") {

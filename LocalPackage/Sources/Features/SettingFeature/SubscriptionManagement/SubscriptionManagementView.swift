@@ -13,7 +13,6 @@ struct SubscriptionManagementView: View {
 
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(\.routeResolver) var router
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
     @LoadingState var loadingState
 
     @State var isShowPaywall = false
@@ -37,8 +36,7 @@ struct SubscriptionManagementView: View {
         .fullScreenLoadingIndicator(loadingState)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .subscriptionManagement)) }
         )
         .alert(.localized("購入の復元"), isPresented: $isPresentedRestoreResultAlert) {
             Button("OK") {}
@@ -184,12 +182,7 @@ private struct ManageSubscriptionButtonStyle: ViewModifier {
 private extension SubscriptionManagementView {
 
     func tappedChangePlanButton() {
-        analyticsClient.log(.paywall(.shown(step: .subscriptionManagement)))
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(step: .subscriptionManagement, isPremium: subscriptionStore.isPremium)))
     }
 
     func tappedRestorePurchasesButton() {

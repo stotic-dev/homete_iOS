@@ -131,4 +131,179 @@ struct AccountAuthStoreTest {
         }
     }
 
+    @Test("Appleアカウントと連携すると、匿名でなくなった認証状態に更新する")
+    func linkWithApple() async throws {
+        // Arrange
+        let inputSignInWithAppleResult = SignInWithAppleResult(
+            tokenId: "testToken",
+            nonce: "testNonce",
+            authorizationCode: "testCode"
+        )
+        let store = AccountAuthStore(
+            accountAuthClient: .init(
+                makeListener: { .defaultValue() },
+                linkWithApple: { tokenId, nonce in
+                    #expect(tokenId == inputSignInWithAppleResult.tokenId)
+                    #expect(nonce == inputSignInWithAppleResult.nonce)
+                    return .init(id: "anonymousId", isAnonymous: false)
+                }
+            ),
+            currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+        )
+
+        // Act
+        try await store.linkWithApple(inputSignInWithAppleResult)
+
+        // Assert
+        let expected = AccountAuthInfo(
+            result: .init(id: "anonymousId", isAnonymous: false),
+            alreadyLoadedAtInitiate: true
+        )
+        #expect(store.currentAuth == expected)
+    }
+
+    @Test("既存のアカウントへ切り替えるときは、匿名のアカウントを削除してから受け取った認証情報でログインする")
+    func switchToExistingAccount() async throws {
+        // Arrange
+        let calledMethods = TestLockedArray<String>()
+        let store = AccountAuthStore(
+            accountAuthClient: .init(
+                signOut: { Issue.record() },
+                makeListener: { .defaultValue() },
+                signInWithExistingCredential: { credential in
+                    #expect(credential.rawValue as? String == "existingCredential")
+                    await calledMethods.append("signInWithExistingCredential")
+                    return .init(id: "existingId")
+                },
+                deleteAnonymousAccount: {
+                    await calledMethods.append("deleteAnonymousAccount")
+                }
+            ),
+            analyticsClient: .init(
+                setId: { id in
+                    #expect(id == "existingId")
+                },
+                log: { event in
+                    #expect(event == .login(isSuccess: true))
+                }
+            ),
+            currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+        )
+
+        // Act
+        try await store.switchToExistingAccount(.init(rawValue: "existingCredential"))
+
+        // Assert
+        let actual = await calledMethods.values
+        #expect(actual == ["deleteAnonymousAccount", "signInWithExistingCredential"])
+    }
+
+    @Test("既存のアカウントへ切り替えるときは、ログインのイベントを送る前に、匿名のアカウントのユーザープロパティを消す")
+    func switchToExistingAccount_clearUserProperties() async throws {
+        // Arrange
+        let calls = TestBox<[AnalyticsCall]>(value: [])
+        let store = AccountAuthStore(
+            accountAuthClient: .init(
+                makeListener: { .defaultValue() },
+                signInWithExistingCredential: { _ in
+                    .init(id: "existingId")
+                }
+            ),
+            analyticsClient: .init(
+                setUserProperty: { property in
+                    calls.value.append(.setUserProperty(property))
+                },
+                log: { event in
+                    calls.value.append(.log(event))
+                }
+            ),
+            currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+        )
+
+        // Act
+        try await store.switchToExistingAccount(.init(rawValue: "existingCredential"))
+
+        // Assert
+        let expected: [AnalyticsCall] = [
+            .setUserProperty(.cleared(.hasCohabitant)),
+            .setUserProperty(.cleared(.cohabitantMemberCount)),
+            .setUserProperty(.cleared(.isAnonymous)),
+            .log(.login(isSuccess: true)),
+        ]
+        #expect(calls.value == expected)
+    }
+
+    @Test("既存のアカウントへのログインに失敗したら、匿名のアカウントは削除済みのためサインアウトする")
+    func switchToExistingAccount_signInFailed() async {
+        await confirmation(expectedCount: 2) { confirmation in
+            // Arrange
+            let store = AccountAuthStore(
+                accountAuthClient: .init(
+                    signOut: { confirmation() },
+                    makeListener: { .defaultValue() },
+                    signInWithExistingCredential: { _ in
+                        throw DomainError.failAuth
+                    }
+                ),
+                analyticsClient: .init(
+                    log: { event in
+                        confirmation()
+                        #expect(event == .login(isSuccess: false))
+                    }
+                ),
+                currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+            )
+
+            // Act
+            await #expect(throws: DomainError.failAuth) {
+                try await store.switchToExistingAccount(.init(rawValue: "existingCredential"))
+            }
+
+            // Assert
+            #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+        }
+    }
+
+    @Test("匿名のアカウントの退会は、再認証とトークンの無効化を行わずに削除してサインアウトする")
+    func deleteAccount_anonymous() async throws {
+        try await confirmation(expectedCount: 3) { confirmation in
+            // Arrange
+            let store = AccountAuthStore(
+                accountAuthClient: .init(
+                    signOut: { confirmation() },
+                    makeListener: { .defaultValue() },
+                    reauthenticateWithApple: { _ in Issue.record() },
+                    revokeAppleToken: { _ in Issue.record() },
+                    deleteAccount: { Issue.record() },
+                    deleteAnonymousAccount: { confirmation() }
+                ),
+                analyticsClient: .init(
+                    log: { event in
+                        confirmation()
+                        #expect(event == .deleteAccount())
+                    }
+                ),
+                signInWithAppleClient: .init { _ in
+                    Issue.record()
+                    return .init(tokenId: "", nonce: "", authorizationCode: "")
+                },
+                currentAuth: .init(result: .init(id: "anonymousId", isAnonymous: true), alreadyLoadedAtInitiate: true)
+            )
+
+            // Act
+            try await store.deleteAccount()
+
+            // Assert
+            #expect(store.currentAuth == .init(result: nil, alreadyLoadedAtInitiate: true))
+        }
+    }
+
+}
+
+/// 計測に送った順番を確かめるための記録
+private enum AnalyticsCall: Equatable {
+
+    case setUserProperty(AnalyticsUserProperty)
+    case log(AnalyticsEvent)
+
 }

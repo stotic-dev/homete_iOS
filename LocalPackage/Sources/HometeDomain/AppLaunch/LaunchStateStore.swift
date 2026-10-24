@@ -41,6 +41,11 @@ public final class LaunchStateStore {
     @ObservationIgnored private var drainTask: Task<Void, Never>?
     /// 受け取り済みでアカウントへ未反映のFCMトークン
     @ObservationIgnored private var fcmToken: String?
+    /// 最後に反映した認証が匿名かどうか
+    /// - Note: アカウント情報の変化は認証を伴わずに届くため、そのときの判定のために退避しておく
+    @ObservationIgnored private var isAnonymous = false
+    /// 最後に反映した認証のユーザーID。サインアウトを挟まずにユーザーが切り替わったことを見分けるために使う
+    @ObservationIgnored private var signedInUserId: String?
 
     private let accountStore: AccountStore
     private let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
@@ -180,10 +185,19 @@ private extension LaunchStateStore {
 
     func applyAuthChange(_ auth: AccountAuthInfo) async {
         guard let authResult = auth.result else {
+            signedInUserId = nil
             launchState = .notLoggedIn
             await authSubscriptionSyncUseCase.syncOnSignedOut()
             return
         }
+
+        // 匿名のアカウントから既存のアカウントへ切り替えると、サインアウトを挟まずにユーザーIDだけが変わって届く。
+        // 前のアカウントの購読が残ると、新しいアカウントの変化を取りこぼし、古いアカウントの値で上書きされるため、先に片付ける
+        if let signedInUserId, signedInUserId != authResult.id {
+            await authSubscriptionSyncUseCase.syncOnUserSwitched()
+            guard !Task.isCancelled else { return }
+        }
+        signedInUserId = authResult.id
 
         let loadedAccount: Account?
         do {
@@ -193,6 +207,7 @@ private extension LaunchStateStore {
             await signOutOnAccountLoadFailure(error)
             return
         }
+        isAnonymous = authResult.isAnonymous
 
         guard let account = loadedAccount else {
             guard !Task.isCancelled else { return }
@@ -208,7 +223,7 @@ private extension LaunchStateStore {
     func applyAccountChange(_ account: Account?) async {
         // 認証が切り替わって打ち切られた世代は、古いアカウントで先に進めない
         guard !Task.isCancelled,
-              launchState.isLoggedIn,
+              launchState.hasLoadedAccount,
               let account else { return }
 
         await updateFcmTokenIfNeeded()
@@ -228,6 +243,7 @@ private extension LaunchStateStore {
     func signOutOnAccountLoadFailure(_ error: any Error) async {
         print("failed to load account, signing out: \(error)")
         accountLoadFailure = .make(error)
+        signedInUserId = nil
         launchState = .notLoggedIn
         await authSubscriptionSyncUseCase.syncOnSignedOut()
         do {
@@ -237,10 +253,15 @@ private extension LaunchStateStore {
         }
     }
 
+    /// - Note: 匿名のままグループに参加していたら、Apple連携を終えるまでホームに入れない。
+    ///         相手の参加でグループに入ったときもアカウントの変化としてここを通るため、未参加ホームから連携の画面に切り替わる
     func applyLoggedIn(_ account: Account) {
-        let context = LoginContext(account: account)
+        let context = LoginContext(account: account, isAnonymous: isAnonymous)
         analyticsClient.setUserProperty(.hasCohabitant(context.hasCohabitant))
-        launchState = .loggedIn(context: context)
+        analyticsClient.setUserProperty(.isAnonymous(context.isAnonymous))
+        launchState = context.requiresAccountLink
+            ? .accountLinkRequired(context: context)
+            : .loggedIn(context: context)
     }
 
     func updateFcmTokenIfNeeded() async {

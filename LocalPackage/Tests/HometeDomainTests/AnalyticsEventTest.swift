@@ -26,6 +26,37 @@ struct AnalyticsEventTest {
     }
 
     @Test(
+        "Apple連携の起点と結果を、entry/resultのパラメータを持つaccount_linkイベントに変換する",
+        arguments: [
+            (
+                AccountLinkAnalyticsAction(entry: .required, result: .success),
+                ["entry": "required", "result": "success"]
+            ),
+            (
+                AccountLinkAnalyticsAction(entry: .paywall, result: .cancel),
+                ["entry": "paywall", "result": "cancel"]
+            ),
+            (
+                AccountLinkAnalyticsAction(entry: .setting, result: .conflictSwitched),
+                ["entry": "setting", "result": "conflict_switched"]
+            ),
+            (
+                AccountLinkAnalyticsAction(entry: .onboarding, result: .failure),
+                ["entry": "onboarding", "result": "failure"]
+            ),
+            (
+                AccountLinkAnalyticsAction(entry: .todo, result: .success),
+                ["entry": "todo", "result": "success"]
+            ),
+        ]
+    )
+    func accountLink(action: AccountLinkAnalyticsAction, expectedParameters: [String: String]) {
+        let actual = AnalyticsEvent.accountLink(action)
+
+        #expect(actual == AnalyticsEvent(name: "account_link", parameters: expectedParameters))
+    }
+
+    @Test(
         "オンボーディング中の行動を、step/actionのパラメータを持つonboardingイベントに変換する",
         arguments: [
             (

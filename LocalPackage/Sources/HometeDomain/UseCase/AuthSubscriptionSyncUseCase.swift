@@ -83,15 +83,17 @@ public struct AuthSubscriptionSyncUseCase {
     /// - Note: `is_premium`は`SubscriptionStore.logOut()`が`false`を送る。
     ///         匿名ユーザーにエンタイトルメントは無く「未加入」が実態のため、削除ではなく値の更新にしている
     public func syncOnSignedOut() async {
-        // 購読を残すと、権限を失ったユーザーID・グループIDのままFirestoreへのアクセスが続く
-        await accountStore.stopObserving()
-        accountStore.clear()
-        await cohabitantStore.clear()
-        await houseworkManager.clearOnSignedOut()
-        await subscriptionStore.logOut()
+        await clearSession()
         analyticsClient.setUserProperty(.cleared(.hasCohabitant))
         analyticsClient.setUserProperty(.cleared(.cohabitantMemberCount))
+        analyticsClient.setUserProperty(.cleared(.isAnonymous))
         analyticsClient.clearId()
+    }
+
+    /// サインアウトを挟まずに別のユーザーへ切り替わったとき、前のユーザーの購読とキャッシュを片付ける
+    /// - Note: 計測のユーザーIDは切り替え先で設定済みのため消さない。ユーザープロパティはログイン後に設定し直される
+    public func syncOnUserSwitched() async {
+        await clearSession()
     }
 
     /// アカウント新規登録時にアカウントを登録し、サブスクリプション状態を同期する
@@ -127,6 +129,20 @@ public struct AuthSubscriptionSyncUseCase {
         } catch {
             print("failed to sync housework retention: \(error)")
         }
+    }
+
+}
+
+private extension AuthSubscriptionSyncUseCase {
+
+    /// Firestoreの購読を止め、アカウント情報とサブスクリプション状態をクリアする
+    func clearSession() async {
+        // 購読を残すと、権限を失ったユーザーID・グループIDのままFirestoreへのアクセスが続く
+        await accountStore.stopObserving()
+        accountStore.clear()
+        await cohabitantStore.clear()
+        await houseworkManager.clearOnSignedOut()
+        await subscriptionStore.logOut()
     }
 
 }

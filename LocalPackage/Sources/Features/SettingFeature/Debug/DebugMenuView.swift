@@ -128,7 +128,7 @@ struct DebugMenuView: View {
             router.resolve(.debugOnboarding)
         }
         .fullScreenCoverOnIOS(isPresented: $isShowPaywall) {
-            router.resolve(.paywall)
+            router.resolve(.paywall(step: nil))
         }
         .fullScreenCoverOnIOS(isPresented: $isShowCohabitantRegistration) {
             router.resolve(.debugCohabitantRegistration)

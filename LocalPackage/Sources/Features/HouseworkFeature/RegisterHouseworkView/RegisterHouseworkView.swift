@@ -125,8 +125,7 @@ public struct RegisterHouseworkView: View {
         }
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall) }
+            content: { router.resolve(.paywall(step: .frequentHouseworkLimit)) }
         )
         .alert(.localized("入力した内容を破棄しますか？"), isPresented: $isPresentingDiscardAlert) {
             Button(.localized("破棄する"), role: .destructive) {
@@ -490,15 +489,7 @@ private extension RegisterHouseworkView {
     }
 
     func showPaywall() {
-        analyticsClient.log(.paywall(.shown(step: .frequentHouseworkLimit)))
         isShowPaywall = true
-    }
-
-    func dismissedPaywall() {
-        analyticsClient.log(.paywall(.closed(
-            step: .frequentHouseworkLimit,
-            isPremium: subscriptionStore.isPremium
-        )))
     }
 
 }

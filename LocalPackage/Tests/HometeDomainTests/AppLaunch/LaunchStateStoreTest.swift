@@ -14,6 +14,10 @@ struct LaunchStateStoreTest {
         alreadyLoadedAtInitiate: true
     )
     private let signedOutAuth = AccountAuthInfo(result: nil, alreadyLoadedAtInitiate: true)
+    private let anonymousAuth = AccountAuthInfo(
+        result: AccountAuthResult(id: "testAccountId", isAnonymous: true),
+        alreadyLoadedAtInitiate: true
+    )
 
     private func makeAccount(id: String = "testAccountId", cohabitantId: String? = nil) -> Account {
         Account(id: id, userName: "testUserName", cohabitantId: cohabitantId)
@@ -314,6 +318,128 @@ struct LaunchStateStoreTest {
 
             store.syncAuthChange(signedInAuth)
             await store.waitForSync()
+        }
+    }
+
+    @Test("匿名でグループに参加済みなら、Apple連携を求める状態になる")
+    func syncAuthChangeAnonymousWithCohabitant() async {
+        // Arrange
+
+        let loadedAccount = makeAccount(cohabitantId: "cohabitantId")
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in loadedAccount }))
+        let store = makeStore(accountStore: accountStore)
+
+        // Act
+
+        store.syncAuthChange(anonymousAuth)
+        await store.waitForSync()
+
+        // Assert
+
+        let expected = LaunchState.accountLinkRequired(context: LoginContext(account: loadedAccount, isAnonymous: true))
+        #expect(store.launchState == expected)
+    }
+
+    @Test("匿名でグループに未参加なら、匿名のままログイン済みになる")
+    func syncAuthChangeAnonymousWithoutCohabitant() async {
+        // Arrange
+
+        let loadedAccount = makeAccount()
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in loadedAccount }))
+        let store = makeStore(accountStore: accountStore)
+
+        // Act
+
+        store.syncAuthChange(anonymousAuth)
+        await store.waitForSync()
+
+        // Assert
+
+        let expected = LaunchState.loggedIn(context: LoginContext(account: loadedAccount, isAnonymous: true))
+        #expect(store.launchState == expected)
+    }
+
+    @Test("匿名で未参加の間に相手が参加してグループに入ったら、Apple連携を求める状態に切り替わる")
+    func syncAccountChangeAnonymousJoinedCohabitant() async {
+        // Arrange
+
+        let notJoinedAccount = makeAccount()
+        let joinedAccount = makeAccount(cohabitantId: "cohabitantId")
+        let fetchCount = TestCounter()
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in
+            await fetchCount.increment()
+            return await fetchCount.value == 1 ? notJoinedAccount : joinedAccount
+        }))
+        let store = makeStore(accountStore: accountStore)
+        store.syncAuthChange(anonymousAuth)
+        await store.waitForSync()
+        // 相手の参加は、購読しているアカウントの更新としてAccountStoreに先に届く
+        _ = try? await accountStore.load(.init(id: joinedAccount.id))
+
+        // Act
+
+        store.syncAccountChange(joinedAccount)
+        await store.waitForSync()
+
+        // Assert
+
+        let expected = LaunchState.accountLinkRequired(context: LoginContext(account: joinedAccount, isAnonymous: true))
+        #expect(store.launchState == expected)
+    }
+
+    @Test("Apple連携を求めている間に連携を終えたら、ログイン済みになる")
+    func syncAuthChangeLinkedWhileAccountLinkRequired() async {
+        // Arrange
+
+        let loadedAccount = makeAccount(cohabitantId: "cohabitantId")
+        let accountStore = AccountStore(accountInfoClient: .init(fetch: { _ in loadedAccount }))
+        let store = makeStore(accountStore: accountStore)
+        store.syncAuthChange(anonymousAuth)
+        await store.waitForSync()
+
+        // Act
+
+        store.syncAuthChange(signedInAuth)
+        await store.waitForSync()
+
+        // Assert
+
+        #expect(store.launchState == .loggedIn(context: LoginContext(account: loadedAccount)))
+    }
+
+    @Test("サインアウトを挟まずに別のユーザーへ切り替わったら、前のユーザーの購読を止めてから切り替え先を購読する")
+    func syncAuthChangeUserSwitched() async {
+        let anonymousAccount = makeAccount()
+        let existingAccount = makeAccount(id: "existingAccountId")
+        let existingAuth = AccountAuthInfo(
+            result: AccountAuthResult(id: "existingAccountId"),
+            alreadyLoadedAtInitiate: true
+        )
+
+        await confirmation(expectedCount: 1) { removed in
+            // Arrange
+
+            let accountStore = AccountStore(
+                accountInfoClient: .init(
+                    fetch: { accountId in
+                        accountId == "existingAccountId" ? existingAccount : anonymousAccount
+                    },
+                    addSnapshotListener: { _, _ in .makeStream().stream },
+                    removeSnapshotListener: { _ in removed() }
+                )
+            )
+            let store = makeStore(accountStore: accountStore)
+            store.syncAuthChange(anonymousAuth)
+            await store.waitForSync()
+
+            // Act
+
+            store.syncAuthChange(existingAuth)
+            await store.waitForSync()
+
+            // Assert
+
+            #expect(store.launchState == .loggedIn(context: LoginContext(account: existingAccount)))
         }
     }
 
