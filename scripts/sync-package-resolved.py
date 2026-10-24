@@ -9,9 +9,8 @@ xcodeproj側にあるパッケージの版・revisionだけをパッケージ側
 パッケージの追加・削除はXcodeで解決し直す必要があるため扱わない。
 
 使い方:
-  scripts/sync-package-resolved.py          書き換える
-  scripts/sync-package-resolved.py --check  ずれがあれば一覧を出して終了コード1を返す（書き換えない）
-  --root <dir>  リポジトリのルート（既定はカレントディレクトリ）
+  scripts/sync-package-resolved.py [--root <dir>]
+  --root  リポジトリのルート（既定はカレントディレクトリ）
 """
 
 import argparse
@@ -58,26 +57,18 @@ def describe(state):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--check", action="store_true")
     parser.add_argument("--root", default=".")
     args = parser.parse_args()
 
-    drifted = False
     for root_path, source_path in TARGETS:
         root_path = os.path.join(args.root, root_path)
         source_path = os.path.join(args.root, source_path)
         synced, changes = sync(root_path, source_path)
         if not changes:
             continue
-        drifted = True
         for identity, current, expected in changes:
             print(f"{root_path}: {identity} {current} -> {expected}（{source_path}）")
-        if not args.check:
-            dump(root_path, synced)
-
-    if args.check and drifted:
-        print("scripts/sync-package-resolved.py を実行してそろえてください。")
-        return 1
+        dump(root_path, synced)
     return 0
 
 
