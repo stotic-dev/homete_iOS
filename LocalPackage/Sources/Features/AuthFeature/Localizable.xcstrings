@@ -546,6 +546,16 @@
         }
       }
     },
+    "次へ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        }
+      }
+    },
     "洗濯" : {
       "localizations" : {
         "en" : {

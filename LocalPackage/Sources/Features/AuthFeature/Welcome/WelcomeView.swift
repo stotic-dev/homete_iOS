@@ -10,7 +10,8 @@ import SwiftUI
 
 /// ログイン前にアプリを紹介する説明画面のUI
 ///
-/// 最後のページまで読まなくても始められるよう、「はじめる」「すでにアカウントをお持ちの方」はページの外に置く。
+/// アプリでできることを読んでから始めてもらうため、「はじめる」は最後のページにだけ出し、それまでは「次へ」で進める。
+/// すでにアカウントを持っている人は読む必要がないので、「すでにアカウントをお持ちの方」はどのページにも出す。
 struct WelcomeView: View {
 
     @Binding var selectedPage: WelcomePage
@@ -116,14 +117,7 @@ private extension WelcomeView {
 
     var actions: some View {
         VStack(spacing: .space16) {
-            Button {
-                onTapStart()
-            } label: {
-                Text("はじめる", bundle: #bundle)
-                    .padding(.vertical, .space8)
-                    .frame(maxWidth: .infinity)
-            }
-            .primaryButtonStyle()
+            primaryAction
             Button {
                 onTapExistingAccount()
             } label: {
@@ -140,8 +134,36 @@ private extension WelcomeView {
             .font(with: .caption)
             .foregroundStyle(.textSecondary)
             .tint(.textAccent)
+            // 「はじめる」についての案内なので、最後のページでだけ見せる。ページを送るたびにボタンの位置が動かないよう、場所は空けておく
+            .opacity(selectedPage.next == nil ? 1 : 0)
+            .accessibilityHidden(selectedPage.next != nil)
         }
         .padding(.horizontal, .space16)
+    }
+
+    @ViewBuilder
+    var primaryAction: some View {
+        if let nextPage = selectedPage.next {
+            Button {
+                withAnimation {
+                    selectedPage = nextPage
+                }
+            } label: {
+                Text("次へ", bundle: #bundle)
+                    .padding(.vertical, .space8)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+        } else {
+            Button {
+                onTapStart()
+            } label: {
+                Text("はじめる", bundle: #bundle)
+                    .padding(.vertical, .space8)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+        }
     }
 
     @ViewBuilder

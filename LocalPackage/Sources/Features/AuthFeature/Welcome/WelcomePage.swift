@@ -13,4 +13,11 @@ enum WelcomePage: Hashable, CaseIterable {
     /// ありがとうを送り合う
     case thanks
 
+    /// 次のページ。最後のページならnil
+    var next: WelcomePage? {
+        let pages = Self.allCases
+        guard let index = pages.firstIndex(of: self), index + 1 < pages.count else { return nil }
+        return pages[index + 1]
+    }
+
 }
