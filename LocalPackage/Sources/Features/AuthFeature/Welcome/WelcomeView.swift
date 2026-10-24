@@ -136,6 +136,8 @@ private extension WelcomeView {
             .tint(.textAccent)
             // 「はじめる」についての案内なので、最後のページでだけ見せる。ページを送るたびにボタンの位置が動かないよう、場所は空けておく
             .opacity(selectedPage.next == nil ? 1 : 0)
+            // 透明にしてもリンクはタップできてしまうため、見せていない間はタップも読み上げも止める
+            .allowsHitTesting(selectedPage.next == nil)
             .accessibilityHidden(selectedPage.next != nil)
         }
         .padding(.horizontal, .space16)
