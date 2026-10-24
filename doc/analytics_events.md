@@ -611,8 +611,8 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics` | 実行したIntent。キーを増やさないため、他のイベントと同じ`action`に載せる |
-| `result` | ○ | `success` / `not_found` / `already_completed` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
+| `action` | ○ | `complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics` / `record_housework` / `register_housework` | 実行したIntent。キーを増やさないため、他のイベントと同じ`action`に載せる |
+| `result` | ○ | `success` / `not_found` / `already_completed` / `already_registered` / `memo_limit_exceeded` / `cancelled` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
 
 送信されるパターンと、その送信タイミング:
 
@@ -623,13 +623,16 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 | `send_thanks` | アプリを開かずにありがとうを伝えようとした。伝えられる家事が無い・送信済みなら`not_found`、通信できず端末に保存して返したときは`pending_sync`。伝える家事をSiriが聞き返し、選ばずに閉じたときは送らない |
 | `show_contribution_summary` | 今月のがんばりをSiriの結果に出した |
 | `open_contribution_analytics` | アプリを開いてがんばりの分析画面を出すIntentを実行した（常に`success`） |
+| `record_housework` | アプリを開かずに、やった家事を名前で記録しようとした（[siri-voice-housework.md](strategy/siri-voice-housework.md)）。今日の家事・いつもの家事・新しく作った家事のどれを完了にしても`success`。今日の同じ名前の家事がもう終わっていれば`already_completed`、確認に「いいえ」と答えて記録しなかったときは`cancelled`、通信できず端末に保存して返したときは`pending_sync`。候補をSiriが聞き返し、選ばずに閉じたときは送らない |
+| `register_housework` | アプリを開かずに、これからやる家事を名前で今日の家事に登録しようとした。今日の家事に同じ名前の未完了の家事があれば`already_registered`、補足のメモが書ける文字数を超えていれば`memo_limit_exceeded`、確認に「いいえ」と答えたときは`cancelled`、通信できず端末に保存して返したときは`pending_sync`。候補をSiriが聞き返し、選ばずに閉じたときは送らない |
 
 ログインしていない・グループに所属していない・強制アップデートが必要なバージョンのときは、それぞれ`not_logged_in` / `no_cohabitant` / `update_required`になる。
 
-家事の完了・ありがとうは、書き込めたときに`housework`イベント（`step=app_intent`）も送る。`pending_sync`のときは、プロセスが動いている間に書き込みがサーバーに届いた場合だけ送られる。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
+家事の完了・ありがとう・登録は、書き込めたときに`housework`イベント（`step=app_intent`）も送る（`record_housework`は`complete`、`register_housework`は`register`。`register`の`source`はいつもの家事なら`frequent`、名前だけなら`manual`）。`pending_sync`のときは、プロセスが動いている間に書き込みがサーバーに届いた場合だけ送られる。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
 
 **分析での使い方:** `action`ごとの件数で、どのIntentが使われているかが分かる。`housework`の`complete`・`send_thanks`のうち`step=app_intent`の割合が、アプリを開かずに記録された割合（このIntentの主指標）になる。
 `not_found`が多い場合は、OSの提案やSiriで指定された家事が今日の家事に無い（名前の変更・登録していない）と読める。
+`record_housework`・`register_housework`の`cancelled`が多い場合は、似ている家事の提案や音声の聞き取りが意図とずれていると読める。
 
 ## イベントを追加するときの手順
 

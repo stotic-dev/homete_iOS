@@ -615,6 +615,7 @@ private extension HouseworkIntentServiceTest {
                 }),
                 houseworkClient: houseworkClient,
                 houseworkTemplateClient: houseworkTemplateClient,
+                frequentHouseworkClient: .init(),
                 remoteConfigClient: .init(),
                 currentAppVersion: "1.0.0"
             ),

@@ -115,6 +115,7 @@ struct AppIntentSessionUseCaseTest {
             }),
             houseworkClient: .init(),
             houseworkTemplateClient: .init(),
+            frequentHouseworkClient: .init(),
             remoteConfigClient: .init(),
             currentAppVersion: "1.0.0"
         )
@@ -132,6 +133,46 @@ struct AppIntentSessionUseCaseTest {
         #expect(actual == expected)
     }
 
+    @Test("いつもの家事は、最初に届いた一覧を返して購読をやめる")
+    func fetchFrequentHousework() async {
+        // Arrange
+
+        let items: [FrequentHouseworkItem] = [
+            .makeForTest(id: "laundry", title: "洗濯物干し"),
+            .makeForTest(id: "shopping", title: "買い物"),
+        ]
+
+        // Act
+
+        let actual = await confirmation { confirmation in
+            let sut = AppIntentSessionUseCase(
+                accountAuthClient: .init(),
+                accountInfoClient: .init(),
+                cohabitantClient: .init(),
+                houseworkClient: .init(),
+                houseworkTemplateClient: .init(),
+                frequentHouseworkClient: .init(
+                    addItemsSnapshotListener: { _, cohabitantId in
+                        #expect(cohabitantId == "cohabitant")
+                        return AsyncStream { $0.yield(items) }
+                    },
+                    removeListener: { _ in
+                        // Assert
+
+                        confirmation()
+                    }
+                ),
+                remoteConfigClient: .init(),
+                currentAppVersion: "1.0.0"
+            )
+            return await sut.fetchFrequentHousework(session: .init(account: account, cohabitantId: "cohabitant"))
+        }
+
+        // Assert
+
+        #expect(actual == FrequentHouseworkContext(items: items))
+    }
+
 }
 
 private extension AppIntentSessionUseCaseTest {
@@ -147,6 +188,7 @@ private extension AppIntentSessionUseCaseTest {
             cohabitantClient: .init(),
             houseworkClient: .init(),
             houseworkTemplateClient: .init(),
+            frequentHouseworkClient: .init(),
             remoteConfigClient: .init(string: { _ in minimumRequiredVersion }),
             currentAppVersion: "1.0.0"
         )

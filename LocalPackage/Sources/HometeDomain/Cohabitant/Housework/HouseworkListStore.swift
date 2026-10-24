@@ -71,9 +71,8 @@ public final class HouseworkListStore {
     }
 
     /// 家事をまとめて登録する
-    /// - Note: 一括書き込みのため、全件成功か全件失敗かのどちらかになる。
-    ///         登録を同居人へは通知しない。家事のステータスに関わる通知は、ふりかえり通知だけにしている。
-    ///         Analyticsは既存の指標の意味を保つため、家事1件につき1イベント送る
+    ///
+    /// 書き込み・Analyticsの詳細は`HouseworkCommandUseCase.register`を参照。
     /// - Parameter memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
     /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（1件も書き込まない）
     public func register(
@@ -82,22 +81,13 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep,
         memoLimitPolicy: HouseworkMemoLimitPolicy
     ) async throws {
-        guard !newItems.isEmpty else { return }
-        do {
-            for entry in newItems {
-                try entry.validateMemo(limitPolicy: memoLimitPolicy)
-            }
-            // まとめて登録した家事は同時に作られたものとして扱い、作成日時を揃える
-            let createdAt = now()
-            try await houseworkClient.insertOrUpdateItems(
-                newItems.map { $0.item.updateCreatedAt(createdAt) },
-                cohabitantId
-            )
-        } catch {
-            logRegistered(newItems, step: step, isSuccess: false)
-            throw error
-        }
-        logRegistered(newItems, step: step, isSuccess: true)
+        try await commandUseCase.register(
+            newItems: newItems,
+            createdAt: now(),
+            cohabitantId: cohabitantId,
+            step: step,
+            memoLimitPolicy: memoLimitPolicy
+        )
     }
 
     /// 家事を完了にする
@@ -478,12 +468,6 @@ private extension HouseworkListStore {
             throw error
         }
         analyticsClient.log(.housework(analyticsAction(true), itemCount: updatedItems.count))
-    }
-
-    func logRegistered(_ entries: [NewHouseworkEntry], step: HouseworkAnalyticsStep, isSuccess: Bool) {
-        for entry in entries {
-            analyticsClient.log(.housework(.register(step: step, source: entry.source, isSuccess: isSuccess)))
-        }
     }
 
     func startObserving() async {

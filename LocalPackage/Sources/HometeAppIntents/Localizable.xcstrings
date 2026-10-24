@@ -11,12 +11,72 @@
         }
       }
     },
+    "%@は、今日の家事にもうあります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is already on today's chores."
+          }
+        }
+      }
+    },
     "%@はもう終わっています" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ is already done."
+          }
+        }
+      }
+    },
+    "「%@」を新しく登録して、記録しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add “%@” as a new chore and log it?"
+          }
+        }
+      }
+    },
+    "「%@」を新しく登録しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add “%@” as a new chore?"
+          }
+        }
+      }
+    },
+    "「%@」を新しく登録する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add “%@” as a new chore"
+          }
+        }
+      }
+    },
+    "いつもの家事の「%@」を完了にしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark your usual chore “%@” as done?"
+          }
+        }
+      }
+    },
+    "いつもの家事の「%@」を追加しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your usual chore “%@”?"
           }
         }
       }
@@ -81,12 +141,62 @@
         }
       }
     },
+    "どの家事をしましたか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore did you do?"
+          }
+        }
+      }
+    },
+    "どの家事を登録しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to add?"
+          }
+        }
+      }
+    },
+    "どの家事を記録しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to log?"
+          }
+        }
+      }
+    },
+    "どの家事を追加しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which chore do you want to add?"
+          }
+        }
+      }
+    },
     "パートナーを招待すると使えます" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invite your partner to use this."
+          }
+        }
+      }
+    },
+    "メモが長すぎるため、追加できませんでした。短くしてからもう一度お試しください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The note is too long, so the chore wasn't added. Please shorten it and try again."
           }
         }
       }
@@ -111,6 +221,26 @@
         }
       }
     },
+    "今日の家事に%@を追加しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added %@ to today's chores."
+          }
+        }
+      }
+    },
+    "今日の家事の「%@」を完了にしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mark today's chore “%@” as done?"
+          }
+        }
+      }
+    },
     "今月のがんばりです" : {
       "localizations" : {
         "en" : {
@@ -127,6 +257,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No records yet this month."
+          }
+        }
+      }
+    },
+    "記録しませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing was logged."
+          }
+        }
+      }
+    },
+    "追加しませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing was added."
+          }
+        }
+      }
+    },
+    "通信がつながりにくいため、%@はオンラインになってから今日の家事に追加されます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The connection is weak, so %@ will be added to today's chores once you're back online."
           }
         }
       }

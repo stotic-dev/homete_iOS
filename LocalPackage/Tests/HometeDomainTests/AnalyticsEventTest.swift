@@ -712,6 +712,10 @@ struct AnalyticsEventTest {
             (.completeHousework, .updateRequired, "complete_housework", "update_required"),
             (.completeHousework, .failure, "complete_housework", "failure"),
             (.sendThanks, .pendingSync, "send_thanks", "pending_sync"),
+            (.recordHousework, .success, "record_housework", "success"),
+            (.recordHousework, .cancelled, "record_housework", "cancelled"),
+            (.registerHousework, .alreadyRegistered, "register_housework", "already_registered"),
+            (.registerHousework, .memoLimitExceeded, "register_housework", "memo_limit_exceeded"),
         ]
     )
     func appIntent(

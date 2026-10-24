@@ -16,6 +16,10 @@ public enum AppIntentAnalyticsIntent: String, Equatable, Sendable, CaseIterable 
     case showContributionSummary = "show_contribution_summary"
     /// アプリを開いてがんばりの分析画面を出す
     case openContributionAnalytics = "open_contribution_analytics"
+    /// アプリを開かずに、やった家事を記録する（今日の家事に無ければ新しく作って完了にする）
+    case recordHousework = "record_housework"
+    /// アプリを開かずに、これからやる家事を今日の家事に登録する
+    case registerHousework = "register_housework"
 
 }
 
@@ -29,6 +33,12 @@ public enum AppIntentAnalyticsResult: String, Equatable, Sendable, CaseIterable 
     case notFound = "not_found"
     /// 家事がすでに完了していた
     case alreadyCompleted = "already_completed"
+    /// 登録しようとした家事が、今日の家事にもう未完了である
+    case alreadyRegistered = "already_registered"
+    /// 補足のメモが、プランで書ける文字数を超えていた
+    case memoLimitExceeded = "memo_limit_exceeded"
+    /// 確認に「いいえ」と答え、記録・登録しなかった
+    case cancelled
     /// 通信できず、書き込みを端末に保存した（オンラインになったら反映される）
     case pendingSync = "pending_sync"
     /// ログインしていなかった
