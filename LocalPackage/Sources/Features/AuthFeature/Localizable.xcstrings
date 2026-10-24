@@ -295,6 +295,16 @@
         }
       }
     },
+    "パートナーが参加するまでのあいだも、先に使い始められます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can start using the app while you wait for your partner to join."
+          }
+        }
+      }
+    },
     "パートナーが家事を終えると通知が届きます。ひとこと添えて、ありがとうを伝えられます" : {
       "localizations" : {
         "en" : {
@@ -533,6 +543,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I Received an Invite Link"
+          }
+        }
+      }
+    },
+    "招待リンクを送りました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite Link Sent"
           }
         }
       }

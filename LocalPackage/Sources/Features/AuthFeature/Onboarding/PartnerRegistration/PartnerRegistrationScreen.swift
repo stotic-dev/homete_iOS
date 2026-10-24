@@ -28,6 +28,9 @@ struct PartnerRegistrationScreen: View {
     /// 共有シートを閉じたが、共有を完了したと分からなかった招待
     /// - Note: 共有先のアプリによっては、送っても完了と伝えてこない。送った人が自分で次へ進めるよう、閉じた後も持っておく
     @State var unconfirmedInvitation: CohabitantInvitation?
+    /// 招待リンクの共有を完了したか
+    /// - Note: 送った直後に画面が切り替わると何が起きたか分からないため、自動では次へ進めず、送ったことを伝えてボタンで進めてもらう
+    @State var hasSharedInvitation = false
     @State var isShowCohabitantRegistration = false
     /// P2Pでの登録画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
     @State var sentInvitationTokenBeforeRegistration: String?
@@ -41,13 +44,14 @@ struct PartnerRegistrationScreen: View {
         PartnerRegistrationView(
             isInvitationAvailable: CohabitantInvitationLink.isAvailable,
             isInvitationNotFound: pasteboardInvitationStore?.state == .notFound,
-            isInvitationShareUnconfirmed: unconfirmedInvitation != nil,
+            invitationShareState: invitationShareState,
             onTapInvite: {
                 loadingState.task {
                     await tappedInvite()
                 }
             },
             onTapSentInvitation: { tappedSentInvitation() },
+            onTapNextAfterShare: { tappedNextAfterShare() },
             onTapNearby: { tappedNearby() },
             onTapInvited: {
                 Task {
@@ -103,6 +107,16 @@ private extension PartnerRegistrationScreen {
         )
     }
 
+    var invitationShareState: PartnerInvitationShareState {
+        if unconfirmedInvitation != nil {
+            .unconfirmed
+        } else if hasSharedInvitation {
+            .shared
+        } else {
+            .notShared
+        }
+    }
+
     var hasJoinedCohabitant: Bool {
         accountStore.account?.cohabitantId != nil
     }
@@ -119,27 +133,33 @@ private extension PartnerRegistrationScreen {
         }
     }
 
-    /// 共有を完了したら、相手の参加を待たずに次へ進む。キャンセルしたら選択肢に留まる
+    /// 共有を完了したら、送ったことを伝えて「次へ」を出す。相手の参加は待たない。キャンセルしたら送れたかを尋ねる
     func finishedShareSheet(_ invitation: CohabitantInvitation, isCompleted: Bool) {
         guard isCompleted else {
             unconfirmedInvitation = invitation
+            hasSharedInvitation = false
             return
         }
-        completeInvitationShare(invitation)
+        saveSharedInvitation(invitation)
     }
 
     /// 共有を完了したと分からなかった招待を、送ったと言われたら送ったものとして次へ進む
     func tappedSentInvitation() {
         guard let unconfirmedInvitation else { return }
-        completeInvitationShare(unconfirmedInvitation)
+        saveSharedInvitation(unconfirmedInvitation)
+        onNext(true)
     }
 
-    func completeInvitationShare(_ invitation: CohabitantInvitation) {
+    func tappedNextAfterShare() {
+        onNext(true)
+    }
+
+    func saveSharedInvitation(_ invitation: CohabitantInvitation) {
         unconfirmedInvitation = nil
+        hasSharedInvitation = true
         Task {
             await sentInvitationStore.save(invitation, accountId: account.id)
         }
-        onNext(true)
     }
 
     func tappedNearby() {

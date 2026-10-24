@@ -14,11 +14,13 @@ struct PartnerRegistrationView: View {
     let isInvitationAvailable: Bool
     /// 「招待された」でクリップボードを確認したが、招待リンクが見つからなかったか
     let isInvitationNotFound: Bool
-    /// 招待リンクの共有シートを閉じたが、共有を完了したと分からなかったか
-    let isInvitationShareUnconfirmed: Bool
+    /// 招待リンクをどこまで共有したか
+    let invitationShareState: PartnerInvitationShareState
     let onTapInvite: () -> Void
     /// 共有を完了したと分からなかった招待を、送ったと伝えたとき
     let onTapSentInvitation: () -> Void
+    /// 招待リンクを送った後に、次へ進むとき
+    let onTapNextAfterShare: () -> Void
     let onTapNearby: () -> Void
     let onTapInvited: () -> Void
     let onTapLater: () -> Void
@@ -35,8 +37,13 @@ struct PartnerRegistrationView: View {
                             description: .localized("離れていても、リンクから参加してもらえます"),
                             action: onTapInvite
                         )
-                        if isInvitationShareUnconfirmed {
+                        switch invitationShareState {
+                        case .notShared:
+                            EmptyView()
+                        case .unconfirmed:
                             invitationSentConfirmation
+                        case .shared:
+                            invitationSentNotice
                         }
                     }
                     choiceButton(
@@ -112,6 +119,32 @@ private extension PartnerRegistrationView {
         }
     }
 
+    var invitationSentNotice: some View {
+        VStack(alignment: .leading, spacing: .space16) {
+            VStack(alignment: .leading, spacing: .space4) {
+                Text("招待リンクを送りました", bundle: #bundle)
+                    .font(with: .headLineS)
+                    .foregroundStyle(.textPrimary)
+                Text("パートナーが参加するまでのあいだも、先に使い始められます", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                onTapNextAfterShare()
+            } label: {
+                Text("次へ", bundle: #bundle)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+        }
+        .padding(.space16)
+        .background {
+            RoundedRectangle(radius: .radius20)
+                .fill(.backgroundCard)
+        }
+    }
+
     var invitationNotFoundNote: some View {
         HStack(alignment: .top, spacing: .space8) {
             Image(systemName: "info.circle")
@@ -170,9 +203,10 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: true,
         isInvitationNotFound: false,
-        isInvitationShareUnconfirmed: false,
+        invitationShareState: .notShared,
         onTapInvite: {},
         onTapSentInvitation: {},
+        onTapNextAfterShare: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
@@ -183,9 +217,10 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: true,
         isInvitationNotFound: true,
-        isInvitationShareUnconfirmed: false,
+        invitationShareState: .notShared,
         onTapInvite: {},
         onTapSentInvitation: {},
+        onTapNextAfterShare: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
@@ -196,9 +231,10 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: false,
         isInvitationNotFound: false,
-        isInvitationShareUnconfirmed: false,
+        invitationShareState: .notShared,
         onTapInvite: {},
         onTapSentInvitation: {},
+        onTapNextAfterShare: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
@@ -209,9 +245,24 @@ private extension PartnerRegistrationView {
     PartnerRegistrationView(
         isInvitationAvailable: true,
         isInvitationNotFound: false,
-        isInvitationShareUnconfirmed: true,
+        invitationShareState: .unconfirmed,
         onTapInvite: {},
         onTapSentInvitation: {},
+        onTapNextAfterShare: {},
+        onTapNearby: {},
+        onTapInvited: {},
+        onTapLater: {}
+    )
+}
+
+#Preview("PartnerRegistrationView_共有した") {
+    PartnerRegistrationView(
+        isInvitationAvailable: true,
+        isInvitationNotFound: false,
+        invitationShareState: .shared,
+        onTapInvite: {},
+        onTapSentInvitation: {},
+        onTapNextAfterShare: {},
         onTapNearby: {},
         onTapInvited: {},
         onTapLater: {}
