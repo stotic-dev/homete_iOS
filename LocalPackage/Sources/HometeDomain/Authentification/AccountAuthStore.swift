@@ -76,6 +76,11 @@ public final class AccountAuthStore {
     /// - Note: 匿名で登録した内容は引き継がない
     public func switchToExistingAccount(_ credential: ExistingAccountCredential) async throws {
         try await accountAuthClient.deleteAnonymousAccount()
+        // サインアウトを挟まずにユーザーが替わるため、新しいIDで送るログインのイベントに、削除した匿名のアカウントの
+        // ユーザープロパティが載ってしまう。先に消し、切り替え先の値はログイン状態が決まった時点で設定し直してもらう
+        analyticsClient.setUserProperty(.cleared(.hasCohabitant))
+        analyticsClient.setUserProperty(.cleared(.cohabitantMemberCount))
+        analyticsClient.setUserProperty(.cleared(.isAnonymous))
 
         do {
             let authInfo = try await accountAuthClient.signInWithExistingCredential(credential)
