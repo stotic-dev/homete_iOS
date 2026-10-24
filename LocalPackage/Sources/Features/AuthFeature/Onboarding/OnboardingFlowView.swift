@@ -18,6 +18,7 @@ public struct OnboardingFlowView: View {
     @Environment(\.launchStateProxy) var launchStateProxy
     @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
     @Environment(AccountStore.self) var accountStore
+    @Environment(AccountAuthStore.self) var accountAuthStore
 
     @State var step = OnboardingStep.registration
     /// 実際に案内するステップの並び（案内が不要なステップは除かれる）
@@ -157,10 +158,12 @@ private extension OnboardingFlowView {
     }
 
     /// - Note: パートナー登録で参加・P2P登録をするとグループIDが入り、Apple連携をすると匿名でなくなる。
-    ///         どちらもオンボーディング中は起動状態に反映されないため、最新のアカウントと認証で入り直す
+    ///         どちらもオンボーディング中は起動状態に反映されないため、最新のアカウントと認証で入り直す。
+    ///         `authInfo`は連携の後の同期が終わるまで匿名のままなので、連携した時点で変わる`AccountAuthStore`の認証を見る
     func finishOnboarding() {
         guard let account = accountStore.account ?? registeredAccount else { return }
-        launchStateProxy(.entered(LoginContext(account: account, isAnonymous: authInfo.isAnonymous)))
+        let isAnonymous = accountAuthStore.currentAuth.result?.isAnonymous ?? authInfo.isAnonymous
+        launchStateProxy(.entered(LoginContext(account: account, isAnonymous: isAnonymous)))
     }
 
 }
@@ -179,6 +182,7 @@ private extension OnboardingFlowView {
     )
     .environment(subscriptionStore)
     .environment(AccountStore())
+    .environment(AccountAuthStore())
     #if canImport(Prefire)
         .prefireIgnored()
     #endif
