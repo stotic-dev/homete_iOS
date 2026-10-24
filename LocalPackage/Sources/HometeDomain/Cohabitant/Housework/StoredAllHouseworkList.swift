@@ -15,20 +15,12 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
         self.value = value
     }
 
-    public static func makeMultiDateList(
-        items: [HouseworkItem],
-        anchorDate: Date,
-        offsetDays: Int,
-        calendar: Calendar
-    ) -> Self {
-        let targetDates = Set(
-            HouseworkIndexedDate.calcTargetPeriod(anchorDate: anchorDate, offsetDays: offsetDays, calendar: calendar)
-        )
+    /// 家事を日付ごとのリストにまとめる
+    /// - Note: 期間では絞らない。家事ボードは前後数日より前の日も選べるため、受け取った家事はすべて保持する
+    public static func makeMultiDateList(items: [HouseworkItem]) -> Self {
         // 家事を操作するたびに並びが入れ替わらないよう、作った順に並べておく
         let dailyLists: [DailyHouseworkList] = Dictionary(
-            grouping: items
-                .filter { targetDates.contains($0.indexedDate.value) }
-                .sorted(by: isCreatedBefore)
+            grouping: items.sorted(by: isCreatedBefore)
         ) { $0.indexedDate }
             .compactMap {
                 guard let firstItem = $1.first else { return nil }

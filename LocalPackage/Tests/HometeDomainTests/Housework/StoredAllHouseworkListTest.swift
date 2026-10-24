@@ -11,10 +11,8 @@ import Testing
 
 struct StoredAllHouseworkListTest {
 
-    private static let anchorDate = Date.previewDate(year: 2025, month: 1, day: 1)
     private static let inputFirstDate = Date.previewDate(year: 2025, month: 1, day: 1)
     private static let inputSecondDate = Date.previewDate(year: 2025, month: 1, day: 2)
-    private static let offsetDays = 3
 
     @Test("家事リストは家事の日付毎に保持される")
     func makeMultiDateList() {
@@ -28,12 +26,7 @@ struct StoredAllHouseworkListTest {
         )
         let inputHouseworkItem = inputFirstHouseworkGroup + inputSecondHouseworkGroup
 
-        let actual = StoredAllHouseworkList.makeMultiDateList(
-            items: inputHouseworkItem,
-            anchorDate: Self.anchorDate,
-            offsetDays: Self.offsetDays,
-            calendar: .japanese
-        )
+        let actual = StoredAllHouseworkList.makeMultiDateList(items: inputHouseworkItem)
 
         let sortedActualValue = actual.value.sorted { $0.metaData.indexedDate.value < $1.metaData.indexedDate.value }
         let sortedActual = StoredAllHouseworkList(value: sortedActualValue)
@@ -44,21 +37,27 @@ struct StoredAllHouseworkListTest {
         #expect(sortedActual == expected)
     }
 
-    @Test("リスナー範囲外の家事は保持しない")
-    func makeMultiDateList_filtersOutOfRangeItems() {
-        let inRangeItems = makeAllCasesItems(at: Self.inputFirstDate, offset: 0)
-        let outOfRangeDate = Date.previewDate(year: 2024, month: 12, day: 1)
-        let outOfRangeItems = makeAllCasesItems(at: outOfRangeDate, offset: inRangeItems.count)
+    @Test("リアルタイムリスナーの期間（前後7日）より前の家事も保持する")
+    func makeMultiDateList_keepsItemsOutsideListenerPeriod() {
+        // Arrange
 
-        let actual = StoredAllHouseworkList.makeMultiDateList(
-            items: inRangeItems + outOfRangeItems,
-            anchorDate: Self.anchorDate,
-            offsetDays: Self.offsetDays,
-            calendar: .japanese
-        )
+        let recentItems = makeAllCasesItems(at: Self.inputFirstDate, offset: 0)
+        let olderDate = Date.previewDate(year: 2024, month: 12, day: 1)
+        let olderItems = makeAllCasesItems(at: olderDate, offset: recentItems.count)
 
-        let expected = StoredAllHouseworkList(value: [.makeForTest(items: inRangeItems)])
-        #expect(actual == expected)
+        // Act
+
+        let actual = StoredAllHouseworkList.makeMultiDateList(items: recentItems + olderItems)
+
+        // Assert
+
+        let sortedActualValue = actual.value.sorted { $0.metaData.indexedDate.value < $1.metaData.indexedDate.value }
+        let sortedActual = StoredAllHouseworkList(value: sortedActualValue)
+        let expected = StoredAllHouseworkList(value: [
+            .makeForTest(items: olderItems),
+            .makeForTest(items: recentItems),
+        ])
+        #expect(sortedActual == expected)
     }
 
     @Test(
@@ -74,10 +73,7 @@ struct StoredAllHouseworkListTest {
             offset: 0
         )
         let list = StoredAllHouseworkList.makeMultiDateList(
-            items: (inputFirstHouseworkGroup + [expectedItem]).shuffled(),
-            anchorDate: Self.anchorDate,
-            offsetDays: Self.offsetDays,
-            calendar: .japanese
+            items: (inputFirstHouseworkGroup + [expectedItem]).shuffled()
         )
 
         let actual = list.item(expectedItem)
@@ -97,12 +93,7 @@ struct StoredAllHouseworkListTest {
 
         // Act
 
-        let actual = StoredAllHouseworkList.makeMultiDateList(
-            items: [newerItem, legacyItem2, olderItem, legacyItem1],
-            anchorDate: Self.anchorDate,
-            offsetDays: Self.offsetDays,
-            calendar: .japanese
-        )
+        let actual = StoredAllHouseworkList.makeMultiDateList(items: [newerItem, legacyItem2, olderItem, legacyItem1])
 
         // Assert
 

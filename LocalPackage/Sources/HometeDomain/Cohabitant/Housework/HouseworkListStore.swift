@@ -475,13 +475,7 @@ private extension HouseworkListStore {
         for await result in stream {
             switch result {
             case let .success(newItems):
-                let anchorDate = await houseworkManager.listenerAnchorDate
-                items = StoredAllHouseworkList.makeMultiDateList(
-                    items: newItems,
-                    anchorDate: anchorDate,
-                    offsetDays: HouseworkManager.listenerOffset,
-                    calendar: calendar
-                )
+                items = StoredAllHouseworkList.makeMultiDateList(items: newItems)
                 print("did receive current items: \(items)")
                 loadState = .loaded
                 updateHouseworkTitlesIfNeeded()

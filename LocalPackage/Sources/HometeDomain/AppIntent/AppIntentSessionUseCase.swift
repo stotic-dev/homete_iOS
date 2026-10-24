@@ -64,20 +64,11 @@ public struct AppIntentSessionUseCase: Sendable {
 
     /// 指定した日の家事を取得する
     /// - Parameter days: 取得する日（その日の0時）。連続した日を渡す
-    public func fetchHousework(
-        session: AppIntentSession,
-        days: [Date],
-        calendar: Calendar
-    ) async throws -> StoredAllHouseworkList {
+    public func fetchHousework(session: AppIntentSession, days: [Date]) async throws -> StoredAllHouseworkList {
         guard let from = days.min(), let to = days.max() else { return .init(value: []) }
 
         let items = try await houseworkClient.fetchItems(session.cohabitantId, from, to)
-        return .makeMultiDateList(
-            items: items,
-            anchorDate: to,
-            offsetDays: days.count - 1,
-            calendar: calendar
-        )
+        return .makeMultiDateList(items: items)
     }
 
     /// グループで使っているテンプレートを取得する

@@ -95,6 +95,10 @@ public struct HouseworkBoardScreen: View {
                 .task(id: storagePolicy) {
                     rebuildDateList()
                 }
+                // リアルタイムリスナーの期間（前後数日）より前の日を選んだときも、操作や同居人の変更が画面に届くようにする
+                .task(id: dateList.selectedDate) {
+                    await houseworkManager.focus(on: dateList.selectedDate, calendar: calendar)
+                }
         } else {
             // TODO: グループ登録前は利用できない旨の空表示を出す
             ContentUnavailableView(

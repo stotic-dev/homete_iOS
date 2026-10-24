@@ -12,7 +12,8 @@ public final actor HouseworkManager {
     // MARK: state
 
     public private(set) var allItems: [HouseworkItem] = []
-    public private(set) var listenerAnchorDate: Date = .now
+    /// リアルタイムリスナーの期間（±N日）の起点
+    private var listenerAnchorDate: Date = .now
     /// ワンショットフェッチ済みの期間。この範囲より過去は未取得のため、必要になった時点で追加取得する
     public private(set) var fetchedRange: ClosedRange<Date>?
     private var streamContinuationDic: [String: AsyncStream<Result<[HouseworkItem], DomainError>>.Continuation] = [:]
@@ -27,6 +28,13 @@ public final actor HouseworkManager {
     /// - Note: IDは世代ごとに変える。共通のIDで外すと、再開した古い世代が新しい世代のリスナーまで外してしまい、
     ///         `activeCondition`が残ったまま購読が止まって、張り直す機会もなくなるため
     private var listenerId: String?
+    /// 家事ボードで選ばれている日。リアルタイムリスナーの期間（±N日）の外なら、その日だけを購読するリスナーを別に張る
+    private var focusedDay: Date?
+    /// 選ばれている日だけを購読するリスナーのID
+    private var focusListenerId: String?
+    private var focusTask: Task<Void, Never>?
+    /// 選ばれている日のリスナーの世代。選び直しが続いたとき、古い呼び出しが後から張ったリスナーを残さないために使う
+    private var focusGeneration = 0
 
     // MARK: Dependencies
 
@@ -35,11 +43,12 @@ public final actor HouseworkManager {
     // MARK: constant
 
     private let houseworkObserveKey = "houseworkObserveKey"
+    private let focusedDayObserveKey = "focusedDayHouseworkObserveKey"
     /// リアルタイムリスナーで購読する期間（今日の前後N日）
     ///
     /// 過去のありがとう漏れの一覧で7日前までの家事にありがとうを送るため、送った結果がすぐ反映されるよう7日前まで購読する。
     /// 未来側も、家事ボードで選べる7日後までそろえる
-    public static let listenerOffset: Int = 7
+    private static let listenerOffset: Int = 7
 
     // MARK: initialize
 
@@ -79,6 +88,7 @@ public final actor HouseworkManager {
     ///         数ヶ月分の家事をサーバーから読むため、そのたびに読み取りが課金される。
     ///         同じグループ・同じ日・同じプランで購読中（準備中を含む）なら何もしない。
     ///         そのため、リスナーの期間（±N日）より前の家事を同居人が変えても、条件が変わるまでは反映されない。
+    ///         ただし家事ボードで選んでいる日だけは、`focus(on:calendar:)`で別に購読するため反映される。
     public func setupObserver(
         currentTime: Date,
         cohabitantId: String,
@@ -103,6 +113,7 @@ public final actor HouseworkManager {
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
         await removeListener()
+        await removeFocusListener()
         guard generation == observeGeneration else { return }
 
         // 1. プランに応じた期間をワンショットフェッチして allItems を初期化
@@ -139,6 +150,23 @@ public final actor HouseworkManager {
         observeTask = Task {
             await listen(houseworkListStream, generation: generation)
         }
+
+        // 4. 選ばれている日がリスナーの期間から外れていれば、その日だけのリスナーを張り直す
+        await updateFocusListener(cohabitantId: cohabitantId, calendar: calendar)
+    }
+
+    /// 家事ボードで選んだ日の家事を、リアルタイムに受け取れるようにする
+    ///
+    /// 選んだ日がリアルタイムリスナーの期間（±N日）の外なら、その日だけを購読するリスナーを張る。
+    /// ワンショットフェッチの期間より前の日でも、リスナーの初回の通知でその日の家事がそろう。
+    /// - Note: 期間内の日を選び直したときは、張っていたリスナーを外す。リスナーは常に1日分だけにして、読み取りを増やさない
+    public func focus(on date: Date, calendar: Calendar) async {
+        let day = calendar.startOfDay(for: date)
+        guard day != focusedDay else { return }
+        focusedDay = day
+
+        guard let cohabitantId = activeCondition?.cohabitantId else { return }
+        await updateFocusListener(cohabitantId: cohabitantId, calendar: calendar)
     }
 
     /// サインアウト時に監視を止め、前のユーザーの家事データを破棄する
@@ -153,6 +181,8 @@ public final actor HouseworkManager {
         pendingFetchTask?.cancel()
         pendingFetchTask = nil
         await removeListener()
+        focusedDay = nil
+        await removeFocusListener()
         allItems = []
         fetchedRange = nil
         notifyObservers()
@@ -193,6 +223,61 @@ private extension HouseworkManager {
         // 外し終わるのを待つ間に再入されても、同じリスナーを二重に外さないよう先に手放す
         self.listenerId = nil
         await houseworkClient.removeListener(listenerId)
+    }
+
+    /// 選ばれている日だけを購読するリスナーを、選ばれている日に合わせて張り直す
+    func updateFocusListener(cohabitantId: String, calendar: Calendar) async {
+        await removeFocusListener()
+        let generation = focusGeneration
+        let currentObserveGeneration = observeGeneration
+
+        let listenerPeriod = HouseworkIndexedDate.calcTargetPeriod(
+            anchorDate: listenerAnchorDate,
+            offsetDays: Self.listenerOffset,
+            calendar: calendar
+        )
+        guard let focusedDay, !listenerPeriod.contains(focusedDay) else { return }
+
+        let newListenerId = "\(focusedDayObserveKey)-\(generation)"
+        let stream = await houseworkClient.snapshotListener(newListenerId, cohabitantId, focusedDay, 0)
+        // 張っている間に日付の選び直し・再セットアップ・サインアウトが割り込んだら、自分で張った分だけを外す
+        guard generation == focusGeneration, currentObserveGeneration == observeGeneration else {
+            await houseworkClient.removeListener(newListenerId)
+            return
+        }
+        focusListenerId = newListenerId
+        focusTask = Task {
+            await listenFocusedDay(stream, generation: generation)
+        }
+    }
+
+    /// 選ばれている日だけを購読するリスナーを外す
+    func removeFocusListener() async {
+        // 準備中の`updateFocusListener`が再開しても、リスナーを残さないよう先に世代を進める
+        focusGeneration += 1
+        focusTask?.cancel()
+        focusTask = nil
+        guard let focusListenerId else { return }
+        self.focusListenerId = nil
+        await houseworkClient.removeListener(focusListenerId)
+    }
+
+    /// 選ばれている日のリスナーの更新を allItems に upsert マージして通知する
+    /// - Note: 失敗しても家事ボード全体を失敗の表示にはしない。その日の家事はワンショットフェッチの分が残っているため。
+    ///         次に同じ日を選び直したときに張り直せるよう、選ばれている日を忘れる
+    func listenFocusedDay(_ stream: AsyncThrowingStream<[HouseworkItem], Error>, generation: Int) async {
+        do {
+            for try await currentItems in stream {
+                // 外した後に届いた通知で、別の日・別のグループの家事を書き戻さない
+                guard generation == focusGeneration else { return }
+                upsert(currentItems)
+                notifyObservers()
+            }
+        } catch {
+            guard generation == focusGeneration else { return }
+            print("failed to listen focused day housework items: \(error)")
+            focusedDay = nil
+        }
     }
 
     /// リアルタイムリスナーの更新を allItems に upsert マージして通知する
