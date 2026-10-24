@@ -7,8 +7,9 @@
 	<string>$(APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST)</string>
 	<key>AppGroupIdentifier</key>
 	<string>$(APP_GROUP_IDENTIFIER)</string>
+	<!-- 開発用（Debug・Stg構成）は名前を変える。同じ端末に本番と並べたとき、Siri・Spotlightのショートカットがアプリ名で取り違えられるため -->
 	<key>CFBundleDisplayName</key>
-	<string>homeau</string>
+	<string>$(APP_DISPLAY_NAME)</string>
 	<!-- LocalPackageの文言の訳は、アプリが対応している言語の中から選ばれる -->
 	<key>CFBundleLocalizations</key>
 	<array>

@@ -377,6 +377,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
+				APP_DISPLAY_NAME = "[開発用]homeau";
 				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
@@ -629,6 +630,7 @@
 			baseConfigurationReferenceRelativePath = Resouces/Secret_dev.xcconfig;
 			buildSettings = {
 				APP_CHECK_DEBUG_TOKEN_IN_INFO_PLIST = "$(APP_CHECK_DEBUG_TOKEN)";
+				APP_DISPLAY_NAME = "[開発用]homeau";
 				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure.dev;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDev;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
@@ -680,6 +682,7 @@
 			baseConfigurationReferenceAnchor = BCC853F72DB74BBC00C9A44B /* homete */;
 			baseConfigurationReferenceRelativePath = Resouces/Secret.xcconfig;
 			buildSettings = {
+				APP_DISPLAY_NAME = homeau;
 				APP_GROUP_IDENTIFIER = group.taichi.satou.hometekure;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
