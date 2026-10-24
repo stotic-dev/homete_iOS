@@ -96,6 +96,8 @@ public struct OnboardingFlowView: View {
             OnboardingProgressIndicator(steps: steps, currentStep: step)
         }
         .padding(.bottom, .space16)
+        // 各ステップの背景は進捗の上で切れるため、進捗の下と安全領域まで画面全体を同じ背景で塗る
+        .background(.backgroundScreen)
         .animation(.spring, value: step)
         .task {
             await loadSteps()
