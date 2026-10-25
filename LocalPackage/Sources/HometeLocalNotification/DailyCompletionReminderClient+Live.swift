@@ -13,7 +13,7 @@ public extension DailyCompletionReminderClient {
     /// - Note: 設定はApp GroupのUserDefaultsに保存する。App Groupの識別子は、アプリ・拡張それぞれの
     ///         Info.plistの`AppGroupIdentifier`から読む（ビルド構成ごとにバンドルIDが違うため）
     static var liveValue: DailyCompletionReminderClient {
-        live(appGroupIdentifier: Bundle.main.object(forInfoDictionaryKey: appGroupIdentifierInfoKey) as? String)
+        live(appGroupIdentifier: AppGroup.identifier)
     }
 
     /// 指定したApp GroupのUserDefaultsを使うlive実装
@@ -21,7 +21,7 @@ public extension DailyCompletionReminderClient {
     static func live(appGroupIdentifier: String?) -> DailyCompletionReminderClient {
         .init(
             loadSetting: {
-                guard let data = Self.userDefaults(appGroupIdentifier).data(forKey: Self.settingKey),
+                guard let data = AppGroup.userDefaults(appGroupIdentifier).data(forKey: Self.settingKey),
                       let setting = try? JSONDecoder().decode(DailyCompletionReminderSetting.self, from: data) else {
                     return .initial
                 }
@@ -29,25 +29,28 @@ public extension DailyCompletionReminderClient {
             },
             saveSetting: { setting in
                 guard let data = try? JSONEncoder().encode(setting) else { return }
-                Self.userDefaults(appGroupIdentifier).set(data, forKey: Self.settingKey)
+                AppGroup.userDefaults(appGroupIdentifier).set(data, forKey: Self.settingKey)
             },
             loadCompletedDayIdentifier: {
-                Self.userDefaults(appGroupIdentifier).string(forKey: Self.completedDayIdentifierKey)
+                AppGroup.userDefaults(appGroupIdentifier).string(forKey: Self.completedDayIdentifierKey)
             },
             saveCompletedDayIdentifier: { identifier in
-                Self.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedDayIdentifierKey)
+                AppGroup.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedDayIdentifierKey)
             },
             loadCompletedSignalSentDayIdentifier: {
-                Self.userDefaults(appGroupIdentifier).string(forKey: Self.completedSignalSentDayIdentifierKey)
+                AppGroup.userDefaults(appGroupIdentifier).string(forKey: Self.completedSignalSentDayIdentifierKey)
             },
             saveCompletedSignalSentDayIdentifier: { identifier in
-                Self.userDefaults(appGroupIdentifier).set(identifier, forKey: Self.completedSignalSentDayIdentifierKey)
+                AppGroup.userDefaults(appGroupIdentifier).set(
+                    identifier,
+                    forKey: Self.completedSignalSentDayIdentifierKey
+                )
             },
             loadIsDailyLimitDisabled: {
-                Self.userDefaults(appGroupIdentifier).bool(forKey: Self.isDailyLimitDisabledKey)
+                AppGroup.userDefaults(appGroupIdentifier).bool(forKey: Self.isDailyLimitDisabledKey)
             },
             saveIsDailyLimitDisabled: { isDisabled in
-                Self.userDefaults(appGroupIdentifier).set(isDisabled, forKey: Self.isDailyLimitDisabledKey)
+                AppGroup.userDefaults(appGroupIdentifier).set(isDisabled, forKey: Self.isDailyLimitDisabledKey)
             },
             schedule: { request in
                 let content = UNMutableNotificationContent()
@@ -74,20 +77,9 @@ public extension DailyCompletionReminderClient {
 
 private extension DailyCompletionReminderClient {
 
-    static let appGroupIdentifierInfoKey = "AppGroupIdentifier"
     static let settingKey = "dailyCompletionReminderSetting"
     static let completedDayIdentifierKey = "dailyCompletionReminderCompletedDayIdentifier"
     static let completedSignalSentDayIdentifierKey = "dailyCompletionReminderCompletedSignalSentDayIdentifier"
     static let isDailyLimitDisabledKey = "dailyCompletionReminderIsDailyLimitDisabled"
-
-    /// App GroupのUserDefaultsを返す。App Groupが無い・読めない場合は`standard`を使う
-    static func userDefaults(_ appGroupIdentifier: String?) -> UserDefaults {
-        guard let appGroupIdentifier,
-              !appGroupIdentifier.isEmpty,
-              let userDefaults = UserDefaults(suiteName: appGroupIdentifier) else {
-            return .standard
-        }
-        return userDefaults
-    }
 
 }
