@@ -42,6 +42,14 @@ public struct RemoteConfigSyncUseCase {
         forceUpdateStore.updateRequirement()
     }
 
+    /// コンソールで公開された変更を受け取り続け、起動中も反映するキーだけ反映させる
+    /// - Note: 呼び出し元のTaskがキャンセルされるまで終わらない。リスナーを1つにするため、Storeごとには購読しない
+    public func observeConfigUpdates() async {
+        for await _ in remoteConfigClient.configUpdates() {
+            forceUpdateStore.updateRequirement()
+        }
+    }
+
 }
 
 private extension RemoteConfigSyncUseCase {

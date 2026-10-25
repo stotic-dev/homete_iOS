@@ -170,7 +170,7 @@ public extension RootView {
                 await remoteConfigSyncUseCase.setupOnLaunch()
             }
             .task {
-                await forceUpdateStore.observeConfigUpdates()
+                await remoteConfigSyncUseCase.observeConfigUpdates()
             }
             .routeResolverInjection()
             .adComponentResolverInjection()

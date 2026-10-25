@@ -156,4 +156,44 @@ struct RemoteConfigSyncUseCaseTest {
         #expect(forceUpdateStore.isForceUpdateRequired == true)
     }
 
+    @Test("コンソールで公開された最低バージョンの変更を受け取ると、強制アップデートを判定し直す")
+    func observeConfigUpdatesRequiresForceUpdate() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            configUpdates: {
+                AsyncStream { continuation in
+                    isActivated.value = true
+                    continuation.yield()
+                    continuation.finish()
+                }
+            },
+            bool: { _ in
+                Issue.record("起動中は広告表示の値を読み直さない")
+                return true
+            },
+            string: { key in
+                isActivated.value ? "2.0.0" : key.defaultValue
+            }
+        )
+        let forceUpdateStore = ForceUpdateStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+        let useCase = RemoteConfigSyncUseCase(
+            remoteConfigClient: remoteConfigClient,
+            advertisementStore: AdvertisementStore(remoteConfigClient: remoteConfigClient),
+            forceUpdateStore: forceUpdateStore
+        )
+
+        // Act
+
+        await useCase.observeConfigUpdates()
+
+        // Assert
+
+        #expect(forceUpdateStore.isForceUpdateRequired == true)
+    }
+
 }
