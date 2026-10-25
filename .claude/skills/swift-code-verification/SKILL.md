@@ -42,7 +42,7 @@ InfraPackageのビルド: 要
 | ローカルVRT | 手順4の `make snapshot-affected`（Viewの見た目に関わる変更のときだけ） |
 
 全部「なし」「不要」なら、Swiftのビルドに影響しない変更なので、このスキルの検証は不要。`.claude/`・`doc/`・`CLAUDE.md`・
-`firebase/functions/`・GitHub Actions・ツール設定などがこれに当たる。
+`fastlane/`・GitHub Actions・ツール設定などがこれに当たる。
 
 `make build-local-package` / `make test-packages-fast` は全ターゲットが対象なので、`make affected` の判定が当てにならない場合
 （`scripts/affected-modules.py` 自体を直したときなど）や、ユーザーに頼まれたときだけ使う。

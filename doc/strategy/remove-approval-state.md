@@ -271,7 +271,7 @@ static var pageableCases: [HouseworkState] {
 
 ### 12. Firestoreデータのマイグレーション
 
-使い捨てのNodeスクリプトを `firebase/functions/scripts/migratePendingApproval.ts` に置き、手元から `stg` → `prod` の順で実行する。
+使い捨てのNodeスクリプトを [`firebase/functions/src/scripts/migratePendingApproval.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/scripts/migratePendingApproval.ts) に置き、手元から `stg` → `prod` の順で実行する。
 
 - 対象パス: `Cohabitant/{cohabitantId}/Houseworks/{houseworkId}`（`FirestoreExtensionForReferencePath.swift` 参照）
 - `collectionGroup("Houseworks").where("state", "==", "pendingApproval")` で抽出し、`state` を `"completed"` に更新する
@@ -307,7 +307,7 @@ static var pageableCases: [HouseworkState] {
 | リネーム | `Features/HouseworkFeature/HouseworkApproval/` → `HouseworkThanks/` | 感謝メッセージ画面へ転用 |
 | 修正 | `Features/HouseworkFeature/IncompleteHouseworkListView/IncompleteHouseworkListView.swift` | Previewの追従 |
 | 修正 | `Features/HomeFeature/.../TodayHouseworkSummaryComponent.swift` | Previewの追従 |
-| 新規 | `firebase/functions/scripts/migratePendingApproval.ts` | 既存データの書き換え |
+| 新規 | [`firebase/functions/src/scripts/migratePendingApproval.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/scripts/migratePendingApproval.ts) | 既存データの書き換え |
 | 修正 | `doc/analytics_events.md` | イベント定義の追従 |
 | 修正 | `doc/strategy/today-housework-summary.md` / `housework_template.md` | 承認前提の記述の追従 |
 
@@ -361,7 +361,7 @@ static var pageableCases: [HouseworkState] {
   - `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkQuickAction.swift`
   - `LocalPackage/Sources/Features/HouseworkFeature/HouseworkApproval/HouseworkApprovalView.swift`
   - `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkListStore.swift`
-  - `firebase/functions/src/syncHouseworkRetention.ts`（admin SDKでの家事ドキュメント操作）
+  - [`firebase/functions/src/syncHouseworkRetention.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/syncHouseworkRetention.ts)（admin SDKでの家事ドキュメント操作）
 - 関連ドキュメント:
   - [doc/analytics_events.md](../analytics_events.md)
   - [doc/strategy/today-housework-summary.md](today-housework-summary.md)

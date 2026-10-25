@@ -8,7 +8,7 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 
 **技術スタック:**
 - iOS: SwiftUI + Swift 6（strict concurrency有効）
-- バックエンド: Firebase（Firestore、Auth、Cloud Messaging、Functions）
+- バックエンド: Firebase（Firestore、Auth、Cloud Messaging、Functions）。Functions・Firestoreのルールとインデックス・Hostingのコードとデプロイは [homete_backend](https://github.com/stotic-dev/homete_backend) で管理する
 - CI/CD: GitHub Actions + Xcode Cloud + Fastlane
 
 ## よく使うコマンド
@@ -50,32 +50,6 @@ make setup-project
 ```
 
 `make` の各ターゲットには `--disable-sandbox` が付いている。理由は `.claude/skills/swift-code-verification/SKILL.md` を参照。
-
-### Firebase Functions
-
-```bash
-# Firebase Functionsのlint実行
-make lint
-# または: cd firebase/functions && npm run lint -- --fix
-
-# TypeScriptのビルド
-cd firebase/functions && npm run build
-
-# ローカルでエミュレーターを起動
-make emulator
-# または: cd firebase/functions && npm run serve
-
-# Functionsをデプロイ
-make deploy
-# または: cd firebase/functions && npm run deploy
-
-# E2Eテスト実行
-make test-e2e
-# または: cd firebase/functions && npm run test:e2e
-
-# Firestoreセキュリティルールのユニットテストのみ実行（Emulator上で実行。Java必須）
-cd firebase/functions && npm run test:rules
-```
 
 ### Fastlane
 
@@ -153,17 +127,7 @@ View → Store（AppDependenciesを受け取る）
 - `AsyncStream`を使ったリアルタイムリスナー
 - コレクションパスは`CollectionPath.swift`で定義
 
-**Cloud Functions** (`firebase/functions/src/`):
-- `notifyothercohabitants` - 同居人グループメンバーにプッシュ通知を送信（v2 callable）。任意の`data`（文字列の辞書）を渡すと`mutable-content`付きで送り、受け取った端末のNotification Service Extensionが起動する。アプリは通知の種類を`data`に載せ、受け取った端末がその言語で文面を組み立て直す（[doc/localization.md](doc/localization.md)）
-- `deleteuserdata` - アカウント削除時のユーザーデータクリーンアップ（v1 authトリガー）
-- `synchouseworkretention` - グループの現在のプランに合わせて家事データの保持期限を再計算（v2 callable）
-- `cohabitantinvitation` 系 - 招待リンクの発行・参加（v2 callable）。招待の概要を返す`fetchcohabitantinvitation`だけは、ログイン前の説明画面で招待者名を出すため未認証でも呼べる
-- `deleteanonymousaccount` - 呼び出し元の匿名アカウントを削除する（v2 callable）。匿名のアカウントは再認証できず、時間がたつと端末から削除できないため、退会と既存のアカウントへの切り替えで使う。Appleと連携済みのユーザーは`failed-precondition`で拒否する
-- `cleanupanonymousaccounts` - 最後に使われてから30日たった匿名アカウントを毎日削除する（v2 scheduled、Cloud Scheduler）。後片付けは`deleteuserdata`に任せる（[ADR-0054](doc/adr/0054-start-with-anonymous-auth-and-link-apple-later.md)）
-- `debugrevokerefreshtokens` - **STG限定**。呼び出し元自身のリフレッシュトークンを失効させ、トークン失効による自動サインアウトを再現する（v2 callable）
-  - コードは両プロジェクトにデプロイされるが、実行時に`GCLOUD_PROJECT`を見てSTG以外では`permission-denied`で拒否する
-  - 失効対象は`request.auth`のユーザー自身のみ。引数でユーザーIDを受け取らないので、他人をサインアウトさせる余地がない
-  - アプリ側の導線はDEBUGビルドのデバッグメニュー（設定 → デバッグメニュー → ログイン情報の失効）
+**Cloud Functions・Firestoreルール・Hosting**: [homete_backend](https://github.com/stotic-dev/homete_backend) にある。関数の一覧とリクエスト・レスポンスは [homete_backend の docs/api.md](https://github.com/stotic-dev/homete_backend/blob/main/docs/api.md) が正。アプリから呼ぶ関数の形を変えるときは、配信済みのアプリとの互換性を保つ
 
 **Remote Config**（詳細は [doc/remote_config.md](doc/remote_config.md)、[ADR-0033](doc/adr/0033-remote-config-fetch-and-per-key-apply-timing.md)、[ADR-0035](doc/adr/0035-force-update-with-realtime-remote-config.md)）:
 - 起動時とバックグラウンド復帰時に`RemoteConfigSyncUseCase`が`fetchAndActivate()`する（起動は待たせない）。値をいつ画面へ反映するかは、そのキーを使う領域のStore（例: `AdvertisementStore`、`ForceUpdateStore`）で決める。Remote Config単位のStoreは作らない
@@ -202,7 +166,7 @@ FirestoreとCallable関数で有効化の仕組みが違うので混同しない
 
 | | Firestore | Callable Functions |
 |---|---|---|
-| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | `firebase/functions/src/appCheckOptions.ts`の`enforceAppCheck` + デプロイ |
+| 強制適用の切り替え | Firebaseコンソール（App Check → APIs） | homete_backendの[`firebase/functions/src/appCheckOptions.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/src/appCheckOptions.ts)の`enforceAppCheck` + デプロイ |
 | コンソールのメトリクス | あり | なし（メトリクス対象サービスに含まれない） |
 
 Callable関数のトークン検証は`enforceAppCheck`の値に関係なく常に走り、検証を通った場合だけ`request.app`が埋まる。`enforceAppCheck`は拒否するかどうかだけを制御するので、**`false`のままではSDKのデフォルトと同じで何も有効化されない**。コンソールでは切り替えられないため、変更にはデプロイが必要。
@@ -250,11 +214,6 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 - Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
 - iOS 27ランタイムでログイン済み・同居人グループ所属済みのシミュレータが前提（Sign in with Appleは自動化できない）
 
-**Firebase Functions E2Eテスト** (`firebase/functions/test/`):
-- フレームワーク: Jest + ts-jest
-- Firebase Emulators（Auth、Firestore、Functions）に対して実行
-- コマンド: `npm run test:e2e`または`make test-e2e`
-
 ## CI/CDパイプライン
 
 **GitHub Actionsワークフロー:**
@@ -271,46 +230,24 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
    - `InfraPackage/**`とLocalPackageのソース・マニフェストへの変更でトリガー。`AppRoot`が全Featureに依存するため、LocalPackage側の変更でも追従漏れを確かめる
    - PRでは、変更がInfraPackageのターゲットまで届くときだけビルドする（テストやHometeSnapshotTestSupportだけの変更ではビルドしない）
 
-4. **`functions-e2e-test.yml`** - Firebase Functionsテスト
-   - `firebase/functions/**` / `firebase/firestore.rules`への変更でトリガー（PR / mainまたはrelease/*へのpush）
-   - ESLintとE2Eテスト、Firestoreセキュリティルールのユニットテスト（`test/rules`）を実行
-   - Node.js 21とJava 21を使用
+4. **`create-release-note.yaml`** - リリースノート生成
 
-5. **`deploy-functions.yml`** - Firebase Functionsのデプロイ
-   - `functions-e2e-test.yml`の完了を`workflow_run`で受けて発火し、mainへのpushかつ成功時のみSTGへデプロイ
-   - `firebase deploy --only functions --project <エイリアス>`（`firebase.json`のpredeployでlint+buildが走る）
-   - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
-
-6. **`deploy-firestore.yml`** - Firestoreインデックス・セキュリティルールのデプロイ
-   - `firebase/firestore.indexes.json` / `firebase/firestore.rules`のmainへのpushでSTGへデプロイ
-   - `workflow_dispatch`の`environment`入力（`stg` / `prod`）でデプロイ先を選ぶ。本番はこの手動実行のみ
-   - デプロイ前に`test-rules`ジョブでEmulator上のルールテスト（`firebase/functions/test/rules`）を実行し、通過時のみデプロイする（手動実行の本番デプロイも同じ関門を通る）。経緯は[ADR-0015](doc/adr/0015-gate-firestore-deploy-on-rules-tests.md)
-
-7. **`create-release-note.yaml`** - リリースノート生成
-
-8. **`release-snapshot-diff.yml`** - リリースPRで前バージョンとのスナップショット比較
+5. **`release-snapshot-diff.yml`** - リリースPRで前バージョンとのスナップショット比較
    - `release/*` → `main` のPRへのpushで、前回リリースタグと現在の参照スナップショットをreg-cliで比較（ubuntu）。レポートをartifactにし、PRのコメントを上書き更新する
    - PR作成直後の1回目は`create-release-pr.yml`が`workflow_dispatch`で起動する。`[ci skip]`付きのbotコミットでは走らないので、必要なら手動実行する
    - 意図しない差分の確認は`release-snapshot-review`スキルで行う。経緯は[ADR-0039](doc/adr/0039-release-snapshot-diff-with-reg-cli.md)
 
-9. **`merge-main-into-release.yml`** - リリースPRのブランチへ最新のmainを取り込む（手動実行のみ）
+6. **`merge-main-into-release.yml`** - リリースPRのブランチへ最新のmainを取り込む（手動実行のみ）
    - `release_branch`入力が空なら、オープンなリリースPRから取り込み先を解決する（1件に定まらなければ失敗）
    - mergeで取り込み、force pushはしない。コンフリクトしたら失敗するので、ローカルで解消してpushする
    - GITHUB_TOKENのpushでは他のワークフローが発火しないため、`release-snapshot-diff.yml`と、メタデータに変更が入ったときの`sync-metadata.yml`をここから起動する。Xcode Cloudは通常どおり起動する
 
-10. **`sync-package-resolved.yml`** - xcodeproj側の`Package.resolved`をInfraPackage・LocalPackageの解決結果にそろえる
+7. **`sync-package-resolved.yml`** - xcodeproj側の`Package.resolved`をInfraPackage・LocalPackageの解決結果にそろえる
    - xcodeprojでビルドすると使われるのはルート（xcodeproj）の`Package.resolved`だけなので、dependabotがパッケージ側だけ更新してもアプリの版は上がらない
    - dependabotのPRでは`pull_request_target`で`scripts/sync-package-resolved.py`を流し、そろえるコミットを積む
    - 手で依存を上げたら`python3 scripts/sync-package-resolved.py`でそろえる。経緯は[ADR-0053](doc/adr/0053-sync-xcodeproj-package-resolved-on-dependabot-prs.md)
 
-**Firebaseプロジェクトの対応関係**（詳細は [ADR-0014](doc/adr/0014-firebase-multi-project-deploy.md)）:
-
-| エイリアス | プロジェクトID | 用途 | サービスアカウントsecret |
-|---|---|---|---|
-| `stg` | `homete-ios-dev-e3ef7` | 開発・TestFlight（`taichi.satou.hometekure.dev`） | `FIREBASE_SERVICE_ACCOUNT` |
-| `prod` | `homete-ios-dev` | App Store配信（`taichi.satou.hometekure`） | `FIREBASE_SERVICE_ACCOUNT_PROD` |
-
-`.firebaserc`に`default`エイリアスは置かない。デプロイ・エミュレーター起動を含む全てのfirebaseコマンドで`--project`を明示すること（プロジェクトIDの`homete-ios-dev`が本番、`-e3ef7`付きがSTGという紛らわしい命名のため）。
+**Firebaseプロジェクトの対応関係**: STGは`homete-ios-dev-e3ef7`（開発・TestFlight、`taichi.satou.hometekure.dev`）、本番は`homete-ios-dev`（App Store配信、`taichi.satou.hometekure`）。プロジェクトIDの`homete-ios-dev`が本番、`-e3ef7`付きがSTGという紛らわしい命名なので取り違えないこと。デプロイ用のエイリアスとサービスアカウントは [homete_backend の ADR-0014](https://github.com/stotic-dev/homete_backend/blob/main/docs/adr/0014-firebase-multi-project-deploy.md) を参照
 
 **Xcode Cloudワークフロー:**
 
@@ -361,9 +298,9 @@ Fastlaneのアップロードで`--use-old-altool`を使用。Xcode 26の新し�
 
 ### 広告（AdMob）の app-ads.txt
 
-`firebase/hosting/public/app-ads.txt` をFirebase Hostingのルートで配信し、App Storeのマーケティングリンク（`fastlane/metadata/ja/marketing_url.txt`）を同じドメインに向けている。設置・更新の手順は **[doc/app_ads_txt.md](doc/app_ads_txt.md)**、配信先の選定経緯は [ADR-0028](doc/adr/0028-app-ads-txt-on-firebase-hosting.md) が正。
+`app-ads.txt` は homete_backend のFirebase Hostingのルートで配信し、App Storeのマーケティングリンク（`fastlane/metadata/ja/marketing_url.txt`）を同じドメインに向けている。設置・更新の手順は **[homete_backend の docs/app_ads_txt.md](https://github.com/stotic-dev/homete_backend/blob/main/docs/app_ads_txt.md)** が正。
 
-本番への反映は `deploy-hosting.yml`（`environment=prod`）と `sync-metadata.yml` の手動実行が必要で、どちらも忘れるとクローラーに届かない。
+本番への反映は homete_backend 側のHostingのデプロイと、このリポジトリの `sync-metadata.yml` の手動実行が必要で、どちらも忘れるとクローラーに届かない。
 
 ### ドメインモデル
 
@@ -449,7 +386,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
   ---
   ```
 
-- 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`firebase/functions/**`を含めない）
+- 対象を無闇に広げない。実際にそのルールが関係するディレクトリ・拡張子のみを`paths:`に指定する（例: Swift実装のみに関係するルールに`fastlane/**`を含めない）
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
   - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`、`task-closure-capture.md`
@@ -482,12 +419,5 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - swift-snapshot-testing 1.19.6
 - Prefire 6.1.0
 
-**Firebase Functions（npm）:**
-- firebase-admin 12.6.0
-- firebase-functions 6.0.1
-- typescript 5.7.3
-- jest 30.2.0 + ts-jest 29.4.6
-
 **ビルドツール:**
 - Fastlane（Bundler/Gemfile経由）
-- Node.js 22（Firebase Functions用）

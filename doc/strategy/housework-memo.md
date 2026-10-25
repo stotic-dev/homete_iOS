@@ -175,7 +175,7 @@ function keepsMemo() {
 - `text`の安全上限はクライアントの5,000文字より大きく取る。Swiftの`count`（書記素クラスタ）とルールの`size()`では絵文字などの数え方が違うため。
 - チェックリストの項目名の長さはルールでは検査しない（配列を走査できない）。1MiB制限で頭打ちになる。
 - 毎週のテンプレート（`Days`）には置かない（家事を配列で持つため検査できない）。旧アプリが保存し直すとその曜日のメモがすべて消える残存リスクは、#330で最低バージョンを引き上げて塞ぐ（ADR-0034）。
-- `firebase/functions/test/rules/firestore.rules.test.ts`にテストを足す（安全上限の境界、`memo`の削除拒否、`memo`の無いドキュメントは従来どおり更新できること）。
+- [`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts)にテストを足す（安全上限の境界、`memo`の削除拒否、`memo`の無いドキュメントは従来どおり更新できること）。
 
 ### 7. Analytics
 
@@ -210,8 +210,8 @@ function keepsMemo() {
 | 修正View | `Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseBoardListRow.swift` | 「メモあり」 |
 | 修正View | `Features/HouseworkTemplateFeature/EditModal/HouseworkTemplateItemEditModal.swift` | テンプレートのメモ |
 | 修正View | `Features/FrequentHouseworkFeature/EditModal/` | いつもの家事のメモ |
-| 修正ルール | `firebase/firestore.rules` | 安全上限・消失の拒否 |
-| 修正テスト | `firebase/functions/test/rules/firestore.rules.test.ts` | ルールのテスト |
+| 修正ルール | [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules) | 安全上限・消失の拒否 |
+| 修正テスト | [`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts) | ルールのテスト |
 | 修正ドキュメント | `doc/analytics_events.md` | `editMemo` |
 
 ## タスク

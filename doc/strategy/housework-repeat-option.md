@@ -66,7 +66,7 @@
 - 登録画面から書き込むときも、テンプレートの `version` を上げる。こうしておくと、他のメンバーがテンプレートを編集中でも、そのメンバーの保存は既存の仕組みでコンフリクトとして検知されるので、登録した家事が上書きで消えない
 - 旧バージョンのアプリは `MonthlyItems` を読まないので、アップデートしていないメンバーには毎月の家事が表示されない。`Days` は壊さないので、それ以外の影響はない
 - `MonthlyItems` の取得に失敗しても（セキュリティルールが未デプロイの環境など）、`configure` は失敗扱いにしない。毎週の家事を含むテンプレート全体の表示を巻き込まないため
-- **リリース手順: 本番（`prod`）の Firestore ルールを、アプリの審査提出より先にデプロイする。** 本番へのルールのデプロイは `deploy-firestore.yml` の手動実行だけなので、忘れると新しいアプリで毎月の家事を読み書きできない
+- **リリース手順: 本番（`prod`）の Firestore ルールを、アプリの審査提出より先にデプロイする。** 本番へのルールのデプロイは `deploy-firestore.yml`（現在は [homete_backend](https://github.com/stotic-dev/homete_backend) にある）の手動実行だけなので、忘れると新しいアプリで毎月の家事を読み書きできない
 - 日付の判定（毎月◯日の月末への寄せ）はドメイン層の値型に置き、`Calendar` を引数で受け取ってユニットテストする
 
 ## 設計方針
@@ -134,7 +134,7 @@ public struct HouseworkTemplateContext {
 
 ### 4. セキュリティルール
 
-`firebase/firestore.rules` の `HouseworkTemplates` の下に追加し、`firebase/functions/test/rules/firestore.rules.test.ts` にメンバー・非メンバーのテストを足す。アカウント削除時はテンプレートをサブコレクションごと再帰的に削除しているので、`deleteUserData` の変更は不要（E2Eテストに `MonthlyItems` の削除確認を足す）。
+[`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules) の `HouseworkTemplates` の下に追加し、[`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts) にメンバー・非メンバーのテストを足す。アカウント削除時はテンプレートをサブコレクションごと再帰的に削除しているので、`deleteUserData` の変更は不要（E2Eテストに `MonthlyItems` の削除確認を足す）。
 
 ```
 match /MonthlyItems/{itemId} {
@@ -200,7 +200,7 @@ match /MonthlyItems/{itemId} {
 | 修正Model | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Model/HouseworkTemplateDraft.swift` | 毎月の家事の編集状態 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkTemplateFeature/Detail/HouseworkTemplateItemDetailView.swift` | 繰り返し内容の表示 |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/RegisterHouseworkView/RegisterHouseworkView.swift` | 繰り返しの設定欄と登録処理の分岐 |
-| 修正ルール | `firebase/firestore.rules` / `firebase/functions/test/rules/firestore.rules.test.ts` | `MonthlyItems` |
+| 修正ルール | [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules) / [`firebase/functions/test/rules/firestore.rules.test.ts`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/functions/test/rules/firestore.rules.test.ts) | `MonthlyItems` |
 | 修正ドキュメント | `doc/analytics_events.md` / `doc/strategy/housework_template.md` | パラメータ追加、毎月の家事への参照 |
 
 ## PR分割（スタックPR）
@@ -236,7 +236,7 @@ match /MonthlyItems/{itemId} {
 ### Phase 2: 実装
 
 **PR #1**
-- [x] `firebase/firestore.rules` に `MonthlyItems` を追加
+- [x] [`firebase/firestore.rules`](https://github.com/stotic-dev/homete_backend/blob/main/firebase/firestore.rules) に `MonthlyItems` を追加
 - [x] ルールテストにメンバー・非メンバーの読み書きを追加
 - [x] `deleteUserData` のE2Eテストに `MonthlyItems` の削除確認・残存確認を追加
 

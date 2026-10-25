@@ -13,7 +13,7 @@
 
 - 保存先: `doc/adr/`
 - ファイル名: `NNNN-<kebab-case-title>.md`（例: `0001-spm-multimodule-structure.md`）
-- 連番は既存ファイルの最大番号 +1 とする
+- 連番は既存ファイルの最大番号 +1 とする。0054 までは [homete_backend](https://github.com/stotic-dev/homete_backend) と共通の番号空間で、backend へ移した ADR（0007・0008・0014 の一部・0015・0028）の番号は欠番のまま再利用しない。0055 以降は両リポジトリの `docs/adr/`・`doc/adr/` の最大番号 +1 を取り、番号が重ならないようにする
 
 ## フォーマット
 

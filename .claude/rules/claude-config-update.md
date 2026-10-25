@@ -31,7 +31,7 @@ Claude Code の設定（`settings.json` / `settings.local.json` / `.claude/rules
 
 ### ルール追加時の `paths:` は必須
 
-`.claude/rules/` に追加するファイルには必ず `paths:` frontmatter を付ける（詳細は CLAUDE.md「ルール（.claude/rules/）の運用」）。Swift実装に関するルールに `firebase/functions/**` を含めるような、対象の広げすぎをしない。
+`.claude/rules/` に追加するファイルには必ず `paths:` frontmatter を付ける（詳細は CLAUDE.md「ルール（.claude/rules/）の運用」）。Swift実装に関するルールに `fastlane/**` を含めるような、対象の広げすぎをしない。
 
 ### ADR の対象になる場合がある
 

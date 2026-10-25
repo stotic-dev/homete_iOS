@@ -24,7 +24,7 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                 case let .cohabitantJoin(token):
                     CohabitantJoinView(token: token)
                 case .setting:
-                    SettingViewScreen()
+                    SettingViewScreen.make()
                 case .houseworkTemplate:
                     HouseworkTemplateScreen.make()
                 case .frequentHouseworkManagement:

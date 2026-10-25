@@ -74,7 +74,7 @@ Info.plistへは `APP_CHECK_DEBUG_TOKEN` を直接展開せず、Debug構成に�
 
 ## 補足: エミュレータ・E2Eテストへの影響
 
-`firebase/functions/test/e2e/` のテストはCallable関数をHTTP経由で呼ばず、Firestoreエミュレータに対してロジックを直接検証している。App Check検証はCallableのHTTPレイヤで行われるため、`enforceAppCheck` を `true` にしてもこれらのテストには影響しない。
+[`firebase/functions/test/e2e/`](https://github.com/stotic-dev/homete_backend/tree/main/firebase/functions/test/e2e) のテストはCallable関数をHTTP経由で呼ばず、Firestoreエミュレータに対してロジックを直接検証している。App Check検証はCallableのHTTPレイヤで行われるため、`enforceAppCheck` を `true` にしてもこれらのテストには影響しない。
 
 ## 参考
 

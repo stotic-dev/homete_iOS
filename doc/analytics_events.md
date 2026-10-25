@@ -117,6 +117,9 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `frequent_housework_category` | `FrequentHouseworkCategoryView`（いつもの家事のカテゴリ管理） |
 | `frequent_housework_import` | `FrequentHouseworkImportView`（テンプレートからの取り込み） |
 | `setting` | `SettingView` |
+| `inquiry_list` | `InquiryListScreen` |
+| `inquiry_detail` | `InquiryDetailScreen` |
+| `inquiry_creation` | `InquiryCreationScreen` |
 | `subscription_management` | `SubscriptionManagementView` |
 | `setting_notification_permission` | `SettingNotificationPermissionGuideView`（通知設定。通知が許可されていない場合） |
 | `setting_notification` | `DailyCompletionReminderSettingView`（通知設定。通知が許可されている場合） |

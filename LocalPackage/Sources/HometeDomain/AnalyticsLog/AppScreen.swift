@@ -80,6 +80,12 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case frequentHouseworkImport = "frequent_housework_import"
     /// 設定画面
     case setting
+    /// 問い合わせの一覧（設定画面から開く）
+    case inquiryList = "inquiry_list"
+    /// 問い合わせの詳細（メッセージ履歴と追加の送信）
+    case inquiryDetail = "inquiry_detail"
+    /// 問い合わせの作成
+    case inquiryCreation = "inquiry_creation"
     /// サブスクリプションの管理画面
     case subscriptionManagement = "subscription_management"
     /// 設定画面から開くプッシュ通知権限ガイド
