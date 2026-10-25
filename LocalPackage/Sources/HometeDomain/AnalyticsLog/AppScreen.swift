@@ -12,6 +12,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case launch
     /// 最低バージョンを下回ったときの強制アップデート画面
     case forceUpdate = "force_update"
+    /// Remote Configでアプリ全体を止めているときのメンテナンス画面
+    case maintenance
     /// ログイン前にアプリを紹介する説明画面
     case welcome
     /// Sign in with Appleのログイン画面

@@ -25,14 +25,18 @@ public struct RootView: View {
     @Environment(LaunchStateStore.self) var launchStateStore
     @Environment(AdvertisementStore.self) var advertisementStore
     @Environment(ForceUpdateStore.self) var forceUpdateStore
+    @Environment(MaintenanceStore.self) var maintenanceStore
 
     public var body: some View {
         ZStack {
-            if forceUpdateStore.isForceUpdateRequired {
-                // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
-                // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
+            // 他の画面に進めないよう、ログイン状態に関係なく画面ごと差し替える。
+            // 差し替えると表示中のシートなども閉じられるため、案内が別の画面の裏に隠れない
+            switch appAvailability {
+            case .underMaintenance:
+                MaintenanceView()
+            case .updateRequired:
                 ForceUpdateView()
-            } else {
+            case .available:
                 switch launchStateStore.launchState {
                 case .launching:
                     LaunchScreenView()
@@ -68,6 +72,12 @@ public struct RootView: View {
         }
         .onChange(of: launchStateStore.launchState) {
             onChangeLaunchState()
+        }
+        .onChange(of: maintenanceStore.isUnderMaintenance) {
+            discardPendingEntriesIfUnderMaintenance()
+        }
+        .onChange(of: pendingRouteStore.pendingRoute) {
+            discardPendingEntriesIfUnderMaintenance()
         }
         .onChange(of: subscriptionStore.isPremium) {
             Task {
@@ -131,10 +141,15 @@ public extension RootView {
                 currentAppVersion: Bundle.main
                     .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
             )
+            let maintenanceStore = MaintenanceStore(
+                remoteConfigClient: $0.remoteConfigClient,
+                maintenanceStateClient: $0.maintenanceStateClient
+            )
             let remoteConfigSyncUseCase = RemoteConfigSyncUseCase(
                 remoteConfigClient: $0.remoteConfigClient,
                 advertisementStore: advertisementStore,
-                forceUpdateStore: forceUpdateStore
+                forceUpdateStore: forceUpdateStore,
+                maintenanceStore: maintenanceStore
             )
             let registrationTutorialStore = RegistrationTutorialStore(
                 stateClient: $0.registrationTutorialStateClient,
@@ -161,6 +176,7 @@ public extension RootView {
             .environment(launchStateStore)
             .environment(advertisementStore)
             .environment(forceUpdateStore)
+            .environment(maintenanceStore)
             .environment(registrationTutorialStore)
             .task {
                 await subscriptionStore.observeEntitlementUpdates()
@@ -170,7 +186,7 @@ public extension RootView {
                 await remoteConfigSyncUseCase.setupOnLaunch()
             }
             .task {
-                await forceUpdateStore.observeConfigUpdates()
+                await remoteConfigSyncUseCase.observeConfigUpdates()
             }
             .routeResolverInjection()
             .adComponentResolverInjection()
@@ -184,11 +200,20 @@ public extension RootView {
 
 private extension RootView {
 
+    var appAvailability: AppAvailability {
+        .init(
+            isUnderMaintenance: maintenanceStore.isUnderMaintenance,
+            isForceUpdateRequired: forceUpdateStore.isForceUpdateRequired
+        )
+    }
+
     /// 招待リンク（Universal Link / カスタムURLスキーム）を受け取る
     /// - Note: ログイン前にも開かれるため、ここではトークンを退避するだけにして、
-    ///         ログイン後に`AppTabView`が参加画面を表示する
+    ///         ログイン後に`AppTabView`が参加画面を表示する。メンテナンス中に開かれたリンクは、
+    ///         終わった後に急に参加画面が開かないよう受け取らない
     func onOpenURL(_ url: URL) {
-        guard let link = CohabitantInvitationLink.parse(url) else { return }
+        guard !maintenanceStore.isUnderMaintenance,
+              let link = CohabitantInvitationLink.parse(url) else { return }
 
         pendingInvitationStore.store(link.token)
         analyticsClient.log(.cohabitantInvitation(.linkOpened(source: link.source)))
@@ -216,6 +241,15 @@ private extension RootView {
     func onChangeLaunchState() {
         guard case .notLoggedIn = launchStateStore.launchState else { return }
         pendingRouteStore.clear()
+    }
+
+    /// メンテナンス中は、通知のタップ・App Intent・招待リンクから開く画面を破棄する
+    /// - Note: メンテナンスが終わった後に、ユーザーが覚えていない画面が急に開かないようにする。
+    ///         メンテナンスに入った時点でまだ使われていないもの（起動のきっかけになった通知やリンクを含む）も破棄する
+    func discardPendingEntriesIfUnderMaintenance() {
+        guard maintenanceStore.isUnderMaintenance else { return }
+        pendingRouteStore.clear()
+        pendingInvitationStore.clear()
     }
 
     func onReceiveFcmToken(_ notification: NotificationCenter.Publisher.Output) {

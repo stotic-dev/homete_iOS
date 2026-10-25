@@ -33,6 +33,7 @@ public struct AppDependencies: Sendable {
     public let pasteboardClient: PasteboardClient
     public let dailyCompletionReminderClient: DailyCompletionReminderClient
     public let remoteConfigClient: RemoteConfigClient
+    public let maintenanceStateClient: MaintenanceStateClient
     public let encouragementCommentClient: EncouragementCommentClient
     public let encouragementCommentCacheClient: EncouragementCommentCacheClient
     public let intentDonationClient: IntentDonationClient
@@ -74,6 +75,7 @@ public struct AppDependencies: Sendable {
         pasteboardClient: PasteboardClient = .previewValue,
         dailyCompletionReminderClient: DailyCompletionReminderClient = .previewValue,
         remoteConfigClient: RemoteConfigClient = .previewValue,
+        maintenanceStateClient: MaintenanceStateClient = .previewValue,
         encouragementCommentClient: EncouragementCommentClient = .previewValue,
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         intentDonationClient: IntentDonationClient = .previewValue,
@@ -105,6 +107,7 @@ public struct AppDependencies: Sendable {
         self.pasteboardClient = pasteboardClient
         self.dailyCompletionReminderClient = dailyCompletionReminderClient
         self.remoteConfigClient = remoteConfigClient
+        self.maintenanceStateClient = maintenanceStateClient
         self.encouragementCommentClient = encouragementCommentClient
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.intentDonationClient = intentDonationClient

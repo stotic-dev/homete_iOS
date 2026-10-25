@@ -36,7 +36,8 @@ struct RemoteConfigSyncUseCaseTest {
         let useCase = RemoteConfigSyncUseCase(
             remoteConfigClient: remoteConfigClient,
             advertisementStore: advertisementStore,
-            forceUpdateStore: forceUpdateStore
+            forceUpdateStore: forceUpdateStore,
+            maintenanceStore: MaintenanceStore(remoteConfigClient: remoteConfigClient)
         )
 
         // Act
@@ -70,7 +71,8 @@ struct RemoteConfigSyncUseCaseTest {
         let useCase = RemoteConfigSyncUseCase(
             remoteConfigClient: remoteConfigClient,
             advertisementStore: AdvertisementStore(remoteConfigClient: remoteConfigClient),
-            forceUpdateStore: forceUpdateStore
+            forceUpdateStore: forceUpdateStore,
+            maintenanceStore: MaintenanceStore(remoteConfigClient: remoteConfigClient)
         )
 
         // Act
@@ -102,7 +104,8 @@ struct RemoteConfigSyncUseCaseTest {
         let useCase = RemoteConfigSyncUseCase(
             remoteConfigClient: remoteConfigClient,
             advertisementStore: advertisementStore,
-            forceUpdateStore: forceUpdateStore
+            forceUpdateStore: forceUpdateStore,
+            maintenanceStore: MaintenanceStore(remoteConfigClient: remoteConfigClient)
         )
 
         // Act
@@ -115,7 +118,7 @@ struct RemoteConfigSyncUseCaseTest {
         #expect(forceUpdateStore.isForceUpdateRequired == true)
     }
 
-    @Test("フォアグラウンド復帰時は、起動中の広告表示の有無を変えずに強制アップデートを判定し直す")
+    @Test("フォアグラウンド復帰時は、起動中の広告表示の有無を変えずに強制アップデートとメンテナンスを判定し直す")
     func refresh() async {
         // Arrange
 
@@ -124,8 +127,10 @@ struct RemoteConfigSyncUseCaseTest {
             fetchAndActivate: {
                 isActivated.value = true
             },
-            bool: { _ in
-                Issue.record("起動中は広告表示の値を読み直さない")
+            bool: { key in
+                if key == .adsEnabled {
+                    Issue.record("起動中は広告表示の値を読み直さない")
+                }
                 return true
             },
             string: { key in
@@ -140,10 +145,12 @@ struct RemoteConfigSyncUseCaseTest {
             remoteConfigClient: remoteConfigClient,
             currentAppVersion: "1.0.0"
         )
+        let maintenanceStore = MaintenanceStore(remoteConfigClient: remoteConfigClient)
         let useCase = RemoteConfigSyncUseCase(
             remoteConfigClient: remoteConfigClient,
             advertisementStore: advertisementStore,
-            forceUpdateStore: forceUpdateStore
+            forceUpdateStore: forceUpdateStore,
+            maintenanceStore: maintenanceStore
         )
 
         // Act
@@ -154,6 +161,87 @@ struct RemoteConfigSyncUseCaseTest {
 
         #expect(advertisementStore.isAdsEnabled == false)
         #expect(forceUpdateStore.isForceUpdateRequired == true)
+        #expect(maintenanceStore.isUnderMaintenance == true)
+    }
+
+    @Test("コンソールで公開された最低バージョンの変更を受け取ると、強制アップデートを判定し直す")
+    func observeConfigUpdatesRequiresForceUpdate() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            configUpdates: {
+                AsyncStream { continuation in
+                    isActivated.value = true
+                    continuation.yield()
+                    continuation.finish()
+                }
+            },
+            bool: { key in
+                if key == .adsEnabled {
+                    Issue.record("起動中は広告表示の値を読み直さない")
+                }
+                return true
+            },
+            string: { key in
+                isActivated.value ? "2.0.0" : key.defaultValue
+            }
+        )
+        let forceUpdateStore = ForceUpdateStore(
+            remoteConfigClient: remoteConfigClient,
+            currentAppVersion: "1.0.0"
+        )
+        let useCase = RemoteConfigSyncUseCase(
+            remoteConfigClient: remoteConfigClient,
+            advertisementStore: AdvertisementStore(remoteConfigClient: remoteConfigClient),
+            forceUpdateStore: forceUpdateStore,
+            maintenanceStore: MaintenanceStore(remoteConfigClient: remoteConfigClient)
+        )
+
+        // Act
+
+        await useCase.observeConfigUpdates()
+
+        // Assert
+
+        #expect(forceUpdateStore.isForceUpdateRequired == true)
+    }
+
+    @Test("コンソールでメンテナンスを終えた変更を受け取ると、メンテナンスを解除する")
+    func observeConfigUpdatesEndsMaintenance() async {
+        // Arrange
+
+        let isActivated = TestBox(value: false)
+        let remoteConfigClient = RemoteConfigClient(
+            configUpdates: {
+                AsyncStream { continuation in
+                    isActivated.value = true
+                    continuation.yield()
+                    continuation.finish()
+                }
+            },
+            bool: { key in
+                key == .maintenanceEnabled ? !isActivated.value : key.defaultValue
+            }
+        )
+        let maintenanceStore = MaintenanceStore(
+            remoteConfigClient: remoteConfigClient,
+            isUnderMaintenance: true
+        )
+        let useCase = RemoteConfigSyncUseCase(
+            remoteConfigClient: remoteConfigClient,
+            advertisementStore: AdvertisementStore(remoteConfigClient: remoteConfigClient),
+            forceUpdateStore: ForceUpdateStore(remoteConfigClient: remoteConfigClient),
+            maintenanceStore: maintenanceStore
+        )
+
+        // Act
+
+        await useCase.observeConfigUpdates()
+
+        // Assert
+
+        #expect(maintenanceStore.isUnderMaintenance == false)
     }
 
 }
