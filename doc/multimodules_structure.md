@@ -30,11 +30,11 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure`（InfraPackage） | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
-| `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
+| `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）と、メンテナンス中かどうかの共有（`MaintenanceStateClient`、[ADR-0055](adr/0055-maintenance-mode-with-remote-config.md)）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `HometeAppIntents` | Siri・Spotlight・ショートカットAppから実行するApp Intent・Entity・ドネーションの liveValue。Firebase の実装はアプリから`AppDependencyManager`経由で受け取るため`HometeInfrastructure`に依存させない（[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)） | `HometeDomain`, `HouseworkFeature`, `ContributionFeature` |
 | `AppRoot`（InfraPackage） | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeInfrastructure`, `HometeLocalNotification`, `HometeAppIntents` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`）・App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要がある） | `AppRoot`, `HometeInfrastructure`, `HometeAppIntents` |
-| `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension | `HometeLocalNotification` |
+| `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension（メンテナンス中は予約しない） | `HometeLocalNotification` |
 | `HometeSnapshotTestSupport` | VRT（`hometeSnapshotTests`）が使う SnapshotTesting・Prefire を提供する。アプリ本体からは依存しない | Prefire, swift-snapshot-testing |
 
 外部ライブラリは `LocalPackage/Package.swift`・`InfraPackage/Package.swift` からだけ参照し、xcodeproj から直接参照しない。xcodeproj 側にもバージョン指定を持つと、dependabot が `Package.swift` だけを更新したときに指定が食い違い、Xcode Cloud の依存解決が失敗するため。アプリ本体・拡張・テストのターゲットで外部ライブラリが必要になったら、LocalPackage・InfraPackage のモジュール経由で使う。

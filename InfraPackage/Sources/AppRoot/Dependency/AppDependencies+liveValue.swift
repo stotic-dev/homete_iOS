@@ -35,6 +35,7 @@ public extension AppDependencies {
         pasteboardClient: livePasteboardClient,
         dailyCompletionReminderClient: .liveValue,
         remoteConfigClient: .liveValue,
+        maintenanceStateClient: .liveValue,
         encouragementCommentClient: .liveValue,
         encouragementCommentCacheClient: .liveValue,
         intentDonationClient: .liveValue,

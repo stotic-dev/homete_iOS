@@ -83,6 +83,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 |---|---|
 | `launch` | `LaunchScreenView` |
 | `force_update` | `ForceUpdateView`（最低バージョンを下回ったときの強制アップデート画面） |
+| `maintenance` | `MaintenanceView`（Remote Configの`maintenance_enabled`でアプリ全体を止めているときのメンテナンス画面。強制アップデートより優先して出す） |
 | `welcome` | `WelcomeScreen`（ログイン前の説明画面。未ログインで起動すると出る） |
 | `login` | `LoginView`（説明画面の「すでにアカウントをお持ちの方」から開く） |
 | `registration_account` | `RegistrationAccountView` |
@@ -669,7 +670,7 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
 | `action` | ○ | `complete_housework` / `open_housework_complete` / `send_thanks` / `show_contribution_summary` / `open_contribution_analytics` / `record_housework` / `register_housework` | 実行したIntent。キーを増やさないため、他のイベントと同じ`action`に載せる |
-| `result` | ○ | `success` / `not_found` / `already_completed` / `already_registered` / `memo_limit_exceeded` / `cancelled` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `failure` | 実行した結果 |
+| `result` | ○ | `success` / `not_found` / `already_completed` / `already_registered` / `memo_limit_exceeded` / `cancelled` / `pending_sync` / `not_logged_in` / `no_cohabitant` / `update_required` / `under_maintenance` / `failure` | 実行した結果 |
 
 送信されるパターンと、その送信タイミング:
 
@@ -684,6 +685,7 @@ App Intent（Siri・Spotlight・ショートカットApp・アクションボタ
 | `register_housework` | アプリを開かずに、これからやる家事を名前で今日の家事に登録しようとした。今日の家事に同じ名前の未完了の家事があれば`already_registered`、補足のメモが書ける文字数を超えていれば`memo_limit_exceeded`、確認に「いいえ」と答えたときは`cancelled`、通信できず端末に保存して返したときは`pending_sync`。候補をSiriが聞き返し、選ばずに閉じたときは送らない |
 
 ログインしていない・グループに所属していない・強制アップデートが必要なバージョンのときは、それぞれ`not_logged_in` / `no_cohabitant` / `update_required`になる。
+メンテナンス中は、読むだけのIntentも含めてどの`action`でも`under_maintenance`になる（ほかの理由より優先する）。`open_contribution_analytics`はアプリを開いてメンテナンス画面を出すだけなので`success`のまま。`open_housework_complete`は、家事の候補を出す段階でメンテナンス中と伝えて止まるため、イベントを送らない。
 
 家事の完了・ありがとう・登録は、書き込めたときに`housework`イベント（`step=app_intent`）も送る（`record_housework`は`complete`、`register_housework`は`register`。`register`の`source`はいつもの家事なら`frequent`、名前だけなら`manual`）。`pending_sync`のときは、プロセスが動いている間に書き込みがサーバーに届いた場合だけ送られる。二重に数えないよう、家事の件数は`housework`、入口の使われ方は`app_intent`で見る。
 

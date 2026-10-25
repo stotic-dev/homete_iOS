@@ -201,6 +201,16 @@
         }
       }
     },
+    "メンテナンス中のため、いまは使えません。しばらくお待ちください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This isn't available right now because of maintenance. Please try again later."
+          }
+        }
+      }
+    },
     "今は、ありがとうを伝えられる家事はありません" : {
       "localizations" : {
         "en" : {
