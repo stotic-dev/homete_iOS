@@ -84,4 +84,24 @@ public final class PendingRouteStore {
         return true
     }
 
+    /// 問い合わせの詳細画面を開く予定があるか
+    ///
+    /// 問い合わせの詳細は設定画面の中にあるため、設定画面を出すかどうかの判断に使う。保持している画面は破棄しない。
+    public var hasPendingInquiryDetail: Bool {
+        guard case .inquiryDetail = pendingRoute else { return false }
+        return true
+    }
+
+    /// 詳細画面を開く問い合わせのIDを取り出す
+    ///
+    /// 取り出したら、保持している画面を破棄する。問い合わせが削除された・別のアカウントのものだった場合は、
+    /// 開いた詳細画面が取得に失敗して見つからないと表示する。
+    /// - Returns: 詳細画面を開く問い合わせのID。問い合わせの詳細画面を開く予定がない場合は`nil`
+    public func takeInquiryDetailId() -> String? {
+        guard case let .inquiryDetail(inquiryId) = pendingRoute else { return nil }
+
+        pendingRoute = nil
+        return inquiryId
+    }
+
 }

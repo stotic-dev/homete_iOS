@@ -15,6 +15,8 @@ public enum PendingRoute: Equatable, Sendable {
     case houseworkComplete(houseworkTitle: String)
     /// がんばりの分析画面（App Intent）
     case contributionAnalytics
+    /// 問い合わせの詳細画面（運営の返信の通知のタップ）
+    case inquiryDetail(inquiryId: String)
 
 }
 
@@ -23,9 +25,13 @@ public extension PendingRoute {
     /// タップされた通知の`userInfo`から開く画面を決める
     /// - Returns: 開く画面が決まっていない通知の場合は`nil`
     init?(userInfo: [AnyHashable: Any]) {
-        guard let data = HouseworkThanksNotificationData(userInfo: userInfo) else { return nil }
-
-        self = .houseworkDetail(houseworkId: data.houseworkId)
+        if let data = HouseworkThanksNotificationData(userInfo: userInfo) {
+            self = .houseworkDetail(houseworkId: data.houseworkId)
+        } else if let data = InquiryReplyNotificationData(userInfo: userInfo) {
+            self = .inquiryDetail(inquiryId: data.inquiryId)
+        } else {
+            return nil
+        }
     }
 
 }
