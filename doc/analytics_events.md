@@ -97,7 +97,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `cohabitant_join` | `CohabitantJoinView` |
 | `cohabitant_completion` | `CohabitantCompletionView` |
 | `incomplete_housework_list` | `IncompleteHouseworkListView` |
-| `thanks_target_list` | `ThanksTargetListView`（ありがとうを伝えられる今日の家事の一覧。ダッシュボードの感謝の促しから開く） |
+| `thanks_target_list` | `ThanksTargetListScreen`（ありがとうを伝えられる今日の家事の一覧。ダッシュボードの感謝の促しから開く） |
 | `past_thanks_target_list` | `PastThanksTargetListScreen`（昨日から7日前までのありがとう漏れの一覧。ダッシュボードの過去の促しと、今日の一覧の末尾のリンクから開く） |
 | `contribution_analytics` | `ContributionAnalyticsView` |
 | `housework_board` | `HouseworkBoardScreen` |
@@ -259,7 +259,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 | `complete` | `dashboard` / `board` / `detail` / `app_intent` | 家事を完了にした（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「完了にする」から開く完了のハーフモーダル。複数選択の一括完了は常に`executor_type=self`・`effort=normal`で、`item_count`を付けて1回だけ送る。`app_intent`はアプリを開かずに完了にしたときで、常に`executor_type=self`・`effort=normal`） |
 | `redo` | `dashboard` / `board` / `detail` | 完了した家事を「もう一度やった」として、同じ日・同じ内容の完了済みの家事を新しく登録した（ダッシュボード・家事ボードのクイックアクション、または家事詳細の「もう一度やった」） |
 | `add_helper` | `board` / `detail` | 完了した家事に手伝った人を追加した（家事ボードのクイックアクション、または家事詳細の「手伝った人を追加」から開くハーフモーダル）。家事の合計ポイントは変えず、追加後の担当者で配分し直す。1件ずつ配分を決める操作なので複数選択の一括操作にはない |
-| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 完了した家事に「ありがとう」を伝えた（`app_intent`はアプリを開かずに伝えたとき。家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧で、ハートのタップまたはメッセージを添えて送信）。1人が1つの家事に送れるのは1回まで |
+| `send_thanks` | `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 完了した家事に「ありがとう」を伝えた（`app_intent`はアプリを開かずに伝えたとき。家事ボードのクイックアクション・一括操作はコメントなしで、一括操作は`item_count`を付けて1回だけ送る。`thanks`はありがとうを伝える画面からメッセージを添えて送信、`comment_prompt`はダッシュボードの感謝の促しから開いた一覧（今日・昨日までの家事）で、ハートのタップ・メッセージを添えて送信・複数選択の一括送信。一括送信は`item_count`を付けて1回だけ送る）。1人が1つの家事に送れるのは1回まで |
 | `edit_thanks` | `thanks` / `comment_prompt` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面、またはありがとうを伝えられる家事の一覧から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
