@@ -13,6 +13,7 @@ public struct SettingViewScreen: View {
 
     @Environment(\.routeResolver) var router
     @Environment(\.scenePhase) var scenePhase
+    @Environment(PendingRouteStore.self) var pendingRouteStore
 
     @State var navigationPath = AppNavigationPath<SettingRoute>()
     @State var isShowHouseworkTemplate = false
@@ -54,6 +55,9 @@ public struct SettingViewScreen: View {
                 await inquiryListStore.refresh()
             }
         }
+        .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
+            openPendingInquiryDetail()
+        }
         // NavigationStackの中で出すと、出した画面がシートを出した直後に作り直されて
         // `@State`ごと初期化され、追加・編集のシートがすぐ閉じてしまう。NavigationStackの外から出す
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
@@ -94,6 +98,15 @@ private extension SettingViewScreen {
             DebugMenuView()
         #endif
         }
+    }
+
+    /// 通知から開く問い合わせがあれば、その詳細画面を開く
+    /// - Note: 別の画面を開いていても、問い合わせの一覧と詳細だけが積まれた状態にする。詳細から戻ると一覧が見える。
+    ///         家事テンプレートなどのフルスクリーンカバーは閉じず、その裏に詳細画面を積む。
+    ///         削除された・別のアカウントの問い合わせだった場合は、詳細画面が見つからないと表示する
+    func openPendingInquiryDetail() {
+        guard let inquiryId = pendingRouteStore.takeInquiryDetailId() else { return }
+        navigationPath.path = [.inquiryList, .inquiryDetail(inquiryId: inquiryId)]
     }
 
 }

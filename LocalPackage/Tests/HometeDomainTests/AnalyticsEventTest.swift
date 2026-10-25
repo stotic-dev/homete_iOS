@@ -768,6 +768,7 @@ struct AnalyticsEventTest {
             (.completeHousework, .alreadyCompleted, "complete_housework", "already_completed"),
             (.completeHousework, .noCohabitant, "complete_housework", "no_cohabitant"),
             (.completeHousework, .updateRequired, "complete_housework", "update_required"),
+            (.completeHousework, .underMaintenance, "complete_housework", "under_maintenance"),
             (.completeHousework, .failure, "complete_housework", "failure"),
             (.sendThanks, .pendingSync, "send_thanks", "pending_sync"),
             (.recordHousework, .success, "record_housework", "success"),

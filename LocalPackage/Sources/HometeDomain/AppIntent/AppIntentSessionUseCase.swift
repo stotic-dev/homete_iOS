@@ -41,11 +41,16 @@ public struct AppIntentSessionUseCase: Sendable {
     }
 
     /// ログイン中のアカウントと所属グループを取得する
-    /// - Parameter requiresLatestVersion: 書き込むIntentでは`true`を渡し、強制アップデートが必要なバージョンなら実行させない。
-    ///   最低バージョンは、最後に反映したRemote Configの値で判定する（Intentのためにサーバーへは問い合わせない）
-    /// - Throws: 未ログインは`AppIntentFailure.notLoggedIn`、未所属は`.noCohabitant`、
+    ///
+    /// メンテナンス中は、読むだけのIntentも含めて実行させない。メンテナンス中かどうか・最低バージョンは、
+    /// 最後に反映したRemote Configの値で判定する（Intentのためにサーバーへは問い合わせない）。
+    /// - Parameter requiresLatestVersion: 書き込むIntentでは`true`を渡し、強制アップデートが必要なバージョンなら実行させない
+    /// - Throws: メンテナンス中は`AppIntentFailure.underMaintenance`、未ログインは`.notLoggedIn`、未所属は`.noCohabitant`、
     ///   アップデートが必要なら`.updateRequired`。通信の失敗はそのまま投げる
     public func resolve(requiresLatestVersion: Bool) async throws -> AppIntentSession {
+        if remoteConfigClient.bool(.maintenanceEnabled) {
+            throw AppIntentFailure.underMaintenance
+        }
         if requiresLatestVersion, ForceUpdatePolicy.isRequired(
             currentVersion: currentAppVersion,
             minimumRequiredVersion: remoteConfigClient.string(.minimumRequiredVersion)

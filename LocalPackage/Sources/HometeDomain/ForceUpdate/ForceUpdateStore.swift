@@ -43,12 +43,4 @@ public final class ForceUpdateStore {
         )
     }
 
-    /// コンソールで公開された変更を受け取り続ける
-    /// - Note: 呼び出し元のTaskがキャンセルされるまで終わらない
-    public func observeConfigUpdates() async {
-        for await _ in remoteConfigClient.configUpdates() {
-            updateRequirement()
-        }
-    }
-
 }

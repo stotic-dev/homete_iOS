@@ -20,6 +20,9 @@ enum PendingRouteStoreTest {
     @MainActor
     struct TakeContributionAnalyticsCase {}
 
+    @MainActor
+    struct InquiryDetailCase {}
+
 }
 
 // MARK: - store / clear
@@ -250,6 +253,78 @@ extension PendingRouteStoreTest.TakeContributionAnalyticsCase {
 
         #expect(!actual)
         #expect(sut.pendingRoute == .houseworkComplete(houseworkTitle: "洗濯"))
+    }
+
+}
+
+// MARK: - hasPendingInquiryDetail / takeInquiryDetailId
+
+extension PendingRouteStoreTest.InquiryDetailCase {
+
+    @Test("問い合わせの詳細画面を開く予定がある場合は、trueを返して画面を残す")
+    func hasPendingInquiryDetail_pending_returnsTrueAndKeepsRoute() {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: .inquiryDetail(inquiryId: "inquiryId"))
+
+        // Act
+
+        let actual = sut.hasPendingInquiryDetail
+
+        // Assert
+
+        #expect(actual)
+        #expect(sut.pendingRoute == .inquiryDetail(inquiryId: "inquiryId"))
+    }
+
+    @Test(
+        "問い合わせの詳細画面以外を保持している、または保持していない場合は、falseを返す",
+        arguments: [PendingRoute?.some (.houseworkDetail(houseworkId: "target")), nil]
+    )
+    func hasPendingInquiryDetail_otherRoute_returnsFalse(route: PendingRoute?) {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: route)
+
+        // Act
+
+        let actual = sut.hasPendingInquiryDetail
+
+        // Assert
+
+        #expect(!actual)
+    }
+
+    @Test("問い合わせのIDを取り出したら、保持している画面を破棄する")
+    func takeInquiryDetailId_pending_returnsIdAndClears() {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: .inquiryDetail(inquiryId: "inquiryId"))
+
+        // Act
+
+        let actual = sut.takeInquiryDetailId()
+
+        // Assert
+
+        #expect(actual == "inquiryId")
+        #expect(sut.pendingRoute == nil)
+    }
+
+    @Test("問い合わせの詳細画面以外を保持している場合は、何も返さず画面も残す")
+    func takeInquiryDetailId_otherRoute_returnsNil() {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: .contributionAnalytics)
+
+        // Act
+
+        let actual = sut.takeInquiryDetailId()
+
+        // Assert
+
+        #expect(actual == nil)
+        #expect(sut.pendingRoute == .contributionAnalytics)
     }
 
 }

@@ -261,6 +261,16 @@
         }
       }
     },
+    "ご不便をおかけして申し訳ありません。終わりしだい使えるようになりますので、しばらくお待ちください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We're sorry for the inconvenience. The app will be available again as soon as maintenance is complete."
+          }
+        }
+      }
+    },
     "しない" : {
       "comment" : "家事のくり返しの種類",
       "localizations" : {
@@ -278,6 +288,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "More Actions"
+          }
+        }
+      }
+    },
+    "ただいまメンテナンス中です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Under maintenance"
           }
         }
       }
