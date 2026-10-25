@@ -36,6 +36,7 @@ public struct AppDependencies: Sendable {
     public let encouragementCommentClient: EncouragementCommentClient
     public let encouragementCommentCacheClient: EncouragementCommentCacheClient
     public let intentDonationClient: IntentDonationClient
+    public let inquiryClient: InquiryClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
@@ -76,6 +77,7 @@ public struct AppDependencies: Sendable {
         encouragementCommentClient: EncouragementCommentClient = .previewValue,
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         intentDonationClient: IntentDonationClient = .previewValue,
+        inquiryClient: InquiryClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue,
         debugLocalDataClient: DebugLocalDataClient = .previewValue
     ) {
@@ -106,6 +108,7 @@ public struct AppDependencies: Sendable {
         self.encouragementCommentClient = encouragementCommentClient
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.intentDonationClient = intentDonationClient
+        self.inquiryClient = inquiryClient
         self.debugAuthClient = debugAuthClient
         self.debugLocalDataClient = debugLocalDataClient
         houseworkManager = .init(houseworkClient: houseworkClient)
