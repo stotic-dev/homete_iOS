@@ -12,5 +12,7 @@ public enum AppIntentFailure: Error, Equatable, Sendable {
     case noCohabitant
     /// 強制アップデートが必要なバージョン
     case updateRequired
+    /// メンテナンス中
+    case underMaintenance
 
 }

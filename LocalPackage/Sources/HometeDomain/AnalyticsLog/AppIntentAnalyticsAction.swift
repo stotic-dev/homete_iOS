@@ -47,6 +47,8 @@ public enum AppIntentAnalyticsResult: String, Equatable, Sendable, CaseIterable 
     case noCohabitant = "no_cohabitant"
     /// 強制アップデートが必要なバージョンだった
     case updateRequired = "update_required"
+    /// メンテナンス中だった
+    case underMaintenance = "under_maintenance"
     /// 通信などで失敗した
     case failure
 
@@ -64,6 +66,9 @@ public extension AppIntentAnalyticsResult {
 
         case .updateRequired:
             self = .updateRequired
+
+        case .underMaintenance:
+            self = .underMaintenance
         }
     }
 

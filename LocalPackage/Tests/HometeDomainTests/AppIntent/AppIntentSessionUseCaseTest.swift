@@ -82,6 +82,27 @@ struct AppIntentSessionUseCaseTest {
         }
     }
 
+    @Test(
+        "メンテナンス中は、読むだけのIntentも書き込むIntentも、強制アップデートより優先してunderMaintenanceを投げる",
+        arguments: [true, false]
+    )
+    func resolveUnderMaintenance(requiresLatestVersion: Bool) async {
+        // Arrange
+
+        let sut = makeSUT(
+            authId: "own",
+            account: account,
+            minimumRequiredVersion: "2.0.0",
+            isMaintenanceEnabled: true
+        )
+
+        // Act & Assert
+
+        await #expect(throws: AppIntentFailure.underMaintenance) {
+            try await sut.resolve(requiresLatestVersion: requiresLatestVersion)
+        }
+    }
+
     @Test("読むだけのIntentでは、強制アップデートが必要なバージョンでも実行できる")
     func resolveReadOnlyRequiringUpdate() async throws {
         // Arrange
@@ -180,7 +201,8 @@ private extension AppIntentSessionUseCaseTest {
     func makeSUT(
         authId: String?,
         account: Account?,
-        minimumRequiredVersion: String = ""
+        minimumRequiredVersion: String = "",
+        isMaintenanceEnabled: Bool = false
     ) -> AppIntentSessionUseCase {
         .init(
             accountAuthClient: .init(currentAuth: { authId.map { AccountAuthResult(id: $0) } }),
@@ -189,7 +211,10 @@ private extension AppIntentSessionUseCaseTest {
             houseworkClient: .init(),
             houseworkTemplateClient: .init(),
             frequentHouseworkClient: .init(),
-            remoteConfigClient: .init(string: { _ in minimumRequiredVersion }),
+            remoteConfigClient: .init(
+                bool: { key in key == .maintenanceEnabled ? isMaintenanceEnabled : key.defaultValue },
+                string: { _ in minimumRequiredVersion }
+            ),
             currentAppVersion: "1.0.0"
         )
     }

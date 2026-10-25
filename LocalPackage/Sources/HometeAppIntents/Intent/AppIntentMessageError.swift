@@ -21,6 +21,9 @@ struct AppIntentMessageError: Error, CustomLocalizedStringResourceConvertible {
 
         case .updateRequired:
             localizedStringResource = .localized("アプリをアップデートしてから使えます")
+
+        case .underMaintenance:
+            localizedStringResource = .localized("メンテナンス中のため、いまは使えません。しばらくお待ちください")
         }
     }
 
