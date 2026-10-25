@@ -169,6 +169,7 @@ View → Store（AppDependenciesを受け取る）
 - 起動時とバックグラウンド復帰時に`RemoteConfigSyncUseCase`が`fetchAndActivate()`する（起動は待たせない）。値をいつ画面へ反映するかは、そのキーを使う領域のStore（例: `AdvertisementStore`、`ForceUpdateStore`）で決める。Remote Config単位のStoreは作らない
 - `ads_enabled`は起動時に確定させ、起動中は変えない。キーを足したら`RemoteConfigBoolKey`/`RemoteConfigStringKey`・コンソール（stg/prod）・`doc/remote_config.md`をそろえる
 - 強制アップデート（`minimum_required_version`）はリアルタイム更新も購読して判定し直し、`RootView`で画面ごと`ForceUpdateView`に差し替える。判定できない値ならブロックしない
+- メンテナンス（`maintenance_enabled`）も同じ仕組みで`MaintenanceView`に差し替え、強制アップデートより優先する。App Intent・NSE・通知/リンクからの遷移も止める（[ADR-0055](doc/adr/0055-maintenance-mode-with-remote-config.md)）。リアルタイム更新の購読は`RemoteConfigSyncUseCase`が1つにまとめて持つ
 - App Checkの保護対象外
 
 **認証:**
