@@ -1,9 +1,11 @@
 Thank you for using homeau.
 
-- Use Siri or Shortcuts to complete a chore, say thanks, or check this month's effort
-- Tap the month on the chore board to pick a date from the calendar
-- The first time you open the chore entry screen or Chore Templates, a short guide shows you how to use it
-- Fixed an issue where the add and edit screens closed right away in Chore Templates and Go-to Chores opened from Settings
+- Start right away without signing in. A short intro and partner setup guide you through the first steps
+- Tell Siri the name of a chore to log one you've done or add one you plan to do
+- See the chores you forgot to say thanks for up to yesterday, all in one list
+- Messages on Home are now easier to read, and you can dismiss thanks you've received
+- Contact us from Settings without leaving the app. Settings items are now grouped for easier browsing
+- Fixed an issue where chores didn't show correctly when opening a day 8 or more days ago on the chore board
 - Other usability improvements and minor bug fixes
 
 A little reward for everyday chores.
