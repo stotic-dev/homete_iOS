@@ -447,6 +447,7 @@ private extension SettingView {
         .environment(AccountStore())
         .environment(SubscriptionStore())
         .environment(InquiryListStore())
+        .environment(SentInvitationStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -461,6 +462,7 @@ private extension SettingView {
         .environment(AccountStore())
         .environment(SubscriptionStore())
         .environment(InquiryListStore())
+        .environment(SentInvitationStore())
         .environment(\.loginContext, .init(
             account: .init(id: "", userName: "Hoge", cohabitantId: nil),
             isAnonymous: true
@@ -473,6 +475,7 @@ private extension SettingView {
         .environment(AccountStore())
         .environment(SubscriptionStore())
         .environment(InquiryListStore())
+        .environment(SentInvitationStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -503,6 +506,7 @@ private extension SettingView {
             willRenew: true
         )))
         .environment(InquiryListStore())
+        .environment(SentInvitationStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
@@ -533,6 +537,7 @@ private extension SettingView {
             willRenew: false
         )))
         .environment(InquiryListStore())
+        .environment(SentInvitationStore())
         .environment(\.loginContext, .init(account: .init(
             id: "",
             userName: "Hoge",
