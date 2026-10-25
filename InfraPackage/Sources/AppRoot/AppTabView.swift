@@ -310,18 +310,26 @@ private extension AppTabView {
     }
 
     /// 通知やApp Intentから開く画面があれば、その画面を持つタブに切り替える
-    /// - Note: 画面は家事の読み込みを待って切り替え先のタブが開く。グループ未所属なら開けないので破棄する
+    /// - Note: 画面は家事の読み込みを待って切り替え先のタブが開く。家事やがんばりの画面はグループ未所属なら開けないので破棄する。
+    ///         問い合わせはグループに関係なく使えるため、未所属でもダッシュボードの設定から開く
     func onChangePendingRoute() {
         guard let route = pendingRouteStore.pendingRoute else { return }
-        guard loginContext.hasCohabitant else {
-            pendingRouteStore.clear()
-            return
-        }
         switch route {
         case .houseworkDetail, .houseworkComplete:
+            guard loginContext.hasCohabitant else {
+                pendingRouteStore.clear()
+                return
+            }
             type = .homework
 
         case .contributionAnalytics:
+            guard loginContext.hasCohabitant else {
+                pendingRouteStore.clear()
+                return
+            }
+            type = .dashboard
+
+        case .inquiryDetail:
             type = .dashboard
         }
     }
