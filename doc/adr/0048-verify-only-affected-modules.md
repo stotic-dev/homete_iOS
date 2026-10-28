@@ -25,6 +25,7 @@ VRTはローカルでは流さない運用だった。テストホストに`Secr
 * CIは、PRでは`make test-affected COVERAGE=1`で関係するテストだけを流し、InfraPackageのビルドも影響範囲が届くときだけにする。mainへのpushと手動実行では全部流す
 * ローカルVRTは`make snapshot-affected`で流す
   * 対象は**直接変えた**HometeUI・Featureのプレビューだけ。依存するFeatureへは広げない。全プレビューはCIのVRTが見る
+  * CIのVRT（`VRT_light`）も、PRでは推移的な影響範囲のプレビューだけに絞った（[ADR-0063](0063-split-ui-modules-from-domain-for-affected-vrt.md)）
   * 必ずiOS 27.0のiPhone 16で流す。参照スナップショットを記録しているXcode Cloudと、マイナーバージョンまでそろえないと描画に差分が出る
   * 参照スナップショットは書き換えない。参照の無い新しいプレビューで書き出されたPNGは消し、記録はCIに任せる
 * 生成テストのテンプレートに`SNAPSHOT_REFERENCE_DIR`を足し、ローカルでは参照PNGの場所を渡す。Prefire 6では生成コードがDerivedDataに置かれ、
