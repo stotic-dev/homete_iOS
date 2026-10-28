@@ -34,12 +34,15 @@ public struct RootView: View {
             switch appAvailability {
             case .underMaintenance:
                 MaintenanceView()
+                    .trackScreenView(.maintenance)
             case .updateRequired:
                 ForceUpdateView()
+                    .trackScreenView(.forceUpdate)
             case .available:
                 switch launchStateStore.launchState {
                 case .launching:
                     LaunchScreenView()
+                        .trackScreenView(.launch)
                 case let .preLoggedIn(auth):
                     OnboardingFlowView(authInfo: auth, authSubscriptionSyncUseCase: authSubscriptionSyncUseCase)
                         .transition(.asymmetric(

@@ -2,6 +2,7 @@
 
 > この構成を採用した背景・目的・意思決定の経緯は [ADR-0001](adr/0001-spm-multimodule-structure.md) を参照。
 > `HometeInfrastructure`・`AppRoot`を`InfraPackage`に分けている経緯は [ADR-0046](adr/0046-split-infra-package-from-local-package.md) を参照。
+> UIが使う値型を`HometeModel`に分け、`HometeUI`を`HometeDomain`から切り離している経緯は [ADR-0063](adr/0063-split-ui-modules-from-domain-for-affected-vrt.md) を参照。
 
 ## パッケージ構成
 
@@ -20,9 +21,10 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 
 | モジュール | 役割 | 依存先 |
 |---|---|---|
-| `HometeDomain` | ドメインモデル・Client プロトコル・Store・UseCase・AppRoute | なし（最下層） |
+| `HometeModel` | UIが使う値型のドメインモデル（`HouseworkItem`・`LoginContext`・`DomainError`など）。Store・UseCase・Clientは置かない | なし（最下層） |
+| `HometeDomain` | UIが使わない値型（AnalyticsLog・RemoteConfigなど）・Client プロトコル・Store・UseCase・AppRoute・RouteResolver・画面計測のModifier。`HometeModel`を再公開する | `HometeModel` |
 | `HometeResources` | アセット（色・画像）・SwiftGen 生成コード | なし |
-| `HometeUI` | デザインシステム・共通コンポーネント・View ユーティリティ | `HometeDomain`, `HometeResources` |
+| `HometeUI` | デザインシステム・共通コンポーネント・View ユーティリティ。Store・Client・Analyticsには依存させない | `HometeModel`, `HometeResources` |
 | `AuthFeature` | 認証関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HouseworkFeature` | 家事ボード関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `SettingFeature` | 設定関連 View | `HometeDomain`, `HometeUI`, `HometeResources` |
@@ -32,7 +34,7 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 | `HometeInfrastructure`（InfraPackage） | Client liveValue 実装・Services（Firestore / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）と、メンテナンス中かどうかの共有（`MaintenanceStateClient`、[ADR-0055](adr/0055-maintenance-mode-with-remote-config.md)）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `HometeAppIntents` | Siri・Spotlight・ショートカットAppから実行するApp Intent・Entity・ドネーションの liveValue。Firebase の実装はアプリから`AppDependencyManager`経由で受け取るため`HometeInfrastructure`に依存させない（[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)） | `HometeDomain`, `HouseworkFeature`, `ContributionFeature` |
-| `AppRoot`（InfraPackage） | RootView・AppTabView・DependenciesInjectLayer・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeInfrastructure`, `HometeLocalNotification`, `HometeAppIntents` |
+| `AppRoot`（InfraPackage） | RootView・AppTabView・依存の注入（`HometeDomain`の`DependenciesInjectLayer`を使う）・RouteResolverInjection | `HometeDomain`, `HometeUI`, 全 Feature, `HometeInfrastructure`, `HometeLocalNotification`, `HometeAppIntents` |
 | `homete`（メインターゲット） | アプリエントリーポイント（`HometeApp.swift`）・App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要がある） | `AppRoot`, `HometeInfrastructure`, `HometeAppIntents` |
 | `hometeNotificationService`（拡張ターゲット） | 古いアプリから届く家事の完了通知を受けて、今日のふりかえり通知を予約する Notification Service Extension（メンテナンス中は予約しない） | `HometeLocalNotification` |
 | `HometeSnapshotTestSupport` | VRT（`hometeSnapshotTests`）が使う SnapshotTesting・Prefire を提供する。アプリ本体からは依存しない | Prefire, swift-snapshot-testing |
@@ -44,12 +46,18 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 ### ディレクトリ構成
 
 ```
+HometeModel/
+  ├── UIが使う値型のドメインモデル (Account, HouseworkItem, LoginContext, DomainError...)
+  ├── 値型のプレビュー・テスト用データ（Utilities/DebugHelper）
+  └── LocalizedStringResource.localized
+
 HometeDomain/
-  ├── Domain Models (Account, HouseworkItem, CohabitantData...)
+  ├── UIが使わない値型 (AnalyticsLog, RemoteConfig, AppIntent...)
   ├── Client Protocols + previewValue
   ├── Stores (AccountStore, HouseworkListStore, CohabitantStore, AccountAuthStore)
   ├── UseCase (複数Storeを合成するオーケストレーションロジック)
-  └── AppRoute + RouteResolver
+  ├── AppRoute + RouteResolver
+  └── DependenciesInjectLayer・trackScreenView（Environmentから依存を取るView・Modifier）
 
 HometeResources/
   └── Assets（Colors.xcassets, Image.xcassets）+ SwiftGen 生成コード
@@ -119,7 +127,8 @@ graph TD
 
     HometeUI["HometeUI\n（デザインシステム・共通 UI）"]
     HometeResources["HometeResources\n（アセット・SwiftGen）"]
-    HometeDomain["HometeDomain\n（ドメインモデル・Client Protocol・Store・AppRoute）"]
+    HometeDomain["HometeDomain\n（Client Protocol・Store・UseCase・AppRoute）"]
+    HometeModel["HometeModel\n（UIが使う値型）"]
 
     homete --> AppRoot
     homete --> HometeInfrastructure
@@ -165,19 +174,21 @@ graph TD
     HomeFeature --> HometeDomain
     CohabitantRegistrationFeature --> HometeDomain
 
-    HometeUI --> HometeDomain
+    HometeUI --> HometeModel
     HometeUI --> HometeResources
+    HometeDomain --> HometeModel
 ```
 
 > **ルール:**
 > - 重い外部ライブラリ（Firebase など）への依存は `HometeInfrastructure` のみが持つ。Feature モジュールは外部ライブラリに直接依存しない
 > - `HometeInfrastructure` が Client の `liveValue` を実装し、`AppRoot` の `DependenciesInjectLayer` が Environment 経由で各 Feature に DI する
+> - `HometeUI` は `HometeDomain` に依存させない。Store・Client・`routeResolver`・Analyticsが要るViewは Feature（または `AppRoot`）側に置き、`HometeUI` のViewには値とクロージャを渡す
 > - Feature モジュール間の直接依存は禁止。Feature 間の画面遷移は必ず RouteResolver パターンを使用する
 > - Feature 内部の画面遷移は RouteResolver を使用しない。Feature 専用のルート enum を定義して管理する
 
 ## Feature 間の画面遷移（RouteResolver パターン）
 
-Feature モジュール間で直接依存せずに画面遷移を実現するため、`HometeDomain` に `AppRoute` enum を、`HometeUI` に `RouteResolver` を定義し、メインターゲットで実態を DI する。
+Feature モジュール間で直接依存せずに画面遷移を実現するため、`HometeDomain` に `AppRoute` enum と `RouteResolver` を定義し、メインターゲットで実態を DI する。
 
 ### 使用する場面・しない場面
 
@@ -199,7 +210,7 @@ enum AppRoute: Hashable {
 ```
 
 ```swift
-// HometeUI 側
+// HometeDomain 側
 struct RouteResolver: Sendable {
     private var _resolve: @MainActor @Sendable (AppRoute) -> AnyView
 

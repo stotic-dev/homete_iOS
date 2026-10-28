@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-import HometeDomain
 import SwiftUI
 
 /// 画面の表示を`screen_view`イベントとして送信するModifier

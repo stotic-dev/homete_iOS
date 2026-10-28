@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/09.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 public extension View {

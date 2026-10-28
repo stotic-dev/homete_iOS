@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/08/22.
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import SwiftUI
 

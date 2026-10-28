@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// チュートリアルで、ステップごとに「どこで何ができるか」を説明するカード

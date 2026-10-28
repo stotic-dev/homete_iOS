@@ -62,6 +62,7 @@ private extension CohabitantJoinContent {
                 onTapClose()
             }
             .hideNavigationBar()
+            .trackScreenView(.cohabitantCompletion)
 
         case .alreadyMember:
             CohabitantJoinAlreadyMemberView {

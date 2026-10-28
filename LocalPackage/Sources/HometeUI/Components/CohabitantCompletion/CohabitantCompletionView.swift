@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 同居人グループへの参加が完了したことを祝うView
@@ -52,7 +52,6 @@ public struct CohabitantCompletionView: View {
                 // 紙片のレイヤーが閉じるボタンのタップを奪わないようにする
                 .allowsHitTesting(false)
         }
-        .trackScreenView(.cohabitantCompletion)
     }
 
 }

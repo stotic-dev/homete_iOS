@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/05/14.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 public extension EnvironmentValues {

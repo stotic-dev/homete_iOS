@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 public extension EnvironmentValues {
