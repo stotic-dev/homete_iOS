@@ -115,10 +115,13 @@ public struct RegisterHouseworkView: View {
             )
         }
         .sheet(isPresented: $isPresentingMemoEditSheet) {
-            HouseworkMemoEditScreen(memo: draft.input.memo) { memo in
+            HouseworkMemoEditScreen(memo: draft.input.memo, isPremium: subscriptionStore.isPremium) { memo in
                 // まだ保存していない家事なので、すべて消したメモは「メモなし」に戻す
                 draft.input.memo = memo.isEmpty ? nil : memo
+            } paywall: {
+                router.resolve(.paywall(step: .houseworkMemoLimit))
             }
+            .trackScreenView(.houseworkMemoEdit)
         }
         .fullScreenCoverOnIOS(isPresented: $isShowFrequentManagement) {
             router.resolve(.frequentHouseworkManagement)

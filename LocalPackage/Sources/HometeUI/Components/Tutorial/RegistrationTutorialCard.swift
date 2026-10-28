@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// グループ登録の直後のチュートリアルで、ステップごとに「どこで何ができるか」を説明するカード

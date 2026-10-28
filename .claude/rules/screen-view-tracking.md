@@ -55,7 +55,7 @@ var body: some View {
 
 **画面のルートViewの`body`の最後**に付ける。サブViewや条件分岐の内側に付けると、条件によって送信されたりされなかったりして数が合わなくなる。
 
-`.trackScreenView(_:)`は`HometeUI`にあるため、`HometeUI`に依存しないモジュール（`HometeInfrastructure`など）のViewには直接付けられない。計測のためだけに依存を増やさず、**画面を組み立てる側**で付ける。`PaywallScreen`が`AppRoot/ResolverImpl/RouteResolverInjection.swift`で付けているのがこのケース。
+`.trackScreenView(_:)`は`HometeDomain`にある。`HometeUI`は`HometeDomain`に依存させないため（[ADR-0063](../../doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）、`HometeUI`のViewには付けられない。`HometeUI`のViewを画面として出すときは、**画面を組み立てる側**（Feature・`AppRoot`）で付ける。`AppRoot/RootView.swift`の`MaintenanceView`・`ForceUpdateView`、家事メモの編集シート（`HouseworkMemoEditScreen`）の各呼び出し元がこのケース。`PaywallScreen`も`AppRoot/ResolverImpl/RouteResolverInjection.swift`で付けている。
 
 ## 禁止事項
 

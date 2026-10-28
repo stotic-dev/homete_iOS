@@ -3,30 +3,41 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import SwiftUI
 
 /// 家事メモの編集シート
 ///
 /// 家事・テンプレート・いつもの家事の各画面から開く。保存は呼び出し側が行う。
-public struct HouseworkMemoEditScreen: View {
+/// HometeUIはStoreに依存させないため（doc/adr/0063）、プランとペイウォールは呼び出し側から受け取る。
+/// `.trackScreenView(.houseworkMemoEdit)`も呼び出し側で付ける
+public struct HouseworkMemoEditScreen<Paywall: View>: View {
 
     @Environment(\.dismiss) var dismiss
-    @Environment(\.routeResolver) var router
-    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @State var draft: HouseworkMemoDraft
     @State var isShowPaywall = false
 
+    let isPremium: Bool
     let onSave: (HouseworkMemo) -> Void
+    let paywall: () -> Paywall
 
     /// - Parameters:
     ///   - memo: 編集前のメモ。新しく書く場合は`nil`
+    ///   - isPremium: プレミアムプランを購読中か。書ける文字数の上限が変わる
     ///   - onSave: 保存ボタンで確定したメモを受け取る。シートは閉じてから呼ぶ
-    public init(memo: HouseworkMemo?, onSave: @escaping (HouseworkMemo) -> Void) {
+    ///   - paywall: 上限の案内からプレミアムプランを見るときに出すペイウォール
+    public init(
+        memo: HouseworkMemo?,
+        isPremium: Bool,
+        onSave: @escaping (HouseworkMemo) -> Void,
+        @ViewBuilder paywall: @escaping () -> Paywall
+    ) {
         _draft = State(initialValue: HouseworkMemoDraft(original: memo))
+        self.isPremium = isPremium
         self.onSave = onSave
+        self.paywall = paywall
     }
 
     public var body: some View {
@@ -43,7 +54,7 @@ public struct HouseworkMemoEditScreen: View {
         .presentationDetents([.large])
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            content: { router.resolve(.paywall(step: .houseworkMemoLimit)) }
+            content: { paywall() }
         )
     }
 
@@ -54,7 +65,7 @@ public struct HouseworkMemoEditScreen: View {
 private extension HouseworkMemoEditScreen {
 
     var limitPolicy: HouseworkMemoLimitPolicy {
-        .init(isPremium: subscriptionStore.isPremium)
+        .init(isPremium: isPremium)
     }
 
 }
@@ -139,7 +150,6 @@ struct HouseworkMemoEditView: View {
             guard newCount > oldCount, let addedItem = draft.checklist.last else { return }
             focusedField = .item(addedItem.id)
         }
-        .trackScreenView(.houseworkMemoEdit)
     }
 
 }

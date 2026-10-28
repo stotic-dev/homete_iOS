@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 割合（%）をドラムロール（wheelスタイルのPicker）のポップアップで選択させる入力コンポーネント。

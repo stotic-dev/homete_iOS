@@ -17,6 +17,7 @@ public struct HouseworkDetailView: View {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.routeResolver) var router
     @LoadingState var loadingState
 
     @State var item: HouseworkBoardItem
@@ -66,9 +67,12 @@ public struct HouseworkDetailView: View {
             }
             .commonError(content: $commonErrorContent)
             .sheet(isPresented: $isPresentedMemoEditSheet) {
-                HouseworkMemoEditScreen(memo: item.originalItem.memo) { memo in
+                HouseworkMemoEditScreen(memo: item.originalItem.memo, isPremium: subscriptionStore.isPremium) { memo in
                     savedMemo(memo)
+                } paywall: {
+                    router.resolve(.paywall(step: .houseworkMemoLimit))
                 }
+                .trackScreenView(.houseworkMemoEdit)
             }
             .alert(.localized("メモを保存できませんでした"), isPresented: $isPresentedMemoNotEditableAlert) {
                 Button(.localized("閉じる"), role: .cancel) {}

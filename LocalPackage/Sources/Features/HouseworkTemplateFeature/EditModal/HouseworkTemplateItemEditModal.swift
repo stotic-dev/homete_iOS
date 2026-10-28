@@ -68,6 +68,8 @@ private extension HouseworkTemplateItemEditModalScreen {
 struct HouseworkTemplateItemEditModal: View {
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.routeResolver) var router
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @State var isPresentedMemoEditSheet = false
 
     @Binding var input: TemplateItemEditInput
@@ -100,9 +102,12 @@ struct HouseworkTemplateItemEditModal: View {
         }
         .sheet(isPresented: $isPresentedMemoEditSheet) {
             // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
-            HouseworkMemoEditScreen(memo: input.memo) { memo in
+            HouseworkMemoEditScreen(memo: input.memo, isPremium: subscriptionStore.isPremium) { memo in
                 input.memo = memo
+            } paywall: {
+                router.resolve(.paywall(step: .houseworkMemoLimit))
             }
+            .trackScreenView(.houseworkMemoEdit)
         }
         .trackScreenView(.houseworkTemplateEdit)
     }

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import HometeDomain
+@testable import HometeModel
 import Testing
 
 enum HouseworkItemTest {

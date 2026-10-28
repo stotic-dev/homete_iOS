@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import HometeDomain
+@testable import HometeModel
 import Testing
 
 /// `FrequentHouseworkContext`のうち、名前の検証と書き込むデータの組み立てを検証する

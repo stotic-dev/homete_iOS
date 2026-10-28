@@ -9,6 +9,7 @@ let package = Package(
     defaultLocalization: "ja",
     platforms: [.iOS(.v17), .macOS(.v26)],
     products: [
+        lib("HometeModel"),
         lib("HometeDomain"),
         lib("HometeUI"),
         lib("HometeResources"),
@@ -28,21 +29,29 @@ let package = Package(
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
         .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.2.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.6"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.7"),
     ],
     targets: [
 
         // MARK: Core Targets
 
+        // UIが使う値型のドメインモデル。Store・UseCase・Clientは置かない（doc/adr/0063）
         .target(
-            name: "HometeDomain",
+            name: "HometeModel",
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
         .target(
+            name: "HometeDomain",
+            dependencies: ["HometeModel"],
+            resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
+        // HometeDomainには依存させない。Store・UseCase・Clientの変更でVRTが全件にならないようにする（doc/adr/0063）
+        .target(
             name: "HometeUI",
             dependencies: [
-                "HometeDomain",
+                "HometeModel",
                 "HometeResources",
                 .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
             ],
@@ -121,6 +130,11 @@ let package = Package(
 
         // MARK: Test Targets
 
+        .testTarget(
+            name: "HometeModelTests",
+            dependencies: ["HometeModel"],
+            plugins: [swiftLintPlugin()]
+        ),
         .testTarget(
             name: "HometeDomainTests",
             dependencies: ["HometeDomain"],

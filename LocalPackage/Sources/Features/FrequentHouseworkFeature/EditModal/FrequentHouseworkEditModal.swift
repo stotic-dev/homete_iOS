@@ -11,6 +11,8 @@ import SwiftUI
 struct FrequentHouseworkEditModal: View {
 
     @Environment(\.dismiss) var dismiss
+    @Environment(\.routeResolver) var router
+    @Environment(SubscriptionStore.self) var subscriptionStore
 
     @LoadingState var loadingState
     @CommonError var commonErrorContent
@@ -61,9 +63,12 @@ struct FrequentHouseworkEditModal: View {
         .presentationDetents([.medium, .large])
         .sheet(isPresented: $isPresentedMemoEditSheet) {
             // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
-            HouseworkMemoEditScreen(memo: input.memo) { memo in
+            HouseworkMemoEditScreen(memo: input.memo, isPremium: subscriptionStore.isPremium) { memo in
                 input.memo = memo
+            } paywall: {
+                router.resolve(.paywall(step: .houseworkMemoLimit))
             }
+            .trackScreenView(.houseworkMemoEdit)
         }
         .alert(.localized("新しいカテゴリ"), isPresented: $isPresentingCategoryNameAlert) {
             TextField(text: $newCategoryName) {
