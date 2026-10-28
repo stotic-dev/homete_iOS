@@ -52,6 +52,7 @@ struct CohabitantRegistrationSession: View {
                     dismiss()
                 }
                 .hideNavigationBar()
+                .trackScreenView(.cohabitantCompletion)
                 .transition(.push(from: .trailing))
             }
         }

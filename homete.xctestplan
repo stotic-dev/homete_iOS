@@ -33,6 +33,13 @@
     {
       "target" : {
         "containerPath" : "container:LocalPackage",
+        "identifier" : "HometeModelTests",
+        "name" : "HometeModelTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:LocalPackage",
         "identifier" : "HometeDomainTests",
         "name" : "HometeDomainTests"
       }

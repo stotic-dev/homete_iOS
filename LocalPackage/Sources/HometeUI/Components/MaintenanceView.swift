@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// Remote Configでアプリ全体を止めているときに表示する、閉じられないメンテナンス画面
@@ -36,7 +36,6 @@ public struct MaintenanceView: View {
             .padding(.bottom, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .trackScreenView(.maintenance)
     }
 
 }

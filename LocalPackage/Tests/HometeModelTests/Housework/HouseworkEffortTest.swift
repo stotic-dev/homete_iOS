@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@testable import HometeDomain
+@testable import HometeModel
 import Testing
 
 struct HouseworkEffortTest {

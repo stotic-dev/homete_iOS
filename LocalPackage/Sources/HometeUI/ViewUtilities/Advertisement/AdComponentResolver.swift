@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 public struct AdComponentResolver: Sendable {

@@ -2,7 +2,6 @@
 //  DependenciesInjectLayer.swift
 //
 
-import HometeDomain
 import SwiftUI
 
 public struct DependenciesInjectLayer<Content: View>: View {

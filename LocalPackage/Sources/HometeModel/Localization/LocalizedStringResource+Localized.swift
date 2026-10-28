@@ -1,6 +1,6 @@
 //
 //  LocalizedStringResource+Localized.swift
-//  HometeDomain
+//  HometeModel
 //
 
 import Foundation

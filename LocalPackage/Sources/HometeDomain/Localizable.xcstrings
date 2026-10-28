@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
+    "Preview: %@" : {
+      "shouldTranslate" : false
+    },
     "%@さん" : {
       "comment" : "担当者の名前に付ける敬称",
       "localizations" : {
@@ -109,28 +112,6 @@
         }
       }
     },
-    "その他" : {
-      "comment" : "どのカテゴリにも入らない家事をまとめるカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        }
-      }
-    },
-    "ゴミ" : {
-      "comment" : "家事のカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trash"
-          }
-        }
-      }
-    },
     "プレミアムプラン" : {
       "localizations" : {
         "en" : {
@@ -172,16 +153,6 @@
         }
       }
     },
-    "土曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saturday"
-          }
-        }
-      }
-    },
     "年額プラン" : {
       "localizations" : {
         "en" : {
@@ -192,149 +163,12 @@
         }
       }
     },
-    "掃除" : {
-      "comment" : "家事のカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cleaning"
-          }
-        }
-      }
-    },
-    "料理" : {
-      "comment" : "家事のカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cooking"
-          }
-        }
-      }
-    },
-    "日曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sunday"
-          }
-        }
-      }
-    },
-    "月曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monday"
-          }
-        }
-      }
-    },
     "月額プラン" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Monthly Plan"
-          }
-        }
-      }
-    },
-    "木曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thursday"
-          }
-        }
-      }
-    },
-    "毎日" : {
-      "comment" : "家事のくり返し",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily"
-          }
-        }
-      }
-    },
-    "毎月%lld日" : {
-      "comment" : "家事のくり返し。毎月その日付に表示する",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monthly on day %lld"
-          }
-        }
-      }
-    },
-    "毎週%@" : {
-      "comment" : "家事のくり返し。曜日の名前を並べたものが入る（例: 毎週月曜日・木曜日）",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weekly on %@"
-          }
-        }
-      }
-    },
-    "水曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wednesday"
-          }
-        }
-      }
-    },
-    "洗濯" : {
-      "comment" : "家事のカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Laundry"
-          }
-        }
-      }
-    },
-    "火曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuesday"
-          }
-        }
-      }
-    },
-    "買い物" : {
-      "comment" : "家事のカテゴリ名",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shopping"
-          }
-        }
-      }
-    },
-    "金曜日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Friday"
           }
         }
       }

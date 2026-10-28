@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/09/26.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 家事の繰り返し方（毎日 / 毎週 / 毎月◯日）を選ぶコンポーネント。

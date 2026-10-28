@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 起動状態の判定が終わるまで表示する、アプリ名とほめっとだけの画面
@@ -20,7 +20,6 @@ public struct LaunchScreenView: View {
         }
         .padding(.horizontal, .space16)
         .padding(.vertical, .space24)
-        .trackScreenView(.launch)
     }
 
 }
