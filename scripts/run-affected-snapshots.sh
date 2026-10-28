@@ -60,8 +60,7 @@ if [ -z "$generated" ]; then
     echo "Prefireの生成コード（PreviewTests.generated.swift）が見つかりません。" >&2
     exit 1
 fi
-available="$(grep -o 'func test_.*_Preview()' "$generated" | sed 's/^func test_//; s/_Preview()$//' | sort -u)"
-tests="$(comm -12 <(echo "$candidates" | sort -u) <(echo "$available"))"
+tests="$(python3 scripts/affected-modules.py vrt-tests --base "$BASE" --generated "$generated")"
 if [ -z "$tests" ]; then
     echo "変更したモジュールに、VRTの対象になるプレビューがありません。"
     exit 0

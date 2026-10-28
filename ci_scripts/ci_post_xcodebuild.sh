@@ -75,7 +75,8 @@ resolve_github_app_token() {
 # 外してある。これによりVRTビルドだけを止め、Dangerによるbefore/after画像差分の報告は
 # このbot commitに対しても走る。
 #
-# xcodebuild の終了コードは VRT_RUN_STATUS に入れる（シミュレータが見つからず流せなかったときは1）。
+# 引数はテストを流す関数の名前。その関数は $DEVICE_ID のシミュレータでテストを流し、xcodebuild の
+# 終了コードを VRT_RUN_STATUS に入れる（シミュレータが見つからず流せなかったときは1）。
 # 終了コードをどう扱うかは呼び出し側で決める。commit・pushの失敗は set -e でそのまま落とす。
 record_and_push_snapshots() {
     VRT_RUN_STATUS=0
@@ -138,16 +139,7 @@ record_and_push_snapshots() {
         echo "✓ Checked out real HEAD of $CI_PULL_REQUEST_SOURCE_BRANCH (merge previewから離脱): $(git rev-parse HEAD)"
     fi
 
-    # xctestplan の $(SNAPSHOT_TESTING_RECORD) は build-for-testing の時点で展開されて
-    # xctestrun に焼き込まれるため、test-without-building を呼ぶシェルで値を付けてもテストに届かない
-    # （ワークフローに変数が無いと空になってキーごと消え、既定の missing で動く）。
-    # TEST_RUNNER_ 接頭辞の変数は xcodebuild が接頭辞を外してテストプロセスへ渡すので、
-    # こちらで failed を指定し、ワークフロー側の設定値に依存させない。
-    echo "--- xcodebuild $1 (self-invoked on $CI_XCODEBUILD_ACTION runner) ---"
-    TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild "$@" \
-        -destination "platform=iOS Simulator,id=$DEVICE_ID" \
-        -collect-test-diagnostics never \
-        || VRT_RUN_STATUS=$?
+    "$1"
 
     git add -- "$SNAPSHOT_DIR" "$CI_SCRIPTS_SNAPSHOT_DIR"
 
@@ -183,6 +175,133 @@ COMMIT_MSG
 
     git push "$REMOTE_URL" "HEAD:refs/heads/$CI_PULL_REQUEST_SOURCE_BRANCH"
     echo "✓ Pushed snapshot updates to $CI_PULL_REQUEST_SOURCE_BRANCH"
+}
+
+# スナップショットテストを記録モードで流す。引数は xcodebuild に渡すアクションとオプション
+# （-destination・-collect-test-diagnostics・記録モードの指定はこの関数で付ける）。
+#
+# xctestplan の $(SNAPSHOT_TESTING_RECORD) は build-for-testing の時点で展開されて
+# xctestrun に焼き込まれるため、test-without-building を呼ぶシェルで値を付けてもテストに届かない
+# （ワークフローに変数が無いと空になってキーごと消え、既定の missing で動く）。
+# TEST_RUNNER_ 接頭辞の変数は xcodebuild が接頭辞を外してテストプロセスへ渡すので、
+# こちらで failed を指定し、ワークフロー側の設定値に依存させない。
+run_recording_tests() {
+    echo "--- xcodebuild $1 (self-invoked on $CI_XCODEBUILD_ACTION runner) ---"
+    TEST_RUNNER_SNAPSHOT_TESTING_RECORD=failed xcodebuild "$@" \
+        -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+        -collect-test-diagnostics never \
+        || VRT_RUN_STATUS=$?
+}
+
+# VRTのテストアクションが作ったテストの成果物で、全件を流す
+run_vrt_test_products() {
+    run_recording_tests test-without-building \
+        -testProductsPath "$TEST_PRODUCTS_PATH" \
+        -testPlan hometeSnapshotTestsForCI \
+        -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult
+}
+
+# doc/adr/0063: 変更の起点（PRのターゲットブランチのコミット）を出す。決められなければ非0を返す
+resolve_vrt_base() {
+    if [ -z "$CI_PULL_REQUEST_NUMBER" ] || [ -z "$CI_PULL_REQUEST_TARGET_COMMIT" ]; then
+        echo "PRに紐付かないビルドです" >&2
+        return 1
+    fi
+    # 依存グラフに出ない変化（Xcode Cloudの環境の更新など）を、リリース前に拾う
+    case "$CI_PULL_REQUEST_SOURCE_BRANCH" in
+        release/*)
+            echo "リリースPRです" >&2
+            return 1
+            ;;
+    esac
+    if ! git cat-file -e "${CI_PULL_REQUEST_TARGET_COMMIT}^{commit}" 2>/dev/null; then
+        # 浅いcloneでターゲットのコミットが無ければ取ってくる
+        if ! git fetch -q "${REMOTE_URL:-origin}" "$CI_PULL_REQUEST_TARGET_COMMIT" >&2; then
+            echo "ターゲットのコミット（$CI_PULL_REQUEST_TARGET_COMMIT）を取得できません" >&2
+            return 1
+        fi
+    fi
+    if ! git merge-base "$CI_PULL_REQUEST_TARGET_COMMIT" HEAD >/dev/null 2>&1; then
+        echo "ターゲットのコミットとの分岐点が見つかりません（浅いclone）" >&2
+        return 1
+    fi
+    echo "$CI_PULL_REQUEST_TARGET_COMMIT"
+}
+
+# doc/adr/0063: PRでは、変更から推移的に影響を受けるモジュールのプレビューだけを流す。
+# VRTの設定・Package.resolved・HometeUIなど全モジュールに届く変更、リリースPR、起点を決められない
+# ときは全件を流す。対象が無ければテストを流さない（流さなかった参照PNGはそのまま残る）
+run_vrt_light() {
+    VRT_DERIVED_DATA="${CI_DERIVED_DATA_PATH:-/Volumes/workspace/DerivedData}"
+    VRT_RESULT_BUNDLE=/Volumes/workspace/vrt-light-resultbundle.xcresult
+    set -- \
+        -project hometeVRT.xcodeproj \
+        -scheme hometeSnapshotTests \
+        -testPlan hometeSnapshotTestsForCI \
+        -derivedDataPath "$VRT_DERIVED_DATA"
+
+    if ! VRT_BASE=$(resolve_vrt_base); then
+        echo "全件を流します"
+        run_vrt_light_all "$@"
+        return 0
+    fi
+    echo "変更の起点: $VRT_BASE"
+    python3 scripts/affected-modules.py summary --transitive --base "$VRT_BASE" || true
+
+    # 判定に失敗したら全件に倒す
+    if ! VRT_ALL=$(python3 scripts/affected-modules.py vrt-all --transitive --base "$VRT_BASE") \
+        || ! candidates=$(python3 scripts/affected-modules.py vrt-tests --transitive --base "$VRT_BASE"); then
+        echo "影響範囲を判定できないので、全件を流します"
+        run_vrt_light_all "$@"
+        return 0
+    fi
+    if [ "$VRT_ALL" != "no" ]; then
+        run_vrt_light_all "$@"
+        return 0
+    fi
+    if [ -z "$candidates" ]; then
+        echo "VRTの対象になるモジュールに影響が無いので、テストを流しません"
+        return 0
+    fi
+
+    echo "--- xcodebuild build-for-testing ---"
+    xcodebuild build-for-testing "$@" \
+        -destination "platform=iOS Simulator,id=$DEVICE_ID" \
+        -onlyUsePackageVersionsFromResolvedFile \
+        -skipPackagePluginValidation \
+        -skipMacroValidation \
+        || { VRT_RUN_STATUS=$?; return 0; }
+
+    # Prefireが実際に生成したテストと突き合わせる（.prefireIgnored() などで対象外のプレビューもあるため）
+    generated=$(find "$VRT_DERIVED_DATA/Build/Intermediates.noindex/BuildToolPluginIntermediates" \
+        -name PreviewTests.generated.swift -path '*PrefireTestsPlugin*' | head -1)
+    if [ -z "$generated" ] \
+        || ! tests=$(python3 scripts/affected-modules.py vrt-tests --transitive --base "$VRT_BASE" --generated "$generated"); then
+        echo "Prefireの生成コードと突き合わせられないので、全件を流します"
+        run_recording_tests test-without-building "$@" -resultBundlePath "$VRT_RESULT_BUNDLE"
+        return 0
+    fi
+    if [ -z "$tests" ]; then
+        echo "影響を受けるモジュールに、VRTの対象になるプレビューがありません"
+        return 0
+    fi
+
+    # テスト名は識別子なので空白を含まない。分割させるためにクォートせずに展開する
+    only_testing=""
+    for name in $tests; do
+        only_testing="$only_testing -only-testing:hometeSnapshotTests/PreviewTests/test_${name}_Preview"
+    done
+    echo "対象のテスト: $(echo "$tests" | wc -l | tr -d ' ')件"
+    # shellcheck disable=SC2086
+    run_recording_tests test-without-building "$@" -resultBundlePath "$VRT_RESULT_BUNDLE" $only_testing
+}
+
+run_vrt_light_all() {
+    run_recording_tests test "$@" \
+        -resultBundlePath "$VRT_RESULT_BUNDLE" \
+        -onlyUsePackageVersionsFromResolvedFile \
+        -skipPackagePluginValidation \
+        -skipMacroValidation
 }
 
 case "$CI_WORKFLOW" in
@@ -222,10 +341,7 @@ case "$CI_WORKFLOW" in
         fi
         echo "✓ $TEST_PRODUCTS_PATH exists"
 
-        record_and_push_snapshots test-without-building \
-            -testProductsPath "$TEST_PRODUCTS_PATH" \
-            -testPlan hometeSnapshotTestsForCI \
-            -resultBundlePath /Volumes/workspace/vrt-record-resultbundle.xcresult
+        record_and_push_snapshots run_vrt_test_products
 
         # 合否はXcode Cloud公式のテストアクションで判定するので、ここでは落とさない
         if [ "$VRT_RUN_STATUS" -ne 0 ]; then
@@ -242,20 +358,13 @@ case "$CI_WORKFLOW" in
         # VRTは記録用と判定用に同じテストを2回流し、別ランナーの準備と結果のアップロードも
         # 待つので、その分を省く。テストのビルドもここで行う（Buildアクションは
         # generic/platform=iOS 向けで、シミュレータ向けの成果物を使い回せないため）。
+        # doc/adr/0063: PRでは影響を受けるプレビューだけを流す（run_vrt_light）。
         if [ "$CI_XCODEBUILD_ACTION" != "build" ]; then
             echo "Skipping VRT_light run (CI_XCODEBUILD_ACTION=$CI_XCODEBUILD_ACTION)"
             exit 0
         fi
 
-        record_and_push_snapshots test \
-            -project hometeVRT.xcodeproj \
-            -scheme hometeSnapshotTests \
-            -testPlan hometeSnapshotTestsForCI \
-            -derivedDataPath "${CI_DERIVED_DATA_PATH:-/Volumes/workspace/DerivedData}" \
-            -resultBundlePath /Volumes/workspace/vrt-light-resultbundle.xcresult \
-            -onlyUsePackageVersionsFromResolvedFile \
-            -skipPackagePluginValidation \
-            -skipMacroValidation
+        record_and_push_snapshots run_vrt_light
 
         # 記録モードでは不一致でもXCTFailしないので、ここで落ちるのはビルドの失敗やクラッシュ。
         # このワークフローにはテストアクションが無いので、ここで落とさないと誰も気付かない

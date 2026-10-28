@@ -102,7 +102,7 @@ private extension RegisteredContent {
             HouseworkDetailView.make(item: item)
 
         case .thanksTargetList:
-            ThanksTargetListView.make {
+            ThanksTargetListScreen.make {
                 navigationPath.push(.pastThanksTargetList)
             }
 

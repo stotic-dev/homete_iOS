@@ -52,35 +52,4 @@ struct ForceUpdateStoreTest {
         #expect(store.isForceUpdateRequired == false)
     }
 
-    @Test("コンソールで公開された最低バージョンの変更を受け取ると、強制アップデートを判定し直す")
-    func observeConfigUpdatesRequiresForceUpdate() async {
-        // Arrange
-
-        let isActivated = TestBox(value: false)
-        let remoteConfigClient = RemoteConfigClient(
-            configUpdates: {
-                AsyncStream { continuation in
-                    isActivated.value = true
-                    continuation.yield()
-                    continuation.finish()
-                }
-            },
-            string: { key in
-                isActivated.value ? "2.0.0" : key.defaultValue
-            }
-        )
-        let store = ForceUpdateStore(
-            remoteConfigClient: remoteConfigClient,
-            currentAppVersion: "1.0.0"
-        )
-
-        // Act
-
-        await store.observeConfigUpdates()
-
-        // Assert
-
-        #expect(store.isForceUpdateRequired == true)
-    }
-
 }

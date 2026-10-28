@@ -133,6 +133,7 @@ View → Store（AppDependenciesを受け取る）
 - 起動時とバックグラウンド復帰時に`RemoteConfigSyncUseCase`が`fetchAndActivate()`する（起動は待たせない）。値をいつ画面へ反映するかは、そのキーを使う領域のStore（例: `AdvertisementStore`、`ForceUpdateStore`）で決める。Remote Config単位のStoreは作らない
 - `ads_enabled`は起動時に確定させ、起動中は変えない。キーを足したら`RemoteConfigBoolKey`/`RemoteConfigStringKey`・コンソール（stg/prod）・`doc/remote_config.md`をそろえる
 - 強制アップデート（`minimum_required_version`）はリアルタイム更新も購読して判定し直し、`RootView`で画面ごと`ForceUpdateView`に差し替える。判定できない値ならブロックしない
+- メンテナンス（`maintenance_enabled`）も同じ仕組みで`MaintenanceView`に差し替え、強制アップデートより優先する。App Intent・NSE・通知/リンクからの遷移も止める（[ADR-0055](doc/adr/0055-maintenance-mode-with-remote-config.md)）。リアルタイム更新の購読は`RemoteConfigSyncUseCase`が1つにまとめて持つ
 - App Checkの保護対象外
 
 **認証:**
@@ -259,6 +260,7 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 
 2. **`VRT_light`** - スナップショットテストを1回だけ流す版（[ADR-0052](doc/adr/0052-vrt-light-workflow-with-build-action.md)）
    - Buildアクション（スキーム `hometeVRTHost`、空のホストアプリだけをビルド）のあと、`ci_post_xcodebuild.sh` が `xcodebuild test` を記録モードで流し、変わった参照PNGをcommit・pushする
+   - PRでは `scripts/affected-modules.py vrt-tests --transitive` で、変更から推移的に影響を受けるモジュールのプレビューだけを流す。VRTの設定・`Package.resolved`・`HometeDomain`/`HometeUI`/`HometeResources`の変更、リリースPR、起点を決められないときは全件。対象が無ければ流さない（[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
    - テスト結果はXcode Cloudの画面に出ず、`ci_post_xcodebuild.log` で見る。見た目の差分では失敗せず、xcodebuildが落ちたときだけ失敗する
 
 3. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード

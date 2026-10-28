@@ -27,6 +27,7 @@ public struct HomeView: View {
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(SentInvitationStore.self) var sentInvitationStore
     @Environment(CohabitantStore.self) var cohabitantStore
+    @Environment(PendingRouteStore.self) var pendingRouteStore
 
     @State var isShowCohabitantRegistrationModal = false
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
@@ -74,6 +75,12 @@ public struct HomeView: View {
         }
         .task {
             await onAppear()
+        }
+        .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
+            openSettingForPendingRouteIfNeeded()
+        }
+        .onChange(of: isPresentingModal) {
+            openSettingForPendingRouteIfNeeded()
         }
     }
 
@@ -191,6 +198,20 @@ private extension HomeView {
             calendar: calendar,
             storagePolicy: storagePolicy
         )
+    }
+
+    /// 通知から問い合わせの詳細を開くときに、問い合わせの詳細を持つ設定画面を出す
+    /// - Note: 詳細画面は設定画面が開いてから積む。設定画面を開いていれば何もしない。
+    ///         ダッシュボードの上に別のシートを出している間は、シートを重ねて出せないため閉じるまで待つ。
+    ///         入力中の画面を通知で勝手に閉じないよう、こちらからは閉じない
+    func openSettingForPendingRouteIfNeeded() {
+        guard pendingRouteStore.hasPendingInquiryDetail, !isPresentingModal else { return }
+        isShowSetting = true
+    }
+
+    /// ダッシュボードの上に、設定画面以外のシートやフルスクリーンカバーを出しているか
+    var isPresentingModal: Bool {
+        isShowCohabitantRegistrationModal || isShowAccountLink || resendingInvitation != nil
     }
 
     /// 送った招待のうち、有効期限内で相手の参加を待っているもの

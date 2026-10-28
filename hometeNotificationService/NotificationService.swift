@@ -14,6 +14,7 @@ import UserNotifications
 /// アプリが起動していなくても、`mutable-content`付きの通知を受け取るとOSがこの拡張を起動する。
 /// 届いた文面は送った側の端末の言語で書かれているため、dataに載った通知の種類から組み立て直す。
 /// 種類が読み取れない通知（古いアプリから届いたものなど）は、届いた文面のまま表示する。
+/// メンテナンス中は、ふりかえり通知を予約せずに届いた通知だけを表示する（ADR-0055）。
 /// - Note: `didReceive`とOSからの`serviceExtensionTimeWillExpire`は別スレッドから呼ばれうるため、
 ///         保持する状態はロックで守る
 final class NotificationService: UNNotificationServiceExtension, @unchecked Sendable {
@@ -27,7 +28,9 @@ final class NotificationService: UNNotificationServiceExtension, @unchecked Send
         withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void
     ) {
         let content = Self.localized(request.content)
-        guard let data = HouseworkCompletedNotificationData(userInfo: content.userInfo) else {
+        // 拡張はRemote Configを読めないため、アプリが最後に反映したメンテナンスの判定を使う
+        guard !MaintenanceStateClient.liveValue.load(),
+              let data = HouseworkCompletedNotificationData(userInfo: content.userInfo) else {
             contentHandler(content)
             return
         }
