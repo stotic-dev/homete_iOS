@@ -12,7 +12,7 @@ Firebase Analytics（GA4）へ送信するイベントの一覧と、送信タ�
 | イベントの定義（name / parameters の組み立て） | `LocalPackage/Sources/HometeDomain/AnalyticsLog/AnalyticsEvent.swift` |
 | 機能単位のパラメータ設計 | `LocalPackage/Sources/HometeDomain/AnalyticsLog/<機能名>AnalyticsAction.swift` |
 | 送信インターフェース | `AnalyticsClient`（`liveValue`は`HometeInfrastructure`） |
-| 画面表示の送信 | `AppScreen`、`View.trackScreenView(_:)`（`HometeUI`） |
+| 画面表示の送信 | `AppScreen`、`View.trackScreenView(_:)`（`HometeDomain`） |
 
 送信は必ず `AnalyticsEvent` のstaticファクトリ経由で行う。Viewやストアが `AnalyticsEvent(name:parameters:)` を直接呼ぶと、
 このドキュメントとの対応が追えなくなるため禁止。
@@ -71,7 +71,7 @@ Appleでログインした人のファネル（ニックネーム登録 → パ�
 | 項目 | 内容 |
 |---|---|
 | 送信タイミング | 対象画面が表示された（`onAppear`）とき。前面に別画面を出して戻ってきた場合も再度送信される |
-| 実装 | `AppScreen`、`HometeUI`の`View.trackScreenView(_:)`を各画面のルートViewに付与 |
+| 実装 | `AppScreen`、`HometeDomain`の`View.trackScreenView(_:)`を各画面のルートViewに付与（`HometeUI`のViewは組み立てる側で付ける） |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
@@ -108,7 +108,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
 | `housework_add_helper` | `HouseworkAddHelperView`（完了した家事に手伝った人を追加するハーフモーダル） |
 | `housework_thanks` | `HouseworkThanksView`（ありがとうを伝えるハーフモーダル） |
-| `housework_memo_edit` | `HouseworkMemoEditView`（家事メモの編集シート。家事の追加・家事詳細・テンプレートの編集・いつもの家事の編集から開く） |
+| `housework_memo_edit` | `HouseworkMemoEditScreen`（家事メモの編集シート。開く側で付ける。家事の追加・家事詳細・テンプレートの編集・いつもの家事の編集から開く） |
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |

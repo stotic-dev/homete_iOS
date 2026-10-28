@@ -88,9 +88,10 @@ Domain Models（Codable構造体）
 **マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/` と `InfraPackage/` に置かれている。Firebase・AdMob・RevenueCat・GRDBなど重い外部依存を持つモジュールだけを `InfraPackage/` に分け、ユニットテストのある `LocalPackage/` には持ち込まない（[ADR-0046](doc/adr/0046-split-infra-package-from-local-package.md)）。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
 
 **主要ディレクトリ:**
-- `LocalPackage/Sources/HometeDomain/` - ドメインモデル・Clientプロトコル・Store・UseCase（最下層、依存なし）
+- `LocalPackage/Sources/HometeModel/` - UIが使う値型のドメインモデル（最下層、依存なし。[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
+- `LocalPackage/Sources/HometeDomain/` - UIが使わない値型・Clientプロトコル・Store・UseCase（`HometeModel`に依存し、再公開する）
 - `LocalPackage/Sources/Features/` - 機能別SwiftUIビュー（Auth / Home / Housework / HouseworkTemplate / Setting / Contribution）
-- `LocalPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ
+- `LocalPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ（`HometeDomain`には依存しない）
 - `InfraPackage/Sources/HometeInfrastructure/` - Clientの`liveValue`実装とService（Firestore、SignInWithApple、Purchase、Advertisement）
 - `LocalPackage/Sources/HometeResources/` - アセットとSwiftGen生成コード
 - `InfraPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
@@ -194,7 +195,7 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 ### テスト戦略
 
 **ユニットテスト** (`LocalPackage/Tests/`):
-- テストターゲット: `HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
+- テストターゲット: `HometeModelTests`、`HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
 - 実行: `make test-affected`（`swift test --filter`。xcodebuildは使わない）。変更されたターゲットと、それに依存するターゲットのテストだけを流す（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
 - Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記のターゲットを含む）
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）。PRでは関係するテストだけ、mainへのpushでは全テストを流す
@@ -260,7 +261,7 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 
 2. **`VRT_light`** - スナップショットテストを1回だけ流す版（[ADR-0052](doc/adr/0052-vrt-light-workflow-with-build-action.md)）
    - Buildアクション（スキーム `hometeVRTHost`、空のホストアプリだけをビルド）のあと、`ci_post_xcodebuild.sh` が `xcodebuild test` を記録モードで流し、変わった参照PNGをcommit・pushする
-   - PRでは `scripts/affected-modules.py vrt-tests --transitive` で、変更から推移的に影響を受けるモジュールのプレビューだけを流す。VRTの設定・`Package.resolved`・`HometeDomain`/`HometeUI`/`HometeResources`の変更、リリースPR、起点を決められないときは全件。対象が無ければ流さない（[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
+   - PRでは `scripts/affected-modules.py vrt-tests --transitive` で、変更から推移的に影響を受けるモジュールのプレビューだけを流す。VRTの設定・`Package.resolved`・`HometeModel`/`HometeUI`/`HometeResources`の変更、リリースPR、起点を決められないときは全件（`HometeDomain`の変更は全Featureが対象になる）。対象が無ければ流さない（[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
    - テスト結果はXcode Cloudの画面に出ず、`ci_post_xcodebuild.log` で見る。見た目の差分では失敗せず、xcodebuildが落ちたときだけ失敗する
 
 3. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
@@ -402,7 +403,7 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 新機能を追加する際:
 
 1. **Views**: `LocalPackage/Sources/Features/<機能名>Feature/` に追加
-2. **ドメインモデル**: ドメイン領域別に `LocalPackage/Sources/HometeDomain/` のサブフォルダに追加
+2. **ドメインモデル**: UIが使う値型は `LocalPackage/Sources/HometeModel/`、UIが使わない値型（Analytics・RemoteConfigなど）は `LocalPackage/Sources/HometeDomain/` の、ドメイン領域別のサブフォルダに追加
 3. **Clients**: `LocalPackage/Sources/HometeDomain/Dependencies/` でプロトコルと`.previewValue`を定義し、`.liveValue`は `InfraPackage/Sources/HometeInfrastructure/` に実装
 4. **Services**: `InfraPackage/Sources/HometeInfrastructure/` のサブフォルダにインフラコードを追加
 5. **Stores**: `LocalPackage/Sources/HometeDomain/` の該当ドメインフォルダにObservable状態管理クラスを追加（機能固有のものは Feature 配下の `Model/` でもよい）
