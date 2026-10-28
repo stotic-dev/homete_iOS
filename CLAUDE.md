@@ -260,6 +260,7 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 
 2. **`VRT_light`** - スナップショットテストを1回だけ流す版（[ADR-0052](doc/adr/0052-vrt-light-workflow-with-build-action.md)）
    - Buildアクション（スキーム `hometeVRTHost`、空のホストアプリだけをビルド）のあと、`ci_post_xcodebuild.sh` が `xcodebuild test` を記録モードで流し、変わった参照PNGをcommit・pushする
+   - PRでは `scripts/affected-modules.py vrt-tests --transitive` で、変更から推移的に影響を受けるモジュールのプレビューだけを流す。VRTの設定・`Package.resolved`・`HometeDomain`/`HometeUI`/`HometeResources`の変更、リリースPR、起点を決められないときは全件。対象が無ければ流さない（[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
    - テスト結果はXcode Cloudの画面に出ず、`ci_post_xcodebuild.log` で見る。見た目の差分では失敗せず、xcodebuildが落ちたときだけ失敗する
 
 3. **`Upload Stg TestFlight`** - Stg環境TestFlightアップロード
