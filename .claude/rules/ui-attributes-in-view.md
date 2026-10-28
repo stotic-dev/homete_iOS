@@ -7,7 +7,7 @@ paths:
 # 表示の属性はViewに書く
 
 **画面に出す文言・SF Symbol名・色・VoiceOverの読み上げ文言など、見た目やアクセシビリティに
-直接効く値はView側で決める。** `HometeDomain`のモデルや、Feature配下の`Model/`に置く値型には
+直接効く値はView側で決める。** `HometeModel`・`HometeDomain`のモデルや、Feature配下の`Model/`に置く値型には
 持たせない。
 
 `Model/`の値型が持つのは「どの状態か」「何件か」「誰か」といった**表示の元になる事実**まで。
@@ -19,7 +19,7 @@ paths:
   算出プロパティを生やす
 - `Model/`の値型に表示用の既定文言（`static let defaultMessage = "ありがとう！"`など）を置き、
   `nil`を文言で埋めた状態で返す
-- 表示のためだけに`Model/`や`HometeDomain`で`SwiftUI` / `HometeResources`をimportする
+- 表示のためだけに`Model/`や`HometeModel`・`HometeDomain`で`SwiftUI` / `HometeResources`をimportする
 
 ```swift
 // ❌ 誤り: 状態のenumが見た目と読み上げ文言まで持っている
