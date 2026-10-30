@@ -324,6 +324,27 @@ public final class HouseworkListStore {
         }
     }
 
+    /// 取得済みの期間より前の家事を、3ヶ月分追加で取得する
+    ///
+    /// 取得した家事は購読中のストリーム経由で`items`に反映される。
+    /// - Returns: 追加で取得した家事の件数。失敗した場合などは`nil`
+    public func fetchOlderPeriod(cohabitantId: String) async -> Int? {
+        await houseworkManager.fetchOlderPeriod(
+            months: Self.olderPeriodMonths,
+            cohabitantId: cohabitantId,
+            calendar: calendar
+        )
+    }
+
+}
+
+private extension HouseworkListStore {
+
+    /// `fetchOlderPeriod`で1回に取得する月数
+    static var olderPeriodMonths: Int {
+        3
+    }
+
 }
 
 // MARK: - 複数選択の一括操作
