@@ -351,7 +351,8 @@ public extension HouseworkListStore {
         step: HouseworkAnalyticsStep
     ) async throws -> HouseworkPostponePlan.Outcome? {
         let current = isRegistered ? items.item(target) ?? target : target
-        guard current.state == .incomplete else { return nil }
+        guard current.state == .incomplete,
+              isRegistered || !hasRegisteredTemplateRecord(of: target) else { return nil }
 
         let plan = postponePlan(
             target: current,
@@ -368,6 +369,19 @@ public extension HouseworkListStore {
         }
         analyticsClient.log(.housework(.postpone(step: step, outcome: plan.outcome, isSuccess: true)))
         return plan.outcome
+    }
+
+    /// テンプレートから出している家事と同じテンプレートの記録が、その日にすでに登録されているか
+    ///
+    /// 画面を開いている間に同居人が完了・「やらない」にすると、テンプレートの家事は別のIDで登録される。
+    /// そのまま元の日の記録を書くと、同じテンプレートの記録が2件になるため、まわさずに返す判定に使う。
+    private func hasRegisteredTemplateRecord(of target: HouseworkItem) -> Bool {
+        guard let templateItemId = target.templateHouseworkItemId else { return false }
+
+        return items.value
+            .first { $0.metaData.indexedDate == target.indexedDate }?
+            .items
+            .contains { $0.templateHouseworkItemId == templateItemId } ?? false
     }
 
     /// 家事を別の日へまわしたときに書き込む家事と結果を、書き込まずに返す

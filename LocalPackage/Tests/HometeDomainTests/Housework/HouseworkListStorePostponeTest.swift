@@ -105,4 +105,45 @@ struct HouseworkListStorePostponeTest {
         #expect(actual == nil)
     }
 
+    @Test("テンプレートから出していた家事を、画面を開いている間に同居人が完了にしていたら、まわさない")
+    func postpone_unregisteredTemplateItemRegisteredByPartner_doesNothing() async throws {
+        // Arrange
+        let templateItemId = HouseworkTemplateItem.ItemId(id: "template1")
+        let inputItem = HouseworkItem.makeForTest(
+            id: "virtual",
+            indexedDate: sourceDate,
+            title: "お皿洗い",
+            templateHouseworkItemId: templateItemId
+        )
+        let registeredByPartner = HouseworkItem.makeForTest(
+            id: "registered",
+            indexedDate: sourceDate,
+            title: "お皿洗い",
+            state: .completed,
+            executorId: "partner",
+            templateHouseworkItemId: templateItemId
+        )
+        let store = HouseworkListStore(
+            houseworkClient: .init(insertOrUpdateItemsHandler: { _, _ in Issue.record() }),
+            cohabitantPushNotificationClient: .init { _, _ in Issue.record() },
+            analyticsClient: .init(log: { _ in Issue.record() }),
+            calendar: .japanese,
+            items: [.makeForTest(items: [registeredByPartner])]
+        )
+
+        // Act
+        let actual = try await store.postpone(
+            target: inputItem,
+            isRegistered: false,
+            to: destinationDate,
+            templateContext: .init(metadata: nil, houseworkTemplate: []),
+            storagePolicy: .free,
+            cohabitantId: inputCohabitantId,
+            step: .board
+        )
+
+        // Assert
+        #expect(actual == nil)
+    }
+
 }
