@@ -240,86 +240,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         )
     }
 
-    /// 別の日へまわす（単発の家事）
-    ///
-    /// IDは変えずに日付と保持期限だけを移すので、メモ・作成日時はそのまま引き継ぐ。
-    /// 単発の家事はテンプレートから出ることがないため、元の日に記録を残さなくてよい。
-    /// - Parameter metaData: まわす先の日付と、その日付から求めた保持期限
-    public func postponed(to metaData: DailyHouseworkMetaData) -> Self {
-        .init(
-            id: id,
-            indexedDate: metaData.indexedDate,
-            title: title,
-            point: point,
-            state: state,
-            executors: executors,
-            effort: effort,
-            executedAt: executedAt,
-            expiredAt: metaData.expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks,
-            createdAt: createdAt,
-            memo: memo,
-            postponedFrom: indexedDate,
-            postponedTo: nil
-        )
-    }
-
-    /// テンプレートの家事を別の日へまわしたときに、元の日に残す記録にする
-    ///
-    /// テンプレートの家事は、その日に同じテンプレートIDの記録が無いと仮想表示で出てしまう（ADR-0003）。
-    /// 「やらない」にして`postponedTo`を付け、テンプレートからは出さず、画面にも出さない記録として残す。
-    public func markedAsPostponed(to destination: HouseworkIndexedDate) -> Self {
-        .init(
-            id: id,
-            indexedDate: indexedDate,
-            title: title,
-            point: point,
-            state: .notTodo,
-            executors: executors,
-            effort: effort,
-            executedAt: executedAt,
-            expiredAt: expiredAt,
-            templateHouseworkItemId: templateHouseworkItemId,
-            thanks: thanks,
-            createdAt: createdAt,
-            memo: memo,
-            postponedFrom: postponedFrom,
-            postponedTo: destination
-        )
-    }
-
-    /// テンプレートの家事を別の日へまわすときに、まわす先に作る単発の家事
-    ///
-    /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない
-    /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。
-    /// - Parameters:
-    ///   - metaData: まわす先の日付と、その日付から求めた保持期限
-    ///   - now: 作成日時
-    public func makePostponedCopy(id: String, to metaData: DailyHouseworkMetaData, at now: Date) -> Self {
-        .init(
-            id: id,
-            indexedDate: metaData.indexedDate,
-            title: title,
-            point: point,
-            state: .incomplete,
-            executors: [],
-            effort: .normal,
-            executedAt: nil,
-            expiredAt: metaData.expiredAt,
-            templateHouseworkItemId: nil,
-            createdAt: now,
-            memo: memo,
-            postponedFrom: indexedDate,
-            postponedTo: nil
-        )
-    }
-
-    /// 別の日へまわしたテンプレートの家事の、元の日に残した記録か。画面には出さない
-    public var isPostponedRecord: Bool {
-        postponedTo != nil
-    }
-
     /// メモを編集できるか。完了済み・「やらない」の家事のメモは閲覧のみ
     public var canEditMemo: Bool {
         state == .incomplete
@@ -402,6 +322,92 @@ public extension HouseworkItem {
             createdAt: createdAt,
             memo: memo
         )
+    }
+
+}
+
+// MARK: - 別の日へまわす
+
+public extension HouseworkItem {
+
+    /// 別の日へまわす（単発の家事）
+    ///
+    /// IDは変えずに日付と保持期限だけを移すので、メモ・作成日時はそのまま引き継ぐ。
+    /// 単発の家事はテンプレートから出ることがないため、元の日に記録を残さなくてよい。
+    /// - Parameter metaData: まわす先の日付と、その日付から求めた保持期限
+    func postponed(to metaData: DailyHouseworkMetaData) -> Self {
+        .init(
+            id: id,
+            indexedDate: metaData.indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo,
+            postponedFrom: indexedDate,
+            postponedTo: nil
+        )
+    }
+
+    /// テンプレートの家事を別の日へまわしたときに、元の日に残す記録にする
+    ///
+    /// テンプレートの家事は、その日に同じテンプレートIDの記録が無いと仮想表示で出てしまう（ADR-0003）。
+    /// 「やらない」にして`postponedTo`を付け、テンプレートからは出さず、画面にも出さない記録として残す。
+    func markedAsPostponed(to destination: HouseworkIndexedDate) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .notTodo,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: destination
+        )
+    }
+
+    /// テンプレートの家事を別の日へまわすときに、まわす先に作る単発の家事
+    ///
+    /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない
+    /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。
+    /// - Parameters:
+    ///   - metaData: まわす先の日付と、その日付から求めた保持期限
+    ///   - now: 作成日時
+    func makePostponedCopy(id: String, to metaData: DailyHouseworkMetaData, at now: Date) -> Self {
+        .init(
+            id: id,
+            indexedDate: metaData.indexedDate,
+            title: title,
+            point: point,
+            state: .incomplete,
+            executors: [],
+            effort: .normal,
+            executedAt: nil,
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: nil,
+            createdAt: now,
+            memo: memo,
+            postponedFrom: indexedDate,
+            postponedTo: nil
+        )
+    }
+
+    /// 別の日へまわしたテンプレートの家事の、元の日に残した記録か。画面には出さない
+    var isPostponedRecord: Bool {
+        postponedTo != nil
     }
 
 }
