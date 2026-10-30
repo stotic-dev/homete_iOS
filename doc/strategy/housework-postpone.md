@@ -1,15 +1,15 @@
 # 未完了の家事を別の日にまわす 実装方針
 
 > 関連Issue: [#527 Feature: 未完了の家事を明日・別の日にまわせるようにする](https://github.com/stotic-dev/homete_iOS/issues/527)
-> ブランチ: `feat/housework-postpone`（予定）
-> テンプレートの仮想表示は [ADR-0003](../adr/0003-housework-template-virtual-view.md) / [ADR-0022](../adr/0022-monthly-housework-template-items.md) を参照。
+> ブランチ: `feat/housework-postpone`
+> 設計の判断は [ADR-0064](../adr/0064-housework-postpone-without-new-state.md)、テンプレートの仮想表示は [ADR-0003](../adr/0003-housework-template-virtual-view.md) / [ADR-0022](../adr/0022-monthly-housework-template-items.md) を参照。
 
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定（「Phase 1」の残課題を参照）
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 設計確定
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -49,14 +49,14 @@
 
 | 移動先の日の状態 | 結果 |
 |---|---|
-| 同じテンプレートの家事が**未完了**で出ている（仮想表示・登録済みどちらも） | **まとめる**: 移動先には増やさず、元の日から消すだけ。「明日の『お皿洗い』にまとめました」と伝える |
+| 同じテンプレートの家事が**未完了**で出ている（仮想表示・登録済みどちらも） | **まとめる**: 移動先には増やさず、元の日から消すだけ。まわす前に「1/11にも『お皿洗い』があるので、その日の分にまとめます。」と確認のアラートで伝える |
 | 同じテンプレートの家事が完了・やらないになっている | 単発の家事として移す |
 | 同じテンプレートの家事が出ない日（毎週月曜の家事を火曜へ等） | 単発の家事として移す |
 
 **同じ名前の家事が移動先にあるとき**
 
 - 「まとめる」に当たらない場合で、移動先に同じ名前の家事（状態は問わない）があるときは、確認のアラートを出す
-  - 例: 「10/31には『洗濯』がすでにあります。まわしますか？」 → 「まわす」「キャンセル」
+  - 例: 「このまままわしますか？」「10/31には『洗濯』がすでにあります。」 → 「まわす」「キャンセル」
 - 移動なので、登録画面と違ってブロックはしない
 
 ### 非機能要件 / 制約
@@ -120,24 +120,25 @@ public struct HouseworkPostponePlan: Equatable, Sendable {
         target: HouseworkItem,
         isRegistered: Bool,
         destination: Date,
-        destinationItems: [HouseworkItem],  // 移動先の日の家事（テンプレートを当てた後）
+        storedItems: StoredAllHouseworkList,         // 登録済みの家事（移動先の日の家事を探す）
+        templateContext: HouseworkTemplateContext,  // 移動先の日にテンプレートから出る家事を探す
         now: Date,
         calendar: Calendar,
         storagePolicy: HouseworkStoragePolicy,
-        idGenerator: () -> String
+        newItemId: String  // 移動先に単発の家事を作るときのID
     ) -> Self
 }
 ```
 
 | まわす家事 | 移動先 | `writes` |
 |---|---|---|
-| 単発（`templateHouseworkItemId == nil`、必ず登録済み） | — | `[target.postponed(to:expiredAt:)]`（同じドキュメントの日付を書き換える） |
+| 単発（`templateHouseworkItemId == nil`、必ず登録済み） | — | `[target.postponed(to: metaData)]`（同じドキュメントの日付を書き換える） |
 | テンプレート | 同じテンプレートの家事が未完了 | `[target.markedAsPostponed(to:)]`（`outcome = .merged`） |
 | テンプレート | それ以外 | `[target.markedAsPostponed(to:), target.makePostponedCopy(...)]` |
 
 - テンプレートの家事がまだ登録されていない（仮想表示）なら、元の日の記録は`updateCreatedAt(now)`を付けて新規作成する（`HouseworkListStore.remove`と同じ）
 - 単発の家事を日付の書き換えで移すのは、IDを保てばメモ・作成日時・リスナーの同一性がそのまま引き継がれるため。単発の家事は元の日に記録を残す必要がない
-- 移動先の日の家事は、テンプレートを当てた後の一覧（`HouseworkTemplateDay.applyTemplate`の結果）を渡す。仮想表示のテンプレートの家事と比べるため
+- 移動先の日の家事は、`make`の中で登録済みの家事にテンプレートを当てて求める（`HouseworkTemplateDay.applyTemplate`）。仮想表示のテンプレートの家事と比べるため
 
 ### 3. 元の日に残す記録を画面に出さない
 
@@ -151,23 +152,30 @@ public struct HouseworkPostponePlan: Equatable, Sendable {
 
 ```swift
 /// 未完了の家事を別の日へまわす
-/// - Returns: まとめたかどうか（画面の文言に使う）
+/// - Returns: まわした結果。最新の記録が未完了でなく、まわさなかったときは`nil`
 public func postpone(
-    plan: HouseworkPostponePlan,
+    target: HouseworkItem,
+    isRegistered: Bool,
+    to destination: Date,
+    templateContext: HouseworkTemplateContext,
+    storagePolicy: HouseworkStoragePolicy,
     cohabitantId: String,
     step: HouseworkAnalyticsStep
-) async throws -> HouseworkPostponePlan.Outcome
+) async throws -> HouseworkPostponePlan.Outcome?
+
+/// 書き込まずに計画だけを返す（確認のアラートを出すかどうかを決めるのに使う）
+public func postponePlan(...) -> HouseworkPostponePlan
 ```
 
-- 計画は呼び出し側（Screen）で、リスナーで受け取った最新の記録とテンプレートから作る。確認のアラートを出すかどうかを、書き込む前に決めるため
+- 確認のアラートを出すかどうかは`postponePlan`で書き込む前に決める。了承されたら`postpone`が最新の記録で計画を作り直して書き込む
 - 書き込みは`insertOrUpdateItems(plan.writes, cohabitantId)`の1回だけ
 - 画面を開いている間に同居人が完了にしていた場合は、最新の記録が未完了でなければ何もせず返す（`updateAndSave`と同じく、最新の記録で判定する）
 
 ### 5. クイックアクション（`HouseworkQuickAction`）
 
-- ケース`postponeToNextDay`を足す。行き先はどちらも家事の日付の翌日で、「明日にまわす」「今日にまわす」の出し分けはView側（`HouseworkQuickAction+Presentation.swift`）で家事の日付から決める
-- `actions(for:ownUserId:canAddHelper:)`に`now`・`calendar`を足し、未完了で、家事の日付が今日か昨日のときだけ`postponeToNextDay`を入れる。並びは`[.complete, .postponeToNextDay, .remove]`
-- `actions(for state:)`（ホームの未完了一覧。今日の家事だけ）は`[.complete, .postponeToNextDay, .remove]`
+- ケース`postponeToTomorrow`（「明日にまわす」）と`postponeToToday`（「今日にまわす」）を足す。行き先はどちらも家事の日付の翌日。文言・アイコンを状態ごとに分けるため、ケースを2つにする
+- 1件の家事のメニューには`menuActions(for:ownUserId:canAddHelper:now:calendar:)`を使う。`actions(for:ownUserId:canAddHelper:)`に、家事の日付が今日なら`postponeToTomorrow`、昨日なら`postponeToToday`を「やらない」の前に足す。並びは`[.complete, .postponeToTomorrow, .remove]`
+- `actions(for:ownUserId:canAddHelper:)`には入れない。複数選択の「一緒に選べるか」の判定に使っているため、入れると今日と昨日の家事を一緒に選べなくなる
 - `isAvailableInBulk`は`false`
 - メニューの区切り線は`HouseworkQuickActionMenuContent`で`.remove`の前に入れる
 - アイコンは`arrow.turn.down.right`を第一候補にする（VRTで見て決める）
@@ -176,8 +184,8 @@ public func postpone(
 
 - ケース`postpone`を足す（`isPrimary == false`）。未完了の家事のときの並びは`[.complete, .postpone, .remove]`
 - タップでまわす日を選ぶハーフモーダルを出す
-  - `HouseworkDatePickerView`を流用できるか先に確かめる。今のピッカーはボードの表示日を切り替えるためのもので、保存期間のPaywallへの導線を持ち、日付をタップするとすぐ決まる。「まわす日を選ぶ」というタイトル・今の日付を選べなくすること・保存期間の導線を出さないことを引数で切り替えられなければ、`HouseworkPostponeDatePickerView`（UIのみ）を新しく作る
-  - 新しく作るなら画面として`AppScreen.housework_postpone_date_picker`を足し、`screen_view`を送る（`doc/analytics_events.md`の画面一覧も更新）
+  - `HouseworkDatePickerView`は保存期間のPaywallへの導線を持つボード専用のピッカーなので流用せず、`HouseworkPostponeDatePickerView`（UIのみ）を新しく作る。選べる範囲と最初に選んでおく日は`HouseworkPostponeDateRange`（Feature の`Model/`）で決め、家事の今の日付を選んでいる間は確定ボタンを押せなくする
+  - 画面として`AppScreen.houseworkPostponeDatePicker`（`housework_postpone_date_picker`）を足し、`screen_view`を送る（`doc/analytics_events.md`の画面一覧も更新）
 - まわしたら家事詳細をpopして家事ボードへ戻る
 
 ### 7. まわした家事のラベル
@@ -187,13 +195,13 @@ public func postpone(
 
 ### 8. 操作のあとの伝え方
 
-- まとめたとき: 「明日の『お皿洗い』にまとめました」
-- 移したとき: 「明日にまわしました」/「今日にまわしました」/「11/2にまわしました」
-- 既存のトースト（HometeUI）があればそれを使う。無ければ、まわした家事が画面から消えることで伝わるので、まとめたときだけ伝える形にする（実装時に確認）
+- HometeUIにトーストが無いため、まわした後には何も出さない。まわした家事が画面から消え、移動先ではラベルが付くことで伝わる
+- まとめるときと同じ名前の家事があるときは、まわす**前**に確認のアラート（`houseworkPostponeConfirmation`）で伝える
+  - `.contextMenu`の中からはアラートを出せないので、メニュー（`HouseworkQuickActionMenuContent`）は確かめる内容を`onRequestPostponeConfirmation`で呼び出し元へ伝え、家事ボード・ホームの今日の家事・未完了の家事・家事詳細の各画面にModifierを付ける
 
 ### 9. Analytics
 
-`HouseworkAnalyticsAction`に`postpone(step:isMerged:isSuccess:)`を足し、`housework`イベントの`action = postpone`で送る。`is_merged`パラメータで、まとめたかどうかを区別する（ADR-0009）。`doc/analytics_events.md`の`### housework`を更新する。
+`HouseworkAnalyticsAction`に`postpone(step:outcome:isSuccess:)`を足し、`housework`イベントの`action = postpone`で送る。単発の家事として移したか、まとめたかは`kind`（`moved` / `merged`）で区別する。カスタムディメンションを増やさないため、`encouragement_comment`の`kind`と同じキーを使い回す（ADR-0009、`doc/analytics_events.md`の命名ポリシー5）。`doc/analytics_events.md`の`### housework`を更新する。
 
 ### ファイル配置
 
@@ -204,17 +212,20 @@ public func postpone(
 | 新規ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkPostponePlan.swift` | 書き込む家事・まとめるか・同じ名前の家事の判定 |
 | 修正ドメイン | `LocalPackage/Sources/HometeDomain/Cohabitant/Housework/HouseworkListStore.swift` | `postpone` |
 | 修正ドメイン | `LocalPackage/Sources/HometeDomain/AnalyticsLog/HouseworkAnalyticsAction.swift` | `postpone` |
-| 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkQuickAction.swift` | `postponeToNextDay`と出す条件 |
+| 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkQuickAction.swift` | `postponeToTomorrow`・`postponeToToday`と出す条件 |
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkDetailAction.swift` | `postpone` |
 | 修正Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkBoardItem.swift` | `postponedFrom`を通す |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/Components/HouseworkQuickAction+Presentation.swift` | 「明日にまわす」「今日にまわす」の文言・アイコン |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/HouseworkQuickActionMenuContent.swift` | 実行・区切り線・確認のアラート |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkDetailView/` | メニュー・ピッカーの表示・まわした後のpop・ラベル |
 | 修正View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/SubViews/`（行） | 「10/29から」のラベル |
-| 新規View（必要なら） | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkPostponeDatePicker/` | まわす日を選ぶピッカー |
+| 新規View | `LocalPackage/Sources/Features/HouseworkFeature/HouseworkPostponeDatePicker/HouseworkPostponeDatePickerView.swift` | まわす日を選ぶピッカー |
+| 新規Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkPostponeDateRange.swift` | ピッカーで選べる範囲・最初に選んでおく日 |
+| 新規Model | `LocalPackage/Sources/Features/HouseworkFeature/Model/HouseworkPostponeConfirmation.swift`・`HouseworkListStore+Postpone.swift` | 確かめる内容と、確かめてからまわす流れ |
+| 新規Component | `LocalPackage/Sources/Features/HouseworkFeature/Components/HouseworkPostponeConfirmationAlert.swift` | 確認のアラートを出してまわすModifier |
 | 修正 | `LocalPackage/Sources/Features/HouseworkFeature/Localizable.xcstrings` | 文言と英訳 |
 | 修正ドキュメント | `doc/analytics_events.md` | `postpone`・（必要なら）画面 |
-| 新規ADR | `doc/adr/NNNN-housework-postpone-without-new-state.md` | 状態を増やさず、テンプレートの家事は元の日に隠した記録を残す方式にした判断 |
+| 新規ADR | `doc/adr/0064-housework-postpone-without-new-state.md` | 状態を増やさず、テンプレートの家事は元の日に隠した記録を残す方式にした判断 |
 
 ## タスク
 
@@ -226,24 +237,24 @@ public func postpone(
 - [x] 家事詳細の「その他」メニューは「別の日にまわす…」（ピッカー）1つだけ
 - [x] 一括操作には入れない
 - [x] 対象は未完了だけ・移動先は今日から今日+7日・同じ名前の家事は確認・通知なし・無料
-- [ ] [homete_backend](https://github.com/stotic-dev/homete_backend)のFirestoreルールが`Houseworks`のフィールドを列挙して制限していないか確かめる。制限していれば`postponedFrom`・`postponedTo`を許可するルールの変更を、アプリの審査提出より先にstg・prodへデプロイする
-- [ ] `HouseworkDatePickerView`を流用するか、新しいピッカーを作るかを決める
-- [ ] 既存のトーストの有無を確かめ、まわしたあとの伝え方を決める
-- [ ] ADRを書く（番号は両リポジトリの最大番号+1）
+- [x] [homete_backend](https://github.com/stotic-dev/homete_backend)のFirestoreルールが`Houseworks`のフィールドを列挙して制限していないか確かめる。制限していれば`postponedFrom`・`postponedTo`を許可するルールの変更を、アプリの審査提出より先にstg・prodへデプロイする（→ 制限していないので変更不要）
+- [x] `HouseworkDatePickerView`を流用するか、新しいピッカーを作るかを決める
+- [x] 既存のトーストの有無を確かめ、まわしたあとの伝え方を決める
+- [x] ADRを書く（番号は両リポジトリの最大番号+1）
 
 ### Phase 2: 実装
 
-- [ ] `HouseworkItem`に`postponedFrom`・`postponedTo`とまわす操作を追加し、既存の`updateXxx`で引き継ぐ（テスト: Codable・引き継ぎ漏れ）
-- [ ] `HouseworkPostponePlan`を追加（テスト: 単発・まとめる・完了済みの先・テンプレートが出ない日・未登録のテンプレートの家事・同じ名前の家事・月末をまたぐ日付）
-- [ ] `applyTemplate`と、保存済みの家事を並べる箇所で元の日の記録を除く（テスト: 仮想表示が復活しないこと・やらないタブに出ないこと）
-- [ ] `HouseworkListStore.postpone`とAnalyticsを追加（テスト: 書き込む家事・Analyticsのパラメータ・最新が未完了でないときに何もしないこと）
-- [ ] `HouseworkQuickAction`に`postponeToNextDay`を追加し、今日・昨日の出し分け（テスト: 今日・昨日・一昨日・明日・日付をまたぐ直前の時刻）
-- [ ] クイックアクションのメニューに表示・実行・確認のアラートを追加
-- [ ] `HouseworkDetailAction`に`postpone`を追加し、ピッカーの表示・まわした後のpopを実装
-- [ ] 家事ボードの行と家事詳細に「◯/◯から」のラベルを追加
-- [ ] 文言と英訳を`Localizable.xcstrings`に追加
-- [ ] Previewの追加・修正: `HouseworkQuickActionMenuContent`（今日・昨日・一昨日）、ラベル付きの行、家事詳細のメニュー、ピッカー
-- [ ] `doc/analytics_events.md`を更新
+- [x] `HouseworkItem`に`postponedFrom`・`postponedTo`とまわす操作を追加し、既存の`updateXxx`で引き継ぐ（テスト: Codable・引き継ぎ漏れ）
+- [x] `HouseworkPostponePlan`を追加（テスト: 単発・まとめる・完了済みの先・テンプレートが出ない日・未登録のテンプレートの家事・同じ名前の家事）
+- [x] `applyTemplate`と、保存済みの家事を並べる箇所で元の日の記録を除く（テスト: 仮想表示が復活しないこと・やらないタブに出ないこと）
+- [x] `HouseworkListStore.postpone`とAnalyticsを追加（テスト: 書き込む家事・Analyticsのパラメータ・最新が未完了でないときに何もしないこと）
+- [x] `HouseworkQuickAction`に`postponeToTomorrow`・`postponeToToday`を追加し、今日・昨日の出し分け（テスト: 今日・昨日・一昨日・明日・日付をまたぐ直前の時刻）
+- [x] クイックアクションのメニューに表示・実行・確認のアラートを追加
+- [x] `HouseworkDetailAction`に`postpone`を追加し、ピッカーの表示・まわした後のpopを実装
+- [x] 家事ボードの行と家事詳細に「◯/◯から」のラベルを追加
+- [x] 文言と英訳を`Localizable.xcstrings`に追加
+- [x] Previewの追加・修正: `HouseworkQuickActionMenuContent`（今日・昨日・一昨日）、ラベル付きの行、家事詳細のメニュー、ピッカー
+- [x] `doc/analytics_events.md`を更新
 
 ### Phase 3: 検証
 
@@ -251,7 +262,7 @@ public func postpone(
 - [ ] SwiftLint通過（`swift-code-verification`スキル）
 - [ ] `make test-affected`でユニットテスト通過
 - [ ] `make snapshot-affected`でVRT確認（参照画像の更新はCIに任せる）
-- [ ] `make check-translations`通過
+- [x] `make check-translations`通過
 - [ ] シミュレータで確認（`simulator-e2e-check`）: 今日→明日、昨日→今日、毎日の家事をまとめる、詳細のピッカーで3日後へ
 
 ### Phase 4: PR
