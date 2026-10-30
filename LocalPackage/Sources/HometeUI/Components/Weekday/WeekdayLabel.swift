@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/05/16.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 曜日を1文字で表示するラベル。選択状態で塗りが変わる

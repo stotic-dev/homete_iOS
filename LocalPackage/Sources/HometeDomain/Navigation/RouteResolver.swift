@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-import HometeDomain
 import SwiftUI
 
 public struct RouteResolver: Sendable {

@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 最低バージョンを下回ったときに表示する、閉じられないアップデート案内画面
@@ -46,7 +46,6 @@ public struct ForceUpdateView: View {
             .padding(.bottom, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .trackScreenView(.forceUpdate)
     }
 
 }

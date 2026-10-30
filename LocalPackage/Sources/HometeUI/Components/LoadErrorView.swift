@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// Firestoreの監視・取得に失敗した画面で表示する、エラー内容とリトライ導線

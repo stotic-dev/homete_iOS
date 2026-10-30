@@ -20,6 +20,7 @@ paths:
 ```
 
 とくに踏みやすいのが、プレビュー専用のヘルパーを実装ファイルの末尾に `private extension View` で置くパターン。**プレビュー用ヘルパーは `LocalPackage/Sources/HometeDomain/Utilities/DebugHelper/Preview/PreviewEnvironment.swift` に `public` で置く**（`setupEnvironmentForPreview()` / `setupStorageEnvironmentForPreview(now:storagePolicy:)` と同じ場所）。1ファイルでしか使わないヘルパーでも、そこに置けば再発しない。
+`HometeUI`は`HometeDomain`に依存しないので、`HometeUI`のプレビューで使うヘルパーは`HometeUI`に、値型のプレビュー用データ（`HouseworkItem.makeForTest`・`Date.previewDate`など）は`LocalPackage/Sources/HometeModel/Utilities/DebugHelper/`に置く。
 
 同様に `private struct XxxPreviewWrapper: View` のようなプレビュー用のラッパー型も `private` にしない。
 

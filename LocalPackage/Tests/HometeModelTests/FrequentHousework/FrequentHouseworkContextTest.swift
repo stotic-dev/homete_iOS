@@ -6,7 +6,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-@testable import HometeDomain
+@testable import HometeModel
 import Testing
 
 enum FrequentHouseworkContextTest {

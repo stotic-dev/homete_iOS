@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/05/15.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// 月〜日を複数選択するセグメント風コンポーネント。

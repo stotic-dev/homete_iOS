@@ -5,14 +5,11 @@
 //  Created by Taichi Sato on 2026/08/22.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// プッシュ通知の役割を説明し、通知設定の導線を提供するUI
 public struct NotificationPermissionGuideView: View {
-
-    @Environment(\.appDependencies.notificationPermissionUseCase) var notificationPermissionUseCase
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
 
     /// スキップボタンタップ時の処理
     let onTapSkipButton: () -> Void

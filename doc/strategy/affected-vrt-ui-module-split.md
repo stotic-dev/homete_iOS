@@ -194,11 +194,11 @@ Screen側の算出プロパティに移す。
 
 **Step 2: `HometeModel`の切り出しと`HometeUI`の切り離し**
 
-- [ ] `HometeModel`モジュールを作り、`HometeDomain`から依存する
-- [ ] `HometeUI`が使う値型を`HometeModel`へ移し、`HometeUI`の依存から`HometeDomain`を外す
-- [ ] `HouseworkMemoEditScreen`（`SubscriptionStore`に依存）をFeature側へ移すか、UIのみのViewに分ける
-- [ ] 値型が使う文言を`HometeModel`のString Catalogへ移す（`make check-translations`）
-- [ ] 値型のユニットテストを`HometeModelTests`へ移す
+- [x] `HometeModel`モジュールを作り、`HometeDomain`から依存する（`HometeDomain`は`@_exported import`で再公開）
+- [x] `HometeUI`が使う値型を`HometeModel`へ移し、`HometeUI`の依存から`HometeDomain`を外す（`RouteResolver`・`trackScreenView`・`DependenciesInjectLayer`は`HometeDomain`へ移し、画面計測は呼び出し側で付ける）
+- [x] `HouseworkMemoEditScreen`（`SubscriptionStore`に依存）をFeature側へ移すか、UIのみのViewに分ける（3つのFeatureから使うので`HometeUI`に残し、プランとペイウォールを引数で受け取る）
+- [x] 値型が使う文言を`HometeModel`のString Catalogへ移す（`make check-translations`）
+- [x] 値型のユニットテストを`HometeModelTests`へ移す
 
 **Step 3: Featureごとの移行**（Storeへの依存が少ない順。Homeは依存先のContribution・Housework・FrequentHouseworkの後）
 

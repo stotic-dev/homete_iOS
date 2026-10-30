@@ -5,7 +5,7 @@
 //  Created by Taichi Sato on 2026/08/29.
 //
 
-import HometeDomain
+import HometeModel
 import SwiftUI
 
 /// ポイント値をドラムロール（wheelスタイルのPicker）のポップアップで選択させる入力コンポーネント。

@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-@testable import HometeDomain
+@testable import HometeModel
 import Testing
 
 enum HouseworkMemoDraftTest {

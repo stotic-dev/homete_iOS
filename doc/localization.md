@@ -27,7 +27,7 @@ bundleを引き、ビルドは通るのに訳が使われない（日本語の�
 | 文言を返すプロパティ・関数 | 戻り値を`LocalizedStringResource`にして`.localized("…")`を返す |
 | 画面の外で文字列が必要な箇所（通知の文面・共有する文など） | `LocalizedStringResource.localized("…").resolved()` |
 
-`LocalizedStringResource.localized`は`HometeDomain`にある。デフォルト引数の`#bundle`が**呼び出し元で**展開されるため、
+`LocalizedStringResource.localized`は`HometeModel`にある。デフォルト引数の`#bundle`が**呼び出し元で**展開されるため、
 どのモジュールから呼んでもそのモジュールのCatalogを引く。
 
 ### 翻訳しやすくするために
