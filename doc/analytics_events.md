@@ -104,6 +104,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_board` | `HouseworkBoardScreen` |
 | `housework_date_picker` | `HouseworkDatePickerView`（家事ボードの年月ラベルから開く、日付を選ぶカレンダーのハーフモーダル） |
 | `housework_detail` | `HouseworkDetailView` |
+| `housework_postpone_date_picker` | `HouseworkPostponeDatePickerView`（家事詳細の「別の日にまわす…」から開く、まわす日を選ぶカレンダーのハーフモーダル） |
 | `housework_register` | `RegisterHouseworkView` |
 | `housework_complete` | `HouseworkCompleteView`（家事を完了にするハーフモーダル） |
 | `housework_add_helper` | `HouseworkAddHelperView`（完了した家事に手伝った人を追加するハーフモーダル） |
@@ -230,7 +231,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 
 ### `housework`
 
-家事の登録・完了・もう一度やった・手伝った人の追加・ありがとう・未完了に戻す・削除・メモの編集における行動。`HouseworkListStore`に送信箇所を集約する。
+家事の登録・完了・もう一度やった・手伝った人の追加・ありがとう・未完了に戻す・削除・メモの編集・別の日にまわすにおける行動。`HouseworkListStore`に送信箇所を集約する。
 完了・ありがとうは、App Intentと共有する`HouseworkCommandUseCase`から送る。
 
 | 項目 | 内容 |
@@ -239,11 +240,12 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` / `postpone` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む）。`app_intent`はアプリを開かずに実行したApp Intent（Siri・Spotlight・ショートカットApp） |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`はすごくがんばった |
 | `source` | — | `frequent` / `manual` | いつもの家事から選んだか、新しく入力したか。`register`のみ付与 |
+| `kind` | — | `moved` / `merged` | 別の日へまわしたときに、単発の家事として移したか（`moved`）、まわす先の同じテンプレートの家事にまとめたか（`merged`）。`postpone`のみ付与。`encouragement_comment`の`kind`と同じキーを使い回し、カスタムディメンションを増やさない |
 | `result` | — | `success` / `failure` | 行動の結果 |
 | `item_count` | — | 数値 | 複数選択の一括操作でまとめて書き込んだ家事の件数。一括操作（`complete` / `delete` / `send_thanks` / `return_incomplete`）のときだけ付与し、1件ずつの操作には付けない。GA4のレポートで集計するため、stg / prodの両方でカスタム指標（イベントスコープ）として登録する |
 
@@ -264,6 +266,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 | `edit_thanks` | `thanks` / `comment_prompt` | 送ったありがとうのメッセージを編集した（家事詳細の「送ったメッセージを編集」から開いた画面、またはありがとうを伝えられる家事の一覧から開いた画面で更新）。コメントなしで送ったありがとうに、後から「メッセージを添える」で書き足した場合もこれになる（このときだけプッシュ通知も送る） |
 | `return_incomplete` | `dashboard` / `board` / `detail` | 家事を未完了に戻した（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
+| `postpone` | `dashboard` / `board` / `detail` | 未完了の家事を別の日へまわした（ダッシュボード・未完了の家事・家事ボードのクイックアクションの「明日にまわす」「今日にまわす」、または家事詳細の「別の日にまわす…」から日付を選んだ）。まとめるとき・まわす先に同じ名前の家事があるときは、確認のアラートで了承したときに送る。1件ずつ確かめる操作なので複数選択の一括操作にはない |
 | `edit_memo` | `detail` | 家事詳細でメモのテキスト・チェックリストの項目を編集して保存した。チェックの切り替えだけでは送らない（頻度が高く、メモの利用状況を見るには編集だけで足りるため）。家事を追加する画面で入力したメモは`register`に含まれ、これは送らない |
 
 いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
@@ -277,6 +280,7 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 `complete`のうち`executor_type`が`others` / `shared`の割合で、代わりに記録する・手分けする使い方がどれだけあるかが分かる。
 `complete`のうち`effort`が`hard` / `very_hard`の割合で、頑張り度がどれだけ使われているかが分かる（一括完了は頑張り度を選べず常に`normal`になるため、実際の利用率より低く出る点に注意）。
 `complete`に対する`redo`の比率で、1日に同じ家事を繰り返す運用がどれだけあるかが分かる。
+`postpone`の件数と`step`の比率で、やり残した家事を別の日へまわす使い方がどれだけあり、クイックアクションと家事詳細のどちらから使われているかが分かる。`delete`に対する`postpone`の比率は、やり残した家事を取り下げずに持ち越している割合の目安になる。
 `complete`に対する`add_helper`の比率で、完了時に担当者を選びきれず後から足す運用がどれだけあるかが分かる（比率が高い場合は、完了時の担当者選択が使いにくいか、手分けが後から判明しやすいと読める）。
 
 ### `encouragement_comment`
