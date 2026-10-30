@@ -155,13 +155,9 @@ struct HouseworkTemplateDayTest {
             templateHouseworkItemId: .init(id: "id1"),
             postponedTo: .init(value: .previewDate(year: 2026, month: 1, day: 6))
         )
-        let registeredItems: [HouseworkItem] = [
-            postponedRecord,
-            .makeForTest(id: 2, indexedDate: selectedDate, title: "洗濯"),
-        ]
-        let expected: [HouseworkItem] = [
-            .makeForTest(id: 2, indexedDate: selectedDate, title: "洗濯"),
-        ]
+        let laundry = HouseworkItem.makeForTest(id: 2, indexedDate: selectedDate, title: "洗濯")
+        let registeredItems: [HouseworkItem] = [postponedRecord, laundry]
+        let expected: [HouseworkItem] = [laundry]
 
         // Act
         let actual = template.applyTemplate(
