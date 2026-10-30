@@ -77,6 +77,46 @@
         }
       }
     },
+    "%@（%lld日前）" : {
+      "comment" : "やり残している家事の日付の区切り。1つめは日付（例: 10月27日）、2つめは今日から何日前か",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ (%2$lld day ago)"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ (%2$lld days ago)"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@（%2$lld日前）"
+          }
+        }
+      }
+    },
+    "%@（昨日）" : {
+      "comment" : "やり残している家事の日付の区切り。昨日の日付（例: 10月28日）",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Yesterday)"
+          }
+        }
+      }
+    },
     "%lld件" : {
       "localizations" : {
         "en" : {
@@ -345,6 +385,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show More"
+          }
+        }
+      }
+    },
+    "やり残している家事" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unfinished Chores"
           }
         }
       }
