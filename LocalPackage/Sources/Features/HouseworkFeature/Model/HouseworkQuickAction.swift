@@ -119,6 +119,11 @@ extension HouseworkQuickAction {
         return nil
     }
 
+    /// 「明日にまわす」「今日にまわす」でまわす先の日（家事の日付の翌日）
+    static func nextDay(of item: HouseworkBoardItem, calendar: Calendar) -> Date? {
+        calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: item.originalItem.indexedDate.value))
+    }
+
     /// 状態のみに応じたクイックアクションを返す
     ///
     /// 未完了の家事だけを並べる一覧のように、状態だけで出せるアクションが決まる画面で使う。

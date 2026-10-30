@@ -16,7 +16,8 @@ import SwiftUI
 /// ボタンのタップが競合しないよう、ボタンは行の`Button`の**中ではなく隣**に置いている。
 ///
 /// どのボタンを出すか・ありがとうを伝えられるかは画面ごとに違うため、この行では判断せず決まった値を
-/// 受け取る。`@Environment`に依存しないので、プレビューで表示のバリエーションを並べられる。
+/// 受け取る。Storeなどの`@Environment`には依存せず（日付の書式に使う`calendar`・`locale`・`timeZone`だけを読む）、
+/// プレビューで表示のバリエーションを並べられる。
 public struct HouseBoardListRow<MenuContent: View>: View {
 
     @Environment(\.calendar) var calendar

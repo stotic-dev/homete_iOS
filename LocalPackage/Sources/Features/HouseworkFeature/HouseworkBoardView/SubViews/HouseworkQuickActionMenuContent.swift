@@ -54,9 +54,10 @@ public struct HouseworkQuickActionMenuContent: View {
     }
 
     public var body: some View {
-        ForEach(actions) { action in
+        let menuActions = actions
+        ForEach(menuActions) { action in
             // 取り下げる操作は、ほかの操作と離して押し間違えにくくする
-            if action == .remove, action != actions.first {
+            if action == .remove, action != menuActions.first {
                 Divider()
             }
             Button(action.label, systemImage: action.systemImage, role: action.role) {
@@ -121,7 +122,7 @@ private extension HouseworkQuickActionMenuContent {
     /// 家事の日付の翌日へまわす。確かめることがあれば、まわさずに呼び出し元へ伝える
     func postponeToNextDay() async {
         guard let cohabitantId = loginContext.cohabitantId,
-              let destination = HouseworkListStore.nextDay(of: item, calendar: calendar) else { return }
+              let destination = HouseworkQuickAction.nextDay(of: item, calendar: calendar) else { return }
 
         do {
             let result = try await houseworkListStore.postponeIfNeeded(

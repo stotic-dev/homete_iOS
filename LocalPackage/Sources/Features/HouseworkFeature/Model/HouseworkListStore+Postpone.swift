@@ -67,11 +67,6 @@ extension HouseworkListStore {
         )
     }
 
-    /// クイックアクションでまわす先の日（家事の日付の翌日）
-    static func nextDay(of item: HouseworkBoardItem, calendar: Calendar) -> Date? {
-        calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: item.originalItem.indexedDate.value))
-    }
-
 }
 
 private extension HouseworkListStore {
