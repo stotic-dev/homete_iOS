@@ -18,6 +18,8 @@ struct HouseworkDateCell: View {
 
     let date: Date
     let state: HouseworkDateState
+    /// 昨日以前で、まだ終わっていない家事がある日か。右上に印を付ける
+    var hasPastIncomplete = false
     let onTap: (Date) -> Void
 
     var body: some View {
@@ -34,13 +36,32 @@ struct HouseworkDateCell: View {
                         .fill(background)
                         .strokeBorder(border, lineWidth: 1)
                 }
+                .overlay(alignment: .topTrailing) {
+                    if hasPastIncomplete {
+                        pastIncompleteBadge
+                    }
+                }
                 .padding(2)
         }
+        .accessibilityValue(hasPastIncomplete ? Text("やり残している家事があります", bundle: #bundle) : Text(verbatim: ""))
     }
 
 }
 
 private extension HouseworkDateCell {
+
+    /// やり残している家事がある日の印。日付の丸の背景色に埋もれないよう、カードの色で縁取る
+    var pastIncompleteBadge: some View {
+        Image(systemName: "exclamationmark.circle.fill")
+            .font(with: .body)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(.textOnDestructive, .fillDestructive)
+            .background {
+                Circle()
+                    .fill(.backgroundCard)
+            }
+            .accessibilityHidden(true)
+    }
 
     func dateLabel() -> LocalizedStringResource {
         if calendar.dateComponents(
@@ -104,6 +125,16 @@ private extension HouseworkDateCell {
 
 #Preview("HouseworkDateCell_選択可能な日付", traits: .sizeThatFitsLayout) {
     HouseworkDateCell(date: .distantPast, state: .selectable) { _ in }
+        .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDateCell_やり残しがある日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .selectable, hasPastIncomplete: true) { _ in }
+        .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDateCell_やり残しがある選択中の日付", traits: .sizeThatFitsLayout) {
+    HouseworkDateCell(date: .distantPast, state: .selected, hasPastIncomplete: true) { _ in }
         .setupEnvironmentForPreview()
 }
 

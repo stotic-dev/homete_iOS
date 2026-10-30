@@ -28,6 +28,8 @@ struct HouseworkBoardView<RowMenu: View>: View {
     let ownUserId: String
     /// 家事の購読に失敗している場合のエラー内容
     let loadFailure: DomainError?
+    /// 昨日以前で、まだ終わっていない家事がある日付。日付の行に印を付ける
+    var pastIncompleteDates: Set<Date> = []
     let onTapRetry: () -> Void
     let onTapAdd: () -> Void
     let onTapItem: (HouseworkBoardItem) -> Void
@@ -111,6 +113,7 @@ private extension HouseworkBoardView {
         VStack(spacing: .space16) {
             HouseworkDateHeaderContent(
                 dateList: $dateList,
+                pastIncompleteDates: pastIncompleteDates,
                 onTapYearMonth: onTapYearMonth,
                 onTapStorageLimit: onTapStorageLimit
             )
