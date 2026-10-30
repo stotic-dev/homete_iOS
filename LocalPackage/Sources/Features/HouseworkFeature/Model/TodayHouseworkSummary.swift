@@ -52,7 +52,7 @@ public extension TodayHouseworkSummary {
             calendar: calendar,
             storagePolicy: storagePolicy,
             idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
-        ) ?? storedItems
+        ) ?? storedItems.filter { !$0.isPostponedRecord }
 
         let incomplete = allItems
             .filter { $0.state == .incomplete }

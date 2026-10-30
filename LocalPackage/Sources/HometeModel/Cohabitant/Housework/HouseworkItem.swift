@@ -41,6 +41,15 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     ///
     /// 一度もメモを書いていない家事は`nil`。書いたメモを消した家事は空のメモを持つ（ADR-0034）。
     public let memo: HouseworkMemo?
+    /// まわす前の日付。別の日へまわした家事に付け、「10/29から」のラベルに使う
+    ///
+    /// 2回まわしたときは直前の日付にする。まわしていない家事は`nil`。
+    public let postponedFrom: HouseworkIndexedDate?
+    /// まわした先の日付。テンプレートの家事を別の日へまわしたときに、元の日に残す記録に付ける
+    ///
+    /// テンプレートの家事は仮想表示（ADR-0003）なので、元の日に記録を残さないとテンプレートからまた出てしまう。
+    /// この記録は`notTodo`にして、画面には出さない。
+    public let postponedTo: HouseworkIndexedDate?
 
     public init(
         id: String,
@@ -55,7 +64,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
-        memo: HouseworkMemo? = nil
+        memo: HouseworkMemo? = nil,
+        postponedFrom: HouseworkIndexedDate? = nil,
+        postponedTo: HouseworkIndexedDate? = nil
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -70,6 +81,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.thanks = thanks
         self.createdAt = createdAt
         self.memo = memo
+        self.postponedFrom = postponedFrom
+        self.postponedTo = postponedTo
     }
 
     /// 完了にする
@@ -101,7 +114,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -135,7 +150,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -176,7 +193,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -194,7 +213,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -213,8 +234,90 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: now,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
+    }
+
+    /// 別の日へまわす（単発の家事）
+    ///
+    /// IDは変えずに日付と保持期限だけを移すので、メモ・作成日時はそのまま引き継ぐ。
+    /// 単発の家事はテンプレートから出ることがないため、元の日に記録を残さなくてよい。
+    /// - Parameter metaData: まわす先の日付と、その日付から求めた保持期限
+    public func postponed(to metaData: DailyHouseworkMetaData) -> Self {
+        .init(
+            id: id,
+            indexedDate: metaData.indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo,
+            postponedFrom: indexedDate,
+            postponedTo: nil
+        )
+    }
+
+    /// テンプレートの家事を別の日へまわしたときに、元の日に残す記録にする
+    ///
+    /// テンプレートの家事は、その日に同じテンプレートIDの記録が無いと仮想表示で出てしまう（ADR-0003）。
+    /// 「やらない」にして`postponedTo`を付け、テンプレートからは出さず、画面にも出さない記録として残す。
+    public func markedAsPostponed(to destination: HouseworkIndexedDate) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: .notTodo,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            expiredAt: expiredAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: destination
+        )
+    }
+
+    /// テンプレートの家事を別の日へまわすときに、まわす先に作る単発の家事
+    ///
+    /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない
+    /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。
+    /// - Parameters:
+    ///   - metaData: まわす先の日付と、その日付から求めた保持期限
+    ///   - now: 作成日時
+    public func makePostponedCopy(id: String, to metaData: DailyHouseworkMetaData, at now: Date) -> Self {
+        .init(
+            id: id,
+            indexedDate: metaData.indexedDate,
+            title: title,
+            point: point,
+            state: .incomplete,
+            executors: [],
+            effort: .normal,
+            executedAt: nil,
+            expiredAt: metaData.expiredAt,
+            templateHouseworkItemId: nil,
+            createdAt: now,
+            memo: memo,
+            postponedFrom: indexedDate,
+            postponedTo: nil
+        )
+    }
+
+    /// 別の日へまわしたテンプレートの家事の、元の日に残した記録か。画面には出さない
+    public var isPostponedRecord: Bool {
+        postponedTo != nil
     }
 
     /// メモを編集できるか。完了済み・「やらない」の家事のメモは閲覧のみ
@@ -241,7 +344,9 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -321,6 +426,8 @@ public extension HouseworkItem {
         case thanks
         case createdAt
         case memo
+        case postponedFrom
+        case postponedTo
 
     }
 
@@ -333,6 +440,7 @@ public extension HouseworkItem {
     /// ありがとうの記録が導入される前に保存された家事は`thanks`を持たないため、無ければ空として読む（ADR-0025）。
     /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
     /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0034）。
+    /// 別の日へまわしていない家事は`postponedFrom`・`postponedTo`を持たないため、`nil`として読む。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
@@ -355,7 +463,9 @@ public extension HouseworkItem {
             ),
             thanks: container.decodeIfPresent([String: HouseworkThanks].self, forKey: .thanks) ?? [:],
             createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt),
-            memo: container.decodeIfPresent(HouseworkMemo.self, forKey: .memo)
+            memo: container.decodeIfPresent(HouseworkMemo.self, forKey: .memo),
+            postponedFrom: container.decodeIfPresent(HouseworkIndexedDate.self, forKey: .postponedFrom),
+            postponedTo: container.decodeIfPresent(HouseworkIndexedDate.self, forKey: .postponedTo)
         )
     }
 
@@ -376,6 +486,8 @@ public extension HouseworkItem {
         try container.encode(thanks, forKey: .thanks)
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(memo, forKey: .memo)
+        try container.encodeIfPresent(postponedFrom, forKey: .postponedFrom)
+        try container.encodeIfPresent(postponedTo, forKey: .postponedTo)
     }
 
 }

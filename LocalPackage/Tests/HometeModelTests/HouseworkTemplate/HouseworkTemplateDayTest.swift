@@ -132,4 +132,48 @@ struct HouseworkTemplateDayTest {
         #expect(actual == expected)
     }
 
+    @Test("別の日へまわした記録は、テンプレートの家事を出さない判定にだけ使い、表示する家事には含めない")
+    func applyTemplate_postponedRecord_hidesRecordAndTemplateItem() {
+        // Arrange
+        let template = HouseworkTemplateDay(
+            dayOfWeek: .monday,
+            items: [
+                .init(
+                    id: .init(id: "id1"),
+                    title: "お皿洗い",
+                    point: 10,
+                    updatedAt: .previewDate(year: 2026, month: 1, day: 1)
+                ),
+            ]
+        )
+        let selectedDate = Date.previewDate(year: 2026, month: 1, day: 5)
+        let postponedRecord = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: selectedDate,
+            title: "お皿洗い",
+            state: .notTodo,
+            templateHouseworkItemId: .init(id: "id1"),
+            postponedTo: .init(value: .previewDate(year: 2026, month: 1, day: 6))
+        )
+        let registeredItems: [HouseworkItem] = [
+            postponedRecord,
+            .makeForTest(id: 2, indexedDate: selectedDate, title: "洗濯"),
+        ]
+        let expected: [HouseworkItem] = [
+            .makeForTest(id: 2, indexedDate: selectedDate, title: "洗濯"),
+        ]
+
+        // Act
+        let actual = template.applyTemplate(
+            registeredItems: registeredItems,
+            selectedDate: selectedDate,
+            calendar: .japanese,
+            storagePolicy: .free,
+            idGenerator: { _ in "generated" }
+        )
+
+        // Assert
+        #expect(actual == expected)
+    }
+
 }

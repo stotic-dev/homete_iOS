@@ -88,13 +88,16 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     /// 家事のメモ（テキスト・チェックリストの項目）を編集した
     /// - Note: チェックの切り替えは頻度が高く、利用状況を見るには編集だけで足りるため送らない
     case editMemo(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 未完了の家事を別の日へまわした
+    case postpone(step: HouseworkAnalyticsStep, outcome: HouseworkPostponePlan.Outcome, isSuccess: Bool)
 
 }
 
 extension HouseworkAnalyticsAction {
 
     /// `housework`イベントに載せるパラメータ
-    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`effort`・`source`・`result`はそれぞれ意味を持つケースのみ追加する
+    /// - Note: `action`は全ケースで送り、`step`・`executor_type`・`effort`・`source`・`kind`・`result`は
+    ///         それぞれ意味を持つケースのみ追加する
     var parameters: [String: String] {
         var parameters = ["action": action]
         if let step {
@@ -108,6 +111,9 @@ extension HouseworkAnalyticsAction {
         }
         if let source {
             parameters["source"] = source
+        }
+        if let kind {
+            parameters["kind"] = kind
         }
         if let result {
             parameters["result"] = result
@@ -130,7 +136,8 @@ private extension HouseworkAnalyticsAction {
              let .editThanks(step, _),
              let .returnIncomplete(step, _),
              let .delete(step, _),
-             let .editMemo(step, _):
+             let .editMemo(step, _),
+             let .postpone(step, _, _):
             step.rawValue
         }
     }
@@ -148,7 +155,8 @@ private extension HouseworkAnalyticsAction {
              .editThanks,
              .returnIncomplete,
              .delete,
-             .editMemo:
+             .editMemo,
+             .postpone:
             nil
         }
     }
@@ -175,7 +183,8 @@ private extension HouseworkAnalyticsAction {
              .editThanks,
              .returnIncomplete,
              .delete,
-             .editMemo:
+             .editMemo,
+             .postpone:
             nil
         }
     }
@@ -209,6 +218,9 @@ private extension HouseworkAnalyticsAction {
 
         case .editMemo:
             "edit_memo"
+
+        case .postpone:
+            "postpone"
         }
     }
 
@@ -218,7 +230,33 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, source, _):
             source.rawValue
 
-        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete, .editMemo:
+        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete, .editMemo, .postpone:
+            nil
+        }
+    }
+
+    /// 別の日へまわしたときに、単発の家事として移したか、まわす先の家事にまとめたか
+    /// - Note: カスタムディメンションを増やさないため、`encouragement_comment`の`kind`と同じキーを使い回す
+    var kind: String? {
+        switch self {
+        case let .postpone(_, outcome, _):
+            switch outcome {
+            case .moved:
+                "moved"
+
+            case .merged:
+                "merged"
+            }
+
+        case .register,
+             .complete,
+             .redo,
+             .addHelper,
+             .sendThanks,
+             .editThanks,
+             .returnIncomplete,
+             .delete,
+             .editMemo:
             nil
         }
     }
@@ -234,7 +272,8 @@ private extension HouseworkAnalyticsAction {
              let .editThanks(_, isSuccess),
              let .returnIncomplete(_, isSuccess),
              let .delete(_, isSuccess),
-             let .editMemo(_, isSuccess):
+             let .editMemo(_, isSuccess),
+             let .postpone(_, _, isSuccess):
             isSuccess ? "success" : "failure"
         }
     }

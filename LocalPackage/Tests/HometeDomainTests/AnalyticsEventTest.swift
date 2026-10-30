@@ -306,6 +306,14 @@ struct AnalyticsEventTest {
                 HouseworkAnalyticsAction.delete(step: .board, isSuccess: false),
                 ["action": "delete", "step": "board", "result": "failure"]
             ),
+            (
+                HouseworkAnalyticsAction.postpone(step: .board, outcome: .moved, isSuccess: true),
+                ["action": "postpone", "step": "board", "kind": "moved", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.postpone(step: .detail, outcome: .merged, isSuccess: false),
+                ["action": "postpone", "step": "detail", "kind": "merged", "result": "failure"]
+            ),
         ]
     )
     func housework(action: HouseworkAnalyticsAction, expectedParameters: [String: String]) {

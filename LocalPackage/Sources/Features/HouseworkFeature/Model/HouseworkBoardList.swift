@@ -35,7 +35,10 @@ extension HouseworkBoardList {
 
         // テンプレートが存在するときは、条件に合ったテンプレートの家事を未完了で追加する
         guard let selectedDateTemplate else {
-            self.items = items.map { .init(originalItem: $0, isRegistered: true) }
+            // 別の日へまわしたテンプレートの家事の記録は出さない（テンプレートを消した後も残っているため）
+            self.items = items
+                .filter { !$0.isPostponedRecord }
+                .map { .init(originalItem: $0, isRegistered: true) }
             return
         }
 

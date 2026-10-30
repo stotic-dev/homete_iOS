@@ -55,7 +55,8 @@ public struct HouseworkTemplateDay: Codable, Sendable, Equatable, Hashable {
                 memo: $0.memo
             )
         }
-        return registeredItems + incompleteTemplateItems
+        // 別の日へまわした記録は、テンプレートの家事を重複させないための判定にだけ使い、画面には出さない
+        return registeredItems.filter { !$0.isPostponedRecord } + incompleteTemplateItems
     }
 
 }
