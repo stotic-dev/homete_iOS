@@ -56,7 +56,7 @@ public extension TodayHouseworkSummary {
 
         let incomplete = allItems
             .filter { $0.state == .incomplete }
-            .sorted(by: isIncompleteDisplayOrderedBefore)
+            .sorted(by: HouseworkItem.isIncompleteDisplayOrderedBefore)
 
         let progress: Double
         let displayState: DisplayState
@@ -115,17 +115,6 @@ public extension TodayHouseworkSummary {
 }
 
 private extension TodayHouseworkSummary {
-
-    /// 未完了家事の表示順（ポイント降順）を決める比較関数
-    ///
-    /// Firestoreの取得順は安定しないため、表示のたびに並び順が変わっていた。
-    /// ポイントの高い家事から並べ、取りかかる価値の大きいものをファーストビューに出す。
-    static func isIncompleteDisplayOrderedBefore(_ lhs: HouseworkItem, _ rhs: HouseworkItem) -> Bool {
-        if lhs.point != rhs.point {
-            return lhs.point > rhs.point
-        }
-        return lhs.id < rhs.id
-    }
 
     /// 未登録のテンプレート家事に振るID
     ///
