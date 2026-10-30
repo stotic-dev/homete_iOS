@@ -12,6 +12,8 @@ import SwiftUI
 /// クイックアクションのメニュー（`.contextMenu`の中）からはアラートを出せないため、メニューを置いた画面に付ける。
 /// 家事ボード・ホームの今日の家事・未完了の家事・家事詳細のどこから確かめても同じ文言と処理にするため、
 /// 1つのModifierにまとめている。
+///
+/// Storeを呼んでまわすため、UIのみのViewではなく、ロジックを持つView（`XxxScreen`・`XxxComponent`・家事詳細）に付ける。
 struct HouseworkPostponeConfirmationAlert: ViewModifier {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -21,6 +23,9 @@ struct HouseworkPostponeConfirmationAlert: ViewModifier {
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
     @Environment(\.timeZone) var timeZone
+
+    /// 最後に出した確認の理由。閉じている途中に`confirmation`が`nil`になっても、タイトルを変えないために持つ
+    @State var lastReason: HouseworkPostponeConfirmation.Reason?
 
     @Binding var confirmation: HouseworkPostponeConfirmation?
     let step: HouseworkAnalyticsStep
@@ -43,6 +48,11 @@ struct HouseworkPostponeConfirmationAlert: ViewModifier {
             } message: { confirmation in
                 Text(message(confirmation))
             }
+            .onChange(of: confirmation) {
+                if let confirmation {
+                    lastReason = confirmation.reason
+                }
+            }
     }
 
 }
@@ -61,7 +71,7 @@ private extension HouseworkPostponeConfirmationAlert {
     }
 
     var title: LocalizedStringResource {
-        switch confirmation?.reason {
+        switch confirmation?.reason ?? lastReason {
         case .merge:
             .localized("まとめてまわしますか？")
 
@@ -92,9 +102,10 @@ private extension HouseworkPostponeConfirmationAlert {
         }
     }
 
+    /// 家事の行に出す「12/31から」と同じ書式にする
     func destinationText(_ destination: Date) -> String {
         let format = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: timeZone)
-            .month()
+            .month(.defaultDigits)
             .day()
         return destination.formatted(format)
     }
