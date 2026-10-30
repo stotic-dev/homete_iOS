@@ -305,7 +305,10 @@ private extension HouseworkDetailView {
     }
 
     func didChangeItems() {
-        guard let targetItem = houseworkListStore.items.item(item.originalItem) else { return }
+        // テンプレートの家事を別の日へまわすと、元の日に同じIDの記録が残る。画面を閉じる前にその記録
+        //（「やらない」）へ切り替わって見えないよう、反映しない
+        guard let targetItem = houseworkListStore.items.item(item.originalItem),
+              !targetItem.isPostponedRecord else { return }
 
         withAnimation {
             item = .init(originalItem: targetItem, isRegistered: true)
