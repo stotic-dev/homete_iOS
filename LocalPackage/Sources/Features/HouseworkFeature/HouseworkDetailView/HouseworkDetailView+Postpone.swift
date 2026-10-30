@@ -23,7 +23,13 @@ extension HouseworkDetailView {
     }
 
     func selectedPostponeDate(_ date: Date) {
+        pendingPostponeDate = date
         isPresentedPostponeDatePicker = false
+    }
+
+    func dismissedPostponeDatePicker() {
+        guard let date = pendingPostponeDate else { return }
+        pendingPostponeDate = nil
         guard let cohabitantId = account.cohabitantId else { return }
 
         let target = item

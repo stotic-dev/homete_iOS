@@ -30,6 +30,8 @@ public struct HouseworkDetailView: View {
     @State var isPresentedMemoEditSheet = false
     @State var isPresentedMemoNotEditableAlert = false
     @State var isPresentedPostponeDatePicker = false
+    /// カレンダーで選んだ、まわす先の日。カレンダーが閉じきるのを待ってからまわす
+    @State var pendingPostponeDate: Date?
     /// 別の日へまわす前に、確認のアラートで確かめている内容
     @State var postponeConfirmation: HouseworkPostponeConfirmation?
     /// チェックの保存中か
@@ -71,7 +73,8 @@ public struct HouseworkDetailView: View {
             .sheet(isPresented: $isPresentedAddHelperSheet) {
                 HouseworkAddHelperSheet(item: item, step: .detail)
             }
-            .sheet(isPresented: $isPresentedPostponeDatePicker) {
+            // 確認のアラートを出すことがあるため、カレンダーが閉じきってからまわす。閉じている途中に出すと表示されないことがある
+            .sheet(isPresented: $isPresentedPostponeDatePicker, onDismiss: dismissedPostponeDatePicker) {
                 postponeDatePicker()
             }
             .houseworkPostponeConfirmation(
