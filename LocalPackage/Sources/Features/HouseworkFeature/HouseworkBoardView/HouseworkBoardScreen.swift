@@ -46,6 +46,8 @@ public struct HouseworkBoardScreen: View {
     @State var thankingItem: HouseworkBoardItem?
     /// クイックアクションの「手伝った人を追加」で、担当者を選ぶハーフモーダルを出している家事
     @State var addingHelperItem: HouseworkBoardItem?
+    /// クイックアクションの「明日にまわす」「今日にまわす」で、確認のアラートを出している家事
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
     /// 初めてありがとうを伝えた回数。増えるたびにありがとうの演出を出す
     @State var thanksFeedbackCount = 0
     /// ハーフモーダルで初めてありがとうを伝え、モーダルが閉じきるのを待って演出を出す
@@ -164,6 +166,11 @@ private extension HouseworkBoardScreen {
             .thanksFeedback(trigger: thanksFeedbackCount)
             // まとめて完了は完了のハーフモーダルを通らないため、ボードに重ねてほめる
             .completionPraise($bulkCompletionPraise)
+            .houseworkPostponeConfirmation(
+                $postponeConfirmation,
+                step: .board,
+                onError: { commonError = .init(error: $0) }
+            )
             .commonError(content: $commonError)
             .fullScreenLoadingIndicator(loadingState)
             .trackScreenView(.houseworkBoard)
@@ -205,6 +212,7 @@ private extension HouseworkBoardScreen {
                         onSelectComplete: { completingItem = item },
                         onSelectThanks: { thankingItem = item },
                         onSelectAddHelper: { addingHelperItem = item },
+                        onRequestPostponeConfirmation: { postponeConfirmation = $0 },
                         onError: { commonError = .init(error: $0) }
                     )
                 }

@@ -19,8 +19,8 @@ enum HouseworkDetailActionTest {
 
 extension HouseworkDetailActionTest.ActionsCase {
 
-    @Test("未完了の家事では、完了にすると、やらないを出す")
-    func actions_incomplete_returnsCompleteAndRemove() {
+    @Test("未完了の家事では、完了にする・別の日にまわす・やらないを出す")
+    func actions_incomplete_returnsCompletePostponeAndRemove() {
         // Arrange
         let item = HouseworkBoardItem.makeForPreview(id: "1", state: .incomplete)
 
@@ -28,7 +28,7 @@ extension HouseworkDetailActionTest.ActionsCase {
         let actual = HouseworkDetailAction.actions(for: item, ownUserId: "own", canAddHelper: true)
 
         // Assert
-        #expect(actual == [.complete, .remove])
+        #expect(actual == [.complete, .postpone, .remove])
     }
 
     @Test("やらないにした家事では、アクションを出さない")
@@ -142,6 +142,7 @@ extension HouseworkDetailActionTest.IsPrimaryCase {
             HouseworkDetailAction.addHelper,
             .redo,
             .returnToIncomplete,
+            .postpone,
             .remove,
         ]
     )

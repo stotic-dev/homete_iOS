@@ -25,6 +25,8 @@ enum HouseworkDetailAction: Identifiable, Equatable, CaseIterable {
     case redo
     /// 未完了に戻す（完了 → 未完了）
     case returnToIncomplete
+    /// 別の日にまわす（日付を選んで、未完了の家事をその日へ移す）
+    case postpone
     /// やらない（家事を一覧から取り下げる）
     case remove
 
@@ -45,7 +47,7 @@ extension HouseworkDetailAction {
         case .complete, .sendThanks, .addThanksMessage, .editThanksMessage:
             true
 
-        case .addHelper, .redo, .returnToIncomplete, .remove:
+        case .addHelper, .redo, .returnToIncomplete, .postpone, .remove:
             false
         }
     }
@@ -65,7 +67,7 @@ extension HouseworkDetailAction {
     ) -> [Self] {
         switch item.state {
         case .incomplete:
-            return [.complete, .remove]
+            return [.complete, .postpone, .remove]
 
         case .completed:
             var actions: [Self] = []

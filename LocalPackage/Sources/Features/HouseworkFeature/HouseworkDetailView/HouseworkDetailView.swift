@@ -13,6 +13,9 @@ public struct HouseworkDetailView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.now) var now
+    @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
@@ -26,6 +29,9 @@ public struct HouseworkDetailView: View {
     @State var isPresentedAddHelperSheet = false
     @State var isPresentedMemoEditSheet = false
     @State var isPresentedMemoNotEditableAlert = false
+    @State var isPresentedPostponeDatePicker = false
+    /// 別の日へまわす前に、確認のアラートで確かめている内容
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
     /// チェックの保存中か
     /// - Note: 保存がリスナーに反映される前に次のチェックを保存すると、古いメモを元に書いて先のチェックを消すため、1つずつ保存する
     @State var isSavingMemoCheck = false
@@ -65,6 +71,16 @@ public struct HouseworkDetailView: View {
             .sheet(isPresented: $isPresentedAddHelperSheet) {
                 HouseworkAddHelperSheet(item: item, step: .detail)
             }
+            .sheet(isPresented: $isPresentedPostponeDatePicker) {
+                postponeDatePicker()
+            }
+            .houseworkPostponeConfirmation(
+                $postponeConfirmation,
+                step: .detail,
+                // まわした家事はこの日の一覧から消えるため、詳細を閉じて家事ボードへ戻る
+                onPostponed: { dismiss() },
+                onError: { commonErrorContent = .init(error: $0) }
+            )
             .commonError(content: $commonErrorContent)
             .sheet(isPresented: $isPresentedMemoEditSheet) {
                 HouseworkMemoEditScreen(memo: item.originalItem.memo, isPremium: subscriptionStore.isPremium) { memo in
@@ -169,6 +185,9 @@ private extension HouseworkDetailView {
         case .addHelper:
             isPresentedAddHelperSheet = true
 
+        case .postpone:
+            isPresentedPostponeDatePicker = true
+
         case .redo, .returnToIncomplete, .remove:
             loadingState.task {
                 await perform(action)
@@ -208,12 +227,56 @@ private extension HouseworkDetailView {
                 // 一覧から取り下げた家事の詳細は見られても意味がないため閉じる
                 dismiss()
 
-            case .complete, .sendThanks, .addThanksMessage, .editThanksMessage, .addHelper:
+            case .complete, .sendThanks, .addThanksMessage, .editThanksMessage, .addHelper, .postpone:
                 // ハーフモーダルで入力を受け取ってから実行するアクション
                 break
             }
         } catch {
             commonErrorContent = .init(error: error)
+        }
+    }
+
+    func postponeDatePicker() -> some View {
+        NavigationStack {
+            HouseworkPostponeDatePickerView(
+                dateRange: .init(itemDate: item.originalItem.indexedDate.value, now: now, calendar: calendar),
+                onSelect: { selectedPostponeDate($0) },
+                onTapClose: { isPresentedPostponeDatePicker = false }
+            )
+        }
+        .presentationDragIndicator(.visible)
+        .trackScreenView(.houseworkPostponeDatePicker)
+    }
+
+    func selectedPostponeDate(_ date: Date) {
+        isPresentedPostponeDatePicker = false
+        guard let cohabitantId = account.cohabitantId else { return }
+
+        let target = item
+        loadingState.task {
+            do {
+                let result = try await houseworkListStore.postponeIfNeeded(
+                    target,
+                    to: date,
+                    templateContext: templateContext,
+                    storagePolicy: storagePolicy,
+                    cohabitantId: cohabitantId,
+                    step: .detail
+                )
+                switch result {
+                case .postponed:
+                    // まわした家事はこの日の一覧から消えるため、詳細を閉じて家事ボードへ戻る
+                    dismiss()
+
+                case let .needsConfirmation(confirmation):
+                    postponeConfirmation = confirmation
+
+                case .skipped:
+                    break
+                }
+            } catch {
+                commonErrorContent = .init(error: error)
+            }
         }
     }
 

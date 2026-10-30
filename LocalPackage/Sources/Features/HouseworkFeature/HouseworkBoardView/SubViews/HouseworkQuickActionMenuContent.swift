@@ -12,11 +12,16 @@ import SwiftUI
 /// 「完了にする」「ありがとう」「手伝った人を追加」は入力用のハーフモーダルを出すため、その場では実行せず
 /// `onSelectComplete`・`onSelectThanks`・`onSelectAddHelper`で呼び出し元に伝える
 /// （`.contextMenu`の中からはシートを出せないため）。
+/// 「明日にまわす」「今日にまわす」も、確認のアラートが要るときは`onRequestPostponeConfirmation`で呼び出し元に伝える
+/// （呼び出し元は`houseworkPostponeConfirmation`でアラートを出す）。
 public struct HouseworkQuickActionMenuContent: View {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.now) var now
+    @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
@@ -25,6 +30,7 @@ public struct HouseworkQuickActionMenuContent: View {
     let onSelectComplete: () -> Void
     let onSelectThanks: () -> Void
     let onSelectAddHelper: () -> Void
+    let onRequestPostponeConfirmation: (HouseworkPostponeConfirmation) -> Void
     let onError: (Error) -> Void
 
     public init(
@@ -34,6 +40,7 @@ public struct HouseworkQuickActionMenuContent: View {
         onSelectComplete: @escaping () -> Void,
         onSelectThanks: @escaping () -> Void,
         onSelectAddHelper: @escaping () -> Void,
+        onRequestPostponeConfirmation: @escaping (HouseworkPostponeConfirmation) -> Void,
         onError: @escaping (Error) -> Void
     ) {
         self.item = item
@@ -42,11 +49,16 @@ public struct HouseworkQuickActionMenuContent: View {
         self.onSelectComplete = onSelectComplete
         self.onSelectThanks = onSelectThanks
         self.onSelectAddHelper = onSelectAddHelper
+        self.onRequestPostponeConfirmation = onRequestPostponeConfirmation
         self.onError = onError
     }
 
     public var body: some View {
         ForEach(actions) { action in
+            // 取り下げる操作は、ほかの操作と離して押し間違えにくくする
+            if action == .remove, action != actions.first {
+                Divider()
+            }
             Button(action.label, systemImage: action.systemImage, role: action.role) {
                 Task {
                     await perform(action)
@@ -60,10 +72,12 @@ public struct HouseworkQuickActionMenuContent: View {
 private extension HouseworkQuickActionMenuContent {
 
     var actions: [HouseworkQuickAction] {
-        HouseworkQuickAction.actions(
+        HouseworkQuickAction.menuActions(
             for: item,
             ownUserId: loginContext.account.id,
-            canAddHelper: canAddHelper
+            canAddHelper: canAddHelper,
+            now: now,
+            calendar: calendar
         )
     }
 
@@ -79,6 +93,10 @@ private extension HouseworkQuickActionMenuContent {
 
         case .addHelper:
             onSelectAddHelper()
+            return
+
+        case .postponeToTomorrow, .postponeToToday:
+            await postponeToNextDay()
             return
 
         case .remove, .redo, .returnToIncomplete:
@@ -100,10 +118,32 @@ private extension HouseworkQuickActionMenuContent {
         }
     }
 
+    /// 家事の日付の翌日へまわす。確かめることがあれば、まわさずに呼び出し元へ伝える
+    func postponeToNextDay() async {
+        guard let cohabitantId = loginContext.cohabitantId,
+              let destination = HouseworkListStore.nextDay(of: item, calendar: calendar) else { return }
+
+        do {
+            let result = try await houseworkListStore.postponeIfNeeded(
+                item,
+                to: destination,
+                templateContext: templateContext,
+                storagePolicy: storagePolicy,
+                cohabitantId: cohabitantId,
+                step: step
+            )
+            if case let .needsConfirmation(confirmation) = result {
+                onRequestPostponeConfirmation(confirmation)
+            }
+        } catch {
+            onError(error)
+        }
+    }
+
 }
 
 #if DEBUG
-#Preview("HouseworkQuickActionMenuContent_未完了", traits: .sizeThatFitsLayout) {
+#Preview("HouseworkQuickActionMenuContent_未完了_今日の家事", traits: .sizeThatFitsLayout) {
     HouseworkQuickActionMenuContent(
         item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
         step: .board,
@@ -111,6 +151,7 @@ private extension HouseworkQuickActionMenuContent {
         onSelectComplete: {},
         onSelectThanks: {},
         onSelectAddHelper: {},
+        onRequestPostponeConfirmation: { _ in },
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -118,6 +159,51 @@ private extension HouseworkQuickActionMenuContent {
         \.loginContext,
         .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
     )
+    // 家事の日付（2026/1/1）を今日にして、「明日にまわす」を出す
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 1))
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkQuickActionMenuContent_未完了_昨日の家事", traits: .sizeThatFitsLayout) {
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
+        step: .board,
+        canAddHelper: false,
+        onSelectComplete: {},
+        onSelectThanks: {},
+        onSelectAddHelper: {},
+        onRequestPostponeConfirmation: { _ in },
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
+    )
+    // 家事の日付（2026/1/1）を昨日にして、「今日にまわす」を出す
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 2))
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkQuickActionMenuContent_未完了_一昨日の家事", traits: .sizeThatFitsLayout) {
+    HouseworkQuickActionMenuContent(
+        item: .makeForPreview(title: "洗濯", point: 10, state: .incomplete),
+        step: .board,
+        canAddHelper: false,
+        onSelectComplete: {},
+        onSelectThanks: {},
+        onSelectAddHelper: {},
+        onRequestPostponeConfirmation: { _ in },
+        onError: { _ in }
+    )
+    .environment(HouseworkListStore())
+    .environment(
+        \.loginContext,
+        .init(account: .init(id: "own", userName: "", cohabitantId: "cohabitant"))
+    )
+    // 家事の日付（2026/1/1）を一昨日にして、まわす操作を出さない
+    .environment(\.now, .previewDate(year: 2026, month: 1, day: 3))
+    .setupEnvironmentForPreview()
 }
 
 #Preview("HouseworkQuickActionMenuContent_完了_実施者以外_手伝った人を追加できる", traits: .sizeThatFitsLayout) {
@@ -133,6 +219,7 @@ private extension HouseworkQuickActionMenuContent {
         onSelectComplete: {},
         onSelectThanks: {},
         onSelectAddHelper: {},
+        onRequestPostponeConfirmation: { _ in },
         onError: { _ in }
     )
     .environment(HouseworkListStore())
@@ -155,6 +242,7 @@ private extension HouseworkQuickActionMenuContent {
         onSelectComplete: {},
         onSelectThanks: {},
         onSelectAddHelper: {},
+        onRequestPostponeConfirmation: { _ in },
         onError: { _ in }
     )
     .environment(HouseworkListStore())

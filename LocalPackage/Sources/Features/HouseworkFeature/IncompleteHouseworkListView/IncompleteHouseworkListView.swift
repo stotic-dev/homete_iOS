@@ -20,6 +20,8 @@ public struct IncompleteHouseworkListView: View {
     @CommonError var commonError
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
+    /// クイックアクションの「明日にまわす」で、確認のアラートを出している家事
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
 
     /// 行をタップしたときの処理。家事詳細への遷移は、ナビゲーションを持つ呼び出し元に任せる
     let onSelectItem: (HouseworkBoardItem) -> Void
@@ -45,6 +47,11 @@ public struct IncompleteHouseworkListView: View {
         .sheet(item: $completingItem) { item in
             HouseworkCompleteSheet(item: item, step: .dashboard)
         }
+        .houseworkPostponeConfirmation(
+            $postponeConfirmation,
+            step: .dashboard,
+            onError: { commonError = .init(error: $0) }
+        )
         .commonError(content: $commonError)
         .trackScreenView(.incompleteHouseworkList)
     }
@@ -104,6 +111,7 @@ private extension IncompleteHouseworkListView {
             onSelectComplete: { completingItem = item },
             onSelectThanks: {},
             onSelectAddHelper: {},
+            onRequestPostponeConfirmation: { postponeConfirmation = $0 },
             onError: { commonError = .init(error: $0) }
         )
     }

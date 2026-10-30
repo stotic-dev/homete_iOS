@@ -27,6 +27,10 @@ extension HouseworkQuickAction {
             .localized("もう一度やった")
         case .returnToIncomplete:
             .localized("未完了に戻す")
+        case .postponeToTomorrow:
+            .localized("明日にまわす")
+        case .postponeToToday:
+            .localized("今日にまわす")
         }
     }
 
@@ -45,6 +49,8 @@ extension HouseworkQuickAction {
             "arrow.clockwise"
         case .returnToIncomplete:
             "arrow.uturn.backward"
+        case .postponeToTomorrow, .postponeToToday:
+            "arrow.turn.down.right"
         }
     }
 
@@ -52,7 +58,7 @@ extension HouseworkQuickAction {
         switch self {
         case .remove:
             .destructive
-        case .complete, .sendThanks, .addHelper, .redo, .returnToIncomplete:
+        case .complete, .sendThanks, .addHelper, .redo, .returnToIncomplete, .postponeToTomorrow, .postponeToToday:
             nil
         }
     }

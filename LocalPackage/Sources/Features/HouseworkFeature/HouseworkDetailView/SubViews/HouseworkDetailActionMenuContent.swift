@@ -26,7 +26,7 @@ struct HouseworkDetailActionMenuContent: View {
 
 #if DEBUG
 #Preview("HouseworkDetailActionMenuContent_未完了", traits: .sizeThatFitsLayout) {
-    HouseworkDetailActionMenuContent(actions: [.remove], onTap: { _ in })
+    HouseworkDetailActionMenuContent(actions: [.postpone, .remove], onTap: { _ in })
 }
 
 #Preview("HouseworkDetailActionMenuContent_完了", traits: .sizeThatFitsLayout) {

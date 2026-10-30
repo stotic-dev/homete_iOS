@@ -3,6 +3,7 @@
 //  homete
 //
 
+import Foundation
 import HometeDomain
 
 /// 家事リストのセルからワンタップで行えるアクション
@@ -24,6 +25,10 @@ enum HouseworkQuickAction: Identifiable, Equatable, CaseIterable {
     case redo
     /// 未完了に戻す（完了 → 未完了）
     case returnToIncomplete
+    /// 明日にまわす（今日の未完了の家事を翌日へ移す）
+    case postponeToTomorrow
+    /// 今日にまわす（昨日の未完了の家事を翌日、つまり今日へ移す）
+    case postponeToToday
 
     var id: Self {
         self
@@ -37,9 +42,10 @@ extension HouseworkQuickAction {
     ///
     /// もう一度やったは、選択した件数分の家事がまとめて増えてしまうため一括操作の対象にしない。
     /// 手伝った人の追加は、家事ごとに担当者と配分を決める操作なので同じく対象にしない。
+    /// まわす操作は、まとめるかどうか・同じ名前の家事があるかを家事ごとに確かめるため対象にしない。
     var isAvailableInBulk: Bool {
         switch self {
-        case .redo, .addHelper:
+        case .redo, .addHelper, .postponeToTomorrow, .postponeToToday:
             false
         case .complete, .remove, .sendThanks, .returnToIncomplete:
             true
@@ -74,6 +80,43 @@ extension HouseworkQuickAction {
         case .notTodo:
             return []
         }
+    }
+
+    /// 1件の家事のメニュー（長押し・その他ボタン）に出すクイックアクションを返す
+    ///
+    /// `actions(for:ownUserId:canAddHelper:)`に、家事の日付で出し分ける「まわす」を「やらない」の前に足す。
+    /// 「まわす」は複数選択の判定に含めないため、`actions(for:ownUserId:canAddHelper:)`には入れない。
+    /// - Parameter canAddHelper: 手伝った人を足せるかどうか（足せる相手がいないときは出さない）
+    static func menuActions(
+        for item: HouseworkBoardItem,
+        ownUserId: String,
+        canAddHelper: Bool,
+        now: Date,
+        calendar: Calendar
+    ) -> [Self] {
+        var result = Self.actions(for: item, ownUserId: ownUserId, canAddHelper: canAddHelper)
+        guard let postpone = Self.postponeAction(for: item, now: now, calendar: calendar),
+              let removeIndex = result.firstIndex(of: .remove) else { return result }
+
+        result.insert(postpone, at: removeIndex)
+        return result
+    }
+
+    /// 家事の日付に応じた「まわす」のアクション
+    ///
+    /// 今日の家事は明日へ、昨日の家事は今日へまわせる。それより前や先の日の家事は、家事詳細から日付を選んでまわす。
+    static func postponeAction(for item: HouseworkBoardItem, now: Date, calendar: Calendar) -> Self? {
+        guard item.state == .incomplete else { return nil }
+
+        let today = calendar.startOfDay(for: now)
+        let itemDay = calendar.startOfDay(for: item.originalItem.indexedDate.value)
+        if itemDay == today {
+            return .postponeToTomorrow
+        }
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today), itemDay == yesterday {
+            return .postponeToToday
+        }
+        return nil
     }
 
     /// 状態のみに応じたクイックアクションを返す

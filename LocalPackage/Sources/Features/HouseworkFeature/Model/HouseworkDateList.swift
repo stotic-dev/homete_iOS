@@ -25,7 +25,8 @@ struct HouseworkDateList: Equatable {
     /// 保存期間の上限に達しているか。無料プランで上限日まで遡ったときにブロック表示を出す判断に使う
     let hasStorageLimit: Bool
 
-    private static let forwardSelectableOffset = 7
+    /// 未来方向に選択できる日数。家事詳細から別の日へまわすときに選べる範囲（`HouseworkPostponeDateRange`）にも使う
+    static let forwardSelectableOffset = 7
     private static let unselectablePadding = 3
     /// プレミアムプランで一度に生成する過去日数の上限
     ///

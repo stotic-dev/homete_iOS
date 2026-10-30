@@ -20,6 +20,17 @@
         }
       }
     },
+    "%@から" : {
+      "comment" : "別の日からまわしてきた家事に添える、まわす前の日付",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From %@"
+          }
+        }
+      }
+    },
     "%@さん" : {
       "comment" : "担当者の名前に付ける敬称",
       "localizations" : {
@@ -37,6 +48,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "From %@"
+          }
+        }
+      }
+    },
+    "%@には「%@」がすでにあります。" : {
+      "comment" : "1つめはまわす先の日付、2つめは家事の名前",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@には「%2$@」がすでにあります。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%2$@” is already on %1$@."
+          }
+        }
+      }
+    },
+    "%@にも「%@」があるので、その日の分にまとめます。" : {
+      "comment" : "1つめはまわす先の日付、2つめは家事の名前",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@にも「%2$@」があるので、その日の分にまとめます。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%2$@” is already on %1$@, so it will be combined into that day's chore."
           }
         }
       }
@@ -365,6 +410,16 @@
         }
       }
     },
+    "このまままわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Anyway?"
+          }
+        }
+      }
+    },
     "この家事は%lldptなので、担当者は%lld人まで選べます" : {
       "localizations" : {
         "ja" : {
@@ -513,12 +568,63 @@
         }
       }
     },
+    "まとめてまわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combine with That Day?"
+          }
+        }
+      }
+    },
     "まとめて登録する" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Several at Once"
+          }
+        }
+      }
+    },
+    "まとめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combine"
+          }
+        }
+      }
+    },
+    "まわす" : {
+      "comment" : "家事を別の日へ移すボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move"
+          }
+        }
+      }
+    },
+    "まわす前の日" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moved From"
+          }
+        }
+      }
+    },
+    "まわす日を選ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Day"
           }
         }
       }
@@ -589,6 +695,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pick a date from the calendar"
+          }
+        }
+      }
+    },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
           }
         }
       }
@@ -805,6 +921,16 @@
         }
       }
     },
+    "今日にまわす" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Today"
+          }
+        }
+      }
+    },
     "今日の家事は、ぜんぶ終わりました" : {
       "localizations" : {
         "en" : {
@@ -861,6 +987,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Make sure everyone gets at least 1pt"
+          }
+        }
+      }
+    },
+    "別の日にまわす…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Another Day…"
           }
         }
       }
@@ -1052,6 +1188,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose a Date"
+          }
+        }
+      }
+    },
+    "明日にまわす" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move to Tomorrow"
           }
         }
       }

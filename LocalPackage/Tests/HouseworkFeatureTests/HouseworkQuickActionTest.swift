@@ -11,6 +11,7 @@ import Testing
 enum HouseworkQuickActionTest {
 
     struct ActionsForItemCase {}
+    struct MenuActionsCase {}
     struct ActionsForStateCase {}
     struct IsAvailableInBulkCase {}
 
@@ -183,6 +184,108 @@ extension HouseworkQuickActionTest.ActionsForStateCase {
 
 }
 
+extension HouseworkQuickActionTest.MenuActionsCase {
+
+    /// 家事の日付（2026/1/10）。今日・昨日の判定は日本時間で行う
+    static let itemDate = Date.previewDate(year: 2026, month: 1, day: 10)
+
+    @Test("今日の未完了の家事は、やらないの前に明日にまわすを出す")
+    func menuActions_incompleteToday_insertsPostponeToTomorrowBeforeRemove() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            indexedDate: .init(value: Self.itemDate),
+            state: .incomplete
+        )
+
+        // Act
+        let actual = HouseworkQuickAction.menuActions(
+            for: item,
+            ownUserId: "ownUserId",
+            canAddHelper: false,
+            now: .previewDate(year: 2026, month: 1, day: 10, hour: 23, minute: 59),
+            calendar: .japanese
+        )
+
+        // Assert
+        #expect(actual == [.complete, .postponeToTomorrow, .remove])
+    }
+
+    @Test("昨日の未完了の家事は、やらないの前に今日にまわすを出す")
+    func menuActions_incompleteYesterday_insertsPostponeToTodayBeforeRemove() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            indexedDate: .init(value: Self.itemDate),
+            state: .incomplete
+        )
+
+        // Act
+        let actual = HouseworkQuickAction.menuActions(
+            for: item,
+            ownUserId: "ownUserId",
+            canAddHelper: false,
+            now: .previewDate(year: 2026, month: 1, day: 11),
+            calendar: .japanese
+        )
+
+        // Assert
+        #expect(actual == [.complete, .postponeToToday, .remove])
+    }
+
+    @Test(
+        "一昨日より前・明日以降の未完了の家事には、まわす操作を出さない",
+        arguments: [
+            Date.previewDate(year: 2026, month: 1, day: 12),
+            .previewDate(year: 2026, month: 1, day: 9),
+        ]
+    )
+    func menuActions_incompleteOtherDay_returnsActionsWithoutPostpone(now: Date) {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            indexedDate: .init(value: Self.itemDate),
+            state: .incomplete
+        )
+
+        // Act
+        let actual = HouseworkQuickAction.menuActions(
+            for: item,
+            ownUserId: "ownUserId",
+            canAddHelper: false,
+            now: now,
+            calendar: .japanese
+        )
+
+        // Assert
+        #expect(actual == [.complete, .remove])
+    }
+
+    @Test("完了した今日の家事には、まわす操作を出さない")
+    func menuActions_completedToday_returnsActionsWithoutPostpone() {
+        // Arrange
+        let item = HouseworkBoardItem.makeForPreview(
+            id: "1",
+            indexedDate: .init(value: Self.itemDate),
+            state: .completed,
+            executorId: "otherUserId"
+        )
+
+        // Act
+        let actual = HouseworkQuickAction.menuActions(
+            for: item,
+            ownUserId: "ownUserId",
+            canAddHelper: false,
+            now: Self.itemDate,
+            calendar: .japanese
+        )
+
+        // Assert
+        #expect(actual == [.sendThanks, .redo, .returnToIncomplete])
+    }
+
+}
+
 extension HouseworkQuickActionTest.IsAvailableInBulkCase {
 
     @Test(
@@ -194,6 +297,8 @@ extension HouseworkQuickActionTest.IsAvailableInBulkCase {
             (.addHelper, false),
             (.redo, false),
             (.returnToIncomplete, true),
+            (.postponeToTomorrow, false),
+            (.postponeToToday, false),
         ]
     )
     func isAvailableInBulk(action: HouseworkQuickAction, expected: Bool) {
