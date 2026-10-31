@@ -1,0 +1,151 @@
+//
+//  AnnouncementStore.swift
+//  LocalPackage
+//
+
+import Foundation
+import Observation
+
+/// 運営からのお知らせの一覧・未読の数・起動時に出すお知らせを扱うStore
+///
+/// ダッシュボードのベルのバッジ・起動時のモーダル・一覧で同じ状態を使うため、メイン画面（`AppTabView`）が1つ持つ。
+@MainActor
+@Observable
+public final class AnnouncementStore {
+
+    public private(set) var state = AnnouncementState()
+
+    /// 進行中の取得。取得中にもう一度呼ばれたら、新しく取りにいかずにこれを待つ
+    private var refreshTask: Task<Void, Never>?
+    /// この端末で既読にした一覧の位置
+    ///
+    /// 既読にする前に始めた取得が後から返ってきても、未読の数が戻らないようにするために使う。
+    private var listReadUntil: Date?
+    /// この端末で既読にしたモーダルの位置
+    ///
+    /// 閉じる前に始めた取得が後から返ってきても、同じお知らせを出し直さないようにするために使う。
+    private var modalReadUntil: Date?
+
+    // MARK: Dependencies
+
+    private let announcementClient: AnnouncementClient
+
+    public init(announcementClient: AnnouncementClient = .previewValue) {
+        self.announcementClient = announcementClient
+    }
+
+    /// 取り直す
+    /// - Note: 取得中にもう一度呼ばれた場合は、進行中の取得が終わるのを待つ。失敗しても取得済みの内容は残す。
+    ///         ベルと一覧で同じ取得を使い回すため、呼び出した画面が閉じても取得は止めない
+    public func refresh() async {
+        if let refreshTask {
+            await refreshTask.value
+            return
+        }
+
+        let task = Task {
+            await self.fetch()
+        }
+        refreshTask = task
+        await task.value
+        refreshTask = nil
+    }
+
+    /// 一覧を開いたときに、先頭（最新）のお知らせまでを既読にする
+    ///
+    /// 未読の数とモーダルはすぐに消す。各お知らせの`isUnread`は次に取り直すまでそのままにする。
+    /// - Note: 失敗しても画面には出さない。サーバーの既読位置が進んでいなければ、次の取得で未読が戻る
+    public func markListRead() async {
+        guard let latest = state.announcements.first else { return }
+
+        listReadUntil = max(listReadUntil ?? latest.publishedAt, latest.publishedAt)
+        modalReadUntil = max(modalReadUntil ?? latest.publishedAt, latest.publishedAt)
+        state.unreadCount = 0
+        state.modalAnnouncement = nil
+
+        try? await announcementClient.markRead(latest.id, .list)
+    }
+
+    /// 起動時のモーダルを閉じたときに、そのお知らせを既読にする
+    /// - Note: 一覧の未読は残る。失敗しても画面には出さない
+    public func markModalRead() async {
+        guard let modal = state.modalAnnouncement else { return }
+
+        modalReadUntil = max(modalReadUntil ?? modal.publishedAt, modal.publishedAt)
+        state.modalAnnouncement = nil
+
+        try? await announcementClient.markRead(modal.id, .modal)
+    }
+
+}
+
+private extension AnnouncementStore {
+
+    func fetch() async {
+        state.isRefreshing = true
+        defer { state.isRefreshing = false }
+
+        do {
+            let list = try await announcementClient.list()
+            state.announcements = list.announcements
+            state.unreadCount = unreadCount(in: list)
+            state.modalAnnouncement = modalAnnouncement(in: list)
+            state.loadFailure = nil
+            state.hasLoaded = true
+        } catch {
+            state.loadFailure = DomainError.make(error) ?? .other
+        }
+    }
+
+    func unreadCount(in list: AnnouncementList) -> Int {
+        guard let listReadUntil else { return list.unreadCount }
+
+        // 既読にした位置より後に公開されたものだけが未読として残りうる
+        let unreadAfterRead = list.announcements.count { $0.publishedAt > listReadUntil }
+        return min(list.unreadCount, unreadAfterRead)
+    }
+
+    func modalAnnouncement(in list: AnnouncementList) -> Announcement? {
+        guard let modalId = list.modalAnnouncementId,
+              let announcement = list.announcements.first(where: { $0.id == modalId }) else { return nil }
+
+        if let modalReadUntil, announcement.publishedAt <= modalReadUntil {
+            return nil
+        }
+        return announcement
+    }
+
+}
+
+/// 運営からのお知らせの状態
+public struct AnnouncementState: Equatable, Sendable {
+
+    /// `publishedAt`の新しい順
+    public var announcements: [Announcement] = []
+    /// 未読のお知らせの数。ベルのバッジに使う
+    public var unreadCount = 0
+    /// 起動時にモーダルで出すお知らせ。出すものが無ければ`nil`
+    public var modalAnnouncement: Announcement?
+    /// 一度でも取得に成功したか。取得前の空と、お知らせが1件も無い空を見分ける
+    public var hasLoaded = false
+    public var isRefreshing = false
+    /// 直近の取り直しに失敗した理由
+    public var loadFailure: DomainError?
+
+    public init(
+        announcements: [Announcement] = [],
+        unreadCount: Int = 0,
+        modalAnnouncement: Announcement? = nil,
+        hasLoaded: Bool = false,
+        isRefreshing: Bool = false,
+        loadFailure: DomainError? = nil
+    ) {
+        self.announcements = announcements
+        self.unreadCount = unreadCount
+        self.modalAnnouncement = modalAnnouncement
+        self.hasLoaded = hasLoaded
+        self.isRefreshing = isRefreshing
+        self.loadFailure = loadFailure
+    }
+
+}
