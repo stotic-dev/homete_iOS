@@ -113,7 +113,8 @@ private extension AnnouncementListView {
             announcementList()
         } else if state.hasLoaded {
             emptyContent()
-        } else if let failure = state.loadFailure {
+        } else if !state.isRefreshing, let failure = state.loadFailure {
+            // 再読み込みを押した後は、取り直している間スピナーに切り替えて押したことが分かるようにする
             LoadErrorView(error: failure, onTapRetry: onTapRetry)
         } else {
             ProgressView()
