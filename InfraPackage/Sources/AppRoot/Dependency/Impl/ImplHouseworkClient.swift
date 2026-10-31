@@ -65,8 +65,6 @@ extension HouseworkClient {
                 .whereField("indexedDate.value", isGreaterThanOrEqualTo: from)
                 .whereField("indexedDate.value", isLessThanOrEqualTo: to)
         }
-    } syncRetentionHandler: { cohabitantId in
-        _ = try await FunctionsService.call("synchouseworkretention", parameters: ["cohabitantId": cohabitantId])
     }
 
 }

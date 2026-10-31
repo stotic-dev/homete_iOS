@@ -128,7 +128,6 @@ public extension RootView {
                 cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
                 houseworkManager: $0.houseworkManager,
-                houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient,
                 sentInvitationStore: sentInvitationStore
             )
