@@ -6,6 +6,9 @@
 import HometeDomain
 import HometeUI
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 /// 問い合わせの詳細画面の下に置く、追加のメッセージの入力欄と送信ボタン
 struct InquiryMessageInputBar: View {
@@ -80,6 +83,7 @@ private extension InquiryMessageInputBar {
     )
 }
 
+// スピナーは撮影ごとに回転角が変わりVRTがフレーキーになるため、スナップショットの対象から外す
 #Preview("InquiryMessageInputBar_送信中", traits: .sizeThatFitsLayout) {
     InquiryMessageInputBar(
         messageText: .constant("再起動しても同じでした。"),
@@ -88,6 +92,9 @@ private extension InquiryMessageInputBar {
         isSending: true,
         onTapSubmit: {}
     )
+    #if canImport(Prefire)
+    .prefireIgnored()
+    #endif
 }
 
 #Preview("InquiryMessageInputBar_文字数超過", traits: .sizeThatFitsLayout) {

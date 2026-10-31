@@ -57,6 +57,9 @@ struct RegisteredContent: View {
             },
             contributionSummary: {
                 ContributionSummaryComponent.make()
+            },
+            pastIncompleteHousework: {
+                PastIncompleteHouseworkComponent.make()
             }
         )
         .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {

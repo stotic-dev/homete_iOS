@@ -177,6 +177,7 @@ private extension HouseworkTemplateItemEditModal {
         input: .constant(.initial(UUID())),
         mode: .create
     ) { _ in }
+        .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkTemplateItemEditModal_入力済み") {
@@ -190,6 +191,7 @@ private extension HouseworkTemplateItemEditModal {
         input: .constant(beforeInput),
         mode: .edit(before: beforeInput)
     ) { _ in }
+        .environment(SubscriptionStore())
 }
 
 #Preview("HouseworkTemplateItemEditModal_毎月") {
@@ -203,5 +205,6 @@ private extension HouseworkTemplateItemEditModal {
         input: .constant(beforeInput),
         mode: .edit(before: beforeInput)
     ) { _ in }
+        .environment(SubscriptionStore())
 }
 #endif

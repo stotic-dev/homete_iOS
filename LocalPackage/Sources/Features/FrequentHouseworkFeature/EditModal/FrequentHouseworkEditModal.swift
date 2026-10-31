@@ -291,6 +291,7 @@ private extension FrequentHouseworkEditModal {
         onConfirm: { _ in },
         onCreateCategory: { .makeForPreview(id: "new", name: $0) }
     )
+    .environment(SubscriptionStore())
 }
 
 #Preview("FrequentHouseworkEditModal_編集_名前が重複") {
@@ -303,5 +304,6 @@ private extension FrequentHouseworkEditModal {
         onConfirm: { _ in },
         onCreateCategory: { .makeForPreview(id: "new", name: $0) }
     )
+    .environment(SubscriptionStore())
 }
 #endif

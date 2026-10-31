@@ -115,7 +115,9 @@ private extension HomeView {
         RegisteredContent(onRetry: {
             await didAppearRegisteredContent()
         })
-        .task {
+        // プランが変わったら、そのプランで閲覧できる期間で家事を取り直す。
+        // 取り直さないと、プレミアムを解約した後もプレミアムで読み込んだ過去の家事が表示されたままになる
+        .task(id: storagePolicy) {
             await didAppearRegisteredContent()
         }
         // 設定から開く画面（家事テンプレートなど）がStoreを使うため、Storeの注入より内側で出す

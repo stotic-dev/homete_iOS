@@ -19,7 +19,7 @@ public final actor HouseworkManager {
     private var streamContinuationDic: [String: AsyncStream<Result<[HouseworkItem], DomainError>>.Continuation] = [:]
     private var observeTask: Task<Void, Never>?
     /// 進行中の追加フェッチ。同じ期間を重複して取得しないための待ち合わせに使う
-    private var pendingFetchTask: Task<Void, Never>?
+    private var pendingFetchTask: Task<Int?, Never>?
     /// 監視の世代。actorの再入により、中断中の準備処理が後から状態を書き戻すのを防ぐために使う
     private var observeGeneration = 0
     /// 購読中（準備中を含む）の条件。初回フェッチかリスナーが失敗したら`nil`に戻し、次の呼び出しでやり直させる
@@ -188,27 +188,60 @@ public final actor HouseworkManager {
         notifyObservers()
     }
 
+    /// 書き込んだ家事のうち、リアルタイムに受け取れない日のものを手元へ反映する
+    ///
+    /// リスナーの期間（±N日）より前の家事は、ホームのやり残している家事などから操作しても、書き込みの結果がリスナーで届かない。
+    /// そのままでは操作が画面に反映されないため、書き込んだ内容をそのまま反映する。
+    /// - Note: リスナーで届く日（±N日と、家事ボードで選んでいる日）は反映しない。書き込みの後に届いた同居人の変更を、
+    ///         古い内容で上書きしてしまうことがあるため
+    public func reflectWritten(_ items: [HouseworkItem], calendar: Calendar) {
+        guard fetchedRange != nil else { return }
+        let listenerPeriod = Set(HouseworkIndexedDate.calcTargetPeriod(
+            anchorDate: listenerAnchorDate,
+            offsetDays: Self.listenerOffset,
+            calendar: calendar
+        ))
+        let unobservedItems = items.filter { item in
+            let day = calendar.startOfDay(for: item.indexedDate.value)
+            return !listenerPeriod.contains(day) && day != focusedDay
+        }
+        guard !unobservedItems.isEmpty else { return }
+        upsert(unobservedItems)
+        notifyObservers()
+    }
+
     /// 指定日まで遡って参照できるように、未取得の期間を追加でフェッチする
     ///
     /// プレミアムユーザーが貢献度画面で取得済み期間より過去へ遡った際に呼ぶ。
     /// すでに取得済みの期間内であれば何もしない。
     public func fetchIfNeeded(until targetDate: Date, cohabitantId: String, calendar: Calendar) async {
         // 進行中の追加フェッチがあれば完了を待つ。待っている間に対象期間が取得済みになるケースがある
-        if let pendingFetchTask {
-            await pendingFetchTask.value
-        }
+        guard await waitForPendingFetch() else { return }
 
         let targetDay = calendar.startOfDay(for: targetDate)
         guard let fetchedRange, targetDay < fetchedRange.lowerBound else { return }
 
         // 取得済み範囲と重複しないよう、その前日までを取得する
         let to = calendar.date(byAdding: .day, value: -1, to: fetchedRange.lowerBound) ?? fetchedRange.lowerBound
-        let task = Task {
-            await self.appendItems(cohabitantId: cohabitantId, from: targetDay, to: to)
+        _ = await runAppendTask(cohabitantId: cohabitantId, from: targetDay, to: to)
+    }
+
+    /// 取得済みの期間より前を、指定した月数ぶん追加でフェッチする
+    ///
+    /// プレミアムユーザーがホームのやり残している家事を末尾までスクロールした際に呼ぶ。
+    /// 家事が全部でいつまで遡れるかは事前に分からないため、取得した件数を返して打ち切りの判断を呼び出し側に任せる。
+    /// - Returns: 追加で取得した家事の件数。初回のフェッチを終えていない・失敗した・サインアウトなどが割り込んだ場合は`nil`
+    public func fetchOlderPeriod(months: Int, cohabitantId: String, calendar: Calendar) async -> Int? {
+        // 進行中の追加フェッチがあれば完了を待ち、その結果の期間より前を取得する
+        guard await waitForPendingFetch(),
+              let fetchedRange,
+              let from = calendar.date(byAdding: .month, value: -months, to: fetchedRange.lowerBound) else {
+            return nil
         }
-        pendingFetchTask = task
-        await task.value
-        pendingFetchTask = nil
+
+        // 取得済み範囲と重複しないよう、その前日までを取得する
+        let to = calendar.date(byAdding: .day, value: -1, to: fetchedRange.lowerBound) ?? fetchedRange.lowerBound
+        return await runAppendTask(cohabitantId: cohabitantId, from: from, to: to)
     }
 
 }
@@ -223,6 +256,33 @@ private extension HouseworkManager {
         // 外し終わるのを待つ間に再入されても、同じリスナーを二重に外さないよう先に手放す
         self.listenerId = nil
         await houseworkClient.removeListener(listenerId)
+    }
+
+    /// 進行中の追加フェッチがあれば完了を待つ
+    /// - Returns: 待っている間に、再セットアップ・サインアウトが割り込まなかったか
+    /// - Note: 待っている間にグループが変わると、`fetchedRange`は新しいグループのものになる。
+    ///         呼び出し側が持つ古いグループIDのまま続けると、前のグループの家事を新しいグループの一覧に混ぜてしまうため、続けさせない
+    func waitForPendingFetch() async -> Bool {
+        let generation = observeGeneration
+        if let pendingFetchTask {
+            _ = await pendingFetchTask.value
+        }
+        return generation == observeGeneration
+    }
+
+    /// 追加フェッチを進行中のフェッチとして登録して実行する
+    /// - Note: 同じフェッチを待っていた別の呼び出しが先に再開し、次のフェッチを登録していることがある。
+    ///         それを消すと重複して取得してしまうため、自分が登録したフェッチのときだけ外す
+    func runAppendTask(cohabitantId: String, from: Date, to: Date) async -> Int? {
+        let task = Task {
+            await self.appendItems(cohabitantId: cohabitantId, from: from, to: to)
+        }
+        pendingFetchTask = task
+        let fetchedCount = await task.value
+        if pendingFetchTask == task {
+            pendingFetchTask = nil
+        }
+        return fetchedCount
     }
 
     /// 選ばれている日だけを購読するリスナーを、選ばれている日に合わせて張り直す
@@ -297,22 +357,24 @@ private extension HouseworkManager {
     }
 
     /// 追加フェッチした期間を allItems と fetchedRange に反映する
-    func appendItems(cohabitantId: String, from: Date, to: Date) async {
+    /// - Returns: 取得した家事の件数。失敗した・反映しなかった場合は`nil`
+    func appendItems(cohabitantId: String, from: Date, to: Date) async -> Int? {
         let generation = observeGeneration
         let fetchedItems: [HouseworkItem]
         do {
             fetchedItems = try await houseworkClient.fetchItems(cohabitantId, from, to)
         } catch {
             print("failed to fetch additional housework items: \(error)")
-            return
+            return nil
         }
         // 追加フェッチ中にサインアウト・再セットアップが走った場合は反映しない
         guard generation == observeGeneration,
-              let currentRange = fetchedRange else { return }
+              let currentRange = fetchedRange else { return nil }
 
         upsert(fetchedItems)
         fetchedRange = min(from, currentRange.lowerBound) ... currentRange.upperBound
         notifyObservers()
+        return fetchedItems.count
     }
 
     func upsert(_ updatedItems: [HouseworkItem]) {

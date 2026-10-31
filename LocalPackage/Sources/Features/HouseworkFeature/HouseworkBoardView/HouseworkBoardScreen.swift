@@ -187,6 +187,11 @@ private extension HouseworkBoardScreen {
                 members: members,
                 ownUserId: loginContext.account.id,
                 loadFailure: loadFailure(of: houseworkListStore),
+                pastIncompleteDates: PastIncompleteHouseworkList.make(
+                    storedAllItems: houseworkListStore.items,
+                    now: now,
+                    calendar: calendar
+                ).dates,
                 onTapRetry: {
                     loadingState.task {
                         await retry()

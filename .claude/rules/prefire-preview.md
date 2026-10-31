@@ -138,6 +138,26 @@ Prefire は `#Preview` の表示名を**そのまま参照スナップショッ�
 同じ画面を撮る。画面全体を撮るPreview（`.sizeThatFitsLayout`でないもの）にだけ付けられる。ライブラリの`.wait(for:on:)`は待った後に
 Viewを作り直すので、この用途では効かない。
 
+### 10. スピナーを写すPreviewは `.prefireIgnored()` でVRTの対象から外す
+
+`ProgressView`・`LoadingIndicator`のスピナーは、撮るたびに回転の角度が変わる。写したままにすると、関係のないPRでも参照PNGが
+差分になり、自動コミットされる（`InquiryMessageInputBar_送信中`で起きた）。通信中・送信中・読み込み中など、スピナーが出る状態の
+Previewには `.prefireIgnored()` を付け、理由をコメントで残す。Xcodeのプレビューでは引き続き確認できる。
+
+```swift
+// スピナーは撮影ごとに回転角が変わりVRTがフレーキーになるため、スナップショットの対象から外す
+#Preview("CohabitantJoinContent_取得中") {
+    NavigationStack {
+        CohabitantJoinContent(state: .loading, onTapJoin: {}, onTapClose: {})
+    }
+    #if canImport(Prefire)
+    .prefireIgnored()
+    #endif
+}
+```
+
+スピナー以外の見た目（入力欄の無効化など）をVRTで押さえたいときは、スピナーの出ない状態のPreviewで確かめる。
+
 ## 検証
 
 上記1〜3は静的に検出できる。Swiftを変更したら実行すること（Stopフックと `local_package_test` ワークフローでも自動実行される）。
@@ -151,5 +171,5 @@ VRT自体はローカルで実行しない（`.claude/rules/swift-code-verificat
 ## 参考実装
 
 - `LocalPackage/Sources/HometeDomain/Utilities/DebugHelper/Preview/PreviewEnvironment.swift`
-- `LocalPackage/Sources/HometeUI/Components/Indicator/LoadingIndicator.swift`
+- `LocalPackage/Sources/HometeUI/Components/Indicator/LoadingIndicator.swift`（スピナーをVRTの対象から外した例）
 - `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsView.swift`（UI変更をScreen層に逃がさずView層に含めた例）

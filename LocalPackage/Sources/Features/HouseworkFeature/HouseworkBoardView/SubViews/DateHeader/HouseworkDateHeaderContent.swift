@@ -24,6 +24,8 @@ struct HouseworkDateHeaderContent: View {
     /// `scrollPosition(id:)`で最初のレイアウトから選択日に合わせる。
     @State private var scrolledDate: Date?
 
+    /// 昨日以前で、まだ終わっていない家事がある日付（その日の0時）
+    let pastIncompleteDates: Set<Date>
     let onTapYearMonth: () -> Void
     let onTapStorageLimit: () -> Void
 
@@ -32,10 +34,12 @@ struct HouseworkDateHeaderContent: View {
 
     init(
         dateList: Binding<HouseworkDateList>,
+        pastIncompleteDates: Set<Date> = [],
         onTapYearMonth: @escaping () -> Void,
         onTapStorageLimit: @escaping () -> Void
     ) {
         _dateList = dateList
+        self.pastIncompleteDates = pastIncompleteDates
         self.onTapYearMonth = onTapYearMonth
         self.onTapStorageLimit = onTapStorageLimit
     }
@@ -117,6 +121,7 @@ private extension HouseworkDateHeaderContent {
         HouseworkDateCell(
             date: item.date,
             state: item.state,
+            hasPastIncomplete: pastIncompleteDates.contains(item.date),
             onTap: { tappedDate in
                 withAnimation {
                     dateList.selectDate(tappedDate, calendar: calendar)

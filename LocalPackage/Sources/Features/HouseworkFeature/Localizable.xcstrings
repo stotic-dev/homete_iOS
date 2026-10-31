@@ -659,6 +659,16 @@
         }
       }
     },
+    "やり残している家事があります" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has unfinished chores"
+          }
+        }
+      }
+    },
     "やる家事を追加すると、ここに並びます" : {
       "localizations" : {
         "en" : {
