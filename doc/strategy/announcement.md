@@ -7,9 +7,9 @@
 ## ステータス
 
 - [x] 要件確定
-- [ ] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 設計確定
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -139,7 +139,7 @@ public struct AnnouncementState: Equatable, Sendable {
 
 - 取得とモーダルの既読が行き違ったとき（閉じた直後に`refresh`が返ってきて同じお知らせがまた入る）に出し直さないよう、閉じたお知らせのIDを覚えておき、`refresh`の結果がそのIDなら`modalAnnouncement`に入れない
 
-### 4. 起動時の購読（`AnnouncementTopicSyncUseCase`）
+### 4. 起動時の購読（`AnnouncementTopicUseCase`）
 
 - 起動時に`AnnouncementTopicClient.loadIsEnabled()`を見て`subscribe`/`unsubscribe`する。`HometeApp`の`AppDelegate`で`MessagingConfigurator.configure()`の後に呼ぶ（ログイン状態に関わらないため、`RootView`より手前）
 - 設定画面のトグルも同じUseCaseの`update(isEnabled:)`を通し、保存と購読の切り替えを1か所にまとめる
@@ -162,13 +162,14 @@ public struct AnnouncementState: Equatable, Sendable {
 | `AnnouncementModalScreen` | `AnnouncementModalView` | 起動時のシート。閉じたら`markModalRead` |
 | — | `AnnouncementListRow` | 行（タイトル・公開日・未読ドット） |
 
-- ベル: `homeNavigationBar`に`onTapAnnouncement`と`unreadCount`を足し、`HometeUI`の`NavigationBarButton`に`bell`のラベルとバッジの表示を足す（チュートリアルのダッシュボードも同じバーを使うため、チュートリアル中はバッジ0で出す）
-- `HomeView`に`@State var isShowAnnouncementList`を足し、`isPresentingModal`にお知らせ一覧と設定を含めたうえで、モーダルの出し分けは`AnnouncementStore.state.modalAnnouncement != nil && !isPresentingModal && !isShowSetting`で判定する
+- ベル: `homeNavigationBar`に`onTapAnnouncement`と`unreadAnnouncementCount`を足し、`HometeUI`の`NavigationBarButton`にバッジの表示を足す。ベルのアイコンはダッシュボードだけで使うので`.symbol("bell", …)`で渡す（チュートリアルのダッシュボードも同じバーを使うため、チュートリアル中はバッジ0で出す）
+- `HomeView`に`isShowAnnouncementList`と、起動時のシートで出しているお知らせ`presentedAnnouncementModal`を持たせる。出せる条件（`announcementModalCandidate`）は、ダッシュボードの上に別のシート・登録後のチュートリアル・招待リンクの参加画面が無く、通知から開く画面も残っていないこと。条件がそろったときに`presentedAnnouncementModal`へ入れ、シートを閉じたら（スワイプを含む）`markModalRead`する
+- 一覧を開いている間は、お知らせが変わるたびに`markListRead`を呼ぶ（既読にした位置より新しいものが無ければ`AnnouncementStore`が何もしない）。未読のドットは開いている間に見えた未読を`AnnouncementListScreen`が覚えて出し続ける
 - `AppScreen`に`announcementList` / `announcementDetail` / `announcementModal`を足し、各Screenで`.trackScreenView`する。`doc/analytics_events.md`の画面一覧も更新する
 
 ### 7. 通知設定のトグル（`SettingFeature/SettingNotification/`）
 
-- 通知が許可されているときの`DailyCompletionReminderSettingView`の下に、お知らせのセクションとトグルを足す（View名が内容と合わなくなるので、通知設定の画面としてまとめた`NotificationSettingView`に改める）
+- 通知が許可されているときの`DailyCompletionReminderSettingView`の下に、お知らせのセクションとトグルを足す（View名を改めると参照スナップショットの改名まで広がるため、名前はそのままにする）
 - 通知が許可されていないときは、今まで通り権限の案内だけを出す（購読していても通知は出ないため）
 
 ### ファイル配置
@@ -176,7 +177,8 @@ public struct AnnouncementState: Equatable, Sendable {
 | 種別 | パス | 役割 |
 |---|---|---|
 | 新規モデル | `LocalPackage/Sources/HometeModel/Announcement/Announcement.swift` | お知らせ（+`Announcement+Preview.swift`） |
-| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Announcement/` | `AnnouncementList`・`AnnouncementReadScope`・`AnnouncementError`・`AnnouncementNotificationData`・`AnnouncementStore`・`AnnouncementTopicSyncUseCase` |
+| 新規ドメイン | `LocalPackage/Sources/HometeDomain/Announcement/` | `AnnouncementList`・`AnnouncementReadScope`・`AnnouncementError`・`AnnouncementNotificationData`・`AnnouncementStore` |
+| 新規UseCase | `LocalPackage/Sources/HometeDomain/UseCase/AnnouncementTopicUseCase.swift` | 通知の設定の保存とトピックの購読をそろえる |
 | 新規Client | `LocalPackage/Sources/HometeDomain/Dependencies/AnnouncementClient.swift`・`AnnouncementTopicClient.swift` | プロトコルと`previewValue` |
 | 修正 | `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift`・`InfraPackage/Sources/AppRoot/Dependency/AppDependencies+liveValue.swift` | Client・UseCaseの追加 |
 | 修正 | `LocalPackage/Sources/HometeDomain/PendingRoute/PendingRoute.swift`・`PendingRouteStore.swift` | `.announcementList`の追加と取り出し |
@@ -184,7 +186,8 @@ public struct AnnouncementState: Equatable, Sendable {
 | 修正 | `LocalPackage/Sources/HometeDomain/AnalyticsLog/AppScreen.swift` | 画面3つ |
 | 新規Infra | `InfraPackage/Sources/HometeInfrastructure/Messaging/MessagingTopicService.swift` | トピックの購読・解除 |
 | 新規Impl | `InfraPackage/Sources/AppRoot/Dependency/Impl/ImplAnnouncementClient.swift`・`ImplAnnouncementTopicClient.swift` | `liveValue` |
-| 修正 | `InfraPackage/Sources/AppRoot/AppTabView.swift` | `AnnouncementStore`の保持・注入・取得のタイミング・PendingRoute |
+| 修正 | `InfraPackage/Sources/AppRoot/AppTabView.swift`・`RootView.swift` | `AnnouncementStore`の保持・注入・PendingRoute |
+| 新規 | `InfraPackage/Sources/AppRoot/AnnouncementRefreshModifier.swift` | お知らせを取り直すタイミング |
 | 修正 | `homete/Views/HometeApp.swift` | 起動時の購読、フォアグラウンド受信の通知 |
 | 新規View | `LocalPackage/Sources/Features/HomeFeature/Announcement/` | 一覧・詳細・モーダル・行・`AnnouncementRoute` |
 | 修正View | `LocalPackage/Sources/Features/HomeFeature/HomeView/HomeView.swift`・`SubViews/HomeNavigationBar.swift` | ベル・シート・モーダル |
@@ -209,26 +212,26 @@ public struct AnnouncementState: Equatable, Sendable {
 
 コミットは対応ごとに分ける（ドメイン・Client → Infra → 画面 → 通知 → 設定 → ドキュメント）。
 
-- [ ] `Announcement`・`AnnouncementList`・`AnnouncementReadScope`・`AnnouncementError`とテスト
-- [ ] `AnnouncementClient`・`AnnouncementTopicClient`と`AppDependencies`への追加
-- [ ] `ImplAnnouncementClient`・`MessagingTopicService`・`ImplAnnouncementTopicClient`
-- [ ] `AnnouncementStore`とテスト
-- [ ] `AnnouncementTopicSyncUseCase`とテスト、起動時の購読
-- [ ] 一覧・詳細・行のView/Screen、`AnnouncementRoute`、Preview
-- [ ] モーダルのView/Screen、Preview
-- [ ] ベルとバッジ（`NavigationBarButton`・`homeNavigationBar`・`HomeView`）
-- [ ] `AppTabView`での`AnnouncementStore`の保持と取得のタイミング
-- [ ] `AnnouncementNotificationData`・`PendingRoute.announcementList`とテスト、フォアグラウンド受信・タップの処理
-- [ ] 通知設定のトグル
-- [ ] `AppScreen`の追加と`doc/analytics_events.md`の更新
-- [ ] 文言の英訳（`make check-translations`）
+- [x] `Announcement`・`AnnouncementList`・`AnnouncementReadScope`・`AnnouncementError`とテスト
+- [x] `AnnouncementClient`・`AnnouncementTopicClient`と`AppDependencies`への追加
+- [x] `ImplAnnouncementClient`・`MessagingTopicService`・`ImplAnnouncementTopicClient`
+- [x] `AnnouncementStore`とテスト
+- [x] `AnnouncementTopicUseCase`とテスト、起動時の購読
+- [x] 一覧・詳細・行のView/Screen、`AnnouncementRoute`、Preview
+- [x] モーダルのView/Screen、Preview
+- [x] ベルとバッジ（`NavigationBarButton`・`homeNavigationBar`・`HomeView`）
+- [x] `AppTabView`での`AnnouncementStore`の保持と取得のタイミング
+- [x] `AnnouncementNotificationData`・`PendingRoute.announcementList`とテスト、フォアグラウンド受信・タップの処理
+- [x] 通知設定のトグル
+- [x] `AppScreen`の追加と`doc/analytics_events.md`の更新
+- [x] 文言の英訳（`make check-translations`）
 
 ### Phase 3: 検証
 
-- [ ] `make build-affected` でビルド通過（InfraPackageも）
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] `make test-affected` でユニットテスト通過
-- [ ] `make check-previews`・`make snapshot-affected`
+- [x] `make build-affected` でビルド通過（InfraPackageも）
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] `make test-affected` でユニットテスト通過
+- [x] `make check-previews`・`make snapshot-affected`
 - [ ] stgで疎通確認（一覧・既読・モーダル・Push通知の受信とタップ・通知のオフ）
 
 ### Phase 4: PR
