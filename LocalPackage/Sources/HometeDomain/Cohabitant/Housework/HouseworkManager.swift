@@ -188,6 +188,28 @@ public final actor HouseworkManager {
         notifyObservers()
     }
 
+    /// 書き込んだ家事のうち、リアルタイムに受け取れない日のものを手元へ反映する
+    ///
+    /// リスナーの期間（±N日）より前の家事は、ホームのやり残している家事などから操作しても、書き込みの結果がリスナーで届かない。
+    /// そのままでは操作が画面に反映されないため、書き込んだ内容をそのまま反映する。
+    /// - Note: リスナーで届く日（±N日と、家事ボードで選んでいる日）は反映しない。書き込みの後に届いた同居人の変更を、
+    ///         古い内容で上書きしてしまうことがあるため
+    public func reflectWritten(_ items: [HouseworkItem], calendar: Calendar) {
+        guard fetchedRange != nil else { return }
+        let listenerPeriod = Set(HouseworkIndexedDate.calcTargetPeriod(
+            anchorDate: listenerAnchorDate,
+            offsetDays: Self.listenerOffset,
+            calendar: calendar
+        ))
+        let unobservedItems = items.filter { item in
+            let day = calendar.startOfDay(for: item.indexedDate.value)
+            return !listenerPeriod.contains(day) && day != focusedDay
+        }
+        guard !unobservedItems.isEmpty else { return }
+        upsert(unobservedItems)
+        notifyObservers()
+    }
+
     /// 指定日まで遡って参照できるように、未取得の期間を追加でフェッチする
     ///
     /// プレミアムユーザーが貢献度画面で取得済み期間より過去へ遡った際に呼ぶ。

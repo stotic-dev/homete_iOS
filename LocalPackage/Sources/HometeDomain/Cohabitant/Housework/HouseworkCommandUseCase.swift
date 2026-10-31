@@ -80,6 +80,8 @@ public struct HouseworkCommandUseCase: Sendable {
     ///   - notify: 一括操作では件数をまとめた1件の完了通知を呼び出し側で送るため`false`を渡す
     ///   - delivery: 通知の送信を待つかどうか
     ///   - onWritten: 書き込みがサーバーに届いたときに呼ぶ。通知を送り終えるのを待つときに、書き込みにかかった時間だけを測るため
+    /// - Returns: 書き込んだ家事
+    @discardableResult
     public func complete( // swiftlint:disable:this function_parameter_count function_body_length
         current: HouseworkItem,
         now: Date,
@@ -94,18 +96,16 @@ public struct HouseworkCommandUseCase: Sendable {
         notify: Bool = true,
         delivery: HouseworkNotificationDelivery = .background,
         onWritten: @Sendable () -> Void = {}
-    ) async throws {
+    ) async throws -> HouseworkItem {
         let executorType = HouseworkAnalyticsExecutorType(executors: executors, reporterId: reporter.id)
         let analyticsAction = { (isSuccess: Bool) -> HouseworkAnalyticsAction in
             .complete(step: step, executorType: executorType, effort: effort, isSuccess: isSuccess)
         }
+        let completedItem = current.updateCompleted(at: now, executors: executors, effort: effort)
+        // 登録されていない家事はドキュメントを新規作成する
+        let writtenItem = isRegistered ? completedItem : completedItem.updateCreatedAt(now)
         do {
-            let completedItem = current.updateCompleted(at: now, executors: executors, effort: effort)
-            // 登録されていない家事はドキュメントを新規作成する
-            try await houseworkClient.insertOrUpdateItem(
-                isRegistered ? completedItem : completedItem.updateCreatedAt(now),
-                cohabitantId
-            )
+            try await houseworkClient.insertOrUpdateItem(writtenItem, cohabitantId)
         } catch {
             analyticsClient.log(.housework(analyticsAction(false)))
             throw error
@@ -113,7 +113,7 @@ public struct HouseworkCommandUseCase: Sendable {
         onWritten()
         analyticsClient.log(.housework(analyticsAction(true)))
 
-        guard notify else { return }
+        guard notify else { return writtenItem }
 
         let reporterName = reporter.userName
         let houseworkTitle = current.title
@@ -154,6 +154,7 @@ public struct HouseworkCommandUseCase: Sendable {
                 content: content
             )
         }
+        return writtenItem
     }
 
     /// 完了した家事に「ありがとう」を記録し、コメントが初めて付いたときだけ相手に通知する

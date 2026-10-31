@@ -109,7 +109,7 @@ public final class HouseworkListStore {
         step: HouseworkAnalyticsStep,
         notify: Bool = true
     ) async throws {
-        try await commandUseCase.complete(
+        let writtenItem = try await commandUseCase.complete(
             current: isRegistered ? items.item(target) ?? target : target,
             now: now,
             reporter: reporter,
@@ -122,6 +122,7 @@ public final class HouseworkListStore {
             step: step,
             notify: notify
         )
+        await houseworkManager.reflectWritten([writtenItem], calendar: calendar)
         if notify {
             intentDonationClient.donateCompleteHousework(target.title)
         }
@@ -488,6 +489,7 @@ private extension HouseworkListStore {
             analyticsClient.log(.housework(analyticsAction(false), itemCount: updatedItems.count))
             throw error
         }
+        await houseworkManager.reflectWritten(updatedItems, calendar: calendar)
         analyticsClient.log(.housework(analyticsAction(true), itemCount: updatedItems.count))
     }
 
@@ -541,6 +543,7 @@ private extension HouseworkListStore {
     ) async throws {
         let updatedItem = transform(items.item(target) ?? target)
         try await houseworkClient.insertOrUpdateItem(updatedItem, cohabitantId)
+        await houseworkManager.reflectWritten([updatedItem], calendar: calendar)
     }
 
     /// 今日の家事の名前か状態が変わったときだけ、Siriで言える家事の名前をOSに読み直してもらう
