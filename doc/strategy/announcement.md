@@ -40,6 +40,7 @@
    - `linkUrl`があれば「詳しく見る」ボタンを出し、外部ブラウザ（`openURL`）で開く
 4. **起動時のモーダル**
    - `modalAnnouncementId`が返ったら、そのお知らせをシートで出す（タイトル・公開日・スクロールできる本文・`linkUrl`があれば「詳しく見る」・「閉じる」）
+   - 出すお知らせは、起動後（`AppTabView`を出してから）初めて取得できたときの1回だけ決める。フォアグラウンドへの復帰や通知の受信で取り直しても、新しくシートは出さない（ダッシュボードの中で家事の登録など別のシートを開いている最中に、シートを重ねて出そうとして止まるのを避けるため）
    - シートを閉じたら（「閉じる」・×・下スワイプのいずれでも）`markannouncementsread(scope: "modal")`で既読にする。一覧の未読は残る
    - ダッシュボードの上に別のシート・フルスクリーンカバー（パートナー登録・Apple連携・設定・招待の共有・お知らせ一覧）やチュートリアルを出している間は出さず、閉じてから出す
 5. **取得のタイミング**
@@ -118,12 +119,14 @@ public struct AnnouncementTopicClient: Sendable {
 public final class AnnouncementStore {
     public private(set) var state = AnnouncementState()
 
-    /// 取り直す。取得中にもう一度呼ばれたら何もしない。失敗しても取得済みの内容は残す
+    /// 取り直す。取得中にもう一度呼ばれたら、進行中の取得を待つ。失敗しても取得済みの内容は残す
     public func refresh() async
+    /// この端末で既読にした位置を踏まえて、お知らせが未読か
+    public func isUnread(_ announcement: Announcement) -> Bool
     /// 一覧を開いたとき。先頭のお知らせを既読にし、未読の数とモーダルを消す（行の`isUnread`はそのまま）
     public func markListRead() async
-    /// モーダルを閉じたとき。モーダルのお知らせを既読にし、モーダルを消す
-    public func markModalRead() async
+    /// モーダルを閉じたとき。表示したお知らせを既読にし、モーダルを消す
+    public func markModalRead(_ announcement: Announcement) async
 }
 
 public struct AnnouncementState: Equatable, Sendable {
@@ -137,7 +140,8 @@ public struct AnnouncementState: Equatable, Sendable {
 }
 ```
 
-- 取得とモーダルの既読が行き違ったとき（閉じた直後に`refresh`が返ってきて同じお知らせがまた入る）に出し直さないよう、閉じたお知らせのIDを覚えておき、`refresh`の結果がそのIDなら`modalAnnouncement`に入れない
+- 起動時のお知らせは、起動後に初めて取得できたときだけ`modalAnnouncement`に入れる（`hasDecidedModalAnnouncement`）。閉じた後や一覧を開いた後に取り直しても出し直さない
+- 一覧を既読にした位置（`publishedAt`）を手元にも持ち、既読にする前に始めた取得が後から返っても、未読の数（`unreadCount`）と各お知らせの未読（`isUnread(_:)`）が戻らないようにする。既読にできなかったら位置を戻す
 
 ### 4. 起動時の購読（`AnnouncementTopicUseCase`）
 
@@ -163,8 +167,8 @@ public struct AnnouncementState: Equatable, Sendable {
 | — | `AnnouncementListRow` | 行（タイトル・公開日・未読ドット） |
 
 - ベル: `homeNavigationBar`に`onTapAnnouncement`と`unreadAnnouncementCount`を足し、`HometeUI`の`NavigationBarButton`にバッジの表示を足す。ベルのアイコンはダッシュボードだけで使うので`.symbol("bell", …)`で渡す（チュートリアルのダッシュボードも同じバーを使うため、チュートリアル中はバッジ0で出す）
-- `HomeView`に`isShowAnnouncementList`と、起動時のシートで出しているお知らせ`presentedAnnouncementModal`を持たせる。出せる条件（`announcementModalCandidate`）は、ダッシュボードの上に別のシート・登録後のチュートリアル・招待リンクの参加画面が無く、通知から開く画面も残っていないこと。条件がそろったときに`presentedAnnouncementModal`へ入れ、シートを閉じたら（スワイプを含む）`markModalRead`する
-- 一覧を開いている間は、お知らせが変わるたびに`markListRead`を呼ぶ（既読にした位置より新しいものが無ければ`AnnouncementStore`が何もしない）。未読のドットは開いている間に見えた未読を`AnnouncementListScreen`が覚えて出し続ける
+- `HomeView`に`isShowAnnouncementList`と、起動時のシートで出しているお知らせ`presentedAnnouncementModal`を持たせる。出せる条件（`announcementModalCandidate`）は、ダッシュボードの上に別のシート・登録後のチュートリアル・招待リンクの参加画面が無く、通知から開く画面も残っていないこと。条件がそろったときに`presentedAnnouncementModal`へ入れ、シートを閉じたら（スワイプを含む）表示したお知らせで`markModalRead`する
+- 一覧を開いている間は、お知らせが変わるたびに`markListRead`を呼ぶ（既読にした位置より新しいものが無ければ`AnnouncementStore`が何もしない）。未読のドットは、既読にする前に`isUnread(_:)`で見た未読を`AnnouncementListScreen`が覚えて、開いている間出し続ける
 - `AppScreen`に`announcementList` / `announcementDetail` / `announcementModal`を足し、各Screenで`.trackScreenView`する。`doc/analytics_events.md`の画面一覧も更新する
 
 ### 7. 通知設定のトグル（`SettingFeature/SettingNotification/`）
