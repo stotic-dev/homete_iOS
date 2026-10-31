@@ -129,10 +129,16 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
-        willPresent _: UNNotification
+        willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
+        // 運営からのお知らせは、通知だけでなくダッシュボードのバッジと起動時のシートにも反映する
+        if AnnouncementNotificationData(userInfo: notification.request.content.userInfo) != nil {
+            await MainActor.run {
+                NotificationCenter.default.post(name: .didReceiveAnnouncementNotification, object: nil)
+            }
+        }
         // アプリ起動中でも同居人の家事完了などに気づけるよう、バナーと通知センターにも表示する
-        [.banner, .list, .sound]
+        return [.banner, .list, .sound]
     }
 
     /// 通知のタップを受け取り、開く画面を保持する

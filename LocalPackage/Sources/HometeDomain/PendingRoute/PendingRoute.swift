@@ -17,6 +17,8 @@ public enum PendingRoute: Equatable, Sendable {
     case contributionAnalytics
     /// 問い合わせの詳細画面（運営の返信の通知のタップ）
     case inquiryDetail(inquiryId: String)
+    /// お知らせの一覧（運営からのお知らせの通知のタップ）
+    case announcementList
 
 }
 
@@ -29,6 +31,8 @@ public extension PendingRoute {
             self = .houseworkDetail(houseworkId: data.houseworkId)
         } else if let data = InquiryReplyNotificationData(userInfo: userInfo) {
             self = .inquiryDetail(inquiryId: data.inquiryId)
+        } else if AnnouncementNotificationData(userInfo: userInfo) != nil {
+            self = .announcementList
         } else {
             return nil
         }
