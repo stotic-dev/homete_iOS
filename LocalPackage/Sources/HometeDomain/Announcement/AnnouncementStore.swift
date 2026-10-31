@@ -43,12 +43,14 @@ public final class AnnouncementStore {
             return
         }
 
+        // 取得を終えたらすぐに片付ける。呼び出し元が戻るのを待ってから片付けると、その間に呼ばれた取り直しが
+        // 終わった取得を待つだけで、取りにいかずに終わってしまう
         let task = Task {
             await self.fetch()
+            self.refreshTask = nil
         }
         refreshTask = task
         await task.value
-        refreshTask = nil
     }
 
     /// 一覧を開いたときに、先頭（最新）のお知らせまでを既読にする
