@@ -56,6 +56,10 @@ public struct DashboardTutorialView: View {
                 },
                 contributionSummary: {
                     ContributionSummaryTutorialContent(members: HouseworkTutorialSample.members)
+                },
+                // サンプルは今日の家事だけなので、やり残している家事は出さない
+                pastIncompleteHousework: {
+                    EmptyView()
                 }
             )
             .homeNavigationBar(onTapSetting: {})

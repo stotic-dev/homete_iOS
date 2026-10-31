@@ -16,7 +16,8 @@ struct DashboardContent<
     EncouragementComment: View,
     TodaySummary: View,
     Advertisement: View,
-    ContributionSummary: View
+    ContributionSummary: View,
+    PastIncomplete: View
 >: View {
 
     /// 購読に失敗している場合のエラー内容
@@ -34,6 +35,8 @@ struct DashboardContent<
     @ViewBuilder let todaySummary: () -> TodaySummary
     @ViewBuilder let advertisement: () -> Advertisement
     @ViewBuilder let contributionSummary: () -> ContributionSummary
+    /// やり残している家事。日付ごとのカードを`LazyVStack`の要素として並べるため、カードの見た目は付けない
+    @ViewBuilder let pastIncompleteHousework: () -> PastIncomplete
 
     var body: some View {
         ZStack {
@@ -41,7 +44,8 @@ struct DashboardContent<
                 LoadErrorView(error: loadFailure, onTapRetry: onTapRetry)
             } else {
                 ScrollView {
-                    VStack(spacing: .space24) {
+                    // やり残している家事は件数に上限が無いため、画面外の行を描画しないよう遅延して並べる
+                    LazyVStack(spacing: .space24) {
                         encouragementComment()
                             .sectionCardStyle()
                         todaySummary()
@@ -63,6 +67,7 @@ struct DashboardContent<
                             PromoteHouseworkTemplateBanner(action: onTapTemplateBanner)
                                 .sectionCardStyle()
                         }
+                        pastIncompleteHousework()
                     }
                     .padding(.horizontal, .space16)
                     .padding(.vertical, .space16)
