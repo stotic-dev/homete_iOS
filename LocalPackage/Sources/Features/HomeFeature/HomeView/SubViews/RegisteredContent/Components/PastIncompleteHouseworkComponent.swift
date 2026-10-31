@@ -26,6 +26,7 @@ struct PastIncompleteHouseworkComponent: View {
 
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
     @State var olderPeriodState = OlderPeriodState.idle
     /// さらに前の家事を読み込んだ回数。末尾が表示されたままなら続けて読み込むために使う
     @State var olderPeriodLoadCount = 0
@@ -58,6 +59,7 @@ struct PastIncompleteHouseworkComponent: View {
                     onSelectComplete: { completingItem = item },
                     onSelectThanks: {},
                     onSelectAddHelper: {},
+                    onRequestPostponeConfirmation: { postponeConfirmation = $0 },
                     onError: { commonError = .init(error: $0) }
                 )
             },
@@ -68,6 +70,11 @@ struct PastIncompleteHouseworkComponent: View {
         .sheet(item: $completingItem) { item in
             HouseworkCompleteSheet(item: item, step: .dashboard)
         }
+        .houseworkPostponeConfirmation(
+            $postponeConfirmation,
+            step: .dashboard,
+            onError: { commonError = .init(error: $0) }
+        )
         .commonError(content: $commonError)
     }
 

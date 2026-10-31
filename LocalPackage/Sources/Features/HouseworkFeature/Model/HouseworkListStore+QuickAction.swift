@@ -77,6 +77,11 @@ extension HouseworkListStore {
             // 担当者とポイントの配分をハーフモーダルで決めてから`addHelpers`を呼ぶアクションなので、
             // 入力なしで実行できるこの経路では何もしない（一括操作の対象にもしていない）
             break
+
+        case .postponeToTomorrow, .postponeToToday:
+            // まとめるかどうか・同じ名前の家事があるかを確かめてから`postpone`を呼ぶアクションなので、
+            // この経路では何もしない（一括操作の対象にもしていない）
+            break
         }
         return false
     }
@@ -127,7 +132,7 @@ extension HouseworkListStore {
         case .returnToIncomplete:
             try await returnToIncompleteBulk(targets: targets, cohabitantId: cohabitantId, step: step)
 
-        case .redo, .addHelper:
+        case .redo, .addHelper, .postponeToTomorrow, .postponeToToday:
             // 一括操作の対象にしていない（`HouseworkQuickAction.isAvailableInBulk`）
             break
         }

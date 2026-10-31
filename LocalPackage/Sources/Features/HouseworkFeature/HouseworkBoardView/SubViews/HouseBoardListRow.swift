@@ -16,8 +16,13 @@ import SwiftUI
 /// ボタンのタップが競合しないよう、ボタンは行の`Button`の**中ではなく隣**に置いている。
 ///
 /// どのボタンを出すか・ありがとうを伝えられるかは画面ごとに違うため、この行では判断せず決まった値を
-/// 受け取る。`@Environment`に依存しないので、プレビューで表示のバリエーションを並べられる。
+/// 受け取る。Storeなどの`@Environment`には依存せず（日付の書式に使う`calendar`・`locale`・`timeZone`だけを読む）、
+/// プレビューで表示のバリエーションを並べられる。
 public struct HouseBoardListRow<MenuContent: View>: View {
+
+    @Environment(\.calendar) var calendar
+    @Environment(\.locale) var locale
+    @Environment(\.timeZone) var timeZone
 
     let houseworkItem: HouseworkItem
     let completionInfo: HouseworkRowCompletionInfo?
@@ -109,6 +114,8 @@ private extension HouseBoardListRow {
                     executorLabel(label)
                 } else if let metaData = HouseworkItemMetaData.make(item: houseworkItem) {
                     metaDataLabel(metaData)
+                } else if let postponedFrom = houseworkItem.postponedFrom {
+                    postponedFromLabel(postponedFrom.value)
                 }
             }
             Spacer()
@@ -126,6 +133,19 @@ private extension HouseBoardListRow {
         Label(metaData.label, systemImage: metaData.systemImage)
             .font(with: .boldCaption)
             .foregroundStyle(metaData.foregroundStyle)
+    }
+
+    /// 別の日からまわしてきた家事に、まわす前の日付を添える
+    func postponedFromLabel(_ date: Date) -> some View {
+        let format = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: timeZone)
+            .month(.defaultDigits)
+            .day()
+        return Label(
+            .localized("\(date.formatted(format))から", comment: "別の日からまわしてきた家事に添える、まわす前の日付"),
+            systemImage: "arrow.turn.down.right"
+        )
+        .font(with: .boldCaption)
+        .foregroundStyle(.textSecondary)
     }
 
     func memoIndicator() -> some View {
@@ -211,6 +231,24 @@ private extension HouseBoardListRow {
         onTapComplete: {},
         menuContent: { EmptyView() }
     )
+}
+
+#Preview("HouseBoardListRow_未完了_まわした家事", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(
+            title: "洗濯",
+            point: 20,
+            postponedFrom: .init(value: .previewDate(year: 2025, month: 12, day: 31))
+        ),
+        completionInfo: nil,
+        showsCompleteButton: true,
+        showsMoreButton: true,
+        onTapRow: {},
+        onTapThanks: nil,
+        onTapComplete: {},
+        menuContent: { EmptyView() }
+    )
+    .setupEnvironmentForPreview()
 }
 
 #Preview("HouseBoardListRow_未完了_メモあり", traits: .sizeThatFitsLayout) {

@@ -28,6 +28,8 @@ struct TodayHouseworkSummaryComponent: View {
     @State var isPresentingRegister = false
     /// クイックアクションの「完了にする」で、担当者を選ぶハーフモーダルを出している家事
     @State var completingItem: HouseworkBoardItem?
+    /// クイックアクションの「明日にまわす」で、確認のアラートを出している家事
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
     @CommonError var commonError
 
     static func make() -> some View {
@@ -57,6 +59,7 @@ struct TodayHouseworkSummaryComponent: View {
                     onSelectComplete: { completingItem = item },
                     onSelectThanks: {},
                     onSelectAddHelper: {},
+                    onRequestPostponeConfirmation: { postponeConfirmation = $0 },
                     onError: { commonError = .init(error: $0) }
                 )
             }
@@ -75,6 +78,11 @@ struct TodayHouseworkSummaryComponent: View {
         .sheet(item: $completingItem) { item in
             HouseworkCompleteSheet(item: item, step: .dashboard)
         }
+        .houseworkPostponeConfirmation(
+            $postponeConfirmation,
+            step: .dashboard,
+            onError: { commonError = .init(error: $0) }
+        )
         .commonError(content: $commonError)
     }
 

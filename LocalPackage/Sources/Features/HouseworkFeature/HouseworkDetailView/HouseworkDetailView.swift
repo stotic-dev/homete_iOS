@@ -13,6 +13,9 @@ public struct HouseworkDetailView: View {
 
     @Environment(\.dismiss) var dismiss
     @Environment(\.now) var now
+    @Environment(\.calendar) var calendar
+    @Environment(\.houseworkTemplateContext) var templateContext
+    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
@@ -26,6 +29,11 @@ public struct HouseworkDetailView: View {
     @State var isPresentedAddHelperSheet = false
     @State var isPresentedMemoEditSheet = false
     @State var isPresentedMemoNotEditableAlert = false
+    @State var isPresentedPostponeDatePicker = false
+    /// カレンダーで選んだ、まわす先の日。カレンダーが閉じきるのを待ってからまわす
+    @State var pendingPostponeDate: Date?
+    /// 別の日へまわす前に、確認のアラートで確かめている内容
+    @State var postponeConfirmation: HouseworkPostponeConfirmation?
     /// チェックの保存中か
     /// - Note: 保存がリスナーに反映される前に次のチェックを保存すると、古いメモを元に書いて先のチェックを消すため、1つずつ保存する
     @State var isSavingMemoCheck = false
@@ -65,6 +73,17 @@ public struct HouseworkDetailView: View {
             .sheet(isPresented: $isPresentedAddHelperSheet) {
                 HouseworkAddHelperSheet(item: item, step: .detail)
             }
+            // 確認のアラートを出すことがあるため、カレンダーが閉じきってからまわす。閉じている途中に出すと表示されないことがある
+            .sheet(isPresented: $isPresentedPostponeDatePicker, onDismiss: dismissedPostponeDatePicker) {
+                postponeDatePicker()
+            }
+            .houseworkPostponeConfirmation(
+                $postponeConfirmation,
+                step: .detail,
+                // まわした家事はこの日の一覧から消えるため、詳細を閉じて家事ボードへ戻る
+                onPostponed: { dismiss() },
+                onError: { commonErrorContent = .init(error: $0) }
+            )
             .commonError(content: $commonErrorContent)
             .sheet(isPresented: $isPresentedMemoEditSheet) {
                 HouseworkMemoEditScreen(memo: item.originalItem.memo, isPremium: subscriptionStore.isPremium) { memo in
@@ -169,6 +188,9 @@ private extension HouseworkDetailView {
         case .addHelper:
             isPresentedAddHelperSheet = true
 
+        case .postpone:
+            isPresentedPostponeDatePicker = true
+
         case .redo, .returnToIncomplete, .remove:
             loadingState.task {
                 await perform(action)
@@ -208,7 +230,7 @@ private extension HouseworkDetailView {
                 // 一覧から取り下げた家事の詳細は見られても意味がないため閉じる
                 dismiss()
 
-            case .complete, .sendThanks, .addThanksMessage, .editThanksMessage, .addHelper:
+            case .complete, .sendThanks, .addThanksMessage, .editThanksMessage, .addHelper, .postpone:
                 // ハーフモーダルで入力を受け取ってから実行するアクション
                 break
             }
@@ -283,7 +305,10 @@ private extension HouseworkDetailView {
     }
 
     func didChangeItems() {
-        guard let targetItem = houseworkListStore.items.item(item.originalItem) else { return }
+        // テンプレートの家事を別の日へまわすと、元の日に同じIDの記録が残る。画面を閉じる前にその記録
+        //（「やらない」）へ切り替わって見えないよう、反映しない
+        guard let targetItem = houseworkListStore.items.item(item.originalItem),
+              !targetItem.isPostponedRecord else { return }
 
         withAnimation {
             item = .init(originalItem: targetItem, isRegistered: true)

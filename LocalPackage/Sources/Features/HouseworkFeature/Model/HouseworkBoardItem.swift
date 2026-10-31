@@ -94,6 +94,19 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
     }
 
     public func formattedIndexedDate(calendar: Calendar) -> String {
+        Self.formatted(originalItem.indexedDate.value, calendar: calendar)
+    }
+
+    /// 別の日からまわしてきた家事の、まわす前の日付。まわしていない家事は`nil`
+    public func formattedPostponedFromDate(calendar: Calendar) -> String? {
+        originalItem.postponedFrom.map { Self.formatted($0.value, calendar: calendar) }
+    }
+
+}
+
+private extension HouseworkBoardItem {
+
+    static func formatted(_ date: Date, calendar: Calendar) -> String {
         let formatStyle = Date.FormatStyle(
             date: .numeric,
             time: .omitted,
@@ -104,7 +117,7 @@ public struct HouseworkBoardItem: Equatable, Identifiable, Hashable, Sendable {
         .year(.extended(minimumLength: 4))
         .month(.twoDigits)
         .day(.twoDigits)
-        return originalItem.indexedDate.value.formatted(formatStyle)
+        return date.formatted(formatStyle)
     }
 
 }

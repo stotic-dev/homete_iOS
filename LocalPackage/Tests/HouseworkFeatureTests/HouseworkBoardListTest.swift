@@ -59,6 +59,35 @@ struct HouseworkBoardListTest {
         #expect(actual == expected)
     }
 
+    @Test("テンプレートが無い日でも、別の日へまわしたテンプレートの家事の記録は家事ボードに出さない")
+    func initialize_withoutTemplate_hidesPostponedRecord() {
+        // Arrange
+        let selectedDate = Date.previewDate(year: 2026, month: 1, day: 10)
+        let laundry = HouseworkItem.makeForTest(id: 1, indexedDate: selectedDate, title: "洗濯")
+        let postponedRecord = HouseworkItem.makeForTest(
+            id: 2,
+            indexedDate: selectedDate,
+            title: "お皿洗い",
+            state: .notTodo,
+            templateHouseworkItemId: .init(id: "template1"),
+            postponedTo: .init(value: .previewDate(year: 2026, month: 1, day: 11))
+        )
+        let expected = HouseworkBoardList(items: [.init(originalItem: laundry, isRegistered: true)])
+
+        // Act
+        let actual = HouseworkBoardList(
+            dailyList: [.makeForTest(items: [laundry, postponedRecord])],
+            selectedDateTemplate: nil,
+            selectedDate: selectedDate,
+            calendar: .japanese,
+            storagePolicy: .free,
+            uuidGenerator: { UUID() }
+        )
+
+        // Assert
+        #expect(actual == expected)
+    }
+
     @Test(
         "指定した状態にマッチする家事を取得する",
         arguments: HouseworkState.allCases

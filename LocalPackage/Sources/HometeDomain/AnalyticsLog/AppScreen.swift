@@ -54,6 +54,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case houseworkDatePicker = "housework_date_picker"
     /// 家事の詳細
     case houseworkDetail = "housework_detail"
+    /// 家事詳細から、家事をまわす日を選ぶカレンダー（「別の日にまわす…」から開くハーフモーダル）
+    case houseworkPostponeDatePicker = "housework_postpone_date_picker"
     /// 家事の登録
     case houseworkRegister = "housework_register"
     /// 家事を完了にする画面（担当者とコメントを入力するハーフモーダル）

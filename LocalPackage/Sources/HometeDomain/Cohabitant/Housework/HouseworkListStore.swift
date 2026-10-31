@@ -348,6 +348,89 @@ private extension HouseworkListStore {
 
 }
 
+// MARK: - 別の日へまわす
+
+/// `idGenerator`・`now`・`calendar`を使うため、クラスと同じファイルに置く
+public extension HouseworkListStore {
+
+    /// 未完了の家事を別の日へまわす
+    ///
+    /// 書き込む家事の決め方は`HouseworkPostponePlan`を参照。元の日の記録とまわす先の家事は1回の`WriteBatch`で書き込む。
+    /// 同居人への通知は送らない（家事のステータスに関わる通知はふりかえり通知だけ）。
+    /// 手元の家事は画面を開いた時点のものなので、登録済みの家事はリスナーで受け取った最新の記録で判断する。
+    /// - Parameters:
+    ///   - templateContext: まわす先の日にテンプレートから出る家事を探すのに使う
+    ///   - storagePolicy: まわす先の日付から保持期限を求めるのに使う
+    /// - Returns: まわした結果。画面を開いている間に同居人が完了・「やらない」にしていて、まわさなかったときは`nil`
+    @discardableResult
+    func postpone( // swiftlint:disable:this function_parameter_count
+        target: HouseworkItem,
+        isRegistered: Bool,
+        to destination: Date,
+        templateContext: HouseworkTemplateContext,
+        storagePolicy: HouseworkStoragePolicy,
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep
+    ) async throws -> HouseworkPostponePlan.Outcome? {
+        let current = isRegistered ? items.item(target) ?? target : target
+        guard current.state == .incomplete,
+              isRegistered || !hasRegisteredTemplateRecord(of: target) else { return nil }
+
+        let plan = postponePlan(
+            target: current,
+            isRegistered: isRegistered,
+            to: destination,
+            templateContext: templateContext,
+            storagePolicy: storagePolicy
+        )
+        do {
+            try await houseworkClient.insertOrUpdateItems(plan.writes, cohabitantId)
+        } catch {
+            analyticsClient.log(.housework(.postpone(step: step, outcome: plan.outcome, isSuccess: false)))
+            throw error
+        }
+        analyticsClient.log(.housework(.postpone(step: step, outcome: plan.outcome, isSuccess: true)))
+        return plan.outcome
+    }
+
+    /// テンプレートから出している家事と同じテンプレートの記録が、その日にすでに登録されているか
+    ///
+    /// 画面を開いている間に同居人が完了・「やらない」にすると、テンプレートの家事は別のIDで登録される。
+    /// そのまま元の日の記録を書くと、同じテンプレートの記録が2件になるため、まわさずに返す判定に使う。
+    private func hasRegisteredTemplateRecord(of target: HouseworkItem) -> Bool {
+        guard let templateItemId = target.templateHouseworkItemId else { return false }
+
+        return items.value
+            .first { $0.metaData.indexedDate == target.indexedDate }?
+            .items
+            .contains { $0.templateHouseworkItemId == templateItemId } ?? false
+    }
+
+    /// 家事を別の日へまわしたときに書き込む家事と結果を、書き込まずに返す
+    ///
+    /// まわす先に同じ名前の家事があるかを、書き込む前に確かめるのに使う。
+    func postponePlan(
+        target: HouseworkItem,
+        isRegistered: Bool,
+        to destination: Date,
+        templateContext: HouseworkTemplateContext,
+        storagePolicy: HouseworkStoragePolicy
+    ) -> HouseworkPostponePlan {
+        .make(
+            target: target,
+            isRegistered: isRegistered,
+            destination: destination,
+            storedItems: items,
+            templateContext: templateContext,
+            now: now(),
+            calendar: calendar,
+            storagePolicy: storagePolicy,
+            newItemId: idGenerator()
+        )
+    }
+
+}
+
 // MARK: - 複数選択の一括操作
 
 /// 複数選択で選んだ家事への一括操作

@@ -25,7 +25,9 @@ public extension HouseworkItem {
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
-        memo: HouseworkMemo? = nil
+        memo: HouseworkMemo? = nil,
+        postponedFrom: HouseworkIndexedDate? = nil,
+        postponedTo: HouseworkIndexedDate? = nil
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -40,7 +42,9 @@ public extension HouseworkItem {
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 
@@ -58,7 +62,9 @@ public extension HouseworkItem {
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
-        memo: HouseworkMemo? = nil
+        memo: HouseworkMemo? = nil,
+        postponedFrom: HouseworkIndexedDate? = nil,
+        postponedTo: HouseworkIndexedDate? = nil
     ) -> Self {
         .init(
             id: id,
@@ -73,7 +79,9 @@ public extension HouseworkItem {
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
-            memo: memo
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo
         )
     }
 

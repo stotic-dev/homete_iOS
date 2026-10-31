@@ -25,6 +25,12 @@ struct HouseworkDetailItemListContent: View {
                 HouseworkDetailItemRow(title: .localized("予定日")) {
                     valueText(item.formattedIndexedDate(calendar: calendar))
                 }
+                if let postponedFromDate = item.formattedPostponedFromDate(calendar: calendar) {
+                    Divider()
+                    HouseworkDetailItemRow(title: .localized("まわす前の日")) {
+                        valueText(postponedFromDate)
+                    }
+                }
                 Divider()
                 HouseworkDetailItemRow(title: .localized("ステータス")) {
                     Text(item.state.segmentTitle)
@@ -148,6 +154,19 @@ private extension HouseworkDetailItemListContent {
         item: .makeForPreview(
             title: "洗濯",
             point: 10
+        )
+    )
+    .padding()
+    .setupEnvironmentForPreview()
+}
+
+#Preview("HouseworkDetailItemListContent_まわした家事", traits: .sizeThatFitsLayout) {
+    HouseworkDetailItemListContent(
+        cohabitantMemberList: .init(value: [], ownId: ""),
+        item: .makeForPreview(
+            title: "洗濯",
+            point: 10,
+            postponedFrom: .init(value: .previewDate(year: 2025, month: 12, day: 31))
         )
     )
     .padding()

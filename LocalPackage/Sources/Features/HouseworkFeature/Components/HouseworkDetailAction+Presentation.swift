@@ -30,6 +30,8 @@ extension HouseworkDetailAction {
             .localized("もう一度やった")
         case .returnToIncomplete:
             .localized("未完了に戻す")
+        case .postpone:
+            .localized("別の日にまわす…")
         case .remove:
             .localized("やらない")
         }
@@ -51,6 +53,8 @@ extension HouseworkDetailAction {
             "arrow.clockwise"
         case .returnToIncomplete:
             "arrow.uturn.backward"
+        case .postpone:
+            "arrow.turn.down.right"
         case .remove:
             "trash"
         }
@@ -62,7 +66,7 @@ extension HouseworkDetailAction {
             .destructive
 
         case .complete, .sendThanks, .addThanksMessage, .editThanksMessage, .addHelper,
-             .redo, .returnToIncomplete:
+             .redo, .returnToIncomplete, .postpone:
             nil
         }
     }
