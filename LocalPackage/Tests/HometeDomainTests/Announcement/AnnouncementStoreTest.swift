@@ -277,13 +277,47 @@ struct AnnouncementStoreTest {
         await sut.refresh()
 
         // Act
-        await sut.markModalRead()
+        await sut.markModalRead(.makeForTest(id: "1", publishedAt: 100, isUnread: true))
 
         // Assert
         #expect(sut.state.modalAnnouncement == nil)
         #expect(sut.state.unreadCount == 1)
         #expect(marked.value.map(\.0) == ["1"])
         #expect(marked.value.map(\.1) == [.modal])
+    }
+
+    @Test("表示している間に起動時のお知らせが新しいものに変わっていたら、表示したものだけを既読にし、新しいものは残す")
+    func markModalRead_modalChangedWhilePresenting_marksPresentedOnly() async {
+        // Arrange
+        let lists = TestBox(value: [
+            AnnouncementList(
+                announcements: [.makeForTest(id: "1", publishedAt: 100)],
+                unreadCount: 0,
+                modalAnnouncementId: "1"
+            ),
+            AnnouncementList(
+                announcements: [.makeForTest(id: "2", publishedAt: 200), .makeForTest(id: "1", publishedAt: 100)],
+                unreadCount: 0,
+                modalAnnouncementId: "2"
+            ),
+        ])
+        let marked = TestBox(value: [String]())
+        let sut = AnnouncementStore(announcementClient: .init(
+            list: { lists.value.removeFirst() },
+            markRead: { id, _ in marked.value.append(id) }
+        ))
+        await sut.refresh()
+        let presented = sut.state.modalAnnouncement
+        await sut.refresh()
+
+        // Act
+        if let presented {
+            await sut.markModalRead(presented)
+        }
+
+        // Assert
+        #expect(marked.value == ["1"])
+        #expect(sut.state.modalAnnouncement == .makeForTest(id: "2", publishedAt: 200))
     }
 
     @Test("閉じたモーダルのお知らせが取り直しで返ってきても出し直さず、より新しいお知らせなら出す")
@@ -310,7 +344,7 @@ struct AnnouncementStoreTest {
             lists.value.removeFirst()
         }))
         await sut.refresh()
-        await sut.markModalRead()
+        await sut.markModalRead(.makeForTest(id: "1", publishedAt: 100))
 
         // Act
         await sut.refresh()

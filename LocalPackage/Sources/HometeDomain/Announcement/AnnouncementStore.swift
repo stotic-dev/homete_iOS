@@ -81,14 +81,18 @@ public final class AnnouncementStore {
     }
 
     /// 起動時のモーダルを閉じたときに、そのお知らせを既読にする
+    ///
+    /// 出している間に取り直して起動時のお知らせが変わることがあるため、今の状態ではなく表示したお知らせを既読にする。
     /// - Note: 一覧の未読は残る。失敗しても画面には出さない
-    public func markModalRead() async {
-        guard let modal = state.modalAnnouncement else { return }
+    /// - Parameter announcement: モーダルで表示したお知らせ
+    public func markModalRead(_ announcement: Announcement) async {
+        modalReadUntil = max(modalReadUntil ?? announcement.publishedAt, announcement.publishedAt)
+        // 表示したものより新しいお知らせに変わっていたら、まだ見ていないので残す
+        if let modal = state.modalAnnouncement, modal.publishedAt <= announcement.publishedAt {
+            state.modalAnnouncement = nil
+        }
 
-        modalReadUntil = max(modalReadUntil ?? modal.publishedAt, modal.publishedAt)
-        state.modalAnnouncement = nil
-
-        try? await announcementClient.markRead(modal.id, .modal)
+        try? await announcementClient.markRead(announcement.id, .modal)
     }
 
 }

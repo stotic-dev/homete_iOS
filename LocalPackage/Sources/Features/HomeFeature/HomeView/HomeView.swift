@@ -38,6 +38,9 @@ public struct HomeView: View {
     @State var isShowAnnouncementList = false
     /// 起動時のシートで出しているお知らせ
     @State var presentedAnnouncementModal: Announcement?
+    /// 起動時のシートで最後に出したお知らせ。閉じたときに既読にするために控える
+    /// - Note: シートを閉じると`presentedAnnouncementModal`は`onDismiss`より先に`nil`になるため、別に持つ
+    @State var lastPresentedAnnouncementModal: Announcement?
     /// 「もう一度送る」で共有シートに出している招待
     @State var resendingInvitation: CohabitantInvitation?
     /// パートナー登録の画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
@@ -84,9 +87,7 @@ public struct HomeView: View {
             AnnouncementListScreen()
         }
         .sheet(item: $presentedAnnouncementModal) {
-            Task {
-                await announcementStore.markModalRead()
-            }
+            dismissedAnnouncementModal()
         } content: { announcement in
             AnnouncementModalScreen(announcement: announcement)
         }
@@ -278,6 +279,15 @@ private extension HomeView {
     func presentAnnouncementModalIfNeeded() {
         guard presentedAnnouncementModal == nil, let announcementModalCandidate else { return }
         presentedAnnouncementModal = announcementModalCandidate
+        lastPresentedAnnouncementModal = announcementModalCandidate
+    }
+
+    func dismissedAnnouncementModal() {
+        guard let announcement = lastPresentedAnnouncementModal else { return }
+        lastPresentedAnnouncementModal = nil
+        Task {
+            await announcementStore.markModalRead(announcement)
+        }
     }
 
     /// 送った招待のうち、有効期限内で相手の参加を待っているもの
