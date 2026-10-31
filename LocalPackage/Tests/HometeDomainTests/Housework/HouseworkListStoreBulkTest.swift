@@ -26,7 +26,6 @@ private let inputCohabitantId = "cohabitantId"
 private let inputAccount = Account(id: "ownUserId", userName: "own", cohabitantId: nil)
 /// `DailyHouseworkList`は先頭の家事の日付でまとめるため、全件を同じ日付にする
 private let inputIndexedDate = Date.previewDate(year: 2026, month: 9, day: 25)
-private let inputExpiredAt = Date.previewDate(year: 2026, month: 12, day: 25)
 
 private extension HouseworkItem {
 
@@ -41,7 +40,6 @@ private extension HouseworkItem {
             indexedDate: inputIndexedDate,
             state: state,
             executorId: executorId,
-            expiredAt: inputExpiredAt,
             thanks: thanks
         )
     }
@@ -51,7 +49,6 @@ private extension HouseworkItem {
 extension HouseworkListStoreBulkTest.CompleteBulkCase {
 
     @Test("登録済みの家事をまとめて完了にすると、1回の一括書き込みで全件を自分が終えた家事として更新し、件数をまとめた完了通知を1件だけ送る")
-    // swiftlint:disable:next function_body_length
     func completeBulk_registeredItems_writesOnceAndSendsBulkNotification() async {
         // Arrange
 
@@ -368,7 +365,6 @@ extension HouseworkListStoreBulkTest.ReturnToIncompleteBulkCase {
 extension HouseworkListStoreBulkTest.SendThanksBulkCase {
 
     @Test("まとめてありがとうを伝えると、まだ伝えていない完了済みの家事だけに1回の一括書き込みでコメントなしのありがとうを記録する")
-    // swiftlint:disable:next function_body_length
     func sendThanksBulk_writesOnlyThankableItemsOnce() async throws {
         // Arrange
 

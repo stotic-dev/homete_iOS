@@ -60,7 +60,6 @@ struct HouseworkListStoreMemoTest {
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: .distantPast,
-            expiredAt: .distantPast,
             templateHouseworkItemId: .init(id: "template")
         )
 
@@ -73,7 +72,6 @@ struct HouseworkListStoreMemoTest {
                         let expected = HouseworkItem.makeForTest(
                             id: 1,
                             indexedDate: .distantPast,
-                            expiredAt: .distantPast,
                             templateHouseworkItemId: .init(id: "template"),
                             createdAt: inputNow,
                             memo: inputMemo

@@ -20,52 +20,24 @@ enum DailyHouseworkListTest {
 
 extension DailyHouseworkListTest.MakeInitialValueCase {
 
-    @Test("無料プランでは一日の家事情報の保持期限は1年後になる")
-    func makeInitialValueWithFreePlan() throws {
+    @Test("選んだ日の0時を日付にした、家事の無い一日の家事情報を作る")
+    func makeInitialValue() {
         // Arrange
         let calendar = Calendar.japanese
         let selectedDate = Date()
         let selectedDay = calendar.startOfDay(for: selectedDate)
         let expectedIndexedDate = HouseworkIndexedDate(value: selectedDay)
-        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 1, to: selectedDay))
 
         let expectedList = DailyHouseworkList(
             items: [],
-            metaData: .init(indexedDate: expectedIndexedDate, expiredAt: expectedExpiredAt)
+            metaData: .init(indexedDate: expectedIndexedDate)
         )
 
         // Act
         let list = DailyHouseworkList.makeInitialValue(
             selectedDate: selectedDate,
             items: [],
-            calendar: calendar,
-            storagePolicy: .free
-        )
-
-        // Assert
-        #expect(list == expectedList)
-    }
-
-    @Test("プレミアムプランでは一日の家事情報の保持期限は100年後になる")
-    func makeInitialValueWithPremiumPlan() throws {
-        // Arrange
-        let calendar = Calendar.japanese
-        let selectedDate = Date()
-        let selectedDay = calendar.startOfDay(for: selectedDate)
-        let expectedIndexedDate = HouseworkIndexedDate(value: selectedDay)
-        let expectedExpiredAt = try #require(calendar.date(byAdding: .year, value: 100, to: selectedDay))
-
-        let expectedList = DailyHouseworkList(
-            items: [],
-            metaData: .init(indexedDate: expectedIndexedDate, expiredAt: expectedExpiredAt)
-        )
-
-        // Act
-        let list = DailyHouseworkList.makeInitialValue(
-            selectedDate: selectedDate,
-            items: [],
-            calendar: calendar,
-            storagePolicy: .premium
+            calendar: calendar
         )
 
         // Assert
@@ -87,7 +59,7 @@ extension DailyHouseworkListTest.IsRegisteredCase {
         // Arrange
         let list = DailyHouseworkList(
             items: inputItems,
-            metaData: .init(indexedDate: .init(value: .now), expiredAt: .now)
+            metaData: .init(indexedDate: .init(value: .now))
         )
 
         // Act

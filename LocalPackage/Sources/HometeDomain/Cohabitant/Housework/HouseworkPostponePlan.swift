@@ -43,7 +43,6 @@ public extension HouseworkPostponePlan {
     ///   - storedItems: 登録済みの家事。まわす先の日の家事を探すのに使う
     ///   - templateContext: テンプレート。まわす先の日にテンプレートから出る家事を探すのに使う
     ///   - now: 新しく作るドキュメントの作成日時
-    ///   - storagePolicy: まわす先の日付から保持期限を求めるのに使う
     ///   - newItemId: まわす先に単発の家事を作るときのID（作らないときは使わない）
     static func make( // swiftlint:disable:this function_parameter_count
         target: HouseworkItem,
@@ -53,20 +52,14 @@ public extension HouseworkPostponePlan {
         templateContext: HouseworkTemplateContext,
         now: Date,
         calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy,
         newItemId: String
     ) -> Self {
-        let metaData = DailyHouseworkMetaData(
-            selectedDate: destination,
-            calendar: calendar,
-            storagePolicy: storagePolicy
-        )
+        let metaData = DailyHouseworkMetaData(selectedDate: destination, calendar: calendar)
         let destinationItems = Self.items(
             on: metaData.indexedDate.value,
             storedItems: storedItems,
             templateContext: templateContext,
-            calendar: calendar,
-            storagePolicy: storagePolicy
+            calendar: calendar
         )
         let conflictingTitle = destinationItems.contains { $0.title == target.title && $0.id != target.id }
             ? target.title
@@ -101,8 +94,7 @@ private extension HouseworkPostponePlan {
         on day: Date,
         storedItems: StoredAllHouseworkList,
         templateContext: HouseworkTemplateContext,
-        calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy
+        calendar: Calendar
     ) -> [HouseworkItem] {
         let registeredItems = storedItems.value
             .first { $0.metaData.indexedDate.value == day }?
@@ -115,7 +107,6 @@ private extension HouseworkPostponePlan {
             registeredItems: registeredItems,
             selectedDate: day,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             idGenerator: { "template-\($0.id.id)" }
         )
     }

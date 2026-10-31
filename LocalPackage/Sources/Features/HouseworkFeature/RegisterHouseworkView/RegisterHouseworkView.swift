@@ -550,8 +550,7 @@ extension RegisterHouseworkView {
         .init(
             items: [],
             metaData: .init(
-                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-                expiredAt: .previewDate(year: 2026, month: 2, day: 1)
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
             )
         )
     }

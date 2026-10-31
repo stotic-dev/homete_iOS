@@ -201,8 +201,7 @@ private extension TodayHouseworkSummaryContent {
                 storedAllItems: .init(value: []),
                 template: nil,
                 now: today,
-                calendar: .japanese,
-                storagePolicy: .premium
+                calendar: .japanese
             ),
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},
@@ -240,15 +239,13 @@ private extension TodayHouseworkSummaryContent {
                             ),
                         ],
                         metaData: .init(
-                            indexedDate: .init(value: today),
-                            expiredAt: .distantFuture
+                            indexedDate: .init(value: today)
                         )
                     ),
                 ]),
                 template: nil,
                 now: today,
-                calendar: .japanese,
-                storagePolicy: .premium
+                calendar: .japanese
             ),
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},
@@ -294,15 +291,13 @@ private extension TodayHouseworkSummaryContent {
                             ),
                         ],
                         metaData: .init(
-                            indexedDate: .init(value: today),
-                            expiredAt: .distantFuture
+                            indexedDate: .init(value: today)
                         )
                     ),
                 ]),
                 template: nil,
                 now: today,
-                calendar: .japanese,
-                storagePolicy: .premium
+                calendar: .japanese
             ),
             members: .init(
                 value: [
@@ -374,15 +369,13 @@ private extension TodayHouseworkSummaryContent {
                             ),
                         ],
                         metaData: .init(
-                            indexedDate: .init(value: today),
-                            expiredAt: .distantFuture
+                            indexedDate: .init(value: today)
                         )
                     ),
                 ]),
                 template: nil,
                 now: today,
-                calendar: .japanese,
-                storagePolicy: .premium
+                calendar: .japanese
             ),
             members: .init(value: [], ownId: "ownUserId"),
             onTapRegister: {},

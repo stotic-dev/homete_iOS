@@ -19,7 +19,6 @@ struct HouseworkPostponeConfirmationAlert: ViewModifier {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
     @Environment(\.timeZone) var timeZone
@@ -117,7 +116,6 @@ private extension HouseworkPostponeConfirmationAlert {
             let result = try await houseworkListStore.postpone(
                 confirmation,
                 templateContext: templateContext,
-                storagePolicy: storagePolicy,
                 cohabitantId: cohabitantId,
                 step: step
             )

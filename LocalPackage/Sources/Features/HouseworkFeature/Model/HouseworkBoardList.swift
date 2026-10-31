@@ -25,7 +25,6 @@ extension HouseworkBoardList {
         selectedDateTemplate: HouseworkTemplateDay?,
         selectedDate: Date,
         calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy,
         uuidGenerator: () -> UUID
     ) {
         let items = dailyList
@@ -46,7 +45,6 @@ extension HouseworkBoardList {
             registeredItems: items,
             selectedDate: selectedDate,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             uuidGenerator: uuidGenerator
         )
         .map { .init(originalItem: $0, isRegistered: false) }

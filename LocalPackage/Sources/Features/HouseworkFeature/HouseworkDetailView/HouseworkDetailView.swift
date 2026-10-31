@@ -15,7 +15,6 @@ public struct HouseworkDetailView: View {
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
@@ -306,7 +305,7 @@ private extension HouseworkDetailView {
 
     func didChangeItems() {
         // テンプレートの家事を別の日へまわすと、元の日に同じIDの記録が残る。画面を閉じる前にその記録
-        //（「やらない」）へ切り替わって見えないよう、反映しない
+        // （「やらない」）へ切り替わって見えないよう、反映しない
         guard let targetItem = houseworkListStore.items.item(item.originalItem),
               !targetItem.isPostponedRecord else { return }
 

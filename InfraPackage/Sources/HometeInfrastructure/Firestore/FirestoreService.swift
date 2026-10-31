@@ -50,6 +50,22 @@ public final actor FirestoreService {
         try await predicate(firestore).setData(encoded, merge: false)
     }
 
+    /// ドキュメントを作成するか、`fieldNames`のフィールドだけを上書きする
+    ///
+    /// `fieldNames`に無いフィールドには触れない。Cloud Functionsだけが書くフィールドを残したまま、
+    /// アプリが持つフィールドを全体の上書きと同じように書き換えたいときに使う。
+    /// `fieldNames`にあってエンコードした値に無いフィールド（`nil`の値）は消す。
+    /// - Note: `merge: true`は入れ子のマップまで合わせるため、マップから消したキー（ありがとうなど）が残ってしまう。
+    ///         `mergeFields`ならフィールドの値を丸ごと置き換える
+    public func insertOrUpdate(
+        data: some Encodable,
+        fieldNames: [String],
+        predicate: (Firestore) -> DocumentReference
+    ) async throws {
+        let encoded = try Self.encode(data, replacing: fieldNames)
+        try await predicate(firestore).setData(encoded, mergeFields: fieldNames)
+    }
+
     /// 既存ドキュメントの1つのフィールドだけを更新する
     ///
     /// ドキュメント全体を上書きしないので、同じドキュメントの別のフィールドを同時に書き換える
@@ -75,6 +91,24 @@ public final actor FirestoreService {
         for element in data {
             let encoded = try Firestore.Encoder().encode(element)
             batch.setData(encoded, forDocument: reference(firestore, element), merge: false)
+        }
+        try await batch.commit()
+    }
+
+    /// 複数のドキュメントをまとめて作成するか、`fieldNames`のフィールドだけを上書きする（全件成功か全件失敗のどちらかになる）
+    ///
+    /// フィールドの扱いは`insertOrUpdate(data:fieldNames:predicate:)`と同じ。
+    /// - Parameter reference: 書き込む値ごとのドキュメント参照
+    public func batchInsertOrUpdate<T: Encodable & Sendable>(
+        data: [T],
+        fieldNames: [String],
+        reference: (Firestore, T) -> DocumentReference
+    ) async throws {
+        guard !data.isEmpty else { return }
+        let batch = firestore.batch()
+        for element in data {
+            let encoded = try Self.encode(element, replacing: fieldNames)
+            batch.setData(encoded, forDocument: reference(firestore, element), mergeFields: fieldNames)
         }
         try await batch.commit()
     }
@@ -206,6 +240,21 @@ public final actor FirestoreService {
                 }
             }
         }
+    }
+
+}
+
+private extension FirestoreService {
+
+    /// `fieldNames`を上書きする書き込みの値を作る。値が無いフィールドは消す
+    ///
+    /// `mergeFields`に指定したフィールドがデータに無いとSDKがエラーにするため、消す指定で埋める。
+    static func encode(_ data: some Encodable, replacing fieldNames: [String]) throws -> [String: Any] {
+        var encoded = try Firestore.Encoder().encode(data)
+        for fieldName in fieldNames where encoded[fieldName] == nil {
+            encoded[fieldName] = FieldValue.delete()
+        }
+        return encoded
     }
 
 }

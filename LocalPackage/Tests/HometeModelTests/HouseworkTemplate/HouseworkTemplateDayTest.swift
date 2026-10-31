@@ -45,7 +45,7 @@ struct HouseworkTemplateDayTest {
     ]
 
     @Test("すでに登録されているテンプレート家事と指定日付より古いテンプレートの家事は表示する家事に適用しない")
-    func applyTemplate() throws {
+    func applyTemplate() {
         // Arrange
         let template = HouseworkTemplateDay(
             dayOfWeek: .monday,
@@ -66,12 +66,10 @@ struct HouseworkTemplateDayTest {
             registeredItems: registeredItems,
             selectedDate: selectedDate,
             calendar: .japanese,
-            storagePolicy: .free,
             uuidGenerator: { uuid }
         )
 
         // Assert
-        let expectedExpired = try #require(Calendar.japanese.date(byAdding: .year, value: 1, to: selectedDate))
         let expected: [HouseworkItem] = registeredItems + [
             .makeForTest(
                 id: uuid.uuidString,
@@ -79,7 +77,6 @@ struct HouseworkTemplateDayTest {
                 title: "1",
                 point: 10,
                 state: .incomplete,
-                expiredAt: expectedExpired,
                 templateHouseworkItemId: .init(id: "id1")
             ),
             .makeForTest(
@@ -88,7 +85,6 @@ struct HouseworkTemplateDayTest {
                 title: "2",
                 point: 10,
                 state: .incomplete,
-                expiredAt: expectedExpired,
                 templateHouseworkItemId: .init(id: "id2")
             ),
         ]
@@ -97,7 +93,7 @@ struct HouseworkTemplateDayTest {
     }
 
     @Test("テンプレートから作る家事は、テンプレートの家事のメモを引き継ぐ")
-    func applyTemplate_copiesMemo() throws {
+    func applyTemplate_copiesMemo() {
         // Arrange
         let memo = HouseworkMemo(text: "スーパーで", checklist: [.init(id: "1", title: "牛乳", isChecked: false)])
         let updatedAt = Date.previewDate(year: 2026, month: 1, day: 1)
@@ -112,19 +108,16 @@ struct HouseworkTemplateDayTest {
             registeredItems: [],
             selectedDate: selectedDate,
             calendar: .japanese,
-            storagePolicy: .free,
             idGenerator: { _ in "generated" }
         )
 
         // Assert
-        let expectedExpired = try #require(Calendar.japanese.date(byAdding: .year, value: 1, to: selectedDate))
         let expected: [HouseworkItem] = [
             .makeForTest(
                 id: "generated",
                 indexedDate: selectedDate,
                 title: "買い出し",
                 point: 10,
-                expiredAt: expectedExpired,
                 templateHouseworkItemId: .init(id: "id1"),
                 memo: memo
             ),
@@ -164,7 +157,6 @@ struct HouseworkTemplateDayTest {
             registeredItems: registeredItems,
             selectedDate: selectedDate,
             calendar: .japanese,
-            storagePolicy: .free,
             idGenerator: { _ in "generated" }
         )
 
