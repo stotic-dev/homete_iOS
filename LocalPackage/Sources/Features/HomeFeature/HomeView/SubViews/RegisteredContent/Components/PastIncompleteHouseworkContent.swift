@@ -7,6 +7,9 @@ import HometeDomain
 import HometeUI
 import HouseworkFeature
 import SwiftUI
+#if canImport(Prefire)
+import Prefire
+#endif
 
 /// 「やり残している家事」のUI
 ///
@@ -199,6 +202,7 @@ private extension PastIncompleteHouseworkContent {
     .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
 }
 
+// スピナーは撮影ごとに回転角が変わりVRTがフレーキーになるため、スナップショットの対象から外す
 #Preview("PastIncompleteHouseworkContent_読み込み中") {
     let today = Date.previewDate(year: 2026, month: 5, day: 18)
     ScrollView {
@@ -223,5 +227,8 @@ private extension PastIncompleteHouseworkContent {
     }
     .setupEnvironmentForPreview()
     .environment(\.now, .previewDate(year: 2026, month: 5, day: 18))
+    #if canImport(Prefire)
+        .prefireIgnored()
+    #endif
 }
 #endif
