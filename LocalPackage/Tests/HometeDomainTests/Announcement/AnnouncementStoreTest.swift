@@ -167,6 +167,62 @@ struct AnnouncementStoreTest {
         #expect(markCount.value == 0)
     }
 
+    @Test("既読にした位置より新しいお知らせが無ければ、もう一度は既読にしない")
+    func markListRead_alreadyRead_doesNotMarkAgain() async {
+        // Arrange
+        let markCount = TestBox(value: 0)
+        let sut = AnnouncementStore(announcementClient: .init(
+            list: { .init(
+                announcements: [.makeForTest(id: "1", publishedAt: 100)],
+                unreadCount: 0,
+                modalAnnouncementId: nil
+            ) },
+            markRead: { _, _ in markCount.value += 1 }
+        ))
+        await sut.refresh()
+        await sut.markListRead()
+
+        // Act
+        await sut.markListRead()
+
+        // Assert
+        #expect(markCount.value == 1)
+    }
+
+    @Test("既読にできなかったら、次に一覧を開いたときにもう一度既読にし、取り直した未読の数も戻す")
+    func markListRead_failure_marksAgainNextTime() async {
+        // Arrange
+        let marked = TestBox(value: [String]())
+        let shouldFail = TestBox(value: true)
+        let sut = AnnouncementStore(announcementClient: .init(
+            list: {
+                .init(
+                    announcements: [.makeForTest(id: "1", publishedAt: 100, isUnread: true)],
+                    unreadCount: 1,
+                    modalAnnouncementId: nil
+                )
+            },
+            markRead: { id, _ in
+                marked.value.append(id)
+                if shouldFail.value {
+                    throw DomainError.noNetwork
+                }
+            }
+        ))
+        await sut.refresh()
+        await sut.markListRead()
+        await sut.refresh()
+        let unreadCountAfterFailure = sut.state.unreadCount
+        shouldFail.value = false
+
+        // Act
+        await sut.markListRead()
+
+        // Assert
+        #expect(unreadCountAfterFailure == 1)
+        #expect(marked.value == ["1", "1"])
+    }
+
     @Test("既読にする前の内容が後から返ってきても、既読にした位置より後に公開されたものだけを未読として数え、モーダルも出し直さない")
     func refresh_afterMarkListRead_ignoresStaleUnreadAndModal() async {
         // Arrange

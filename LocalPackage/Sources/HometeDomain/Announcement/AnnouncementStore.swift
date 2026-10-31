@@ -54,16 +54,28 @@ public final class AnnouncementStore {
     /// 一覧を開いたときに、先頭（最新）のお知らせまでを既読にする
     ///
     /// 未読の数とモーダルはすぐに消す。各お知らせの`isUnread`は次に取り直すまでそのままにする。
-    /// - Note: 失敗しても画面には出さない。サーバーの既読位置が進んでいなければ、次の取得で未読が戻る
+    /// - Note: 一覧を開いている間にお知らせが変わるたびに呼ばれるため、既読にした位置より新しいお知らせが無ければ何もしない。
+    ///         失敗しても画面には出さない。既読にした位置を戻し、次の取得で未読が戻るようにする
     public func markListRead() async {
         guard let latest = state.announcements.first else { return }
+        if let listReadUntil, latest.publishedAt <= listReadUntil {
+            return
+        }
 
-        listReadUntil = max(listReadUntil ?? latest.publishedAt, latest.publishedAt)
+        let previousListReadUntil = listReadUntil
+        listReadUntil = latest.publishedAt
         modalReadUntil = max(modalReadUntil ?? latest.publishedAt, latest.publishedAt)
         state.unreadCount = 0
         state.modalAnnouncement = nil
 
-        try? await announcementClient.markRead(latest.id, .list)
+        do {
+            try await announcementClient.markRead(latest.id, .list)
+        } catch {
+            // 待っている間に、より新しいお知らせで既読にし直していたら戻さない
+            if listReadUntil == latest.publishedAt {
+                listReadUntil = previousListReadUntil
+            }
+        }
     }
 
     /// 起動時のモーダルを閉じたときに、そのお知らせを既読にする
