@@ -18,6 +18,9 @@ struct DailyCompletionReminderSettingScreen: View {
     @State var setting: DailyCompletionReminderSetting?
     /// お知らせの通知を受け取る設定か。読み込むまでは`nil`
     @State var isAnnouncementNotificationEnabled: Bool?
+    /// 直前のお知らせの通知の切り替え
+    /// - Note: 素早く切り替えると、保存と購読の切り替えが前後して設定と購読が食い違うため、前の切り替えを待ってから次を行う
+    @State var announcementNotificationUpdateTask: Task<Void, Never>?
 
     var body: some View {
         DailyCompletionReminderSettingView(
@@ -36,9 +39,7 @@ struct DailyCompletionReminderSettingScreen: View {
             // 未設定の端末は受け取る設定になるため、読み込むまではオンで出す
             isAnnouncementNotificationEnabled: isAnnouncementNotificationEnabled ?? true,
             onChangeAnnouncementNotificationEnabled: { isEnabled in
-                Task {
-                    await changedAnnouncementNotificationEnabled(isEnabled)
-                }
+                changedAnnouncementNotificationEnabled(isEnabled)
             }
         )
         .task {
@@ -57,9 +58,13 @@ private extension DailyCompletionReminderSettingScreen {
         isAnnouncementNotificationEnabled = await announcementTopicUseCase.isEnabled()
     }
 
-    func changedAnnouncementNotificationEnabled(_ isEnabled: Bool) async {
+    func changedAnnouncementNotificationEnabled(_ isEnabled: Bool) {
         isAnnouncementNotificationEnabled = isEnabled
-        await announcementTopicUseCase.update(isEnabled: isEnabled)
+        let previousTask = announcementNotificationUpdateTask
+        announcementNotificationUpdateTask = Task {
+            await previousTask?.value
+            await announcementTopicUseCase.update(isEnabled: isEnabled)
+        }
     }
 
     func changedEnabled(_ isEnabled: Bool) async {
