@@ -54,6 +54,15 @@ public final class AnnouncementStore {
         await task.value
     }
 
+    /// お知らせがまだ読まれていないか
+    ///
+    /// 各お知らせの`isUnread`は取り直すまで変わらないため、この端末で既読にした位置より前のものは既読として扱う。
+    public func isUnread(_ announcement: Announcement) -> Bool {
+        guard announcement.isUnread else { return false }
+        guard let listReadUntil else { return true }
+        return announcement.publishedAt > listReadUntil
+    }
+
     /// 一覧を開いたときに、先頭（最新）のお知らせまでを既読にする
     ///
     /// 未読の数とモーダルはすぐに消す。各お知らせの`isUnread`は次に取り直すまでそのままにする。

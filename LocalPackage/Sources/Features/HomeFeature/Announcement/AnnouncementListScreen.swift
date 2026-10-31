@@ -69,7 +69,8 @@ private extension AnnouncementListScreen {
     }
 
     func changedAnnouncements(_ announcements: [Announcement]) {
-        unreadIds.formUnion(announcements.filter(\.isUnread).map(\.id))
+        // 既読にすると判定が変わるため、既読にする前に見ておく
+        unreadIds.formUnion(announcements.filter(announcementStore.isUnread).map(\.id))
         Task {
             await announcementStore.markListRead()
         }

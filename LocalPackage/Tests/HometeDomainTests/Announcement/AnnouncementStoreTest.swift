@@ -256,6 +256,41 @@ struct AnnouncementStoreTest {
         #expect(sut.state.modalAnnouncement == nil)
     }
 
+    // MARK: - isUnread
+
+    @Test("取り直す前でも、この端末で既読にした位置までのお知らせは既読として扱い、それより新しい未読は未読のままにする")
+    func isUnread_respectsLocalReadPosition() async {
+        // Arrange
+        let lists = TestBox(value: [
+            AnnouncementList(
+                announcements: [.makeForTest(id: "1", publishedAt: 100, isUnread: true)],
+                unreadCount: 1,
+                modalAnnouncementId: nil
+            ),
+            // 既読がまだ反映されていない内容に、新しいお知らせが1件増えている
+            AnnouncementList(
+                announcements: [
+                    .makeForTest(id: "2", publishedAt: 200, isUnread: true),
+                    .makeForTest(id: "1", publishedAt: 100, isUnread: true),
+                ],
+                unreadCount: 2,
+                modalAnnouncementId: nil
+            ),
+        ])
+        let sut = AnnouncementStore(announcementClient: .init(list: {
+            lists.value.removeFirst()
+        }))
+        await sut.refresh()
+        await sut.markListRead()
+        await sut.refresh()
+
+        // Act
+        let actual = sut.state.announcements.map(sut.isUnread)
+
+        // Assert
+        #expect(actual == [true, false])
+    }
+
     // MARK: - markModalRead
 
     @Test("モーダルを閉じるとそのお知らせをモーダルで既読にし、一覧の未読は残す")
