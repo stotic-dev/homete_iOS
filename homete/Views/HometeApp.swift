@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().delegate = self
         MessagingConfigurator.configure()
+        setupAnnouncementTopic()
 
         return true
     }
@@ -105,6 +106,16 @@ private extension AppDelegate {
     func setupRevenueCat() {
         guard !isXcodePreview, !isUnitTestMode else { return }
         RevenueCatClient.shared.initialize()
+    }
+
+    /// お知らせの通知を受け取る設定に合わせて、トピックを購読する／やめる
+    /// - Note: 購読は端末単位でログイン状態に関わらないため、画面より先に起動時に行う
+    func setupAnnouncementTopic() {
+        // プレビュー・ユニットテストではFirebaseを初期化しないため、購読もしない
+        guard FirebaseConfigurator.isConfigured else { return }
+        Task {
+            await AppDependencies.liveValue.announcementTopicUseCase.sync()
+        }
     }
 
     /// App Intentが使う依存を登録する
