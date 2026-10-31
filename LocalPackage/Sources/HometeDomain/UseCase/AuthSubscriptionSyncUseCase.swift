@@ -78,8 +78,7 @@ public struct AuthSubscriptionSyncUseCase {
         await subscriptionStore.logIn(account.id)
         guard !Task.isCancelled else { return nil }
 
-        // アプリ未起動の間に失効しているケースは状態変化として検知できないため、サインイン時にも突き合わせる
-        await syncPremiumStateIfNeeded()
+        await syncHouseworkRetentionIfNeeded()
         return accountStore.account ?? account
     }
 
@@ -101,19 +100,13 @@ public struct AuthSubscriptionSyncUseCase {
         await clearSession()
     }
 
-    /// アカウント新規登録時にアカウントを登録し、サブスクリプション状態を同期する
+    /// アカウント新規登録時にアカウントを登録し、サブスクリプションにログインする
     public func syncOnRegistered(auth: AccountAuthResult, userName: UserName) async throws -> Account {
         let account = try await accountStore.registerAccount(auth: auth, userName: userName)
         await accountStore.startObservingIfNeeded(account.id)
         await subscriptionStore.logIn(account.id)
-        await syncPremiumStateIfNeeded()
-        return accountStore.account ?? account
-    }
-
-    /// プレミアム加入状態の変化をアカウントに反映し、家事データの保持期限を再計算させる
-    public func syncPremiumStateIfNeeded() async {
-        await accountStore.updateIsPremiumIfNeeded(subscriptionStore.isPremium)
         await syncHouseworkRetentionIfNeeded()
+        return accountStore.account ?? account
     }
 
     /// 家事データの保持期限をグループの現在のプランに合わせて再計算させる

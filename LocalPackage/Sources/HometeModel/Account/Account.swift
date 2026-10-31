@@ -13,8 +13,8 @@ public struct Account: Equatable, Codable, Sendable {
     public let userName: String
     public let cohabitantId: String?
     /// プレミアムプランに加入しているか
-    /// - Note: 家事データの保持期間をサーバー側で判定するために保存する。
-    ///         機能の解放判定にはクライアントのエンタイトルメントを使うため、この値は保持期間の決定にのみ使う。
+    /// - Note: RevenueCatのWebhookを受けたCloud Functionsだけが書き、アプリからは書かない（Firestoreルールで拒否される）。
+    ///         家事データの保持期間をサーバー側で判定するための値で、機能の解放判定にはクライアントのエンタイトルメントを使う。
     public let isPremium: Bool
 
     public init(
@@ -36,16 +36,6 @@ public struct Account: Equatable, Codable, Sendable {
         cohabitantId = try container.decodeIfPresent(String.self, forKey: .cohabitantId)
         // isPremium 導入前に作成されたドキュメントにはフィールドが存在しないため、無い場合は無料プラン扱いにする
         isPremium = try container.decodeIfPresent(Bool.self, forKey: .isPremium) ?? false
-    }
-
-    /// プレミアム加入状態のみを差し替えたアカウントを返す
-    public func updateIsPremium(_ isPremium: Bool) -> Self {
-        .init(
-            id: id,
-            userName: userName,
-            cohabitantId: cohabitantId,
-            isPremium: isPremium
-        )
     }
 
 }

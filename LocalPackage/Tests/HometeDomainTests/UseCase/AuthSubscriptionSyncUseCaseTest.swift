@@ -31,7 +31,7 @@ private func makeSyncStateStore(_ suiteName: String) -> HouseworkRetentionSyncSt
 
 extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
 
-    @Test("サインイン成功時にアカウントをロードし、プレミアム状態をアカウントへ反映する")
+    @Test("サインイン成功時にアカウントをロードし、エンタイトルメントがプレミアムでもアカウントのisPremiumは書き換えない")
     func syncOnSignedInSuccess() async throws {
         try await confirmation(expectedCount: 2) { confirmation in
             let inputAuthResult = AccountAuthResult(id: "testAccountId")
@@ -40,13 +40,8 @@ extension AuthSubscriptionSyncUseCaseTest.SignedInCase {
                 userName: "testUserName",
                 cohabitantId: nil
             )
-            // エンタイトルメントがプレミアムのため、ロードしたアカウントに同期される
-            let expectedAccount = Account(
-                id: inputAuthResult.id,
-                userName: "testUserName",
-                cohabitantId: nil,
-                isPremium: true
-            )
+            // isPremiumはサーバーだけが書くため、エンタイトルメントがプレミアムでもロードした値のまま
+            let expectedAccount = inputAccount
             let accountInfoClient = AccountInfoClient(fetch: {
                 confirmation()
                 #expect($0 == inputAuthResult.id)
@@ -362,49 +357,6 @@ extension AuthSubscriptionSyncUseCaseTest.SignedOutCase {
 
 extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
 
-    @Test("プレミアム状態が変化した場合はアカウントを更新し家事データの保持期限を同期する")
-    func syncPremiumStateIfNeededWhenChanged() async {
-        await confirmation(expectedCount: 1) { confirmation in
-            let inputCohabitantId = "cohabitantId"
-            let inputAccount = Account(
-                id: "testAccountId",
-                userName: "testUserName",
-                cohabitantId: inputCohabitantId,
-                isPremium: false
-            )
-            let expectedAccount = Account(
-                id: "testAccountId",
-                userName: "testUserName",
-                cohabitantId: inputCohabitantId,
-                isPremium: true
-            )
-            let accountStore = AccountStore(account: inputAccount)
-            let subscriptionStore = SubscriptionStore(
-                entitlementInfo: EntitlementInfo(
-                    isActive: true,
-                    productIdentifier: "premium_monthly",
-                    expirationDate: nil,
-                    willRenew: true
-                )
-            )
-            let useCase = AuthSubscriptionSyncUseCase(
-                accountStore: accountStore,
-                cohabitantStore: CohabitantStore(),
-                subscriptionStore: subscriptionStore,
-                houseworkManager: .init(houseworkClient: .previewValue),
-                houseworkClient: .init(syncRetentionHandler: {
-                    #expect($0 == inputCohabitantId)
-                    confirmation()
-                }),
-                retentionSyncStateStore: makeSyncStateStore(#function)
-            )
-
-            await useCase.syncPremiumStateIfNeeded()
-
-            #expect(accountStore.account == expectedAccount)
-        }
-    }
-
     @Test("同期済みの内容と一致する場合は保持期限の同期を行わない")
     func syncPremiumStateIfNeededWhenAlreadySynced() async {
         await confirmation(expectedCount: 0) { confirmation in
@@ -429,7 +381,7 @@ extension AuthSubscriptionSyncUseCaseTest.RetentionSyncCase {
                 retentionSyncStateStore: syncStateStore
             )
 
-            await useCase.syncPremiumStateIfNeeded()
+            await useCase.syncHouseworkRetentionIfNeeded()
 
             #expect(accountStore.account == inputAccount)
         }
