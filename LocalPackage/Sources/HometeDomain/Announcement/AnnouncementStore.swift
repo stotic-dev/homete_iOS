@@ -21,10 +21,11 @@ public final class AnnouncementStore {
     ///
     /// 既読にする前に始めた取得が後から返ってきても、未読の数が戻らないようにするために使う。
     private var listReadUntil: Date?
-    /// この端末で既読にしたモーダルの位置
+    /// 起動時に出すお知らせを決めたか
     ///
-    /// 閉じる前に始めた取得が後から返ってきても、同じお知らせを出し直さないようにするために使う。
-    private var modalReadUntil: Date?
+    /// 起動時のモーダルは、起動後に初めて取得できたときの1回だけ決める。復帰時や通知の受信で取り直すたびに決め直すと、
+    /// ダッシュボードの上で別の画面を開いている最中にシートを出そうとしてしまうため。
+    private var hasDecidedModalAnnouncement = false
 
     // MARK: Dependencies
 
@@ -66,7 +67,6 @@ public final class AnnouncementStore {
 
         let previousListReadUntil = listReadUntil
         listReadUntil = latest.publishedAt
-        modalReadUntil = max(modalReadUntil ?? latest.publishedAt, latest.publishedAt)
         state.unreadCount = 0
         state.modalAnnouncement = nil
 
@@ -82,15 +82,11 @@ public final class AnnouncementStore {
 
     /// 起動時のモーダルを閉じたときに、そのお知らせを既読にする
     ///
-    /// 出している間に取り直して起動時のお知らせが変わることがあるため、今の状態ではなく表示したお知らせを既読にする。
-    /// - Note: 一覧の未読は残る。失敗しても画面には出さない
+    /// 出している間に一覧を開くなどして今の状態が変わっていることがあるため、表示したお知らせを既読にする。
+    /// - Note: 一覧の未読は残る。失敗しても画面には出さない（次の起動で同じお知らせがまた出る）
     /// - Parameter announcement: モーダルで表示したお知らせ
     public func markModalRead(_ announcement: Announcement) async {
-        modalReadUntil = max(modalReadUntil ?? announcement.publishedAt, announcement.publishedAt)
-        // 表示したものより新しいお知らせに変わっていたら、まだ見ていないので残す
-        if let modal = state.modalAnnouncement, modal.publishedAt <= announcement.publishedAt {
-            state.modalAnnouncement = nil
-        }
+        state.modalAnnouncement = nil
 
         try? await announcementClient.markRead(announcement.id, .modal)
     }
@@ -107,7 +103,10 @@ private extension AnnouncementStore {
             let list = try await announcementClient.list()
             state.announcements = list.announcements
             state.unreadCount = unreadCount(in: list)
-            state.modalAnnouncement = modalAnnouncement(in: list)
+            if !hasDecidedModalAnnouncement {
+                hasDecidedModalAnnouncement = true
+                state.modalAnnouncement = modalAnnouncement(in: list)
+            }
             state.loadFailure = nil
             state.hasLoaded = true
         } catch {
@@ -124,13 +123,8 @@ private extension AnnouncementStore {
     }
 
     func modalAnnouncement(in list: AnnouncementList) -> Announcement? {
-        guard let modalId = list.modalAnnouncementId,
-              let announcement = list.announcements.first(where: { $0.id == modalId }) else { return nil }
-
-        if let modalReadUntil, announcement.publishedAt <= modalReadUntil {
-            return nil
-        }
-        return announcement
+        guard let modalId = list.modalAnnouncementId else { return nil }
+        return list.announcements.first { $0.id == modalId }
     }
 
 }
@@ -142,7 +136,7 @@ public struct AnnouncementState: Equatable, Sendable {
     public var announcements: [Announcement] = []
     /// 未読のお知らせの数。ベルのバッジに使う
     public var unreadCount = 0
-    /// 起動時にモーダルで出すお知らせ。出すものが無ければ`nil`
+    /// 起動時にモーダルで出すお知らせ。起動後に初めて取得できたときに決まる。出すものが無ければ`nil`
     public var modalAnnouncement: Announcement?
     /// 一度でも取得に成功したか。取得前の空と、お知らせが1件も無い空を見分ける
     public var hasLoaded = false

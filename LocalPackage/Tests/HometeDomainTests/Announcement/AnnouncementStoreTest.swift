@@ -286,49 +286,10 @@ struct AnnouncementStoreTest {
         #expect(marked.value.map(\.1) == [.modal])
     }
 
-    @Test("表示している間に起動時のお知らせが新しいものに変わっていたら、表示したものだけを既読にし、新しいものは残す")
-    func markModalRead_modalChangedWhilePresenting_marksPresentedOnly() async {
+    @Test("起動時のお知らせは起動後に初めて取得できたときに決め、後から取り直しても変えない")
+    func refresh_decidesModalOnlyOnFirstSuccess() async {
         // Arrange
         let lists = TestBox(value: [
-            AnnouncementList(
-                announcements: [.makeForTest(id: "1", publishedAt: 100)],
-                unreadCount: 0,
-                modalAnnouncementId: "1"
-            ),
-            AnnouncementList(
-                announcements: [.makeForTest(id: "2", publishedAt: 200), .makeForTest(id: "1", publishedAt: 100)],
-                unreadCount: 0,
-                modalAnnouncementId: "2"
-            ),
-        ])
-        let marked = TestBox(value: [String]())
-        let sut = AnnouncementStore(announcementClient: .init(
-            list: { lists.value.removeFirst() },
-            markRead: { id, _ in marked.value.append(id) }
-        ))
-        await sut.refresh()
-        let presented = sut.state.modalAnnouncement
-        await sut.refresh()
-
-        // Act
-        if let presented {
-            await sut.markModalRead(presented)
-        }
-
-        // Assert
-        #expect(marked.value == ["1"])
-        #expect(sut.state.modalAnnouncement == .makeForTest(id: "2", publishedAt: 200))
-    }
-
-    @Test("閉じたモーダルのお知らせが取り直しで返ってきても出し直さず、より新しいお知らせなら出す")
-    func refresh_afterMarkModalRead_showsOnlyNewerModal() async {
-        // Arrange
-        let lists = TestBox(value: [
-            AnnouncementList(
-                announcements: [.makeForTest(id: "1", publishedAt: 100)],
-                unreadCount: 0,
-                modalAnnouncementId: "1"
-            ),
             AnnouncementList(
                 announcements: [.makeForTest(id: "1", publishedAt: 100)],
                 unreadCount: 0,
@@ -344,16 +305,52 @@ struct AnnouncementStoreTest {
             lists.value.removeFirst()
         }))
         await sut.refresh()
+
+        // Act
+        await sut.refresh()
+
+        // Assert
+        #expect(sut.state.modalAnnouncement == .makeForTest(id: "1", publishedAt: 100))
+    }
+
+    @Test("閉じた後に取り直しても、起動時のお知らせは出し直さない")
+    func refresh_afterMarkModalRead_doesNotShowModalAgain() async {
+        // Arrange
+        let sut = AnnouncementStore(announcementClient: .init(list: {
+            .init(announcements: [.makeForTest(id: "1", publishedAt: 100)], unreadCount: 0, modalAnnouncementId: "1")
+        }))
+        await sut.refresh()
         await sut.markModalRead(.makeForTest(id: "1", publishedAt: 100))
 
         // Act
         await sut.refresh()
-        let modalAfterStaleRefresh = sut.state.modalAnnouncement
+
+        // Assert
+        #expect(sut.state.modalAnnouncement == nil)
+    }
+
+    @Test("最初の取得に失敗したら、次に取得できたときに起動時のお知らせを決める")
+    func refresh_firstFailure_decidesModalOnNextSuccess() async {
+        // Arrange
+        let shouldFail = TestBox(value: true)
+        let sut = AnnouncementStore(announcementClient: .init(list: {
+            if shouldFail.value {
+                throw DomainError.noNetwork
+            }
+            return .init(
+                announcements: [.makeForTest(id: "1", publishedAt: 100)],
+                unreadCount: 0,
+                modalAnnouncementId: "1"
+            )
+        }))
+        await sut.refresh()
+        shouldFail.value = false
+
+        // Act
         await sut.refresh()
 
         // Assert
-        #expect(modalAfterStaleRefresh == nil)
-        #expect(sut.state.modalAnnouncement == .makeForTest(id: "2", publishedAt: 200))
+        #expect(sut.state.modalAnnouncement == .makeForTest(id: "1", publishedAt: 100))
     }
 
     @Test("モーダルのお知らせが一覧に含まれていなければ、モーダルは出さない")
