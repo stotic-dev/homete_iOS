@@ -31,16 +31,10 @@ enum TodayHouseworkSummaryTest {
             DailyHouseworkList(
                 items: items,
                 metaData: DailyHouseworkMetaData(
-                    indexedDate: .init(value: today),
-                    expiredAt: .distantFuture
+                    indexedDate: .init(value: today)
                 )
             ),
         ])
-    }
-
-    /// テンプレートから生成される家事に設定される有効期限（当日の1年後）
-    static func expiredAtOfToday() throws -> Date {
-        try #require(calendar.date(byAdding: .year, value: 1, to: today))
     }
 
 }
@@ -59,8 +53,7 @@ extension TodayHouseworkSummaryTest.EmptyCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -95,8 +88,7 @@ extension TodayHouseworkSummaryTest.AllCompletedCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -130,8 +122,7 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -164,8 +155,7 @@ extension TodayHouseworkSummaryTest.HasIncompleteCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -201,8 +191,7 @@ extension TodayHouseworkSummaryTest.ProgressCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -238,8 +227,7 @@ extension TodayHouseworkSummaryTest.ProgressCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -272,8 +260,7 @@ extension TodayHouseworkSummaryTest.ProgressCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Act
@@ -305,8 +292,7 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -351,8 +337,7 @@ extension TodayHouseworkSummaryTest.DisplayIncompleteItemsCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -395,8 +380,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -422,8 +406,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             DailyHouseworkList(
                 items: [otherDayItem],
                 metaData: DailyHouseworkMetaData(
-                    indexedDate: .init(value: otherDate),
-                    expiredAt: .distantFuture
+                    indexedDate: .init(value: otherDate)
                 )
             ),
         ])
@@ -434,8 +417,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -464,22 +446,19 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             DailyHouseworkList(
                 items: [yesterdayItem],
                 metaData: DailyHouseworkMetaData(
-                    indexedDate: .init(value: yesterday),
-                    expiredAt: .distantFuture
+                    indexedDate: .init(value: yesterday)
                 )
             ),
             DailyHouseworkList(
                 items: [todayItem],
                 metaData: DailyHouseworkMetaData(
-                    indexedDate: .init(value: TodayHouseworkSummaryTest.today),
-                    expiredAt: .distantFuture
+                    indexedDate: .init(value: TodayHouseworkSummaryTest.today)
                 )
             ),
             DailyHouseworkList(
                 items: [tomorrowItem],
                 metaData: DailyHouseworkMetaData(
-                    indexedDate: .init(value: tomorrow),
-                    expiredAt: .distantFuture
+                    indexedDate: .init(value: tomorrow)
                 )
             ),
         ])
@@ -490,8 +469,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -528,8 +506,7 @@ extension TodayHouseworkSummaryTest.DateFilterCase {
             storedAllItems: input,
             template: nil,
             now: nowWithTime,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -573,8 +550,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -585,7 +561,6 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             title: "洗濯",
             point: 10,
             state: .incomplete,
-            expiredAt: TodayHouseworkSummaryTest.expiredAtOfToday(),
             templateHouseworkItemId: .init(id: "templateId1")
         )
         let expected = TodayHouseworkSummary.makeForTest(
@@ -627,8 +602,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -667,8 +641,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -707,8 +680,7 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             storedAllItems: input,
             template: template,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert
@@ -719,7 +691,6 @@ extension TodayHouseworkSummaryTest.TemplateCase {
             title: "洗濯",
             point: 10,
             state: .incomplete,
-            expiredAt: TodayHouseworkSummaryTest.expiredAtOfToday(),
             templateHouseworkItemId: .init(id: "templateId1")
         )
         let expected = TodayHouseworkSummary.makeForTest(
@@ -751,8 +722,7 @@ extension TodayHouseworkSummaryTest.DisplayOrderCase {
             storedAllItems: input,
             template: nil,
             now: TodayHouseworkSummaryTest.today,
-            calendar: TodayHouseworkSummaryTest.calendar,
-            storagePolicy: .free
+            calendar: TodayHouseworkSummaryTest.calendar
         )
 
         // Assert

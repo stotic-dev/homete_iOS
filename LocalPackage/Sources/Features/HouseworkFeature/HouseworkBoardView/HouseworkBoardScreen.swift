@@ -121,8 +121,7 @@ private extension HouseworkBoardScreen {
                     dailyHouseworkList: .makeInitialValue(
                         selectedDate: dateList.selectedDate,
                         items: [],
-                        calendar: calendar,
-                        storagePolicy: storagePolicy
+                        calendar: calendar
                     ),
                     step: .board
                 )
@@ -297,7 +296,6 @@ private extension HouseworkBoardScreen {
             selectedDateTemplate: templateContext.templateOfDay(by: selectedDate, calendar: calendar),
             selectedDate: dateList.selectedDate,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             uuidGenerator: { UUID() }
         )
     }

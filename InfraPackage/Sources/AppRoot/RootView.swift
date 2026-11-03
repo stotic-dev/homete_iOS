@@ -19,7 +19,6 @@ public struct RootView: View {
     @Environment(\.scenePhase) var scenePhase
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
-    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(PendingRouteStore.self) var pendingRouteStore
     @Environment(LaunchStateStore.self) var launchStateStore
@@ -50,7 +49,7 @@ public struct RootView: View {
                             removal: .opacity
                         ))
                 case let .loggedIn(context):
-                    AppTabView()
+                    AppTabView.make()
                         .environment(\.loginContext, context)
                         .transition(.scale)
                 case .accountLinkRequired:
@@ -81,11 +80,6 @@ public struct RootView: View {
         }
         .onChange(of: pendingRouteStore.pendingRoute) {
             discardPendingEntriesIfUnderMaintenance()
-        }
-        .onChange(of: subscriptionStore.isPremium) {
-            Task {
-                await authSubscriptionSyncUseCase.syncPremiumStateIfNeeded()
-            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
             onReceiveFcmToken(notification)
@@ -134,7 +128,6 @@ public extension RootView {
                 cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
                 houseworkManager: $0.houseworkManager,
-                houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient,
                 sentInvitationStore: sentInvitationStore
             )

@@ -23,6 +23,9 @@ enum PendingRouteStoreTest {
     @MainActor
     struct InquiryDetailCase {}
 
+    @MainActor
+    struct TakeAnnouncementListCase {}
+
 }
 
 // MARK: - store / clear
@@ -325,6 +328,44 @@ extension PendingRouteStoreTest.InquiryDetailCase {
 
         #expect(actual == nil)
         #expect(sut.pendingRoute == .contributionAnalytics)
+    }
+
+}
+
+// MARK: - takeAnnouncementList
+
+extension PendingRouteStoreTest.TakeAnnouncementListCase {
+
+    @Test("お知らせの一覧を開く場合は、trueを返して保持している画面を破棄する")
+    func takeAnnouncementList_pending_returnsTrueAndClears() {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: .announcementList)
+
+        // Act
+
+        let actual = sut.takeAnnouncementList()
+
+        // Assert
+
+        #expect(actual)
+        #expect(sut.pendingRoute == nil)
+    }
+
+    @Test("お知らせの一覧以外の画面を保持している場合は、falseを返して画面を残す")
+    func takeAnnouncementList_otherRoute_returnsFalse() {
+        // Arrange
+
+        let sut = PendingRouteStore(pendingRoute: .inquiryDetail(inquiryId: "inquiryId"))
+
+        // Act
+
+        let actual = sut.takeAnnouncementList()
+
+        // Assert
+
+        #expect(!actual)
+        #expect(sut.pendingRoute == .inquiryDetail(inquiryId: "inquiryId"))
     }
 
 }

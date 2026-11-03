@@ -117,6 +117,9 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `frequent_housework_edit` | `FrequentHouseworkEditModal` |
 | `frequent_housework_category` | `FrequentHouseworkCategoryView`（いつもの家事のカテゴリ管理） |
 | `frequent_housework_import` | `FrequentHouseworkImportView`（テンプレートからの取り込み） |
+| `announcement_list` | `AnnouncementListScreen`（お知らせの一覧。ダッシュボードのベルと、お知らせの通知のタップから開く） |
+| `announcement_detail` | `AnnouncementDetailScreen` |
+| `announcement_modal` | `AnnouncementModalScreen`（起動時に出すお知らせのシート） |
 | `setting` | `SettingView` |
 | `inquiry_list` | `InquiryListScreen` |
 | `inquiry_detail` | `InquiryDetailScreen` |

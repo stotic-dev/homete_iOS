@@ -21,8 +21,8 @@ struct HouseworkManagerFetchOlderPeriodTest {
         let expectedFrom = Date.previewDate(year: 2025, month: 5, day: 11)
         let expectedTo = Date.previewDate(year: 2025, month: 8, day: 10)
         let olderItems = [
-            HouseworkItem.makeForTest(id: 1, indexedDate: expectedFrom, expiredAt: expectedFrom),
-            HouseworkItem.makeForTest(id: 2, indexedDate: expectedTo, expiredAt: expectedTo),
+            HouseworkItem.makeForTest(id: 1, indexedDate: expectedFrom),
+            HouseworkItem.makeForTest(id: 2, indexedDate: expectedTo),
         ]
 
         let manager = HouseworkManager(

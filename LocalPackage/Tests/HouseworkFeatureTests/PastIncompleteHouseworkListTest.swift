@@ -22,7 +22,7 @@ enum PastIncompleteHouseworkListTest {
     static func makeDailyList(date: Date, items: [HouseworkItem]) -> DailyHouseworkList {
         DailyHouseworkList(
             items: items,
-            metaData: DailyHouseworkMetaData(indexedDate: .init(value: date), expiredAt: .distantFuture)
+            metaData: DailyHouseworkMetaData(indexedDate: .init(value: date))
         )
     }
 

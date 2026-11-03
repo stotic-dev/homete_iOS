@@ -21,8 +21,7 @@ public extension StoredAllHouseworkList {
                     id: offset * 2 + index,
                     indexedDate: date,
                     title: titles[(offset * 2 + index) % titles.count],
-                    point: 10 * (index + 1),
-                    expiredAt: .distantFuture
+                    point: 10 * (index + 1)
                 )
             }
         }

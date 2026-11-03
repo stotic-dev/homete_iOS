@@ -360,7 +360,6 @@ public extension HouseworkListStore {
     /// 手元の家事は画面を開いた時点のものなので、登録済みの家事はリスナーで受け取った最新の記録で判断する。
     /// - Parameters:
     ///   - templateContext: まわす先の日にテンプレートから出る家事を探すのに使う
-    ///   - storagePolicy: まわす先の日付から保持期限を求めるのに使う
     /// - Returns: まわした結果。画面を開いている間に同居人が完了・「やらない」にしていて、まわさなかったときは`nil`
     @discardableResult
     func postpone( // swiftlint:disable:this function_parameter_count
@@ -368,7 +367,6 @@ public extension HouseworkListStore {
         isRegistered: Bool,
         to destination: Date,
         templateContext: HouseworkTemplateContext,
-        storagePolicy: HouseworkStoragePolicy,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> HouseworkPostponePlan.Outcome? {
@@ -380,8 +378,7 @@ public extension HouseworkListStore {
             target: current,
             isRegistered: isRegistered,
             to: destination,
-            templateContext: templateContext,
-            storagePolicy: storagePolicy
+            templateContext: templateContext
         )
         do {
             try await houseworkClient.insertOrUpdateItems(plan.writes, cohabitantId)
@@ -413,8 +410,7 @@ public extension HouseworkListStore {
         target: HouseworkItem,
         isRegistered: Bool,
         to destination: Date,
-        templateContext: HouseworkTemplateContext,
-        storagePolicy: HouseworkStoragePolicy
+        templateContext: HouseworkTemplateContext
     ) -> HouseworkPostponePlan {
         .make(
             target: target,
@@ -424,7 +420,6 @@ public extension HouseworkListStore {
             templateContext: templateContext,
             now: now(),
             calendar: calendar,
-            storagePolicy: storagePolicy,
             newItemId: idGenerator()
         )
     }

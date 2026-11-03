@@ -22,15 +22,13 @@ struct HouseworkListStorePostponeTest {
         let inputItem = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: sourceDate,
-            title: "洗濯",
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10)
+            title: "洗濯"
         )
         let expectedItems = [
             HouseworkItem.makeForTest(
                 id: "1",
                 indexedDate: destinationDate,
                 title: "洗濯",
-                expiredAt: .previewDate(year: 2027, month: 1, day: 11),
                 postponedFrom: .init(value: sourceDate)
             ),
         ]
@@ -56,7 +54,6 @@ struct HouseworkListStorePostponeTest {
                 isRegistered: true,
                 to: destinationDate,
                 templateContext: .init(metadata: nil, houseworkTemplate: []),
-                storagePolicy: .free,
                 cohabitantId: inputCohabitantId,
                 step: .board
             )
@@ -96,7 +93,6 @@ struct HouseworkListStorePostponeTest {
             isRegistered: true,
             to: destinationDate,
             templateContext: .init(metadata: nil, houseworkTemplate: []),
-            storagePolicy: .free,
             cohabitantId: inputCohabitantId,
             step: .board
         )
@@ -137,7 +133,6 @@ struct HouseworkListStorePostponeTest {
             isRegistered: false,
             to: destinationDate,
             templateContext: .init(metadata: nil, houseworkTemplate: []),
-            storagePolicy: .free,
             cohabitantId: inputCohabitantId,
             step: .board
         )

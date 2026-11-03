@@ -148,7 +148,7 @@ struct HouseworkIntentService {
             return .alreadyCompleted(title: title)
 
         case nil:
-            let item = makeNewItem(resolvedTarget, session: session, now: now, note: "")
+            let item = makeNewItem(resolvedTarget, now: now, note: "")
             let isDelivered = try await complete(item, isRegistered: false, session: session, now: now)
             return isDelivered ? .completed(title: item.title, point: item.point) : .pendingSync(title: item.title)
         }
@@ -176,7 +176,7 @@ struct HouseworkIntentService {
         guard isWithinMemoLimit(note: trimmedNote, session: session) else {
             return .memoLimitExceeded
         }
-        let item = makeNewItem(resolvedTarget, session: session, now: now, note: trimmedNote)
+        let item = makeNewItem(resolvedTarget, now: now, note: trimmedNote)
         let source: HouseworkRegisterSource = resolvedTarget.isFrequent ? .frequent : .manual
         let isDelivered = try await awaitWrite { onWritten in
             try await commandUseCase.register(
@@ -335,10 +335,7 @@ private extension HouseworkIntentService {
             storedAllItems: stored,
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
-            calendar: calendar,
-            // アプリはRevenueCatのエンタイトルメント（`SubscriptionStore`）で判定するが、IntentではRevenueCatを使わない。
-            // 保持期限の判定用にアカウントへ保存している値を使う。購入・解約の直後で反映前なら、保持期限がずれうる
-            storagePolicy: HouseworkStoragePolicy(isPremium: session.account.isPremium)
+            calendar: calendar
         )
     }
 

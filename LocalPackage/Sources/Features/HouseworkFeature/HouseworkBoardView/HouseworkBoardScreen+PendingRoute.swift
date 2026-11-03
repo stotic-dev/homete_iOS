@@ -46,8 +46,7 @@ extension HouseworkBoardScreen {
                 storedAllItems: store.items,
                 template: templateContext.templateOfDay(by: now, calendar: calendar),
                 now: now,
-                calendar: calendar,
-                storagePolicy: storagePolicy
+                calendar: calendar
             )
             .incompleteItems
             .first { $0.title == title }

@@ -14,7 +14,6 @@ public struct IncompleteHouseworkListView: View {
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(HouseworkListStore.self) var houseworkListStore
 
     @CommonError var commonError
@@ -35,8 +34,7 @@ public struct IncompleteHouseworkListView: View {
             storedAllItems: houseworkListStore.items,
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
-            calendar: calendar,
-            storagePolicy: storagePolicy
+            calendar: calendar
         )
         )
         // ホームからの遷移で地の色が変わらないよう、ホームと同じミルク色にする
@@ -139,8 +137,7 @@ private extension IncompleteHouseworkListView {
                         ),
                     ],
                     metaData: .init(
-                        indexedDate: .init(value: today),
-                        expiredAt: .distantFuture
+                        indexedDate: .init(value: today)
                     )
                 ),
             ]

@@ -26,7 +26,7 @@ public struct StoredAllHouseworkList: Equatable, Sendable {
                 guard let firstItem = $1.first else { return nil }
                 return .init(
                     items: $1,
-                    metaData: .init(indexedDate: firstItem.indexedDate, expiredAt: firstItem.expiredAt)
+                    metaData: .init(indexedDate: firstItem.indexedDate)
                 )
             }
         return .init(value: dailyLists)

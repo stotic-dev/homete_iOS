@@ -29,6 +29,18 @@ struct AppTabView: View {
     @State var frequentHouseworkStore: FrequentHouseworkStore?
     @State var encouragementCommentStore: EncouragementCommentStore?
     @State var type: TabType = .dashboard
+    /// ダッシュボードのベルのバッジ・起動時のシート・お知らせの一覧で同じ状態を使う
+    @State var announcementStore: AnnouncementStore
+
+    static func make() -> some View {
+        DependenciesInjectLayer {
+            AppTabView(announcementStore: .init(announcementClient: $0.announcementClient))
+        }
+    }
+
+    init(announcementStore: AnnouncementStore) {
+        _announcementStore = State(initialValue: announcementStore)
+    }
 
     var handler: Binding<TabType> {
         Binding(
@@ -96,6 +108,8 @@ struct AppTabView: View {
             .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
                 onChangePendingRoute()
             }
+            .refreshAnnouncements(announcementStore)
+            .environment(announcementStore)
             .environment(\.cohabitantMembers, cohabitantStore.members)
             .environment(
                 \.houseworkTemplateContext,
@@ -311,7 +325,7 @@ private extension AppTabView {
 
     /// 通知やApp Intentから開く画面があれば、その画面を持つタブに切り替える
     /// - Note: 画面は家事の読み込みを待って切り替え先のタブが開く。家事やがんばりの画面はグループ未所属なら開けないので破棄する。
-    ///         問い合わせはグループに関係なく使えるため、未所属でもダッシュボードの設定から開く
+    ///         問い合わせとお知らせはグループに関係なく使えるため、未所属でもダッシュボードから開く
     func onChangePendingRoute() {
         guard let route = pendingRouteStore.pendingRoute else { return }
         switch route {
@@ -329,7 +343,7 @@ private extension AppTabView {
             }
             type = .dashboard
 
-        case .inquiryDetail:
+        case .inquiryDetail, .announcementList:
             type = .dashboard
         }
     }
@@ -397,7 +411,7 @@ private extension AppTabView {
 }
 
 #Preview {
-    AppTabView()
+    AppTabView(announcementStore: AnnouncementStore())
         .environment(AccountStore())
         .environment(AccountAuthStore())
         .environment(CohabitantStore())

@@ -14,8 +14,6 @@ enum HouseworkItemPostponeTest {
 
     static let sourceDate = Date.previewDate(year: 2026, month: 1, day: 10)
     static let destinationDate = Date.previewDate(year: 2026, month: 1, day: 11)
-    /// `makeForTest`の`expiredAt`の既定値は呼び出すたびの現在日時なので、比べる家事では固定する
-    static let expiredAt = Date.previewDate(year: 2027, month: 1, day: 11)
 
 }
 
@@ -30,7 +28,6 @@ extension HouseworkItemPostponeTest.CodableCase {
             id: "1",
             indexedDate: HouseworkItemPostponeTest.sourceDate,
             state: .notTodo,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10),
             createdAt: .previewDate(year: 2026, month: 1, day: 9),
             postponedFrom: .init(value: .previewDate(year: 2026, month: 1, day: 9)),
             postponedTo: .init(value: HouseworkItemPostponeTest.destinationDate)
@@ -71,7 +68,6 @@ extension HouseworkItemPostponeTest.CarryOverCase {
             id: "1",
             indexedDate: HouseworkItemPostponeTest.destinationDate,
             point: 10,
-            expiredAt: HouseworkItemPostponeTest.expiredAt,
             postponedFrom: .init(value: HouseworkItemPostponeTest.sourceDate)
         )
         let completedAt = Date.previewDate(year: 2026, month: 1, day: 11, hour: 9)
@@ -82,7 +78,6 @@ extension HouseworkItemPostponeTest.CarryOverCase {
             state: .completed,
             executorId: "own",
             executedAt: completedAt,
-            expiredAt: HouseworkItemPostponeTest.expiredAt,
             postponedFrom: .init(value: HouseworkItemPostponeTest.sourceDate)
         )
 
@@ -103,14 +98,12 @@ extension HouseworkItemPostponeTest.CarryOverCase {
         let input = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: HouseworkItemPostponeTest.destinationDate,
-            expiredAt: HouseworkItemPostponeTest.expiredAt,
             postponedFrom: .init(value: HouseworkItemPostponeTest.sourceDate)
         )
         let expected = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: HouseworkItemPostponeTest.destinationDate,
             state: .notTodo,
-            expiredAt: HouseworkItemPostponeTest.expiredAt,
             postponedFrom: .init(value: HouseworkItemPostponeTest.sourceDate)
         )
 
@@ -127,22 +120,19 @@ extension HouseworkItemPostponeTest.CarryOverCase {
         let input = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: HouseworkItemPostponeTest.destinationDate,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 11),
             postponedFrom: .init(value: HouseworkItemPostponeTest.sourceDate)
         )
         let nextDestination = Date.previewDate(year: 2026, month: 1, day: 12)
         let expected = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: nextDestination,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 12),
             postponedFrom: .init(value: HouseworkItemPostponeTest.destinationDate)
         )
 
         // Act
         let actual = input.postponed(
             to: .init(
-                indexedDate: .init(value: nextDestination),
-                expiredAt: .previewDate(year: 2027, month: 1, day: 12)
+                indexedDate: .init(value: nextDestination)
             )
         )
 

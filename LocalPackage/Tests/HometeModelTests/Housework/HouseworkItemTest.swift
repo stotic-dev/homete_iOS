@@ -28,14 +28,12 @@ extension HouseworkItemTest.UpdateStateCase {
     func updateCompleted_updatesStateAndExecutorInfo() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let item = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: indexedDate,
             title: "洗濯",
             point: 100,
-            state: .incomplete,
-            expiredAt: expiredAt
+            state: .incomplete
         )
         let now = Date()
         let executors = [
@@ -59,7 +57,6 @@ extension HouseworkItemTest.UpdateStateCase {
             ],
             effort: .hard,
             executedAt: now,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil
         )
         #expect(result == expected)
@@ -69,7 +66,6 @@ extension HouseworkItemTest.UpdateStateCase {
     func makeRedone_fromBoostedItem_returnsNormalEffort() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let now = Date()
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -79,8 +75,7 @@ extension HouseworkItemTest.UpdateStateCase {
             state: .completed,
             executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 120)],
             effort: .hard,
-            executedAt: Date(),
-            expiredAt: expiredAt
+            executedAt: Date()
         )
 
         // Act
@@ -96,7 +91,6 @@ extension HouseworkItemTest.UpdateStateCase {
             executors: [HouseworkExecutor(userId: "userB", percentage: 100, point: 100)],
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil,
             createdAt: now
         )
@@ -107,7 +101,6 @@ extension HouseworkItemTest.UpdateStateCase {
     func updateIncomplete_clearsExecutorInfo() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let item = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: indexedDate,
@@ -116,8 +109,7 @@ extension HouseworkItemTest.UpdateStateCase {
             state: .completed,
             executorId: "executorId",
             effort: .veryHard,
-            executedAt: Date(),
-            expiredAt: expiredAt
+            executedAt: Date()
         )
 
         // Act
@@ -129,8 +121,7 @@ extension HouseworkItemTest.UpdateStateCase {
             indexedDate: indexedDate,
             title: "洗濯",
             point: 100,
-            state: .incomplete,
-            expiredAt: expiredAt
+            state: .incomplete
         )
         #expect(result == expected)
     }
@@ -139,7 +130,6 @@ extension HouseworkItemTest.UpdateStateCase {
     func updateNotTodo_keepsExecutorInfo() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let executedAt = Date().addingTimeInterval(-3600)
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -149,8 +139,7 @@ extension HouseworkItemTest.UpdateStateCase {
             state: .completed,
             executors: [HouseworkExecutor(userId: "executorId", percentage: 100, point: 120)],
             effort: .hard,
-            executedAt: executedAt,
-            expiredAt: expiredAt
+            executedAt: executedAt
         )
 
         // Act
@@ -166,7 +155,6 @@ extension HouseworkItemTest.UpdateStateCase {
             executors: [HouseworkExecutor(userId: "executorId", percentage: 100, point: 120)],
             effort: .hard,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil
         )
         #expect(result == expected)
@@ -182,14 +170,12 @@ extension HouseworkItemTest.ThanksCase {
     func updateIncomplete_clearsThanks() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let item = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: indexedDate,
             state: .completed,
             executorId: "executorId",
             executedAt: Date(),
-            expiredAt: expiredAt,
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
         )
 
@@ -200,8 +186,7 @@ extension HouseworkItemTest.ThanksCase {
         let expected = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: indexedDate,
-            state: .incomplete,
-            expiredAt: expiredAt
+            state: .incomplete
         )
         #expect(result == expected)
     }
@@ -226,13 +211,11 @@ extension HouseworkItemTest.ThanksCase {
     func updateCompleted_clearsThanks() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let now = Date()
         let item = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: indexedDate,
             state: .incomplete,
-            expiredAt: expiredAt,
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
         )
 
@@ -249,8 +232,7 @@ extension HouseworkItemTest.ThanksCase {
             indexedDate: indexedDate,
             state: .completed,
             executorId: "executorId",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         #expect(result == expected)
     }
@@ -259,7 +241,6 @@ extension HouseworkItemTest.ThanksCase {
     func makeRedone_doesNotInheritThanks() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let now = Date()
         let item = HouseworkItem.makeForTest(
             id: 1,
@@ -267,7 +248,6 @@ extension HouseworkItemTest.ThanksCase {
             state: .completed,
             executorId: "executorId",
             executedAt: Date(),
-            expiredAt: expiredAt,
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date())]
         )
 
@@ -281,7 +261,6 @@ extension HouseworkItemTest.ThanksCase {
             state: .completed,
             executorId: "executorId",
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: now
         )
         #expect(result == expected)
@@ -313,8 +292,7 @@ extension HouseworkItemTest.ThanksCase {
             title: "洗濯",
             state: .completed,
             executorId: "executorId",
-            executedAt: Date(timeIntervalSinceReferenceDate: 0),
-            expiredAt: Date(timeIntervalSinceReferenceDate: 0)
+            executedAt: Date(timeIntervalSinceReferenceDate: 0)
         )
         #expect(result == expected)
     }
@@ -328,7 +306,6 @@ extension HouseworkItemTest.ThanksCase {
             state: .completed,
             executorId: "executorId",
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date(timeIntervalSinceReferenceDate: .zero))]
         )
 
@@ -343,7 +320,6 @@ extension HouseworkItemTest.ThanksCase {
             state: .completed,
             executorId: "executorId",
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             thanks: ["senderId": .init(comment: "ありがとう", sentAt: Date(timeIntervalSinceReferenceDate: .zero))]
         )
         #expect(actual == expected)
@@ -394,7 +370,6 @@ extension HouseworkItemTest.CodableCase {
             executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 10)],
             effort: .normal,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil
         )
         #expect(actual == expected)
@@ -431,7 +406,6 @@ extension HouseworkItemTest.CodableCase {
             executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 10)],
             effort: .normal,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil
         )
         #expect(actual == expected)
@@ -511,7 +485,6 @@ extension HouseworkItemTest.CodableCase {
             ],
             effort: .normal,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil
         )
         #expect(actual == expected)
@@ -545,7 +518,6 @@ extension HouseworkItemTest.CodableCase {
             executors: [],
             effort: .normal,
             executedAt: nil,
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil
         )
         #expect(actual == expected)
@@ -566,7 +538,6 @@ extension HouseworkItemTest.CodableCase {
             ],
             effort: .normal,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil
         )
 
@@ -594,7 +565,6 @@ extension HouseworkItemTest.CodableCase {
             ],
             effort: .veryHard,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil,
             createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
@@ -616,10 +586,71 @@ extension HouseworkItemTest.CodableCase {
             ],
             effort: .veryHard,
             executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero),
             templateHouseworkItemId: nil,
             createdAt: Date(timeIntervalSinceReferenceDate: 100)
         )
+        #expect(actual == expected)
+    }
+
+    @Test("保持期限が付く前の家事（expiredAtが無いドキュメント）も読み込める")
+    func decode_withoutExpiredAt_succeeds() throws {
+        // Arrange
+        let json = Data("""
+        {
+            "id": "id1",
+            "indexedDate": { "value": 0 },
+            "title": "洗濯",
+            "point": 100,
+            "state": { "incomplete": {} }
+        }
+        """.utf8)
+
+        // Act
+        let actual = try JSONDecoder().decode(HouseworkItem.self, from: json)
+
+        // Assert
+        let expected = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: 0),
+            title: "洗濯"
+        )
+        #expect(actual == expected)
+    }
+
+    @Test("エンコードしても、Cloud Functionsだけが書く保持期限（expiredAt）は書き出さない")
+    func encode_doesNotWriteExpiredAt() throws {
+        // Arrange
+        let item = HouseworkItem.makeForTest(
+            id: 1,
+            indexedDate: Date(timeIntervalSinceReferenceDate: .zero),
+            state: .completed,
+            executorId: "executorId",
+            executedAt: Date(timeIntervalSinceReferenceDate: .zero),
+            createdAt: Date(timeIntervalSinceReferenceDate: .zero)
+        )
+
+        // Act
+        let data = try JSONEncoder().encode(item)
+
+        // Assert
+        let actual = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any]).keys
+        let expected = [
+            "id", "indexedDate", "title", "point", "state", "executors", "effort",
+            "executorId", "executedAt", "thanks", "createdAt",
+        ]
+        #expect(Set(actual) == Set(expected))
+    }
+
+    @Test("アプリが書き込むフィールドに、保持期限（expiredAt）を含めない")
+    func writtenFieldNames_excludesExpiredAt() {
+        // Act
+        let actual = HouseworkItem.writtenFieldNames
+
+        // Assert
+        let expected = [
+            "id", "indexedDate", "title", "point", "state", "executors", "effort", "executorId",
+            "executedAt", "templateHouseworkItemId", "thanks", "createdAt", "memo", "postponedFrom", "postponedTo",
+        ]
         #expect(actual == expected)
     }
 
@@ -633,7 +664,6 @@ extension HouseworkItemTest.UpdateExecutorsCase {
     func updateExecutors_completedItem_keepsCompletionRecord() {
         // Arrange
         let indexedDate = Date()
-        let expiredAt = Date().addingTimeInterval(3600)
         let executedAt = Date()
         let thanks = ["userB": HouseworkThanks(comment: "ありがとう", sentAt: Date())]
         let item = HouseworkItem.makeForTest(
@@ -645,7 +675,6 @@ extension HouseworkItemTest.UpdateExecutorsCase {
             executors: [HouseworkExecutor(userId: "userA", percentage: 100, point: 120)],
             effort: .hard,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             thanks: thanks,
             createdAt: executedAt
         )
@@ -670,7 +699,6 @@ extension HouseworkItemTest.UpdateExecutorsCase {
             ],
             effort: .hard,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil,
             thanks: thanks,
             createdAt: executedAt
@@ -713,7 +741,7 @@ extension HouseworkItemTest.MemoCase {
     func updateCompleted_keepsMemo() {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
-        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, point: 10, expiredAt: date, memo: Self.memo)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, point: 10, memo: Self.memo)
 
         // Act
         let actual = item.updateCompleted(at: date, executors: [.solo(userId: "userA", point: 10)], effort: .normal)
@@ -726,7 +754,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executorId: "userA",
             executedAt: date,
-            expiredAt: date,
             memo: Self.memo
         )
         #expect(actual == expected)
@@ -743,7 +770,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executorId: "userA",
             executedAt: date,
-            expiredAt: date,
             memo: Self.memo
         )
         let executors = [
@@ -762,7 +788,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executors: executors,
             executedAt: date,
-            expiredAt: date,
             memo: Self.memo
         )
         #expect(actual == expected)
@@ -779,7 +804,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executorId: "userA",
             executedAt: date,
-            expiredAt: date,
             memo: Self.memo
         )
 
@@ -794,7 +818,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executorId: "userB",
             executedAt: date,
-            expiredAt: date,
             createdAt: date,
             memo: Self.memo
         )
@@ -811,7 +834,6 @@ extension HouseworkItemTest.MemoCase {
             state: .completed,
             executorId: "userA",
             executedAt: date,
-            expiredAt: date,
             memo: Self.memo
         )
 
@@ -819,7 +841,7 @@ extension HouseworkItemTest.MemoCase {
         let actual = item.updateIncomplete()
 
         // Assert
-        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, memo: Self.memo)
         #expect(actual == expected)
     }
 
@@ -827,7 +849,7 @@ extension HouseworkItemTest.MemoCase {
     func updateNotTodo_keepsMemo() {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
-        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, memo: Self.memo)
 
         // Act
         let actual = item.updateNotTodo()
@@ -837,7 +859,6 @@ extension HouseworkItemTest.MemoCase {
             id: 1,
             indexedDate: date,
             state: .notTodo,
-            expiredAt: date,
             memo: Self.memo
         )
         #expect(actual == expected)
@@ -847,7 +868,7 @@ extension HouseworkItemTest.MemoCase {
     func updateCreatedAt_keepsMemo() {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
-        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: Self.memo)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, memo: Self.memo)
 
         // Act
         let actual = item.updateCreatedAt(date)
@@ -856,7 +877,6 @@ extension HouseworkItemTest.MemoCase {
         let expected = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: date,
-            expiredAt: date,
             createdAt: date,
             memo: Self.memo
         )
@@ -867,7 +887,7 @@ extension HouseworkItemTest.MemoCase {
     func updateMemo_replacesOnlyMemo() throws {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
-        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, createdAt: date)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, createdAt: date)
 
         // Act
         let actual = try item.updateMemo(Self.memo, limitPolicy: .free)
@@ -876,7 +896,6 @@ extension HouseworkItemTest.MemoCase {
         let expected = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: date,
-            expiredAt: date,
             createdAt: date,
             memo: Self.memo
         )
@@ -923,8 +942,7 @@ extension HouseworkItemTest.MemoCase {
         let expected = HouseworkItem.makeForTest(
             id: 1,
             indexedDate: Date(timeIntervalSinceReferenceDate: 0),
-            title: "洗濯",
-            expiredAt: Date(timeIntervalSinceReferenceDate: 0)
+            title: "洗濯"
         )
         #expect(actual == expected)
     }
@@ -939,14 +957,14 @@ extension HouseworkItemTest.MemoCase {
     func encodeThenDecode_keepsMemo(memo: HouseworkMemo) throws {
         // Arrange
         let date = Date(timeIntervalSinceReferenceDate: .zero)
-        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: memo)
+        let item = HouseworkItem.makeForTest(id: 1, indexedDate: date, memo: memo)
 
         // Act
         let data = try JSONEncoder().encode(item)
         let actual = try JSONDecoder().decode(HouseworkItem.self, from: data)
 
         // Assert
-        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, expiredAt: date, memo: memo)
+        let expected = HouseworkItem.makeForTest(id: 1, indexedDate: date, memo: memo)
         #expect(actual == expected)
     }
 

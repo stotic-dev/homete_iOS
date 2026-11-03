@@ -27,8 +27,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     public let effort: HouseworkEffort
     /// 実行日時
     public let executedAt: Date?
-    /// 有効期限
-    public let expiredAt: Date
     /// 紐づくテンプレートの家事ID
     public let templateHouseworkItemId: HouseworkTemplateItem.ItemId?
     /// 届いたありがとう（キーは送った人のユーザID）
@@ -60,7 +58,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         executors: [HouseworkExecutor],
         effort: HouseworkEffort,
         executedAt: Date?,
-        expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
@@ -76,7 +73,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.executors = executors
         self.effort = effort
         self.executedAt = executedAt
-        self.expiredAt = expiredAt
         self.templateHouseworkItemId = templateHouseworkItemId
         self.thanks = thanks
         self.createdAt = createdAt
@@ -111,7 +107,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             effort: effort,
             executedAt: now,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             createdAt: createdAt,
             memo: memo,
@@ -146,7 +141,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -170,7 +164,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             state: .completed,
             executorId: executor,
             executedAt: now,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil,
             createdAt: now,
             memo: memo
@@ -190,7 +183,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: [],
             effort: .normal,
             executedAt: nil,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             createdAt: createdAt,
             memo: memo,
@@ -209,7 +201,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -230,7 +221,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: now,
@@ -260,7 +250,6 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -301,7 +290,6 @@ public extension HouseworkItem {
         state: HouseworkState,
         executorId: String?,
         executedAt: Date?,
-        expiredAt: Date,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId?,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
@@ -316,7 +304,6 @@ public extension HouseworkItem {
             executors: executorId.map { [.solo(userId: $0, point: point)] } ?? [],
             effort: .normal,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -332,9 +319,9 @@ public extension HouseworkItem {
 
     /// 別の日へまわす（単発の家事）
     ///
-    /// IDは変えずに日付と保持期限だけを移すので、メモ・作成日時はそのまま引き継ぐ。
+    /// IDは変えずに日付だけを移すので、メモ・作成日時はそのまま引き継ぐ。
     /// 単発の家事はテンプレートから出ることがないため、元の日に記録を残さなくてよい。
-    /// - Parameter metaData: まわす先の日付と、その日付から求めた保持期限
+    /// - Parameter metaData: まわす先の日付
     func postponed(to metaData: DailyHouseworkMetaData) -> Self {
         .init(
             id: id,
@@ -345,7 +332,6 @@ public extension HouseworkItem {
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: metaData.expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -369,7 +355,6 @@ public extension HouseworkItem {
             executors: executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
@@ -384,7 +369,7 @@ public extension HouseworkItem {
     /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない
     /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。
     /// - Parameters:
-    ///   - metaData: まわす先の日付と、その日付から求めた保持期限
+    ///   - metaData: まわす先の日付
     ///   - now: 作成日時
     func makePostponedCopy(id: String, to metaData: DailyHouseworkMetaData, at now: Date) -> Self {
         .init(
@@ -396,7 +381,6 @@ public extension HouseworkItem {
             executors: [],
             effort: .normal,
             executedAt: nil,
-            expiredAt: metaData.expiredAt,
             templateHouseworkItemId: nil,
             createdAt: now,
             memo: memo,
@@ -416,7 +400,15 @@ public extension HouseworkItem {
 
 public extension HouseworkItem {
 
-    internal enum CodingKeys: String, CodingKey {
+    /// アプリが書き込むフィールドの名前
+    ///
+    /// 家事のドキュメントは、ここに無いフィールド（`expiredAt`）を残したまま、ここにあるフィールドだけを上書きする。
+    /// 値が無くてエンコードされなかったフィールドは、書き込むときに消す（`executedAt`を未完了で消すときなど）。
+    static var writtenFieldNames: [String] {
+        CodingKeys.allCases.map(\.stringValue)
+    }
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
 
         case id
         case indexedDate
@@ -427,7 +419,6 @@ public extension HouseworkItem {
         case effort
         case executorId
         case executedAt
-        case expiredAt
         case templateHouseworkItemId
         case thanks
         case createdAt
@@ -447,6 +438,7 @@ public extension HouseworkItem {
     /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
     /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0034）。
     /// 別の日へまわしていない家事は`postponedFrom`・`postponedTo`を持たないため、`nil`として読む。
+    /// 保持期限（`expiredAt`）はCloud Functionsだけが書くフィールドで、アプリでは読まない。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let point = try container.decode(Int.self, forKey: .point)
@@ -462,7 +454,6 @@ public extension HouseworkItem {
             executors: executors ?? legacyExecutorId.map { [.solo(userId: $0, point: point)] } ?? [],
             effort: container.decodeIfPresent(HouseworkEffort.self, forKey: .effort) ?? .normal,
             executedAt: container.decodeIfPresent(Date.self, forKey: .executedAt),
-            expiredAt: container.decode(Date.self, forKey: .expiredAt),
             templateHouseworkItemId: container.decodeIfPresent(
                 HouseworkTemplateItem.ItemId.self,
                 forKey: .templateHouseworkItemId
@@ -476,6 +467,9 @@ public extension HouseworkItem {
     }
 
     /// 旧バージョンのアプリが実行者を読めるよう、`executorId`に1人目の担当者も書く
+    ///
+    /// 保持期限（`expiredAt`）は書かない。家事の作成時にトリガーが付け、プランやメンバーが変わると
+    /// Cloud Functionsが計算し直すため、アプリから書くとFirestoreルールで拒否される。
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
@@ -487,7 +481,6 @@ public extension HouseworkItem {
         try container.encode(effort, forKey: .effort)
         try container.encodeIfPresent(executorId, forKey: .executorId)
         try container.encodeIfPresent(executedAt, forKey: .executedAt)
-        try container.encode(expiredAt, forKey: .expiredAt)
         try container.encodeIfPresent(templateHouseworkItemId, forKey: .templateHouseworkItemId)
         try container.encode(thanks, forKey: .thanks)
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
@@ -520,7 +513,6 @@ public extension HouseworkItem {
             state: state,
             executorId: executorId,
             executedAt: executedAt,
-            expiredAt: metaData.expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             memo: memo

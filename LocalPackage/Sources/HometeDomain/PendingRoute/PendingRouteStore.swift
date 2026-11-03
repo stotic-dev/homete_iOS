@@ -104,4 +104,15 @@ public final class PendingRouteStore {
         return inquiryId
     }
 
+    /// お知らせの一覧を開くかどうかを取り出す
+    ///
+    /// 開くと判断したら、保持している画面を破棄する。
+    /// - Returns: お知らせの一覧を開く場合は`true`
+    public func takeAnnouncementList() -> Bool {
+        guard pendingRoute == .announcementList else { return false }
+
+        pendingRoute = nil
+        return true
+    }
+
 }
