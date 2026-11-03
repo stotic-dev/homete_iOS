@@ -27,7 +27,7 @@ struct HouseworkTutorialSampleTest {
                 makeItem(id: "tutorial_4", title: "お風呂掃除", point: 30, today: today),
                 makeItem(id: "tutorial_5", title: "夕食の準備", point: 40, today: today),
             ],
-            metaData: .init(indexedDate: .init(value: today), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: today))
         )
         #expect(result == expected)
     }
@@ -46,7 +46,6 @@ private extension HouseworkTutorialSampleTest {
             executors: executorId.map { [.init(userId: $0, percentage: 100, point: point)] } ?? [],
             effort: .normal,
             executedAt: executorId == nil ? nil : today,
-            expiredAt: .distantFuture,
             templateHouseworkItemId: nil
         )
     }

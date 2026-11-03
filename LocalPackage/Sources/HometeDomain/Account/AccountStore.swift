@@ -125,22 +125,4 @@ public final class AccountStore {
         )
     }
 
-    /// プレミアム加入状態が変わっている場合のみアカウント情報を更新する
-    /// - Returns: 更新が発生したかどうか
-    @discardableResult
-    public func updateIsPremiumIfNeeded(_ isPremium: Bool) async -> Bool {
-        guard let account,
-              account.isPremium != isPremium else { return false }
-
-        do {
-            let updatedAccount = account.updateIsPremium(isPremium)
-            try await accountInfoClient.insertOrUpdate(updatedAccount)
-            self.account = updatedAccount
-            return true
-        } catch {
-            print("failed to update isPremium: \(error)")
-            return false
-        }
-    }
-
 }

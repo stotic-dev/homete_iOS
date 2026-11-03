@@ -24,7 +24,6 @@ struct EncouragementCommentComponent: View {
     @Environment(\.cohabitantMembers) var members
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.houseworkTemplateContext) var templateContext
     @Environment(\.registeredContentNavigationPath) var navigationPath
     @Environment(\.scenePhase) var scenePhase
@@ -172,8 +171,7 @@ private extension EncouragementCommentComponent {
             storedAllItems: houseworkListStore.items,
             template: templateContext.templateOfDay(by: now, calendar: calendar),
             now: now,
-            calendar: calendar,
-            storagePolicy: storagePolicy
+            calendar: calendar
         )
         .allItems
         .count

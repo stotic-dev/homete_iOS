@@ -68,8 +68,7 @@ struct HouseworkStateTest {
             point: 100,
             state: .completed,
             executorId: "executorId",
-            executedAt: Date(timeIntervalSinceReferenceDate: .zero),
-            expiredAt: Date(timeIntervalSinceReferenceDate: .zero)
+            executedAt: Date(timeIntervalSinceReferenceDate: .zero)
         )
         #expect(actual == expected)
     }

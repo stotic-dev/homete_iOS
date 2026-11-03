@@ -11,7 +11,6 @@ enum HouseworkStoragePolicyTest {
 
     struct ViewableCase {}
     struct BoardCase {}
-    struct ExpiredAtCase {}
     struct InitialFetchCase {}
 
 }
@@ -144,48 +143,6 @@ extension HouseworkStoragePolicyTest.BoardCase {
         // Assert
 
         #expect(actual == nil)
-    }
-
-}
-
-// MARK: 保持期限
-
-extension HouseworkStoragePolicyTest.ExpiredAtCase {
-
-    private var calendar: Calendar {
-        .japanese
-    }
-
-    @Test("無料プランの保持期限は起点の1年後になる")
-    func freeExpiredAt() {
-        // Arrange
-
-        let baseDate = Date.previewDate(year: 2026, month: 8, day: 11)
-        let expected = Date.previewDate(year: 2027, month: 8, day: 11)
-
-        // Act
-
-        let actual = HouseworkStoragePolicy.free.expiredAt(from: baseDate, calendar: calendar)
-
-        // Assert
-
-        #expect(actual == expected)
-    }
-
-    @Test("プレミアムプランの保持期限は起点の100年後になる")
-    func premiumExpiredAt() {
-        // Arrange
-
-        let baseDate = Date.previewDate(year: 2026, month: 8, day: 11)
-        let expected = Date.previewDate(year: 2126, month: 8, day: 11)
-
-        // Act
-
-        let actual = HouseworkStoragePolicy.premium.expiredAt(from: baseDate, calendar: calendar)
-
-        // Assert
-
-        #expect(actual == expected)
     }
 
 }

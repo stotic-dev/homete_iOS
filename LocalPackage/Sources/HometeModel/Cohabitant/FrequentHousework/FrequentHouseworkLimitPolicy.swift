@@ -5,7 +5,7 @@
 
 /// プランごとのいつもの家事の件数上限
 /// - Note: 判定には操作している本人のプランを使う（プレミアムはアカウント単位で、グループ単位の概念がないため）。
-///         `Account.isPremium`はクライアント書き込みのため、セキュリティルールでは検証しない
+///         件数上限はクライアントで判定し、セキュリティルールでは検証しない
 public enum FrequentHouseworkLimitPolicy: Equatable, Sendable {
 
     /// 無料プラン

@@ -16,8 +16,6 @@ enum HouseworkPostponePlanTest {
     static let sourceDate = Date.previewDate(year: 2026, month: 1, day: 10)
     /// まわす先の日（2026/1/11 日曜日）
     static let destinationDate = Date.previewDate(year: 2026, month: 1, day: 11)
-    /// まわす先の日の保持期限（無料プランは1年）
-    static let destinationExpiredAt = Date.previewDate(year: 2027, month: 1, day: 11)
     static let now = Date.previewDate(year: 2026, month: 1, day: 10, hour: 21)
     static let templateItemId = HouseworkTemplateItem.ItemId(id: "template1")
     /// 日曜日に出る、`templateItemId`のテンプレートの家事
@@ -44,14 +42,13 @@ enum HouseworkPostponePlanTest {
 
 extension HouseworkPostponePlanTest.SingleItemCase {
 
-    @Test("単発の家事は、同じドキュメントの日付と保持期限を書き換え、まわす前の日付を付ける")
+    @Test("単発の家事は、同じドキュメントの日付を書き換え、まわす前の日付を付ける")
     func make_singleItem_movesSameDocument() {
         // Arrange
         let target = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: HouseworkPostponePlanTest.sourceDate,
             title: "洗濯",
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10),
             createdAt: .previewDate(year: 2026, month: 1, day: 9),
             memo: .init(text: "柔軟剤を入れる", checklist: [])
         )
@@ -61,7 +58,6 @@ extension HouseworkPostponePlanTest.SingleItemCase {
                     id: "1",
                     indexedDate: HouseworkPostponePlanTest.destinationDate,
                     title: "洗濯",
-                    expiredAt: HouseworkPostponePlanTest.destinationExpiredAt,
                     createdAt: .previewDate(year: 2026, month: 1, day: 9),
                     memo: .init(text: "柔軟剤を入れる", checklist: []),
                     postponedFrom: .init(value: HouseworkPostponePlanTest.sourceDate)
@@ -80,7 +76,6 @@ extension HouseworkPostponePlanTest.SingleItemCase {
             templateContext: .init(metadata: nil, houseworkTemplate: []),
             now: HouseworkPostponePlanTest.now,
             calendar: .japanese,
-            storagePolicy: .free,
             newItemId: "newId"
         )
 
@@ -94,8 +89,7 @@ extension HouseworkPostponePlanTest.SingleItemCase {
         let target = HouseworkItem.makeForTest(
             id: "1",
             indexedDate: HouseworkPostponePlanTest.sourceDate,
-            title: "洗濯",
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10)
+            title: "洗濯"
         )
         let sameTitleItem = HouseworkItem.makeForTest(
             id: "2",
@@ -110,7 +104,6 @@ extension HouseworkPostponePlanTest.SingleItemCase {
                     id: "1",
                     indexedDate: HouseworkPostponePlanTest.destinationDate,
                     title: "洗濯",
-                    expiredAt: HouseworkPostponePlanTest.destinationExpiredAt,
                     postponedFrom: .init(value: HouseworkPostponePlanTest.sourceDate)
                 ),
             ],
@@ -127,7 +120,6 @@ extension HouseworkPostponePlanTest.SingleItemCase {
             templateContext: .init(metadata: nil, houseworkTemplate: []),
             now: HouseworkPostponePlanTest.now,
             calendar: .japanese,
-            storagePolicy: .free,
             newItemId: "newId"
         )
 
@@ -149,7 +141,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             indexedDate: HouseworkPostponePlanTest.sourceDate,
             title: "お皿洗い",
             point: 10,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10),
             templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
             createdAt: .previewDate(year: 2026, month: 1, day: 10)
         )
@@ -161,7 +152,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
                     title: "お皿洗い",
                     point: 10,
                     state: .notTodo,
-                    expiredAt: .previewDate(year: 2027, month: 1, day: 10),
                     templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
                     createdAt: .previewDate(year: 2026, month: 1, day: 10),
                     postponedTo: .init(value: HouseworkPostponePlanTest.destinationDate)
@@ -180,7 +170,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             templateContext: HouseworkPostponePlanTest.sundayTemplate,
             now: HouseworkPostponePlanTest.now,
             calendar: .japanese,
-            storagePolicy: .free,
             newItemId: "newId"
         )
 
@@ -196,7 +185,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             indexedDate: HouseworkPostponePlanTest.sourceDate,
             title: "お皿洗い",
             point: 10,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10),
             templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
             createdAt: .previewDate(year: 2026, month: 1, day: 10)
         )
@@ -217,7 +205,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
                     title: "お皿洗い",
                     point: 10,
                     state: .notTodo,
-                    expiredAt: .previewDate(year: 2027, month: 1, day: 10),
                     templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
                     createdAt: .previewDate(year: 2026, month: 1, day: 10),
                     postponedTo: .init(value: HouseworkPostponePlanTest.destinationDate)
@@ -227,7 +214,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
                     indexedDate: HouseworkPostponePlanTest.destinationDate,
                     title: "お皿洗い",
                     point: 10,
-                    expiredAt: HouseworkPostponePlanTest.destinationExpiredAt,
                     createdAt: HouseworkPostponePlanTest.now,
                     postponedFrom: .init(value: HouseworkPostponePlanTest.sourceDate)
                 ),
@@ -245,7 +231,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             templateContext: HouseworkPostponePlanTest.sundayTemplate,
             now: HouseworkPostponePlanTest.now,
             calendar: .japanese,
-            storagePolicy: .free,
             newItemId: "newId"
         )
 
@@ -261,7 +246,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             indexedDate: HouseworkPostponePlanTest.sourceDate,
             title: "お皿洗い",
             point: 10,
-            expiredAt: .previewDate(year: 2027, month: 1, day: 10),
             templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
             memo: .init(text: "", checklist: [.init(id: "c1", title: "鍋", isChecked: false)])
         )
@@ -273,7 +257,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
                     title: "お皿洗い",
                     point: 10,
                     state: .notTodo,
-                    expiredAt: .previewDate(year: 2027, month: 1, day: 10),
                     templateHouseworkItemId: HouseworkPostponePlanTest.templateItemId,
                     createdAt: HouseworkPostponePlanTest.now,
                     memo: .init(text: "", checklist: [.init(id: "c1", title: "鍋", isChecked: false)]),
@@ -284,7 +267,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
                     indexedDate: HouseworkPostponePlanTest.destinationDate,
                     title: "お皿洗い",
                     point: 10,
-                    expiredAt: HouseworkPostponePlanTest.destinationExpiredAt,
                     createdAt: HouseworkPostponePlanTest.now,
                     memo: .init(text: "", checklist: [.init(id: "c1", title: "鍋", isChecked: false)]),
                     postponedFrom: .init(value: HouseworkPostponePlanTest.sourceDate)
@@ -303,7 +285,6 @@ extension HouseworkPostponePlanTest.TemplateItemCase {
             templateContext: .init(metadata: nil, houseworkTemplate: []),
             now: HouseworkPostponePlanTest.now,
             calendar: .japanese,
-            storagePolicy: .free,
             newItemId: "newId"
         )
 

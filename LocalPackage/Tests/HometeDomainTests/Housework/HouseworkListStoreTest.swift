@@ -32,17 +32,17 @@ struct HouseworkListStoreTest {
         let inputDate = Date(timeIntervalSince1970: 0)
         let inputEntries = [
             NewHouseworkEntry(
-                item: .makeForTest(id: 1, indexedDate: inputDate, expiredAt: inputDate),
+                item: .makeForTest(id: 1, indexedDate: inputDate),
                 source: .frequent
             ),
             NewHouseworkEntry(
-                item: .makeForTest(id: 2, indexedDate: inputDate, expiredAt: inputDate),
+                item: .makeForTest(id: 2, indexedDate: inputDate),
                 source: .manual
             ),
         ]
         let expected = [
-            HouseworkItem.makeForTest(id: 1, indexedDate: inputDate, expiredAt: inputDate, createdAt: inputNow),
-            HouseworkItem.makeForTest(id: 2, indexedDate: inputDate, expiredAt: inputDate, createdAt: inputNow),
+            HouseworkItem.makeForTest(id: 1, indexedDate: inputDate, createdAt: inputNow),
+            HouseworkItem.makeForTest(id: 2, indexedDate: inputDate, createdAt: inputNow),
         ]
 
         try await confirmation { confirmation in
@@ -351,7 +351,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             ],
             effort: .normal,
             executedAt: completedAt,
-            expiredAt: inputHouseworkItem.expiredAt,
             templateHouseworkItemId: nil
         )
         let expectedContent = PushNotificationContent(
@@ -420,7 +419,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             state: .completed,
             executorId: "otherExecutor",
             executedAt: .previewDate(year: 2026, month: 9, day: 25, hour: 8),
-            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
             templateHouseworkItemId: .init(id: "templateItemId")
         )
         let inputExecutor = Account(id: "dummyExecutor", userName: "", cohabitantId: inputCohabitantId)
@@ -433,7 +431,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             state: .completed,
             executorId: "dummyExecutor",
             executedAt: redoneAt,
-            expiredAt: .previewDate(year: 2026, month: 12, day: 25),
             templateHouseworkItemId: nil,
             createdAt: redoneAt
         )
@@ -522,7 +519,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
         // Arrange
 
         let completedAt = Date.previewDate(year: 2026, month: 9, day: 25, hour: 10)
-        let expiredAt = Date.previewDate(year: 2026, month: 10, day: 25, hour: 10)
         let inputThanks = ["userB": HouseworkThanks(comment: "ありがとう", sentAt: completedAt)]
         let inputHouseworkItem = HouseworkItem.makeForTest(
             id: 1,
@@ -532,7 +528,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executors: [.init(userId: "own", percentage: 100, point: 12)],
             effort: .hard,
             executedAt: completedAt,
-            expiredAt: expiredAt,
             thanks: inputThanks,
             createdAt: completedAt
         )
@@ -548,7 +543,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
             executors: inputExecutors,
             effort: .hard,
             executedAt: completedAt,
-            expiredAt: expiredAt,
             thanks: inputThanks,
             createdAt: completedAt
         )
@@ -838,8 +832,7 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         indexedDate: inputHouseworkItem.indexedDate.value,
                         title: inputHouseworkItem.title,
                         point: inputHouseworkItem.point,
-                        state: .notTodo,
-                        expiredAt: inputHouseworkItem.expiredAt
+                        state: .notTodo
                     )
                     #expect(item == expected)
                     #expect(cohabitantId == inputCohabitantId)
@@ -878,7 +871,6 @@ extension HouseworkListStoreTest.UpdateStatusCase {
                         title: inputHouseworkItem.title,
                         point: inputHouseworkItem.point,
                         state: .notTodo,
-                        expiredAt: inputHouseworkItem.expiredAt,
                         createdAt: inputNow
                     )
                     #expect(item == expected)
@@ -1412,7 +1404,6 @@ extension HouseworkListStoreTest {
 extension HouseworkListStoreTest.DailyCompletionReminderCase {
 
     @Test("今日完了した家事を受け取ると、今日のふりかえり通知を予約する")
-    // swiftlint:disable:next function_body_length
     func startObserving_completedToday_schedulesReminder() async {
         // Arrange
 
