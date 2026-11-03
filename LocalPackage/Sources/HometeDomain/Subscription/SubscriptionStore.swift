@@ -45,9 +45,11 @@ public final class SubscriptionStore {
     ///
     /// `logIn`に失敗したままだと購入者は匿名のIDのままで、購入してもどのアカウントにも結び付かず、
     /// サーバーに加入状態が届かない。購入・復元の前に呼び、`false`なら実行させない
-    /// - Returns: 購入者がアカウントになっているか
+    /// - Returns: 購入者がアカウントになっているか。SDKを初期化していなければ、ログインを試みずに`false`
     public func ensureLoggedIn(_ accountId: String) async -> Bool {
-        guard purchaseClient.appUserId() != accountId else { return true }
+        // SDKを初期化していないときにlogInを呼ぶと、SDKの中でクラッシュする
+        guard let appUserId = purchaseClient.appUserId() else { return false }
+        guard appUserId != accountId else { return true }
         do {
             try await purchaseClient.logIn(accountId)
         } catch {
@@ -55,7 +57,8 @@ public final class SubscriptionStore {
             return false
         }
         await refresh()
-        return true
+        // ログインの途中でアカウントの切り替え（logOut）が割り込むと、成功しても匿名のIDに戻っているため、改めて確かめる
+        return purchaseClient.appUserId() == accountId
     }
 
     public func logOut() async {

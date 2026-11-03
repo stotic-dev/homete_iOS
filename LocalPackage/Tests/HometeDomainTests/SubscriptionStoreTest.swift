@@ -61,11 +61,8 @@ struct SubscriptionStoreTest {
         #expect(actual)
     }
 
-    @Test(
-        "購入者がアカウントになっていなければログインし直し、成功したらエンタイトルメント状態を反映してtrueを返す",
-        arguments: [nil, "$RCAnonymousID:abc"]
-    )
-    func ensureLoggedInRetrySuccess(currentAppUserId: String?) async {
+    @Test("購入者が匿名のIDならログインし直し、アカウントになったらエンタイトルメント状態を反映してtrueを返す")
+    func ensureLoggedInRetrySuccess() async {
         // Arrange
 
         let entitlementInfo = EntitlementInfo(
@@ -74,6 +71,7 @@ struct SubscriptionStoreTest {
             expirationDate: nil,
             willRenew: true
         )
+        let appUserId = TestBox(value: "$RCAnonymousID:abc")
 
         // Act
 
@@ -82,8 +80,9 @@ struct SubscriptionStoreTest {
                 logIn: {
                     confirmation()
                     #expect($0 == "testAccountId")
+                    appUserId.value = $0
                 },
-                appUserId: { currentAppUserId },
+                appUserId: { appUserId.value },
                 fetchEntitlementInfo: { entitlementInfo }
             )
             let store = SubscriptionStore(purchaseClient: purchaseClient)
@@ -96,13 +95,67 @@ struct SubscriptionStoreTest {
         #expect(store.entitlementInfo == entitlementInfo)
     }
 
-    @Test("購入者がアカウントになっておらず、ログインし直しにも失敗したらfalseを返す")
+    @Test("購入者が匿名のIDのままログインし直しにも失敗したら、エンタイトルメント状態を変えずにfalseを返す")
     func ensureLoggedInRetryFailure() async {
         // Arrange
 
+        let existingInfo = EntitlementInfo(
+            isActive: false,
+            productIdentifier: "",
+            expirationDate: nil,
+            willRenew: false
+        )
+
+        // Act
+
+        let (actual, store) = await confirmation(expectedCount: 1) { confirmation in
+            let purchaseClient = PurchaseClient(
+                logIn: { _ in
+                    confirmation()
+                    throw DomainError.noNetwork
+                },
+                appUserId: { "$RCAnonymousID:abc" },
+                fetchEntitlementInfo: {
+                    Issue.record("ログインに失敗したら取り直さない")
+                    return existingInfo
+                }
+            )
+            let store = SubscriptionStore(purchaseClient: purchaseClient, entitlementInfo: existingInfo)
+            return await (store.ensureLoggedIn("testAccountId"), store)
+        }
+
+        // Assert
+
+        #expect(!actual)
+        #expect(store.entitlementInfo == existingInfo)
+    }
+
+    @Test("ログインし直しに成功しても、購入者が匿名のIDのままならfalseを返す")
+    func ensureLoggedInStillAnonymousAfterLogIn() async {
+        // Arrange
+
         let purchaseClient = PurchaseClient(
-            logIn: { _ in throw DomainError.noNetwork },
+            logIn: { _ in },
             appUserId: { "$RCAnonymousID:abc" }
+        )
+        let store = SubscriptionStore(purchaseClient: purchaseClient)
+
+        // Act
+
+        let actual = await store.ensureLoggedIn("testAccountId")
+
+        // Assert
+
+        #expect(!actual)
+    }
+
+    @Test("SDKを初期化していなければ、ログインを試みずにfalseを返す")
+    func ensureLoggedInNotConfigured() async {
+        // Arrange
+
+        let purchaseClient = PurchaseClient(
+            logIn: { _ in Issue.record("ログインしない") },
+            appUserId: { nil }
         )
         let store = SubscriptionStore(purchaseClient: purchaseClient)
 
@@ -319,6 +372,33 @@ struct SubscriptionStoreTest {
         // Assert
 
         #expect(store.entitlementInfo == existingInfo)
+    }
+
+    @Test("購入者が匿名のIDでも、ログインし直してアカウントになれば復元する")
+    func restorePurchasesAfterLogIn() async throws {
+        // Arrange
+
+        let restoredInfo = EntitlementInfo(
+            isActive: true,
+            productIdentifier: "premium_yearly",
+            expirationDate: nil,
+            willRenew: true
+        )
+        let appUserId = TestBox(value: "$RCAnonymousID:abc")
+        let purchaseClient = PurchaseClient(
+            logIn: { appUserId.value = $0 },
+            appUserId: { appUserId.value },
+            restorePurchases: { restoredInfo }
+        )
+        let store = SubscriptionStore(purchaseClient: purchaseClient)
+
+        // Act
+
+        let actual = try await store.restorePurchases(for: "testAccountId")
+
+        // Assert
+
+        #expect(actual)
     }
 
     @Test("購入者をアカウントにできない場合、復元せずにエラーを伝播し、subscriptionイベントを失敗として送信する")
