@@ -47,7 +47,9 @@ struct PaywallGate: View {
 
     let step: PaywallAnalyticsStep?
 
-    @State var preparation = PaywallPreparation.preparing
+    @State var preparation = Preparation.preparing
+    /// 「もう一度試す」を押した回数。準備をやり直すきっかけにする
+    @State var retryCount = 0
 
     var body: some View {
         if accountAuthStore.currentAuth.result?.isAnonymous == true {
@@ -57,18 +59,32 @@ struct PaywallGate: View {
             )
         } else {
             preparedContent
-                .task { await prepare() }
+                .task(id: PreparationTrigger(accountId: preparingAccountId, retryCount: retryCount)) {
+                    await prepare(for: preparingAccountId)
+                }
         }
     }
 
 }
 
-/// 購入者をアカウントに結び付ける準備の状態
-enum PaywallPreparation {
+extension PaywallGate {
 
-    case preparing
-    case ready
-    case failed
+    /// 購入者をアカウントに結び付ける準備の状態
+    enum Preparation {
+
+        case preparing
+        case ready
+        case failed
+
+    }
+
+    /// 準備をやり直すきっかけ。準備に使うアカウントが変わったときと、「もう一度試す」を押したときにやり直す
+    struct PreparationTrigger: Equatable {
+
+        let accountId: String?
+        let retryCount: Int
+
+    }
 
 }
 
@@ -93,7 +109,7 @@ private extension PaywallGate {
 
         case .failed:
             PaywallPreparationErrorView(
-                onTapRetry: { Task { await retry() } },
+                onTapRetry: { retryCount += 1 },
                 onTapClose: { dismiss() }
             )
         }
@@ -105,19 +121,27 @@ private extension PaywallGate {
 
 private extension PaywallGate {
 
-    /// 準備済みなら何もしない。Apple連携からPaywallに切り替わったときにも、ここで準備を始める
-    func prepare() async {
-        guard preparation == .preparing else { return }
-        guard let accountId = accountStore.account?.id else {
-            preparation = .failed
-            return
-        }
-        preparation = await subscriptionStore.ensureLoggedIn(accountId) ? .ready : .failed
+    /// 準備に使うアカウントのID。認証とアカウントの読み込みがそろうまではnil
+    ///
+    /// Apple連携から既存のアカウントに切り替えると、認証が先に切り替わり、アカウントの読み込みと
+    /// 購入者の切り替え（logOut → logIn）は後から追いかける。その間に古いアカウントで準備を終えると、
+    /// 後から購入者が匿名のIDに戻ってもPaywallを出したままになるため、そろうまで待つ
+    var preparingAccountId: String? {
+        guard let auth = accountAuthStore.currentAuth.result,
+              !auth.isAnonymous,
+              let account = accountStore.account,
+              account.id == auth.id else { return nil }
+        return account.id
     }
 
-    func retry() async {
+    /// アカウントがそろうまでは準備中のまま待つ。そろったら購入者がそのアカウントになっているかを確かめる
+    func prepare(for accountId: String?) async {
         preparation = .preparing
-        await prepare()
+        guard let accountId else { return }
+        let isReady = await subscriptionStore.ensureLoggedIn(accountId)
+        // 確かめている間にアカウントが変わると、このTaskはキャンセルされ、新しいアカウントで準備し直す
+        guard !Task.isCancelled else { return }
+        preparation = isReady ? .ready : .failed
     }
 
     func appearedPaywall() {
