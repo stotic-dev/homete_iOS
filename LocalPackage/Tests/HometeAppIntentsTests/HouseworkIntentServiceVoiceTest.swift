@@ -663,7 +663,7 @@ private extension HouseworkIntentServiceVoiceTest {
         let own = account ?? own
         let houseworkClient = HouseworkClient(
             insertOrUpdateItemHandler: { item, _ in try await insertOrUpdateItem(item) },
-            insertOrUpdateItemsHandler: { items, _ in try await insertOrUpdateItems(items) },
+            createItemsHandler: { items, _ in try await insertOrUpdateItems(items) },
             fetchItemsHandler: { _, _, _ in items }
         )
         let reminderUseCase = DailyCompletionReminderUseCase(client: .previewValue)

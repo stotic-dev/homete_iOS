@@ -54,7 +54,8 @@ public struct HouseworkCommandUseCase: Sendable {
             for entry in newItems {
                 try entry.validateMemo(limitPolicy: memoLimitPolicy)
             }
-            try await houseworkClient.insertOrUpdateItems(
+            // 新しく作る家事なので、画像の参照も書く
+            try await houseworkClient.createItems(
                 newItems.map { $0.item.updateCreatedAt(createdAt) },
                 cohabitantId
             )

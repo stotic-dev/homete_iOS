@@ -177,7 +177,7 @@ extension HouseworkMemoLimitGuardTest.StoreCase {
     func register_overLimit_doesNotWrite() async {
         // Arrange
 
-        let store = HouseworkListStore(houseworkClient: .init(insertOrUpdateItemsHandler: { _, _ in Issue.record() }))
+        let store = HouseworkListStore(houseworkClient: .init(createItemsHandler: { _, _ in Issue.record() }))
 
         // Act & Assert
 
@@ -192,7 +192,9 @@ extension HouseworkMemoLimitGuardTest.StoreCase {
                 ],
                 cohabitantId: "cohabitantId",
                 step: .board,
-                memoLimitPolicy: .free
+                memoLimitPolicy: .free,
+                imagePolicy: .free,
+                uploaderId: "userA"
             )
         }
     }
