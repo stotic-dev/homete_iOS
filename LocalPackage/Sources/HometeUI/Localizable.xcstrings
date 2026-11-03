@@ -476,6 +476,16 @@
         }
       }
     },
+    "プレミアムプランの準備ができませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the Premium Plan"
+          }
+        }
+      }
+    },
     "プレミアムプランを見る" : {
       "localizations" : {
         "en" : {

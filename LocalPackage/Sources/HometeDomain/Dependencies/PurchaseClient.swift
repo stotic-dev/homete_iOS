@@ -7,6 +7,9 @@ public struct PurchaseClient: Sendable {
 
     public let logIn: @Sendable (String) async throws -> Void
     public let logOut: @Sendable () async throws -> Void
+    /// 今の購入者のApp User ID。SDKを初期化していなければnil
+    /// - Note: `logIn`に失敗していると、アカウントのIDではなく匿名のID（`$RCAnonymousID:...`）になる
+    public let appUserId: @Sendable () -> String?
     public let fetchEntitlementInfo: @Sendable () async throws -> EntitlementInfo
     public let entitlementInfoUpdates: @Sendable () -> AsyncStream<EntitlementInfo>
     public let showManageSubscriptions: @Sendable () async throws -> Void
@@ -16,6 +19,7 @@ public struct PurchaseClient: Sendable {
     public init(
         logIn: @Sendable @escaping (String) async throws -> Void = { _ in },
         logOut: @Sendable @escaping () async throws -> Void = {},
+        appUserId: @Sendable @escaping () -> String? = { nil },
         fetchEntitlementInfo: @Sendable @escaping () async throws -> EntitlementInfo = {
             .init(isActive: false, productIdentifier: "", expirationDate: nil, willRenew: false)
         },
@@ -27,6 +31,7 @@ public struct PurchaseClient: Sendable {
     ) {
         self.logIn = logIn
         self.logOut = logOut
+        self.appUserId = appUserId
         self.fetchEntitlementInfo = fetchEntitlementInfo
         self.entitlementInfoUpdates = entitlementInfoUpdates
         self.showManageSubscriptions = showManageSubscriptions

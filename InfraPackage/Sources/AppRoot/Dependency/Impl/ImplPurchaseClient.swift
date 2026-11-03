@@ -15,6 +15,9 @@ extension PurchaseClient {
         logOut: {
             _ = try await Purchases.shared.logOut()
         },
+        appUserId: {
+            Purchases.isConfigured ? Purchases.shared.appUserID : nil
+        },
         fetchEntitlementInfo: {
             let customerInfo = try await Purchases.shared.customerInfo()
             return makeEntitlementInfo(from: customerInfo)
