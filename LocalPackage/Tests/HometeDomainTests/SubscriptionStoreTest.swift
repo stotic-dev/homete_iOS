@@ -232,7 +232,7 @@ struct SubscriptionStoreTest {
             expirationDate: nil,
             willRenew: true
         )
-        let purchaseClient = PurchaseClient(restorePurchases: { restoredInfo })
+        let purchaseClient = PurchaseClient(appUserId: { "testAccountId" }, restorePurchases: { restoredInfo })
 
         let store = try await confirmation(expectedCount: 2) { confirmation in
             let store = SubscriptionStore(
@@ -251,7 +251,7 @@ struct SubscriptionStoreTest {
 
             // Act
 
-            try await store.restorePurchases()
+            try await store.restorePurchases(for: "testAccountId")
 
             return store
         }
@@ -265,7 +265,7 @@ struct SubscriptionStoreTest {
     func restorePurchasesWithoutActiveEntitlement() async throws {
         // Arrange
 
-        let purchaseClient = PurchaseClient(restorePurchases: {
+        let purchaseClient = PurchaseClient(appUserId: { "testAccountId" }, restorePurchases: {
             EntitlementInfo(
                 isActive: false,
                 productIdentifier: "",
@@ -277,7 +277,7 @@ struct SubscriptionStoreTest {
 
         // Act
 
-        let actual = try await store.restorePurchases()
+        let actual = try await store.restorePurchases(for: "testAccountId")
 
         // Assert
 
@@ -294,7 +294,7 @@ struct SubscriptionStoreTest {
             expirationDate: nil,
             willRenew: true
         )
-        let purchaseClient = PurchaseClient(restorePurchases: {
+        let purchaseClient = PurchaseClient(appUserId: { "testAccountId" }, restorePurchases: {
             throw DomainError.other
         })
         let store = await confirmation(expectedCount: 1) { confirmation in
@@ -310,7 +310,7 @@ struct SubscriptionStoreTest {
             // Act
 
             await #expect(throws: DomainError.other) {
-                try await store.restorePurchases()
+                try await store.restorePurchases(for: "testAccountId")
             }
 
             return store
@@ -319,6 +319,36 @@ struct SubscriptionStoreTest {
         // Assert
 
         #expect(store.entitlementInfo == existingInfo)
+    }
+
+    @Test("購入者をアカウントにできない場合、復元せずにエラーを伝播し、subscriptionイベントを失敗として送信する")
+    func restorePurchasesNotLoggedIn() async {
+        // Arrange
+
+        let purchaseClient = PurchaseClient(
+            logIn: { _ in throw DomainError.noNetwork },
+            appUserId: { "$RCAnonymousID:abc" },
+            restorePurchases: {
+                Issue.record("復元しない")
+                return EntitlementInfo(isActive: false, productIdentifier: "", expirationDate: nil, willRenew: false)
+            }
+        )
+
+        await confirmation(expectedCount: 1) { confirmation in
+            let store = SubscriptionStore(
+                purchaseClient: purchaseClient,
+                analyticsClient: .init(log: { event in
+                    confirmation()
+                    #expect(event == .subscription(.restore(isSuccess: false)))
+                })
+            )
+
+            // Act & Assert
+
+            await #expect(throws: PurchaseAccountError.notLoggedIn) {
+                try await store.restorePurchases(for: "testAccountId")
+            }
+        }
     }
 
 }

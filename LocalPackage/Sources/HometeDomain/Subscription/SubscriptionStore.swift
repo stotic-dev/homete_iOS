@@ -99,11 +99,19 @@ public final class SubscriptionStore {
     }
 
     /// 過去の購入を復元する
+    ///
+    /// 購入者が匿名のIDのまま復元すると、購入と同じく加入がアカウントに結び付かないため、
+    /// 購入者がアカウントになっていることを確かめてから復元する（`ensureLoggedIn(_:)`）
+    /// - Parameter accountId: 復元した購入を結び付けるアカウントのID
     /// - Returns: 復元の結果、有効なエンタイトルメントが得られたか
+    /// - Throws: 購入者をアカウントにできなかった場合は`PurchaseAccountError.notLoggedIn`
     /// - Note: 結果をユーザーに提示する必要があるため、他のメソッドと異なりエラーを握り潰さない
     @discardableResult
-    public func restorePurchases() async throws -> Bool {
+    public func restorePurchases(for accountId: String) async throws -> Bool {
         do {
+            guard await ensureLoggedIn(accountId) else {
+                throw PurchaseAccountError.notLoggedIn
+            }
             let restoredInfo = try await purchaseClient.restorePurchases()
             entitlementInfo = restoredInfo
             analyticsClient.setUserProperty(.isPremium(isPremium))
