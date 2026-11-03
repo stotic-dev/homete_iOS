@@ -19,7 +19,7 @@ struct AnnouncementListScreen: View {
     /// 未読のドットを出すお知らせ
     ///
     /// 開いた瞬間に既読にするため、`isUnread`をそのまま使うと取り直したときにドットが消え、どれが新しいか分からなくなる。
-    /// 開いている間に見えた未読を覚えておき、閉じるまでドットを出し続ける。
+    /// 開いている間に見えた未読を覚えておき、詳細を開くか一覧を閉じるまでドットを出し続ける。
     @State var unreadIds: Set<String> = []
 
     var body: some View {
@@ -27,7 +27,7 @@ struct AnnouncementListScreen: View {
             AnnouncementListView(
                 state: announcementStore.state,
                 unreadIds: unreadIds,
-                onTapAnnouncement: { announcement in navigationPath.push(.detail(announcement)) },
+                onTapAnnouncement: { announcement in tappedAnnouncement(announcement) },
                 onRefresh: { await announcementStore.refresh() },
                 onTapRetry: { refresh() },
                 onTapClose: { dismiss() }
@@ -60,6 +60,12 @@ private extension AnnouncementListScreen {
         case let .detail(announcement):
             AnnouncementDetailScreen(announcement: announcement)
         }
+    }
+
+    func tappedAnnouncement(_ announcement: Announcement) {
+        // 詳細で読んだので、一覧に戻ったときにはドットを出さない
+        unreadIds.remove(announcement.id)
+        navigationPath.push(.detail(announcement))
     }
 
     func refresh() {
