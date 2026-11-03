@@ -12,6 +12,7 @@ import SwiftUI
 struct SubscriptionManagementView: View {
 
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
     @LoadingState var loadingState
 
@@ -193,7 +194,7 @@ private extension SubscriptionManagementView {
 
     func restorePurchases() async {
         do {
-            let isRestored = try await subscriptionStore.restorePurchases()
+            let isRestored = try await subscriptionStore.restorePurchases(for: loginContext.account.id)
             restoreResultMessage = isRestored
                 ? .localized("購入を復元しました")
                 : .localized("復元できる購入が見つかりませんでした")
