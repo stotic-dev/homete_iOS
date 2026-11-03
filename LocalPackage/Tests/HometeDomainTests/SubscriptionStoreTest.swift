@@ -42,6 +42,79 @@ struct SubscriptionStoreTest {
         }
     }
 
+    @Test("購入者がすでにアカウントになっていれば、ログインし直さずにtrueを返す")
+    func ensureLoggedInAlreadyLoggedIn() async {
+        // Arrange
+
+        let purchaseClient = PurchaseClient(
+            logIn: { _ in Issue.record("ログインし直さない") },
+            appUserId: { "testAccountId" }
+        )
+        let store = SubscriptionStore(purchaseClient: purchaseClient)
+
+        // Act
+
+        let actual = await store.ensureLoggedIn("testAccountId")
+
+        // Assert
+
+        #expect(actual)
+    }
+
+    @Test(
+        "購入者がアカウントになっていなければログインし直し、成功したらエンタイトルメント状態を反映してtrueを返す",
+        arguments: [nil, "$RCAnonymousID:abc"]
+    )
+    func ensureLoggedInRetrySuccess(currentAppUserId: String?) async {
+        // Arrange
+
+        let entitlementInfo = EntitlementInfo(
+            isActive: true,
+            productIdentifier: "premium_monthly",
+            expirationDate: nil,
+            willRenew: true
+        )
+
+        // Act
+
+        let (actual, store) = await confirmation(expectedCount: 1) { confirmation in
+            let purchaseClient = PurchaseClient(
+                logIn: {
+                    confirmation()
+                    #expect($0 == "testAccountId")
+                },
+                appUserId: { currentAppUserId },
+                fetchEntitlementInfo: { entitlementInfo }
+            )
+            let store = SubscriptionStore(purchaseClient: purchaseClient)
+            return await (store.ensureLoggedIn("testAccountId"), store)
+        }
+
+        // Assert
+
+        #expect(actual)
+        #expect(store.entitlementInfo == entitlementInfo)
+    }
+
+    @Test("購入者がアカウントになっておらず、ログインし直しにも失敗したらfalseを返す")
+    func ensureLoggedInRetryFailure() async {
+        // Arrange
+
+        let purchaseClient = PurchaseClient(
+            logIn: { _ in throw DomainError.noNetwork },
+            appUserId: { "$RCAnonymousID:abc" }
+        )
+        let store = SubscriptionStore(purchaseClient: purchaseClient)
+
+        // Act
+
+        let actual = await store.ensureLoggedIn("testAccountId")
+
+        // Assert
+
+        #expect(!actual)
+    }
+
     @Test("ログアウト時にエンタイトルメント状態をクリアし、is_premiumユーザープロパティをfalseに更新する")
     func logOut() async {
         await confirmation(expectedCount: 2) { confirmation in

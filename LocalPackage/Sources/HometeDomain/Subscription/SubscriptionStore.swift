@@ -41,6 +41,23 @@ public final class SubscriptionStore {
         }
     }
 
+    /// 購入者がアカウントになっているかを確かめ、なっていなければログインし直す
+    ///
+    /// `logIn`に失敗したままだと購入者は匿名のIDのままで、購入してもどのアカウントにも結び付かず、
+    /// サーバーに加入状態が届かない。購入・復元の前に呼び、`false`なら実行させない
+    /// - Returns: 購入者がアカウントになっているか
+    public func ensureLoggedIn(_ accountId: String) async -> Bool {
+        guard purchaseClient.appUserId() != accountId else { return true }
+        do {
+            try await purchaseClient.logIn(accountId)
+        } catch {
+            print("failed to logIn to purchase client: \(error)")
+            return false
+        }
+        await refresh()
+        return true
+    }
+
     public func logOut() async {
         do {
             try await purchaseClient.logOut()
