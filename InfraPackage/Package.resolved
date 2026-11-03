@@ -1,5 +1,5 @@
 {
-  "originHash" : "fbd8e9507c9d55838bd33a5cea06b639f52076cb774aedbce160ea6711f9ca00",
+  "originHash" : "e1629284bf600dfafcff1abddac783ab7775a52d09e7f405a3ceaa39fdba4abe",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "df2ea9cfd4d80419ab03c492f9e3a9f5aabd174b",
-        "version" : "6.1.0"
+        "revision" : "bb912cffdabce65ca87367f79a6ca9df63b6f605",
+        "version" : "6.2.0"
       }
     },
     {
@@ -177,8 +177,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "28e5de025e3fd98991791bfbf83023ab3708da03",
-        "version" : "1.19.6"
+        "revision" : "1488390b0735e726564b948bf08b384398bdab5c",
+        "version" : "1.19.7"
       }
     },
     {
