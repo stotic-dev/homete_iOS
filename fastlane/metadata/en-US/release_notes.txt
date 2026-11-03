@@ -1,11 +1,8 @@
 Thank you for using homeau.
 
-- Start right away without signing in. A short intro and partner setup guide you through the first steps
-- Tell Siri the name of a chore to log one you've done or add one you plan to do
-- See the chores you forgot to say thanks for up to yesterday, all in one list
-- Messages on Home are now easier to read, and you can dismiss thanks you've received
-- Contact us from Settings without leaving the app. Settings items are now grouped for easier browsing
-- Fixed an issue where chores didn't show correctly when opening a day 8 or more days ago on the chore board
+- Move chores you couldn't get to onto tomorrow or another day. Use "Move to Tomorrow" or "Move to Today" from the chore menu, or pick a date from the chore details
+- See unfinished chores from yesterday and earlier, all on Home. Days with unfinished chores are also marked on the chore board
+- Check announcements from the homeau team with the bell on Home. You can choose whether to get announcement notifications in notification settings
 - Other usability improvements and minor bug fixes
 
 A little reward for everyday chores.
