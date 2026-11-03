@@ -30,7 +30,7 @@
    - `listannouncements`の`announcements`を`publishedAt`の新しい順に並べる（最大50件。ページングは無い）
    - 行にはタイトル・公開日・未読のドットを出す
    - 一覧を開いて取得できたら、先頭（最新）のお知らせを`markannouncementsread(scope: "list")`で既読にする。未読の数は0、モーダルも出さない状態にする
-   - 行の未読のドットは、開いたときに取得した`isUnread`のまま出す（開いた瞬間に消えると、どれが新しいか分からなくなるため）。次に取り直したときに消える
+   - 行の未読のドットは、開いたときに取得した`isUnread`のまま出す（開いた瞬間に消えると、どれが新しいか分からなくなるため）。詳細を開いたもの、次に取り直したときに既読になっているものは消す
    - 0件のときは、お知らせが無いことを伝える空状態を出す
    - 取得に失敗したら、再読み込みのボタン付きのエラー表示を出す
    - 引っ張って更新できる
@@ -168,7 +168,7 @@ public struct AnnouncementState: Equatable, Sendable {
 
 - ベル: `homeNavigationBar`に`onTapAnnouncement`と`unreadAnnouncementCount`を足し、`HometeUI`の`NavigationBarButton`にバッジの表示を足す。ベルのアイコンはダッシュボードだけで使うので`.symbol("bell", …)`で渡す（チュートリアルのダッシュボードも同じバーを使うため、チュートリアル中はバッジ0で出す）
 - `HomeView`に`isShowAnnouncementList`と、起動時のシートで出しているお知らせ`presentedAnnouncementModal`を持たせる。出せる条件（`announcementModalCandidate`）は、ダッシュボードの上に別のシート・登録後のチュートリアル・招待リンクの参加画面が無く、通知から開く画面も残っていないこと。条件がそろったときに`presentedAnnouncementModal`へ入れ、シートを閉じたら（スワイプを含む）表示したお知らせで`markModalRead`する
-- 一覧を開いている間は、お知らせが変わるたびに`markListRead`を呼ぶ（既読にした位置より新しいものが無ければ`AnnouncementStore`が何もしない）。未読のドットは、既読にする前に`isUnread(_:)`で見た未読を`AnnouncementListScreen`が覚えて、開いている間出し続ける
+- 一覧を開いている間は、お知らせが変わるたびに`markListRead`を呼ぶ（既読にした位置より新しいものが無ければ`AnnouncementStore`が何もしない）。未読のドットは、既読にする前に`isUnread(_:)`で見た未読を`AnnouncementListScreen`が覚えて、詳細を開くか一覧を閉じるまで出し続ける
 - `AppScreen`に`announcementList` / `announcementDetail` / `announcementModal`を足し、各Screenで`.trackScreenView`する。`doc/analytics_events.md`の画面一覧も更新する
 
 ### 7. 通知設定のトグル（`SettingFeature/SettingNotification/`）
