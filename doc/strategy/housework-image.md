@@ -63,6 +63,7 @@ Issueの確定事項に、実装時に決めた事項（2026-11-03）を加え�
 
 Clientは`HouseworkImageClient`（実体の`upload`・`delete`・`fetch`）と、`HouseworkClient`の`addImages`・`removeImage`（参照）。
 `liveValue`は`StorageService`（Firebase Storage）と`HouseworkImageCache`（端末のキャッシュ）で実装する。
+ログアウト（退会を含む）したら、`RootView`が`clearCache`で端末のキャッシュを消す。
 
 ### 画面
 
@@ -84,7 +85,11 @@ Clientは`HouseworkImageClient`（実体の`upload`・`delete`・`fetch`）と�
 
 ## バックエンドの対応（homete_backend）
 
-このリポジトリには含まれない。リリース前にhomete_backend側で揃える必要がある。揃うまで、画像の追加はStorageへの書き込みで失敗する。
+このリポジトリには含まれない。リリース前にhomete_backend側で揃える必要がある。揃うまで、画像の追加はStorageへの書き込みで失敗する（stgで`403 Permission denied.`になることを2026-11-03に確認）。
+
+- ルール・App Check: [homete_backend#30](https://github.com/stotic-dev/homete_backend/issues/30)
+- 家事・グループが消えたときの画像の削除: [homete_backend#31](https://github.com/stotic-dev/homete_backend/issues/31)
+
 
 - [ ] STG・本番でStorageバケットを有効化し、`firebase.json`に`storage.rules`を足す
 - [ ] `storage.rules`: `Cohabitant/{cohabitantId}/Houseworks/{houseworkId}/{imageId}`を、グループのメンバーだけが読み書きできるようにする。
@@ -97,7 +102,9 @@ Clientは`HouseworkImageClient`（実体の`upload`・`delete`・`fetch`）と�
 
 ## リリース前の確認
 
-- [ ] App Storeのプライバシーラベルに「ユーザーコンテンツ：写真またはビデオ」を足す。プライバシーポリシーに追記する
+- [x] プライバシーマニフェスト（`PrivacyInfo.xcprivacy`）に「写真またはビデオ」を足す
+- [x] プライバシーポリシー（`docs/privacy.html`）に、写真の取得・保存・共有・削除を追記する
+- [ ] App Store Connectのプライバシーラベルに「ユーザーコンテンツ：写真またはビデオ」（ユーザーに紐づく・トラッキングに使わない・アプリの機能）を足す。App Store Connectで手で設定する
 - [ ] App ReviewのUGC要件（同居人だけに共有される閉じた空間であること）の説明を用意する
 - [ ] RevenueCatのPaywallの訴求文言に画像を載せるか決める（[premium_plan.md](../premium_plan.md)）
 
@@ -105,4 +112,3 @@ Clientは`HouseworkImageClient`（実体の`upload`・`delete`・`fetch`）と�
 
 - 完了時の「やった証拠」写真、テンプレート・いつもの家事の画像（Issueの代替案。別Issueで検討）
 - 画像の拡大表示でのピンチズーム
-- ログアウト・退会時の端末のキャッシュの削除（OSの判断で消えるキャッシュのフォルダに置いている）
