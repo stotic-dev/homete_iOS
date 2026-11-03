@@ -16,6 +16,7 @@ public struct RootView: View {
     @State var hasEnteredBackground = false
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.appDependencies.houseworkImageClient) var houseworkImageClient
     @Environment(\.scenePhase) var scenePhase
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
@@ -233,10 +234,14 @@ private extension RootView {
     }
 
     /// ログアウトしたら、前のアカウントで受け取った通知から画面を開かないよう破棄する
+    /// 前のアカウントの家事に添えた画像も、端末に残さないよう消す
     /// - Note: 起動時はログイン済みなら`launching`から直接`loggedIn`になるため、起動のきっかけになった通知は消さない
     func onChangeLaunchState() {
         guard case .notLoggedIn = launchStateStore.launchState else { return }
         pendingRouteStore.clear()
+        Task {
+            await houseworkImageClient.clearCache()
+        }
     }
 
     /// メンテナンス中は、通知のタップ・App Intent・招待リンクから開く画面を破棄する

@@ -50,6 +50,27 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(houseworkId)
         }
+    } createItemsHandler: { items, cohabitantId in
+        try await FirestoreService.shared.batchInsertOrUpdate(
+            data: items,
+            fieldNames: HouseworkItem.creationFieldNames
+        ) { firestore, item in
+            firestore
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
+    } addImagesHandler: { houseworkId, images, cohabitantId in
+        try await FirestoreService.shared.arrayUnion(fieldPath: "images", elements: images) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(houseworkId)
+        }
+    } removeImageHandler: { houseworkId, image, cohabitantId in
+        try await FirestoreService.shared.arrayRemove(fieldPath: "images", elements: [image]) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(houseworkId)
+        }
     } snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
         let targetDateList = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: anchorDate,

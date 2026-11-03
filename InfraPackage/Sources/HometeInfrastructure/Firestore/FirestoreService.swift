@@ -80,6 +80,30 @@ public final actor FirestoreService {
         try await predicate(firestore).updateData([fieldPath: encoded])
     }
 
+    /// 既存ドキュメントの配列のフィールドに、要素を追記する（すでに同じ要素があれば足さない）
+    ///
+    /// 配列ごと書き換えないので、ほかの端末が同時に足した要素を消さない。フィールドが無ければ作る。
+    public func arrayUnion(
+        fieldPath: String,
+        elements: [some Encodable & Sendable],
+        predicate: (Firestore) -> DocumentReference
+    ) async throws {
+        let encoded = try elements.map { try Firestore.Encoder().encode($0) }
+        try await predicate(firestore).updateData([fieldPath: FieldValue.arrayUnion(encoded)])
+    }
+
+    /// 既存ドキュメントの配列のフィールドから、要素を取り除く（ほかの要素には触れない）
+    ///
+    /// すべての要素を取り除いても、フィールドは空の配列として残る。
+    public func arrayRemove(
+        fieldPath: String,
+        elements: [some Encodable & Sendable],
+        predicate: (Firestore) -> DocumentReference
+    ) async throws {
+        let encoded = try elements.map { try Firestore.Encoder().encode($0) }
+        try await predicate(firestore).updateData([fieldPath: FieldValue.arrayRemove(encoded)])
+    }
+
     /// 複数のドキュメントをまとめて作成または上書きする（全件成功か全件失敗のどちらかになる）
     /// - Parameter reference: 書き込む値ごとのドキュメント参照
     public func batchInsertOrUpdate<T: Encodable & Sendable>(
