@@ -30,6 +30,7 @@ public struct RegisterHouseworkView: View {
     @Environment(\.appDependencies.screenTutorialStateClient) var screenTutorialStateClient
     @Environment(\.routeResolver) var router
     @Environment(\.loginContext.cohabitantId) var cohabitantId
+    @Environment(\.loginContext.account.id) var accountId
     @Environment(\.calendar) var calendar
     @Environment(\.now) var now
 
@@ -45,6 +46,11 @@ public struct RegisterHouseworkView: View {
     @State var isShowPaywall = false
     @State var isShowFrequentManagement = false
     @State var isPresentingMemoEditSheet = false
+    @State var imagePickSource: HouseworkImagePickSource?
+    @State var isShowImagePaywall = false
+    /// 外す前の確認で確かめている、入力中の家事の画像
+    @State var removingImageId: HouseworkImageUpload.ID?
+    @State var imageError: HouseworkImageError?
 
     @State var houseworkEntryHistoryList = HouseworkHistoryList(items: [])
     /// 初めて開いたときに出すチュートリアル。Environmentの依存から作るため、表示されてから用意する
@@ -123,6 +129,24 @@ public struct RegisterHouseworkView: View {
             }
             .trackScreenView(.houseworkMemoEdit)
         }
+        .houseworkImagePicker(source: $imagePickSource, maxSelectionCount: remainingImageCount) { originals in
+            pickedImages(originals)
+        }
+        .houseworkImageErrorAlert($imageError)
+        .fullScreenCoverOnIOS(isPresented: $isShowImagePaywall) {
+            router.resolve(.paywall(step: .houseworkImage))
+        }
+        .confirmationDialog(
+            .localized("この画像を外しますか？"),
+            isPresented: .init(get: { removingImageId != nil }, set: { if !$0 { removingImageId = nil } }),
+            titleVisibility: .visible,
+            presenting: removingImageId
+        ) { imageId in
+            Button(.localized("外す"), role: .destructive) {
+                draft.removeImage(imageId)
+            }
+            Button(.localized("キャンセル"), role: .cancel) {}
+        }
         .fullScreenCoverOnIOS(isPresented: $isShowFrequentManagement) {
             router.resolve(.frequentHouseworkManagement)
         }
@@ -180,6 +204,24 @@ private extension RegisterHouseworkView {
 
     var memoLimitPolicy: HouseworkMemoLimitPolicy {
         .init(isPremium: subscriptionStore.isPremium)
+    }
+
+    var imagePolicy: HouseworkImagePolicy {
+        .init(isPremium: subscriptionStore.isPremium)
+    }
+
+    /// くり返す家事はテンプレートに登録するため、画像を添えられない。選んだ画像は入力に残したまま隠し、
+    /// くり返しをやめたらまた出す（登録予定リストには載せない）
+    var canAddImages: Bool {
+        draft.input.canAttachImages
+    }
+
+    var imageAddState: HouseworkImageAddState {
+        .make(canAdd: canAddImages, policy: imagePolicy, currentCount: draft.input.images.count)
+    }
+
+    var remainingImageCount: Int {
+        imagePolicy.addableCount(currentCount: draft.input.images.count)
     }
 
     var pendingEntries: [PendingEntry] {
@@ -300,7 +342,14 @@ private extension RegisterHouseworkView {
             history: houseworkEntryHistoryList.items,
             onTapHistory: { item in tappedEntryHistoryRow(item) },
             onTapSaveAsFrequentWhenLimitReached: { tappedSaveAsFrequentWhenLimitReached() },
-            onTapMemo: { isPresentingMemoEditSheet = true }
+            onTapMemo: { isPresentingMemoEditSheet = true },
+            images: canAddImages ? draft.input.images : [],
+            imageAddState: imageAddState,
+            imageNote: canAddImages ? nil : .localized("くり返す家事には、画像を添えられません"),
+            isCameraAvailable: CameraPicker.isAvailable,
+            onTapAddImage: { source in imagePickSource = source },
+            onTapImagePremium: { isShowImagePaywall = true },
+            onTapImage: { imageId in removingImageId = imageId }
         )
         .onChange(of: saveAsFrequentState) { _, newState in
             // 名前を変えて重複・上限に当たったら、オンのままにしない
@@ -416,7 +465,11 @@ private extension RegisterHouseworkView {
             try await registerHousework(entries, cohabitantId: cohabitantId)
         } catch {
             print("Failed registering new housework items: \(error)")
-            commonErrorContent = .init(error: error)
+            if let error = error as? HouseworkImageError {
+                imageError = error
+            } else {
+                commonErrorContent = .init(error: error)
+            }
             return
         }
         await saveAsFrequentIfNeeded(entries, cohabitantId: cohabitantId)
@@ -426,12 +479,14 @@ private extension RegisterHouseworkView {
     func registerHousework(_ entries: [PendingEntry], cohabitantId: String) async throws {
         let newItems = entries
             .filter { $0.recurrence == nil }
-            .map { NewHouseworkEntry(item: makeHouseworkItem($0), source: $0.registerSource) }
+            .map { NewHouseworkEntry(item: makeHouseworkItem($0), source: $0.registerSource, images: $0.images) }
         try await houseworkListStore.register(
             newItems: newItems,
             cohabitantId: cohabitantId,
             step: step,
-            memoLimitPolicy: memoLimitPolicy
+            memoLimitPolicy: memoLimitPolicy,
+            imagePolicy: imagePolicy,
+            uploaderId: accountId
         )
 
         for entry in entries {
@@ -493,6 +548,21 @@ private extension RegisterHouseworkView {
 
     func showPaywall() {
         isShowPaywall = true
+    }
+
+    /// 選んだ画像を縮小・圧縮して、入力中の家事に添える（上げるのは登録するとき）
+    func pickedImages(_ originals: [@Sendable () async -> Data?]) {
+        loadingState.task {
+            do {
+                let uploads = try await HouseworkImageUpload.make(loading: originals)
+                // 読み込んでいる間に枚数が変わっていても、上限を超えて添えない
+                draft.input.images += uploads.prefix(remainingImageCount)
+            } catch let error as HouseworkImageError {
+                imageError = error
+            } catch {
+                commonErrorContent = .init(error: error)
+            }
+        }
     }
 
 }

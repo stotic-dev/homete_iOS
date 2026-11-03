@@ -24,7 +24,8 @@ extension HouseworkItem {
         executedAt: Date? = nil,
         thanks: [String: HouseworkThanks] = [:],
         memo: HouseworkMemo? = nil,
-        postponedFrom: HouseworkIndexedDate? = nil
+        postponedFrom: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: id,
@@ -38,7 +39,8 @@ extension HouseworkItem {
             templateHouseworkItemId: nil,
             thanks: thanks,
             memo: memo,
-            postponedFrom: postponedFrom
+            postponedFrom: postponedFrom,
+            images: images
         )
     }
 
@@ -59,6 +61,7 @@ extension HouseworkBoardItem {
         thanks: [String: HouseworkThanks] = [:],
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil, // swiftlint:disable:this discouraged_optional_collection
         isRegistered: Bool = true
     ) -> Self {
         .init(
@@ -74,7 +77,8 @@ extension HouseworkBoardItem {
                 executedAt: executedAt,
                 thanks: thanks,
                 memo: memo,
-                postponedFrom: postponedFrom
+                postponedFrom: postponedFrom,
+                images: images
             ),
             isRegistered: isRegistered
         )

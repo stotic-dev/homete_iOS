@@ -43,6 +43,18 @@ extension RegisterHouseworkDraft {
         var recurrenceInput: HouseworkRecurrenceInput
         /// 家事に付けるメモ。書いていなければ`nil`
         var memo: HouseworkMemo?
+        /// 家事に添える画像（縮小・圧縮済み）。その日の家事として登録するときだけ添える
+        var images: [HouseworkImageUpload] = []
+
+        /// 画像を添えられるか。くり返す家事はテンプレートに登録するため添えられない
+        var canAttachImages: Bool {
+            recurrenceInput.kind == .none
+        }
+
+        /// 登録するときに添える画像。くり返す家事では、選んだ画像があっても添えない
+        var attachedImages: [HouseworkImageUpload] {
+            canAttachImages ? images : []
+        }
 
         /// 「新しく入力」タブの初期値（家事登録シートと同じく10ポイント）
         static let initial = ManualEntry(
@@ -83,12 +95,13 @@ extension RegisterHouseworkDraft {
     }
 
     /// キャンセル時に破棄の確認が要るか
-    /// - Note: 名前より先にメモを書くこともあるため、入力中のメモも含める
+    /// - Note: 名前より先にメモを書いたり画像を選んだりすることもあるため、入力中のメモと画像も含める
     var hasInput: Bool {
         !selectedFrequentItemIds.isEmpty
             || !queuedEntries.isEmpty
             || !Self.isBlank(input.title)
             || input.memo.hasContent
+            || !input.attachedImages.isEmpty
     }
 
     /// 「続けて入力する」を押せるか
@@ -134,6 +147,11 @@ extension RegisterHouseworkDraft {
         case .editing:
             input = .initial
         }
+    }
+
+    /// 入力中の家事から画像を1枚外す
+    mutating func removeImage(_ imageId: HouseworkImageUpload.ID) {
+        input.images.removeAll { $0.id == imageId }
     }
 
 }

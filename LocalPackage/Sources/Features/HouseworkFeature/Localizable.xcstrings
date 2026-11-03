@@ -135,6 +135,23 @@
         }
       }
     },
+    "%lld / %lld" : {
+      "comment" : "拡大表示している画像が、家事に添えた画像の何枚目か",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
     "%lld%%・%lldpt" : {
       "localizations" : {
         "ja" : {
@@ -219,6 +236,22 @@
         }
       }
     },
+    "「%@」に添えた画像は、%@の家事には引き継がれず、見られなくなります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "「%1$@」に添えた画像は、%2$@の家事には引き継がれず、見られなくなります。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The photos attached to \"%1$@\" won't move to the chore on %2$@ and will no longer be visible."
+          }
+        }
+      }
+    },
     "「いつもの家事」では、保存しておいた家事をタップするだけで選べます。はじめての家事は「新しく入力」から名前を入れて追加できます。" : {
       "localizations" : {
         "en" : {
@@ -235,6 +268,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tap \"Add Another\" to keep adding chores to the list. Then use the button at the top right to add them all at once."
+          }
+        }
+      }
+    },
+    "あと%lld枚" : {
+      "comment" : "家事に添えられる残りの画像の枚数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more"
+                }
+              }
+            }
           }
         }
       }
@@ -400,6 +456,16 @@
         }
       }
     },
+    "くり返す家事には、画像を添えられません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos can't be attached to repeating chores."
+          }
+        }
+      }
+    },
     "この1週間で、まだありがとうを伝えていない家事はありません" : {
       "localizations" : {
         "en" : {
@@ -442,6 +508,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "This chore is done or marked “Won't Do,” so its note can't be edited."
+          }
+        }
+      }
+    },
+    "この家事は完了または「やらない」になったため、画像を追加できません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This chore was marked Done or Won't Do, so photos can no longer be added."
+          }
+        }
+      }
+    },
+    "この画像を外しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this photo?"
+          }
+        }
+      }
+    },
+    "この画像を消しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this photo?"
           }
         }
       }
@@ -770,6 +866,26 @@
         }
       }
     },
+    "プレミアムプラン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium Plan"
+          }
+        }
+      }
+    },
+    "プレミアムプランで使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Available with Premium"
+          }
+        }
+      }
+    },
     "プレミアムプランにすると、件数を気にせず登録できます。" : {
       "localizations" : {
         "en" : {
@@ -1001,6 +1117,26 @@
         }
       }
     },
+    "写真を撮る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Photo"
+          }
+        }
+      }
+    },
+    "写真を選ぶ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Photo"
+          }
+        }
+      }
+    },
     "別の日にまわす…" : {
       "localizations" : {
         "en" : {
@@ -1031,6 +1167,26 @@
         }
       }
     },
+    "同居人が追加した画像は、プレミアムプランの方だけが消せます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only Premium members can delete photos added by housemates."
+          }
+        }
+      }
+    },
+    "同居人の画面からも見えなくなります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your housemates won't be able to see it anymore."
+          }
+        }
+      }
+    },
     "夕食の準備" : {
       "comment" : "チュートリアルの見本で出す家事の名前",
       "localizations" : {
@@ -1038,6 +1194,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Make Dinner"
+          }
+        }
+      }
+    },
+    "外す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
           }
         }
       }
@@ -1303,6 +1469,16 @@
         }
       }
     },
+    "消す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
     "無料プランでは、いつもの家事を%lld件まで登録できます" : {
       "localizations" : {
         "en" : {
@@ -1331,6 +1507,148 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Free Plan: up to %lld"
+          }
+        }
+      }
+    },
+    "画像" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        }
+      }
+    },
+    "画像あり" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has photos"
+          }
+        }
+      }
+    },
+    "画像は%lld枚まで添えられます" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You can attach up to %lld photo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You can attach up to %lld photos."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "画像を外す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Photo"
+          }
+        }
+      }
+    },
+    "画像を拡大して見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Photo"
+          }
+        }
+      }
+    },
+    "画像を残さずにまわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Without the Photos?"
+          }
+        }
+      }
+    },
+    "画像を消せませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Delete Photo"
+          }
+        }
+      }
+    },
+    "画像を添えられませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Attach Photo"
+          }
+        }
+      }
+    },
+    "画像を添えられるのは、プレミアムプランの方だけです。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only Premium members can attach photos."
+          }
+        }
+      }
+    },
+    "画像を読み込めませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the photo"
+          }
+        }
+      }
+    },
+    "画像を読み込めませんでした。別の写真を選んでください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the photo. Please choose a different one."
+          }
+        }
+      }
+    },
+    "画像を追加" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Photo"
+          }
+        }
+      }
+    },
+    "画像を追加できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Add Photo"
           }
         }
       }
