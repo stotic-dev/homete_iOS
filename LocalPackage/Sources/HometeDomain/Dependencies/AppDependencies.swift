@@ -38,6 +38,8 @@ public struct AppDependencies: Sendable {
     public let encouragementCommentCacheClient: EncouragementCommentCacheClient
     public let intentDonationClient: IntentDonationClient
     public let inquiryClient: InquiryClient
+    public let announcementClient: AnnouncementClient
+    public let announcementTopicClient: AnnouncementTopicClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
@@ -49,6 +51,8 @@ public struct AppDependencies: Sendable {
     public let notificationPermissionUseCase: NotificationPermissionUseCase
     /// 今日完了した家事がある日に、ふりかえり通知を予約するUseCase
     public let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
+    /// お知らせのPush通知の設定とトピックの購読をそろえるUseCase
+    public let announcementTopicUseCase: AnnouncementTopicUseCase
 
     public init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
@@ -80,6 +84,8 @@ public struct AppDependencies: Sendable {
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         intentDonationClient: IntentDonationClient = .previewValue,
         inquiryClient: InquiryClient = .previewValue,
+        announcementClient: AnnouncementClient = .previewValue,
+        announcementTopicClient: AnnouncementTopicClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue,
         debugLocalDataClient: DebugLocalDataClient = .previewValue
     ) {
@@ -112,6 +118,8 @@ public struct AppDependencies: Sendable {
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.intentDonationClient = intentDonationClient
         self.inquiryClient = inquiryClient
+        self.announcementClient = announcementClient
+        self.announcementTopicClient = announcementTopicClient
         self.debugAuthClient = debugAuthClient
         self.debugLocalDataClient = debugLocalDataClient
         houseworkManager = .init(houseworkClient: houseworkClient)
@@ -121,6 +129,7 @@ public struct AppDependencies: Sendable {
             notificationGuideStateClient: notificationGuideStateClient
         )
         dailyCompletionReminderUseCase = .init(client: dailyCompletionReminderClient)
+        announcementTopicUseCase = .init(client: announcementTopicClient)
     }
 
 }

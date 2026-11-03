@@ -62,7 +62,7 @@ public struct DashboardTutorialView: View {
                     EmptyView()
                 }
             )
-            .homeNavigationBar(onTapSetting: {})
+            .homeNavigationBar(unreadAnnouncementCount: 0, onTapAnnouncement: {}, onTapSetting: {})
         }
     }
 

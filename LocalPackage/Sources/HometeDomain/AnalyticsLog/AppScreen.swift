@@ -80,6 +80,12 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case frequentHouseworkCategory = "frequent_housework_category"
     /// テンプレートからいつもの家事を取り込むシート
     case frequentHouseworkImport = "frequent_housework_import"
+    /// お知らせの一覧（ダッシュボードのベルから開く）
+    case announcementList = "announcement_list"
+    /// お知らせの詳細
+    case announcementDetail = "announcement_detail"
+    /// 起動時に出すお知らせのシート
+    case announcementModal = "announcement_modal"
     /// 設定画面
     case setting
     /// 問い合わせの一覧（設定画面から開く）

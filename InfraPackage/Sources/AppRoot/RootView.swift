@@ -49,7 +49,7 @@ public struct RootView: View {
                             removal: .opacity
                         ))
                 case let .loggedIn(context):
-                    AppTabView()
+                    AppTabView.make()
                         .environment(\.loginContext, context)
                         .transition(.scale)
                 case .accountLinkRequired:
