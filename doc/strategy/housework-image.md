@@ -57,7 +57,7 @@ Issueの確定事項に、実装時に決めた事項（2026-11-03）を加え�
 
 | 操作 | 順番 | 実装 |
 |---|---|---|
-| 家事詳細で追加 | 縮小 → 実体を上げる → 参照を`arrayUnion`（未登録の家事はドキュメントごと作る）。参照の書き込みに失敗したら実体を消す | `HouseworkListStore.addImages` → `HouseworkImageUseCase.add` |
+| 家事詳細で追加 | 縮小 → 実体を上げる → 参照を`arrayUnion`（未登録の家事はドキュメントごと作る。同居人が先に作っていたら、トランザクションの中で参照の追記に切り替える）。参照の書き込みに失敗したら実体を消す | `HouseworkListStore.addImages` → `HouseworkImageUseCase.add` |
 | 家事を追加する画面で登録 | 選んだ時点で縮小して入力中の家事に持つ → 登録時に実体を上げる → 参照付きの家事を一括で書く。失敗したら実体を消す | `HouseworkListStore.register` → `HouseworkImageUseCase.register` |
 | 削除 | 参照を`arrayRemove` → 実体を消す（失敗はログだけ） | `HouseworkListStore.removeImage` → `HouseworkImageUseCase.remove` |
 
