@@ -31,6 +31,7 @@ InfraPackageにはユニットテストが無く、`make test-packages-fast`で�
 | `HomeFeature` | ホーム画面・招待リンクからのグループ参加 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `CohabitantRegistrationFeature` | P2P（Multipeer Connectivity）での同居人登録 View | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `FrequentHouseworkFeature` | いつもの家事の管理画面（単発登録・テンプレートから呼び出すコピー元。[ADR-0020](adr/0020-frequent-housework-as-independent-copy-source.md)） | `HometeDomain`, `HometeUI`, `HometeResources` |
+| `PaywallFeature` | プレミアムプランのPaywall（特典・プランの一覧・購入・復元。[ADR-0070](adr/0070-custom-paywall-view.md)）。表示する前のApple連携と購入者の準備は`AppRoot`の`PaywallGate`が受け持つ | `HometeDomain`, `HometeUI`, `HometeResources` |
 | `HometeInfrastructure`（InfraPackage） | Client liveValue 実装・Services（Firestore / Storage / SignInWithApple）・端末内SQLite（[ADR-0031](adr/0031-housework-entry-history-in-sqlite.md)）・Firebase 依存 | `HometeDomain`, Firebase SDK, GRDB |
 | `HometeLocalNotification` | ふりかえり通知（ローカル通知・App Group の設定保存）と、メンテナンス中かどうかの共有（`MaintenanceStateClient`、[ADR-0055](adr/0055-maintenance-mode-with-remote-config.md)）の liveValue 実装。Notification Service Extension からも使うため Firebase に依存させない（[ADR-0021](adr/0021-daily-completion-reminder-on-device.md)） | `HometeDomain` |
 | `HometeAppIntents` | Siri・Spotlight・ショートカットAppから実行するApp Intent・Entity・ドネーションの liveValue。Firebase の実装はアプリから`AppDependencyManager`経由で受け取るため`HometeInfrastructure`に依存させない（[ADR-0044](adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)） | `HometeDomain`, `HouseworkFeature`, `ContributionFeature` |
@@ -73,7 +74,8 @@ Features/
   ├── SettingFeature/
   ├── HomeFeature/          ← 招待リンクからの参加 View を含む
   ├── CohabitantRegistrationFeature/  ← P2P 登録（Multipeer Connectivity）を隔離
-  └── FrequentHouseworkFeature/       ← いつもの家事（単発登録・テンプレートの両方から使う）
+  ├── FrequentHouseworkFeature/       ← いつもの家事（単発登録・テンプレートの両方から使う）
+  └── PaywallFeature/                 ← プレミアムプランのPaywall（多くのFeatureから`AppRoute.paywall`で開く）
 
 InfraPackage/Sources/HometeInfrastructure/
   ├── Client liveValue 実装（Impl*.swift）

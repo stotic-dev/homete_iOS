@@ -47,7 +47,6 @@ let package = Package(
                     condition: .when(platforms: [.iOS])
                 ),
                 .product(name: "RevenueCat", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
-                .product(name: "RevenueCatUI", package: "purchases-ios-spm", condition: .when(platforms: [.iOS])),
                 .product(name: "GRDB", package: "GRDB.swift")
             ],
             resources: [localizableStrings()],
@@ -67,6 +66,7 @@ let package = Package(
                 localPackage("HouseworkTemplateFeature"),
                 localPackage("ContributionFeature"),
                 localPackage("FrequentHouseworkFeature"),
+                localPackage("PaywallFeature"),
                 localPackage("HometeLocalNotification"),
                 localPackage("HometeAppIntents")
             ],

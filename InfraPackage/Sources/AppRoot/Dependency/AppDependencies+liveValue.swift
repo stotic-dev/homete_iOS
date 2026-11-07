@@ -14,6 +14,7 @@ public extension AppDependencies {
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
+        errorReportClient: .liveValue,
         accountInfoClient: .liveValue,
         cohabitantClient: .liveValue,
         cohabitantInvitationClient: .liveValue,
