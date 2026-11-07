@@ -50,10 +50,10 @@ RevenueCat経由のIn-App Purchaseとして、月額/年額の自動更新サブ
 3. **保存期間の上限到達時** — 家事ボード過去端・貢献度分析画面で「プレミアムプランに登録すると全期間閲覧できます」のブロック表示＋CTA
 4. **設定画面** `SubscriptionManagementView` — 現在のプラン確認・変更・購入復元・解約導線
 5. **家事の画像** — 家事詳細・家事を追加する画面の画像の欄で、無料プランの「画像を追加」（王冠のアイコン付き）を押すとPaywallへ遷移（`step=housework_image`）
-6. **購入画面本体** `PaywallScreen` — RevenueCatUIの`PaywallView`標準コンポーネントに委譲しており、価格やプラン説明はアプリ側にハードコードされず**RevenueCatダッシュボード側のPaywall設定に依存**する
+6. **購入画面本体** `PaywallScreen`（`PaywallFeature`） — 自前のSwiftUI View（[ADR-0070](adr/0070-custom-paywall-view.md)）。訴求する特典は`PaywallBenefit`としてコードに持ち、価格・課金期間・導入オファーだけをRevenueCatのOfferingから取得して出す。契約中の人が開いたときは契約プラン画面（`SubscriptionManagementView`）を出す
 
 ## 3. 論点・今後の検討事項
 
 - **「今後追加される機能も使える」の扱い**: 家事の画像（#457）で、新機能をプレミアム限定として機能ごとに解放する形が初めてできた。共通の解放の仕組みは持たず、機能ごとの`XxxPolicy`でプランを判定する
-- **3つ目の価値の柱**: 「広告非表示」「保存期間無制限」に、家事の画像（#457）が加わった。画像をRevenueCatのPaywallの訴求文言にも載せるかは、`billing-product-ops`スキルでダッシュボード側のコピーを更新するときに判断する
-- **Paywall文言はRevenueCatダッシュボード管理**: アプリコード側に価格・訴求コピーの実体がないため、訴求内容を変更する場合はRevenueCat側の設定変更が必要になる（アプリ側の補足UI＝上記2.3の1〜3は除く）
+- **3つ目の価値の柱**: 「広告非表示」「保存期間無制限」に、家事の画像（#457）が加わった。Paywallでは3つとも`PaywallBenefit`として訴求している
+- **Paywall文言はコードで管理**: 訴求内容は`PaywallFeature`の`PaywallBenefit`と、その見せ方（`PaywallBenefitListContent`）にある。特典を足すときは、機能の解放と同じPRで訴求も足す。RevenueCatダッシュボードのPaywalls設定は、置き換え前のバージョン（RevenueCatUIで表示していたもの）が行き渡らなくなるまで残しておく

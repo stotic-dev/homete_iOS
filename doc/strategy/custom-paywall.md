@@ -7,8 +7,8 @@
 
 - [x] 要件確定
 - [x] 設計確定
-- [ ] 実装完了
-- [ ] テスト追加完了
+- [x] 実装完了
+- [x] テスト追加完了
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
@@ -245,33 +245,33 @@ var alert: PaywallAlert?           // 購入失敗 / 承認待ち / 復元の結
 
 コミットは対応ごとに分ける（`git-commit.md`）。
 
-- [ ] `ErrorReportClient`と`liveValue`を足し、`AppDependencies`に登録する
-- [ ] `PurchaseOffering`・`PurchaseResult`などのドメインモデルと、`PurchaseClient`の`fetchOffering`・`purchase`（`previewValue`・`liveValue`）を足す
-- [ ] `SubscriptionStore.purchase(_:for:)`とテストを足す
-- [ ] `PaywallFeature`モジュールと`PaywallFeatureTests`を`Package.swift`に足す
-- [ ] `PaywallStore`とユニットテストを書く
-- [ ] `PaywallView`とSubViews、Previewを作る（未購入・導入オファーあり・プラン変更で利用中あり・購入完了・取得失敗。読み込み中・購入中は`.prefireIgnored()`）
-- [ ] `PaywallScreen`を作り、購入・復元・アラート・エラーの記録をつなぐ
-- [ ] 文言の英訳を入れ、`make check-translations`を通す
-- [ ] `AppRoute.paywall`に`isPlanChange`を足し、`SubscriptionManagementView`から使う
-- [ ] `SubscriptionManagementScreen`を足し、`PaywallGate`で出し分ける
-- [ ] `PaywallScreen.swift`（RevenueCatUI）を消し、`RevenueCatUI`の依存を外す
-- [ ] `.prefire.yml`と`hometeVRT.xcodeproj`に`PaywallFeature`を足す
+- [x] `ErrorReportClient`と`liveValue`を足し、`AppDependencies`に登録する
+- [x] `PurchaseOffering`・`PurchaseResult`などのドメインモデルと、`PurchaseClient`の`fetchOffering`・`purchase`（`previewValue`・`liveValue`）を足す
+- [x] `SubscriptionStore.purchase(_:for:)`とテストを足す
+- [x] `PaywallFeature`モジュールと`PaywallFeatureTests`を`Package.swift`に足す
+- [x] `PaywallStore`とユニットテストを書く
+- [x] `PaywallView`とSubViews、Previewを作る（未購入・導入オファーあり・プラン変更で利用中あり・購入完了・取得失敗。読み込み中・購入中は`.prefireIgnored()`）
+- [x] `PaywallScreen`を作り、購入・復元・アラート・エラーの記録をつなぐ
+- [x] 文言の英訳を入れ、`make check-translations`を通す
+- [x] `AppRoute.paywall`に`isPlanChange`を足し、`SubscriptionManagementView`から使う
+- [x] `SubscriptionManagementScreen`を足し、`PaywallGate`で出し分ける
+- [x] `PaywallScreen.swift`（RevenueCatUI）を消し、`RevenueCatUI`の依存を外す
+- [x] `.prefire.yml`と`hometeVRT.xcodeproj`に`PaywallFeature`を足す
 
 ### Phase 2.5: ドキュメント
 
-- [ ] ADR-0006を置き換えるADRを書く（番号はhomete_backendの`docs/adr/`と照らして最大+1。今のiOS側の最大は0067）。「訴求内容は機能のリリースと連動するため、コードで持つほうが同期できる」を判断理由として残す。ADR-0006の状態をSupersededにする
-- [ ] `doc/multimodules_structure.md`に`PaywallFeature`を足す
-- [ ] `doc/premium_plan.md`の「2.3 訴求が露出する導線」と「3. 論点」を、Paywallの文言がコードにある前提に直す
-- [ ] `doc/analytics_events.md`の`screen_view`の表の`paywall`の行（付けている場所）を直す
-- [ ] `.claude/rules/ux-writing.md`・`screen-view-tracking.md`のRevenueCat Paywallへの言及を直す（`chore:`で別コミット）
+- [x] ADR-0006を置き換える[ADR-0070](../adr/0070-custom-paywall-view.md)を書く。「訴求内容は機能のリリースと連動するため、コードで持つほうが同期できる」を判断理由として残す。ADR-0006の状態をSupersededにする
+- [x] `doc/multimodules_structure.md`に`PaywallFeature`を足す
+- [x] `doc/premium_plan.md`の「2.3 訴求が露出する導線」と「3. 論点」を、Paywallの文言がコードにある前提に直す
+- [x] `doc/analytics_events.md`の`screen_view`の表の`paywall`の行（付けている場所）を直す
+- [x] `.claude/rules/ux-writing.md`・`screen-view-tracking.md`のRevenueCat Paywallへの言及を直す（`chore:`で別コミット）
 
 ### Phase 3: 検証
 
-- [ ] `make build-affected` でビルド通過（InfraPackageも含む）
-- [ ] `swift-code-verification` スキルに沿って SwiftLint 通過
-- [ ] `make test-affected` でユニットテスト通過
-- [ ] `make check-previews` 通過
+- [x] `make build-affected` でビルド通過（InfraPackageも含む）
+- [x] `swift-code-verification` スキルに沿って SwiftLint 通過
+- [x] `make test-affected` でユニットテスト通過
+- [x] `make check-previews` 通過
 - [ ] `make snapshot-affected` でPaywallFeatureのVRTが通る（参照スナップショットの更新はCI）
 - [ ] Stg環境（Sandbox / TestFlight）で購入・リストア・キャンセル・プラン変更が動く
 - [ ] 購入の失敗・プラン一覧の取得の失敗がCrashlyticsに非致命イベントとして届く
@@ -287,7 +287,7 @@ var alert: PaywallAlert?           // 購入失敗 / 承認待ち / 復元の結
 ## 関連リンク
 
 - Issue: https://github.com/stotic-dev/homete_iOS/issues/404
-- 関連ADR: [ADR-0004](../adr/0004-revenuecat-sdk-adoption.md)（RevenueCat SDKの採用）、[ADR-0006](../adr/0006-revenuecatui-paywall-adoption.md)（RevenueCatUIの採用。今回置き換える対象）
+- 関連ADR: [ADR-0070](../adr/0070-custom-paywall-view.md)（今回の判断）、[ADR-0004](../adr/0004-revenuecat-sdk-adoption.md)（RevenueCat SDKの採用）、[ADR-0006](../adr/0006-revenuecatui-paywall-adoption.md)（RevenueCatUIの採用。今回置き換える対象）
 - 既存実装（参考）:
   - `InfraPackage/Sources/AppRoot/ResolverImpl/AccountLinkRoutes.swift`（`PaywallGate`）
   - `InfraPackage/Sources/HometeInfrastructure/Purchase/PaywallScreen.swift`
