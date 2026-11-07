@@ -83,6 +83,7 @@ private extension PaywallView {
             .padding(.top, .space16)
             .padding(.bottom, .space24)
         }
+        .softTopScrollEdgeEffect()
     }
 
     var header: some View {
