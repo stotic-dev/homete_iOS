@@ -67,6 +67,7 @@ let package = Package(
                 localPackage("HouseworkTemplateFeature"),
                 localPackage("ContributionFeature"),
                 localPackage("FrequentHouseworkFeature"),
+                localPackage("PaywallFeature"),
                 localPackage("HometeLocalNotification"),
                 localPackage("HometeAppIntents")
             ],
