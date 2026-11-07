@@ -43,8 +43,9 @@ struct ManualHouseworkForm: View {
             VStack(alignment: .leading, spacing: .space24) {
                 houseworkSection()
                 imageSection()
+                // 上の欄が増えると、小さい端末では画面の下に押し出されるため、説明するときにスクロールして見せる
                 saveAsFrequentSection()
-                    .tutorialSpotlightTarget(.registerHouseworkSaveAsFrequent)
+                    .tutorialSpotlightScrollTarget(.registerHouseworkSaveAsFrequent)
                 if !history.isEmpty {
                     entryHistorySection()
                 }
@@ -54,6 +55,7 @@ struct ManualHouseworkForm: View {
             .padding(.bottom, .space64 * 2)
         }
         .scrollDismissesKeyboard(.interactively)
+        .scrollsToTutorialSpotlightTarget()
     }
 
 }
