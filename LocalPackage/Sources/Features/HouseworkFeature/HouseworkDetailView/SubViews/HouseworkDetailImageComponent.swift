@@ -31,6 +31,7 @@ struct HouseworkDetailImageComponent: View {
             addState: addState,
             isCameraAvailable: CameraPicker.isAvailable,
             thumbnailAccessibilityLabel: .localized("画像を拡大して見る"),
+            thumbnailMinimumWidth: Self.thumbnailMinimumWidth,
             onTapImage: { imageId in viewerInitialId = imageId },
             onTapAdd: { source in pickSource = source },
             onTapPremium: { isPresentedPaywall = true },
@@ -69,9 +70,14 @@ struct HouseworkDetailImageComponent: View {
 
 private extension HouseworkDetailImageComponent {
 
-    /// サムネイルは1辺72pt前後なので、3倍の画面でもぼやけない大きさで読み込む
+    /// 詳細は画像を見るための画面なので、iPhoneの幅で2列に並ぶ大きさにする（タップしなくても写っているものが分かる）
+    static var thumbnailMinimumWidth: CGFloat {
+        140
+    }
+
+    /// サムネイルは1辺160pt前後なので、3倍の画面でもぼやけない大きさで読み込む
     static var thumbnailPixelSize: Int {
-        300
+        600
     }
 
     var images: [HouseworkImage] {

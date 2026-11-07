@@ -30,6 +30,8 @@ struct HouseworkImageSectionContent<Item: Identifiable, Thumbnail: View>: View {
     let isCameraAvailable: Bool
     /// サムネイルをタップしたときの操作。VoiceOverで読み上げる
     let thumbnailAccessibilityLabel: LocalizedStringResource
+    /// サムネイルの最小の幅。家事詳細のように、画像を見ることが目的の画面では大きくする
+    var thumbnailMinimumWidth: CGFloat = 72
     /// 追加ボタンの代わりに添える説明。くり返す家事のように、画像を添えられない理由を伝えるときに使う
     var note: LocalizedStringResource?
     let onTapImage: (Item.ID) -> Void
@@ -61,7 +63,7 @@ struct HouseworkImageSectionContent<Item: Identifiable, Thumbnail: View>: View {
 private extension HouseworkImageSectionContent {
 
     func imageGrid() -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: .space8)], spacing: .space8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: thumbnailMinimumWidth), spacing: .space8)], spacing: .space8) {
             ForEach(images) { image in
                 Button {
                     onTapImage(image.id)
@@ -169,6 +171,23 @@ struct HouseworkImagePreviewItem: Identifiable {
         addState: .available(remainingCount: 7),
         isCameraAvailable: true,
         thumbnailAccessibilityLabel: .localized("画像を拡大して見る"),
+        onTapImage: { _ in },
+        onTapAdd: { _ in },
+        onTapPremium: {},
+        thumbnail: { _ in
+            HouseworkImageContent(phase: .loaded(.makeForPreview(width: 160, height: 120)), contentMode: .fill)
+        }
+    )
+    .padding()
+}
+
+#Preview("HouseworkImageSectionContent_大きいサムネイル", traits: .sizeThatFitsLayout) {
+    HouseworkImageSectionContent(
+        images: (0 ..< 3).map { HouseworkImagePreviewItem(id: $0) },
+        addState: .available(remainingCount: 7),
+        isCameraAvailable: true,
+        thumbnailAccessibilityLabel: .localized("画像を拡大して見る"),
+        thumbnailMinimumWidth: 140,
         onTapImage: { _ in },
         onTapAdd: { _ in },
         onTapPremium: {},
