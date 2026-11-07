@@ -19,6 +19,7 @@ struct HouseworkListStoreImageTest {
         case addReferences(houseworkId: String, images: [HouseworkImage], cohabitantId: String)
         case removeReference(houseworkId: String, image: HouseworkImage, cohabitantId: String)
         case insertItems([HouseworkItem], cohabitantId: String)
+        case insertItemOrAddReferences(HouseworkItem, images: [HouseworkImage], cohabitantId: String)
 
     }
 
@@ -99,18 +100,23 @@ struct HouseworkListStoreImageTest {
         #expect(logger.value == [.housework(.addImage(step: .detail, isSuccess: true))])
     }
 
-    @Test("テンプレートから表示しているだけの家事に画像を添えると、実体を上げてから作成日時を付けてドキュメントごと作る")
-    func addImages_notRegistered_insertsItem() async throws {
+    @Test("テンプレートから表示しているだけの家事に画像を添えると、実体を上げてから、作成日時を付けた家事を作るか、同居人が作っていれば参照を追記する")
+    func addImages_notRegistered_insertsItemOrAddsReferences() async throws {
         // Arrange
 
         let operations = TestLockedArray<Operation>()
         let item = HouseworkItem.makeForTest(id: 1, indexedDate: Self.now)
         let store = HouseworkListStore(
             houseworkClient: .init(
-                createItemsHandler: { items, cohabitantId in
-                    await operations.append(.insertItems(items, cohabitantId: cohabitantId))
-                },
-                addImagesHandler: { _, _, _ in Issue.record() }
+                createItemsHandler: { _, _ in Issue.record() },
+                addImagesHandler: { _, _, _ in Issue.record() },
+                createItemOrAddImagesHandler: { item, images, cohabitantId in
+                    await operations.append(.insertItemOrAddReferences(
+                        item,
+                        images: images,
+                        cohabitantId: cohabitantId
+                    ))
+                }
             ),
             houseworkImageClient: Self.makeImageClient(operations),
             now: { Self.now }
@@ -132,8 +138,9 @@ struct HouseworkListStoreImageTest {
 
         let expectedOperations: [Operation] = [
             .upload(storagePath: Self.uploadedImage.storagePath, data: Self.upload.data),
-            .insertItems(
-                [.makeForTest(id: 1, indexedDate: Self.now, createdAt: Self.now, images: [Self.uploadedImage])],
+            .insertItemOrAddReferences(
+                .makeForTest(id: 1, indexedDate: Self.now, createdAt: Self.now, images: [Self.uploadedImage]),
+                images: [Self.uploadedImage],
                 cohabitantId: Self.cohabitantId
             ),
         ]
@@ -187,7 +194,8 @@ struct HouseworkListStoreImageTest {
         let store = HouseworkListStore(
             houseworkClient: .init(
                 createItemsHandler: { _, _ in Issue.record() },
-                addImagesHandler: { _, _, _ in Issue.record() }
+                addImagesHandler: { _, _, _ in Issue.record() },
+                createItemOrAddImagesHandler: { _, _, _ in Issue.record() }
             ),
             houseworkImageClient: Self.makeImageClient(operations, uploadError: WriteError()),
             items: [.makeForTest(items: [item])]
@@ -231,7 +239,8 @@ struct HouseworkListStoreImageTest {
         let store = HouseworkListStore(
             houseworkClient: .init(
                 createItemsHandler: { _, _ in Issue.record() },
-                addImagesHandler: { _, _, _ in Issue.record() }
+                addImagesHandler: { _, _, _ in Issue.record() },
+                createItemOrAddImagesHandler: { _, _, _ in Issue.record() }
             ),
             houseworkImageClient: Self.makeImageClient(operations),
             // 画面を開いている間に同居人が状態を変えた、最新の記録

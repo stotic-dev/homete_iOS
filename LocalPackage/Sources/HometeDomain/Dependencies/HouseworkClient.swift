@@ -45,6 +45,14 @@ public struct HouseworkClient: Sendable {
         _ images: [HouseworkImage],
         _ cohabitantId: String
     ) async throws -> Void
+    /// まだドキュメントの無い家事に画像を添える。同居人が先にドキュメントを作っていたら、画像の参照を追記するだけにする
+    /// - Note: 有無の確認と書き込みを1つのトランザクションで行う。テンプレートから出している家事を、画像を上げている間に
+    ///         同居人が完了にした・画像を添えたときに、手元の古い記録でドキュメントごと上書きしないため
+    public let createItemOrAddImages: @Sendable (
+        _ item: HouseworkItem,
+        _ images: [HouseworkImage],
+        _ cohabitantId: String
+    ) async throws -> Void
     /// 家事から画像の参照を1つ取り除く（ほかの画像には触れない）
     public let removeImage: @Sendable (
         _ houseworkId: String,
@@ -107,6 +115,11 @@ public extension HouseworkClient {
             _ images: [HouseworkImage],
             _ cohabitantId: String
         ) async throws -> Void)? = nil,
+        createItemOrAddImagesHandler: (@Sendable (
+            _ item: HouseworkItem,
+            _ images: [HouseworkImage],
+            _ cohabitantId: String
+        ) async throws -> Void)? = nil,
         removeImageHandler: (@Sendable (
             _ houseworkId: String,
             _ image: HouseworkImage,
@@ -135,6 +148,7 @@ public extension HouseworkClient {
         // asyncフレームが壊れてクラッシュするため、後から足した処理はnilを既定値にして本体で代入する
         createItems = createItemsHandler ?? { _, _ in }
         addImages = addImagesHandler ?? { _, _, _ in }
+        createItemOrAddImages = createItemOrAddImagesHandler ?? { _, _, _ in }
         removeImage = removeImageHandler ?? { _, _, _ in }
         snapshotListener = snapshotListenerHandler
         removeListener = removeListenerHandler

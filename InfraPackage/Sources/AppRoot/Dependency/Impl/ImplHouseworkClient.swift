@@ -65,6 +65,17 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(houseworkId)
         }
+    } createItemOrAddImagesHandler: { item, images, cohabitantId in
+        try await FirestoreService.shared.insertOrArrayUnion(
+            data: item,
+            fieldNames: HouseworkItem.creationFieldNames,
+            arrayFieldPath: "images",
+            elements: images
+        ) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
     } removeImageHandler: { houseworkId, image, cohabitantId in
         try await FirestoreService.shared.arrayRemove(fieldPath: "images", elements: [image]) {
             $0

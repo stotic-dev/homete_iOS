@@ -34,7 +34,8 @@ public struct HouseworkImageUseCase: Sendable {
     /// - Parameters:
     ///   - uploads: 添える画像。今ある画像の後ろに並べる
     ///   - current: 添える家事。登録済みの家事なら、呼び出し側が見つけた最新の記録を渡す
-    ///   - isRegistered: 未登録（テンプレートから出しているだけ）の家事は、画像を添えた家事のドキュメントを新しく作る
+    ///   - isRegistered: 未登録（テンプレートから出しているだけ）の家事は、画像を添えた家事のドキュメントを新しく作る。
+    ///                   画像を上げている間に同居人がドキュメントを作っていたら、参照を追記するだけにする
     ///   - now: 未登録の家事のドキュメントを作るときの作成日時
     /// - Throws: 家事・プランの条件を満たさない場合は`HouseworkImageError`（何も書き込まない）
     func add( // swiftlint:disable:this function_parameter_count
@@ -62,7 +63,11 @@ public struct HouseworkImageUseCase: Sendable {
                 if isRegistered {
                     try await houseworkClient.addImages(current.id, images, cohabitantId)
                 } else {
-                    try await houseworkClient.createItems([updatedItem.updateCreatedAt(now)], cohabitantId)
+                    try await houseworkClient.createItemOrAddImages(
+                        updatedItem.updateCreatedAt(now),
+                        images,
+                        cohabitantId
+                    )
                 }
             } catch {
                 await discard(images)
