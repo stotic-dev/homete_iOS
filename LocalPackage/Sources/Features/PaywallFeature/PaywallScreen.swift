@@ -48,7 +48,7 @@ public struct PaywallScreen: View {
             isPresented: isPresentedAlert,
             presenting: store?.alert
         ) { _ in
-            Button("OK") {}
+            Button(.localized("OK")) {}
         } message: { alert in
             Text(alertMessage(alert))
         }
