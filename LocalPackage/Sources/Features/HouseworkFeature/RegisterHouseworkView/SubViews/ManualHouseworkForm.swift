@@ -24,6 +24,17 @@ struct ManualHouseworkForm: View {
     /// 上限に達している状態で「いつもの家事に保存する」を押したとき
     let onTapSaveAsFrequentWhenLimitReached: () -> Void
     let onTapMemo: () -> Void
+    /// 欄に並べる画像（くり返す家事のときは呼び出し側で空にする）
+    let images: [HouseworkImageUpload]
+    /// 画像の追加ボタンの状態（くり返す家事のときは呼び出し側で`.hidden`にする）
+    let imageAddState: HouseworkImageAddState
+    /// 画像を添えられない理由（くり返す家事のとき）
+    let imageNote: LocalizedStringResource?
+    let isCameraAvailable: Bool
+    let onTapAddImage: (HouseworkImagePickSource) -> Void
+    /// 無料プランで画像の追加ボタンを押したとき
+    let onTapImagePremium: () -> Void
+    let onTapImage: (HouseworkImageUpload.ID) -> Void
 
     @FocusState var isShowingKeyboard: Bool
 
@@ -31,8 +42,10 @@ struct ManualHouseworkForm: View {
         ScrollView {
             VStack(alignment: .leading, spacing: .space24) {
                 houseworkSection()
+                imageSection()
+                // 上の欄が増えると、小さい端末では画面の下に押し出されるため、説明するときにスクロールして見せる
                 saveAsFrequentSection()
-                    .tutorialSpotlightTarget(.registerHouseworkSaveAsFrequent)
+                    .tutorialSpotlightScrollTarget(.registerHouseworkSaveAsFrequent)
                 if !history.isEmpty {
                     entryHistorySection()
                 }
@@ -42,6 +55,7 @@ struct ManualHouseworkForm: View {
             .padding(.bottom, .space64 * 2)
         }
         .scrollDismissesKeyboard(.interactively)
+        .scrollsToTutorialSpotlightTarget()
     }
 
 }
@@ -64,6 +78,22 @@ private extension ManualHouseworkForm {
                 onTapMemo()
             }
         }
+    }
+
+    func imageSection() -> some View {
+        HouseworkImageSectionContent(
+            images: images,
+            addState: imageAddState,
+            isCameraAvailable: isCameraAvailable,
+            thumbnailAccessibilityLabel: .localized("画像を外す"),
+            note: imageNote,
+            onTapImage: onTapImage,
+            onTapAdd: onTapAddImage,
+            onTapPremium: onTapImagePremium,
+            thumbnail: { image in
+                HouseworkImageComponent(source: .pending(image), maxPixelSize: 300, contentMode: .fill)
+            }
+        )
     }
 
     func inputTitleField() -> some View {
@@ -209,7 +239,14 @@ private extension ManualHouseworkForm {
         ],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {},
-        onTapMemo: {}
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in }
     )
 }
 
@@ -229,7 +266,14 @@ private extension ManualHouseworkForm {
         history: [],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {},
-        onTapMemo: {}
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in }
     )
 }
 
@@ -249,7 +293,14 @@ private extension ManualHouseworkForm {
         history: [],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {},
-        onTapMemo: {}
+        onTapMemo: {},
+        images: [],
+        imageAddState: .hidden,
+        imageNote: .localized("くり返す家事には、画像を添えられません"),
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in }
     )
 }
 
@@ -269,7 +320,14 @@ private extension ManualHouseworkForm {
         history: [],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {},
-        onTapMemo: {}
+        onTapMemo: {},
+        images: [],
+        imageAddState: .hidden,
+        imageNote: .localized("くり返す家事には、画像を添えられません"),
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in }
     )
 }
 
@@ -289,7 +347,14 @@ private extension ManualHouseworkForm {
         history: [],
         onTapHistory: { _ in },
         onTapSaveAsFrequentWhenLimitReached: {},
-        onTapMemo: {}
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in }
     )
 }
 #endif

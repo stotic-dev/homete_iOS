@@ -88,6 +88,11 @@ public enum HouseworkAnalyticsAction: Equatable, Sendable {
     /// 家事のメモ（テキスト・チェックリストの項目）を編集した
     /// - Note: チェックの切り替えは頻度が高く、利用状況を見るには編集だけで足りるため送らない
     case editMemo(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 家事に画像を添えた（家事詳細から追加した、または家事を追加する画面で画像を付けて登録した）
+    /// - Note: 一度に何枚選んでも、操作1回につき1イベント送る
+    case addImage(step: HouseworkAnalyticsStep, isSuccess: Bool)
+    /// 家事に添えた画像を消した
+    case removeImage(step: HouseworkAnalyticsStep, isSuccess: Bool)
     /// 未完了の家事を別の日へまわした
     case postpone(step: HouseworkAnalyticsStep, outcome: HouseworkPostponePlan.Outcome, isSuccess: Bool)
 
@@ -137,6 +142,8 @@ private extension HouseworkAnalyticsAction {
              let .returnIncomplete(step, _),
              let .delete(step, _),
              let .editMemo(step, _),
+             let .addImage(step, _),
+             let .removeImage(step, _),
              let .postpone(step, _, _):
             step.rawValue
         }
@@ -156,6 +163,8 @@ private extension HouseworkAnalyticsAction {
              .returnIncomplete,
              .delete,
              .editMemo,
+             .addImage,
+             .removeImage,
              .postpone:
             nil
         }
@@ -184,6 +193,8 @@ private extension HouseworkAnalyticsAction {
              .returnIncomplete,
              .delete,
              .editMemo,
+             .addImage,
+             .removeImage,
              .postpone:
             nil
         }
@@ -219,6 +230,12 @@ private extension HouseworkAnalyticsAction {
         case .editMemo:
             "edit_memo"
 
+        case .addImage:
+            "add_image"
+
+        case .removeImage:
+            "remove_image"
+
         case .postpone:
             "postpone"
         }
@@ -230,7 +247,17 @@ private extension HouseworkAnalyticsAction {
         case let .register(_, source, _):
             source.rawValue
 
-        case .complete, .redo, .addHelper, .sendThanks, .editThanks, .returnIncomplete, .delete, .editMemo, .postpone:
+        case .complete,
+             .redo,
+             .addHelper,
+             .sendThanks,
+             .editThanks,
+             .returnIncomplete,
+             .delete,
+             .editMemo,
+             .addImage,
+             .removeImage,
+             .postpone:
             nil
         }
     }
@@ -256,7 +283,9 @@ private extension HouseworkAnalyticsAction {
              .editThanks,
              .returnIncomplete,
              .delete,
-             .editMemo:
+             .editMemo,
+             .addImage,
+             .removeImage:
             nil
         }
     }
@@ -273,6 +302,8 @@ private extension HouseworkAnalyticsAction {
              let .returnIncomplete(_, isSuccess),
              let .delete(_, isSuccess),
              let .editMemo(_, isSuccess),
+             let .addImage(_, isSuccess),
+             let .removeImage(_, isSuccess),
              let .postpone(_, _, isSuccess):
             isSuccess ? "success" : "failure"
         }

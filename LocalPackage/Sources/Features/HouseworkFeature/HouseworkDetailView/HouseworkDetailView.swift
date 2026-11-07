@@ -125,6 +125,13 @@ private extension HouseworkDetailView {
                         onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
                     )
                 }
+                if isImageSectionVisible {
+                    HouseworkDetailImageComponent(
+                        item: item,
+                        loadingState: loadingState,
+                        onError: { commonErrorContent = .init(error: $0) }
+                    )
+                }
             }
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
@@ -144,6 +151,11 @@ private extension HouseworkDetailView {
     /// メモ欄を出すか。完了済み・「やらない」の家事は、メモがあるときだけ閲覧用に出す
     var isMemoVisible: Bool {
         item.originalItem.canEditMemo || item.originalItem.memo.hasContent
+    }
+
+    /// 画像の欄を出すか。完了済み・「やらない」の家事は、画像があるときだけ閲覧用に出す（メモと同じ）
+    var isImageSectionVisible: Bool {
+        item.originalItem.canAddImages || item.originalItem.images.hasContent
     }
 
     var memoLimitPolicy: HouseworkMemoLimitPolicy {

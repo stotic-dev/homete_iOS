@@ -26,7 +26,8 @@ public extension HouseworkItem {
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
-        postponedTo: HouseworkIndexedDate? = nil
+        postponedTo: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -42,7 +43,8 @@ public extension HouseworkItem {
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -61,7 +63,8 @@ public extension HouseworkItem {
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
-        postponedTo: HouseworkIndexedDate? = nil
+        postponedTo: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: id,
@@ -77,7 +80,8 @@ public extension HouseworkItem {
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 

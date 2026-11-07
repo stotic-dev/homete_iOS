@@ -47,7 +47,7 @@ struct HouseworkListStoreTest {
 
         try await confirmation { confirmation in
             let store = HouseworkListStore(
-                houseworkClient: .init(insertOrUpdateItemsHandler: { items, cohabitantId in
+                houseworkClient: .init(createItemsHandler: { items, cohabitantId in
                     // Assert
 
                     #expect(items == expected)
@@ -64,7 +64,9 @@ struct HouseworkListStoreTest {
                 newItems: inputEntries,
                 cohabitantId: inputCohabitantId,
                 step: .board,
-                memoLimitPolicy: .free
+                memoLimitPolicy: .free,
+                imagePolicy: .free,
+                uploaderId: "userA"
             )
         }
     }
@@ -74,13 +76,20 @@ struct HouseworkListStoreTest {
         // Arrange
 
         let store = HouseworkListStore(
-            houseworkClient: .init(insertOrUpdateItemsHandler: { _, _ in Issue.record() }),
+            houseworkClient: .init(createItemsHandler: { _, _ in Issue.record() }),
             cohabitantPushNotificationClient: .init { _, _ in Issue.record() }
         )
 
         // Act
 
-        try await store.register(newItems: [], cohabitantId: inputCohabitantId, step: .board, memoLimitPolicy: .free)
+        try await store.register(
+            newItems: [],
+            cohabitantId: inputCohabitantId,
+            step: .board,
+            memoLimitPolicy: .free,
+            imagePolicy: .free,
+            uploaderId: "userA"
+        )
     }
 
 }

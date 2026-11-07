@@ -291,6 +291,18 @@ struct AnalyticsEventTest {
                 ["action": "edit_memo", "step": "detail", "result": "failure"]
             ),
             (
+                HouseworkAnalyticsAction.addImage(step: .detail, isSuccess: true),
+                ["action": "add_image", "step": "detail", "result": "success"]
+            ),
+            (
+                HouseworkAnalyticsAction.addImage(step: .board, isSuccess: false),
+                ["action": "add_image", "step": "board", "result": "failure"]
+            ),
+            (
+                HouseworkAnalyticsAction.removeImage(step: .detail, isSuccess: true),
+                ["action": "remove_image", "step": "detail", "result": "success"]
+            ),
+            (
                 HouseworkAnalyticsAction.returnIncomplete(step: .detail, isSuccess: true),
                 ["action": "return_incomplete", "step": "detail", "result": "success"]
             ),

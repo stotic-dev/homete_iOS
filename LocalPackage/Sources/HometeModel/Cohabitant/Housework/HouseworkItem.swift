@@ -48,6 +48,12 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     /// テンプレートの家事は仮想表示（ADR-0003）なので、元の日に記録を残さないとテンプレートからまた出てしまう。
     /// この記録は`notTodo`にして、画面には出さない。
     public let postponedTo: HouseworkIndexedDate?
+    /// 添えた画像（並び順どおり）
+    ///
+    /// 一度も画像を添えていない家事は`nil`。添えた画像をすべて消した家事は空の配列を持つ（ADR-0067）。
+    /// 旧バージョンのアプリによる上書きで参照が消えるのを、ルールで「一度持った`images`は残す」と検査するため、
+    /// 空の配列と区別して持つ（`memo`と同じ考え方）。
+    public let images: [HouseworkImage]? // swiftlint:disable:this discouraged_optional_collection
 
     public init(
         id: String,
@@ -63,7 +69,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
-        postponedTo: HouseworkIndexedDate? = nil
+        postponedTo: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) {
         self.id = id
         self.indexedDate = indexedDate
@@ -79,6 +86,7 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
         self.memo = memo
         self.postponedFrom = postponedFrom
         self.postponedTo = postponedTo
+        self.images = images
     }
 
     /// 完了にする
@@ -111,7 +119,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -146,7 +155,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -155,6 +165,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
     /// 元の家事の完了記録は残したまま、実施した回数分のポイントを積めるように別IDの家事として作る。
     /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない。
     /// 頑張り度を選ぶ画面を通らないため、頑張り度は「ふつう」にする。
+    /// 画像は引き継がない。Storageの実体は家事ごとのフォルダに置き、家事が消えたらフォルダごと消すため、
+    /// 別の家事から同じ実体を指すと、元の家事が消えたときに画像が見られなくなる（ADR-0067）。
     public func makeRedone(id: String, at now: Date, executor: String) -> Self {
         .init(
             id: id,
@@ -187,7 +199,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -206,7 +219,8 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -226,8 +240,14 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: now,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
+    }
+
+    /// 画像を追加できるか。完了済み・「やらない」の家事の画像は閲覧と削除のみ（メモと同じ）
+    public var canAddImages: Bool {
+        state == .incomplete
     }
 
     /// メモを編集できるか。完了済み・「やらない」の家事のメモは閲覧のみ
@@ -255,7 +275,63 @@ public struct HouseworkItem: Identifiable, Equatable, Sendable, Hashable, Codabl
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
+        )
+    }
+
+    /// 画像を添える
+    /// - Parameters:
+    ///   - newImages: 添える画像。今ある画像の後ろに並べる
+    ///   - policy: 判定に使う、操作している本人のプラン
+    /// - Throws: 未完了ではない家事は`HouseworkImageError.notEditable`、
+    ///           無料プランなら`HouseworkImageError.premiumRequired`、枚数を超えるなら`HouseworkImageError.limitExceeded`
+    public func addingImages(_ newImages: [HouseworkImage], policy: HouseworkImagePolicy) throws -> Self {
+        guard canAddImages else { throw HouseworkImageError.notEditable }
+        try policy.validateAdding(count: newImages.count, currentCount: images?.count ?? 0)
+        return replacingImages((images ?? []) + newImages)
+    }
+
+    /// 画像を1枚消す
+    ///
+    /// 家事の状態に関係なく消せる。写真を残したくない人が、完了した後でも消せるようにするため。
+    /// すべて消しても`images`は空の配列として残す（ADR-0067）。
+    /// - Parameters:
+    ///   - imageId: 消す画像のID
+    ///   - policy: 判定に使う、操作している本人のプラン
+    ///   - userId: 操作している本人のユーザーID
+    /// - Throws: 自分が追加した画像ではなく、プレミアムプランでもないなら`HouseworkImageError.notDeletable`
+    public func removingImage(
+        _ imageId: HouseworkImage.ID,
+        policy: HouseworkImagePolicy,
+        userId: String
+    ) throws -> Self {
+        guard let images, let image = images.first(where: { $0.id == imageId }) else { return self }
+        guard policy.canDelete(image, userId: userId) else { throw HouseworkImageError.notDeletable }
+        return replacingImages(images.filter { $0.id != imageId })
+    }
+
+}
+
+private extension HouseworkItem {
+
+    func replacingImages(_ images: [HouseworkImage]) -> Self {
+        .init(
+            id: id,
+            indexedDate: indexedDate,
+            title: title,
+            point: point,
+            state: state,
+            executors: executors,
+            effort: effort,
+            executedAt: executedAt,
+            templateHouseworkItemId: templateHouseworkItemId,
+            thanks: thanks,
+            createdAt: createdAt,
+            memo: memo,
+            postponedFrom: postponedFrom,
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -337,7 +413,8 @@ public extension HouseworkItem {
             createdAt: createdAt,
             memo: memo,
             postponedFrom: indexedDate,
-            postponedTo: nil
+            postponedTo: nil,
+            images: images
         )
     }
 
@@ -360,14 +437,15 @@ public extension HouseworkItem {
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: destination
+            postponedTo: destination,
+            images: images
         )
     }
 
     /// テンプレートの家事を別の日へまわすときに、まわす先に作る単発の家事
     ///
     /// テンプレートIDは、その日にテンプレートから生成された1件の家事であることを表すため引き継がない
-    /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。
+    /// （`makeRedone`と同じ考え方）。メモは引き継ぐ。画像は`makeRedone`と同じ理由で引き継がず、元の日の記録に残る。
     /// - Parameters:
     ///   - metaData: まわす先の日付
     ///   - now: 作成日時
@@ -400,11 +478,18 @@ public extension HouseworkItem {
 
 public extension HouseworkItem {
 
-    /// アプリが書き込むフィールドの名前
+    /// アプリが既存の家事を書き換えるときに書くフィールドの名前
     ///
     /// 家事のドキュメントは、ここに無いフィールド（`expiredAt`）を残したまま、ここにあるフィールドだけを上書きする。
     /// 値が無くてエンコードされなかったフィールドは、書き込むときに消す（`executedAt`を未完了で消すときなど）。
+    /// 画像の参照（`images`）は含めない。手元の古い記録から家事を書き換えたときに、同居人が足した・消した画像の参照を
+    /// 古い内容に戻さないため。画像の参照は配列への追記・取り除きだけで書く（ADR-0067）。
     static var writtenFieldNames: [String] {
+        CodingKeys.allCases.filter { $0 != .images }.map(\.stringValue)
+    }
+
+    /// 家事のドキュメントを新しく作るときに書くフィールドの名前（画像の参照を含む）
+    static var creationFieldNames: [String] {
         CodingKeys.allCases.map(\.stringValue)
     }
 
@@ -425,6 +510,7 @@ public extension HouseworkItem {
         case memo
         case postponedFrom
         case postponedTo
+        case images
 
     }
 
@@ -438,6 +524,7 @@ public extension HouseworkItem {
     /// 作成日時の記録を始める前に保存された家事は`createdAt`を持たないため、`nil`として読む（ADR-0026）。
     /// メモを一度も書いていない家事は`memo`を持たないため、`nil`として読む（ADR-0034）。
     /// 別の日へまわしていない家事は`postponedFrom`・`postponedTo`を持たないため、`nil`として読む。
+    /// 画像を一度も添えていない家事は`images`を持たないため、`nil`として読む（ADR-0067）。
     /// 保持期限（`expiredAt`）はCloud Functionsだけが書くフィールドで、アプリでは読まない。
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -462,7 +549,8 @@ public extension HouseworkItem {
             createdAt: container.decodeIfPresent(Date.self, forKey: .createdAt),
             memo: container.decodeIfPresent(HouseworkMemo.self, forKey: .memo),
             postponedFrom: container.decodeIfPresent(HouseworkIndexedDate.self, forKey: .postponedFrom),
-            postponedTo: container.decodeIfPresent(HouseworkIndexedDate.self, forKey: .postponedTo)
+            postponedTo: container.decodeIfPresent(HouseworkIndexedDate.self, forKey: .postponedTo),
+            images: container.decodeIfPresent([HouseworkImage].self, forKey: .images)
         )
     }
 
@@ -487,6 +575,7 @@ public extension HouseworkItem {
         try container.encodeIfPresent(memo, forKey: .memo)
         try container.encodeIfPresent(postponedFrom, forKey: .postponedFrom)
         try container.encodeIfPresent(postponedTo, forKey: .postponedTo)
+        try container.encodeIfPresent(images, forKey: .images)
     }
 
 }

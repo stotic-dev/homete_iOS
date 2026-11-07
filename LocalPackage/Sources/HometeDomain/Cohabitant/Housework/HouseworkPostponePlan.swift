@@ -36,6 +36,18 @@ public struct HouseworkPostponePlan: Equatable, Sendable {
 
 public extension HouseworkPostponePlan {
 
+    /// 添えた画像が、画面に出ない元の日の記録に残るか
+    ///
+    /// テンプレートの家事をまわすと、まわす先の家事は別IDで作るため画像を引き継がない（ADR-0067）。
+    /// 元の日の記録は画面に出ないので、画像は見ることも消すこともできなくなる。確認のアラートで先に伝えるのに使う。
+    var leavesImagesBehind: Bool {
+        writes.contains { $0.isPostponedRecord && $0.images.hasContent }
+    }
+
+}
+
+public extension HouseworkPostponePlan {
+
     /// - Parameters:
     ///   - target: まわす家事。登録済みの家事なら、リスナーで受け取った最新の記録を渡す
     ///   - isRegistered: まわす家事がFirestoreに登録済みか（テンプレートから出している家事は未登録）

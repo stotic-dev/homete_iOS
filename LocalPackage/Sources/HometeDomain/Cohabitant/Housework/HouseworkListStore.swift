@@ -32,12 +32,14 @@ public final class HouseworkListStore {
     private let analyticsClient: AnalyticsClient
     private let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
     private let commandUseCase: HouseworkCommandUseCase
+    private let imageUseCase: HouseworkImageUseCase
     private let intentDonationClient: IntentDonationClient
 
     private let houseworkListObserveKey = "houseworkListObserveKey"
 
     public init(
         houseworkClient: HouseworkClient = .previewValue,
+        houseworkImageClient: HouseworkImageClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         houseworkManager: HouseworkManager = .init(houseworkClient: .previewValue),
         analyticsClient: AnalyticsClient = .previewValue,
@@ -64,30 +66,15 @@ public final class HouseworkListStore {
             dailyCompletionReminderUseCase: dailyCompletionReminderUseCase,
             calendar: calendar
         )
+        imageUseCase = .init(
+            houseworkClient: houseworkClient,
+            imageClient: houseworkImageClient,
+            analyticsClient: analyticsClient
+        )
 
         Task {
             await startObserving()
         }
-    }
-
-    /// 家事をまとめて登録する
-    ///
-    /// 書き込み・Analyticsの詳細は`HouseworkCommandUseCase.register`を参照。
-    /// - Parameter memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
-    /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`（1件も書き込まない）
-    public func register(
-        newItems: [NewHouseworkEntry],
-        cohabitantId: String,
-        step: HouseworkAnalyticsStep,
-        memoLimitPolicy: HouseworkMemoLimitPolicy
-    ) async throws {
-        try await commandUseCase.register(
-            newItems: newItems,
-            createdAt: now(),
-            cohabitantId: cohabitantId,
-            step: step,
-            memoLimitPolicy: memoLimitPolicy
-        )
     }
 
     /// 家事を完了にする
@@ -421,6 +408,125 @@ public extension HouseworkListStore {
             now: now(),
             calendar: calendar,
             newItemId: idGenerator()
+        )
+    }
+
+}
+
+// MARK: - 登録
+
+/// `imageUseCase`・`commandUseCase`・`now`を使うため、クラスと同じファイルに置く
+public extension HouseworkListStore {
+
+    /// 家事をまとめて登録する
+    ///
+    /// 書き込み・Analyticsの詳細は`HouseworkCommandUseCase.register`を参照。
+    /// 画像を添えた家事は、画像を上げてから家事を書き込む。家事の書き込みに失敗したら、上げた画像を消す（ADR-0067）。
+    /// - Parameters:
+    ///   - memoLimitPolicy: 入力したメモの上限の判定に使う、操作している本人のプラン
+    ///   - imagePolicy: 画像を添えられるかの判定に使う、操作している本人のプラン
+    ///   - uploaderId: 画像を添えた人（操作している本人）のユーザーID
+    /// - Throws: 入力したメモが上限を超えている場合は`HouseworkMemoError.limitExceeded`、画像を添えられない場合は
+    ///           `HouseworkImageError`（どちらも1件も書き込まない）
+    func register( // swiftlint:disable:this function_parameter_count
+        newItems: [NewHouseworkEntry],
+        cohabitantId: String,
+        step: HouseworkAnalyticsStep,
+        memoLimitPolicy: HouseworkMemoLimitPolicy,
+        imagePolicy: HouseworkImagePolicy,
+        uploaderId: String
+    ) async throws {
+        let commandUseCase = commandUseCase
+        let createdAt = now()
+        // メモが上限を超えているなら、画像を上げる前に弾く。書き込みとAnalyticsは画像なしの登録と同じ扱いにする
+        guard newItems.allSatisfy({ (try? $0.validateMemo(limitPolicy: memoLimitPolicy)) != nil }) else {
+            try await commandUseCase.register(
+                newItems: newItems,
+                createdAt: createdAt,
+                cohabitantId: cohabitantId,
+                step: step,
+                memoLimitPolicy: memoLimitPolicy
+            )
+            return
+        }
+        try await imageUseCase.register(
+            newItems,
+            cohabitantId: cohabitantId,
+            uploaderId: uploaderId,
+            policy: imagePolicy,
+            step: step
+        ) { entries in
+            try await commandUseCase.register(
+                newItems: entries,
+                createdAt: createdAt,
+                cohabitantId: cohabitantId,
+                step: step,
+                memoLimitPolicy: memoLimitPolicy
+            )
+        }
+    }
+
+}
+
+// MARK: - 画像
+
+/// `imageUseCase`・`now`を使うため、クラスと同じファイルに置く
+public extension HouseworkListStore {
+
+    /// 家事に画像を添える
+    ///
+    /// 書き込む順番とAnalyticsの詳細は`HouseworkImageUseCase`を参照。
+    /// - Parameters:
+    ///   - uploads: 縮小・圧縮した画像。今ある画像の後ろに並べる
+    ///   - uploaderId: 操作している本人のユーザーID
+    ///   - policy: 判定に使う、操作している本人のプラン
+    /// - Throws: 画面を開いている間に同居人が完了・「やらない」にしていた場合は`HouseworkImageError.notEditable`。
+    ///           プラン・枚数の条件を満たさない場合も`HouseworkImageError`（どちらも何も書き込まない）
+    func addImages( // swiftlint:disable:this function_parameter_count
+        _ uploads: [HouseworkImageUpload],
+        target: HouseworkItem,
+        cohabitantId: String,
+        isRegistered: Bool,
+        uploaderId: String,
+        policy: HouseworkImagePolicy,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        // 手元の家事は画面を開いた時点のものなので、リスナーで受け取った最新の状態を見て判断する
+        let current = isRegistered ? items.item(target) ?? target : target
+        try await imageUseCase.add(
+            uploads,
+            to: current,
+            isRegistered: isRegistered,
+            cohabitantId: cohabitantId,
+            uploaderId: uploaderId,
+            policy: policy,
+            now: now(),
+            step: step
+        )
+    }
+
+    /// 家事に添えた画像を1枚消す
+    ///
+    /// 家事の状態に関係なく消せる。消せるのはプレミアムプランの人と、その画像を追加した人。
+    /// - Parameters:
+    ///   - userId: 操作している本人のユーザーID
+    ///   - policy: 判定に使う、操作している本人のプラン
+    /// - Throws: 消せない画像なら`HouseworkImageError.notDeletable`（何も書き込まない）
+    func removeImage( // swiftlint:disable:this function_parameter_count
+        _ imageId: HouseworkImage.ID,
+        target: HouseworkItem,
+        cohabitantId: String,
+        userId: String,
+        policy: HouseworkImagePolicy,
+        step: HouseworkAnalyticsStep
+    ) async throws {
+        try await imageUseCase.remove(
+            imageId,
+            from: items.item(target) ?? target,
+            cohabitantId: cohabitantId,
+            userId: userId,
+            policy: policy,
+            step: step
         )
     }
 

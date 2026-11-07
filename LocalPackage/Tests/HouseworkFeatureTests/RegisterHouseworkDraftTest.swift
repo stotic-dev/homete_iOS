@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import Foundation
 import HometeDomain
 @testable import HouseworkFeature
 import Testing
@@ -429,6 +430,72 @@ extension RegisterHouseworkDraftTest.HasInputCase {
         // Assert
 
         #expect(actual == true)
+    }
+
+    @Test(
+        "名前が空でも、その日の家事として画像を選んでいれば破棄の確認が要る（くり返す家事では画像を添えないので要らない）",
+        arguments: [
+            (HouseworkRecurrenceInput.Kind.none, true),
+            (.weekly, false),
+        ]
+    )
+    func hasInputWithOnlyImages(kind: HouseworkRecurrenceInput.Kind, expected: Bool) {
+        // Arrange
+
+        var input = RegisterHouseworkDraftTest.makeInput(title: "", recurrenceInput: .init(kind: kind))
+        input.images = [.init(id: "image1", data: Data([0x01]))]
+        let draft = RegisterHouseworkDraft(input: input)
+
+        // Act
+
+        let actual = draft.hasInput
+
+        // Assert
+
+        #expect(actual == expected)
+    }
+
+}
+
+// MARK: - 登録予定の画像
+
+extension RegisterHouseworkDraftTest.PendingEntriesCase {
+
+    @Test(
+        "入力中の家事に選んだ画像は、その日の家事として登録するときだけ登録予定に持たせる",
+        arguments: [
+            (HouseworkRecurrenceInput(kind: .none), [HouseworkImageUpload(id: "image1", data: Data([0x01]))]),
+            (.init(kind: .weekly, weekdays: [.thursday]), []),
+        ]
+    )
+    func pendingEntriesAttachesImagesOnlyWithoutRecurrence(
+        recurrenceInput: HouseworkRecurrenceInput,
+        expectedImages: [HouseworkImageUpload]
+    ) {
+        // Arrange
+
+        var input = RegisterHouseworkDraftTest.makeInput(title: "ゴミ出し", recurrenceInput: recurrenceInput)
+        input.images = [.init(id: "image1", data: Data([0x01]))]
+        let draft = RegisterHouseworkDraft(input: input)
+
+        // Act
+
+        let actual = draft.pendingEntries(context: RegisterHouseworkDraftTest.context)
+
+        // Assert
+
+        let expected = [
+            PendingEntry(
+                source: .editing,
+                title: "ゴミ出し",
+                point: 10,
+                recurrence: recurrenceInput.recurrence,
+                savesAsFrequent: false,
+                categoryId: nil,
+                images: expectedImages
+            ),
+        ]
+        #expect(actual == expected)
     }
 
 }
