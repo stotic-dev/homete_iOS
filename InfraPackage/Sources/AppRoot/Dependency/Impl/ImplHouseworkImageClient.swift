@@ -14,8 +14,9 @@ extension HouseworkImageClient {
             await HouseworkImageCache.shared.store(data, for: storagePath)
         },
         delete: { storagePath in
-            try await StorageService.delete(path: storagePath)
+            // 参照はもう無いので、Storageから消せなくても端末からは消す（消せなかった実体は、家事が消えるときにまとめて消す）
             await HouseworkImageCache.shared.remove(for: storagePath)
+            try await StorageService.delete(path: storagePath)
         },
         fetch: { storagePath in
             if let cached = await HouseworkImageCache.shared.data(for: storagePath) {
