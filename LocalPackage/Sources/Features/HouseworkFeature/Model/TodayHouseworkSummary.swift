@@ -39,8 +39,7 @@ public extension TodayHouseworkSummary {
         storedAllItems: StoredAllHouseworkList,
         template: HouseworkTemplateDay?,
         now: Date,
-        calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy
+        calendar: Calendar
     ) -> Self {
         let today = calendar.startOfDay(for: now)
         let storedItems = storedAllItems.value
@@ -50,7 +49,6 @@ public extension TodayHouseworkSummary {
             registeredItems: storedItems,
             selectedDate: today,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
         ) ?? storedItems.filter { !$0.isPostponedRecord }
 

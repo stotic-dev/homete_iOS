@@ -236,8 +236,6 @@ private extension LaunchStateStore {
         await updateFcmTokenIfNeeded()
         guard !Task.isCancelled else { return }
         applyLoggedIn(accountStore.account ?? account)
-        // グループへの参加はアカウント更新として届くため、参加後の保持期限同期をここで拾う
-        await authSubscriptionSyncUseCase.syncHouseworkRetentionIfNeeded()
     }
 
     /// アカウントを取得できなかったときは、サインアウトしてログイン画面からやり直してもらう

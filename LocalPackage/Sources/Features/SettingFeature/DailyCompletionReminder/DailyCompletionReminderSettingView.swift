@@ -13,8 +13,14 @@ struct DailyCompletionReminderSettingScreen: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.appDependencies.dailyCompletionReminderUseCase) var dailyCompletionReminderUseCase
+    @Environment(\.appDependencies.announcementTopicUseCase) var announcementTopicUseCase
 
     @State var setting: DailyCompletionReminderSetting?
+    /// お知らせの通知を受け取る設定か。読み込むまでは`nil`
+    @State var isAnnouncementNotificationEnabled: Bool?
+    /// 直前のお知らせの通知の切り替え
+    /// - Note: 素早く切り替えると、保存と購読の切り替えが前後して設定と購読が食い違うため、前の切り替えを待ってから次を行う
+    @State var announcementNotificationUpdateTask: Task<Void, Never>?
 
     var body: some View {
         DailyCompletionReminderSettingView(
@@ -29,6 +35,11 @@ struct DailyCompletionReminderSettingScreen: View {
                 Task {
                     await changedTime(hour: hour, minute: minute)
                 }
+            },
+            // 未設定の端末は受け取る設定になるため、読み込むまではオンで出す
+            isAnnouncementNotificationEnabled: isAnnouncementNotificationEnabled ?? true,
+            onChangeAnnouncementNotificationEnabled: { isEnabled in
+                changedAnnouncementNotificationEnabled(isEnabled)
             }
         )
         .task {
@@ -44,6 +55,16 @@ private extension DailyCompletionReminderSettingScreen {
 
     func loadSetting() async {
         setting = await dailyCompletionReminderUseCase.loadSetting()
+        isAnnouncementNotificationEnabled = await announcementTopicUseCase.isEnabled()
+    }
+
+    func changedAnnouncementNotificationEnabled(_ isEnabled: Bool) {
+        isAnnouncementNotificationEnabled = isEnabled
+        let previousTask = announcementNotificationUpdateTask
+        announcementNotificationUpdateTask = Task {
+            await previousTask?.value
+            await announcementTopicUseCase.update(isEnabled: isEnabled)
+        }
     }
 
     func changedEnabled(_ isEnabled: Bool) async {
@@ -69,19 +90,24 @@ struct DailyCompletionReminderSettingView: View {
     let calendar: Calendar
     let onChangeEnabled: (Bool) -> Void
     let onChangeTime: (_ hour: Int, _ minute: Int) -> Void
+    let isAnnouncementNotificationEnabled: Bool
+    let onChangeAnnouncementNotificationEnabled: (Bool) -> Void
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: .space8) {
-                sectionHeader
-                settingCard
-                Text(
-                    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。",
-                    bundle: #bundle
-                )
-                .font(with: .caption)
-                .foregroundStyle(.textSecondary)
-                .padding(.horizontal, .space16)
+            VStack(alignment: .leading, spacing: .space24) {
+                VStack(alignment: .leading, spacing: .space8) {
+                    sectionHeader
+                    settingCard
+                    Text(
+                        "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。",
+                        bundle: #bundle
+                    )
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+                    .padding(.horizontal, .space16)
+                }
+                announcementSection
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.space16)
@@ -131,6 +157,35 @@ private extension DailyCompletionReminderSettingView {
         .cornerRadius(.radius20)
     }
 
+    var announcementSection: some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("お知らせ", bundle: #bundle)
+                .font(with: .boldCaption)
+                .foregroundStyle(.textSecondary)
+                .padding(.horizontal, .space16)
+            Toggle(isOn: announcementEnabledBinding) {
+                Text("運営からのお知らせを受け取る", bundle: #bundle)
+                    .font(with: .body)
+                    .foregroundStyle(.textPrimary)
+            }
+            .padding(.space16)
+            .background(.backgroundCard)
+            .cornerRadius(.radius20)
+            Text("メンテナンスや新しい機能など、大事なお知らせを通知でお届けします。オフにしても、ダッシュボードのベルから読めます。", bundle: #bundle)
+                .font(with: .caption)
+                .foregroundStyle(.textSecondary)
+                .padding(.horizontal, .space16)
+        }
+    }
+
+    var announcementEnabledBinding: Binding<Bool> {
+        .init {
+            isAnnouncementNotificationEnabled
+        } set: { isEnabled in
+            onChangeAnnouncementNotificationEnabled(isEnabled)
+        }
+    }
+
     var enabledBinding: Binding<Bool> {
         .init {
             setting.isEnabled
@@ -158,7 +213,9 @@ private extension DailyCompletionReminderSettingView {
             setting: .init(isEnabled: false, hour: 21, minute: 0),
             calendar: .japanese,
             onChangeEnabled: { _ in },
-            onChangeTime: { _, _ in }
+            onChangeTime: { _, _ in },
+            isAnnouncementNotificationEnabled: true,
+            onChangeAnnouncementNotificationEnabled: { _ in }
         )
     }
 }
@@ -169,7 +226,22 @@ private extension DailyCompletionReminderSettingView {
             setting: .init(isEnabled: true, hour: 21, minute: 30),
             calendar: .japanese,
             onChangeEnabled: { _ in },
-            onChangeTime: { _, _ in }
+            onChangeTime: { _, _ in },
+            isAnnouncementNotificationEnabled: true,
+            onChangeAnnouncementNotificationEnabled: { _ in }
+        )
+    }
+}
+
+#Preview("DailyCompletionReminderSettingView_お知らせオフ") {
+    NavigationStack {
+        DailyCompletionReminderSettingView(
+            setting: .init(isEnabled: true, hour: 21, minute: 30),
+            calendar: .japanese,
+            onChangeEnabled: { _ in },
+            onChangeTime: { _, _ in },
+            isAnnouncementNotificationEnabled: false,
+            onChangeAnnouncementNotificationEnabled: { _ in }
         )
     }
 }

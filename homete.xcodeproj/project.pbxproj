@@ -393,6 +393,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "家事に添える写真を撮るときに使います。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "パートナーの登録を行うために使用します";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -406,7 +407,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -444,7 +445,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -482,7 +483,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -646,6 +647,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "家事に添える写真を撮るときに使います。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "パートナーの登録を行うために使用します";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -659,7 +661,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -698,6 +700,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = homete/Info.plist;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_NSCameraUsageDescription = "家事に添える写真を撮るときに使います。";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "パートナーの登録を行うために使用します";
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "より関連性の高い広告を表示するために、あなたの閲覧履歴を利用します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -711,7 +714,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -748,7 +751,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.2.0;
+				MARKETING_VERSION = 2.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = taichi.satou.hometekure.dev.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

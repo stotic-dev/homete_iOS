@@ -476,6 +476,16 @@
         }
       }
     },
+    "プレミアムプランの準備ができませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load the Premium Plan"
+          }
+        }
+      }
+    },
     "プレミアムプランを見る" : {
       "localizations" : {
         "en" : {
@@ -1052,6 +1062,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add the chores you plan to do with the + button."
+          }
+        }
+      }
+    },
+    "未読%lld件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld unread"
           }
         }
       }

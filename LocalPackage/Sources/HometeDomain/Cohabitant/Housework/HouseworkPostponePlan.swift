@@ -36,6 +36,18 @@ public struct HouseworkPostponePlan: Equatable, Sendable {
 
 public extension HouseworkPostponePlan {
 
+    /// 添えた画像が、画面に出ない元の日の記録に残るか
+    ///
+    /// テンプレートの家事をまわすと、まわす先の家事は別IDで作るため画像を引き継がない（ADR-0067）。
+    /// 元の日の記録は画面に出ないので、画像は見ることも消すこともできなくなる。確認のアラートで先に伝えるのに使う。
+    var leavesImagesBehind: Bool {
+        writes.contains { $0.isPostponedRecord && $0.images.hasContent }
+    }
+
+}
+
+public extension HouseworkPostponePlan {
+
     /// - Parameters:
     ///   - target: まわす家事。登録済みの家事なら、リスナーで受け取った最新の記録を渡す
     ///   - isRegistered: まわす家事がFirestoreに登録済みか（テンプレートから出している家事は未登録）
@@ -43,7 +55,6 @@ public extension HouseworkPostponePlan {
     ///   - storedItems: 登録済みの家事。まわす先の日の家事を探すのに使う
     ///   - templateContext: テンプレート。まわす先の日にテンプレートから出る家事を探すのに使う
     ///   - now: 新しく作るドキュメントの作成日時
-    ///   - storagePolicy: まわす先の日付から保持期限を求めるのに使う
     ///   - newItemId: まわす先に単発の家事を作るときのID（作らないときは使わない）
     static func make( // swiftlint:disable:this function_parameter_count
         target: HouseworkItem,
@@ -53,20 +64,14 @@ public extension HouseworkPostponePlan {
         templateContext: HouseworkTemplateContext,
         now: Date,
         calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy,
         newItemId: String
     ) -> Self {
-        let metaData = DailyHouseworkMetaData(
-            selectedDate: destination,
-            calendar: calendar,
-            storagePolicy: storagePolicy
-        )
+        let metaData = DailyHouseworkMetaData(selectedDate: destination, calendar: calendar)
         let destinationItems = Self.items(
             on: metaData.indexedDate.value,
             storedItems: storedItems,
             templateContext: templateContext,
-            calendar: calendar,
-            storagePolicy: storagePolicy
+            calendar: calendar
         )
         let conflictingTitle = destinationItems.contains { $0.title == target.title && $0.id != target.id }
             ? target.title
@@ -101,8 +106,7 @@ private extension HouseworkPostponePlan {
         on day: Date,
         storedItems: StoredAllHouseworkList,
         templateContext: HouseworkTemplateContext,
-        calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy
+        calendar: Calendar
     ) -> [HouseworkItem] {
         let registeredItems = storedItems.value
             .first { $0.metaData.indexedDate.value == day }?
@@ -115,7 +119,6 @@ private extension HouseworkPostponePlan {
             registeredItems: registeredItems,
             selectedDate: day,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             idGenerator: { "template-\($0.id.id)" }
         )
     }

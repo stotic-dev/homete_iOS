@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
         UNUserNotificationCenter.current().delegate = self
         MessagingConfigurator.configure()
+        setupAnnouncementTopic()
 
         return true
     }
@@ -107,6 +108,16 @@ private extension AppDelegate {
         RevenueCatClient.shared.initialize()
     }
 
+    /// お知らせの通知を受け取る設定に合わせて、トピックを購読する／やめる
+    /// - Note: 購読は端末単位でログイン状態に関わらないため、画面より先に起動時に行う
+    func setupAnnouncementTopic() {
+        // プレビュー・ユニットテストではFirebaseを初期化しないため、購読もしない
+        guard FirebaseConfigurator.isConfigured else { return }
+        Task {
+            await AppDependencies.liveValue.announcementTopicUseCase.sync()
+        }
+    }
+
     /// App Intentが使う依存を登録する
     /// - Note: アプリを開かないIntentもアプリのプロセスを起動して実行されるため、Firebaseの初期化と同じく起動時に行う。
     ///         家事の名前の読み直しは、家事を読み込んだとき（`HouseworkListStore`）に頼む
@@ -129,10 +140,16 @@ extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
 
     nonisolated func userNotificationCenter(
         _: UNUserNotificationCenter,
-        willPresent _: UNNotification
+        willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
+        // 運営からのお知らせは、通知だけでなくダッシュボードのバッジと起動時のシートにも反映する
+        if AnnouncementNotificationData(userInfo: notification.request.content.userInfo) != nil {
+            await MainActor.run {
+                NotificationCenter.default.post(name: .didReceiveAnnouncementNotification, object: nil)
+            }
+        }
         // アプリ起動中でも同居人の家事完了などに気づけるよう、バナーと通知センターにも表示する
-        [.banner, .list, .sound]
+        return [.banner, .list, .sound]
     }
 
     /// 通知のタップを受け取り、開く画面を保持する

@@ -22,7 +22,7 @@ struct HouseworkManagerFocusTest {
     func focusOutOfListenerPeriod() async {
         // Arrange
 
-        let focusedItem = HouseworkItem.makeForTest(id: 1, indexedDate: Self.outOfListenerDay, expiredAt: Self.now)
+        let focusedItem = HouseworkItem.makeForTest(id: 1, indexedDate: Self.outOfListenerDay)
         let (focusStream, focusContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
         let recorder = ListenerRequestRecorder()
         let manager = HouseworkManager(

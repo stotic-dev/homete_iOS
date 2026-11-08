@@ -13,6 +13,14 @@
 - [ ] PRレビュー完了
 - [ ] マージ完了
 
+> **その後の変更（#242・#531）**: 加入状態と保持期限はサーバーが決める形に変えた（[homete_backend の ADR-0065](https://github.com/stotic-dev/homete_backend/blob/main/docs/adr/0065-server-side-premium-state-and-housework-retention.md)）。
+> 以下の「6. プラン変更時の `expiredAt` 一括更新」「8. `Account` へのプレミアム状態の永続化」、`expiredAt` をクライアントで算出する設計（1・2）、「見送った項目」は当時の方針として残しているが、今は次のとおり。
+>
+> - `Account.isPremium` は RevenueCat の Webhook（`revenuecatwebhook`）が購読状態から書く。アプリは書かない（Firestoreルールで更新を拒否する）
+> - `Houseworks.expiredAt` は家事の作成時にトリガー（`sethouseworkexpiredat`）が付け、プランやメンバーが変わると Functions が計算し直す。アプリは読みも書きもせず、家事の書き込みは `mergeFields` でアプリが持つフィールドだけを上書きして `expiredAt` を残す
+> - アプリからの `synchouseworkretention` の呼び出しと `HouseworkRetentionSyncStateStore` は削除した。古いアプリのため API はサーバーに残る
+> - `HouseworkStoragePolicy` に残るのは閲覧範囲と起動時のフェッチ範囲だけ。画面でのプレミアム判定は今までどおり `SubscriptionStore.isPremium` を使う
+
 ## 概要
 
 プレミアムプランの提供価値として「家事データの保存期間無制限化」を実現する。

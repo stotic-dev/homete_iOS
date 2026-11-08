@@ -45,7 +45,6 @@ struct HouseworkBoardListTest {
             selectedDateTemplate: nil,
             selectedDate: selectTime,
             calendar: .japanese,
-            storagePolicy: .free,
             uuidGenerator: { UUID() }
         )
 
@@ -80,7 +79,6 @@ struct HouseworkBoardListTest {
             selectedDateTemplate: nil,
             selectedDate: selectedDate,
             calendar: .japanese,
-            storagePolicy: .free,
             uuidGenerator: { UUID() }
         )
 
@@ -101,7 +99,6 @@ struct HouseworkBoardListTest {
             selectedDateTemplate: nil,
             selectedDate: targetDate,
             calendar: .japanese,
-            storagePolicy: .free,
             uuidGenerator: { UUID() }
         )
 

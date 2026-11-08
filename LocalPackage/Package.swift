@@ -23,12 +23,13 @@ let package = Package(
         lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
+        lib("PaywallFeature"),
         lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.2.0"),
+        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.5.0"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.7"),
     ],
     targets: [
@@ -78,6 +79,7 @@ let package = Package(
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeature"]),
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature"),
+        feature(name: "PaywallFeature"),
 
         // MARK: Others
 
@@ -158,6 +160,11 @@ let package = Package(
         .testTarget(
             name: "FrequentHouseworkFeatureTests",
             dependencies: ["FrequentHouseworkFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "PaywallFeatureTests",
+            dependencies: ["PaywallFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

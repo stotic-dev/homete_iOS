@@ -13,7 +13,6 @@ struct HouseworkIntentServiceTest {
 
     private let now = Date.previewDate(year: 2026, month: 10, day: 12, hour: 9)
     private let today = Date.previewDate(year: 2026, month: 10, day: 12)
-    private let expiredAt = Date.previewDate(year: 2027, month: 10, day: 12)
     private let createdAt = Date.previewDate(year: 2026, month: 10, day: 11)
     private let own = Account(id: "own", userName: "たろう", cohabitantId: "cohabitant")
     private let partner = Account(id: "partner", userName: "はなこ", cohabitantId: "cohabitant")
@@ -33,7 +32,6 @@ extension HouseworkIntentServiceTest {
             indexedDate: today,
             title: "洗濯",
             point: 20,
-            expiredAt: expiredAt,
             createdAt: createdAt
         )
         let expectedItem = HouseworkItem.makeForTest(
@@ -45,7 +43,6 @@ extension HouseworkIntentServiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: createdAt
         )
 
@@ -80,7 +77,7 @@ extension HouseworkIntentServiceTest {
         // Arrange
 
         let sut = makeSUT(
-            items: [.makeForTest(id: "dish", indexedDate: today, title: "皿洗い", expiredAt: expiredAt)],
+            items: [.makeForTest(id: "dish", indexedDate: today, title: "皿洗い")],
             houseworkClient: { fetchItems in
                 .init(
                     insertOrUpdateItemHandler: { _, _ in Issue.record("書き込まない") },
@@ -110,8 +107,7 @@ extension HouseworkIntentServiceTest {
                     title: "洗濯",
                     state: .completed,
                     executorId: "partner",
-                    executedAt: now,
-                    expiredAt: expiredAt
+                    executedAt: now
                 ),
             ],
             houseworkClient: { fetchItems in
@@ -145,7 +141,6 @@ extension HouseworkIntentServiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateItemId,
             createdAt: now
         )
@@ -198,7 +193,6 @@ extension HouseworkIntentServiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: createdAt
         )
 
@@ -212,7 +206,6 @@ extension HouseworkIntentServiceTest {
                         indexedDate: today,
                         title: "洗濯",
                         point: 10,
-                        expiredAt: expiredAt,
                         createdAt: createdAt
                     ),
                     .makeForTest(
@@ -220,7 +213,6 @@ extension HouseworkIntentServiceTest {
                         indexedDate: today,
                         title: "洗濯",
                         point: 30,
-                        expiredAt: expiredAt,
                         createdAt: createdAt
                     ),
                 ],
@@ -261,7 +253,7 @@ extension HouseworkIntentServiceTest {
 
         _ = try await confirmation(expectedCount: 2) { confirmation in
             let sut = makeSUT(
-                items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", expiredAt: expiredAt)],
+                items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯")],
                 houseworkClient: { fetchItems in
                     .init(insertOrUpdateItemHandler: { _, _ in }, fetchItemsHandler: fetchItems)
                 },
@@ -299,8 +291,7 @@ extension HouseworkIntentServiceTest {
             title: "皿洗い",
             state: .completed,
             executorId: "partner",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         let sut = makeSUT(
             items: [
@@ -312,7 +303,6 @@ extension HouseworkIntentServiceTest {
                     state: .completed,
                     executorId: "partner",
                     executedAt: now,
-                    expiredAt: expiredAt,
                     thanks: ["own": .init(comment: nil, sentAt: now)]
                 ),
                 .makeForTest(
@@ -321,8 +311,7 @@ extension HouseworkIntentServiceTest {
                     title: "お風呂掃除",
                     state: .completed,
                     executorId: "own",
-                    executedAt: now,
-                    expiredAt: expiredAt
+                    executedAt: now
                 ),
             ]
         )
@@ -347,8 +336,7 @@ extension HouseworkIntentServiceTest {
             title: "皿洗い",
             state: .completed,
             executorId: "partner",
-            executedAt: .previewDate(year: 2026, month: 10, day: 12, hour: 0, minute: 10),
-            expiredAt: expiredAt
+            executedAt: .previewDate(year: 2026, month: 10, day: 12, hour: 0, minute: 10)
         )
         let sut = makeSUT(
             items: [
@@ -359,8 +347,7 @@ extension HouseworkIntentServiceTest {
                     title: "洗濯",
                     state: .completed,
                     executorId: "partner",
-                    executedAt: .previewDate(year: 2026, month: 10, day: 11, hour: 23, minute: 50),
-                    expiredAt: expiredAt
+                    executedAt: .previewDate(year: 2026, month: 10, day: 11, hour: 23, minute: 50)
                 ),
             ]
         )
@@ -385,8 +372,7 @@ extension HouseworkIntentServiceTest {
             title: "皿洗い",
             state: .completed,
             executorId: "partner",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         let expectedContent = PushNotificationContent.thanksMessage(
             senderName: "たろう",
@@ -440,8 +426,7 @@ extension HouseworkIntentServiceTest {
             title: "皿洗い",
             state: .completed,
             executorId: "partner",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
 
         // Act
@@ -483,7 +468,6 @@ extension HouseworkIntentServiceTest {
                     state: .completed,
                     executorId: "partner",
                     executedAt: now,
-                    expiredAt: expiredAt,
                     thanks: ["own": .init(comment: nil, sentAt: now)]
                 ),
             ],
@@ -515,7 +499,7 @@ extension HouseworkIntentServiceTest {
         // Arrange
 
         var sut = makeSUT(
-            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", expiredAt: expiredAt)],
+            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯")],
             houseworkClient: { fetchItems in
                 .init(
                     // オフラインのFirestoreのように、サーバーの応答まで返らない
@@ -547,8 +531,7 @@ extension HouseworkIntentServiceTest {
                     title: "皿洗い",
                     state: .completed,
                     executorId: "partner",
-                    executedAt: now,
-                    expiredAt: expiredAt
+                    executedAt: now
                 ),
             ],
             houseworkClient: { fetchItems in
@@ -575,7 +558,7 @@ extension HouseworkIntentServiceTest {
         // Arrange
 
         var sut = makeSUT(
-            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", point: 20, expiredAt: expiredAt)],
+            items: [.makeForTest(id: "laundry", indexedDate: today, title: "洗濯", point: 20)],
             pushNotificationClient: .init { _, _ in try await Task.sleep(for: .milliseconds(100)) }
         )
         sut.writeTimeout = .milliseconds(10)

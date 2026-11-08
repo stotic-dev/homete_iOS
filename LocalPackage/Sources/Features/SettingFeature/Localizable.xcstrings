@@ -121,6 +121,16 @@
         }
       }
     },
+    "お知らせ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Announcements"
+          }
+        }
+      }
+    },
     "このお問い合わせは見つかりませんでした" : {
       "localizations" : {
         "en" : {
@@ -412,6 +422,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Message"
+          }
+        }
+      }
+    },
+    "メンテナンスや新しい機能など、大事なお知らせを通知でお届けします。オフにしても、ダッシュボードのベルから読めます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We will notify you about important news, such as maintenance and new features. Even when this is off, you can read them from the bell on the dashboard."
           }
         }
       }
@@ -1062,6 +1082,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "homeau Team"
+          }
+        }
+      }
+    },
+    "運営からのお知らせを受け取る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get Announcements"
           }
         }
       }

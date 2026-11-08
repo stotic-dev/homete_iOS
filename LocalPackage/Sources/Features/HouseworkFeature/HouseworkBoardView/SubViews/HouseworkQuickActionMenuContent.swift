@@ -21,7 +21,6 @@ public struct HouseworkQuickActionMenuContent: View {
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
 
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
@@ -129,7 +128,6 @@ private extension HouseworkQuickActionMenuContent {
                 item,
                 to: destination,
                 templateContext: templateContext,
-                storagePolicy: storagePolicy,
                 cohabitantId: cohabitantId,
                 step: step
             )

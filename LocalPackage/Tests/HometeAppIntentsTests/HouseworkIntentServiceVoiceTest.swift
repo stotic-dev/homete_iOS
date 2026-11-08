@@ -15,7 +15,6 @@ struct HouseworkIntentServiceVoiceTest {
 
     private let now = Date.previewDate(year: 2026, month: 10, day: 12, hour: 9)
     private let today = Date.previewDate(year: 2026, month: 10, day: 12)
-    private let expiredAt = Date.previewDate(year: 2027, month: 10, day: 12)
     private let own = Account(id: "own", userName: "たろう", cohabitantId: "cohabitant")
     private let laundry = FrequentHouseworkItem(
         id: "frequent-laundry",
@@ -42,8 +41,7 @@ extension HouseworkIntentServiceVoiceTest {
             id: "garbage",
             indexedDate: today,
             title: "ごみ出し",
-            point: 10,
-            expiredAt: expiredAt
+            point: 10
         )
         let sut = makeSUT(items: [item])
         let expected = VoiceHouseworkPlan(
@@ -95,8 +93,7 @@ extension HouseworkIntentServiceVoiceTest {
             title: "洗濯物干し",
             state: .completed,
             executorId: "own",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         let sut = makeSUT(items: [item], frequentItems: [laundry])
         let expected = VoiceHouseworkPlan(
@@ -121,18 +118,17 @@ extension HouseworkIntentServiceVoiceTest {
         // Arrange
 
         let items: [HouseworkItem] = [
-            .makeForTest(id: "fold", indexedDate: today, title: "洗濯物たたみ", point: 20, expiredAt: expiredAt),
-            .makeForTest(id: "hang", indexedDate: today, title: "洗濯物干し", point: 10, expiredAt: expiredAt),
+            .makeForTest(id: "fold", indexedDate: today, title: "洗濯物たたみ", point: 20),
+            .makeForTest(id: "hang", indexedDate: today, title: "洗濯物干し", point: 10),
             .makeForTest(
                 id: "done",
                 indexedDate: today,
                 title: "洗濯物干し（2回目）",
                 state: .completed,
                 executorId: "own",
-                executedAt: now,
-                expiredAt: expiredAt
+                executedAt: now
             ),
-            .makeForTest(id: "dish", indexedDate: today, title: "皿洗い", expiredAt: expiredAt),
+            .makeForTest(id: "dish", indexedDate: today, title: "皿洗い"),
         ]
         let sut = makeSUT(items: items)
         let expected = VoiceHouseworkPlan(
@@ -189,8 +185,7 @@ extension HouseworkIntentServiceVoiceTest {
             id: "laundry",
             indexedDate: today,
             title: "洗濯物干し",
-            point: 20,
-            expiredAt: expiredAt
+            point: 20
         )
         let expectedItem = HouseworkItem.makeForTest(
             id: "laundry",
@@ -200,8 +195,7 @@ extension HouseworkIntentServiceVoiceTest {
             state: .completed,
             executorId: "own",
             effort: .normal,
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
 
         // Act
@@ -238,7 +232,6 @@ extension HouseworkIntentServiceVoiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: now,
             memo: .init(text: "タオルは外", checklist: [])
         )
@@ -277,7 +270,6 @@ extension HouseworkIntentServiceVoiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: now
         )
 
@@ -314,7 +306,6 @@ extension HouseworkIntentServiceVoiceTest {
             executorId: "own",
             effort: .normal,
             executedAt: now,
-            expiredAt: expiredAt,
             createdAt: now
         )
 
@@ -349,8 +340,7 @@ extension HouseworkIntentServiceVoiceTest {
             title: "洗濯物干し",
             state: .completed,
             executorId: "own",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         let sut = makeSUT(
             items: [item],
@@ -382,7 +372,6 @@ extension HouseworkIntentServiceVoiceTest {
             indexedDate: today,
             title: "洗濯物干し",
             point: 30,
-            expiredAt: expiredAt,
             createdAt: now,
             memo: .init(text: "タオルは外\nシーツも", checklist: [])
         )
@@ -421,7 +410,6 @@ extension HouseworkIntentServiceVoiceTest {
             indexedDate: today,
             title: "買い物",
             point: 10,
-            expiredAt: expiredAt,
             createdAt: now,
             memo: .init(text: "牛乳と卵", checklist: [])
         )
@@ -450,7 +438,7 @@ extension HouseworkIntentServiceVoiceTest {
     func registerAlreadyRegistered() async throws {
         // Arrange
 
-        let item = HouseworkItem.makeForTest(id: "shopping", indexedDate: today, title: "買い物", expiredAt: expiredAt)
+        let item = HouseworkItem.makeForTest(id: "shopping", indexedDate: today, title: "買い物")
         let sut = makeSUT(
             items: [item],
             insertOrUpdateItems: { _ in Issue.record("書き込まない") }
@@ -475,15 +463,13 @@ extension HouseworkIntentServiceVoiceTest {
             title: "買い物",
             state: .completed,
             executorId: "own",
-            executedAt: now,
-            expiredAt: expiredAt
+            executedAt: now
         )
         let expectedItem = HouseworkItem.makeForTest(
             id: "new-id",
             indexedDate: today,
             title: "買い物",
             point: 10,
-            expiredAt: expiredAt,
             createdAt: now
         )
 
@@ -581,7 +567,6 @@ extension HouseworkIntentServiceVoiceTest {
             indexedDate: today,
             title: "洗濯物干し",
             point: 10,
-            expiredAt: expiredAt,
             createdAt: now
         )
 
@@ -678,7 +663,7 @@ private extension HouseworkIntentServiceVoiceTest {
         let own = account ?? own
         let houseworkClient = HouseworkClient(
             insertOrUpdateItemHandler: { item, _ in try await insertOrUpdateItem(item) },
-            insertOrUpdateItemsHandler: { items, _ in try await insertOrUpdateItems(items) },
+            createItemsHandler: { items, _ in try await insertOrUpdateItems(items) },
             fetchItemsHandler: { _, _, _ in items }
         )
         let reminderUseCase = DailyCompletionReminderUseCase(client: .previewValue)

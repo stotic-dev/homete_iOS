@@ -32,6 +32,8 @@ struct PendingEntry: Equatable, Identifiable {
     let categoryId: String?
     /// 家事に付けるメモ。いつもの家事に保存するときにも持たせる
     let memo: HouseworkMemo?
+    /// 家事に添える画像。その日の家事として登録するときだけ添え、テンプレート・いつもの家事には持たせない
+    let images: [HouseworkImageUpload]
 
     init(
         source: Source,
@@ -40,7 +42,8 @@ struct PendingEntry: Equatable, Identifiable {
         recurrence: HouseworkRecurrence?,
         savesAsFrequent: Bool,
         categoryId: String?,
-        memo: HouseworkMemo? = nil
+        memo: HouseworkMemo? = nil,
+        images: [HouseworkImageUpload] = []
     ) {
         self.source = source
         self.title = title
@@ -49,6 +52,7 @@ struct PendingEntry: Equatable, Identifiable {
         self.savesAsFrequent = savesAsFrequent
         self.categoryId = categoryId
         self.memo = memo
+        self.images = images
     }
 
     var id: String {
@@ -87,7 +91,8 @@ extension PendingEntry {
             recurrence: entry.recurrenceInput.recurrence,
             savesAsFrequent: entry.savesAsFrequent,
             categoryId: entry.categoryId,
-            memo: entry.memo
+            memo: entry.memo,
+            images: entry.attachedImages
         )
     }
 
@@ -99,7 +104,8 @@ extension PendingEntry {
             recurrence: entry.recurrenceInput.recurrence,
             savesAsFrequent: entry.savesAsFrequent,
             categoryId: entry.categoryId,
-            memo: entry.memo
+            memo: entry.memo,
+            images: entry.attachedImages
         )
     }
 

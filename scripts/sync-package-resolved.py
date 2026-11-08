@@ -6,6 +6,7 @@ InfraPackage・LocalPackage側のPackage.resolvedは読まれない。dependabot
 そのままではリリースされるアプリのライブラリが古い版に固定されたままになる。
 
 xcodeproj側にあるパッケージの版・revisionだけをパッケージ側の値で上書きする。
+LocalPackageだけが更新されたときもアプリに届くよう、先にInfraPackage側をLocalPackageの値にそろえる。
 パッケージの追加・削除はXcodeで解決し直す必要があるため扱わない。
 
 使い方:
@@ -18,9 +19,11 @@ import json
 import os
 import sys
 
-# (ルートのPackage.resolved, 版の取り元にするパッケージのPackage.resolved)
+# (そろえるPackage.resolved, 版の取り元にするパッケージのPackage.resolved)。上から順にそろえる
+# InfraPackageはLocalPackageと共通の依存（Prefireなど）を直接宣言していないので、共通の依存はLocalPackageの値が正。
 # InfraPackageはLocalPackageに依存しているので、アプリが使うパッケージを全部含む
 TARGETS = [
+    ("InfraPackage/Package.resolved", "LocalPackage/Package.resolved"),
     ("homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved", "InfraPackage/Package.resolved"),
     ("hometeVRT.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved", "LocalPackage/Package.resolved"),
 ]

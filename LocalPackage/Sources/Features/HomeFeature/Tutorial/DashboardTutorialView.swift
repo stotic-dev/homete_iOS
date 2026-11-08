@@ -62,7 +62,7 @@ public struct DashboardTutorialView: View {
                     EmptyView()
                 }
             )
-            .homeNavigationBar(onTapSetting: {})
+            .homeNavigationBar(unreadAnnouncementCount: 0, onTapAnnouncement: {}, onTapSetting: {})
         }
     }
 
@@ -76,9 +76,8 @@ private extension DashboardTutorialView {
             storedAllItems: .init(value: [HouseworkTutorialSample.dailyList(today: today)]),
             template: nil,
             now: now,
-            calendar: calendar,
+            calendar: calendar
             // サンプルは今日の家事だけなので、保存期間の制限に関わらない
-            storagePolicy: .premium
         )
     }
 

@@ -38,6 +38,21 @@ struct PendingRouteTest {
         #expect(actual == .inquiryDetail(inquiryId: "inquiryId"))
     }
 
+    @Test("お知らせの通知は、お知らせの一覧を開く")
+    func initUserInfo_announcementNotification_returnsAnnouncementList() {
+        // Arrange
+
+        let userInfo: [AnyHashable: Any] = ["type": "announcement", "announcementId": "announcementId"]
+
+        // Act
+
+        let actual = PendingRoute(userInfo: userInfo)
+
+        // Assert
+
+        #expect(actual == .announcementList)
+    }
+
     @Test(
         "開く画面が決まっていない通知では、画面を開かない",
         arguments: [

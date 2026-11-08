@@ -39,7 +39,6 @@ extension HouseworkDetailView {
                     target,
                     to: date,
                     templateContext: templateContext,
-                    storagePolicy: storagePolicy,
                     cohabitantId: cohabitantId,
                     step: .detail
                 )

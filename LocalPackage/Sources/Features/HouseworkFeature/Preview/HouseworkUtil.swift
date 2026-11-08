@@ -17,7 +17,6 @@ extension HouseworkItem {
         title: String = "",
         point: Int = 10,
         indexedDate: HouseworkIndexedDate = .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-        expiredAt: Date = .distantFuture,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
@@ -25,7 +24,8 @@ extension HouseworkItem {
         executedAt: Date? = nil,
         thanks: [String: HouseworkThanks] = [:],
         memo: HouseworkMemo? = nil,
-        postponedFrom: HouseworkIndexedDate? = nil
+        postponedFrom: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: id,
@@ -36,11 +36,11 @@ extension HouseworkItem {
             executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: nil,
             thanks: thanks,
             memo: memo,
-            postponedFrom: postponedFrom
+            postponedFrom: postponedFrom,
+            images: images
         )
     }
 
@@ -53,7 +53,6 @@ extension HouseworkBoardItem {
         title: String = "",
         point: Int = 10,
         indexedDate: HouseworkIndexedDate = .init(value: .previewDate(year: 2026, month: 1, day: 1)),
-        expiredAt: Date = .distantFuture,
         state: HouseworkState = .incomplete,
         executorId: String? = nil,
         executors: [HouseworkExecutor] = [],
@@ -62,6 +61,7 @@ extension HouseworkBoardItem {
         thanks: [String: HouseworkThanks] = [:],
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil, // swiftlint:disable:this discouraged_optional_collection
         isRegistered: Bool = true
     ) -> Self {
         .init(
@@ -70,7 +70,6 @@ extension HouseworkBoardItem {
                 title: title,
                 point: point,
                 indexedDate: indexedDate,
-                expiredAt: expiredAt,
                 state: state,
                 executorId: executorId,
                 executors: executors,
@@ -78,7 +77,8 @@ extension HouseworkBoardItem {
                 executedAt: executedAt,
                 thanks: thanks,
                 memo: memo,
-                postponedFrom: postponedFrom
+                postponedFrom: postponedFrom,
+                images: images
             ),
             isRegistered: isRegistered
         )

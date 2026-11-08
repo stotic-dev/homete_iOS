@@ -91,7 +91,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `onboarding_partner_registration` | `PartnerRegistrationScreen`（オンボーディングのパートナー登録の選択肢） |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
 | `onboarding_notification_permission` | `OnboardingNotificationPermissionGuideView` |
-| `paywall` | `PaywallScreen`（`RouteResolverInjection`で付与） |
+| `paywall` | `PaywallScreen`（`PaywallFeature`。`AppRoot`の`PaywallGate`で付与） |
 | `dashboard` | `RegisteredContent` |
 | `dashboard_not_registered` | `HomeView`（グループ未参加のホーム。「家事を始める前に」のやることリスト） |
 | `cohabitant_registration` | `CohabitantRegistrationView` |
@@ -110,6 +110,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `housework_add_helper` | `HouseworkAddHelperView`（完了した家事に手伝った人を追加するハーフモーダル） |
 | `housework_thanks` | `HouseworkThanksView`（ありがとうを伝えるハーフモーダル） |
 | `housework_memo_edit` | `HouseworkMemoEditScreen`（家事メモの編集シート。開く側で付ける。家事の追加・家事詳細・テンプレートの編集・いつもの家事の編集から開く） |
+| `housework_image_viewer` | `HouseworkImageViewerScreen`（家事詳細で、家事に添えた画像をタップして開く拡大表示） |
 | `housework_template` | `HouseworkTemplateView` |
 | `housework_template_detail` | `HouseworkTemplateItemDetailView` |
 | `housework_template_edit` | `HouseworkTemplateItemEditModal` |
@@ -117,6 +118,9 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `frequent_housework_edit` | `FrequentHouseworkEditModal` |
 | `frequent_housework_category` | `FrequentHouseworkCategoryView`（いつもの家事のカテゴリ管理） |
 | `frequent_housework_import` | `FrequentHouseworkImportView`（テンプレートからの取り込み） |
+| `announcement_list` | `AnnouncementListScreen`（お知らせの一覧。ダッシュボードのベルと、お知らせの通知のタップから開く） |
+| `announcement_detail` | `AnnouncementDetailScreen` |
+| `announcement_modal` | `AnnouncementModalScreen`（起動時に出すお知らせのシート） |
 | `setting` | `SettingView` |
 | `inquiry_list` | `InquiryListScreen` |
 | `inquiry_detail` | `InquiryDetailScreen` |
@@ -236,11 +240,11 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `HouseworkAnalyticsAction`、`HouseworkListStore`、`HouseworkCommandUseCase` |
+| 実装 | `HouseworkAnalyticsAction`、`HouseworkListStore`、`HouseworkCommandUseCase`、`HouseworkImageUseCase` |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` / `postpone` | 何が起きたか |
+| `action` | ○ | `register` / `complete` / `redo` / `add_helper` / `send_thanks` / `edit_thanks` / `return_incomplete` / `delete` / `edit_memo` / `add_image` / `remove_image` / `postpone` | 何が起きたか |
 | `step` | — | `dashboard` / `board` / `detail` / `thanks` / `comment_prompt` / `app_intent` | 起点画面。`comment_prompt`はダッシュボードの感謝の促しから開いた、ありがとうを伝えられる家事の一覧（そこから開いたありがとうを伝える画面を含む）。`app_intent`はアプリを開かずに実行したApp Intent（Siri・Spotlight・ショートカットApp） |
 | `executor_type` | — | `self` / `others` / `shared` | 完了にしたときの担当者の組み合わせ（`complete`のみ）。`self`は操作した本人だけ、`others`は本人以外だけ（代わりに記録した）、`shared`は本人を含む複数人（手分けした） |
 | `effort` | — | `normal` / `hard` / `very_hard` | 完了にしたときの頑張り度（`complete`のみ）。`normal`はふつう、`hard`はがんばった、`very_hard`はすごくがんばった |
@@ -268,6 +272,8 @@ Sign in with Appleのシートをキャンセルしたときは何も送らな�
 | `delete` | `dashboard` / `board` / `detail` | 家事を「やらない」にした（家事ボードの一括操作は`item_count`を付けて1回だけ送る） |
 | `postpone` | `dashboard` / `board` / `detail` | 未完了の家事を別の日へまわした（ダッシュボード・未完了の家事・家事ボードのクイックアクションの「明日にまわす」「今日にまわす」、または家事詳細の「別の日にまわす…」から日付を選んだ）。まとめるとき・まわす先に同じ名前の家事があるときは、確認のアラートで了承したときに送る。1件ずつ確かめる操作なので複数選択の一括操作にはない |
 | `edit_memo` | `detail` | 家事詳細でメモのテキスト・チェックリストの項目を編集して保存した。チェックの切り替えだけでは送らない（頻度が高く、メモの利用状況を見るには編集だけで足りるため）。家事を追加する画面で入力したメモは`register`に含まれ、これは送らない |
+| `add_image` | `dashboard` / `board` / `detail` | 家事に画像を添えた（プレミアムプラン限定）。`detail`は家事詳細の「画像を追加」から選んだ・撮ったとき。`dashboard` / `board`は家事を追加する画面で画像を付けて登録したときで、`register`とは別に送る。一度に何枚添えても、操作1回につき1イベント送る。画像の実体を上げるのに失敗した場合も`failure`になる |
+| `remove_image` | `detail` | 家事詳細の画像の拡大表示から、家事に添えた画像を消した。家事を追加する画面で、登録前の画像を外したときは送らない |
 
 いずれも`result`に`success` / `failure`が付与される。`send_thanks` / `edit_thanks`は、家事ドキュメントへのありがとうの記録の結果を表す。プッシュ通知（コメントが初めて付いたときだけ送る）の送信結果は含めない。
 
@@ -596,11 +602,11 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:)`で渡す） |
+| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:isPlanChange:)`で渡す） |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
-| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `board_date_picker` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` / `housework_memo_limit` | Paywallへの起点 |
+| `step` | ○ | `onboarding` / `dashboard_ad` / `board_ad` / `board_storage_limit` / `board_date_picker` / `template_ad` / `contribution_storage_limit` / `setting` / `subscription_management` / `frequent_housework_limit` / `housework_memo_limit` / `housework_image` | Paywallへの起点 |
 | `action` | ○ | `shown` / `closed` | 表示 / クローズのどちらか |
 | `result` | — | `purchased` / `not_purchased` | `closed`のみ付与。閉じた時点でプレミアムが有効なら`purchased` |
 
@@ -619,6 +625,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 | `subscription_management` | サブスク管理画面の「プランを変更」ボタン（`SubscriptionManagementView`） |
 | `frequent_housework_limit` | いつもの家事の上限の案内（上限到達時のアラートの「プレミアムプランを見る」、管理画面の「上限を増やす」。`FrequentHouseworkManagementScreen` / `FrequentHouseworkImportScreen`） |
 | `housework_memo_limit` | 家事メモの文字数上限の案内（無料プランで上限を超えたときにメモの編集シートに出る「プレミアムプランを見る」。`HouseworkMemoEditScreen`） |
+| `housework_image` | 家事の画像の案内（無料プランで、家事詳細・家事を追加する画面の画像の欄にある「画像を追加」を押したとき） |
 
 `action: shown`はPaywallが表示されたとき、`action: closed`（`result`付き）はPaywallが閉じたときに、`PaywallGate`が送る。
 起点の画面は`step`を渡すだけで、イベントは送らない。
@@ -626,6 +633,10 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 匿名のアカウントは、Paywallを出す前にApple連携の画面を出す（`PaywallGate`）。連携の画面を出している間は
 Paywallを表示していないので、`shown` / `closed`は送らない。連携を終えてPaywallに切り替わった時点で`shown`を送る。
 連携の結果は`account_link`イベントの`entry: paywall`で見る。
+
+契約中の人がPaywallの起点を踏んだときは、プランの一覧ではなく契約プラン画面を出す（`PaywallGate`）。
+このときもPaywallを表示していないので`shown` / `closed`は送らず、`screen_view`の`subscription_management`だけが送られる。
+契約プラン画面の「プランを変更」から開いたとき（`AppRoute.paywall(step:isPlanChange:)`の`isPlanChange`が`true`）はプランの一覧を出し、`step: subscription_management`で送る。
 
 `board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）に2つの起点があるため、
 開いた時点の起点を保持して`step`に渡す。

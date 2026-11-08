@@ -146,6 +146,8 @@ struct TutorialSpotlightFrameReporter {
 extension EnvironmentValues {
 
     @Entry var tutorialSpotlightFrameReporter: TutorialSpotlightFrameReporter?
+    /// いまハイライトしているUI。スポットライトを出していなければ空
+    @Entry var tutorialSpotlightActiveTargets: [TutorialSpotlightID] = []
 
 }
 
@@ -231,6 +233,7 @@ struct TutorialSpotlightModifier<Card: View>: ViewModifier {
         content
             // 対象のUIは、スポットライトが出ている間だけ位置を伝える
             .environment(\.tutorialSpotlightFrameReporter, isPresented ? .init(store: frameStore) : nil)
+            .environment(\.tutorialSpotlightActiveTargets, isPresented ? targets : [])
             .overlay {
                 if isPresented {
                     TutorialSpotlightOverlay(

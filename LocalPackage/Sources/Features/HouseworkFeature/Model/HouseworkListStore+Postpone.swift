@@ -25,7 +25,6 @@ extension HouseworkListStore {
         _ item: HouseworkBoardItem,
         to destination: Date,
         templateContext: HouseworkTemplateContext,
-        storagePolicy: HouseworkStoragePolicy,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> HouseworkPostponeResult {
@@ -33,8 +32,7 @@ extension HouseworkListStore {
             target: items.item(item.originalItem) ?? item.originalItem,
             isRegistered: item.isRegistered,
             to: destination,
-            templateContext: templateContext,
-            storagePolicy: storagePolicy
+            templateContext: templateContext
         )
         if let confirmation = HouseworkPostponeConfirmation(item: item, destination: destination, plan: plan) {
             return .needsConfirmation(confirmation)
@@ -43,7 +41,6 @@ extension HouseworkListStore {
             item,
             to: destination,
             templateContext: templateContext,
-            storagePolicy: storagePolicy,
             cohabitantId: cohabitantId,
             step: step
         )
@@ -53,7 +50,6 @@ extension HouseworkListStore {
     func postpone(
         _ confirmation: HouseworkPostponeConfirmation,
         templateContext: HouseworkTemplateContext,
-        storagePolicy: HouseworkStoragePolicy,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> HouseworkPostponeResult {
@@ -61,7 +57,6 @@ extension HouseworkListStore {
             confirmation.item,
             to: confirmation.destination,
             templateContext: templateContext,
-            storagePolicy: storagePolicy,
             cohabitantId: cohabitantId,
             step: step
         )
@@ -76,7 +71,6 @@ private extension HouseworkListStore {
         _ item: HouseworkBoardItem,
         to destination: Date,
         templateContext: HouseworkTemplateContext,
-        storagePolicy: HouseworkStoragePolicy,
         cohabitantId: String,
         step: HouseworkAnalyticsStep
     ) async throws -> HouseworkPostponeResult {
@@ -85,7 +79,6 @@ private extension HouseworkListStore {
             isRegistered: item.isRegistered,
             to: destination,
             templateContext: templateContext,
-            storagePolicy: storagePolicy,
             cohabitantId: cohabitantId,
             step: step
         )
