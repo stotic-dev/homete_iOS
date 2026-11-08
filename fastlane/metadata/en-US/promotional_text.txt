@@ -1,3 +1,3 @@
 A chore-sharing app for couples, roommates, and families.
-Check off a chore and your partner gets notified. Send each other thanks.
+Check off chores as you finish them and send each other thanks.
 A little reward for everyday chores.
