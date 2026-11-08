@@ -3,12 +3,12 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// いつもの家事の管理画面（カテゴリごとのセクションで一覧表示する）
-struct FrequentHouseworkManagementView: View {
+public struct FrequentHouseworkManagementView: View {
 
     #if os(iOS)
     /// 並べ替え・削除の編集モード
@@ -36,7 +36,37 @@ struct FrequentHouseworkManagementView: View {
     let onTapUpgrade: () -> Void
     let onRetry: () -> Void
 
-    var body: some View {
+    public init(
+        loadState: ListenerLoadState,
+        sections: [FrequentHouseworkSection],
+        unusableItemIds: Set<String>,
+        limitStatus: FrequentHouseworkLimitStatus?,
+        onTapClose: @escaping () -> Void,
+        onTapAdd: @escaping () -> Void,
+        onTapManageCategories: @escaping () -> Void,
+        onTapImport: (() -> Void)?,
+        onTapItem: @escaping (FrequentHouseworkItem) -> Void,
+        onDelete: @escaping (FrequentHouseworkItem) -> Void,
+        onMove: @escaping ([String]) -> Void,
+        onTapUpgrade: @escaping () -> Void,
+        onRetry: @escaping () -> Void
+    ) {
+        self.loadState = loadState
+        self.sections = sections
+        self.unusableItemIds = unusableItemIds
+        self.limitStatus = limitStatus
+        self.onTapClose = onTapClose
+        self.onTapAdd = onTapAdd
+        self.onTapManageCategories = onTapManageCategories
+        self.onTapImport = onTapImport
+        self.onTapItem = onTapItem
+        self.onDelete = onDelete
+        self.onMove = onMove
+        self.onTapUpgrade = onTapUpgrade
+        self.onRetry = onRetry
+    }
+
+    public var body: some View {
         content()
             // ほかの画面と地の色をそろえ、白い行を浮かせる
             .background(.backgroundScreen)
@@ -54,7 +84,6 @@ struct FrequentHouseworkManagementView: View {
         #if os(iOS)
             .environment(\.editMode, $editMode)
         #endif
-            .trackScreenView(.frequentHouseworkManagement)
     }
 
 }

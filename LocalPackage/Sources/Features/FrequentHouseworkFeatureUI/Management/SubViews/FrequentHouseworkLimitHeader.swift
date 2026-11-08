@@ -3,17 +3,25 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 無料プランで、登録件数と上限を増やす導線を表示する
-struct FrequentHouseworkLimitHeader: View {
+public struct FrequentHouseworkLimitHeader: View {
 
     let status: FrequentHouseworkLimitStatus
     let onTapUpgrade: () -> Void
 
-    var body: some View {
+    public init(
+        status: FrequentHouseworkLimitStatus,
+        onTapUpgrade: @escaping () -> Void
+    ) {
+        self.status = status
+        self.onTapUpgrade = onTapUpgrade
+    }
+
+    public var body: some View {
         HStack(spacing: .space8) {
             VStack(alignment: .leading, spacing: .space4) {
                 Text("無料プランでは\(status.limit)件まで登録できます", bundle: #bundle)

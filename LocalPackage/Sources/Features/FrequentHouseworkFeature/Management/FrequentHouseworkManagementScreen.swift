@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import FrequentHouseworkFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -79,6 +80,7 @@ public struct FrequentHouseworkManagementScreen: View {
         )
         .commonError(content: $commonErrorContent)
         .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.frequentHouseworkManagement)
     }
 
 }

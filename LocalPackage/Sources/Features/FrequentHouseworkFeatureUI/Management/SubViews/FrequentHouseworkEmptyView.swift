@@ -3,18 +3,26 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// いつもの家事が1件もないときの表示
-struct FrequentHouseworkEmptyView: View {
+public struct FrequentHouseworkEmptyView: View {
 
     let onTapAdd: () -> Void
     /// テンプレートから取り込む導線。テンプレートに家事がない場合は`nil`
     let onTapImport: (() -> Void)?
 
-    var body: some View {
+    public init(
+        onTapAdd: @escaping () -> Void,
+        onTapImport: (() -> Void)?
+    ) {
+        self.onTapAdd = onTapAdd
+        self.onTapImport = onTapImport
+    }
+
+    public var body: some View {
         VStack(spacing: .space24) {
             Image(systemName: "star.square.on.square")
                 .font(.system(size: 48))

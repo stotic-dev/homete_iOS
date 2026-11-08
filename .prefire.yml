@@ -26,7 +26,7 @@ test_configuration:
     - HouseworkFeature
     - HouseworkTemplateFeature
     - ContributionFeature
-    - FrequentHouseworkFeature
+    - FrequentHouseworkFeatureUI
     - PaywallFeature
   - draw_hierarchy_in_key_window_default_enabled: true
 

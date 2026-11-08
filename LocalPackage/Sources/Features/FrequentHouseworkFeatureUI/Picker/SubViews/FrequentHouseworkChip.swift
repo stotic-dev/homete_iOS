@@ -3,12 +3,12 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 選ぶ部品に並べる、いつもの家事1件のチップ
-struct FrequentHouseworkChip: View {
+public struct FrequentHouseworkChip: View {
 
     let item: FrequentHouseworkItem
     let isSelected: Bool
@@ -16,7 +16,19 @@ struct FrequentHouseworkChip: View {
     let isUsable: Bool
     let onTap: () -> Void
 
-    var body: some View {
+    public init(
+        item: FrequentHouseworkItem,
+        isSelected: Bool,
+        isUsable: Bool,
+        onTap: @escaping () -> Void
+    ) {
+        self.item = item
+        self.isSelected = isSelected
+        self.isUsable = isUsable
+        self.onTap = onTap
+    }
+
+    public var body: some View {
         Button {
             onTap()
         } label: {

@@ -3,13 +3,13 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// いつもの家事のカテゴリを管理する画面
 /// - Note: プリセットは変更できないため、一覧に出すだけにする
-struct FrequentHouseworkCategoryView: View {
+public struct FrequentHouseworkCategoryView: View {
 
     #if os(iOS)
     /// 並べ替え・削除の編集モード
@@ -25,7 +25,21 @@ struct FrequentHouseworkCategoryView: View {
     /// 並べ替えた後のカスタムカテゴリIDの順
     let onMove: ([String]) -> Void
 
-    var body: some View {
+    public init(
+        customCategories: [FrequentHouseworkCustomCategory],
+        onTapAdd: @escaping () -> Void,
+        onTapCategory: @escaping (FrequentHouseworkCustomCategory) -> Void,
+        onDelete: @escaping (FrequentHouseworkCustomCategory) -> Void,
+        onMove: @escaping ([String]) -> Void
+    ) {
+        self.customCategories = customCategories
+        self.onTapAdd = onTapAdd
+        self.onTapCategory = onTapCategory
+        self.onDelete = onDelete
+        self.onMove = onMove
+    }
+
+    public var body: some View {
         List {
             presetSection()
             customSection()
@@ -42,7 +56,6 @@ struct FrequentHouseworkCategoryView: View {
         #if os(iOS)
         .environment(\.editMode, $editMode)
         #endif
-        .trackScreenView(.frequentHouseworkCategory)
     }
 
 }

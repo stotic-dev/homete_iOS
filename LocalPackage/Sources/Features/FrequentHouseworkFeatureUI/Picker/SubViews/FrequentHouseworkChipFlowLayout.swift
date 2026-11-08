@@ -7,11 +7,17 @@ import SwiftUI
 
 /// チップを内容の幅のまま左から並べ、入りきらなければ次の行へ送るレイアウト
 /// - Note: 1つで幅を超えるチップには行の幅を上限として渡し、チップの中で折り返させる
-struct FrequentHouseworkChipFlowLayout: Layout {
+public struct FrequentHouseworkChipFlowLayout: Layout {
 
-    var spacing: CGFloat
+    public var spacing: CGFloat
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
+    public init(
+        spacing: CGFloat
+    ) {
+        self.spacing = spacing
+    }
+
+    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let rows = makeRows(maxWidth: proposal.width ?? .infinity, subviews: subviews)
         let width = rows.map(\.width).max() ?? 0
         let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
@@ -20,7 +26,7 @@ struct FrequentHouseworkChipFlowLayout: Layout {
         return CGSize(width: proposedWidth ?? width, height: height)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
+    public func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         var y = bounds.minY
         for row in makeRows(maxWidth: bounds.width, subviews: subviews) {
             var x = bounds.minX
@@ -41,9 +47,19 @@ private extension FrequentHouseworkChipFlowLayout {
 
     struct Row {
 
-        var elements: [(index: Int, size: CGSize)] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
+        public var elements: [(index: Int, size: CGSize)] = []
+        public var width: CGFloat = 0
+        public var height: CGFloat = 0
+
+        public init(
+            elements: [(index: Int, size: CGSize)] = [],
+            width: CGFloat = 0,
+            height: CGFloat = 0
+        ) {
+            self.elements = elements
+            self.width = width
+            self.height = height
+        }
 
     }
 

@@ -3,31 +3,30 @@
 //  LocalPackage
 //
 
-import HometeDomain
 
 /// テンプレートから取り込む家事の選択状態
 /// - Note: 候補は名前で重複を除いてあるため、選択は名前で持つ
-struct FrequentHouseworkImportSelection: Equatable {
+public struct FrequentHouseworkImportSelection: Equatable, Sendable {
 
-    let selectedTitles: Set<String>
+    public let selectedTitles: Set<String>
 
-    init(selectedTitles: Set<String> = []) {
+    public init(selectedTitles: Set<String> = []) {
         self.selectedTitles = selectedTitles
     }
 
     /// 取り込む件数
-    var selectedCount: Int {
+    public var selectedCount: Int {
         selectedTitles.count
     }
 
     /// チェックが入っている候補の名前
     /// - Note: すでに登録済みの候補は、操作できないチェック済みとして見せる
-    func checkedTitles(in candidates: [FrequentHouseworkImportCandidate]) -> Set<String> {
+    public func checkedTitles(in candidates: [FrequentHouseworkImportCandidate]) -> Set<String> {
         selectedTitles.union(candidates.filter(\.isAlreadyRegistered).map(\.title))
     }
 
     /// チェックを切り替える
-    func toggling(
+    public func toggling(
         _ candidate: FrequentHouseworkImportCandidate,
         remainingCount: Int?
     ) -> ToggleResult {
@@ -43,13 +42,13 @@ struct FrequentHouseworkImportSelection: Equatable {
     }
 
     /// 取り込む候補（チェックしていて、まだ登録していないもの）
-    func importTargets(from candidates: [FrequentHouseworkImportCandidate]) -> [FrequentHouseworkImportCandidate] {
+    public func importTargets(from candidates: [FrequentHouseworkImportCandidate]) -> [FrequentHouseworkImportCandidate] {
         candidates.filter { !$0.isAlreadyRegistered && selectedTitles.contains($0.title) }
     }
 
 }
 
-extension FrequentHouseworkImportSelection {
+public extension FrequentHouseworkImportSelection {
 
     /// チェックを切り替えた結果
     enum ToggleResult: Equatable {

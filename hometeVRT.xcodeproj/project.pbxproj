@@ -17,7 +17,7 @@
 		0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeature */; };
 		0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeature */; };
 		0AA7C003000000000000000A /* ContributionFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeature */; };
-		0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeature */; };
+		0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */; };
 		0AA7C003000000000000000D /* PaywallFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000D /* PaywallFeature */; };
 		0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000C /* HometeSnapshotTestSupport */; };
 /* End PBXBuildFile section */
@@ -99,7 +99,7 @@
 				0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */,
 				0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */,
 				0AA7C003000000000000000A /* ContributionFeature in Frameworks */,
-				0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */,
+				0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */,
 				0AA7C003000000000000000D /* PaywallFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,7 +183,7 @@
 				0AA7C0020000000000000008 /* HouseworkFeature */,
 				0AA7C0020000000000000009 /* HouseworkTemplateFeature */,
 				0AA7C002000000000000000A /* ContributionFeature */,
-				0AA7C002000000000000000B /* FrequentHouseworkFeature */,
+				0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */,
 				0AA7C002000000000000000D /* PaywallFeature */,
 			);
 			productName = hometeSnapshotTests;
@@ -730,9 +730,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ContributionFeature;
 		};
-		0AA7C002000000000000000B /* FrequentHouseworkFeature */ = {
+		0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = FrequentHouseworkFeature;
+			productName = FrequentHouseworkFeatureUI;
 		};
 		0AA7C002000000000000000D /* PaywallFeature */ = {
 			isa = XCSwiftPackageProductDependency;

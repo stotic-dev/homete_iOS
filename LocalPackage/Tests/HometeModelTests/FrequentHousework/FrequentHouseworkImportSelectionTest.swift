@@ -3,8 +3,7 @@
 //  LocalPackage
 //
 
-@testable import FrequentHouseworkFeature
-import HometeDomain
+@testable import HometeModel
 import Testing
 
 enum FrequentHouseworkImportSelectionTest {

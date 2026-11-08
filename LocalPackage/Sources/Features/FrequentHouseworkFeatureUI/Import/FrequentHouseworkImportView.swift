@@ -3,12 +3,12 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// テンプレートの家事をいつもの家事に取り込むシート
-struct FrequentHouseworkImportView: View {
+public struct FrequentHouseworkImportView: View {
 
     /// テンプレートの全曜日から集めた、名前で重複を除いた候補
     let candidates: [FrequentHouseworkImportCandidate]
@@ -20,7 +20,23 @@ struct FrequentHouseworkImportView: View {
     let onTapCandidate: (FrequentHouseworkImportCandidate) -> Void
     let onTapImport: () -> Void
 
-    var body: some View {
+    public init(
+        candidates: [FrequentHouseworkImportCandidate],
+        checkedTitles: Set<String>,
+        importCount: Int,
+        onTapClose: @escaping () -> Void,
+        onTapCandidate: @escaping (FrequentHouseworkImportCandidate) -> Void,
+        onTapImport: @escaping () -> Void
+    ) {
+        self.candidates = candidates
+        self.checkedTitles = checkedTitles
+        self.importCount = importCount
+        self.onTapClose = onTapClose
+        self.onTapCandidate = onTapCandidate
+        self.onTapImport = onTapImport
+    }
+
+    public var body: some View {
         NavigationStack {
             content()
                 // いつもの家事と地の色をそろえ、白い行を浮かせる
@@ -38,7 +54,6 @@ struct FrequentHouseworkImportView: View {
                     }
                 }
         }
-        .trackScreenView(.frequentHouseworkImport)
     }
 
 }

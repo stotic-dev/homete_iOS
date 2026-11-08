@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/07.
 //
 
-import FrequentHouseworkFeature
+import FrequentHouseworkFeatureUI
 import HometeDomain
 import HometeResources
 import HometeUI

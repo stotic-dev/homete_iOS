@@ -3,17 +3,16 @@
 //  LocalPackage
 //
 
-import HometeDomain
 
 /// 追加・編集モーダルで扱う対象
-enum FrequentHouseworkEditTarget: Identifiable, Equatable {
+public enum FrequentHouseworkEditTarget: Identifiable, Equatable, Sendable {
 
     /// 新しく追加する
     case create
     /// 既存の家事を編集する
     case edit(FrequentHouseworkItem)
 
-    var id: String {
+    public var id: String {
         switch self {
         case .create:
             "create"
