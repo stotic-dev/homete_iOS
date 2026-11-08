@@ -66,6 +66,8 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case houseworkThanks = "housework_thanks"
     /// 家事メモの編集
     case houseworkMemoEdit = "housework_memo_edit"
+    /// 家事に添えた画像の拡大表示
+    case houseworkImageViewer = "housework_image_viewer"
     /// 家事テンプレートの一覧
     case houseworkTemplate = "housework_template"
     /// 家事テンプレートの詳細
@@ -80,6 +82,12 @@ public enum AppScreen: String, Equatable, Sendable, CaseIterable {
     case frequentHouseworkCategory = "frequent_housework_category"
     /// テンプレートからいつもの家事を取り込むシート
     case frequentHouseworkImport = "frequent_housework_import"
+    /// お知らせの一覧（ダッシュボードのベルから開く）
+    case announcementList = "announcement_list"
+    /// お知らせの詳細
+    case announcementDetail = "announcement_detail"
+    /// 起動時に出すお知らせのシート
+    case announcementModal = "announcement_modal"
     /// 設定画面
     case setting
     /// 問い合わせの一覧（設定画面から開く）

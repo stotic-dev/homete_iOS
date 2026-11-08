@@ -14,14 +14,12 @@ public struct HouseworkTemplateDay: Codable, Sendable, Equatable, Hashable {
         registeredItems: [HouseworkItem],
         selectedDate: Date,
         calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy,
         uuidGenerator: () -> UUID
     ) -> [HouseworkItem] {
         applyTemplate(
             registeredItems: registeredItems,
             selectedDate: selectedDate,
             calendar: calendar,
-            storagePolicy: storagePolicy,
             idGenerator: { _ in uuidGenerator().uuidString }
         )
     }
@@ -34,7 +32,6 @@ public struct HouseworkTemplateDay: Codable, Sendable, Equatable, Hashable {
         registeredItems: [HouseworkItem],
         selectedDate: Date,
         calendar: Calendar,
-        storagePolicy: HouseworkStoragePolicy,
         idGenerator: (HouseworkTemplateItem) -> String
     ) -> [HouseworkItem] {
         let incompleteTemplateItems = items.filter { item in
@@ -50,7 +47,7 @@ public struct HouseworkTemplateDay: Codable, Sendable, Equatable, Hashable {
                 id: idGenerator($0),
                 title: $0.title,
                 point: $0.point,
-                metaData: .init(selectedDate: selectedDate, calendar: calendar, storagePolicy: storagePolicy),
+                metaData: .init(selectedDate: selectedDate, calendar: calendar),
                 templateHouseworkItemId: $0.id,
                 memo: $0.memo
             )

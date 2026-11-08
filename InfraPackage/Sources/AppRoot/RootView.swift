@@ -16,10 +16,10 @@ public struct RootView: View {
     @State var hasEnteredBackground = false
 
     @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.appDependencies.houseworkImageClient) var houseworkImageClient
     @Environment(\.scenePhase) var scenePhase
     @Environment(AccountAuthStore.self) var accountAuthStore
     @Environment(AccountStore.self) var accountStore
-    @Environment(SubscriptionStore.self) var subscriptionStore
     @Environment(PendingInvitationStore.self) var pendingInvitationStore
     @Environment(PendingRouteStore.self) var pendingRouteStore
     @Environment(LaunchStateStore.self) var launchStateStore
@@ -50,7 +50,7 @@ public struct RootView: View {
                             removal: .opacity
                         ))
                 case let .loggedIn(context):
-                    AppTabView()
+                    AppTabView.make()
                         .environment(\.loginContext, context)
                         .transition(.scale)
                 case .accountLinkRequired:
@@ -81,11 +81,6 @@ public struct RootView: View {
         }
         .onChange(of: pendingRouteStore.pendingRoute) {
             discardPendingEntriesIfUnderMaintenance()
-        }
-        .onChange(of: subscriptionStore.isPremium) {
-            Task {
-                await authSubscriptionSyncUseCase.syncPremiumStateIfNeeded()
-            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveFcmToken)) { notification in
             onReceiveFcmToken(notification)
@@ -134,7 +129,6 @@ public extension RootView {
                 cohabitantStore: cohabitantStore,
                 subscriptionStore: subscriptionStore,
                 houseworkManager: $0.houseworkManager,
-                houseworkClient: $0.houseworkClient,
                 analyticsClient: $0.analyticsClient,
                 sentInvitationStore: sentInvitationStore
             )
@@ -240,10 +234,14 @@ private extension RootView {
     }
 
     /// ログアウトしたら、前のアカウントで受け取った通知から画面を開かないよう破棄する
+    /// 前のアカウントの家事に添えた画像も、端末に残さないよう消す
     /// - Note: 起動時はログイン済みなら`launching`から直接`loggedIn`になるため、起動のきっかけになった通知は消さない
     func onChangeLaunchState() {
         guard case .notLoggedIn = launchStateStore.launchState else { return }
         pendingRouteStore.clear()
+        Task {
+            await houseworkImageClient.clearCache()
+        }
     }
 
     /// メンテナンス中は、通知のタップ・App Intent・招待リンクから開く画面を破棄する

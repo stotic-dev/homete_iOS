@@ -19,7 +19,6 @@ struct HouseworkPostponeConfirmationAlert: ViewModifier {
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(\.loginContext) var loginContext
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
     @Environment(\.timeZone) var timeZone
@@ -77,6 +76,9 @@ private extension HouseworkPostponeConfirmationAlert {
 
         case .sameTitle, nil:
             .localized("このまままわしますか？")
+
+        case .leavesImages:
+            .localized("画像を残さずにまわしますか？")
         }
     }
 
@@ -85,7 +87,7 @@ private extension HouseworkPostponeConfirmationAlert {
         case .merge:
             .localized("まとめる")
 
-        case .sameTitle:
+        case .sameTitle, .leavesImages:
             .localized("まわす")
         }
     }
@@ -99,6 +101,9 @@ private extension HouseworkPostponeConfirmationAlert {
 
         case .sameTitle:
             return .localized("\(dateText)には「\(title)」がすでにあります。")
+
+        case .leavesImages:
+            return .localized("「\(title)」に添えた画像は、\(dateText)の家事には引き継がれず、見られなくなります。")
         }
     }
 
@@ -117,7 +122,6 @@ private extension HouseworkPostponeConfirmationAlert {
             let result = try await houseworkListStore.postpone(
                 confirmation,
                 templateContext: templateContext,
-                storagePolicy: storagePolicy,
                 cohabitantId: cohabitantId,
                 step: step
             )

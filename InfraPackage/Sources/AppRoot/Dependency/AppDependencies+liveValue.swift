@@ -14,11 +14,13 @@ public extension AppDependencies {
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
+        errorReportClient: .liveValue,
         accountInfoClient: .liveValue,
         cohabitantClient: .liveValue,
         cohabitantInvitationClient: .liveValue,
         sentInvitationClient: .liveValue,
         houseworkClient: .liveValue,
+        houseworkImageClient: .liveValue,
         cohabitantPushNotificationClient: .liveValue,
         signInWithAppleClient: .liveValue,
         purchaseClient: livePurchaseClient,
@@ -40,6 +42,8 @@ public extension AppDependencies {
         encouragementCommentCacheClient: .liveValue,
         intentDonationClient: .liveValue,
         inquiryClient: .liveValue,
+        announcementClient: .liveValue,
+        announcementTopicClient: .liveValue,
         debugAuthClient: liveDebugAuthClient,
         debugLocalDataClient: liveDebugLocalDataClient
     )

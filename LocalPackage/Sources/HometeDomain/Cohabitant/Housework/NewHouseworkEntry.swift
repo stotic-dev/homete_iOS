@@ -9,10 +9,13 @@ public struct NewHouseworkEntry: Equatable, Sendable {
 
     public let item: HouseworkItem
     public let source: HouseworkRegisterSource
+    /// 登録と一緒に添える画像
+    public let images: [HouseworkImageUpload]
 
-    public init(item: HouseworkItem, source: HouseworkRegisterSource) {
+    public init(item: HouseworkItem, source: HouseworkRegisterSource, images: [HouseworkImageUpload] = []) {
         self.item = item
         self.source = source
+        self.images = images
     }
 
     /// 入力したメモが上限を超えていないか検査する

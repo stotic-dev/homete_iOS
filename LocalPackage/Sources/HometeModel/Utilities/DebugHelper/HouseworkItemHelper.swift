@@ -21,13 +21,13 @@ public extension HouseworkItem {
         executors: [HouseworkExecutor] = [],
         effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
-        expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
-        postponedTo: HouseworkIndexedDate? = nil
+        postponedTo: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: "id\(id.formatted())",
@@ -38,13 +38,13 @@ public extension HouseworkItem {
             executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -58,13 +58,13 @@ public extension HouseworkItem {
         executors: [HouseworkExecutor] = [],
         effort: HouseworkEffort = .normal,
         executedAt: Date? = nil,
-        expiredAt: Date = .now,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         thanks: [String: HouseworkThanks] = [:],
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil,
         postponedFrom: HouseworkIndexedDate? = nil,
-        postponedTo: HouseworkIndexedDate? = nil
+        postponedTo: HouseworkIndexedDate? = nil,
+        images: [HouseworkImage]? = nil // swiftlint:disable:this discouraged_optional_collection
     ) -> Self {
         .init(
             id: id,
@@ -75,13 +75,13 @@ public extension HouseworkItem {
             executors: executorId.map { [.solo(userId: $0, point: effort.boostedPoint(point))] } ?? executors,
             effort: effort,
             executedAt: executedAt,
-            expiredAt: expiredAt,
             templateHouseworkItemId: templateHouseworkItemId,
             thanks: thanks,
             createdAt: createdAt,
             memo: memo,
             postponedFrom: postponedFrom,
-            postponedTo: postponedTo
+            postponedTo: postponedTo,
+            images: images
         )
     }
 
@@ -94,7 +94,6 @@ public extension HouseworkItem {
         executors: [HouseworkExecutor] = [],
         effort: HouseworkEffort? = nil,
         executedAt: Date? = nil,
-        expiredAt: Date? = nil,
         templateHouseworkItemId: HouseworkTemplateItem.ItemId? = nil,
         createdAt: Date? = nil,
         memo: HouseworkMemo? = nil
@@ -107,7 +106,6 @@ public extension HouseworkItem {
         let inputExecutors = executorId
             .map { [.solo(userId: $0, point: inputEffort.boostedPoint(inputPoint))] } ?? executors
         let inputExecutedAt = executedAt
-        let inputExpiredAt = expiredAt ?? self.expiredAt
         let inputTemplateHouseworkItemId = templateHouseworkItemId ?? self.templateHouseworkItemId
 
         return .init(
@@ -119,7 +117,6 @@ public extension HouseworkItem {
             executors: inputExecutors,
             effort: inputEffort,
             executedAt: inputExecutedAt,
-            expiredAt: inputExpiredAt,
             templateHouseworkItemId: inputTemplateHouseworkItemId,
             createdAt: createdAt ?? self.createdAt,
             memo: memo ?? self.memo

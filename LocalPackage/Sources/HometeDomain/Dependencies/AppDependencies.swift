@@ -12,11 +12,13 @@ public struct AppDependencies: Sendable {
     public let nonceGeneratorClient: NonceGenerationClient
     public let accountAuthClient: AccountAuthClient
     public let analyticsClient: AnalyticsClient
+    public let errorReportClient: ErrorReportClient
     public let accountInfoClient: AccountInfoClient
     public let cohabitantClient: CohabitantClient
     public let cohabitantInvitationClient: CohabitantInvitationClient
     public let sentInvitationClient: SentInvitationClient
     public let houseworkClient: HouseworkClient
+    public let houseworkImageClient: HouseworkImageClient
     public let cohabitantPushNotificationClient: CohabitantPushNotificationClient
     public let signInWithAppleClient: SignInWithAppleClient
     public let purchaseClient: PurchaseClient
@@ -38,6 +40,8 @@ public struct AppDependencies: Sendable {
     public let encouragementCommentCacheClient: EncouragementCommentCacheClient
     public let intentDonationClient: IntentDonationClient
     public let inquiryClient: InquiryClient
+    public let announcementClient: AnnouncementClient
+    public let announcementTopicClient: AnnouncementTopicClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
     public let debugAuthClient: DebugAuthClient
     /// デバッグメニュー専用。リリースビルドでは何もしない実装が入る
@@ -49,16 +53,20 @@ public struct AppDependencies: Sendable {
     public let notificationPermissionUseCase: NotificationPermissionUseCase
     /// 今日完了した家事がある日に、ふりかえり通知を予約するUseCase
     public let dailyCompletionReminderUseCase: DailyCompletionReminderUseCase
+    /// お知らせのPush通知の設定とトピックの購読をそろえるUseCase
+    public let announcementTopicUseCase: AnnouncementTopicUseCase
 
     public init(
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
+        errorReportClient: ErrorReportClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue,
         cohabitantClient: CohabitantClient = .previewValue,
         cohabitantInvitationClient: CohabitantInvitationClient = .previewValue,
         sentInvitationClient: SentInvitationClient = .previewValue,
         houseworkClient: HouseworkClient = .previewValue,
+        houseworkImageClient: HouseworkImageClient = .previewValue,
         cohabitantPushNotificationClient: CohabitantPushNotificationClient = .previewValue,
         signInWithAppleClient: SignInWithAppleClient = .previewValue,
         purchaseClient: PurchaseClient = .previewValue,
@@ -80,17 +88,21 @@ public struct AppDependencies: Sendable {
         encouragementCommentCacheClient: EncouragementCommentCacheClient = .previewValue,
         intentDonationClient: IntentDonationClient = .previewValue,
         inquiryClient: InquiryClient = .previewValue,
+        announcementClient: AnnouncementClient = .previewValue,
+        announcementTopicClient: AnnouncementTopicClient = .previewValue,
         debugAuthClient: DebugAuthClient = .previewValue,
         debugLocalDataClient: DebugLocalDataClient = .previewValue
     ) {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
         self.analyticsClient = analyticsClient
+        self.errorReportClient = errorReportClient
         self.accountInfoClient = accountInfoClient
         self.cohabitantClient = cohabitantClient
         self.cohabitantInvitationClient = cohabitantInvitationClient
         self.sentInvitationClient = sentInvitationClient
         self.houseworkClient = houseworkClient
+        self.houseworkImageClient = houseworkImageClient
         self.cohabitantPushNotificationClient = cohabitantPushNotificationClient
         self.signInWithAppleClient = signInWithAppleClient
         self.purchaseClient = purchaseClient
@@ -112,6 +124,8 @@ public struct AppDependencies: Sendable {
         self.encouragementCommentCacheClient = encouragementCommentCacheClient
         self.intentDonationClient = intentDonationClient
         self.inquiryClient = inquiryClient
+        self.announcementClient = announcementClient
+        self.announcementTopicClient = announcementTopicClient
         self.debugAuthClient = debugAuthClient
         self.debugLocalDataClient = debugLocalDataClient
         houseworkManager = .init(houseworkClient: houseworkClient)
@@ -121,6 +135,7 @@ public struct AppDependencies: Sendable {
             notificationGuideStateClient: notificationGuideStateClient
         )
         dailyCompletionReminderUseCase = .init(client: dailyCompletionReminderClient)
+        announcementTopicUseCase = .init(client: announcementTopicClient)
     }
 
 }

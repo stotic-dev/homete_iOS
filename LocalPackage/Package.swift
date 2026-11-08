@@ -23,6 +23,7 @@ let package = Package(
         lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
         lib("FrequentHouseworkFeature"),
+        lib("PaywallFeature"),
         lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
@@ -78,6 +79,7 @@ let package = Package(
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeature"]),
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature"),
+        feature(name: "PaywallFeature"),
 
         // MARK: Others
 
@@ -158,6 +160,11 @@ let package = Package(
         .testTarget(
             name: "FrequentHouseworkFeatureTests",
             dependencies: ["FrequentHouseworkFeature"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "PaywallFeatureTests",
+            dependencies: ["PaywallFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

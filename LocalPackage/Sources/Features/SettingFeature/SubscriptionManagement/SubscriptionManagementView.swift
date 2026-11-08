@@ -12,6 +12,7 @@ import SwiftUI
 struct SubscriptionManagementView: View {
 
     @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.loginContext) var loginContext
     @Environment(\.routeResolver) var router
     @LoadingState var loadingState
 
@@ -36,7 +37,10 @@ struct SubscriptionManagementView: View {
         .fullScreenLoadingIndicator(loadingState)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            content: { router.resolve(.paywall(step: .subscriptionManagement)) }
+            // 契約中なら、契約プラン画面ではなくプランの一覧を開く（このPaywallから開いた契約プラン画面へ戻り続けないように）
+            content: {
+                router.resolve(.paywall(step: .subscriptionManagement, isPlanChange: subscriptionStore.isPremium))
+            }
         )
         .alert(.localized("購入の復元"), isPresented: $isPresentedRestoreResultAlert) {
             Button("OK") {}
@@ -193,7 +197,7 @@ private extension SubscriptionManagementView {
 
     func restorePurchases() async {
         do {
-            let isRestored = try await subscriptionStore.restorePurchases()
+            let isRestored = try await subscriptionStore.restorePurchases(for: loginContext.account.id)
             restoreResultMessage = isRestored
                 ? .localized("購入を復元しました")
                 : .localized("復元できる購入が見つかりませんでした")

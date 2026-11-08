@@ -264,6 +264,26 @@
         }
       }
     },
+    "お知らせ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Announcements"
+          }
+        }
+      }
+    },
+    "お知らせはまだありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No announcements yet"
+          }
+        }
+      }
+    },
     "このコメントはいかがでしたか？" : {
       "localizations" : {
         "en" : {
@@ -790,6 +810,16 @@
         }
       }
     },
+    "未読" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unread"
+          }
+        }
+      }
+    },
     "毎週やる家事をテンプレートにしておくと、家事ボードに自動で並びます" : {
       "localizations" : {
         "en" : {
@@ -810,6 +840,16 @@
         }
       }
     },
+    "詳しく見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn More"
+          }
+        }
+      }
+    },
     "送った招待リンクから参加すると、家事を分け合えます" : {
       "localizations" : {
         "en" : {
@@ -826,6 +866,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please check your connection and try again."
+          }
+        }
+      }
+    },
+    "運営からのお知らせが届くと、ここに表示されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Announcements from us will appear here."
           }
         }
       }

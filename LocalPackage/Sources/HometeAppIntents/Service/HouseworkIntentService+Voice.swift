@@ -126,16 +126,12 @@ extension HouseworkIntentService {
 
     /// 今日の家事として新しく作る家事
     /// - Parameter note: メモのテキストの後ろに足す補足
-    func makeNewItem(_ target: ResolvedTarget, session: AppIntentSession, now: Date, note: String) -> HouseworkItem {
+    func makeNewItem(_ target: ResolvedTarget, now: Date, note: String) -> HouseworkItem {
         .init(
             id: idGenerator(),
             title: target.title,
             point: target.point,
-            metaData: .init(
-                selectedDate: now,
-                calendar: calendar,
-                storagePolicy: HouseworkStoragePolicy(isPremium: session.account.isPremium)
-            ),
+            metaData: .init(selectedDate: now, calendar: calendar),
             memo: makeMemo(target.memo, note: note)
         )
     }

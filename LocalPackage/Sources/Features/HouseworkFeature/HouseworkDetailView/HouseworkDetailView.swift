@@ -15,7 +15,6 @@ public struct HouseworkDetailView: View {
     @Environment(\.now) var now
     @Environment(\.calendar) var calendar
     @Environment(\.houseworkTemplateContext) var templateContext
-    @Environment(\.houseworkStoragePolicy) var storagePolicy
     @Environment(\.loginContext.account) var account
     @Environment(HouseworkListStore.self) var houseworkListStore
     @Environment(CohabitantStore.self) var cohabitantStore
@@ -126,6 +125,13 @@ private extension HouseworkDetailView {
                         onToggle: { checklistItemId in tappedMemoChecklistItem(checklistItemId) }
                     )
                 }
+                if isImageSectionVisible {
+                    HouseworkDetailImageComponent(
+                        item: item,
+                        loadingState: loadingState,
+                        onError: { commonErrorContent = .init(error: $0) }
+                    )
+                }
             }
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
@@ -145,6 +151,11 @@ private extension HouseworkDetailView {
     /// メモ欄を出すか。完了済み・「やらない」の家事は、メモがあるときだけ閲覧用に出す
     var isMemoVisible: Bool {
         item.originalItem.canEditMemo || item.originalItem.memo.hasContent
+    }
+
+    /// 画像の欄を出すか。完了済み・「やらない」の家事は、画像があるときだけ閲覧用に出す（メモと同じ）
+    var isImageSectionVisible: Bool {
+        item.originalItem.canAddImages || item.originalItem.images.hasContent
     }
 
     var memoLimitPolicy: HouseworkMemoLimitPolicy {
@@ -306,7 +317,7 @@ private extension HouseworkDetailView {
 
     func didChangeItems() {
         // テンプレートの家事を別の日へまわすと、元の日に同じIDの記録が残る。画面を閉じる前にその記録
-        //（「やらない」）へ切り替わって見えないよう、反映しない
+        // （「やらない」）へ切り替わって見えないよう、反映しない
         guard let targetItem = houseworkListStore.items.item(item.originalItem),
               !targetItem.isPostponedRecord else { return }
 

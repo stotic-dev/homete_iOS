@@ -22,7 +22,7 @@ struct HouseworkManagerTest {
         let now = Date.previewDate(year: 2026, month: 8, day: 11)
         let calendar = Calendar.japanese
         let expectedFrom = Date.previewDate(year: 2025, month: 8, day: 11)
-        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now)
         let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
@@ -75,7 +75,7 @@ struct HouseworkManagerTest {
         // Arrange
 
         let now = Date()
-        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now)
         let (stream, _) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
@@ -114,7 +114,7 @@ struct HouseworkManagerTest {
 
         let now = Date()
         let calendar = Calendar.autoupdatingCurrent
-        let existingItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let existingItem = HouseworkItem.makeForTest(id: 1, indexedDate: now)
         let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
 
         let manager = HouseworkManager(
@@ -141,7 +141,7 @@ struct HouseworkManagerTest {
         // Act
 
         let updatedItem = existingItem.updateProperties(title: "updated title")
-        let newItem = HouseworkItem.makeForTest(id: 2, indexedDate: now, expiredAt: now)
+        let newItem = HouseworkItem.makeForTest(id: 2, indexedDate: now)
         streamContinuation.yield([updatedItem, newItem])
 
         var receivedItems: [HouseworkItem] = []
@@ -205,8 +205,8 @@ struct HouseworkManagerTest {
         let targetDate = Date.previewDate(year: 2025, month: 1, day: 1)
         // 取得済み範囲と重複しないよう、その前日までが取得されること
         let expectedTo = Date.previewDate(year: 2025, month: 8, day: 10)
-        let initialItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
-        let additionalItem = HouseworkItem.makeForTest(id: 2, indexedDate: targetDate, expiredAt: targetDate)
+        let initialItem = HouseworkItem.makeForTest(id: 1, indexedDate: now)
+        let additionalItem = HouseworkItem.makeForTest(id: 2, indexedDate: targetDate)
 
         let manager = HouseworkManager(
             houseworkClient: .init(
@@ -329,7 +329,7 @@ struct HouseworkManagerTest {
 
         let now = Date.previewDate(year: 2026, month: 8, day: 11)
         let calendar = Calendar.japanese
-        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now, expiredAt: now)
+        let fetchedItem = HouseworkItem.makeForTest(id: 1, indexedDate: now)
         let (stream, streamContinuation) = AsyncThrowingStream<[HouseworkItem], Error>.makeStream()
         streamContinuation.finish(throwing: DomainError.noNetwork)
 
@@ -431,7 +431,7 @@ struct HouseworkManagerTest {
                 },
                 fetchItemsHandler: { _, _, _ in
                     await gate.wait()
-                    return [.makeForTest(id: 1, indexedDate: now, expiredAt: now)]
+                    return [.makeForTest(id: 1, indexedDate: now)]
                 }
             )
         )

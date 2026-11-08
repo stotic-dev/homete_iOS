@@ -65,7 +65,7 @@ public enum HouseworkTutorialSample {
     public static func dailyList(today: Date, locale: Locale? = nil) -> DailyHouseworkList {
         .init(
             items: items(today: today, locale: locale),
-            metaData: .init(indexedDate: .init(value: today), expiredAt: .distantFuture)
+            metaData: .init(indexedDate: .init(value: today))
         )
     }
 
@@ -87,7 +87,6 @@ private extension HouseworkTutorialSample {
             executors: executorId.map { [.solo(userId: $0, point: point)] } ?? [],
             effort: .normal,
             executedAt: executorId == nil ? nil : today,
-            expiredAt: .distantFuture,
             templateHouseworkItemId: nil
         )
     }

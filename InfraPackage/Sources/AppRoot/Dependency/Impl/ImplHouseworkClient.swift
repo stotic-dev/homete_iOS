@@ -9,13 +9,17 @@ import HometeInfrastructure
 extension HouseworkClient {
 
     static let liveValue = HometeDomain.HouseworkClient { item, cohabitantId in
-        try await FirestoreService.shared.insertOrUpdate(data: item) {
+        // 保持期限（expiredAt）はCloud Functionsだけが書くため、アプリが書くフィールドだけを上書きする
+        try await FirestoreService.shared.insertOrUpdate(data: item, fieldNames: HouseworkItem.writtenFieldNames) {
             $0
                 .houseworkListRef(id: cohabitantId)
                 .document(item.id)
         }
     } insertOrUpdateItemsHandler: { items, cohabitantId in
-        try await FirestoreService.shared.batchInsertOrUpdate(data: items) { firestore, item in
+        try await FirestoreService.shared.batchInsertOrUpdate(
+            data: items,
+            fieldNames: HouseworkItem.writtenFieldNames
+        ) { firestore, item in
             firestore
                 .houseworkListRef(id: cohabitantId)
                 .document(item.id)
@@ -46,6 +50,38 @@ extension HouseworkClient {
                 .houseworkListRef(id: cohabitantId)
                 .document(houseworkId)
         }
+    } createItemsHandler: { items, cohabitantId in
+        try await FirestoreService.shared.batchInsertOrUpdate(
+            data: items,
+            fieldNames: HouseworkItem.creationFieldNames
+        ) { firestore, item in
+            firestore
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
+    } addImagesHandler: { houseworkId, images, cohabitantId in
+        try await FirestoreService.shared.arrayUnion(fieldPath: "images", elements: images) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(houseworkId)
+        }
+    } createItemOrAddImagesHandler: { item, images, cohabitantId in
+        try await FirestoreService.shared.insertOrArrayUnion(
+            data: item,
+            fieldNames: HouseworkItem.creationFieldNames,
+            arrayFieldPath: "images",
+            elements: images
+        ) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(item.id)
+        }
+    } removeImageHandler: { houseworkId, image, cohabitantId in
+        try await FirestoreService.shared.arrayRemove(fieldPath: "images", elements: [image]) {
+            $0
+                .houseworkListRef(id: cohabitantId)
+                .document(houseworkId)
+        }
     } snapshotListenerHandler: { id, cohabitantId, anchorDate, offset in
         let targetDateList = HouseworkIndexedDate.calcTargetPeriod(
             anchorDate: anchorDate,
@@ -65,8 +101,6 @@ extension HouseworkClient {
                 .whereField("indexedDate.value", isGreaterThanOrEqualTo: from)
                 .whereField("indexedDate.value", isLessThanOrEqualTo: to)
         }
-    } syncRetentionHandler: { cohabitantId in
-        _ = try await FunctionsService.call("synchouseworkretention", parameters: ["cohabitantId": cohabitantId])
     }
 
 }

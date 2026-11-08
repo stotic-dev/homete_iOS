@@ -31,6 +31,8 @@ public enum PaywallAnalyticsStep: String, Equatable, Sendable {
     case frequentHouseworkLimit = "frequent_housework_limit"
     /// 家事メモの文字数上限の案内（メモの編集画面の「プレミアムプランを見る」）
     case houseworkMemoLimit = "housework_memo_limit"
+    /// 家事の画像の案内（無料プランで画像の追加ボタンを押したとき）
+    case houseworkImage = "housework_image"
 
 }
 

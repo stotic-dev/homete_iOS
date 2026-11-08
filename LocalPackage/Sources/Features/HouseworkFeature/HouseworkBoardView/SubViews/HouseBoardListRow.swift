@@ -105,9 +105,12 @@ private extension HouseBoardListRow {
                 HStack(spacing: .space4) {
                     Text(houseworkItem.title)
                         .font(with: .body)
-                    // 本文は詳細画面で見るので、一覧ではメモがあることだけを示す
+                    // 本文・画像は詳細画面で見るので、一覧ではメモ・画像があることだけを示す
                     if houseworkItem.memo.hasContent {
                         memoIndicator()
+                    }
+                    if houseworkItem.images.hasContent {
+                        imageIndicator()
                     }
                 }
                 if let label = completionInfo?.executorLabel {
@@ -153,6 +156,13 @@ private extension HouseBoardListRow {
             .font(with: .caption)
             .foregroundStyle(.textSecondary)
             .accessibilityLabel(.localized("メモあり"))
+    }
+
+    func imageIndicator() -> some View {
+        Image(systemName: "photo")
+            .font(with: .caption)
+            .foregroundStyle(.textSecondary)
+            .accessibilityLabel(.localized("画像あり"))
     }
 
     func executorLabel(_ label: String) -> some View {
@@ -257,6 +267,24 @@ private extension HouseBoardListRow {
             title: "買い出し",
             point: 20,
             memo: .init(text: "", checklist: [.init(id: "1", title: "牛乳", isChecked: false)])
+        ),
+        completionInfo: nil,
+        showsCompleteButton: true,
+        showsMoreButton: true,
+        onTapRow: {},
+        onTapThanks: nil,
+        onTapComplete: {},
+        menuContent: { EmptyView() }
+    )
+}
+
+#Preview("HouseBoardListRow_未完了_メモと画像あり", traits: .sizeThatFitsLayout) {
+    HouseBoardListRow(
+        houseworkItem: .makeForPreview(
+            title: "ゴミ出し",
+            point: 20,
+            memo: .init(text: "缶とびんは分ける", checklist: []),
+            images: [.init(id: "1", storagePath: "path1", uploaderId: "userA")]
         ),
         completionInfo: nil,
         showsCompleteButton: true,

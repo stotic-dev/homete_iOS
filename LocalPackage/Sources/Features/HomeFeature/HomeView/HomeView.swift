@@ -28,11 +28,19 @@ public struct HomeView: View {
     @Environment(SentInvitationStore.self) var sentInvitationStore
     @Environment(CohabitantStore.self) var cohabitantStore
     @Environment(PendingRouteStore.self) var pendingRouteStore
+    @Environment(AnnouncementStore.self) var announcementStore
+    @Environment(RegistrationTutorialStore.self) var registrationTutorialStore
 
     @State var isShowCohabitantRegistrationModal = false
     @State var pasteboardInvitationStore: PasteboardInvitationStore?
     @State var isShowSetting = false
     @State var isShowAccountLink = false
+    @State var isShowAnnouncementList = false
+    /// 起動時のシートで出しているお知らせ
+    @State var presentedAnnouncementModal: Announcement?
+    /// 起動時のシートで最後に出したお知らせ。閉じたときに既読にするために控える
+    /// - Note: シートを閉じると`presentedAnnouncementModal`は`onDismiss`より先に`nil`になるため、別に持つ
+    @State var lastPresentedAnnouncementModal: Announcement?
     /// 「もう一度送る」で共有シートに出している招待
     @State var resendingInvitation: CohabitantInvitation?
     /// パートナー登録の画面を開いたときに送ってあった招待。登録画面の中から招待を送ったかを見分けるために使う
@@ -67,20 +75,36 @@ public struct HomeView: View {
                     onDismiss: { dismissedCohabitantRegistration() },
                     content: { router.resolve(.cohabitantRegistration) }
                 )
-                .homeNavigationBar {
-                    isShowSetting = true
-                }
+                .homeNavigationBar(
+                    unreadAnnouncementCount: announcementStore.state.unreadCount,
+                    onTapAnnouncement: { isShowAnnouncementList = true },
+                    onTapSetting: { isShowSetting = true }
+                )
             }
             .environment(\.registeredContentNavigationPath, registeredContentNavigationPath)
+        }
+        .sheet(isPresented: $isShowAnnouncementList) {
+            AnnouncementListScreen()
+        }
+        .sheet(item: $presentedAnnouncementModal) {
+            dismissedAnnouncementModal()
+        } content: { announcement in
+            AnnouncementModalScreen(announcement: announcement)
         }
         .task {
             await onAppear()
         }
         .onChange(of: pendingRouteStore.pendingRoute, initial: true) {
-            openSettingForPendingRouteIfNeeded()
+            openForPendingRouteIfNeeded()
         }
         .onChange(of: isPresentingModal) {
-            openSettingForPendingRouteIfNeeded()
+            openForPendingRouteIfNeeded()
+        }
+        .onChange(of: isShowSetting) {
+            openForPendingRouteIfNeeded()
+        }
+        .onChange(of: announcementModalCandidate, initial: true) {
+            presentAnnouncementModalIfNeeded()
         }
     }
 
@@ -202,6 +226,12 @@ private extension HomeView {
         )
     }
 
+    /// 通知から開く画面のうち、ダッシュボードのシートから開くものを出す
+    func openForPendingRouteIfNeeded() {
+        openSettingForPendingRouteIfNeeded()
+        openAnnouncementListForPendingRouteIfNeeded()
+    }
+
     /// 通知から問い合わせの詳細を開くときに、問い合わせの詳細を持つ設定画面を出す
     /// - Note: 詳細画面は設定画面が開いてから積む。設定画面を開いていれば何もしない。
     ///         ダッシュボードの上に別のシートを出している間は、シートを重ねて出せないため閉じるまで待つ。
@@ -211,9 +241,53 @@ private extension HomeView {
         isShowSetting = true
     }
 
+    /// お知らせの通知から、お知らせの一覧を出す
+    /// - Note: すでに一覧を開いていれば、そのまま見てもらう（取り直しは復帰時に行われる）。
+    ///         別のシートを出している間は、シートを重ねて出せないため閉じるまで待つ
+    func openAnnouncementListForPendingRouteIfNeeded() {
+        guard pendingRouteStore.pendingRoute == .announcementList else { return }
+        if isShowAnnouncementList {
+            _ = pendingRouteStore.takeAnnouncementList()
+            return
+        }
+        guard !isPresentingModal, !isShowSetting, pendingRouteStore.takeAnnouncementList() else { return }
+        isShowAnnouncementList = true
+    }
+
     /// ダッシュボードの上に、設定画面以外のシートやフルスクリーンカバーを出しているか
     var isPresentingModal: Bool {
         isShowCohabitantRegistrationModal || isShowAccountLink || resendingInvitation != nil
+            || isShowAnnouncementList || presentedAnnouncementModal != nil
+    }
+
+    /// 起動時のシートで出せるお知らせ
+    ///
+    /// ダッシュボードの上に別の画面（シート・フルスクリーンカバー・登録後のチュートリアル・招待リンクの参加画面）を
+    /// 出している間や、通知から開く画面が残っている間は出さず、閉じてから出す。
+    var announcementModalCandidate: Announcement? {
+        guard !isShowCohabitantRegistrationModal,
+              !isShowAccountLink,
+              resendingInvitation == nil,
+              !isShowSetting,
+              !isShowAnnouncementList,
+              registrationTutorialStore.currentStep == nil,
+              pendingInvitationStore.pendingToken == nil,
+              pendingRouteStore.pendingRoute == nil else { return nil }
+        return announcementStore.state.modalAnnouncement
+    }
+
+    func presentAnnouncementModalIfNeeded() {
+        guard presentedAnnouncementModal == nil, let announcementModalCandidate else { return }
+        presentedAnnouncementModal = announcementModalCandidate
+        lastPresentedAnnouncementModal = announcementModalCandidate
+    }
+
+    func dismissedAnnouncementModal() {
+        guard let announcement = lastPresentedAnnouncementModal else { return }
+        lastPresentedAnnouncementModal = nil
+        Task {
+            await announcementStore.markModalRead(announcement)
+        }
     }
 
     /// 送った招待のうち、有効期限内で相手の参加を待っているもの

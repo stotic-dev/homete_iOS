@@ -19,9 +19,6 @@ public struct CohabitantCompletionView: View {
     /// 閉じるボタンをタップしたときの処理
     let onTapClose: () -> Void
 
-    /// クラッカーが弾け終わったかどうか
-    @State private var isCracked = false
-
     public init(title: LocalizedStringResource, message: LocalizedStringResource, onTapClose: @escaping () -> Void) {
         self.title = title
         self.message = message
@@ -47,28 +44,7 @@ public struct CohabitantCompletionView: View {
             }
             .padding(.horizontal, .space16)
             .padding(.vertical, .space24)
-            celebration()
-                .ignoresSafeArea()
-                // 紙片のレイヤーが閉じるボタンのタップを奪わないようにする
-                .allowsHitTesting(false)
-        }
-    }
-
-}
-
-private extension CohabitantCompletionView {
-
-    @ViewBuilder
-    func celebration() -> some View {
-        if isCracked {
-            ConfettiRainView()
-        } else {
-            CrackerView {
-                withAnimation {
-                    isCracked = true
-                }
-            }
-            .transition(.opacity)
+            CelebrationEffectView()
         }
     }
 
