@@ -17,6 +17,7 @@ let package = Package(
         lib("AuthFeature"),
         lib("AuthFeatureUI"),
         lib("SettingFeature"),
+        lib("SettingFeatureUI"),
         lib("HomeFeature"),
         lib("CohabitantRegistrationFeature"),
         lib("CohabitantRegistrationFeatureUI"),
@@ -86,7 +87,7 @@ let package = Package(
         // MARK: Feature Targets
 
         feature(name: "AuthFeature", extraDeps: ["AuthFeatureUI"]),
-        feature(name: "SettingFeature"),
+        feature(name: "SettingFeature", extraDeps: ["SettingFeatureUI"]),
         feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature"]),
         feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
@@ -103,6 +104,7 @@ let package = Package(
         featureUI(name: "ContributionFeatureUI"),
         featureUI(name: "AuthFeatureUI"),
         featureUI(name: "PaywallFeatureUI"),
+        featureUI(name: "SettingFeatureUI"),
 
         // MARK: Others
 
@@ -153,11 +155,6 @@ let package = Package(
         .testTarget(
             name: "HouseworkFeatureTests",
             dependencies: ["HouseworkFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "SettingFeatureTests",
-            dependencies: ["SettingFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

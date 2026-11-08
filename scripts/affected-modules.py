@@ -61,7 +61,7 @@ VRT_ALL_TARGETS = {"HometeSnapshotTestSupport"}
 VRT_MODULES = {
     "HometeUI",
     "AuthFeatureUI",
-    "SettingFeature",
+    "SettingFeatureUI",
     "HomeFeature",
     "CohabitantRegistrationFeatureUI",
     "HouseworkFeature",

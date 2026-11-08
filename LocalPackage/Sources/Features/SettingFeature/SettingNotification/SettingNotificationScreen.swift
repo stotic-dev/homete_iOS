@@ -4,6 +4,7 @@
 //
 
 import HometeDomain
+import SettingFeatureUI
 import SwiftUI
 
 /// 設定画面の「通知設定」から開く画面
@@ -49,7 +50,7 @@ private extension SettingNotificationScreen {
             DailyCompletionReminderSettingScreen()
 
         case .some(false):
-            SettingNotificationPermissionGuideView {
+            SettingNotificationPermissionGuideScreen {
                 isAuthorized = true
             }
         }

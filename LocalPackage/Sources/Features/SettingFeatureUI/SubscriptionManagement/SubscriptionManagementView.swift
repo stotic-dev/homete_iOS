@@ -1,0 +1,239 @@
+//
+//  SubscriptionManagementView.swift
+//  homete
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// 契約中プランの確認・変更・復元・解約導線をまとめた画面
+/// - Note: 解約はStoreKitのAPIで実行できないため、解約ボタンのみOSの管理画面へ委譲する
+public struct SubscriptionManagementView: View {
+
+    let plan: SubscriptionPlan
+    let onTapChangePlan: () -> Void
+    let onTapRestorePurchases: () -> Void
+    let onTapManageSubscription: () -> Void
+
+    public init(
+        plan: SubscriptionPlan,
+        onTapChangePlan: @escaping () -> Void,
+        onTapRestorePurchases: @escaping () -> Void,
+        onTapManageSubscription: @escaping () -> Void
+    ) {
+        self.plan = plan
+        self.onTapChangePlan = onTapChangePlan
+        self.onTapRestorePurchases = onTapRestorePurchases
+        self.onTapManageSubscription = onTapManageSubscription
+    }
+
+    public var body: some View {
+        ScrollView {
+            VStack(spacing: .space32) {
+                currentPlanSection(plan: plan)
+                actionSection(plan: plan)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.space16)
+        }
+        // 設定からの遷移で地の色が変わらないよう、設定と同じミルク色にして白いカードを浮かせる
+        .background(.backgroundScreen)
+        .navigationTitle(.localized("サブスクリプション管理"))
+        .inlineNavigationBarTitleDisplayMode()
+        .softTopScrollEdgeEffect()
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension SubscriptionManagementView {
+
+    func currentPlanSection(plan: SubscriptionPlan) -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            sectionHeader
+            planCard(plan: plan)
+        }
+    }
+
+    var sectionHeader: some View {
+        HStack(spacing: .space8) {
+            Image(systemName: "crown.fill")
+                .foregroundStyle(.textPrimary)
+            Text("現在のプラン", bundle: #bundle)
+                .font(with: .headLineS)
+                .foregroundStyle(.textPrimary)
+            Spacer()
+        }
+    }
+
+    @ViewBuilder
+    func planCard(plan: SubscriptionPlan) -> some View {
+        switch plan {
+        case .free:
+            Text("プレミアムプランには登録していません", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, .space16)
+                .padding(.vertical, .space24)
+                .background(.backgroundCard)
+                .cornerRadius(.radius20)
+
+        case let .subscription(period, nextRenewalDate, willRenew):
+            VStack(spacing: .space8) {
+                planRow(title: .localized("プラン"), value: Text(period.displayName))
+                if let nextRenewalDate {
+                    Divider()
+                    planRow(
+                        title: willRenew ? .localized("次回更新日") : .localized("有効期限"),
+                        value: Text(nextRenewalDate.formatted(date: .abbreviated, time: .omitted))
+                    )
+                }
+                Divider()
+                planRow(
+                    title: .localized("自動更新"),
+                    value: willRenew ? Text("オン", bundle: #bundle, comment: "自動更新が有効かどうか") : Text(
+                        "オフ",
+                        bundle: #bundle,
+                        comment: "自動更新が有効かどうか"
+                    )
+                )
+            }
+            .padding(.space16)
+            .background(.backgroundCard)
+            .cornerRadius(.radius20)
+        }
+    }
+
+    func planRow(title: LocalizedStringResource, value: Text) -> some View {
+        HStack(spacing: .zero) {
+            Text(title)
+                .font(with: .headLineS)
+                .foregroundStyle(.textPrimary)
+            Spacer()
+            value
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+                .lineLimit(1)
+        }
+    }
+
+    func actionSection(plan: SubscriptionPlan) -> some View {
+        VStack(spacing: .space16) {
+            Button {
+                onTapChangePlan()
+            } label: {
+                Text(plan == .free ? "プレミアムプランに登録" : "プランを変更", bundle: #bundle)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+            Button {
+                onTapRestorePurchases()
+            } label: {
+                Text("購入を復元", bundle: #bundle)
+                    .frame(maxWidth: .infinity)
+            }
+            .subPrimaryButtonStyle()
+            manageSubscriptionContent(plan: plan)
+        }
+    }
+
+    @ViewBuilder
+    func manageSubscriptionContent(plan: SubscriptionPlan) -> some View {
+        if case let .subscription(_, _, willRenew) = plan {
+            VStack(spacing: .space8) {
+                Button {
+                    onTapManageSubscription()
+                } label: {
+                    Text(willRenew ? "解約する" : "サブスクリプションを管理", bundle: #bundle)
+                        .frame(maxWidth: .infinity)
+                }
+                .modifier(ManageSubscriptionButtonStyle(isCancelable: willRenew))
+                Text("解約手続きはApp Storeの管理画面で行います", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textPrimary)
+            }
+        }
+    }
+
+}
+
+/// 解約可能な状態のみ警告色のボタンにする
+private struct ManageSubscriptionButtonStyle: ViewModifier {
+
+    let isCancelable: Bool
+
+    func body(content: Content) -> some View {
+        if isCancelable {
+            content.destructiveButtonStyle()
+        } else {
+            content.subPrimaryButtonStyle()
+        }
+    }
+
+}
+
+// MARK: - Preview定義
+
+#if DEBUG
+#Preview("SubscriptionManagementView_月額") {
+    NavigationStack {
+        SubscriptionManagementView(
+            plan: .subscription(
+                period: .monthly,
+                // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+                nextRenewalDate: .previewDate(year: 2026, month: 6, day: 17, hour: 12),
+                willRenew: true
+            ),
+            onTapChangePlan: {},
+            onTapRestorePurchases: {},
+            onTapManageSubscription: {}
+        )
+    }
+}
+
+#Preview("SubscriptionManagementView_年額") {
+    NavigationStack {
+        SubscriptionManagementView(
+            plan: .subscription(
+                period: .yearly,
+                // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+                nextRenewalDate: .previewDate(year: 2027, month: 5, day: 18, hour: 12),
+                willRenew: true
+            ),
+            onTapChangePlan: {},
+            onTapRestorePurchases: {},
+            onTapManageSubscription: {}
+        )
+    }
+}
+
+#Preview("SubscriptionManagementView_解約済み") {
+    NavigationStack {
+        SubscriptionManagementView(
+            plan: .subscription(
+                period: .monthly,
+                // VRTで日付表示がブレないよう固定値にする（TZ差で日付がずれないよう正午JST）
+                nextRenewalDate: .previewDate(year: 2026, month: 5, day: 28, hour: 12),
+                willRenew: false
+            ),
+            onTapChangePlan: {},
+            onTapRestorePurchases: {},
+            onTapManageSubscription: {}
+        )
+    }
+}
+
+#Preview("SubscriptionManagementView_未登録") {
+    NavigationStack {
+        SubscriptionManagementView(
+            plan: .free,
+            onTapChangePlan: {},
+            onTapRestorePurchases: {},
+            onTapManageSubscription: {}
+        )
+    }
+}
+#endif

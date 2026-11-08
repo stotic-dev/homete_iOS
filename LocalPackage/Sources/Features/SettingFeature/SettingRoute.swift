@@ -4,6 +4,7 @@
 //
 
 import HometeUI
+import SettingFeatureUI
 import SwiftUI
 
 enum SettingRoute: Hashable {

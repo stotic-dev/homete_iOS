@@ -112,16 +112,6 @@
         }
       }
     },
-    "プレミアムプラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Premium Plan"
-          }
-        }
-      }
-    },
     "・" : {
       "comment" : "名前を並べるときの区切り（例: Aさん・Bさん、月曜日・木曜日）",
       "localizations" : {
@@ -149,26 +139,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chores got done today. Why not look back and thank each other?"
-          }
-        }
-      }
-    },
-    "年額プラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Annual Plan"
-          }
-        }
-      }
-    },
-    "月額プラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monthly Plan"
           }
         }
       }

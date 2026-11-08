@@ -4,50 +4,14 @@
     "" : {
 
     },
-    "%lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld / %2$lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
-    },
     "%lld回" : {
       "shouldTranslate" : false
-    },
-    "%lld文字以内で入力してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please keep it within %lld characters"
-          }
-        }
-      }
     },
     "1日1回の制限を外す" : {
       "shouldTranslate" : false
     },
     "2週間後のありがとう" : {
       "shouldTranslate" : false
-    },
-    "Appleでサインイン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sign in with Apple"
-          }
-        }
-      }
     },
     "OK" : {
       "localizations" : {
@@ -81,148 +45,8 @@
     "ありがとう10回で出せる状態にする" : {
       "shouldTranslate" : false
     },
-    "いつもの家事" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go-to Chores"
-          }
-        }
-      }
-    },
-    "お問い合わせ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contact Us"
-          }
-        }
-      }
-    },
-    "お問い合わせは24時間に5件まで送れます。時間をおいて、もう一度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send up to 5 inquiries every 24 hours. Please try again later."
-          }
-        }
-      }
-    },
-    "お問い合わせはまだありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No inquiries yet"
-          }
-        }
-      }
-    },
-    "お知らせ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Announcements"
-          }
-        }
-      }
-    },
-    "このお問い合わせは見つかりませんでした" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This inquiry couldn’t be found"
-          }
-        }
-      }
-    },
-    "このお問い合わせは見つかりませんでした。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This inquiry couldn’t be found."
-          }
-        }
-      }
-    },
-    "このアプリについて" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "About This App"
-          }
-        }
-      }
-    },
-    "ご利用中のプラン:" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Plan:"
-          }
-        }
-      }
-    },
-    "ご登録中のプラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your Plan"
-          }
-        }
-      }
-    },
-    "ご要望" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Feature Request"
-          }
-        }
-      }
-    },
-    "その他" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other"
-          }
-        }
-      }
-    },
-    "どんなことについてですか" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What’s It About?"
-          }
-        }
-      }
-    },
     "なし" : {
       "shouldTranslate" : false
-    },
-    "ふりかえりの通知を受け取る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Get Daily Recap"
-          }
-        }
-      }
     },
     "ふりかえり通知" : {
       "localizations" : {
@@ -237,109 +61,17 @@
     "まだ記録がありません。ホーム画面を開くと記録が始まります。" : {
       "shouldTranslate" : false
     },
-    "アカウント・お支払い" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Account & Billing"
-          }
-        }
-      }
-    },
     "アカウント登録からPaywallまでを表示" : {
       "shouldTranslate" : false
-    },
-    "アプリの設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Settings"
-          }
-        }
-      }
     },
     "アプリ評価" : {
       "shouldTranslate" : false
     },
-    "オフ" : {
-      "comment" : "自動更新が有効かどうか",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Off"
-          }
-        }
-      }
-    },
-    "オン" : {
-      "comment" : "自動更新が有効かどうか",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On"
-          }
-        }
-      }
-    },
     "オンボーディング" : {
       "shouldTranslate" : false
     },
-    "グループ" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group"
-          }
-        }
-      }
-    },
-    "グループメンバー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Group Members"
-          }
-        }
-      }
-    },
     "グループ登録直後のチュートリアルを表示" : {
       "shouldTranslate" : false
-    },
-    "サブスクリプションを管理" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manage Subscription"
-          }
-        }
-      }
-    },
-    "サブスクリプション管理" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscription"
-          }
-        }
-      }
-    },
-    "サポート" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Support"
-          }
-        }
-      }
     },
     "サーバー側で自分のログイン情報を失効させます。STG環境限定で、本番では動きません。\n\n「アプリはこのまま」を選んだ後にアプリを終了して起動し直すと、起動直後に自動サインアウトされる状況を再現できます。「すぐにトークンを取り直す」を選ぶと、その場でログイン画面に戻ります。\n\nどちらの場合も、もう一度ログインすればそのまま使えるようになります。" : {
       "shouldTranslate" : false
@@ -355,116 +87,6 @@
     },
     "データを消せませんでした" : {
       "shouldTranslate" : false
-    },
-    "プライバシーポリシー" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy Policy"
-          }
-        }
-      }
-    },
-    "プラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plan"
-          }
-        }
-      }
-    },
-    "プランを変更" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Plan"
-          }
-        }
-      }
-    },
-    "プレミアムプランには登録していません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're not subscribed to Premium"
-          }
-        }
-      }
-    },
-    "プレミアムプランに登録" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscribe to Premium"
-          }
-        }
-      }
-    },
-    "メッセージは1時間に30件まで送れます。時間をおいて、もう一度お試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send up to 30 messages per hour. Please try again later."
-          }
-        }
-      }
-    },
-    "メッセージを入力" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Message"
-          }
-        }
-      }
-    },
-    "メンテナンスや新しい機能など、大事なお知らせを通知でお届けします。オフにしても、ダッシュボードのベルから読めます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We will notify you about important news, such as maintenance and new features. Even when this is off, you can read them from the bell on the dashboard."
-          }
-        }
-      }
-    },
-    "メンバー招待" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invite Members"
-          }
-        }
-      }
-    },
-    "ユーザー名:" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Username:"
-          }
-        }
-      }
-    },
-    "ライセンス" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Licenses"
-          }
-        }
-      }
     },
     "ログアウト" : {
       "localizations" : {
@@ -489,71 +111,11 @@
     "ログイン情報の失効" : {
       "shouldTranslate" : false
     },
-    "一緒に家事をするメンバーはまだいません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No one to share chores with yet"
-          }
-        }
-      }
-    },
-    "不具合" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bug Report"
-          }
-        }
-      }
-    },
-    "不具合やご要望、使い方で困ったことがあれば、こちらから運営に送れます。返信もこの画面で確認できます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If you run into a bug, have a request, or aren’t sure how something works, you can let us know here. Our replies will show up on this screen too."
-          }
-        }
-      }
-    },
-    "今日完了した家事がある日に、決めた時刻にお知らせします。1日の終わりに、家事をふりかえって感謝を伝え合えます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On days when chores get done, we'll notify you at the time you choose. Look back on the day's chores and thank each other."
-          }
-        }
-      }
-    },
-    "以前のメッセージを表示" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Earlier Messages"
-          }
-        }
-      }
-    },
     "使い始めた日" : {
       "shouldTranslate" : false
     },
     "使い始めて2週間後のありがとうで出せる状態にする" : {
       "shouldTranslate" : false
-    },
-    "使い方" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How to Use"
-          }
-        }
-      }
     },
     "使ったきっかけ" : {
       "shouldTranslate" : false
@@ -568,71 +130,11 @@
         }
       }
     },
-    "内容" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Details"
-          }
-        }
-      }
-    },
-    "利用規約" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terms of Use"
-          }
-        }
-      }
-    },
     "受け取ったありがとう" : {
       "shouldTranslate" : false
     },
-    "受付日時: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Received: %@"
-          }
-        }
-      }
-    },
-    "受付済み" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Received"
-          }
-        }
-      }
-    },
     "同居人の登録" : {
       "shouldTranslate" : false
-    },
-    "問い合わせる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contact Us"
-          }
-        }
-      }
-    },
-    "困っていることや、そのときの操作をできるだけ詳しく書いてください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tell us what’s wrong and what you were doing at the time, in as much detail as you can"
-          }
-        }
-      }
     },
     "失効させて、すぐにトークンを取り直す" : {
       "shouldTranslate" : false
@@ -640,61 +142,11 @@
     "失効させる（アプリはこのまま）" : {
       "shouldTranslate" : false
     },
-    "家事" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chores"
-          }
-        }
-      }
-    },
     "家事が完了するたびに、設定した時刻の通知を別々に予約します。設定時刻を過ぎていると予約されないため、動作確認では通知設定の時刻を数分後にしてください。" : {
       "shouldTranslate" : false
     },
-    "家事の記録を始めるには、Appleでのサインインが必要です" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To start tracking chores, you need to sign in with Apple."
-          }
-        }
-      }
-    },
-    "家事テンプレート" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chore Templates"
-          }
-        }
-      }
-    },
     "家事登録シートと家事テンプレート画面を次に開いたときに、チュートリアルがもう一度表示されます。" : {
       "shouldTranslate" : false
-    },
-    "対応中" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In Progress"
-          }
-        }
-      }
-    },
-    "対応済み" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resolved"
-          }
-        }
-      }
     },
     "復元できる購入が見つかりませんでした" : {
       "localizations" : {
@@ -706,118 +158,8 @@
         }
       }
     },
-    "新しく問い合わせる" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New Inquiry"
-          }
-        }
-      }
-    },
-    "時間をおいて、もう一度お試しください。入力した内容はそのまま残っています。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please try again later. What you wrote has been kept."
-          }
-        }
-      }
-    },
     "最後のリクエスト" : {
       "shouldTranslate" : false
-    },
-    "有効期限" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expires"
-          }
-        }
-      }
-    },
-    "有効期限: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expires: %@"
-          }
-        }
-      }
-    },
-    "未読" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unread"
-          }
-        }
-      }
-    },
-    "未読%lld件" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld unread"
-          }
-        }
-      }
-    },
-    "本文は2,000文字以内で入力してください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please keep your message within 2,000 characters."
-          }
-        }
-      }
-    },
-    "次回更新日" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renews"
-          }
-        }
-      }
-    },
-    "次回更新日: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Renews: %@"
-          }
-        }
-      }
-    },
-    "毎日の家事のふりかえり" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily Chore Recap"
-          }
-        }
-      }
-    },
-    "毎日の通知時刻" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification Time"
-          }
-        }
-      }
     },
     "消したデータは元に戻せません。" : {
       "shouldTranslate" : false
@@ -825,28 +167,8 @@
     "消す" : {
       "shouldTranslate" : false
     },
-    "無料プラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free Plan"
-          }
-        }
-      }
-    },
     "状態を整えた後、無料プランから課金するか、同居人からありがとうを受け取ると、評価ダイアログが出ます。ありがとうは、ボタンを押した後に新しく受け取ったものだけを数えます。\n\n「記録をリセット」は、今日から使い始めた状態に戻します。" : {
       "shouldTranslate" : false
-    },
-    "現在のプラン" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Plan"
-          }
-        }
-      }
     },
     "画面ごとのチュートリアルの記録を消す" : {
       "shouldTranslate" : false
@@ -861,38 +183,8 @@
         }
       }
     },
-    "自動更新" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auto-Renew"
-          }
-        }
-      }
-    },
     "複数の端末でこの画面を開くと、実際のP2P通信で登録を最後まで試せます。グループの作成と同居人IDの保存はモックのため、今のグループや登録状態は変わりません。" : {
       "shouldTranslate" : false
-    },
-    "解約する" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel Subscription"
-          }
-        }
-      }
-    },
-    "解約手続きはApp Storeの管理画面で行います" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can cancel in your App Store subscription settings"
-          }
-        }
-      }
     },
     "解約手続きへ" : {
       "localizations" : {
@@ -907,28 +199,8 @@
     "記録をリセット" : {
       "shouldTranslate" : false
     },
-    "設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
-          }
-        }
-      }
-    },
     "設定画面を閉じると、タブの画面に重ねて表示されます。最後まで見るか閉じるまで、アプリを起動し直しても表示されます。" : {
       "shouldTranslate" : false
-    },
-    "認証に失敗しました。再度サインインをお試しください。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Authentication failed. Please sign in again."
-          }
-        }
-      }
     },
     "課金" : {
       "shouldTranslate" : false
@@ -956,32 +228,12 @@
         }
       }
     },
-    "購入を復元" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore Purchases"
-          }
-        }
-      }
-    },
     "購入を復元しました" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Purchases restored"
-          }
-        }
-      }
-    },
-    "退会" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Account"
           }
         }
       }
@@ -1025,26 +277,6 @@
         }
       }
     },
-    "送信" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send"
-          }
-        }
-      }
-    },
-    "送信すると、アプリとOSのバージョン、端末の機種もあわせて運営に届きます。返信は、お問い合わせの一覧から確認できます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your app version, OS version, and device model will be sent along with your message. You can check our replies in your list of inquiries."
-          }
-        }
-      }
-    },
     "送信できませんでした" : {
       "localizations" : {
         "en" : {
@@ -1054,90 +286,6 @@
           }
         }
       }
-    },
-    "通信状態をご確認のうえ、もう一度お試しください。入力した内容はそのまま残っています。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please check your connection and try again. What you wrote has been kept."
-          }
-        }
-      }
-    },
-    "通知設定" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notifications"
-          }
-        }
-      }
-    },
-    "運営" : {
-      "comment" : "問い合わせの返信の送り手として出す、アプリの運営者",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "homeau Team"
-          }
-        }
-      }
-    },
-    "運営からのお知らせを受け取る" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Get Announcements"
-          }
-        }
-      }
-    },
-    "運営からの返信をお待ちください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for a reply from us"
-          }
-        }
-      }
-    },
-    "運営から新しい返信があります" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You have a new reply"
-          }
-        }
-      }
-    },
-    "運営から返信がありました" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We’ve replied"
-          }
-        }
-      }
-    },
-    "選択してください" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select"
-          }
-        }
-      }
-    },
-    "開発者向け" : {
-      "shouldTranslate" : false
     }
   },
   "version" : "1.1"

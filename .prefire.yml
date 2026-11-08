@@ -20,7 +20,7 @@ test_configuration:
   - testable_imports:
     - HometeUI
     - AuthFeatureUI
-    - SettingFeature
+    - SettingFeatureUI
     - HomeFeature
     - CohabitantRegistrationFeatureUI
     - HouseworkFeature
