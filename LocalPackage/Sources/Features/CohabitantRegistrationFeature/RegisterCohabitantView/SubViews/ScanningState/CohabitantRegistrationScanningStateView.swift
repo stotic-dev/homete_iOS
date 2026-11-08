@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
+import CohabitantRegistrationFeatureUI
 import HometeDomain
 import HometeUI
 import MultipeerConnectivity
@@ -43,6 +44,8 @@ struct CohabitantRegistrationScanningStateView: View {
                     .transition(.opacity)
             } else {
                 CohabitantRegistrationPeersListView(
+                    connectedPeers: Set(connectedPeers
+                        .map { CohabitantRegistrationPeerID(displayName: $0.displayName) }),
                     confirmedPeers: scanning.confirmedPeers,
                     isConfirmed: scanning.isConfirmed
                 ) { isOK in

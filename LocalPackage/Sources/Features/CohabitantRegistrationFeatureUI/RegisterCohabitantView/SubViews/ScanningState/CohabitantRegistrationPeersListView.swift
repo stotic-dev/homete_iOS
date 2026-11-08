@@ -5,18 +5,17 @@
 //  Created by 佐藤汰一 on 2025/08/30.
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import HometeUI
-import MultipeerConnectivity
 import SwiftUI
 
-struct CohabitantRegistrationPeersListView: View {
-
-    @Environment(\.connectedPeers) var connectedPeers
+public struct CohabitantRegistrationPeersListView: View {
 
     @State var isPresentingConfirmReadyRegistrationAlert = false
 
+    /// 接続中のメンバー
+    let connectedPeers: Set<CohabitantRegistrationPeerID>
     /// 登録開始を宣言済みのメンバー
     let confirmedPeers: Set<CohabitantRegistrationPeerID>
     /// 自分が登録開始を宣言済みかどうか
@@ -25,7 +24,21 @@ struct CohabitantRegistrationPeersListView: View {
     /// 表示中のメンバーで登録を開始するかどうかを確定した
     let onConfirmMembers: (_ isOK: Bool) -> Void
 
-    var body: some View {
+    public init(
+        isPresentingConfirmReadyRegistrationAlert: Bool = false,
+        connectedPeers: Set<CohabitantRegistrationPeerID>,
+        confirmedPeers: Set<CohabitantRegistrationPeerID>,
+        isConfirmed: Bool,
+        onConfirmMembers: @escaping (_ isOK: Bool) -> Void
+    ) {
+        _isPresentingConfirmReadyRegistrationAlert = State(initialValue: isPresentingConfirmReadyRegistrationAlert)
+        self.connectedPeers = connectedPeers
+        self.confirmedPeers = confirmedPeers
+        self.isConfirmed = isConfirmed
+        self.onConfirmMembers = onConfirmMembers
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             // メンバーが増えても、画面下部の「登録を開始する」を押せる高さを確保できるようスクロールさせる
             ScrollView {
@@ -102,10 +115,9 @@ private extension CohabitantRegistrationPeersListView {
 
     // MARK: プレゼンテーション処理
 
-    func convertToPeerRows(_ peers: Set<MCPeerID>) -> [PeerRow] {
-        peers.map { peer in
-            let peerID = CohabitantRegistrationPeerID(displayName: peer.displayName)
-            return PeerRow(
+    func convertToPeerRows(_ peers: Set<CohabitantRegistrationPeerID>) -> [PeerRow] {
+        peers.map { peerID in
+            PeerRow(
                 id: peerID.displayName,
                 displayName: peerID.userName,
                 isConfirmed: confirmedPeers.contains(peerID)
@@ -117,37 +129,37 @@ private extension CohabitantRegistrationPeersListView {
 
 #Preview("CohabitantRegistrationPeersListView_デバイス検知済みケース") {
     CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
         confirmedPeers: [],
         isConfirmed: false,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_確認アラート表示中のケース") {
     CohabitantRegistrationPeersListView(
         isPresentingConfirmReadyRegistrationAlert: true,
+        connectedPeers: [.init(displayName: "Test_UUID")],
         confirmedPeers: [],
         isConfirmed: false,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_相手が開始済みのケース") {
     CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
         confirmedPeers: [.init(displayName: "Test_UUID")],
         isConfirmed: false,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }
 
 #Preview("CohabitantRegistrationPeersListView_自分が開始済みで相手待ちのケース") {
     CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
         confirmedPeers: [],
         isConfirmed: true,
         onConfirmMembers: { _ in }
     )
-    .environment(\.connectedPeers, [.init(displayName: "Test_UUID")])
 }

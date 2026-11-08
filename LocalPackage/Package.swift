@@ -17,6 +17,7 @@ let package = Package(
         lib("SettingFeature"),
         lib("HomeFeature"),
         lib("CohabitantRegistrationFeature"),
+        lib("CohabitantRegistrationFeatureUI"),
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
         lib("HometeLocalNotification"),
@@ -75,11 +76,15 @@ let package = Package(
         feature(name: "AuthFeature"),
         feature(name: "SettingFeature"),
         feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
-        feature(name: "CohabitantRegistrationFeature"),
+        feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeature"]),
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature"),
         feature(name: "PaywallFeature"),
+
+        // MARK: FeatureUI Targets
+
+        featureUI(name: "CohabitantRegistrationFeatureUI"),
 
         // MARK: Others
 
@@ -179,6 +184,17 @@ let package = Package(
 
 func swiftLintPlugin() -> Target.PluginUsage {
     .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
+}
+
+/// UIのみのView（`XxxView` / `XxxContent`）とプレビューを置くモジュール。HometeDomainには依存させない（doc/adr/0063）
+func featureUI(name: String, extraDeps: [Target.Dependency] = []) -> Target {
+    .target(
+        name: name,
+        dependencies: ["HometeModel", "HometeUI", "HometeResources"] + extraDeps,
+        path: "./Sources/Features/\(name)",
+        resources: [localizableStrings()],
+        plugins: [swiftLintPlugin()]
+    )
 }
 
 func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {

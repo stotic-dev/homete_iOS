@@ -11,9 +11,11 @@ import SwiftUI
 /// 登録処理の完了を待つ画面
 /// - Note: 役割の通知・同居人IDの共有・完了の待ち合わせは`CohabitantRegistrationStateMachine`が扱うため、
 ///         このViewは待っていることを伝えるだけに留める
-struct CohabitantRegistrationProcessingView: View {
+public struct CohabitantRegistrationProcessingView: View {
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: .zero) {
             VStack(spacing: .space16) {
                 VStack(spacing: .zero) {

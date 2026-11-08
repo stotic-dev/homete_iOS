@@ -5,21 +5,20 @@
 //  Created by 佐藤汰一 on 2025/08/17.
 //
 
-import HometeDomain
 import HometeUI
 import SwiftUI
 
-struct CohabitantRegistrationInitialStateView: View {
+public struct CohabitantRegistrationInitialStateView: View {
 
     /// 招待リンクの共有アクション
     /// - Note: nilの場合は招待リンクの導線を表示しない
     let onTapInvite: (() -> Void)?
 
-    init(onTapInvite: (() -> Void)? = nil) {
+    public init(onTapInvite: (() -> Void)? = nil) {
         self.onTapInvite = onTapInvite
     }
 
-    var body: some View {
+    public var body: some View {
         VStack(spacing: .zero) {
             VStack(alignment: .leading, spacing: .space16) {
                 Text("同居人の登録", bundle: #bundle)

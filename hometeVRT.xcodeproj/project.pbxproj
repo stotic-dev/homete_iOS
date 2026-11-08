@@ -13,7 +13,7 @@
 		0AA7C0030000000000000004 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeature */; };
 		0AA7C0030000000000000005 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeature */; };
 		0AA7C0030000000000000006 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeature */; };
-		0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeature */; };
+		0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */; };
 		0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeature */; };
 		0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeature */; };
 		0AA7C003000000000000000A /* ContributionFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeature */; };
@@ -95,7 +95,7 @@
 				0AA7C0030000000000000004 /* AuthFeature in Frameworks */,
 				0AA7C0030000000000000005 /* SettingFeature in Frameworks */,
 				0AA7C0030000000000000006 /* HomeFeature in Frameworks */,
-				0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */,
+				0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */,
 				0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */,
 				0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */,
 				0AA7C003000000000000000A /* ContributionFeature in Frameworks */,
@@ -179,7 +179,7 @@
 				0AA7C0020000000000000004 /* AuthFeature */,
 				0AA7C0020000000000000005 /* SettingFeature */,
 				0AA7C0020000000000000006 /* HomeFeature */,
-				0AA7C0020000000000000007 /* CohabitantRegistrationFeature */,
+				0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */,
 				0AA7C0020000000000000008 /* HouseworkFeature */,
 				0AA7C0020000000000000009 /* HouseworkTemplateFeature */,
 				0AA7C002000000000000000A /* ContributionFeature */,
@@ -714,9 +714,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = HomeFeature;
 		};
-		0AA7C0020000000000000007 /* CohabitantRegistrationFeature */ = {
+		0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = CohabitantRegistrationFeature;
+			productName = CohabitantRegistrationFeatureUI;
 		};
 		0AA7C0020000000000000008 /* HouseworkFeature */ = {
 			isa = XCSwiftPackageProductDependency;
