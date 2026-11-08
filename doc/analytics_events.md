@@ -91,7 +91,7 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 | `onboarding_partner_registration` | `PartnerRegistrationScreen`（オンボーディングのパートナー登録の選択肢） |
 | `onboarding_premium_introduction` | `PremiumIntroductionView` |
 | `onboarding_notification_permission` | `OnboardingNotificationPermissionGuideView` |
-| `paywall` | `PaywallScreen`（`RouteResolverInjection`で付与） |
+| `paywall` | `PaywallScreen`（`PaywallFeature`。`AppRoot`の`PaywallGate`で付与） |
 | `dashboard` | `RegisteredContent` |
 | `dashboard_not_registered` | `HomeView`（グループ未参加のホーム。「家事を始める前に」のやることリスト） |
 | `cohabitant_registration` | `CohabitantRegistrationView` |
@@ -602,7 +602,7 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 
 | 項目 | 内容 |
 |---|---|
-| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:)`で渡す） |
+| 実装 | `PaywallAnalyticsAction`、`PaywallGate`（起点は`AppRoute.paywall(step:isPlanChange:)`で渡す） |
 
 | パラメータ | 必須 | 値 | 説明 |
 |---|---|---|---|
@@ -633,6 +633,10 @@ Paywall（`PaywallScreen`）の表示・クローズ。アプリ内の8箇所あ
 匿名のアカウントは、Paywallを出す前にApple連携の画面を出す（`PaywallGate`）。連携の画面を出している間は
 Paywallを表示していないので、`shown` / `closed`は送らない。連携を終えてPaywallに切り替わった時点で`shown`を送る。
 連携の結果は`account_link`イベントの`entry: paywall`で見る。
+
+契約中の人がPaywallの起点を踏んだときは、プランの一覧ではなく契約プラン画面を出す（`PaywallGate`）。
+このときもPaywallを表示していないので`shown` / `closed`は送らず、`screen_view`の`subscription_management`だけが送られる。
+契約プラン画面の「プランを変更」から開いたとき（`AppRoute.paywall(step:isPlanChange:)`の`isPlanChange`が`true`）はプランの一覧を出し、`step: subscription_management`で送る。
 
 `board_ad`と`contribution_storage_limit`は同一画面（`ContributionAnalyticsScreen`）に2つの起点があるため、
 開いた時点の起点を保持して`step`に渡す。

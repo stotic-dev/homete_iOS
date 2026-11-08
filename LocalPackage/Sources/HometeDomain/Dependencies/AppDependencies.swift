@@ -12,6 +12,7 @@ public struct AppDependencies: Sendable {
     public let nonceGeneratorClient: NonceGenerationClient
     public let accountAuthClient: AccountAuthClient
     public let analyticsClient: AnalyticsClient
+    public let errorReportClient: ErrorReportClient
     public let accountInfoClient: AccountInfoClient
     public let cohabitantClient: CohabitantClient
     public let cohabitantInvitationClient: CohabitantInvitationClient
@@ -59,6 +60,7 @@ public struct AppDependencies: Sendable {
         nonceGeneratorClient: NonceGenerationClient = .previewValue,
         accountAuthClient: AccountAuthClient = .previewValue,
         analyticsClient: AnalyticsClient = .previewValue,
+        errorReportClient: ErrorReportClient = .previewValue,
         accountInfoClient: AccountInfoClient = .previewValue,
         cohabitantClient: CohabitantClient = .previewValue,
         cohabitantInvitationClient: CohabitantInvitationClient = .previewValue,
@@ -94,6 +96,7 @@ public struct AppDependencies: Sendable {
         self.nonceGeneratorClient = nonceGeneratorClient
         self.accountAuthClient = accountAuthClient
         self.analyticsClient = analyticsClient
+        self.errorReportClient = errorReportClient
         self.accountInfoClient = accountInfoClient
         self.cohabitantClient = cohabitantClient
         self.cohabitantInvitationClient = cohabitantInvitationClient

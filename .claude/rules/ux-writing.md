@@ -108,7 +108,8 @@ homeauは「ほめる」から名付けたアプリなので、文言でも、�
 
 - `LocalPackage/Sources/Features/AuthFeature/Onboarding/PremiumIntroductionView.swift` — 敬体・結果ベースの言い回しのお手本
 - `doc/premium_plan.md` — プレミアムプランの訴求内容と実際の提供価値の対応関係
+- `LocalPackage/Sources/Features/PaywallFeature/SubViews/PaywallBenefitListContent.swift` — Paywallで訴求する特典の文言
 
 ## 適用範囲の補足
 
-このルールはSwiftコード中の文言だけでなく、RevenueCat Paywallの訴求文言（`billing-product-ops`スキルで編集するダッシュボード側のコピー）にも同じ基準で適用する。Paywallの文言を編集する際は、変更後に対象機能の提供条件をコードで確認すること（原則4）。
+Paywallの訴求文言は`PaywallFeature`のコード（`PaywallBenefit`と`PaywallBenefitListContent`）にある（[ADR-0070](../../doc/adr/0070-custom-paywall-view.md)）。ほかの画面と同じくこのルールで書き、特典を足すときは、その機能がプラン判定で実際に解放されていることをコードで確認する（原則4）。

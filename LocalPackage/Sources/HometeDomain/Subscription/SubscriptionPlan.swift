@@ -53,7 +53,7 @@ public enum SubscriptionPeriod: Equatable, Sendable {
 
 }
 
-extension SubscriptionPeriod {
+public extension SubscriptionPeriod {
 
     /// プロダクトIDに含まれるキーワードから周期を推定する
     /// - Note: App Store Connect上のプロダクトID命名規則（"monthly"/"yearly"等を含む）に依存する

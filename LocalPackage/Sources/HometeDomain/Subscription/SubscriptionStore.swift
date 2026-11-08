@@ -101,6 +101,26 @@ public final class SubscriptionStore {
         analyticsClient.log(.subscription(.manageOpened(isSuccess: true)))
     }
 
+    /// プランを購入する
+    ///
+    /// 復元と同じく、購入者がアカウントになっていることを確かめてから購入する（`ensureLoggedIn(_:)`）。
+    /// 購入できたら結果をすぐエンタイトルメント状態に反映する（更新の購読が届くのを待たない）
+    /// - Parameters:
+    ///   - packageId: 購入するプランの`PurchasePackage.id`
+    ///   - accountId: 購入を結び付けるアカウントのID
+    /// - Throws: 購入者をアカウントにできなかった場合は`PurchaseAccountError.notLoggedIn`
+    public func purchase(_ packageId: String, for accountId: String) async throws -> PurchaseResult {
+        guard await ensureLoggedIn(accountId) else {
+            throw PurchaseAccountError.notLoggedIn
+        }
+        let result = try await purchaseClient.purchase(packageId)
+        if case let .purchased(info) = result {
+            entitlementInfo = info
+            analyticsClient.setUserProperty(.isPremium(isPremium))
+        }
+        return result
+    }
+
     /// 過去の購入を復元する
     ///
     /// 購入者が匿名のIDのまま復元すると、購入と同じく加入がアカウントに結び付かないため、

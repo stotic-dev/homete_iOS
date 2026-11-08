@@ -4,8 +4,9 @@
 
 import AuthFeature
 import HometeDomain
-import HometeInfrastructure
 import HometeUI
+import PaywallFeature
+import SettingFeature
 import SwiftUI
 
 /// Apple連携の画面をシートとして出す
@@ -36,6 +37,8 @@ struct AccountLinkSheet: View {
 /// `logIn`に失敗したままだと匿名のIDで購入され、加入がサーバーに届かないため、なっていなければログインし直し、
 /// それも失敗したらPaywallを出さずにやり直しを促す
 ///
+/// 契約中の人には、プランの一覧ではなく契約プラン画面を出す（`isPlanChange`が`true`なら一覧を出す）
+///
 /// Paywallの表示・終了のイベントもここで送る。起点で送ると、連携の画面を閉じただけでもPaywallを見たことになるため
 struct PaywallGate: View {
 
@@ -46,6 +49,8 @@ struct PaywallGate: View {
     @Environment(\.dismiss) var dismiss
 
     let step: PaywallAnalyticsStep?
+    /// 契約中のプランを変えるために開いたか
+    let isPlanChange: Bool
 
     @State var preparation = Preparation.preparing
     /// 「もう一度試す」を押した回数。準備をやり直すきっかけにする
@@ -73,8 +78,19 @@ extension PaywallGate {
     enum Preparation {
 
         case preparing
-        case ready
+        case ready(Destination)
         case failed
+
+    }
+
+    /// 準備ができたあとに出す画面
+    /// - Note: 準備ができた時点で決める。Paywallで購入してプレミアムになっても、お礼を出す前に契約プラン画面へ切り替わらないように
+    enum Destination {
+
+        /// プランの一覧
+        case paywall
+        /// 契約プラン画面
+        case subscriptionManagement
 
     }
 
@@ -99,13 +115,21 @@ private extension PaywallGate {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-        case .ready:
-            // PaywallScreenはHometeInfrastructureにあり、HometeUIに依存しない。
-            // 計測のためだけに依存を増やさず、画面を組み立てるここでModifierを付ける
-            PaywallScreen()
-                .onAppear { appearedPaywall() }
-                .onDisappear { disappearedPaywall() }
-                .trackScreenView(.paywall)
+        case .ready(.paywall):
+            if let preparingAccountId {
+                PaywallScreen(accountId: preparingAccountId, onClose: { dismiss() })
+                    .onAppear { appearedPaywall() }
+                    .onDisappear { disappearedPaywall() }
+                    .trackScreenView(.paywall)
+            }
+
+        case .ready(.subscriptionManagement):
+            // Paywallは出していないので、paywallイベントは送らない（screen_viewは契約プラン画面が送る）
+            if let account = accountStore.account {
+                SubscriptionManagementScreen(onClose: { dismiss() })
+                    // 復元に使うアカウントを渡す。オンボーディングなど、ログイン後の画面の外から開かれることがあるため
+                    .environment(\.loginContext, LoginContext(account: account))
+            }
 
         case .failed:
             PaywallPreparationErrorView(
@@ -141,7 +165,11 @@ private extension PaywallGate {
         let isReady = await subscriptionStore.ensureLoggedIn(accountId)
         // 確かめている間にアカウントが変わると、このTaskはキャンセルされ、新しいアカウントで準備し直す
         guard !Task.isCancelled else { return }
-        preparation = isReady ? .ready : .failed
+        guard isReady else {
+            preparation = .failed
+            return
+        }
+        preparation = .ready(subscriptionStore.isPremium && !isPlanChange ? .subscriptionManagement : .paywall)
     }
 
     func appearedPaywall() {

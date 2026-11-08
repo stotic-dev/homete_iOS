@@ -37,7 +37,10 @@ struct SubscriptionManagementView: View {
         .fullScreenLoadingIndicator(loadingState)
         .fullScreenCoverOnIOS(
             isPresented: $isShowPaywall,
-            content: { router.resolve(.paywall(step: .subscriptionManagement)) }
+            // 契約中なら、契約プラン画面ではなくプランの一覧を開く（このPaywallから開いた契約プラン画面へ戻り続けないように）
+            content: {
+                router.resolve(.paywall(step: .subscriptionManagement, isPlanChange: subscriptionStore.isPremium))
+            }
         )
         .alert(.localized("購入の復元"), isPresented: $isPresentedRestoreResultAlert) {
             Button("OK") {}
