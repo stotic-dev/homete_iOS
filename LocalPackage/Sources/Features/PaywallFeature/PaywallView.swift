@@ -64,61 +64,54 @@ private extension PaywallView {
     func planListContent(offering: PurchaseOffering) -> some View {
         ScrollView {
             VStack(spacing: .space32) {
-                header
+                PaywallHeroContent()
                 PaywallBenefitListContent(benefits: PaywallBenefit.allCases)
                 VStack(spacing: .space16) {
                     ForEach(offering.packages) { package in
+                        let isSubscribed = package.productIdentifier == subscribedProductIdentifier
                         PaywallPlanOptionContent(
                             package: package,
                             isSelected: package.id == selectedPackageId,
-                            isSubscribed: package.productIdentifier == subscribedProductIdentifier,
+                            isSubscribed: isSubscribed,
+                            // 1か月あたりがいちばん安い年額を勧める。契約中なら勧めない
+                            isRecommended: package.period == .yearly && !isSubscribed,
                             onTap: { selectedPackageId = package.id }
                         )
                     }
                 }
-                actionButtons
-                PaywallLegalNoticeContent()
+                VStack(spacing: .space16) {
+                    Button(.localized("購入を復元")) {
+                        onTapRestore()
+                    }
+                    .font(with: .body)
+                    .foregroundStyle(.textSecondary)
+                    PaywallLegalNoticeContent()
+                }
             }
             .padding(.horizontal, .space16)
             .padding(.top, .space16)
             .padding(.bottom, .space24)
         }
         .softTopScrollEdgeEffect()
-    }
-
-    var header: some View {
-        VStack(spacing: .space16) {
-            Image(systemName: "crown.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.iconDecorative)
-                .accessibilityHidden(true)
-            Text("プレミアムプラン", bundle: #bundle)
-                .font(with: .headLineM)
-                .accessibilityAddTraits(.isHeader)
-            Text("家事の記録が、もっと便利になります。", bundle: #bundle)
-                .font(with: .body)
-                .foregroundStyle(.textSecondary)
-                .multilineTextAlignment(.center)
+        // 特典を読んでいる間も申し込めるよう、購入ボタンは下に固定する
+        .safeAreaInset(edge: .bottom) {
+            purchaseButton
         }
     }
 
-    var actionButtons: some View {
-        VStack(spacing: .space16) {
-            Button {
-                onTapPurchase()
-            } label: {
-                Text(purchaseButtonTitle)
-                    .padding(.vertical, .space8)
-                    .frame(maxWidth: .infinity)
-            }
-            .primaryButtonStyle()
-            .disabled(selectedPackageId == nil)
-            Button(.localized("購入を復元")) {
-                onTapRestore()
-            }
-            .font(with: .body)
-            .foregroundStyle(.textSecondary)
+    var purchaseButton: some View {
+        Button {
+            onTapPurchase()
+        } label: {
+            Text(purchaseButtonTitle)
+                .padding(.vertical, .space8)
+                .frame(maxWidth: .infinity)
         }
+        .primaryButtonStyle()
+        .disabled(selectedPackageId == nil)
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space8)
+        .background(.backgroundScreen)
     }
 
     var showsToolbarCloseButton: Bool {
@@ -143,7 +136,7 @@ private extension PaywallView {
     @Previewable @State var selectedPackageId: String? = PurchasePackage.yearlyForPreview.id
     NavigationStack {
         PaywallView(
-            phase: .loaded(.previewValue),
+            phase: .loaded(PurchaseOffering(packages: [.yearlyForPreview, .monthlyForPreview])),
             selectedPackageId: $selectedPackageId,
             subscribedProductIdentifier: nil,
             onTapPurchase: {},
@@ -158,7 +151,7 @@ private extension PaywallView {
     @Previewable @State var selectedPackageId: String? = PurchasePackage.yearlyForPreview.id
     NavigationStack {
         PaywallView(
-            phase: .loaded(.previewValue),
+            phase: .loaded(PurchaseOffering(packages: [.yearlyForPreview, .monthlyForPreview])),
             selectedPackageId: $selectedPackageId,
             subscribedProductIdentifier: PurchasePackage.monthlyForPreview.productIdentifier,
             onTapPurchase: {},

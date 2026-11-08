@@ -16,6 +16,8 @@ struct PaywallPlanOptionContent: View {
     let isSelected: Bool
     /// 今契約しているプランか。契約中のプランは選べない
     let isSubscribed: Bool
+    /// おすすめの印を付けて目立たせるか
+    let isRecommended: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -24,8 +26,9 @@ struct PaywallPlanOptionContent: View {
         } label: {
             HStack(spacing: .space16) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
+                    .font(.title2)
                     .foregroundStyle(isSelected ? .textAccent : .textSecondary)
+                    .contentTransition(.symbolEffect(.replace))
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: .space4) {
                     Text(package.period.displayName)
@@ -36,8 +39,8 @@ struct PaywallPlanOptionContent: View {
                         .foregroundStyle(.textPrimary)
                     if let localizedPricePerMonth = package.localizedPricePerMonth {
                         Text("1か月あたり\(localizedPricePerMonth)", bundle: #bundle)
-                            .font(with: .caption)
-                            .foregroundStyle(.textSecondary)
+                            .font(with: isRecommended ? .boldCaption : .caption)
+                            .foregroundStyle(isRecommended ? .textAccent : .textSecondary)
                     }
                     if let offer = package.introductoryOffer {
                         Text(introductoryOfferText(offer))
@@ -53,17 +56,32 @@ struct PaywallPlanOptionContent: View {
                 }
             }
             .padding(.space16)
+            // おすすめの印と重ならないよう、上を空ける
+            .padding(.top, isRecommended ? .space8 : .zero)
             .background(.backgroundCard)
             .cornerRadius(.radius20)
             .overlay {
                 RoundedRectangle(radius: .radius20)
                     .strokeBorder(isSelected ? Color.fillAccent : .clear, lineWidth: 2)
             }
+            .shadow(color: isSelected ? Color.fillAccent.opacity(0.25) : .clear, radius: 12, y: 4)
+            .overlay(alignment: .topLeading) {
+                if isRecommended {
+                    recommendedBadge
+                        .padding(.leading, .space16)
+                        .offset(y: -12)
+                }
+            }
+            .scaleEffect(isSelected ? 1 : 0.98)
+            .animation(.spring(duration: 0.35, bounce: 0.4), value: isSelected)
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .disabled(isSubscribed)
         .opacity(isSubscribed ? 0.6 : 1)
+        .sensoryFeedback(.selection, trigger: isSelected) { _, isSelected in
+            isSelected
+        }
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
@@ -72,6 +90,25 @@ struct PaywallPlanOptionContent: View {
 // MARK: UI定義
 
 private extension PaywallPlanOptionContent {
+
+    var recommendedBadge: some View {
+        Label {
+            Text("おすすめ", bundle: #bundle, comment: "年額プランに付ける印")
+        } icon: {
+            Image(systemName: "sparkles")
+        }
+        .font(with: .boldCaption)
+        .foregroundStyle(.textReward)
+        .padding(.horizontal, .space8)
+        .padding(.vertical, .space4)
+        .background(.fillRewardSubtle)
+        .paywallShimmer()
+        .clipShape(.capsule)
+        .overlay {
+            Capsule()
+                .strokeBorder(.fillReward, lineWidth: 1)
+        }
+    }
 
     var priceText: LocalizedStringResource {
         switch package.period {
@@ -139,9 +176,11 @@ private extension PaywallPlanOptionContent {
         package: .yearlyForPreview,
         isSelected: true,
         isSubscribed: false,
+        isRecommended: true,
         onTap: {}
     )
     .padding()
+    .background(.backgroundScreen)
 }
 
 #Preview("PaywallPlanOptionContent_月額_無料トライアル", traits: .sizeThatFitsLayout) {
@@ -149,9 +188,11 @@ private extension PaywallPlanOptionContent {
         package: .monthlyWithTrialForPreview,
         isSelected: false,
         isSubscribed: false,
+        isRecommended: false,
         onTap: {}
     )
     .padding()
+    .background(.backgroundScreen)
 }
 
 #Preview("PaywallPlanOptionContent_月額_利用中", traits: .sizeThatFitsLayout) {
@@ -159,7 +200,9 @@ private extension PaywallPlanOptionContent {
         package: .monthlyForPreview,
         isSelected: false,
         isSubscribed: true,
+        isRecommended: false,
         onTap: {}
     )
     .padding()
+    .background(.backgroundScreen)
 }

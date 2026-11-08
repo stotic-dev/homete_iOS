@@ -13,10 +13,24 @@ struct PaywallBenefitListContent: View {
     let benefits: [PaywallBenefit]
 
     var body: some View {
-        VStack(spacing: .space24) {
-            ForEach(benefits, id: \.self) { benefit in
-                benefitRow(benefit)
+        VStack(alignment: .leading, spacing: .space16) {
+            Text("プレミアムプランでできること", bundle: #bundle)
+                .font(with: .headLineS)
+                .foregroundStyle(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+            VStack(spacing: .zero) {
+                ForEach(Array(benefits.enumerated()), id: \.element) { index, benefit in
+                    if index > 0 {
+                        // アイコンの右から区切る
+                        Divider()
+                            .padding(.leading, .space16 + .space40 + .space16)
+                    }
+                    benefitRow(benefit)
+                        .padding(.space16)
+                }
             }
+            .background(.backgroundCard)
+            .cornerRadius(.radius20)
         }
     }
 
@@ -29,9 +43,10 @@ private extension PaywallBenefitListContent {
     func benefitRow(_ benefit: PaywallBenefit) -> some View {
         HStack(alignment: .top, spacing: .space16) {
             Image(systemName: systemImage(benefit))
-                .font(.title3)
-                .foregroundStyle(.iconDecorative)
-                .frame(width: .space32)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.textAccent)
+                .frame(width: .space40, height: .space40)
+                .background(.fillAccentSubtle, in: RoundedRectangle(radius: .radius12))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: .space4) {
                 Text(title(benefit))
@@ -121,4 +136,5 @@ private extension PaywallBenefitListContent {
 #Preview("PaywallBenefitListContent", traits: .sizeThatFitsLayout) {
     PaywallBenefitListContent(benefits: PaywallBenefit.allCases)
         .padding()
+        .background(.backgroundScreen)
 }

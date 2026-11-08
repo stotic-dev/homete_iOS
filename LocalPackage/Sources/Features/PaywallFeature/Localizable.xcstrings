@@ -100,6 +100,17 @@
         }
       }
     },
+    "おすすめ" : {
+      "comment" : "年額プランに付ける印",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended"
+          }
+        }
+      }
+    },
     "お支払いはApple Accountに請求されます。期間が終わる24時間前までに解約しない限り、サブスクリプションは自動で更新されます。解約は、App Storeのアカウント設定からいつでも行えます。" : {
       "localizations" : {
         "en" : {
@@ -156,6 +167,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Premium Plan"
+          }
+        }
+      }
+    },
+    "プレミアムプランでできること" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What You Get with Premium"
           }
         }
       }
