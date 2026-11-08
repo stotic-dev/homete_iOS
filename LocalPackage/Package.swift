@@ -11,6 +11,7 @@ let package = Package(
     products: [
         lib("HometeModel"),
         lib("HometeDomain"),
+        lib("HometeAppCore"),
         lib("HometeUI"),
         lib("HometeResources"),
         lib("AuthFeature"),
@@ -23,6 +24,7 @@ let package = Package(
         lib("HometeLocalNotification"),
         lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
+        lib("HouseworkTemplateFeatureUI"),
         lib("FrequentHouseworkFeature"),
         lib("FrequentHouseworkFeatureUI"),
         lib("PaywallFeature"),
@@ -48,6 +50,12 @@ let package = Package(
             name: "HometeDomain",
             dependencies: ["HometeModel"],
             resources: [localizableStrings()],
+            plugins: [swiftLintPlugin()]
+        ),
+        // 画面単位の状態と操作（Feature固有のStore・ViewModel）。SwiftUIには依存させない
+        .target(
+            name: "HometeAppCore",
+            dependencies: ["HometeDomain"],
             plugins: [swiftLintPlugin()]
         ),
         // HometeDomainには依存させない。Store・UseCase・Clientの変更でVRTが全件にならないようにする（doc/adr/0063）
@@ -82,34 +90,16 @@ let package = Package(
         feature(name: "ContributionFeature"),
         feature(name: "FrequentHouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
         feature(name: "PaywallFeature"),
+        feature(name: "HouseworkTemplateFeature", extraDeps: ["HouseworkTemplateFeatureUI"]),
 
         // MARK: FeatureUI Targets
 
         featureUI(name: "CohabitantRegistrationFeatureUI"),
         featureUI(name: "FrequentHouseworkFeatureUI"),
+        featureUI(name: "HouseworkTemplateFeatureUI"),
 
         // MARK: Others
 
-        .target(
-            name: "HouseworkTemplateFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/HouseworkTemplateFeature",
-            resources: [localizableStrings()],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .testTarget(
-            name: "HouseworkTemplateFeatureTests",
-            dependencies: ["HouseworkTemplateFeature"],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
         // Notification Service Extensionからも使うため、Firebaseなど重い依存を持たせない
         .target(
             name: "HometeLocalNotification",
@@ -142,6 +132,11 @@ let package = Package(
         .testTarget(
             name: "HometeModelTests",
             dependencies: ["HometeModel"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
+            name: "HometeAppCoreTests",
+            dependencies: ["HometeAppCore"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(
@@ -197,7 +192,7 @@ func featureUI(name: String, extraDeps: [Target.Dependency] = []) -> Target {
 func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {
     .target(
         name: name,
-        dependencies: ["HometeDomain", "HometeUI", "HometeResources"] + extraDeps,
+        dependencies: ["HometeDomain", "HometeAppCore", "HometeUI", "HometeResources"] + extraDeps,
         path: "./Sources/Features/\(name)",
         resources: [localizableStrings()],
         plugins: [swiftLintPlugin()]

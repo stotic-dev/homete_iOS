@@ -5,8 +5,10 @@
 //  Created by Taichi Sato on 2026/05/08.
 //
 
+import HometeAppCore
 import HometeDomain
 import HometeUI
+import HouseworkTemplateFeatureUI
 import SwiftUI
 
 public struct HouseworkTemplateScreen: View {
@@ -19,8 +21,12 @@ public struct HouseworkTemplateScreen: View {
     @Environment(\.isAdsEnabled) var isAdsEnabled
     @Environment(\.cohabitantMembers) var members
     @Environment(\.routeResolver) var router
+    @Environment(\.dismiss) var dismiss
 
     @CommonError var commonErrorContent
+    /// テンプレートの編集・保存で起きたエラー
+    @CommonError var editErrorContent
+    @LoadingState var loadingState
 
     @State var templateEditStore: HouseworkTemplateEditStore
     /// 初めて開いたときに出すチュートリアル
@@ -29,6 +35,12 @@ public struct HouseworkTemplateScreen: View {
     @State var editingDraft: HouseworkTemplateDraft = .init()
     @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
     @State var isShowPaywall = false
+    @State var presentingAddModal = false
+    @State var presentingEditModal: HouseworkTemplateItem?
+    @State var presentingConflictDraftAlert = false
+    @State var presentingDetailItem: HouseworkTemplateItem?
+    @State var presentingDismissAlert = false
+    @State var presentingResetAlert = false
 
     public static func make() -> some View {
         DependenciesInjectLayer {
@@ -91,18 +103,70 @@ private extension HouseworkTemplateScreen {
     func templateContent() -> some View {
         NavigationStack {
             HouseworkTemplateView(
-                initialDraft: $initialDraft,
-                draft: $editingDraft,
-                editorContext: $editorContext,
+                content: templateViewContent,
+                draft: editingDraft,
+                activeEditors: editorContext.currentActiveEditors,
                 isShowAd: AdDisplayPolicy.shouldShowAds(
                     isPremium: subscriptionStore.isPremium,
                     isEnabled: isAdsEnabled
                 ),
-                memoLimitPolicy: .init(isPremium: subscriptionStore.isPremium),
-                loadFailure: loadFailure,
-                onTapRemoveAdsLink: { tappedRemoveAdsLink() },
-                onRetry: { await retry() }
+                actions: templateViewActions
             )
+            .sheet(isPresented: $presentingAddModal) {
+                HouseworkTemplateItemEditModalScreen(mode: .create) { input in
+                    tappedCreateItemButton(input: input)
+                }
+            }
+            .sheet(item: $presentingEditModal) { item in
+                HouseworkTemplateItemEditModalScreen(
+                    mode: .edit(before: .init(item: item, recurrence: recurrence(for: item)))
+                ) { input in
+                    tappedEditItemButton(input: input)
+                }
+            }
+            .navigationDestination(item: $presentingDetailItem) { item in
+                HouseworkTemplateItemDetailScreen(
+                    item: item,
+                    recurrence: recurrence(for: item),
+                    onEdit: { input in
+                        tappedEditItemButton(input: input)
+                    },
+                    onDelete: {
+                        tappedDeleteItemButton(itemId: item.id)
+                    }
+                )
+            }
+            .onChange(of: initialDraft) {
+                onChangeInitialDraft()
+            }
+            .alert(
+                .localized("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？"),
+                isPresented: $presentingConflictDraftAlert
+            ) {
+                Button(.localized("破棄"), role: .destructive) {
+                    tappedDiscardChangesAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            }
+            .alert(.localized("変更内容はまだ確定していません"), isPresented: $presentingDismissAlert) {
+                Button(.localized("閉じる"), role: .destructive) {
+                    tappedDismissAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            } message: {
+                Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。", bundle: #bundle)
+            }
+            .alert(.localized("編集前の状態に戻しますか？"), isPresented: $presentingResetAlert) {
+                Button(.localized("戻す"), role: .destructive) {
+                    tappedResetAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            } message: {
+                Text("現在の編集内容は破棄されます。", bundle: #bundle)
+            }
+            .commonError(content: $editErrorContent)
+            .fullScreenLoadingIndicator(loadingState)
+            .trackScreenView(.houseworkTemplate)
         }
         .environment(templateEditStore)
     }
@@ -185,6 +249,46 @@ private extension HouseworkTemplateScreen {
             // Storeが持つloadStateを根拠にエラー表示へ倒し、この画面のままリトライできるようにする
             print("failed to start editing housework template: \(error)")
         }
+    }
+
+    /// 画面に出す内容
+    var templateViewContent: HouseworkTemplateView.Content {
+        if let loadFailure {
+            return .loadFailed(loadFailure)
+        }
+        guard houseworkTemplateListStore.selectedTemplateId != nil, let initialDraft else {
+            return .empty
+        }
+        return .editing(hasUnsavedChanges: initialDraft.hasUnsavedChanges(comparedTo: editingDraft))
+    }
+
+    var templateViewActions: HouseworkTemplateView.Actions {
+        .init(
+            onRetry: {
+                loadingState.task {
+                    await retry()
+                }
+            },
+            onTapItem: { item in presentingDetailItem = item },
+            onTapEdit: { item in presentingEditModal = item },
+            onTapDelete: { itemId, day in tappedDeleteItemButton(itemId: itemId, from: day) },
+            onDropItem: { itemId, destination in onDropItem(itemId: itemId, to: destination) },
+            onTapAdd: { presentingAddModal = true },
+            onTapReset: { presentingResetAlert = true },
+            onTapSave: {
+                guard let templateId = houseworkTemplateListStore.selectedTemplateId else { return }
+                Task {
+                    await tappedSaveButton(templateId: templateId)
+                }
+            },
+            onTapCreateTemplate: {
+                Task {
+                    await tappedCreateTemplateButton()
+                }
+            },
+            onTapClose: { tappedCancelButton() },
+            onTapRemoveAdsLink: { tappedRemoveAdsLink() }
+        )
     }
 
     /// テンプレートの初回ロードが失敗している場合に、エラー表示に使う内容を返す

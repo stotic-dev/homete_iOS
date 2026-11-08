@@ -7,24 +7,43 @@
 
 import HometeDomain
 import HometeUI
+import HouseworkTemplateFeatureUI
 import SwiftUI
 
+/// 家事追加・編集モーダル（ハーフモーダル / 新規・編集兼用）
 struct HouseworkTemplateItemEditModalScreen: View {
 
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.routeResolver) var router
+    @Environment(SubscriptionStore.self) var subscriptionStore
+
+    @State var isPresentedMemoEditSheet = false
     @State var input: TemplateItemEditInput = .initial(UUID())
     @FocusState var isShowingKeyboard: Bool
 
-    let mode: EditMode
+    let mode: HouseworkTemplateEditMode
     let onConfirm: (TemplateItemEditInput) -> Void
 
     var body: some View {
         NavigationStack {
-            HouseworkTemplateItemEditModal(
+            HouseworkTemplateItemEditView(
                 input: $input,
                 isShowingKeyboard: _isShowingKeyboard,
                 mode: mode,
-                onConfirm: onConfirm
+                onTapClose: { dismiss() },
+                onTapMemo: { isPresentedMemoEditSheet = true },
+                onTapConfirm: { tappedConfirmButton() }
             )
+            .sheet(isPresented: $isPresentedMemoEditSheet) {
+                // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
+                HouseworkMemoEditScreen(memo: input.memo, isPremium: subscriptionStore.isPremium) { memo in
+                    input.memo = memo
+                } paywall: {
+                    router.resolve(.paywall(step: .houseworkMemoLimit))
+                }
+                .trackScreenView(.houseworkMemoEdit)
+            }
+            .trackScreenView(.houseworkTemplateEdit)
         }
         .background {
             if isShowingKeyboard {
@@ -62,149 +81,9 @@ private extension HouseworkTemplateItemEditModalScreen {
         isShowingKeyboard = false
     }
 
-}
-
-/// 家事追加・編集モーダル（ハーフモーダル / 新規・編集兼用）。
-struct HouseworkTemplateItemEditModal: View {
-
-    @Environment(\.dismiss) var dismiss
-    @Environment(\.routeResolver) var router
-    @Environment(SubscriptionStore.self) var subscriptionStore
-    @State var isPresentedMemoEditSheet = false
-
-    @Binding var input: TemplateItemEditInput
-    @FocusState var isShowingKeyboard: Bool
-
-    let mode: EditMode
-    let onConfirm: (TemplateItemEditInput) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: .space16) {
-            inputTitleField()
-            inputPointPicker()
-            inputRecurrenceSelector()
-            HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
-                isPresentedMemoEditSheet = true
-            }
-            Spacer()
-        }
-        .padding(.horizontal, .space16)
-        .padding(.vertical, .space24)
-        .navigationTitle(navigationTitle)
-        .inlineNavigationBarTitleDisplayMode()
-        .leadingToolbarItem {
-            NavigationBarButton(label: .close) {
-                dismiss()
-            }
-        }
-        .trailingToolbarItem {
-            trailingNavigationItem()
-        }
-        .sheet(isPresented: $isPresentedMemoEditSheet) {
-            // すべて消したメモも空のまま残す。旧バージョンのアプリによる上書きを防ぐため（ADR-0034）
-            HouseworkMemoEditScreen(memo: input.memo, isPremium: subscriptionStore.isPremium) { memo in
-                input.memo = memo
-            } paywall: {
-                router.resolve(.paywall(step: .houseworkMemoLimit))
-            }
-            .trackScreenView(.houseworkMemoEdit)
-        }
-        .trackScreenView(.houseworkTemplateEdit)
-    }
-
-}
-
-// MARK: - UI定義
-
-private extension HouseworkTemplateItemEditModal {
-
-    var navigationTitle: LocalizedStringResource {
-        switch mode {
-        case .create: .localized("家事を追加")
-        case .edit: .localized("家事を編集")
-        }
-    }
-
-    func inputTitleField() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("家事の名前", bundle: #bundle)
-                .font(with: .headLineS)
-            ClearableTextField(
-                text: $input.title,
-                placeholder: .localized("家事の名前を入力"),
-                focus: $isShowingKeyboard
-            )
-        }
-    }
-
-    func inputPointPicker() -> some View {
-        VStack(alignment: .leading, spacing: .space8) {
-            Text("ポイント", bundle: #bundle)
-                .font(with: .headLineS)
-            PointWheelPickerField(point: $input.point)
-                .font(with: .headLineM)
-        }
-    }
-
-    func inputRecurrenceSelector() -> some View {
-        RecurrenceSelector(input: $input.recurrence)
-    }
-
-    func trailingNavigationItem() -> some View {
-        NavigationBarPrimaryActionButton(systemImage: "paperplane") {
-            tappedConfirmButton()
-        }
-        .foregroundStyle(.textOnAccent)
-        .disabled(!input.canConfirm(mode))
-    }
-
-}
-
-// MARK: - プレゼンテーションロジック
-
-private extension HouseworkTemplateItemEditModal {
-
     func tappedConfirmButton() {
         onConfirm(input)
         dismiss()
     }
 
 }
-
-#if DEBUG
-#Preview("HouseworkTemplateItemEditModal_未入力") {
-    HouseworkTemplateItemEditModal(
-        input: .constant(.initial(UUID())),
-        mode: .create
-    ) { _ in }
-        .environment(SubscriptionStore())
-}
-
-#Preview("HouseworkTemplateItemEditModal_入力済み") {
-    let beforeInput = TemplateItemEditInput(
-        itemId: .init(id: "1"),
-        title: "hoge",
-        point: 10,
-        recurrence: .init(kind: .weekly, weekdays: [.monday, .friday])
-    )
-    HouseworkTemplateItemEditModal(
-        input: .constant(beforeInput),
-        mode: .edit(before: beforeInput)
-    ) { _ in }
-        .environment(SubscriptionStore())
-}
-
-#Preview("HouseworkTemplateItemEditModal_毎月") {
-    let beforeInput = TemplateItemEditInput(
-        itemId: .init(id: "1"),
-        title: "家賃の振込",
-        point: 5,
-        recurrence: .init(kind: .monthly, dayOfMonth: 25)
-    )
-    HouseworkTemplateItemEditModal(
-        input: .constant(beforeInput),
-        mode: .edit(before: beforeInput)
-    ) { _ in }
-        .environment(SubscriptionStore())
-}
-#endif

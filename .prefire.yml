@@ -24,7 +24,7 @@ test_configuration:
     - HomeFeature
     - CohabitantRegistrationFeatureUI
     - HouseworkFeature
-    - HouseworkTemplateFeature
+    - HouseworkTemplateFeatureUI
     - ContributionFeature
     - FrequentHouseworkFeatureUI
     - PaywallFeature
