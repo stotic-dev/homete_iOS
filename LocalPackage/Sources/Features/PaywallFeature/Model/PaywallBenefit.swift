@@ -15,5 +15,9 @@ enum PaywallBenefit: CaseIterable {
     case unlimitedHistory
     /// 家事に写真を添えられる（`HouseworkImagePolicy`）
     case houseworkImage
+    /// いつもの家事を件数の上限なく登録できる（`FrequentHouseworkLimitPolicy`）
+    case unlimitedFrequentHousework
+    /// 家事メモに長い文章を書ける（`HouseworkMemoLimitPolicy`）
+    case longerMemo
 
 }

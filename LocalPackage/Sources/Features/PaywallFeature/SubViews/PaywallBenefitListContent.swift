@@ -50,13 +50,19 @@ private extension PaywallBenefitListContent {
     func systemImage(_ benefit: PaywallBenefit) -> String {
         switch benefit {
         case .noAds:
-            "rectangle.slash"
+            "nosign"
 
         case .unlimitedHistory:
             "clock.arrow.circlepath"
 
         case .houseworkImage:
-            "photo.on.rectangle"
+            "photo.on.rectangle.angled"
+
+        case .unlimitedFrequentHousework:
+            "star.square.on.square"
+
+        case .longerMemo:
+            "note.text"
         }
     }
 
@@ -70,19 +76,43 @@ private extension PaywallBenefitListContent {
 
         case .houseworkImage:
             .localized("家事に写真を添えられます")
+
+        case .unlimitedFrequentHousework:
+            .localized("いつもの家事を好きなだけ登録できます")
+
+        case .longerMemo:
+            .localized("家事メモをたっぷり書けます")
         }
     }
 
     func description(_ benefit: PaywallBenefit) -> LocalizedStringResource {
-        switch benefit {
+        // 「5,000」のように桁区切りを付けて出す
+        let freeMemoCharacterCount = HouseworkMemoLimitPolicy.freeMaxCharacterCount.formatted()
+        let premiumMemoCharacterCount = HouseworkMemoLimitPolicy.premiumMaxCharacterCount.formatted()
+        return switch benefit {
         case .noAds:
-            .localized("バナー広告が消え、家事の記録に集中できます。")
+            .localized("バナー広告が消えて、画面がすっきりします。")
 
         case .unlimitedHistory:
-            .localized("3か月より前の家事の記録も、いつでも振り返れます。")
+            .localized("3か月より前の家事の記録も、いつでも見られます。")
 
         case .houseworkImage:
-            .localized("やり方や仕上がりを写真で残して、同居人と共有できます。")
+            .localized(
+                "1つの家事に\(HouseworkImagePolicy.maxImageCount)枚まで。やり方や仕上がりを同居人と共有できます。",
+                comment: "数字は1つの家事に添えられる写真の枚数"
+            )
+
+        case .unlimitedFrequentHousework:
+            .localized(
+                "無料プランの\(FrequentHouseworkLimitPolicy.freeLimit)件までという上限がなくなります。",
+                comment: "数字は無料プランで登録できるいつもの家事の件数"
+            )
+
+        case .longerMemo:
+            .localized(
+                "メモに書ける文字数が、\(freeMemoCharacterCount)文字から\(premiumMemoCharacterCount)文字に増えます。",
+                comment: "無料プランとプレミアムプランで家事メモに書ける文字数"
+            )
         }
     }
 

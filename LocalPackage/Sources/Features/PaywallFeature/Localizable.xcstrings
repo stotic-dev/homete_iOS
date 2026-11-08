@@ -37,12 +37,35 @@
         }
       }
     },
-    "3か月より前の家事の記録も、いつでも振り返れます。" : {
+    "1つの家事に%lld枚まで。やり方や仕上がりを同居人と共有できます。" : {
+      "comment" : "数字は1つの家事に添えられる写真の枚数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld photo per chore. Share how it's done or how it turned out with your housemates."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld photos per chore. Share how it's done or how it turned out with your housemates."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "3か月より前の家事の記録も、いつでも見られます。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Look back on chores from more than 3 months ago, anytime."
+            "value" : "See chores from more than 3 months ago, anytime."
           }
         }
       }
@@ -67,6 +90,16 @@
         }
       }
     },
+    "いつもの家事を好きなだけ登録できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as many go-to chores as you like"
+          }
+        }
+      }
+    },
     "お支払いはApple Accountに請求されます。期間が終わる24時間前までに解約しない限り、サブスクリプションは自動で更新されます。解約は、App Storeのアカウント設定からいつでも行えます。" : {
       "localizations" : {
         "en" : {
@@ -87,22 +120,12 @@
         }
       }
     },
-    "やり方や仕上がりを写真で残して、同居人と共有できます。" : {
+    "バナー広告が消えて、画面がすっきりします。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save how a chore is done or how it turned out, and share it with your housemates."
-          }
-        }
-      }
-    },
-    "バナー広告が消え、家事の記録に集中できます。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Banner ads disappear so you can focus on your chores."
+            "value" : "Banner ads go away, so your screen stays clean."
           }
         }
       }
@@ -157,6 +180,23 @@
         }
       }
     },
+    "メモに書ける文字数が、%@文字から%@文字に増えます。" : {
+      "comment" : "無料プランとプレミアムプランで家事メモに書ける文字数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes can be up to %2$@ characters instead of %1$@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "メモに書ける文字数が、%1$@文字から%2$@文字に増えます。"
+          }
+        }
+      }
+    },
     "利用中" : {
       "comment" : "今契約しているプランに付ける印",
       "localizations" : {
@@ -194,6 +234,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Make keeping track of chores even easier."
+          }
+        }
+      }
+    },
+    "家事メモをたっぷり書けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write longer notes"
           }
         }
       }
@@ -259,6 +309,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Free for the first %@"
+          }
+        }
+      }
+    },
+    "無料プランの%lld件までという上限がなくなります。" : {
+      "comment" : "数字は無料プランで登録できるいつもの家事の件数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No more Free Plan limit of %lld chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No more Free Plan limit of %lld chores."
+                }
+              }
+            }
           }
         }
       }
