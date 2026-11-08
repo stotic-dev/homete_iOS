@@ -3,10 +3,9 @@
 //  LocalPackage
 //
 
-import HometeDomain
 
 /// Paywallに何を出しているか
-enum PaywallPhase: Equatable {
+public enum PaywallPhase: Equatable, Sendable {
 
     /// プランの一覧を取得している
     case loading
@@ -20,7 +19,7 @@ enum PaywallPhase: Equatable {
 }
 
 /// Paywallで出すアラート
-enum PaywallAlert: Equatable {
+public enum PaywallAlert: Equatable, Sendable {
 
     /// 購入に失敗した
     case purchaseFailed

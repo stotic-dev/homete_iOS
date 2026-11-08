@@ -3,16 +3,22 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// プレミアムプランの特典の一覧
-struct PaywallBenefitListContent: View {
+public struct PaywallBenefitListContent: View {
 
     let benefits: [PaywallBenefit]
 
-    var body: some View {
+    public init(
+        benefits: [PaywallBenefit]
+    ) {
+        self.benefits = benefits
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             Text("プレミアムプランでできること", bundle: #bundle)
                 .font(with: .headLineS)

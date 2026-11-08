@@ -3,17 +3,20 @@
 //  LocalPackage
 //
 
+import HometeModel
 import SwiftUI
 
 /// 光の帯が左から右へ通り抜ける演出。間を空けてくり返す
 ///
 /// 光は形に合わせて切り抜かないので、呼び出し側で`clipShape`する。
 /// 帯は止まっている間は左の外に置いているので、スナップショットには写らない。視差効果を減らす設定が有効なら動かさない。
-struct PaywallShimmerModifier: ViewModifier {
+public struct PaywallShimmerModifier: ViewModifier, Sendable {
 
     @Environment(\.accessibilityReduceMotion) private var isReduceMotion
 
-    func body(content: Content) -> some View {
+    public init() {}
+
+    public func body(content: Content) -> some View {
         if isReduceMotion {
             content
         } else {
@@ -53,7 +56,7 @@ private enum ShimmerPosition {
 
 }
 
-extension View {
+public extension View {
 
     /// 光の帯が通り抜ける演出を付ける
     func paywallShimmer() -> some View {

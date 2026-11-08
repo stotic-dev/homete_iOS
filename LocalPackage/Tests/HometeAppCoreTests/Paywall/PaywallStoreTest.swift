@@ -4,7 +4,7 @@
 //
 
 import HometeDomain
-@testable import PaywallFeature
+@testable import HometeAppCore
 import Testing
 
 @MainActor

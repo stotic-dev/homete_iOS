@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 #if canImport(Prefire)
@@ -12,7 +12,7 @@ import Prefire
 
 /// プレミアムプランの特典とプランの一覧を出し、購入・復元を受け付ける画面
 /// - Note: 課金の画面なので、ほめっとは出さない（`ux-writing.md`）
-struct PaywallView: View {
+public struct PaywallView: View {
 
     let phase: PaywallPhase
     @Binding var selectedPackageId: String?
@@ -23,7 +23,25 @@ struct PaywallView: View {
     let onTapRetry: () -> Void
     let onTapClose: () -> Void
 
-    var body: some View {
+    public init(
+        phase: PaywallPhase,
+        selectedPackageId: Binding<String?>,
+        subscribedProductIdentifier: String?,
+        onTapPurchase: @escaping () -> Void,
+        onTapRestore: @escaping () -> Void,
+        onTapRetry: @escaping () -> Void,
+        onTapClose: @escaping () -> Void
+    ) {
+        self.phase = phase
+        _selectedPackageId = selectedPackageId
+        self.subscribedProductIdentifier = subscribedProductIdentifier
+        self.onTapPurchase = onTapPurchase
+        self.onTapRestore = onTapRestore
+        self.onTapRetry = onTapRetry
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         content()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.backgroundScreen)

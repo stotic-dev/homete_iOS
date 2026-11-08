@@ -1,0 +1,365 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "%@" : {
+      "comment" : "期間が分からないプランの価格",
+      "shouldTranslate" : false
+    },
+    "%@ / 年" : {
+      "comment" : "年額プランの価格",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / year"
+          }
+        }
+      }
+    },
+    "%@ / 月" : {
+      "comment" : "月額プランの価格",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / month"
+          }
+        }
+      }
+    },
+    "1か月あたり%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ per month"
+          }
+        }
+      }
+    },
+    "1つの家事に%lld枚まで。やり方や仕上がりを同居人と共有できます。" : {
+      "comment" : "数字は1つの家事に添えられる写真の枚数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld photo per chore. Share how it's done or how it turned out with your housemates."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up to %lld photos per chore. Share how it's done or how it turned out with your housemates."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "3か月より前の家事の記録も、いつでも見られます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See chores from more than 3 months ago, anytime."
+          }
+        }
+      }
+    },
+    "ありがとうございます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you!"
+          }
+        }
+      }
+    },
+    "いつもの家事を好きなだけ登録できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as many go-to chores as you like"
+          }
+        }
+      }
+    },
+    "おすすめ" : {
+      "comment" : "年額プランに付ける印",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended"
+          }
+        }
+      }
+    },
+    "お支払いはApple Accountに請求されます。期間が終わる24時間前までに解約しない限り、サブスクリプションは自動で更新されます。解約は、App Storeのアカウント設定からいつでも行えます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Payment will be charged to your Apple Account. Your subscription renews automatically unless canceled at least 24 hours before the end of the current period. You can cancel anytime in your App Store account settings."
+          }
+        }
+      }
+    },
+    "すべての記録を振り返れます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look back on your entire history"
+          }
+        }
+      }
+    },
+    "バナー広告が消えて、画面がすっきりします。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banner ads go away, so your screen stays clean."
+          }
+        }
+      }
+    },
+    "プライバシーポリシー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
+          }
+        }
+      }
+    },
+    "プランを変更" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Plan"
+          }
+        }
+      }
+    },
+    "プレミアムプラン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium Plan"
+          }
+        }
+      }
+    },
+    "プレミアムプランでできること" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What You Get with Premium"
+          }
+        }
+      }
+    },
+    "プレミアムプランに登録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subscribe to Premium"
+          }
+        }
+      }
+    },
+    "プレミアムプランの特典が使えるようになりました。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Premium benefits are now available."
+          }
+        }
+      }
+    },
+    "メモに書ける文字数が、%@文字から%@文字に増えます。" : {
+      "comment" : "無料プランとプレミアムプランで家事メモに書ける文字数",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes can be up to %2$@ characters instead of %1$@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "メモに書ける文字数が、%1$@文字から%2$@文字に増えます。"
+          }
+        }
+      }
+    },
+    "利用中" : {
+      "comment" : "今契約しているプランに付ける印",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current Plan"
+          }
+        }
+      }
+    },
+    "利用規約" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Service"
+          }
+        }
+      }
+    },
+    "家事に写真を添えられます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add photos to chores"
+          }
+        }
+      }
+    },
+    "家事の記録が、もっと便利になります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make keeping track of chores even easier."
+          }
+        }
+      }
+    },
+    "家事メモをたっぷり書けます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write longer notes"
+          }
+        }
+      }
+    },
+    "広告が表示されません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ads"
+          }
+        }
+      }
+    },
+    "最初の%@は%@" : {
+      "comment" : "最初にまとめて払う割引。期間は「3か月」など",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@ for the first %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "最初の%1$@は%2$@"
+          }
+        }
+      }
+    },
+    "最初の%@は、%@ごとに%@" : {
+      "comment" : "期間ごとに払う割引。期間は「3か月」「1か月」など",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%3$@ every %2$@ for the first %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "最初の%1$@は、%2$@ごとに%3$@"
+          }
+        }
+      }
+    },
+    "最初の%@は無料" : {
+      "comment" : "無料トライアル。期間は「1週間」など",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free for the first %@"
+          }
+        }
+      }
+    },
+    "無料プランの%lld件までという上限がなくなります。" : {
+      "comment" : "数字は無料プランで登録できるいつもの家事の件数",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No more Free Plan limit of %lld chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No more Free Plan limit of %lld chores."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "購入を復元" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchases"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

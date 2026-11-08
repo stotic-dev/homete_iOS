@@ -3,16 +3,22 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 購入（または復元）が完了したときのお礼
-struct PaywallCompletedContent: View {
+public struct PaywallCompletedContent: View {
 
     let onTapClose: () -> Void
 
-    var body: some View {
+    public init(
+        onTapClose: @escaping () -> Void
+    ) {
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         ZStack {
             content
             // 購入を祝って、クラッカーを鳴らして花吹雪を降らせる

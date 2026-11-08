@@ -18,7 +18,7 @@
 		0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */; };
 		0AA7C003000000000000000A /* ContributionFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeatureUI */; };
 		0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */; };
-		0AA7C003000000000000000D /* PaywallFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000D /* PaywallFeature */; };
+		0AA7C003000000000000000D /* PaywallFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000D /* PaywallFeatureUI */; };
 		0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000C /* HometeSnapshotTestSupport */; };
 /* End PBXBuildFile section */
 
@@ -100,7 +100,7 @@
 				0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */,
 				0AA7C003000000000000000A /* ContributionFeatureUI in Frameworks */,
 				0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */,
-				0AA7C003000000000000000D /* PaywallFeature in Frameworks */,
+				0AA7C003000000000000000D /* PaywallFeatureUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,7 +184,7 @@
 				0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */,
 				0AA7C002000000000000000A /* ContributionFeatureUI */,
 				0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */,
-				0AA7C002000000000000000D /* PaywallFeature */,
+				0AA7C002000000000000000D /* PaywallFeatureUI */,
 			);
 			productName = hometeSnapshotTests;
 			productReference = BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */;
@@ -734,9 +734,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = FrequentHouseworkFeatureUI;
 		};
-		0AA7C002000000000000000D /* PaywallFeature */ = {
+		0AA7C002000000000000000D /* PaywallFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = PaywallFeature;
+			productName = PaywallFeatureUI;
 		};
 		0AA7C002000000000000000C /* HometeSnapshotTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;

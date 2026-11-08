@@ -3,16 +3,18 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 自動更新・解約方法の説明と、利用規約・プライバシーポリシーへのリンク
 ///
 /// App Store審査ガイドライン3.1.2で、自動更新のサブスクリプションの購入画面に出すよう求められている
-struct PaywallLegalNoticeContent: View {
+public struct PaywallLegalNoticeContent: View {
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Text(
                 "お支払いはApple Accountに請求されます。期間が終わる24時間前までに解約しない限り、サブスクリプションは自動で更新されます。解約は、App Storeのアカウント設定からいつでも行えます。",

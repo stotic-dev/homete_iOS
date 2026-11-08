@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeModel
 import HometeUI
 import SwiftUI
 
@@ -10,11 +11,13 @@ import SwiftUI
 ///
 /// 動きの始まりと終わりは止まった姿勢にそろえているので、スナップショットでは止まった姿勢で写る。
 /// 視差効果を減らす設定が有効なら動かさない。
-struct PaywallCrownEmblem: View {
+public struct PaywallCrownEmblem: View {
 
     @Environment(\.accessibilityReduceMotion) private var isReduceMotion
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         ZStack {
             if isReduceMotion {
                 halo(scale: 1)

@@ -30,6 +30,7 @@ let package = Package(
         lib("FrequentHouseworkFeature"),
         lib("FrequentHouseworkFeatureUI"),
         lib("PaywallFeature"),
+        lib("PaywallFeatureUI"),
         lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
@@ -91,7 +92,7 @@ let package = Package(
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
         feature(name: "ContributionFeature", extraDeps: ["ContributionFeatureUI"]),
         feature(name: "FrequentHouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
-        feature(name: "PaywallFeature"),
+        feature(name: "PaywallFeature", extraDeps: ["PaywallFeatureUI"]),
         feature(name: "HouseworkTemplateFeature", extraDeps: ["HouseworkTemplateFeatureUI"]),
 
         // MARK: FeatureUI Targets
@@ -101,6 +102,7 @@ let package = Package(
         featureUI(name: "HouseworkTemplateFeatureUI"),
         featureUI(name: "ContributionFeatureUI"),
         featureUI(name: "AuthFeatureUI"),
+        featureUI(name: "PaywallFeatureUI"),
 
         // MARK: Others
 
@@ -156,11 +158,6 @@ let package = Package(
         .testTarget(
             name: "SettingFeatureTests",
             dependencies: ["SettingFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "PaywallFeatureTests",
-            dependencies: ["PaywallFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

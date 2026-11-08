@@ -9,13 +9,13 @@ import Observation
 /// Paywallの状態と、プランの取得・購入・復元を受け持つStore
 @MainActor
 @Observable
-final class PaywallStore {
+public final class PaywallStore {
 
-    private(set) var phase: PaywallPhase = .loading
+    public private(set) var phase: PaywallPhase = .loading
     /// 選んでいるプランの`PurchasePackage.id`。選べるプランが無ければnil
-    var selectedPackageId: String?
+    public var selectedPackageId: String?
     /// 出しているアラート。閉じたらnilに戻す
-    var alert: PaywallAlert?
+    public var alert: PaywallAlert?
 
     private let accountId: String
     private let purchaseClient: PurchaseClient
@@ -23,7 +23,7 @@ final class PaywallStore {
     private let subscriptionStore: SubscriptionStore
 
     /// - Parameter accountId: 購入・復元を結び付けるアカウントのID
-    init(
+    public init(
         accountId: String,
         purchaseClient: PurchaseClient,
         errorReportClient: ErrorReportClient,
@@ -36,13 +36,13 @@ final class PaywallStore {
     }
 
     /// 契約中のプランのプロダクトID。契約していなければnil
-    var subscribedProductIdentifier: String? {
+    public var subscribedProductIdentifier: String? {
         guard let info = subscriptionStore.entitlementInfo, info.isActive else { return nil }
         return info.productIdentifier
     }
 
     /// プランの一覧を取得し、年額を先頭に並べて、最初に選ぶプランを決める
-    func load() async {
+    public func load() async {
         phase = .loading
         do {
             let offering = try await sortedYearlyFirst(purchaseClient.fetchOffering())
@@ -57,7 +57,7 @@ final class PaywallStore {
     }
 
     /// 選んでいるプランを購入する
-    func purchase() async {
+    public func purchase() async {
         guard let packageId = selectedPackageId else { return }
         do {
             switch try await subscriptionStore.purchase(packageId, for: accountId) {
@@ -77,7 +77,7 @@ final class PaywallStore {
     }
 
     /// 過去の購入を復元する。復元できたら購入と同じくお礼を出す
-    func restore() async {
+    public func restore() async {
         do {
             let isRestored = try await subscriptionStore.restorePurchases(for: accountId)
             if isRestored {

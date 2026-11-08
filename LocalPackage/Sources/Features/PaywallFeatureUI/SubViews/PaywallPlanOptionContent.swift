@@ -3,12 +3,12 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// プラン1つ分の選択肢。価格・課金期間・月あたりの価格・導入オファーを出す
-struct PaywallPlanOptionContent: View {
+public struct PaywallPlanOptionContent: View {
 
     @Environment(\.locale) var locale
 
@@ -20,7 +20,21 @@ struct PaywallPlanOptionContent: View {
     let isRecommended: Bool
     let onTap: () -> Void
 
-    var body: some View {
+    public init(
+        package: PurchasePackage,
+        isSelected: Bool,
+        isSubscribed: Bool,
+        isRecommended: Bool,
+        onTap: @escaping () -> Void
+    ) {
+        self.package = package
+        self.isSelected = isSelected
+        self.isSubscribed = isSubscribed
+        self.isRecommended = isRecommended
+        self.onTap = onTap
+    }
+
+    public var body: some View {
         Button {
             onTap()
         } label: {

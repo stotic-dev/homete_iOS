@@ -7,7 +7,7 @@
 ///
 /// 特典を足すときは、ケースと`PaywallBenefitListContent`の見せ方を1つずつ足す。
 /// 訴求する前に、その特典がプラン判定（`HouseworkImagePolicy`など）で実際に解放されていることを確かめる（`ux-writing.md`の原則4）
-enum PaywallBenefit: CaseIterable {
+public enum PaywallBenefit: CaseIterable, Sendable {
 
     /// 広告が表示されない（`AdDisplayPolicy`）
     case noAds

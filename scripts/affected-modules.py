@@ -68,7 +68,7 @@ VRT_MODULES = {
     "HouseworkTemplateFeatureUI",
     "ContributionFeatureUI",
     "FrequentHouseworkFeatureUI",
-    "PaywallFeature",
+    "PaywallFeatureUI",
 }
 
 

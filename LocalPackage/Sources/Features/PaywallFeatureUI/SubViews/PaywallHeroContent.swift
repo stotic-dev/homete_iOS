@@ -3,14 +3,16 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// Paywallの一番上の見出し
-struct PaywallHeroContent: View {
+public struct PaywallHeroContent: View {
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         VStack(spacing: .space8) {
             PaywallCrownEmblem()
             Text("プレミアムプラン", bundle: #bundle)
