@@ -35,7 +35,7 @@ struct PaywallStoreTest {
 
     // MARK: プランの取得
 
-    @Test("プランの一覧を取得したら一覧を出し、年額を選ぶ")
+    @Test("プランの一覧を取得したら、年額を先頭に並べて出し、年額を選ぶ")
     func loadSelectsYearly() async {
         // Arrange
 
@@ -48,7 +48,7 @@ struct PaywallStoreTest {
 
         // Assert
 
-        #expect(store.phase == .loaded(offering))
+        #expect(store.phase == .loaded(PurchaseOffering(packages: [yearlyPackage, monthlyPackage])))
         #expect(store.selectedPackageId == "$rc_annual")
     }
 
@@ -68,7 +68,7 @@ struct PaywallStoreTest {
 
         // Assert
 
-        #expect(store.phase == .loaded(offering))
+        #expect(store.phase == .loaded(PurchaseOffering(packages: [yearlyPackage, monthlyPackage])))
         #expect(store.selectedPackageId == "$rc_monthly")
     }
 
@@ -149,7 +149,7 @@ struct PaywallStoreTest {
     func purchaseCancelled() async {
         // Arrange
 
-        let offering = PurchaseOffering(packages: [monthlyPackage, yearlyPackage])
+        let offering = PurchaseOffering(packages: [yearlyPackage, monthlyPackage])
         let store = await makeLoadedStore(purchaseClient: .init(
             appUserId: { "testAccountId" },
             fetchOffering: { offering },

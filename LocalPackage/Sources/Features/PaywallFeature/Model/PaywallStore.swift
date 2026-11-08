@@ -41,11 +41,11 @@ final class PaywallStore {
         return info.productIdentifier
     }
 
-    /// プランの一覧を取得し、最初に選ぶプランを決める
+    /// プランの一覧を取得し、年額を先頭に並べて、最初に選ぶプランを決める
     func load() async {
         phase = .loading
         do {
-            let offering = try await purchaseClient.fetchOffering()
+            let offering = try await sortedYearlyFirst(purchaseClient.fetchOffering())
             guard !offering.packages.isEmpty else { throw PurchaseError.offeringNotFound }
             selectedPackageId = initialSelectedPackageId(in: offering)
             phase = .loaded(offering)
@@ -93,6 +93,14 @@ final class PaywallStore {
 }
 
 private extension PaywallStore {
+
+    /// 年額のプランを先頭に並べる。ほかのプランは取得した順のまま後ろに並べる
+    /// - Note: 年額をいちばんお得なプランとして目立たせたいため、RevenueCatのOfferingの並び順に任せない
+    func sortedYearlyFirst(_ offering: PurchaseOffering) -> PurchaseOffering {
+        let yearly = offering.packages.filter { $0.period == .yearly }
+        let others = offering.packages.filter { $0.period != .yearly }
+        return PurchaseOffering(packages: yearly + others)
+    }
 
     /// 年額を選ぶ。年額が無い・契約中なら、契約中でない先頭のプランを選ぶ
     func initialSelectedPackageId(in offering: PurchaseOffering) -> String? {
