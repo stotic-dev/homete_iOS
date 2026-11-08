@@ -13,14 +13,25 @@ struct PaywallCompletedContent: View {
     let onTapClose: () -> Void
 
     var body: some View {
+        ZStack {
+            content
+            // 購入を祝って、クラッカーを鳴らして花吹雪を降らせる
+            CelebrationEffectView()
+        }
+    }
+
+}
+
+// MARK: UI定義
+
+private extension PaywallCompletedContent {
+
+    var content: some View {
         // 大きな文字で画面に収まらなくても読み切れるよう、丸ごとスクロールさせる
         ScrollView {
             VStack(spacing: .space32) {
                 VStack(spacing: .space16) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 56))
-                        .foregroundStyle(.iconDecorative)
-                        .accessibilityHidden(true)
+                    PaywallCrownEmblem()
                     Text("ありがとうございます", bundle: #bundle)
                         .font(with: .headLineM)
                         .multilineTextAlignment(.center)
@@ -41,7 +52,7 @@ struct PaywallCompletedContent: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, .space16)
-            .padding(.top, .space64)
+            .padding(.top, .space32)
             .padding(.bottom, .space24)
         }
         .scrollBounceBehavior(.basedOnSize)
