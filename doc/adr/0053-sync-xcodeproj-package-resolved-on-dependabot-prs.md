@@ -16,6 +16,7 @@ dependabotはInfraPackage・LocalPackage側しか更新できないので、CI�
 * `scripts/sync-package-resolved.py`で、xcodeproj側にあるパッケージの版・revisionをパッケージ側の値で上書きする
   * `homete.xcodeproj` ← `InfraPackage`（LocalPackageに依存しているので、アプリが使うパッケージを全部含む）
   * `hometeVRT.xcodeproj` ← `LocalPackage`
+  * `InfraPackage` ← `LocalPackage`（上の2つより先にそろえる。2026-11-08追記）。dependabotがLocalPackageだけを更新するとInfraPackage側に古い版が残り、`homete.xcodeproj`がその古い版にそろえられてしまう（PR #538でPrefire・swift-snapshot-testingの版が下がった）。InfraPackageはLocalPackageと共通の依存を直接宣言していないので、共通の依存はLocalPackageの値を正とする
   * パッケージの追加・削除は扱わない。依存を増やす・減らすときはXcodeで解決し直す
 * `sync-package-resolved.yml`で、dependabotのPRには`pull_request_target`でそろえるコミットを積む。スクリプトはmainのものを使い、PRのチェックアウトはデータとして読むだけにする
 * ずれが出るのはdependabotがパッケージ側だけを更新したときなので、dependabot以外のPRではチェックしない。手で依存を上げたときはスクリプトを手で流す
