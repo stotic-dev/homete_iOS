@@ -3,12 +3,12 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// オンボーディングでパートナーの登録方法を選ぶ画面のUI
-struct PartnerRegistrationView: View {
+public struct PartnerRegistrationView: View {
 
     /// 招待リンクを使えるか。使えない環境では「招待リンクを送る」を出さない
     let isInvitationAvailable: Bool
@@ -25,7 +25,29 @@ struct PartnerRegistrationView: View {
     let onTapInvited: () -> Void
     let onTapLater: () -> Void
 
-    var body: some View {
+    public init(
+        isInvitationAvailable: Bool,
+        isInvitationNotFound: Bool,
+        invitationShareState: PartnerInvitationShareState,
+        onTapInvite: @escaping () -> Void,
+        onTapSentInvitation: @escaping () -> Void,
+        onTapNextAfterShare: @escaping () -> Void,
+        onTapNearby: @escaping () -> Void,
+        onTapInvited: @escaping () -> Void,
+        onTapLater: @escaping () -> Void
+    ) {
+        self.isInvitationAvailable = isInvitationAvailable
+        self.isInvitationNotFound = isInvitationNotFound
+        self.invitationShareState = invitationShareState
+        self.onTapInvite = onTapInvite
+        self.onTapSentInvitation = onTapSentInvitation
+        self.onTapNextAfterShare = onTapNextAfterShare
+        self.onTapNearby = onTapNearby
+        self.onTapInvited = onTapInvited
+        self.onTapLater = onTapLater
+    }
+
+    public var body: some View {
         ScrollView {
             VStack(spacing: .space24) {
                 header

@@ -3,22 +3,23 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// オンボーディングでプレミアムプランの特典を説明し、Paywallへの導線を提供する画面
-struct PremiumIntroductionView: View {
+/// - Note: Paywallの表示と計測は`PremiumIntroductionScreen`が受け持つ
+public struct PremiumIntroductionView: View {
 
-    @Environment(\.routeResolver) var router
-    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    let onTapShowPaywall: () -> Void
+    let onTapSkip: () -> Void
 
-    @State var isShowPaywall = false
+    public init(onTapShowPaywall: @escaping () -> Void, onTapSkip: @escaping () -> Void) {
+        self.onTapShowPaywall = onTapShowPaywall
+        self.onTapSkip = onTapSkip
+    }
 
-    /// この画面での操作が終わり、次のステップへ進むときに呼ばれる
-    let onNext: () -> Void
-
-    var body: some View {
+    public var body: some View {
         VStack(spacing: .space32) {
             VStack(spacing: .space16) {
                 Image(systemName: "crown.fill")
@@ -46,7 +47,7 @@ struct PremiumIntroductionView: View {
             Spacer(minLength: .space24)
             VStack(spacing: .space16) {
                 Button {
-                    tappedShowPaywallButton()
+                    onTapShowPaywall()
                 } label: {
                     Text("プランを見る", bundle: #bundle)
                         .padding(.vertical, .space8)
@@ -54,7 +55,7 @@ struct PremiumIntroductionView: View {
                 }
                 .primaryButtonStyle()
                 Button(.localized("あとで決める")) {
-                    tappedSkipButton()
+                    onTapSkip()
                 }
                 .font(with: .body)
                 .foregroundStyle(.textSecondary)
@@ -65,15 +66,6 @@ struct PremiumIntroductionView: View {
         .padding(.horizontal, .space16)
         .padding(.top, .space32)
         .frame(maxHeight: .infinity, alignment: .top)
-        .onAppear {
-            onAppearView()
-        }
-        .fullScreenCoverOnIOS(
-            isPresented: $isShowPaywall,
-            onDismiss: { dismissedPaywall() },
-            content: { router.resolve(.paywall(step: .onboarding)) }
-        )
-        .trackScreenView(.onboardingPremiumIntroduction)
     }
 
 }
@@ -106,31 +98,6 @@ private extension PremiumIntroductionView {
 
 }
 
-// MARK: プレゼンテーションロジック
-
-private extension PremiumIntroductionView {
-
-    func onAppearView() {
-        analyticsClient.log(.onboarding(.premiumIntroductionShown))
-    }
-
-    func tappedShowPaywallButton() {
-        isShowPaywall = true
-    }
-
-    func tappedSkipButton() {
-        analyticsClient.log(.onboarding(.premiumIntroductionSkipped))
-        onNext()
-    }
-
-    /// Paywallを閉じた後は、購入有無に関わらず次のステップへ進む
-    func dismissedPaywall() {
-        onNext()
-    }
-
-}
-
 #Preview("PremiumIntroductionView") {
-    PremiumIntroductionView {}
-        .environment(SubscriptionStore())
+    PremiumIntroductionView(onTapShowPaywall: {}, onTapSkip: {})
 }

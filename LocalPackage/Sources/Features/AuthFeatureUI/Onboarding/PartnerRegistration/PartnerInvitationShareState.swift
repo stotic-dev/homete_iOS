@@ -3,8 +3,10 @@
 //  LocalPackage
 //
 
+import HometeModel
+
 /// オンボーディングのパートナー登録で、招待リンクをどこまで共有したか
-enum PartnerInvitationShareState: Hashable {
+public enum PartnerInvitationShareState: Hashable, Sendable {
 
     /// まだ共有シートを閉じていない
     case notShared

@@ -15,6 +15,7 @@ let package = Package(
         lib("HometeUI"),
         lib("HometeResources"),
         lib("AuthFeature"),
+        lib("AuthFeatureUI"),
         lib("SettingFeature"),
         lib("HomeFeature"),
         lib("CohabitantRegistrationFeature"),
@@ -83,7 +84,7 @@ let package = Package(
 
         // MARK: Feature Targets
 
-        feature(name: "AuthFeature"),
+        feature(name: "AuthFeature", extraDeps: ["AuthFeatureUI"]),
         feature(name: "SettingFeature"),
         feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature"]),
         feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
@@ -99,6 +100,7 @@ let package = Package(
         featureUI(name: "FrequentHouseworkFeatureUI"),
         featureUI(name: "HouseworkTemplateFeatureUI"),
         featureUI(name: "ContributionFeatureUI"),
+        featureUI(name: "AuthFeatureUI"),
 
         // MARK: Others
 

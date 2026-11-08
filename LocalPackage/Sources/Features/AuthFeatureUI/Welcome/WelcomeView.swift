@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import HometeUI
 import SwiftUI
@@ -12,14 +12,26 @@ import SwiftUI
 ///
 /// アプリでできることを読んでから始めてもらうため、「はじめる」は最後のページにだけ出し、それまでは「次へ」で進める。
 /// すでにアカウントを持っている人は読む必要がないので、「すでにアカウントをお持ちの方」はどのページにも出す。
-struct WelcomeView: View {
+public struct WelcomeView: View {
 
     @Binding var selectedPage: WelcomePage
     let invitation: WelcomeInvitation
     let onTapStart: () -> Void
     let onTapExistingAccount: () -> Void
 
-    var body: some View {
+    public init(
+        selectedPage: Binding<WelcomePage>,
+        invitation: WelcomeInvitation,
+        onTapStart: @escaping () -> Void,
+        onTapExistingAccount: @escaping () -> Void
+    ) {
+        _selectedPage = selectedPage
+        self.invitation = invitation
+        self.onTapStart = onTapStart
+        self.onTapExistingAccount = onTapExistingAccount
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             TabView(selection: $selectedPage) {
                 ForEach(WelcomePage.allCases, id: \.self) { page in

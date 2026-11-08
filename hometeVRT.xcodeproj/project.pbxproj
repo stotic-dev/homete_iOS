@@ -10,7 +10,7 @@
 		0AA7C0030000000000000001 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeDomain */; };
 		0AA7C0030000000000000002 /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000002 /* HometeResources */; };
 		0AA7C0030000000000000003 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000003 /* HometeUI */; };
-		0AA7C0030000000000000004 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeature */; };
+		0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeatureUI */; };
 		0AA7C0030000000000000005 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeature */; };
 		0AA7C0030000000000000006 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeature */; };
 		0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */; };
@@ -92,7 +92,7 @@
 				0AA7C0030000000000000001 /* HometeDomain in Frameworks */,
 				0AA7C0030000000000000002 /* HometeResources in Frameworks */,
 				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
-				0AA7C0030000000000000004 /* AuthFeature in Frameworks */,
+				0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */,
 				0AA7C0030000000000000005 /* SettingFeature in Frameworks */,
 				0AA7C0030000000000000006 /* HomeFeature in Frameworks */,
 				0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */,
@@ -176,7 +176,7 @@
 				0AA7C0020000000000000001 /* HometeDomain */,
 				0AA7C0020000000000000002 /* HometeResources */,
 				0AA7C0020000000000000003 /* HometeUI */,
-				0AA7C0020000000000000004 /* AuthFeature */,
+				0AA7C0020000000000000004 /* AuthFeatureUI */,
 				0AA7C0020000000000000005 /* SettingFeature */,
 				0AA7C0020000000000000006 /* HomeFeature */,
 				0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */,
@@ -702,9 +702,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeUI;
 		};
-		0AA7C0020000000000000004 /* AuthFeature */ = {
+		0AA7C0020000000000000004 /* AuthFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = AuthFeature;
+			productName = AuthFeatureUI;
 		};
 		0AA7C0020000000000000005 /* SettingFeature */ = {
 			isa = XCSwiftPackageProductDependency;

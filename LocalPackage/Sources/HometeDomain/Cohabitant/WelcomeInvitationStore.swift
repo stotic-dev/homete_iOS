@@ -5,17 +5,6 @@
 
 import Observation
 
-/// ログイン前の説明画面に出す招待の案内
-public enum WelcomeInvitation: Equatable, Sendable {
-
-    /// 招待を出さない（招待リンクを開いていない、または取得できなかった）
-    case none
-    /// 招待が届いている
-    /// - Parameter inviterName: 招待者の表示名。名前が無い招待ならnil
-    case invited(inviterName: String?)
-
-}
-
 /// 招待リンクを開いてから起動した人に、説明画面で誰から招待が届いているかを出すStore
 ///
 /// ログイン前に招待者名を取るため、未認証でも呼べる`fetchcohabitantinvitation`を使う。

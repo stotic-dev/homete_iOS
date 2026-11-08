@@ -3,20 +3,34 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 匿名のアカウントをAppleアカウントと連携する画面のUI
-struct AccountLinkView: View {
+/// - Note: サインインの処理は`AccountLinkScreen`が受け持ち、ボタンを差し込む
+public struct AccountLinkView<SignInButton: View>: View {
 
-    let entry: AccountLinkEntry
+    /// Paywallの前で開いたか。購入したプランを引き継げることを伝える
+    let isBeforePurchase: Bool
     /// 閉じるボタンを出すか。連携を必須にしている場所では出さない
     let isClosable: Bool
-    let onSignInWithApple: (Result<SignInWithAppleResult, any Error>) async -> Void
     let onTapClose: () -> Void
+    @ViewBuilder let signInButton: () -> SignInButton
 
-    var body: some View {
+    public init(
+        isBeforePurchase: Bool,
+        isClosable: Bool,
+        onTapClose: @escaping () -> Void,
+        @ViewBuilder signInButton: @escaping () -> SignInButton
+    ) {
+        self.isBeforePurchase = isBeforePurchase
+        self.isClosable = isClosable
+        self.onTapClose = onTapClose
+        self.signInButton = signInButton
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Spacer()
             HometteView(.point, size: .large)
@@ -26,11 +40,9 @@ struct AccountLinkView: View {
                 .font(with: .body)
                 .multilineTextAlignment(.center)
             Spacer()
-            SignInUpWithAppleButton { result in
-                await onSignInWithApple(result)
-            }
-            .frame(height: .space48)
-            .cornerRadius(.radius12)
+            signInButton()
+                .frame(height: .space48)
+                .cornerRadius(.radius12)
             Spacer()
                 .frame(height: .space32)
         }
@@ -52,12 +64,10 @@ private extension AccountLinkView {
 
     @ViewBuilder
     var description: some View {
-        switch entry {
-        case .paywall:
+        if isBeforePurchase {
             Text("プランを購入するには、Appleでのサインインが必要です。機種変更しても、購入したプランを引き継げます", bundle: #bundle)
-
-        // パートナーの登録だけで始められると思われないよう、どこから開いても必要なことを伝える
-        case .required, .onboarding, .todo, .setting:
+        } else {
+            // パートナーの登録だけで始められると思われないよう、どこから開いても必要なことを伝える
             Text("家事の記録を始めるには、Appleでのサインインが必要です。機種変更しても、家事の記録を引き継げます", bundle: #bundle)
         }
     }
@@ -66,21 +76,24 @@ private extension AccountLinkView {
 
 #Preview("AccountLinkView_連携が必須") {
     NavigationStack {
-        AccountLinkView(entry: .required, isClosable: false, onSignInWithApple: { _ in }, onTapClose: {})
+        AccountLinkView(isBeforePurchase: false, isClosable: false, onTapClose: {}) {
+            SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
+        }
     }
-    .environment(\.appDependencies, .previewValue)
 }
 
 #Preview("AccountLinkView_設定") {
     NavigationStack {
-        AccountLinkView(entry: .setting, isClosable: true, onSignInWithApple: { _ in }, onTapClose: {})
+        AccountLinkView(isBeforePurchase: false, isClosable: true, onTapClose: {}) {
+            SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
+        }
     }
-    .environment(\.appDependencies, .previewValue)
 }
 
 #Preview("AccountLinkView_Paywallの前") {
     NavigationStack {
-        AccountLinkView(entry: .paywall, isClosable: true, onSignInWithApple: { _ in }, onTapClose: {})
+        AccountLinkView(isBeforePurchase: true, isClosable: true, onTapClose: {}) {
+            SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
+        }
     }
-    .environment(\.appDependencies, .previewValue)
 }

@@ -3,19 +3,27 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// オンボーディングが全何ステップ中のどこまで進んだかを表すページドット
 /// - Note: 一方向のフローで戻る導線を持たないため、ドットはタップできない表示専用のコンポーネントとする
-struct OnboardingProgressIndicator: View {
+public struct OnboardingProgressIndicator: View {
 
     /// 実際に案内するステップの並び。スキップされるステップを含めないため、フロー側から受け取る
     let steps: [OnboardingStep]
     let currentStep: OnboardingStep
 
-    var body: some View {
+    public init(
+        steps: [OnboardingStep],
+        currentStep: OnboardingStep
+    ) {
+        self.steps = steps
+        self.currentStep = currentStep
+    }
+
+    public var body: some View {
         HStack(spacing: .space8) {
             ForEach(steps, id: \.self) { step in
                 Circle()

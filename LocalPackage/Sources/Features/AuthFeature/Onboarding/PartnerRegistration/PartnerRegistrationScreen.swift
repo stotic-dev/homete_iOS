@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import AuthFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI

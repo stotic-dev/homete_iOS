@@ -3,8 +3,10 @@
 //  LocalPackage
 //
 
+import HometeModel
+
 /// ログイン前の説明画面で、順に見せるページ
-enum WelcomePage: Hashable, CaseIterable {
+public enum WelcomePage: Hashable, CaseIterable, Sendable {
 
     /// ほめっとが出迎える
     case greeting
@@ -16,7 +18,7 @@ enum WelcomePage: Hashable, CaseIterable {
     case thanks
 
     /// 次のページ。最後のページならnil
-    var next: WelcomePage? {
+    public var next: WelcomePage? {
         let pages = Self.allCases
         guard let index = pages.firstIndex(of: self), index + 1 < pages.count else { return nil }
         return pages[index + 1]

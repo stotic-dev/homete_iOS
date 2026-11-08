@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import AuthFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -51,7 +52,7 @@ public struct WelcomeScreen: View {
         .trackScreenView(.welcome)
         // ログインは説明画面の続きではなく別の入口なので、説明画面の上にシートで重ね、下へスワイプして戻れるようにする
         .sheet(isPresented: $isPresentingLogin) {
-            LoginView(
+            LoginScreen(
                 accountLoadFailure: accountLoadFailure,
                 onReceiveAccountLoadFailure: onReceiveAccountLoadFailure
             )
@@ -75,7 +76,7 @@ public struct WelcomeScreen: View {
 private extension WelcomeScreen {
 
     /// 「はじめる」の後にアカウントを取得できなかったら、ローディングを畳んでエラーを出す
-    /// - Note: ログイン画面を開いているときは、Apple IDでのログインの失敗なので`LoginView`に任せる
+    /// - Note: ログイン画面を開いているときは、Apple IDでのログインの失敗なので`LoginScreen`に任せる
     func onChangeAccountLoadFailure() {
         guard let accountLoadFailure, !isPresentingLogin else { return }
         loadingState.isLoading = false
@@ -96,7 +97,7 @@ private extension WelcomeScreen {
             do {
                 try await accountAuthStore.startAnonymously()
                 // 成功時はcurrentAuthの変化を受けてRootView側でlaunchStateが切り替わり、この画面が取り除かれる。
-                // 遷移が終わる前に説明画面へ戻ったように見えないよう、LoginViewと同じくインジケータは戻さない
+                // 遷移が終わる前に説明画面へ戻ったように見えないよう、LoginScreenと同じくインジケータは戻さない
             } catch {
                 loadingState.isLoading = false
                 commonErrorContent = .init(error: error)

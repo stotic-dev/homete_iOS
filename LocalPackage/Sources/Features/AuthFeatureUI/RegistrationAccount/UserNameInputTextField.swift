@@ -5,16 +5,22 @@
 //  Created by 佐藤汰一 on 2025/12/27.
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import HometeUI
 import SwiftUI
 
-struct UserNameInputTextField: View {
+public struct UserNameInputTextField: View {
 
     @Binding var userName: UserName
 
-    var body: some View {
+    public init(
+        userName: Binding<UserName>
+    ) {
+        _userName = userName
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             HStack(spacing: .space8) {
                 TextField(text: $userName.value) {

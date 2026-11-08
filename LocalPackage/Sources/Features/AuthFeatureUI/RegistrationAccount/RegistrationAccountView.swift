@@ -5,22 +5,24 @@
 //  Created by 佐藤汰一 on 2025/12/20.
 //
 
-import HometeDomain
+import HometeModel
 import HometeResources
 import HometeUI
 import SwiftUI
 
-struct RegistrationAccountView: View {
-
-    @LoadingState var loadingState
+/// 呼び名を登録する画面
+/// - Note: アカウントの登録は`RegistrationAccountScreen`が受け持つ
+public struct RegistrationAccountView: View {
 
     @State var inputUserName = UserName()
-    let authInfo: AccountAuthResult
-    let authSubscriptionSyncUseCase: AuthSubscriptionSyncUseCase
-    /// アカウント登録が完了したときに呼ばれる
-    let onRegistered: (Account) -> Void
+    /// 入力した呼び名で「次へ」を押した
+    let onTapNext: (UserName) -> Void
 
-    var body: some View {
+    public init(onTapNext: @escaping (UserName) -> Void) {
+        self.onTapNext = onTapNext
+    }
+
+    public var body: some View {
         VStack(spacing: .space24) {
             VStack(spacing: .space16) {
                 // 入力中はキーボードで画面が狭くなるため、小さく出す
@@ -36,9 +38,7 @@ struct RegistrationAccountView: View {
             UserNameInputTextField(userName: $inputUserName)
             Spacer(minLength: .space24)
             Button {
-                loadingState.task {
-                    await tappedRegistrationButton()
-                }
+                onTapNext(inputUserName)
             } label: {
                 Text("次へ", bundle: #bundle)
                     .padding(.vertical, .space8)
@@ -54,52 +54,14 @@ struct RegistrationAccountView: View {
         .padding(.top, .space48)
         .frame(maxHeight: .infinity, alignment: .top)
         .background(.backgroundScreen)
-        .fullScreenLoadingIndicator(loadingState)
-        .trackScreenView(.registrationAccount)
-    }
-
-}
-
-// MARK: プレゼンテーションロジック
-
-private extension RegistrationAccountView {
-
-    func tappedRegistrationButton() async {
-        do {
-            let account = try await authSubscriptionSyncUseCase.syncOnRegistered(
-                auth: authInfo,
-                userName: inputUserName
-            )
-            onRegistered(account)
-        } catch {
-            print("occurred error: \(error)")
-        }
     }
 
 }
 
 #Preview("RegistrationAccountView_未入力") {
-    RegistrationAccountView(
-        authInfo: AccountAuthResult(id: ""),
-        authSubscriptionSyncUseCase: .init(
-            accountStore: AccountStore(),
-            cohabitantStore: CohabitantStore(),
-            subscriptionStore: SubscriptionStore(),
-            houseworkManager: .init(houseworkClient: .previewValue)
-        ),
-        onRegistered: { _ in }
-    )
+    RegistrationAccountView(onTapNext: { _ in })
 }
 
 #Preview("RegistrationAccountView_入力済み") {
-    RegistrationAccountView(
-        authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(
-            accountStore: AccountStore(),
-            cohabitantStore: CohabitantStore(),
-            subscriptionStore: SubscriptionStore(),
-            houseworkManager: .init(houseworkClient: .previewValue)
-        ),
-        onRegistered: { _ in }
-    )
+    RegistrationAccountView(onTapNext: { _ in })
 }

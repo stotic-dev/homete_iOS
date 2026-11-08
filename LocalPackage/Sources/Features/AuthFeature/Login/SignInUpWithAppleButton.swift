@@ -6,25 +6,23 @@
 //
 
 import AuthenticationServices
+import AuthFeatureUI
 import HometeDomain
 import SwiftUI
 
+/// 「Appleでサインイン」ボタン。nonceを付けてリクエストし、結果をサインインの情報に変換して伝える
 struct SignInUpWithAppleButton: View {
 
-    @Environment(\.colorScheme) var colorScheme
     @Environment(\.appDependencies.nonceGeneratorClient) var nonceGenerationClient
     @State var currentNonce: SignInWithAppleNonce?
 
     let onSignIn: (Result<SignInWithAppleResult, any Error>) async -> Void
 
     var body: some View {
-        SignInWithAppleButton {
-            handleRequest(request: $0)
-        } onCompletion: {
-            handleCompletion(result: $0)
-        }
-        .signInWithAppleButtonStyle(colorScheme == .light ? .black : .white)
-        .id(colorScheme)
+        SignInWithAppleButtonContent(
+            onRequest: { handleRequest(request: $0) },
+            onCompletion: { handleCompletion(result: $0) }
+        )
     }
 
 }
@@ -64,20 +62,4 @@ private extension SignInUpWithAppleButton {
         }
     }
 
-}
-
-#Preview("SignInUpWithAppleButton_light scheme", traits: .sizeThatFitsLayout) {
-    SignInUpWithAppleButton { _ in }
-        .frame(height: 48)
-        .padding()
-        .environment(\.colorScheme, .light)
-        .environment(\.appDependencies, .previewValue)
-}
-
-#Preview("SignInUpWithAppleButton_dark scheme", traits: .sizeThatFitsLayout) {
-    SignInUpWithAppleButton { _ in }
-        .frame(height: 48)
-        .padding()
-        .environment(\.colorScheme, .dark)
-        .environment(\.appDependencies, .previewValue)
 }

@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeModel
 import HometeResources
 import HometeUI
 import SwiftUI
@@ -11,12 +12,18 @@ import SwiftUI
 ///
 /// アプリの画面を簡略化したカードで機能を見せ、ほめっとは隅に小さく添える。
 /// 家事の名前・メンバーの名前・数値は、機能を伝えるための見本の値。
-struct WelcomeIllustration: View {
+public struct WelcomeIllustration: View {
 
     /// - Note: `.greeting`は図ではなく`WelcomeGreeting`で見せるため、渡さない
     let page: WelcomePage
 
-    var body: some View {
+    public init(
+        page: WelcomePage
+    ) {
+        self.page = page
+    }
+
+    public var body: some View {
         illustration
             .padding(.space16)
             .frame(maxWidth: 320)

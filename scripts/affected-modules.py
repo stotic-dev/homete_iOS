@@ -60,7 +60,7 @@ VRT_ALL_TARGETS = {"HometeSnapshotTestSupport"}
 # VRTが描画するモジュール。.prefire.yml の testable_imports と同じ
 VRT_MODULES = {
     "HometeUI",
-    "AuthFeature",
+    "AuthFeatureUI",
     "SettingFeature",
     "HomeFeature",
     "CohabitantRegistrationFeatureUI",

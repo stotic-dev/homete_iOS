@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import AuthFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -41,13 +42,15 @@ public struct AccountLinkScreen: View {
     public var body: some View {
         NavigationStack {
             AccountLinkView(
-                entry: entry,
+                isBeforePurchase: entry == .paywall,
                 isClosable: onClose != nil,
-                onSignInWithApple: { result in
-                    await onSignInWithApple(result)
-                },
                 onTapClose: {
                     tappedClose()
+                },
+                signInButton: {
+                    SignInUpWithAppleButton { result in
+                        await onSignInWithApple(result)
+                    }
                 }
             )
         }

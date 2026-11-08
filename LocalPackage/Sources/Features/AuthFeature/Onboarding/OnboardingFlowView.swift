@@ -3,12 +3,10 @@
 //  LocalPackage
 //
 
+import AuthFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI
-#if canImport(Prefire)
-import Prefire
-#endif
 
 /// アカウント登録直後のオンボーディングを順番に案内する画面
 /// - Note: 全ステップを終えた時点でログイン状態へ遷移する。購入・権限許可・パートナー登録は強制せずスキップできるが、
@@ -52,7 +50,7 @@ public struct OnboardingFlowView: View {
             ZStack {
                 switch step {
                 case .registration:
-                    RegistrationAccountView(
+                    RegistrationAccountScreen(
                         authInfo: authInfo,
                         authSubscriptionSyncUseCase: authSubscriptionSyncUseCase
                     ) { account in
@@ -80,7 +78,7 @@ public struct OnboardingFlowView: View {
                     .transition(stepTransition)
 
                 case .premiumIntroduction:
-                    PremiumIntroductionView {
+                    PremiumIntroductionScreen {
                         moveToNextStep()
                     }
                     .transition(stepTransition)
@@ -167,24 +165,4 @@ private extension OnboardingFlowView {
         launchStateProxy(.entered(LoginContext(account: account, isAnonymous: isAnonymous)))
     }
 
-}
-
-// 初期ステップの見た目はRegistrationAccountViewのPreviewと同一のため、VRTの対象からは外す
-#Preview {
-    let subscriptionStore = SubscriptionStore()
-    OnboardingFlowView(
-        authInfo: AccountAuthResult(id: "Test"),
-        authSubscriptionSyncUseCase: .init(
-            accountStore: AccountStore(),
-            cohabitantStore: CohabitantStore(),
-            subscriptionStore: subscriptionStore,
-            houseworkManager: .init(houseworkClient: .previewValue)
-        )
-    )
-    .environment(subscriptionStore)
-    .environment(AccountStore())
-    .environment(AccountAuthStore())
-    #if canImport(Prefire)
-        .prefireIgnored()
-    #endif
 }
