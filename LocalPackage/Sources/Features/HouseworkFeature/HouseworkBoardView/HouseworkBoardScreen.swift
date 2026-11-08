@@ -5,8 +5,10 @@
 //  Created by Taichi Sato on 2026/05/09.
 //
 
+import HometeAppCore
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 家事ボードの画面
@@ -117,7 +119,7 @@ private extension HouseworkBoardScreen {
     func board(houseworkListStore: HouseworkListStore) -> some View {
         boardNavigation(houseworkListStore: houseworkListStore)
             .sheet(isPresented: $isPresentingAddHouseworkView) {
-                RegisterHouseworkView(
+                RegisterHouseworkScreen(
                     dailyHouseworkList: .makeInitialValue(
                         selectedDate: dateList.selectedDate,
                         items: [],
@@ -133,7 +135,7 @@ private extension HouseworkBoardScreen {
             }
             // モーダルの上ではなく、閉じた後のボードに演出を出す。モーダルを閉じるのを演出で待たせないため
             .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
-                HouseworkThanksView(item: item) {
+                HouseworkThanksScreen(item: item) {
                     hasPendingThanksFeedback = true
                 }
             }
@@ -209,7 +211,7 @@ private extension HouseworkBoardScreen {
                 onTapHouseworkTemplate: { isShowHouseworkTemplate = true },
                 onTapBulkAction: { performBulk($0, store: houseworkListStore) },
                 rowMenu: { item in
-                    HouseworkQuickActionMenuContent(
+                    HouseworkQuickActionMenuComponent(
                         item: item,
                         step: .board,
                         canAddHelper: item.canAddHelper(members: members),
@@ -233,7 +235,7 @@ private extension HouseworkBoardScreen {
     func navigationHandler(_ route: HouseworkBoardRoute) -> some View {
         switch route {
         case let .houseworkDetail(item):
-            HouseworkDetailView(item: item)
+            HouseworkDetailScreen(item: item)
         }
     }
 

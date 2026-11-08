@@ -4,6 +4,7 @@
 //
 
 import HometeDomain
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 家事に添えた画像を読み込んで1枚表示する

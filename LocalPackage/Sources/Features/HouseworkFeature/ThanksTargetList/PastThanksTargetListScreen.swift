@@ -3,8 +3,10 @@
 //  LocalPackage
 //
 
+import HometeAppCore
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 過去のありがとう漏れの一覧の画面
@@ -56,7 +58,7 @@ public struct PastThanksTargetListScreen: View {
             openedAt = now
         }
         .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
-            HouseworkThanksView(
+            HouseworkThanksScreen(
                 item: item,
                 sentThanks: item.sentThanks(ownUserId: loginContext.account.id),
                 step: .commentPrompt

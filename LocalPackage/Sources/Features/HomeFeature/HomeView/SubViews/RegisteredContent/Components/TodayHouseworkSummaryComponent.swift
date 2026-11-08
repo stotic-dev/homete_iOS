@@ -6,9 +6,11 @@
 //
 
 import HometeDomain
+import HometeModel
 import HometeResources
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 /// ダッシュボードの「今日の家事サマリー」
@@ -49,7 +51,7 @@ struct TodayHouseworkSummaryComponent: View {
             onTapComplete: { completingItem = $0 },
             onTapShowMore: { navigationPath.push(.incompleteHouseworkList) },
             rowMenu: { item in
-                HouseworkQuickActionMenuContent(
+                HouseworkQuickActionMenuComponent(
                     item: item,
                     step: .dashboard,
                     // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない
@@ -63,7 +65,7 @@ struct TodayHouseworkSummaryComponent: View {
             }
         )
         .sheet(isPresented: $isPresentingRegister) {
-            RegisterHouseworkView.make(
+            RegisterHouseworkScreen.make(
                 dailyHouseworkList: .makeInitialValue(
                     selectedDate: now,
                     items: [],

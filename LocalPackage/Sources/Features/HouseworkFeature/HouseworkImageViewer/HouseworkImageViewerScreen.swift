@@ -5,6 +5,7 @@
 
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 家事に添えた画像の拡大表示（消すときの確認と保存を受け持つ）

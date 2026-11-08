@@ -5,6 +5,7 @@
 
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 家事詳細の画像の欄（追加・拡大表示・削除と、無料プランのプレミアムプランへの案内を受け持つ）

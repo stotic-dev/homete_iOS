@@ -8,8 +8,10 @@
 import ContributionFeature
 import HometeAppCore
 import HometeDomain
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 struct RegisteredContent: View {
@@ -98,12 +100,12 @@ private extension RegisteredContent {
     func navigationHandler(_ route: RegisteredContentRoute) -> some View {
         switch route {
         case .incompleteHouseworkList:
-            IncompleteHouseworkListView.make { item in
+            IncompleteHouseworkListScreen.make { item in
                 navigationPath.push(.houseworkDetail(item))
             }
 
         case let .houseworkDetail(item):
-            HouseworkDetailView.make(item: item)
+            HouseworkDetailScreen.make(item: item)
 
         case .thanksTargetList:
             ThanksTargetListScreen.make {

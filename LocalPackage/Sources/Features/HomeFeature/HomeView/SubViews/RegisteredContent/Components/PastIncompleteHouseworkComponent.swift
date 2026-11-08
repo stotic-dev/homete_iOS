@@ -4,8 +4,10 @@
 //
 
 import HometeDomain
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 /// ダッシュボードの「やり残している家事」
@@ -51,7 +53,7 @@ struct PastIncompleteHouseworkComponent: View {
                 Task { await fetchOlderPeriodIfNeeded() }
             },
             rowMenu: { item in
-                HouseworkQuickActionMenuContent(
+                HouseworkQuickActionMenuComponent(
                     item: item,
                     step: .dashboard,
                     // 未完了の家事だけを並べるため、ありがとうと手伝った人の追加は選ばれない

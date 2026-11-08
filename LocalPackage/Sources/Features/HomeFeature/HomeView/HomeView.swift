@@ -8,8 +8,10 @@
 import ContributionFeature
 import HometeAppCore
 import HometeDomain
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 public struct HomeView: View {

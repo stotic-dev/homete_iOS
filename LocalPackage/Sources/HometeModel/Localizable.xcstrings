@@ -373,6 +373,112 @@
           }
         }
       }
+    },
+    "%lldpt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldpt"
+          }
+        }
+      }
+    },
+    "お風呂掃除" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean Bathroom"
+          }
+        }
+      }
+    },
+    "がんばった" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worked Hard"
+          }
+        }
+      }
+    },
+    "すごくがんばった" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Went All Out"
+          }
+        }
+      }
+    },
+    "たろう" : {
+      "comment" : "チュートリアルの見本で、自分として出す架空の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alex"
+          }
+        }
+      }
+    },
+    "はなこ" : {
+      "comment" : "チュートリアルの見本で、パートナーとして出す架空の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sam"
+          }
+        }
+      }
+    },
+    "ふつう" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normal"
+          }
+        }
+      }
+    },
+    "ゴミ出し" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take Out Trash"
+          }
+        }
+      }
+    },
+    "夕食の準備" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Make Dinner"
+          }
+        }
+      }
+    },
+    "食器洗い" : {
+      "comment" : "チュートリアルの見本で出す家事の名前",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wash Dishes"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -4,6 +4,7 @@
 //
 
 import HometeUI
+import HouseworkFeatureUI
 import PhotosUI
 import SwiftUI
 

@@ -3,8 +3,10 @@
 //  LocalPackage
 //
 
+import HometeAppCore
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 /// ありがとうを伝えられる家事の一覧の画面
@@ -53,7 +55,7 @@ public struct ThanksTargetListScreen: View {
             onTapBulkThanks: sendThanksBulk
         )
         .sheet(item: $thankingItem, onDismiss: dismissedThanksView) { item in
-            HouseworkThanksView(
+            HouseworkThanksScreen(
                 item: item,
                 sentThanks: item.sentThanks(ownUserId: loginContext.account.id),
                 step: .commentPrompt

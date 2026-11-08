@@ -4,8 +4,10 @@
 //
 
 import HometeDomain
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 #if canImport(Prefire)
 import Prefire

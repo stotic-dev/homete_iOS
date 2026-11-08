@@ -4,6 +4,7 @@
 //
 
 import HometeDomain
+import HouseworkFeatureUI
 import SwiftUI
 
 /// 通知のタップやApp Intentから、家事の詳細画面・完了シートを開く

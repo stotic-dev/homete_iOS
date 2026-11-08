@@ -4,8 +4,10 @@
 //
 
 import HometeDomain
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 /// ダッシュボードの先頭に出すカード。上の段に感謝の促し・過去の促し・ねぎらいのコメントのどれかを、下の段に届いたありがとうを出す

@@ -22,6 +22,7 @@ let package = Package(
         lib("CohabitantRegistrationFeature"),
         lib("CohabitantRegistrationFeatureUI"),
         lib("HouseworkFeature"),
+        lib("HouseworkFeatureUI"),
         lib("ContributionFeature"),
         lib("ContributionFeatureUI"),
         lib("HometeLocalNotification"),
@@ -88,9 +89,9 @@ let package = Package(
 
         feature(name: "AuthFeature", extraDeps: ["AuthFeatureUI"]),
         feature(name: "SettingFeature", extraDeps: ["SettingFeatureUI"]),
-        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature"]),
+        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature", "HouseworkFeatureUI"]),
         feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
-        feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
+        feature(name: "HouseworkFeature", extraDeps: ["HouseworkFeatureUI", "FrequentHouseworkFeatureUI"]),
         feature(name: "ContributionFeature", extraDeps: ["ContributionFeatureUI"]),
         feature(name: "FrequentHouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
         feature(name: "PaywallFeature", extraDeps: ["PaywallFeatureUI"]),
@@ -105,6 +106,7 @@ let package = Package(
         featureUI(name: "AuthFeatureUI"),
         featureUI(name: "PaywallFeatureUI"),
         featureUI(name: "SettingFeatureUI"),
+        featureUI(name: "HouseworkFeatureUI", extraDeps: ["FrequentHouseworkFeatureUI"]),
 
         // MARK: Others
 
@@ -118,7 +120,7 @@ let package = Package(
         // HometeInfrastructureに依存させない
         .target(
             name: "HometeAppIntents",
-            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeatureUI"],
+            dependencies: ["HometeDomain", "HometeAppCore", "ContributionFeatureUI"],
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
@@ -150,11 +152,6 @@ let package = Package(
         .testTarget(
             name: "HometeDomainTests",
             dependencies: ["HometeDomain"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "HouseworkFeatureTests",
-            dependencies: ["HouseworkFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

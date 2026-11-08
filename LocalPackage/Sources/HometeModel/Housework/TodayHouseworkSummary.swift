@@ -1,0 +1,170 @@
+//
+//  TodayHouseworkSummary.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2026/05/18.
+//
+
+import Foundation
+
+/// 当日の家事サマリー（進捗・未完了一覧・表示状態）
+public struct TodayHouseworkSummary: Equatable, Sendable {
+
+    /// サマリーに表示する未完了家事の最大件数
+    public static let displayIncompleteLimit = 4
+
+    /// 当日の全家事
+    public let allItems: [HouseworkItem]
+    /// 未完了家事（`incomplete`）
+    public let incompleteItems: [HouseworkBoardItem]
+    /// 達成率（0.0〜1.0）。家事が0件のときは0
+    public let progress: Double
+    /// 表示状態
+    public let displayState: DisplayState
+    /// サマリーに表示する未完了家事（最大 `displayIncompleteLimit` 件）
+    public let displayIncompleteItems: [HouseworkBoardItem]
+    /// 未完了家事が表示上限を超えるか
+    public let hasMoreIncomplete: Bool
+
+    public init(
+        allItems: [HouseworkItem],
+        incompleteItems: [HouseworkBoardItem],
+        progress: Double,
+        displayState: DisplayState,
+        displayIncompleteItems: [HouseworkBoardItem],
+        hasMoreIncomplete: Bool
+    ) {
+        self.allItems = allItems
+        self.incompleteItems = incompleteItems
+        self.progress = progress
+        self.displayState = displayState
+        self.displayIncompleteItems = displayIncompleteItems
+        self.hasMoreIncomplete = hasMoreIncomplete
+    }
+
+}
+
+public extension TodayHouseworkSummary {
+
+    /// 当日のサマリーを生成する
+    ///
+    /// - Parameter template: 当日のテンプレート。家事ボード画面と同様に、
+    ///   未登録のテンプレート家事もマージして「今日の家事」として扱う。
+    static func make(
+        storedAllItems: StoredAllHouseworkList,
+        template: HouseworkTemplateDay?,
+        now: Date,
+        calendar: Calendar
+    ) -> Self {
+        let today = calendar.startOfDay(for: now)
+        let storedItems = storedAllItems.value
+            .first { $0.metaData.indexedDate.value == today }?
+            .items ?? []
+        let allItems = template?.applyTemplate(
+            registeredItems: storedItems,
+            selectedDate: today,
+            calendar: calendar,
+            idGenerator: { makeUnregisteredItemId(from: $0, occurrenceDate: today, calendar: calendar) }
+        ) ?? storedItems.filter { !$0.isPostponedRecord }
+
+        let incomplete = allItems
+            .filter { $0.state == .incomplete }
+            .sorted(by: HouseworkItem.isIncompleteDisplayOrderedBefore)
+
+        let progress: Double
+        let displayState: DisplayState
+        if allItems.isEmpty {
+            progress = 0
+            displayState = .empty
+        } else {
+            let completedCount = allItems.count - incomplete.count
+            progress = Double(completedCount) / Double(allItems.count)
+            displayState = incomplete.isEmpty ? .allCompleted : .hasIncomplete
+        }
+
+        let storedItemIds = Set(storedItems.map(\.id))
+        let incompleteBoardItems = incomplete.map {
+            HouseworkBoardItem(originalItem: $0, isRegistered: storedItemIds.contains($0.id))
+        }
+        let displayIncompleteItems = Array(incompleteBoardItems.prefix(Self.displayIncompleteLimit))
+        let hasMoreIncomplete = incomplete.count > Self.displayIncompleteLimit
+
+        return .init(
+            allItems: allItems,
+            incompleteItems: incompleteBoardItems,
+            progress: progress,
+            displayState: displayState,
+            displayIncompleteItems: displayIncompleteItems,
+            hasMoreIncomplete: hasMoreIncomplete
+        )
+    }
+
+    /// 終わった家事の数。進捗率と同じく、やらないにした家事も終わった側に数える
+    var finishedCount: Int {
+        allItems.count - incompleteItems.count
+    }
+
+    /// メンバーごとの当日の実績（`members.value` の順。自分が先頭）
+    ///
+    /// 月間の貢献度集計と同じく、完了（`completed`）の家事だけを担当者ごとに集計する。
+    /// 複数人で担当した家事は、担当者それぞれに配分されたポイントと1件の完了を数える。
+    /// 凡例に全員を出すため、実績0件のメンバーも含める。メンバー外の担当者の分は集計しない。
+    func memberContributions(members: CohabitantMemberList) -> [TodayMemberContribution] {
+        let executorsByUser = Dictionary(
+            grouping: allItems.filter { $0.state == .completed }.flatMap(\.executors),
+            by: \.userId
+        )
+        return members.value.map { member in
+            let executors = executorsByUser[member.id] ?? []
+            return .init(
+                userId: member.id,
+                userName: member.userName,
+                completedCount: executors.count,
+                point: executors.reduce(0) { $0 + $1.point }
+            )
+        }
+    }
+
+}
+
+private extension TodayHouseworkSummary {
+
+    /// 未登録のテンプレート家事に振るID
+    ///
+    /// 永続化されていないためFirestore上のIDを持たない。サマリーの再計算ごとにIDが変わらないよう、
+    /// テンプレートの家事IDから決定的に導出する。テンプレートは毎週同じ曜日に繰り返されるため、
+    /// 発生日を含めないとクイックアクション実行時に前回の発生分と同じFirestoreドキュメントを
+    /// 上書きしてしまう。発生日を含めて一意にする。
+    static func makeUnregisteredItemId(
+        from templateItem: HouseworkTemplateItem,
+        occurrenceDate: Date,
+        calendar: Calendar
+    ) -> String {
+        let components = calendar.dateComponents([.year, .month, .day], from: occurrenceDate)
+        let dateSuffix = String(
+            format: "%04d%02d%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
+        return "template-\(templateItem.id.id)-\(dateSuffix)"
+    }
+
+}
+
+public extension TodayHouseworkSummary {
+
+    /// サマリーの表示状態
+    enum DisplayState: Equatable, Sendable {
+
+
+        /// 当日の家事が0件
+        case empty
+        /// 全ての家事が完了
+        case allCompleted
+        /// 未完了の家事がある
+        case hasIncomplete
+
+    }
+
+}

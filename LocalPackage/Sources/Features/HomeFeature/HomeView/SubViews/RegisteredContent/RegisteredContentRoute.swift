@@ -5,8 +5,10 @@
 //  Created by 佐藤汰一 on 2026/05/18.
 //
 
+import HometeModel
 import HometeUI
 import HouseworkFeature
+import HouseworkFeatureUI
 import SwiftUI
 
 enum RegisteredContentRoute: Hashable {

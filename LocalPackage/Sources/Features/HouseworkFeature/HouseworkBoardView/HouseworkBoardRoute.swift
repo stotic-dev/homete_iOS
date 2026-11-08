@@ -5,6 +5,7 @@
 
 import HometeDomain
 import HometeUI
+import HouseworkFeatureUI
 import SwiftUI
 
 enum HouseworkBoardRoute: Hashable {
