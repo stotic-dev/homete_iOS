@@ -5,6 +5,8 @@
 //  Created by Taichi Sato on 2026/04/29.
 //
 
+import ContributionFeatureUI
+import HometeAppCore
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -60,6 +62,7 @@ public struct ContributionAnalyticsScreen: View {
             isPresented: $isShowPaywall,
             content: { router.resolve(.paywall(step: paywallStep)) }
         )
+        .trackScreenView(.contributionAnalytics)
     }
 
 }

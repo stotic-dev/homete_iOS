@@ -25,7 +25,7 @@ test_configuration:
     - CohabitantRegistrationFeatureUI
     - HouseworkFeature
     - HouseworkTemplateFeatureUI
-    - ContributionFeature
+    - ContributionFeatureUI
     - FrequentHouseworkFeatureUI
     - PaywallFeature
   - draw_hierarchy_in_key_window_default_enabled: true

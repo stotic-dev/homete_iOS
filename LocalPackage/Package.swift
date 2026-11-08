@@ -21,6 +21,7 @@ let package = Package(
         lib("CohabitantRegistrationFeatureUI"),
         lib("HouseworkFeature"),
         lib("ContributionFeature"),
+        lib("ContributionFeatureUI"),
         lib("HometeLocalNotification"),
         lib("HometeAppIntents"),
         lib("HouseworkTemplateFeature"),
@@ -84,10 +85,10 @@ let package = Package(
 
         feature(name: "AuthFeature"),
         feature(name: "SettingFeature"),
-        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
+        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature"]),
         feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
         feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
-        feature(name: "ContributionFeature"),
+        feature(name: "ContributionFeature", extraDeps: ["ContributionFeatureUI"]),
         feature(name: "FrequentHouseworkFeature", extraDeps: ["FrequentHouseworkFeatureUI"]),
         feature(name: "PaywallFeature"),
         feature(name: "HouseworkTemplateFeature", extraDeps: ["HouseworkTemplateFeatureUI"]),
@@ -97,6 +98,7 @@ let package = Package(
         featureUI(name: "CohabitantRegistrationFeatureUI"),
         featureUI(name: "FrequentHouseworkFeatureUI"),
         featureUI(name: "HouseworkTemplateFeatureUI"),
+        featureUI(name: "ContributionFeatureUI"),
 
         // MARK: Others
 
@@ -110,7 +112,7 @@ let package = Package(
         // HometeInfrastructureに依存させない
         .target(
             name: "HometeAppIntents",
-            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeature"],
+            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeatureUI"],
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
@@ -147,11 +149,6 @@ let package = Package(
         .testTarget(
             name: "HouseworkFeatureTests",
             dependencies: ["HouseworkFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "ContributionFeatureTests",
-            dependencies: ["ContributionFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(

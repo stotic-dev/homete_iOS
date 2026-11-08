@@ -6,6 +6,7 @@
 //
 
 import ContributionFeature
+import HometeAppCore
 import HometeDomain
 import HometeUI
 import HouseworkFeature

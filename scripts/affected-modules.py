@@ -66,7 +66,7 @@ VRT_MODULES = {
     "CohabitantRegistrationFeatureUI",
     "HouseworkFeature",
     "HouseworkTemplateFeatureUI",
-    "ContributionFeature",
+    "ContributionFeatureUI",
     "FrequentHouseworkFeatureUI",
     "PaywallFeature",
 }

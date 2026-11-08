@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import ContributionFeature
+import ContributionFeatureUI
 import HometeDomain
 import HometeUI
 import HouseworkFeature

@@ -4,7 +4,7 @@
 //
 
 import AppIntents
-import ContributionFeature
+import ContributionFeatureUI
 import Foundation
 import HometeDomain
 import SwiftUI
