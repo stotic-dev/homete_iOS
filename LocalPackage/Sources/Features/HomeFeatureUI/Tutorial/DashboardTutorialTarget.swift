@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HometeModel
 import HometeUI
 
 /// ダッシュボードのうち、チュートリアルでハイライトするUI

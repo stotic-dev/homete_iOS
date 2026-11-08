@@ -3,10 +3,11 @@
 //  homete
 //
 
+import HometeModel
 import HometeUI
 import SwiftUI
 
-extension View {
+public extension View {
 
     /// ダッシュボードのナビゲーションバー
     ///

@@ -27,14 +27,6 @@ public enum EncouragementCommentAnalyticsKind: String, Equatable, Sendable {
 
 }
 
-/// AIが作成したコメントへの評価
-public enum EncouragementCommentAnalyticsRating: String, Equatable, Sendable {
-
-    case good
-    case bad
-
-}
-
 /// ねぎらいのコメントに関する行動
 /// - Note: GA4はプロパティごとに定義できるイベント名の数に上限があるため、行動ごとにイベント名を増やさず
 ///         `encouragement_comment`イベント1つにまとめ、この型が生成するパラメータで区別する

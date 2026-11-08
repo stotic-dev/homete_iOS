@@ -21,7 +21,7 @@ test_configuration:
     - HometeUI
     - AuthFeatureUI
     - SettingFeatureUI
-    - HomeFeature
+    - HomeFeatureUI
     - CohabitantRegistrationFeatureUI
     - HouseworkFeatureUI
     - HouseworkTemplateFeatureUI

@@ -12,7 +12,7 @@
 		0AA7C0030000000000000003 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000003 /* HometeUI */; };
 		0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeatureUI */; };
 		0AA7C0030000000000000005 /* SettingFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeatureUI */; };
-		0AA7C0030000000000000006 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeature */; };
+		0AA7C0030000000000000006 /* HomeFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeatureUI */; };
 		0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */; };
 		0AA7C0030000000000000008 /* HouseworkFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeatureUI */; };
 		0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */; };
@@ -94,7 +94,7 @@
 				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
 				0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */,
 				0AA7C0030000000000000005 /* SettingFeatureUI in Frameworks */,
-				0AA7C0030000000000000006 /* HomeFeature in Frameworks */,
+				0AA7C0030000000000000006 /* HomeFeatureUI in Frameworks */,
 				0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */,
 				0AA7C0030000000000000008 /* HouseworkFeatureUI in Frameworks */,
 				0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */,
@@ -178,7 +178,7 @@
 				0AA7C0020000000000000003 /* HometeUI */,
 				0AA7C0020000000000000004 /* AuthFeatureUI */,
 				0AA7C0020000000000000005 /* SettingFeatureUI */,
-				0AA7C0020000000000000006 /* HomeFeature */,
+				0AA7C0020000000000000006 /* HomeFeatureUI */,
 				0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */,
 				0AA7C0020000000000000008 /* HouseworkFeatureUI */,
 				0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */,
@@ -710,9 +710,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = SettingFeatureUI;
 		};
-		0AA7C0020000000000000006 /* HomeFeature */ = {
+		0AA7C0020000000000000006 /* HomeFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HomeFeature;
+			productName = HomeFeatureUI;
 		};
 		0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;

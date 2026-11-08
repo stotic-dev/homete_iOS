@@ -3,10 +3,9 @@
 //  homete
 //
 
-import HometeDomain
 import HometeModel
 import HometeUI
-import HouseworkFeature
+import HouseworkFeatureUI
 import HouseworkFeatureUI
 import SwiftUI
 #if canImport(Prefire)
@@ -18,7 +17,7 @@ import Prefire
 /// 見出し・日付ごとのカード・広告・読み込み中の表示を、ダッシュボードの`LazyVStack`の要素として並べる。
 /// 1つのViewにまとめると、件数が多いときにすべての行を一度に描画してしまうため、`body`は要素を並べるだけにする。
 /// 渡された値を描画してタップを伝えるだけで、シートの表示や画面遷移、読み込みは呼び出し側が行う。
-struct PastIncompleteHouseworkContent<RowMenu: View, Advertisement: View>: View {
+public struct PastIncompleteHouseworkContent<RowMenu: View, Advertisement: View>: View {
 
     @Environment(\.calendar) var calendar
     @Environment(\.locale) var locale
@@ -44,7 +43,29 @@ struct PastIncompleteHouseworkContent<RowMenu: View, Advertisement: View>: View 
     /// 日付の区切りの間に挟む広告。引数は何番目の広告か
     @ViewBuilder let advertisement: (Int) -> Advertisement
 
-    var body: some View {
+    public init(
+        list: PastIncompleteHouseworkList,
+        showsAdvertisement: Bool,
+        isLoadingOlder: Bool,
+        olderPeriodLoadCount: Int,
+        onTapItem: @escaping (HouseworkBoardItem) -> Void,
+        onTapComplete: @escaping (HouseworkBoardItem) -> Void,
+        onAppearEnd: @escaping () -> Void,
+        @ViewBuilder rowMenu: @escaping (HouseworkBoardItem) -> RowMenu,
+        @ViewBuilder advertisement: @escaping (Int) -> Advertisement
+    ) {
+        self.list = list
+        self.showsAdvertisement = showsAdvertisement
+        self.isLoadingOlder = isLoadingOlder
+        self.olderPeriodLoadCount = olderPeriodLoadCount
+        self.onTapItem = onTapItem
+        self.onTapComplete = onTapComplete
+        self.onAppearEnd = onAppearEnd
+        self.rowMenu = rowMenu
+        self.advertisement = advertisement
+    }
+
+    public var body: some View {
         if !list.sections.isEmpty {
             titleText
             ForEach(list.elements(showsAdvertisement: showsAdvertisement)) { element in

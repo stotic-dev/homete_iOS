@@ -6,6 +6,7 @@
 //
 
 import ContributionFeature
+import HomeFeatureUI
 import HometeAppCore
 import HometeDomain
 import HometeModel
@@ -162,40 +163,3 @@ private extension RegisteredContent {
     }
 
 }
-
-#if DEBUG
-#Preview {
-    RegisteredContent(onRetry: {})
-        .environment(ContributionStore())
-        .environment(CohabitantStore())
-        .environment(HouseworkListStore())
-        .environment(SubscriptionStore())
-        .environment(EncouragementCommentStore(comment: .init(
-            text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
-            kind: .neutral,
-            source: .fixed
-        )))
-        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-        .setupEnvironmentForPreview()
-}
-
-#Preview("プレミアム登録済み_広告非表示") {
-    RegisteredContent(onRetry: {})
-        .environment(ContributionStore())
-        .environment(CohabitantStore())
-        .environment(HouseworkListStore())
-        .environment(SubscriptionStore(entitlementInfo: .init(
-            isActive: true,
-            productIdentifier: "premium_monthly",
-            expirationDate: nil,
-            willRenew: true
-        )))
-        .environment(EncouragementCommentStore(comment: .init(
-            text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
-            kind: .neutral,
-            source: .fixed
-        )))
-        .environment(\.now, .previewDate(year: 2026, month: 4, day: 1))
-        .setupEnvironmentForPreview()
-}
-#endif

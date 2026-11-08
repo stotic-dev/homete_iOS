@@ -38,7 +38,7 @@ public enum CohabitantJoinFailure: Equatable, Sendable {
 
 extension CohabitantJoinFailure {
 
-    init(_ error: any Error) {
+    public init(_ error: any Error) {
         switch error {
         case CohabitantInvitationError.notFound:
             self = .invalidLink

@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2026/05/20.
 //
 
+import HomeFeatureUI
 import HometeDomain
 import HometeModel
 import HometeResources

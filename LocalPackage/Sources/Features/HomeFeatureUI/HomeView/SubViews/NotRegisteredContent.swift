@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/09/04.
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
@@ -13,21 +13,39 @@ import SwiftUI
 ///
 /// 並べるのは未完了の項目だけ。パートナー登録と、匿名のときだけApple連携を出す。
 /// 相手が参加すると`Account.cohabitantId`が入りホームが切り替わるため、パートナー登録を完了済みとして出すことはない。
-struct NotRegisteredContent: View {
+public struct NotRegisteredContent: View {
 
     /// 匿名のまま（Appleアカウントと未連携）か
     let isAnonymous: Bool
     /// 招待を送っていて、相手の参加を待っているか
     let isWaitingForPartner: Bool
     /// クリップボードにコピーされた招待リンクの案内状態
-    let pasteboardInvitationState: PasteboardInvitationStore.State
+    let pasteboardInvitationState: PasteboardInvitationState
     let onTapRegisterPartner: () -> Void
     let onTapResendInvitation: () -> Void
     let onTapLinkAccount: () -> Void
     /// 「招待リンクを確認する」タップ時の処理
     let onTapCheckPasteboard: () -> Void
 
-    var body: some View {
+    public init(
+        isAnonymous: Bool,
+        isWaitingForPartner: Bool,
+        pasteboardInvitationState: PasteboardInvitationState,
+        onTapRegisterPartner: @escaping () -> Void,
+        onTapResendInvitation: @escaping () -> Void,
+        onTapLinkAccount: @escaping () -> Void,
+        onTapCheckPasteboard: @escaping () -> Void
+    ) {
+        self.isAnonymous = isAnonymous
+        self.isWaitingForPartner = isWaitingForPartner
+        self.pasteboardInvitationState = pasteboardInvitationState
+        self.onTapRegisterPartner = onTapRegisterPartner
+        self.onTapResendInvitation = onTapResendInvitation
+        self.onTapLinkAccount = onTapLinkAccount
+        self.onTapCheckPasteboard = onTapCheckPasteboard
+    }
+
+    public var body: some View {
         ScrollView {
             VStack(spacing: .space24) {
                 header

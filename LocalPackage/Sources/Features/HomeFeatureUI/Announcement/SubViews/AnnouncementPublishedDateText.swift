@@ -3,13 +3,14 @@
 //  LocalPackage
 //
 
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// お知らせの公開日
 ///
 /// 一覧・詳細・起動時のシートで同じ書式で出すため、ここにまとめる。
-struct AnnouncementPublishedDateText: View {
+public struct AnnouncementPublishedDateText: View {
 
     @Environment(\.locale) var locale
     @Environment(\.calendar) var calendar
@@ -17,7 +18,13 @@ struct AnnouncementPublishedDateText: View {
 
     let date: Date
 
-    var body: some View {
+    public init(
+        date: Date
+    ) {
+        self.date = date
+    }
+
+    public var body: some View {
         Text(date, format: Date.FormatStyle(
             date: .abbreviated,
             time: .omitted,

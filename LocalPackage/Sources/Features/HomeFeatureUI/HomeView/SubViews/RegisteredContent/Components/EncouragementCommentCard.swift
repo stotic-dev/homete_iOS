@@ -3,17 +3,16 @@
 //  LocalPackage
 //
 
-import HometeDomain
 import HometeModel
 import HometeUI
-import HouseworkFeature
+import HouseworkFeatureUI
 import HouseworkFeatureUI
 import SwiftUI
 
 /// ダッシュボードの先頭に出すカード。上の段に感謝の促し・過去の促し・ねぎらいのコメントのどれかを、下の段に届いたありがとうを出す
 ///
 /// 何を出すかは呼び出し側が決め、このカードは渡された値を描いてタップを伝えるだけにする。
-struct EncouragementCommentCard: View {
+public struct EncouragementCommentCard: View {
 
     /// 上の段に出すメッセージ
     let leadMessage: DashboardLeadMessage
@@ -34,7 +33,29 @@ struct EncouragementCommentCard: View {
     /// 評価済みのコメント。コメントが作り直されたら、また評価できるようにする
     @State var ratedComment: EncouragementComment?
 
-    var body: some View {
+    public init(
+        leadMessage: DashboardLeadMessage,
+        comment: EncouragementComment?,
+        receivedThanks: ReceivedThanksSummary?,
+        onTapThanks: @escaping () -> Void,
+        onTapPastThanks: @escaping () -> Void,
+        onTapDismissReceivedThanks: @escaping () -> Void,
+        onRate: @escaping (EncouragementCommentAnalyticsRating) -> Void,
+        isShowAIInfo: Bool = false,
+        ratedComment: EncouragementComment? = nil
+    ) {
+        self.leadMessage = leadMessage
+        self.comment = comment
+        self.receivedThanks = receivedThanks
+        self.onTapThanks = onTapThanks
+        self.onTapPastThanks = onTapPastThanks
+        self.onTapDismissReceivedThanks = onTapDismissReceivedThanks
+        self.onRate = onRate
+        _isShowAIInfo = State(initialValue: isShowAIInfo)
+        _ratedComment = State(initialValue: ratedComment)
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             switch leadMessage {
             case let .thanksPrompt(thanksPrompt):
@@ -222,13 +243,21 @@ private extension EncouragementCommentCard {
 }
 
 /// AIが作成したコメントの説明と、good/badの評価を出すポップアップ
-struct EncouragementAICommentPopover: View {
+public struct EncouragementAICommentPopover: View {
 
     /// このコメントを評価済みか
     let isRated: Bool
     let onRate: (EncouragementCommentAnalyticsRating) -> Void
 
-    var body: some View {
+    public init(
+        isRated: Bool,
+        onRate: @escaping (EncouragementCommentAnalyticsRating) -> Void
+    ) {
+        self.isRated = isRated
+        self.onRate = onRate
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             VStack(alignment: .leading, spacing: .space8) {
                 Text("AIが作成したコメントです", bundle: #bundle)

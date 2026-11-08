@@ -3,17 +3,24 @@
 //  LocalPackage
 //
 
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 自分が参加済みのグループの招待リンクを開いたことを伝えるView
 ///
 /// 参加は発生していないため、完了の演出ではなく案内として表示する。
-struct CohabitantJoinAlreadyMemberView: View {
+public struct CohabitantJoinAlreadyMemberView: View {
 
     let onTapClose: () -> Void
 
-    var body: some View {
+    public init(
+        onTapClose: @escaping () -> Void
+    ) {
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Text("すでにこのグループに参加しています", bundle: #bundle)
                 .font(with: .headLineL)

@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 #if canImport(Prefire)
@@ -15,13 +15,23 @@ import Prefire
 /// 状態は引数で受け取り、Storeの取得完了を待たずに各状態を描画できるようにする。
 /// `CohabitantJoinView` は表示直後に `.task` で招待情報の取得を始めるため、
 /// 画面のPreviewをそのまま撮ると常に取得中（スピナー）になり、確認画面の見た目をVRTで検証できない。
-struct CohabitantJoinContent: View {
+public struct CohabitantJoinContent: View {
 
     let state: CohabitantJoinState
     let onTapJoin: () -> Void
     let onTapClose: () -> Void
 
-    var body: some View {
+    public init(
+        state: CohabitantJoinState,
+        onTapJoin: @escaping () -> Void,
+        onTapClose: @escaping () -> Void
+    ) {
+        self.state = state
+        self.onTapJoin = onTapJoin
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .inlineNavigationBarTitleDisplayMode()
@@ -62,7 +72,6 @@ private extension CohabitantJoinContent {
                 onTapClose()
             }
             .hideNavigationBar()
-            .trackScreenView(.cohabitantCompletion)
 
         case .alreadyMember:
             CohabitantJoinAlreadyMemberView {

@@ -5,15 +5,21 @@
 //  Created by 佐藤汰一 on 2025/09/04.
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
-struct PromoteHouseworkTemplateBanner: View {
+public struct PromoteHouseworkTemplateBanner: View {
 
     let action: () -> Void
 
-    var body: some View {
+    public init(
+        action: @escaping () -> Void
+    ) {
+        self.action = action
+    }
+
+    public var body: some View {
         VStack(alignment: .center, spacing: .space24) {
             HometteView(.point)
             VStack(spacing: .space8) {

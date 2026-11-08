@@ -19,6 +19,7 @@ let package = Package(
         lib("SettingFeature"),
         lib("SettingFeatureUI"),
         lib("HomeFeature"),
+        lib("HomeFeatureUI"),
         lib("CohabitantRegistrationFeature"),
         lib("CohabitantRegistrationFeatureUI"),
         lib("HouseworkFeature"),
@@ -89,7 +90,7 @@ let package = Package(
 
         feature(name: "AuthFeature", extraDeps: ["AuthFeatureUI"]),
         feature(name: "SettingFeature", extraDeps: ["SettingFeatureUI"]),
-        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "ContributionFeatureUI", "HouseworkFeature", "HouseworkFeatureUI"]),
+        feature(name: "HomeFeature", extraDeps: ["HomeFeatureUI", "ContributionFeature", "HouseworkFeature"]),
         feature(name: "CohabitantRegistrationFeature", extraDeps: ["CohabitantRegistrationFeatureUI"]),
         feature(name: "HouseworkFeature", extraDeps: ["HouseworkFeatureUI", "FrequentHouseworkFeatureUI"]),
         feature(name: "ContributionFeature", extraDeps: ["ContributionFeatureUI"]),
@@ -107,6 +108,7 @@ let package = Package(
         featureUI(name: "PaywallFeatureUI"),
         featureUI(name: "SettingFeatureUI"),
         featureUI(name: "HouseworkFeatureUI", extraDeps: ["FrequentHouseworkFeatureUI"]),
+        featureUI(name: "HomeFeatureUI", extraDeps: ["ContributionFeatureUI", "HouseworkFeatureUI"]),
 
         // MARK: Others
 

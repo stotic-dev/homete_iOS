@@ -3,7 +3,7 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
@@ -13,12 +13,20 @@ import SwiftUI
 /// インストール後にそのリンクから参加できるようにする（ディファードディープリンク）。
 /// コピーは着地ページが自動で行うためユーザーはコピーした自覚がない。文言は「招待リンクから来たか」で問いかけ、
 /// 「コピー」には触れない。内容の読み取りはシステムのペースト許可ダイアログが出るため、ユーザーのタップ起点でのみ行う。
-struct PasteboardInvitationBanner: View {
+public struct PasteboardInvitationBanner: View {
 
-    let state: PasteboardInvitationStore.State
+    let state: PasteboardInvitationState
     let onTapCheck: () -> Void
 
-    var body: some View {
+    public init(
+        state: PasteboardInvitationState,
+        onTapCheck: @escaping () -> Void
+    ) {
+        self.state = state
+        self.onTapCheck = onTapCheck
+    }
+
+    public var body: some View {
         switch state {
         case .idle:
             EmptyView()

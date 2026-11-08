@@ -3,17 +3,25 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// 招待リンクからのグループ参加に失敗した理由を伝えるView
-struct CohabitantJoinFailureView: View {
+public struct CohabitantJoinFailureView: View {
 
     let failure: CohabitantJoinFailure
     let onTapClose: () -> Void
 
-    var body: some View {
+    public init(
+        failure: CohabitantJoinFailure,
+        onTapClose: @escaping () -> Void
+    ) {
+        self.failure = failure
+        self.onTapClose = onTapClose
+    }
+
+    public var body: some View {
         VStack(spacing: .space16) {
             Text(title)
                 .font(with: .headLineL)

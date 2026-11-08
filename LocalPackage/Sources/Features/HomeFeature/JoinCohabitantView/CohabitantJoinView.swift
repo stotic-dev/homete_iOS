@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HomeFeatureUI
 import HometeDomain
 import HometeUI
 import SwiftUI
@@ -33,6 +34,13 @@ public struct CohabitantJoinView: View {
                 onTapJoin: onTapJoin,
                 onTapClose: { dismiss() }
             )
+            // 参加を終えた演出を出したことを、画面の表示として送る
+            .overlay {
+                if case .completed = store?.state {
+                    Color.clear
+                        .trackScreenView(.cohabitantCompletion)
+                }
+            }
         }
         .task {
             await setupStoreAndLoad()

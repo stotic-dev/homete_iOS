@@ -59,14 +59,4 @@ public enum EncouragementMilestone: String, Equatable, Sendable, Codable {
     /// 自分の完了が1件以上で、今日の家事が全て完了した
     case allCompleted
 
-    public init(context: EncouragementContext) {
-        if context.own.todayCompletedCount == 0 {
-            self = .noActivity
-        } else if context.today.isAllCompleted {
-            self = .allCompleted
-        } else {
-            self = .inProgress
-        }
-    }
-
 }

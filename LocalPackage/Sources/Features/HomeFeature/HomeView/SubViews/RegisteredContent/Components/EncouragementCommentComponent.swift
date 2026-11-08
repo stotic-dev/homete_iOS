@@ -3,6 +3,7 @@
 //  LocalPackage
 //
 
+import HomeFeatureUI
 import HometeDomain
 import HometeModel
 import HometeUI

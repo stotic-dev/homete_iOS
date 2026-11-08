@@ -5,6 +5,7 @@
 //  Created by 佐藤汰一 on 2026/05/18.
 //
 
+import HomeFeatureUI
 import HometeModel
 import HometeUI
 import HouseworkFeature

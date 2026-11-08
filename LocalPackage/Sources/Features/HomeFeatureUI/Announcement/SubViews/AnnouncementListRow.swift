@@ -3,17 +3,25 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// お知らせの一覧の1行
-struct AnnouncementListRow: View {
+public struct AnnouncementListRow: View {
 
     let announcement: Announcement
     let isUnread: Bool
 
-    var body: some View {
+    public init(
+        announcement: Announcement,
+        isUnread: Bool
+    ) {
+        self.announcement = announcement
+        self.isUnread = isUnread
+    }
+
+    public var body: some View {
         HStack(spacing: .space16) {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(announcement.title)

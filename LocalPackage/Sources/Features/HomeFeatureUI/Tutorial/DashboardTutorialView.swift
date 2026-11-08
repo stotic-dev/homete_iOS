@@ -4,10 +4,9 @@
 //
 
 import ContributionFeatureUI
-import HometeDomain
 import HometeModel
 import HometeUI
-import HouseworkFeature
+import HouseworkFeatureUI
 import HouseworkFeatureUI
 import SwiftUI
 

@@ -3,7 +3,9 @@
 //  homete
 //
 
-import HometeDomain
+import HouseworkFeatureUI
+import ContributionFeatureUI
+import HometeModel
 import HometeUI
 import SwiftUI
 
@@ -12,7 +14,7 @@ import SwiftUI
 /// セクションの並びと見た目だけを持ち、各セクションの中身は呼び出し側から受け取る。
 /// 本番ではStoreにつながったセクションを、チュートリアルではサンプルを渡したセクションを並べることで、
 /// レイアウトの変更がチュートリアルにもそのまま反映されるようにする。
-struct DashboardContent<
+public struct DashboardContent<
     EncouragementComment: View,
     TodaySummary: View,
     Advertisement: View,
@@ -38,7 +40,35 @@ struct DashboardContent<
     /// やり残している家事。日付ごとのカードを`LazyVStack`の要素として並べるため、カードの見た目は付けない
     @ViewBuilder let pastIncompleteHousework: () -> PastIncomplete
 
-    var body: some View {
+    public init(
+        loadFailure: DomainError?,
+        showsAdvertisement: Bool,
+        isLoading: Bool,
+        showsTemplateBanner: Bool,
+        onTapRetry: @escaping () -> Void,
+        onTapRemoveAdsPromotion: @escaping () -> Void,
+        onTapTemplateBanner: @escaping () -> Void,
+        @ViewBuilder encouragementComment: @escaping () -> EncouragementComment,
+        @ViewBuilder todaySummary: @escaping () -> TodaySummary,
+        @ViewBuilder advertisement: @escaping () -> Advertisement,
+        @ViewBuilder contributionSummary: @escaping () -> ContributionSummary,
+        @ViewBuilder pastIncompleteHousework: @escaping () -> PastIncomplete
+    ) {
+        self.loadFailure = loadFailure
+        self.showsAdvertisement = showsAdvertisement
+        self.isLoading = isLoading
+        self.showsTemplateBanner = showsTemplateBanner
+        self.onTapRetry = onTapRetry
+        self.onTapRemoveAdsPromotion = onTapRemoveAdsPromotion
+        self.onTapTemplateBanner = onTapTemplateBanner
+        self.encouragementComment = encouragementComment
+        self.todaySummary = todaySummary
+        self.advertisement = advertisement
+        self.contributionSummary = contributionSummary
+        self.pastIncompleteHousework = pastIncompleteHousework
+    }
+
+    public var body: some View {
         ZStack {
             if let loadFailure {
                 LoadErrorView(error: loadFailure, onTapRetry: onTapRetry)
@@ -79,3 +109,68 @@ struct DashboardContent<
     }
 
 }
+
+#if DEBUG
+#Preview("DashboardContent_家事なし") {
+    let now = Date.previewDate(year: 2026, month: 4, day: 1)
+    var calendar = Calendar.japanese
+    calendar.timeZone = .tokyo
+    let storedAllItems = StoredAllHouseworkList(value: [])
+    return DashboardContent(
+        loadFailure: nil,
+        showsAdvertisement: false,
+        isLoading: false,
+        showsTemplateBanner: true,
+        onTapRetry: {},
+        onTapRemoveAdsPromotion: {},
+        onTapTemplateBanner: {},
+        encouragementComment: {
+            EncouragementCommentCard(
+                leadMessage: .encouragement,
+                comment: .init(
+                    text: "今日も一日おつかれさまです。気が向いたときに、家事リストをのぞいてみてください",
+                    kind: .neutral,
+                    source: .fixed
+                ),
+                receivedThanks: nil,
+                onTapThanks: {},
+                onTapPastThanks: {},
+                onTapDismissReceivedThanks: {},
+                onRate: { _ in }
+            )
+        },
+        todaySummary: {
+            TodayHouseworkSummaryContent(
+                summary: .make(storedAllItems: storedAllItems, template: nil, now: now, calendar: calendar),
+                members: .init(value: [], ownId: ""),
+                onTapRegister: {},
+                onTapItem: { _ in },
+                onTapComplete: { _ in },
+                onTapShowMore: {},
+                rowMenu: { _ in EmptyView() }
+            )
+        },
+        advertisement: {
+            EmptyView()
+        },
+        contributionSummary: {
+            ContributionSummaryContent(summaries: .init(), onTapShowAnalytics: {})
+        },
+        pastIncompleteHousework: {
+            PastIncompleteHouseworkContent(
+                list: .make(storedAllItems: storedAllItems, now: now, calendar: calendar),
+                showsAdvertisement: false,
+                isLoadingOlder: false,
+                olderPeriodLoadCount: 0,
+                onTapItem: { _ in },
+                onTapComplete: { _ in },
+                onAppearEnd: {},
+                rowMenu: { _ in EmptyView() },
+                advertisement: { _ in EmptyView() }
+            )
+        }
+    )
+    .environment(\.now, now)
+    .setupEnvironmentForPreview()
+}
+#endif

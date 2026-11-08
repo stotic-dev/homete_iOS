@@ -3,10 +3,9 @@
 //  homete
 //
 
-import HometeDomain
 import HometeModel
 import HometeUI
-import HouseworkFeature
+import HouseworkFeatureUI
 import HouseworkFeatureUI
 import SwiftUI
 
@@ -14,7 +13,7 @@ import SwiftUI
 ///
 /// 渡されたサマリーを描画してタップを伝えるだけで、シートの表示や画面遷移は呼び出し側が行う。
 /// チュートリアルでも同じViewにサンプルの家事を渡して表示する。
-struct TodayHouseworkSummaryContent<RowMenu: View>: View {
+public struct TodayHouseworkSummaryContent<RowMenu: View>: View {
 
     let summary: TodayHouseworkSummary
     /// 割合グラフの凡例に出すメンバー
@@ -27,7 +26,25 @@ struct TodayHouseworkSummaryContent<RowMenu: View>: View {
     /// 未完了の家事を長押ししたときと、その他ボタンのメニューの中身
     @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
 
-    var body: some View {
+    public init(
+        summary: TodayHouseworkSummary,
+        members: CohabitantMemberList,
+        onTapRegister: @escaping () -> Void,
+        onTapItem: @escaping (HouseworkBoardItem) -> Void,
+        onTapComplete: @escaping (HouseworkBoardItem) -> Void,
+        onTapShowMore: @escaping () -> Void,
+        @ViewBuilder rowMenu: @escaping (HouseworkBoardItem) -> RowMenu
+    ) {
+        self.summary = summary
+        self.members = members
+        self.onTapRegister = onTapRegister
+        self.onTapItem = onTapItem
+        self.onTapComplete = onTapComplete
+        self.onTapShowMore = onTapShowMore
+        self.rowMenu = rowMenu
+    }
+
+    public var body: some View {
         contentView
     }
 

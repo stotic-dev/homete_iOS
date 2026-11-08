@@ -3,18 +3,24 @@
 //  LocalPackage
 //
 
-import HometeDomain
+import HometeModel
 import HometeUI
 import SwiftUI
 
 /// お知らせのタイトル・公開日・本文
 ///
 /// 詳細画面と起動時のシートで同じ見せ方にするため、ここにまとめる。
-struct AnnouncementContent: View {
+public struct AnnouncementContent: View {
 
     let announcement: Announcement
 
-    var body: some View {
+    public init(
+        announcement: Announcement
+    ) {
+        self.announcement = announcement
+    }
+
+    public var body: some View {
         VStack(alignment: .leading, spacing: .space16) {
             VStack(alignment: .leading, spacing: .space4) {
                 Text(announcement.title)
