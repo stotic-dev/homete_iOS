@@ -1,25 +1,51 @@
 A little reward for everyday chores.
 
-homeau helps your household connect through the chores you share.
-With a simple, clean design, keeping up with daily housework feels natural.
-
-Key features
-
-Log chores and manage them as a checklist
-
-Celebrate what you get done each day
-
-Share with your partner or family and praise each other
+homeau is an iPhone app for splitting and tracking housework with the people you live with, whether that's your partner, your family, or your roommates.
+Check off chores as you finish them, and send each other thanks. Charts show who did how much.
 
 Great for people who
 
-Want to feel more motivated about housework
+- Want to see how housework is split between partners
+- Want to run a roommate chore rotation from a shared list
+- Want their partner to notice the chores they've done
+- Want to stay motivated about housework
 
-Want to communicate more with their family
+Key features
 
-Are looking for a simple, easy-to-use chore app
+[Chore list]
+Add the chores you plan to do today and check them off when you're done. Move anything you didn't get to with "Move to Tomorrow," and see chores left over from earlier days together on the home screen.
 
-Make every day a little more comfortable with homeau.
+[Shared household]
+Invite your partner or roommates to use the same chore list together.
+
+[Completion notifications and thanks]
+Your partner gets notified when you finish your first chore of the day, or whenever you finish one with a comment. Say thanks for finished chores with a short note.
+
+[Contribution charts]
+See each member's completed chores and points on monthly charts.
+
+[Go-to Chores and Chore Templates]
+Save chores you do often as Go-to Chores, or import them from Chore Templates, to add them to your list quickly.
+
+[Notes and checklists]
+Keep steps and tips for each chore as notes or checklists.
+
+[Daily Recap]
+On days you finish chores, get a recap notification in the evening. You can change the time in Settings.
+
+[Siri and Shortcuts]
+Use Siri with phrases like "Log a chore in homeau" or "Say thanks in homeau."
+
+Pricing
+
+All chore management features are free.
+With the Premium Plan, you can also:
+
+- Hide ads
+- Look back at past chores with no time limit
+- Save as many Go-to Chores as you like (up to 10 on the free plan)
+- Write notes up to 5,000 characters (up to 200 on the free plan)
+- Attach photos to chores (up to 10 per chore)
 
 
 About the Premium Plan

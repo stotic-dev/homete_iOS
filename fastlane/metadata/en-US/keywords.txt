@@ -1,1 +1,1 @@
-chores,housework,couple,family,roommate,household,cleaning,to-do,checklist,share,thanks
+housework,couple,roommate,family,household,partner,chore chart,cleaning,to-do,checklist,tasks
