@@ -1,5 +1,5 @@
 {
-  "originHash" : "e1629284bf600dfafcff1abddac783ab7775a52d09e7f405a3ceaa39fdba4abe",
+  "originHash" : "d93cfc59d0b531aa96e62822a0a77831d781ef8c5d0ffd6500ea8598a70a3c38",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/groue/GRDB.swift",
       "state" : {
-        "revision" : "b83108d10f42680d78f23fe4d4d80fc88dab3212",
-        "version" : "7.11.1"
+        "revision" : "92a554cd0d5e8d67cb18993c6054e73fe42c066c",
+        "version" : "7.12.0"
       }
     },
     {
