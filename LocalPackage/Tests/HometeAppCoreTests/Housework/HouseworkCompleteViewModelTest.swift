@@ -11,6 +11,7 @@ import Testing
 @MainActor
 struct HouseworkCompleteViewModelTest {
 
+    private let today = Date.previewDate(year: 2026, month: 1, day: 1)
     private let account = Account(id: "own", userName: "たいち", cohabitantId: "cohabitant")
     private let members = CohabitantMemberList(
         value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
@@ -34,14 +35,11 @@ struct HouseworkCompleteViewModelTest {
         #expect(viewModel.state == expected)
     }
 
-    @Test("完了にできたら、配ったポイントの合計でほめる演出に切り替え、家事を完了として書き込む")
+    @Test("完了にできたら、配ったポイントの合計でほめる演出に切り替える")
     func completeSucceeded() async {
         // Arrange
 
-        let written = TestBox<[HouseworkState]>(value: [])
-        let viewModel = makeViewModel(houseworkClient: .init(insertOrUpdateItemHandler: { item, _ in
-            written.value.append(item.state)
-        }))
+        let viewModel = makeViewModel()
         viewModel.send(.effortSelected(.hard))
 
         // Act
@@ -57,7 +55,92 @@ struct HouseworkCompleteViewModelTest {
             completedPoint: 12
         )
         #expect(viewModel.state == expected)
-        #expect(written.value == [.completed])
+    }
+
+    @Test("完了にすると、選んだ担当者・頑張り度で家事を完了として書き込む")
+    func completeWritesItem() async {
+        // Arrange
+
+        let written = TestBox<[HouseworkItem]>(value: [])
+        let viewModel = makeViewModel(houseworkClient: .init(insertOrUpdateItemHandler: { item, _ in
+            written.value.append(item)
+        }))
+        viewModel.send(.effortSelected(.hard))
+
+        // Act
+
+        viewModel.send(.completeTapped)
+        await tasks.waitUntilIdle()
+
+        // Assert
+
+        let expected = HouseworkItem(
+            id: "laundry",
+            indexedDate: .init(value: today),
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executors: [.init(userId: "own", percentage: 100, point: 12)],
+            effort: .hard,
+            executedAt: today,
+            templateHouseworkItemId: nil
+        )
+        #expect(written.value == [expected])
+    }
+
+    @Test("完了にしている途中にもう一度完了を押しても、書き込みは1回だけにする")
+    func completeTappedTwiceWritesOnce() async {
+        // Arrange
+
+        let written = TestBox<[HouseworkItem]>(value: [])
+        let viewModel = makeViewModel(houseworkClient: .init(insertOrUpdateItemHandler: { item, _ in
+            written.value.append(item)
+        }))
+        viewModel.send(.completeTapped)
+
+        // Act
+
+        viewModel.send(.completeTapped)
+        await tasks.waitUntilIdle()
+
+        // Assert
+
+        let expected = HouseworkItem(
+            id: "laundry",
+            indexedDate: .init(value: today),
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executors: [.init(userId: "own", percentage: 100, point: 10)],
+            effort: .normal,
+            executedAt: today,
+            templateHouseworkItemId: nil
+        )
+        #expect(written.value == [expected])
+    }
+
+    @Test("完了にした後は、頑張り度・担当者の変更を受け付けない", arguments: [
+        HouseworkCompleteViewModel.Action.effortSelected(.veryHard),
+        .memberToggled(userId: "partner"),
+    ])
+    func ignoresEditAfterCompletion(action: HouseworkCompleteViewModel.Action) async {
+        // Arrange
+
+        let viewModel = makeViewModel()
+        viewModel.send(.completeTapped)
+        await tasks.waitUntilIdle()
+
+        // Act
+
+        viewModel.send(action)
+
+        // Assert
+
+        let expected = HouseworkCompleteViewModel.State(
+            allocation: .init(memberIds: ["own", "partner"], selectedIds: ["own"], basePoint: 10),
+            completedPoint: 10
+        )
+        #expect(viewModel.state == expected)
     }
 
     @Test("完了にできなかったら、入力を残したまま失敗を出す")
@@ -82,8 +165,33 @@ struct HouseworkCompleteViewModelTest {
         #expect(viewModel.state == expected)
     }
 
+    @Test("グループに入っていないアカウントでは、書き込まずに失敗を出す")
+    func completeWithoutCohabitant() async {
+        // Arrange
+
+        let viewModel = makeViewModel(
+            account: .init(id: "own", userName: "たいち", cohabitantId: nil),
+            houseworkClient: .init(insertOrUpdateItemHandler: { _, _ in
+                Issue.record("書き込んではいけない")
+            })
+        )
+
+        // Act
+
+        viewModel.send(.completeTapped)
+        await tasks.waitUntilIdle()
+
+        // Assert
+
+        let expected = HouseworkCompleteViewModel.State(
+            allocation: .init(memberIds: ["own", "partner"], selectedIds: ["own"], basePoint: 10),
+            error: .other
+        )
+        #expect(viewModel.state == expected)
+    }
+
     @Test("完了にしている途中は、閉じる操作を受け付けない")
-    func ignoresWhileCompleting() async {
+    func ignoresCloseWhileCompleting() async {
         // Arrange
 
         var outcomes: [HouseworkCompleteViewModel.Outcome] = []
@@ -167,16 +275,18 @@ struct HouseworkCompleteViewModelTest {
     private let tasks = TaskTracker()
 
     private func makeViewModel(
+        account: Account? = nil,
         houseworkClient: HouseworkClient = .previewValue,
         onFinish: @escaping @MainActor (HouseworkCompleteViewModel.Outcome) -> Void = { _ in }
     ) -> HouseworkCompleteViewModel {
-        HouseworkCompleteViewModel(
+        let today = today
+        return HouseworkCompleteViewModel(
             item: item,
             step: .dashboard,
             members: members,
-            account: account,
+            account: account ?? self.account,
             houseworkListStore: HouseworkListStore(houseworkClient: houseworkClient),
-            now: { .previewDate(year: 2026, month: 1, day: 1) },
+            now: { today },
             tasks: tasks,
             onFinish: onFinish
         )
