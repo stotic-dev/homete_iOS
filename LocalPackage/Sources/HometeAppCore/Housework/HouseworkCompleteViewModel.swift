@@ -180,23 +180,9 @@ private extension HouseworkCompleteViewModel {
 
     /// 画面からの操作。`update(_:)`の`Message.action`から呼ぶ
     func handle(_ action: Action) {
-        let isEditable = state.isEditable
         switch action {
-        case let .effortSelected(effort):
-            guard isEditable else { return }
-            state.allocation.updateEffort(effort)
-
-        case let .memberToggled(userId):
-            guard isEditable, state.allocation.canToggle(userId) else { return }
-            state.allocation.toggle(userId)
-
-        case let .percentageChanged(userId, percentage):
-            guard isEditable else { return }
-            state.allocation.updatePercentage(percentage, for: userId)
-
-        case let .allocationChanged(allocation):
-            guard isEditable else { return }
-            state.allocation = allocation
+        case .effortSelected, .memberToggled, .percentageChanged, .allocationChanged:
+            editAllocation(action)
 
         case let .allocationExpandedChanged(isExpanded):
             state.isExpandedAllocation = isExpanded
@@ -219,6 +205,28 @@ private extension HouseworkCompleteViewModel {
 
         case .errorDismissed:
             state.error = nil
+        }
+    }
+
+    /// 頑張り度・担当者・割合の変更。完了にしている途中・完了にした後は受け付けない
+    func editAllocation(_ action: Action) {
+        guard state.isEditable else { return }
+        switch action {
+        case let .effortSelected(effort):
+            state.allocation.updateEffort(effort)
+
+        case let .memberToggled(userId):
+            guard state.allocation.canToggle(userId) else { return }
+            state.allocation.toggle(userId)
+
+        case let .percentageChanged(userId, percentage):
+            state.allocation.updatePercentage(percentage, for: userId)
+
+        case let .allocationChanged(allocation):
+            state.allocation = allocation
+
+        default:
+            break
         }
     }
 

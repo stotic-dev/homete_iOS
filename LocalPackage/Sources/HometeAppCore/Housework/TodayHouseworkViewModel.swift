@@ -106,10 +106,11 @@ private extension TodayHouseworkViewModel {
             account: context.account,
             houseworkListStore: houseworkListStore,
             now: { [weak self] in self?.context.now ?? .now },
-            tasks: tasks
-        ) { [weak self] _ in
-            self?.closeCompletion()
-        }
+            tasks: tasks,
+            onFinish: { [weak self] _ in
+                self?.closeCompletion()
+            }
+        )
         completion = viewModel
     }
 
