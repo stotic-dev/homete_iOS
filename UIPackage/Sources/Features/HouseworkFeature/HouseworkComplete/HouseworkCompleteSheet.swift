@@ -3,8 +3,9 @@
 //  LocalPackage
 //
 
-import HometeDomainUI
+import HometeAppCore
 import HometeDomain
+import HometeDomainUI
 import HometeResources
 import HometeUI
 import HouseworkFeatureUI
@@ -14,6 +15,7 @@ import SwiftUI
 ///
 /// 頑張り度と、担当者（自分以外や複数人も選べる）・ポイントの配分を入力する。
 /// 完了にしたら、中身をほめっとがほめる演出に切り替え、見せ終わってから閉じる。
+/// 状態と操作は`HouseworkCompleteViewModel`が持ち、このViewはつなぐだけにする。
 public struct HouseworkCompleteSheet: View {
 
     @Environment(HouseworkListStore.self) var houseworkListStore
@@ -21,76 +23,103 @@ public struct HouseworkCompleteSheet: View {
     @Environment(\.loginContext.account) var account
     @Environment(\.dismiss) var dismiss
     @Environment(\.now) var now
-    @CommonError var commonError
-    @LoadingState var loadingState
-
-    /// 完了にできたときの、ほめっとがほめる内容。入ると中身を演出に切り替える
-    @State var praise: HometteCompletionPraise?
 
     let item: HouseworkBoardItem
     let step: HouseworkAnalyticsStep
+    /// 出す側が持っているViewModel。`nil`ならこのシートの中で作る
+    let viewModel: HouseworkCompleteViewModel?
 
     public init(item: HouseworkBoardItem, step: HouseworkAnalyticsStep) {
         self.item = item
         self.step = step
+        viewModel = nil
+    }
+
+    /// 出すかどうかを出す側のViewModelが持つときに使う
+    public init(viewModel: HouseworkCompleteViewModel) {
+        item = viewModel.item
+        step = .dashboard
+        self.viewModel = viewModel
     }
 
     public var body: some View {
-        NavigationStack {
-            HouseworkCompleteView(
+        if let viewModel {
+            HouseworkCompleteSheetContent(viewModel: viewModel)
+        } else {
+            OwnedHouseworkCompleteSheet(viewModel: .init(
                 item: item,
+                step: step,
                 members: members,
                 account: account,
+                houseworkListStore: houseworkListStore,
+                now: { [now] in now },
+                onFinish: { [dismiss] _ in dismiss() }
+            ))
+        }
+    }
+
+}
+
+/// シートの中でViewModelを作って持つ
+private struct OwnedHouseworkCompleteSheet: View {
+
+    @State var viewModel: HouseworkCompleteViewModel
+
+    var body: some View {
+        HouseworkCompleteSheetContent(viewModel: viewModel)
+    }
+
+}
+
+private struct HouseworkCompleteSheetContent: View {
+
+    @State var praise: HometteCompletionPraise?
+
+    let viewModel: HouseworkCompleteViewModel
+
+    var body: some View {
+        NavigationStack {
+            HouseworkCompleteView(
+                selectableMembers: viewModel.selectableMembers,
+                allocation: .init(
+                    get: { viewModel.state.allocation },
+                    set: { viewModel.send(.allocationChanged($0)) }
+                ),
+                isExpandedAllocation: .init(
+                    get: { viewModel.state.isExpandedAllocation },
+                    set: { viewModel.send(.allocationExpandedChanged($0)) }
+                ),
                 praise: praise,
-                onTapClose: { dismiss() },
-                onTapComplete: { allocation in
-                    loadingState.task {
-                        await tappedCompleteButton(allocation: allocation)
-                    }
-                },
-                onFinishPraise: { dismiss() }
+                canComplete: viewModel.state.canComplete,
+                onTapClose: { viewModel.send(.closeTapped) },
+                onTapComplete: { viewModel.send(.completeTapped) },
+                onFinishPraise: { viewModel.send(.praiseFinished) }
             )
         }
         .presentationDragIndicator(.visible)
-        .fullScreenLoadingIndicator(loadingState)
-        .commonError(content: $commonError)
+        .fullScreenLoadingIndicator(LoadingStateStore(isLoading: viewModel.state.isCompleting))
+        .commonError(content: errorContent)
+        // ほめる文言は毎回ランダムに選ぶので、完了にできた時点で1回だけ決める
+        .onChange(of: viewModel.state.completedPoint) { _, point in
+            guard let point else { return }
+            praise = .init(houseworkTitle: viewModel.item.originalItem.title, point: point)
+        }
         .trackScreenView(.houseworkComplete)
     }
 
 }
 
-// MARK: - プレゼンテーションロジック
+private extension HouseworkCompleteSheetContent {
 
-private extension HouseworkCompleteSheet {
-
-    func userName(_ userId: String) -> String {
-        members.userName(userId) ?? (userId == account.id ? account.userName : "")
-    }
-
-    func tappedCompleteButton(allocation: HouseworkExecutorAllocation) async {
-        guard let cohabitantId = account.cohabitantId else { return }
-
-        do {
-            let executors = try allocation.makeExecutors()
-            try await houseworkListStore.complete(
-                target: item.originalItem,
-                now: now,
-                reporter: account,
-                executors: executors,
-                effort: allocation.effort,
-                executorNames: executors.map { userName($0.userId) },
-                comment: "",
-                cohabitantId: cohabitantId,
-                isRegistered: item.isRegistered,
-                step: step
-            )
-            praise = .init(
-                houseworkTitle: item.originalItem.title,
-                point: executors.reduce(0) { $0 + $1.point }
-            )
-        } catch {
-            commonError = .init(error: error)
-        }
+    var errorContent: Binding<DomainErrorAlertContent> {
+        .init(
+            get: { viewModel.state.error.map { .init(error: $0) } ?? .initial },
+            set: { content in
+                if !content.isPresenting {
+                    viewModel.send(.errorDismissed)
+                }
+            }
+        )
     }
 
 }

@@ -12,47 +12,39 @@ import SwiftUI
 /// - Note: 完了にする処理は`HouseworkCompleteSheet`が受け持つ。`NavigationStack`の中に置かれる前提でツールバーの項目を並べる
 public struct HouseworkCompleteView: View {
 
-    let item: HouseworkBoardItem
     /// 担当者として選べるメンバー（メンバー一覧の並び順。自分が先頭）
     let selectableMembers: [CohabitantMember]
+    /// 頑張り度と、担当者・ポイントの配分
+    @Binding var allocation: HouseworkExecutorAllocation
+    /// 配分の調整を開いているか
+    @Binding var isExpandedAllocation: Bool
     /// 完了にできたときの、ほめっとがほめる内容。入ると中身を演出に切り替える
     let praise: HometteCompletionPraise?
+    /// 完了にできるか
+    let canComplete: Bool
     let onTapClose: () -> Void
-    /// 決めた頑張り度と配分で完了にする
-    let onTapComplete: (HouseworkExecutorAllocation) -> Void
+    let onTapComplete: () -> Void
     /// ほめる演出を見せ終わった
     let onFinishPraise: () -> Void
 
-    @State var allocation: HouseworkExecutorAllocation
-    @State var isExpandedAllocation: Bool
-
     public init(
-        item: HouseworkBoardItem,
-        members: CohabitantMemberList,
-        account: Account,
-        praise: HometteCompletionPraise? = nil,
-        allocation: HouseworkExecutorAllocation? = nil,
-        isExpandedAllocation: Bool = false,
+        selectableMembers: [CohabitantMember],
+        allocation: Binding<HouseworkExecutorAllocation>,
+        isExpandedAllocation: Binding<Bool>,
+        praise: HometteCompletionPraise?,
+        canComplete: Bool,
         onTapClose: @escaping () -> Void,
-        onTapComplete: @escaping (HouseworkExecutorAllocation) -> Void,
+        onTapComplete: @escaping () -> Void,
         onFinishPraise: @escaping () -> Void
     ) {
-        self.item = item
+        self.selectableMembers = selectableMembers
+        _allocation = allocation
+        _isExpandedAllocation = isExpandedAllocation
         self.praise = praise
+        self.canComplete = canComplete
         self.onTapClose = onTapClose
         self.onTapComplete = onTapComplete
         self.onFinishPraise = onFinishPraise
-        // メンバーの読み込み前に開かれても自分だけは選べるようにする
-        selectableMembers = members.value.isEmpty
-            ? [.init(id: account.id, userName: account.userName)]
-            : members.value
-        // @Stateは他のプロパティを初期化してから代入する（iOS 27 SDKで@Stateがマクロになったため）
-        self.allocation = allocation ?? .init(
-            memberIds: selectableMembers.map(\.id),
-            selectedIds: [account.id],
-            basePoint: item.originalItem.point
-        )
-        self.isExpandedAllocation = isExpandedAllocation
     }
 
     public var body: some View {
@@ -131,10 +123,10 @@ private extension HouseworkCompleteView {
 
     func completeButton() -> some View {
         NavigationBarPrimaryActionButton(systemImage: "checkmark") {
-            onTapComplete(allocation)
+            onTapComplete()
         }
         .foregroundStyle(.textOnAccent)
-        .disabled(allocation.validationError != nil)
+        .disabled(!canComplete)
     }
 
 }
@@ -143,14 +135,13 @@ private extension HouseworkCompleteView {
 #Preview("HouseworkCompleteView_自分だけ") {
     NavigationStack {
         HouseworkCompleteView(
-            item: .makeForPreview(title: "洗濯", point: 10),
-            members: .init(
-                value: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
-                ownId: "own"
-            ),
-            account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant"),
+            selectableMembers: [.init(id: "own", userName: "たいち"), .init(id: "partner", userName: "はなこ")],
+            allocation: .constant(.init(memberIds: ["own", "partner"], selectedIds: ["own"], basePoint: 10)),
+            isExpandedAllocation: .constant(false),
+            praise: nil,
+            canComplete: true,
             onTapClose: {},
-            onTapComplete: { _ in },
+            onTapComplete: {},
             onFinishPraise: {}
         )
     }
@@ -159,25 +150,22 @@ private extension HouseworkCompleteView {
 #Preview("HouseworkCompleteView_配分の調整を開いた状態") {
     NavigationStack {
         HouseworkCompleteView(
-            item: .makeForPreview(title: "洗濯", point: 10),
-            members: .init(
-                value: [
-                    .init(id: "own", userName: "たいち"),
-                    .init(id: "partner", userName: "はなこ"),
-                    .init(id: "child", userName: "じろう"),
-                ],
-                ownId: "own"
-            ),
-            account: .init(id: "own", userName: "たいち", cohabitantId: "cohabitant"),
             // CohabitantMemberList.valueと同じ並び順（自分が先頭、他はユーザーID昇順）
-            allocation: .init(
+            selectableMembers: [
+                .init(id: "own", userName: "たいち"),
+                .init(id: "child", userName: "じろう"),
+                .init(id: "partner", userName: "はなこ"),
+            ],
+            allocation: .constant(.init(
                 memberIds: ["own", "child", "partner"],
                 selectedIds: ["own", "child", "partner"],
                 basePoint: 10
-            ),
-            isExpandedAllocation: true,
+            )),
+            isExpandedAllocation: .constant(true),
+            praise: nil,
+            canComplete: true,
             onTapClose: {},
-            onTapComplete: { _ in },
+            onTapComplete: {},
             onFinishPraise: {}
         )
     }
