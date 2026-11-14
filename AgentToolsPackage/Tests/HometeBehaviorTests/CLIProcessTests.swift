@@ -76,13 +76,15 @@ struct CLIProcessTests {
         return output.split(separator: "\n").map(String.init)
     }
 
-    /// `swift build`・`swift test`がビルドした成果物のディレクトリ（AgentToolsPackage/.build/debug）
+    /// `swift test`がビルドした成果物のディレクトリ
+    ///
+    /// テストバンドル（`.xctest`）と`homete-cli`は同じディレクトリに置かれるので、そこから辿る。
+    /// `--scratch-path`を付けて流したときも同じ場所になる
     private static var productsDirectory: URL {
-        URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent(".build/debug")
+        Bundle(for: TestBundleMarker.self).bundleURL.deletingLastPathComponent()
     }
 
 }
+
+/// テストバンドルを`Bundle(for:)`で引くためのクラス
+private final class TestBundleMarker {}
