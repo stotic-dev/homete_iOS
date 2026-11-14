@@ -36,7 +36,7 @@ let package = Package(
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
-        // 画面単位の状態と操作（Feature固有のStore・ViewModel）。iOSのUIとCLI・行動テストが同じものを使う（doc/adr/0071）
+        // 画面単位の状態と操作（Feature固有のStore・ViewModel）。iOSのUIとCLI・行動テストが同じものを使う（doc/adr/0072）
         .target(
             name: "HometeAppCore",
             dependencies: ["HometeDomain"],

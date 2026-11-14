@@ -1,9 +1,9 @@
 ## タイトル: UIのモジュールをStore・UseCase・Clientから切り離し、VRTを影響範囲だけに絞る
 
-* **提案済**
+* **承認済**
 * 意思決定者: stotic-dev
 * 日付: 2026-10-25
-* 関連: [ADR-0046](0046-split-infra-package-from-local-package.md)、[ADR-0047](0047-vrt-dedicated-xcode-project.md)、[ADR-0048](0048-verify-only-affected-modules.md)、[ADR-0052](0052-vrt-light-workflow-with-build-action.md)、移行計画は [doc/strategy/affected-vrt-ui-module-split.md](../strategy/affected-vrt-ui-module-split.md)
+* 関連: [ADR-0071](0071-split-ui-package.md)、[ADR-0072](0072-app-core-view-models-and-behavior-cli.md)、[ADR-0046](0046-split-infra-package-from-local-package.md)、[ADR-0047](0047-vrt-dedicated-xcode-project.md)、[ADR-0048](0048-verify-only-affected-modules.md)、[ADR-0052](0052-vrt-light-workflow-with-build-action.md)、移行計画は [doc/strategy/affected-vrt-ui-module-split.md](../strategy/affected-vrt-ui-module-split.md)
 
 ## 文脈、背景や問題点の説明
 
@@ -36,6 +36,14 @@ CI（Xcode Cloud）のVRTは、どのファイルを変えても全プレビュ�
     * リリースPR（`release/*` → `main`）。依存グラフに出ない変化（Xcode Cloudの環境の更新など）をリリース前に拾う
     * 差分の起点を決められなかったとき
   * 対象が無ければテストを流さずに成功させる
+
+### 実施時に補った点（Issue #515）
+
+* `XxxFeature`は、同じ名前の`XxxFeatureUI`のほか、`HometeAppCore`・`HometeDomainUI`にも依存する（[ADR-0071](0071-split-ui-package.md)・[ADR-0072](0072-app-core-view-models-and-behavior-cli.md)）
+* Featureの`Model/`にあった値型は、UIが使うものを`HometeModel`へ、Storeとそれに依存するものを`HometeAppCore`へ移した。
+  ユニットテストをSwiftUIのモジュールから切り離すため（[ADR-0071](0071-split-ui-package.md)）。そのため、Feature固有の値型を変えたときもVRTは全件になる
+* `HomeFeatureUI`は`ContributionFeatureUI`・`HouseworkFeatureUI`に依存する（ダッシュボードにがんばり・今日の家事の部品を並べるため）
+* 表示に使うEnvironment（`\.now`・`\.houseworkStoragePolicy`）とプレビュー用の環境の設定は`HometeUI`に置いた
 
 ## 考慮した選択肢
 

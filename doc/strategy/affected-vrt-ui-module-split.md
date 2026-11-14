@@ -3,6 +3,10 @@
 > 関連Issue: [#513 CIのVRTを変更の影響範囲に絞る](https://github.com/stotic-dev/homete_iOS/issues/513)、[#514 HometeModelの切り出し](https://github.com/stotic-dev/homete_iOS/issues/514)、[#515 XxxFeatureUIへの分離](https://github.com/stotic-dev/homete_iOS/issues/515)
 > ブランチ: Issueごとに切る（Step 1は `ci/513-affected-vrt`）
 > ADR: [ADR-0063](../adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)
+>
+> **#515で実施済み。** 実施にあたり、SwiftUIで描くモジュールは新しい`UIPackage`へ移し（[ADR-0071](../adr/0071-split-ui-package.md)）、
+> Featureの値型とStoreはLocalPackageの`HometeModel`・`HometeAppCore`へ寄せた。以下のパス（`LocalPackage/Sources/Features/...`）は計画時点のもの。
+> 現在の構成は [doc/multimodules_structure.md](../multimodules_structure.md) が正。
 
 ## ステータス
 
