@@ -97,6 +97,9 @@ private struct HouseworkCompleteSheetContent: View {
             )
         }
         .presentationDragIndicator(.visible)
+        // 完了にしている途中に閉じると「閉じたのに完了になった」ように見えるうえ、ViewModelは閉じる操作を受け付けないため、
+        // スワイプでも閉じられないようにする
+        .interactiveDismissDisabled(viewModel.state.isCompleting)
         .fullScreenLoadingIndicator(LoadingStateStore(isLoading: viewModel.state.isCompleting))
         .commonError(content: errorContent)
         // ほめる文言は毎回ランダムに選ぶので、完了にできた時点で1回だけ決める
