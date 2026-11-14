@@ -251,26 +251,6 @@
         }
       }
     },
-    "今月のがんばりです" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Here's this month's effort."
-          }
-        }
-      }
-    },
-    "今月の記録はまだありません" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No records yet this month."
-          }
-        }
-      }
-    },
     "記録しませんでした" : {
       "localizations" : {
         "en" : {

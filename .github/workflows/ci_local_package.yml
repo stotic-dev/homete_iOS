@@ -5,10 +5,16 @@ on:
     branches: ["main"]
     paths:
       - "LocalPackage/**"
+      # #Previewの静的検査（make check-previews）はUIPackageのソースを見る
+      - "UIPackage/Sources/**"
+      - ".prefire.yml"
   pull_request:
     branches: ["**"]
     paths:
       - "LocalPackage/**"
+      # #Previewの静的検査（make check-previews）はUIPackageのソースを見る
+      - "UIPackage/Sources/**"
+      - ".prefire.yml"
   workflow_dispatch:
 
 permissions:
@@ -54,9 +60,9 @@ jobs:
             LocalPackage/.build/repositories
             LocalPackage/.build/artifacts
             LocalPackage/.build/workspace-state.json
-          key: local-package-v2-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.resolved') }}
+          key: local-package-v3-${{ runner.os }}-${{ hashFiles('LocalPackage/Package.swift') }}
           restore-keys: |
-            local-package-v2-${{ runner.os }}-
+            local-package-v3-${{ runner.os }}-
 
       # Prefireの生成コードはここではビルドされないため、#Preview のアクセス修飾子ミスは
       # Xcode Cloud の VRT まで検出できない。静的検査で先に落とす。

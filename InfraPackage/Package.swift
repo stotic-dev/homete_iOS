@@ -17,6 +17,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ProjectTools"),
         .package(path: "../LocalPackage"),
+        .package(path: "../UIPackage"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk", from: "13.0.1"),
         .package(url: "https://github.com/googleads/swift-package-manager-google-mobile-ads.git", from: "13.3.0"),
         .package(
@@ -58,20 +59,22 @@ let package = Package(
                 "HometeInfrastructure",
                 localPackage("HometeDomain"),
                 localPackage("HometeAppCore"),
-                localPackage("HometeUI"),
-                localPackage("AuthFeature"),
-                localPackage("SettingFeature"),
-                localPackage("HomeFeature"),
-                localPackage("HomeFeatureUI"),
-                localPackage("CohabitantRegistrationFeature"),
-                localPackage("HouseworkFeature"),
-                localPackage("HouseworkFeatureUI"),
-                localPackage("HouseworkTemplateFeature"),
-                localPackage("ContributionFeature"),
-                localPackage("FrequentHouseworkFeature"),
-                localPackage("PaywallFeature"),
+                uiPackage("HometeDomainUI"),
+                uiPackage("HometeUI"),
+                uiPackage("AuthFeature"),
+                uiPackage("SettingFeature"),
+                uiPackage("HomeFeature"),
+                uiPackage("HomeFeatureUI"),
+                uiPackage("CohabitantRegistrationFeature"),
+                uiPackage("HouseworkFeature"),
+                uiPackage("HouseworkFeatureUI"),
+                uiPackage("HouseworkTemplateFeature"),
+                uiPackage("ContributionFeature"),
+                uiPackage("FrequentHouseworkFeature"),
+                uiPackage("PaywallFeature"),
                 localPackage("HometeLocalNotification"),
-                localPackage("HometeAppIntents")
+                localPackage("HometeAppIntents"),
+                uiPackage("HometeAppIntentsUI")
             ],
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
@@ -83,6 +86,10 @@ let package = Package(
 
 func swiftLintPlugin() -> Target.PluginUsage {
     .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
+}
+
+func uiPackage(_ name: String) -> Target.Dependency {
+    .product(name: name, package: "UIPackage")
 }
 
 func localPackage(_ name: String) -> Target.Dependency {

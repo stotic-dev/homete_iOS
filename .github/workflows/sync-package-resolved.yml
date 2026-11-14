@@ -1,13 +1,13 @@
 name: sync-package-resolved
 
 # doc/adr/0053: xcodeprojでビルドすると使われるのはルート（xcodeproj）のPackage.resolvedだけで、
-# dependabotが更新するInfraPackage・LocalPackage側のPackage.resolvedはアプリに反映されない。
+# dependabotが更新するInfraPackage・UIPackage側のPackage.resolvedはアプリに反映されない。
 # dependabotのPRには、xcodeproj側をそろえるコミットをこのワークフローが積む。
 on:
   pull_request_target:
     paths:
       - "InfraPackage/Package.resolved"
-      - "LocalPackage/Package.resolved"
+      - "UIPackage/Package.resolved"
 
 concurrency:
   group: sync-package-resolved-${{ github.event.pull_request.number }}

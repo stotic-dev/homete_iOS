@@ -12,7 +12,7 @@ import os
 ///
 /// アプリの起動時に`HometeAppIntentsConfigurator.configure`で登録し、Intentは`@Dependency`で受け取る。
 /// Firebaseの実装はアプリが`AppDependencies.liveValue`として渡すので、このパッケージは`HometeInfrastructure`に依存しない。
-struct AppIntentEnvironment {
+public struct AppIntentEnvironment: Sendable {
 
     let dependencies: AppDependencies
     let currentAppVersion: String
@@ -82,7 +82,7 @@ extension HometeAppIntentsConfigurator {
     private static let appShortcutParametersUpdater = OSAllocatedUnfairLock<(@Sendable () -> Void)?>(initialState: nil)
 
     /// Siriで家事の名前を言えるよう、OSに今日の家事の名前を読み直してもらう。`configure`の前に呼ばれたら何もしない
-    static func updateAppShortcutParameters() {
+    public static func updateAppShortcutParameters() {
         appShortcutParametersUpdater.withLock { $0 }?()
     }
 

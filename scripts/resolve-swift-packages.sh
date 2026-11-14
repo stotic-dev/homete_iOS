@@ -24,6 +24,10 @@ echo "LocalPackageの依存を取得中..."
 "$ROOT/scripts/with-local-package-lock.sh" "$ROOT/LocalPackage" -- \
     swift package resolve --package-path "$ROOT/LocalPackage"
 
+echo "UIPackageの依存を取得中..."
+"$ROOT/scripts/with-local-package-lock.sh" "$ROOT/UIPackage" -- \
+    swift package resolve --package-path "$ROOT/UIPackage"
+
 echo "InfraPackageの依存を取得中..."
 "$ROOT/scripts/with-local-package-lock.sh" "$ROOT/InfraPackage" -- \
     swift package resolve --package-path "$ROOT/InfraPackage"

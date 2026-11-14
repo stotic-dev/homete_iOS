@@ -6,7 +6,6 @@
 //
 
 import Observation
-import SwiftUI
 
 /// 所属している同居人グループのメンバーを保持する
 ///
@@ -132,12 +131,5 @@ public final class CohabitantStore {
         members = .init(value: [], ownId: "")
         loadState = .loading
     }
-
-}
-
-public extension EnvironmentValues {
-
-    /// 家事グループメンバー
-    @Entry var cohabitantMembers: CohabitantMemberList = .init(value: [], ownId: "")
 
 }

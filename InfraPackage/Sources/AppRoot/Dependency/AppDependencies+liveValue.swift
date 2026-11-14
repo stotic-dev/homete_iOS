@@ -3,7 +3,9 @@
 //
 
 import HometeAppIntents
+import HometeAppIntentsUI
 import HometeDomain
+import HometeDomainUI
 import HometeLocalNotification
 
 // MARK: Live用の定義

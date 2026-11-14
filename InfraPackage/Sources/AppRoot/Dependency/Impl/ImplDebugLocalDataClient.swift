@@ -7,6 +7,7 @@
 
 import Foundation
 import HometeDomain
+import HometeDomainUI
 
 extension DebugLocalDataClient {
 

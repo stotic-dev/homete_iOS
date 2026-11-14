@@ -1,0 +1,407 @@
+//
+//  HouseworkTemplateScreen.swift
+//  LocalPackage
+//
+//  Created by Taichi Sato on 2026/05/08.
+//
+
+import HometeDomainUI
+import HometeAppCore
+import HometeDomain
+import HometeUI
+import HouseworkTemplateFeatureUI
+import SwiftUI
+
+public struct HouseworkTemplateScreen: View {
+
+    @Environment(\.now) var now
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(\.loginContext.account) var account
+    @Environment(HouseworkTemplateListStore.self) var houseworkTemplateListStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.isAdsEnabled) var isAdsEnabled
+    @Environment(\.cohabitantMembers) var members
+    @Environment(\.routeResolver) var router
+    @Environment(\.dismiss) var dismiss
+
+    @CommonError var commonErrorContent
+    /// テンプレートの編集・保存で起きたエラー
+    @CommonError var editErrorContent
+    @LoadingState var loadingState
+
+    @State var templateEditStore: HouseworkTemplateEditStore
+    /// 初めて開いたときに出すチュートリアル
+    @State var tutorialStore: ScreenTutorialStore<HouseworkTemplateTutorialStep>
+    @State var initialDraft: HouseworkTemplateDraft?
+    @State var editingDraft: HouseworkTemplateDraft = .init()
+    @State var editorContext: TemplateEditorContext = .init(currentActiveEditors: [], currentTemplateVersion: .zero)
+    @State var isShowPaywall = false
+    @State var presentingAddModal = false
+    @State var presentingEditModal: HouseworkTemplateItem?
+    @State var presentingConflictDraftAlert = false
+    @State var presentingDetailItem: HouseworkTemplateItem?
+    @State var presentingDismissAlert = false
+    @State var presentingResetAlert = false
+
+    public static func make() -> some View {
+        DependenciesInjectLayer {
+            HouseworkTemplateScreen(
+                templateEditStore: .init(houseworkTemplateClient: $0.houseworkTemplateClient),
+                tutorialStore: .init(stateClient: $0.screenTutorialStateClient, analyticsClient: $0.analyticsClient)
+            )
+        }
+    }
+
+    public var body: some View {
+        ZStack {
+            templateContent()
+            // スポットライトはチュートリアルの画面の中で閉じるので、後ろの本番の画面のUIは切り抜かれない
+            if let step = tutorialStore.currentStep {
+                tutorialView(step: step)
+            }
+        }
+        .animation(.default, value: tutorialStore.currentStep)
+        .commonError(content: $commonErrorContent)
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            content: { router.resolve(.paywall(step: .templateAd)) }
+        )
+        .task(id: tutorialPrerequisiteLoadStates) {
+            await startTutorialIfNeeded()
+        }
+        .task {
+            await onAppear()
+        }
+        .task {
+            await observeEditorExpiry()
+        }
+        .onDisappear {
+            Task {
+                await onDisappear()
+            }
+        }
+        .onChange(of: templateEditStore.editors) {
+            onChangeEditors()
+        }
+        .onChange(of: templateEditStore.currentVersion) {
+            Task {
+                await onChangeTemplateVersion()
+            }
+        }
+        .onChange(of: houseworkTemplateListStore.selectedTemplateId) { oldValue, newValue in
+            Task {
+                await onChangeSelectedTemplateId(oldValue: oldValue, newValue: newValue)
+            }
+        }
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension HouseworkTemplateScreen {
+
+    func templateContent() -> some View {
+        NavigationStack {
+            HouseworkTemplateView(
+                content: templateViewContent,
+                draft: editingDraft,
+                activeEditors: editorContext.currentActiveEditors,
+                isShowAd: AdDisplayPolicy.shouldShowAds(
+                    isPremium: subscriptionStore.isPremium,
+                    isEnabled: isAdsEnabled
+                ),
+                actions: templateViewActions
+            )
+            .sheet(isPresented: $presentingAddModal) {
+                HouseworkTemplateItemEditModalScreen(mode: .create) { input in
+                    tappedCreateItemButton(input: input)
+                }
+            }
+            .sheet(item: $presentingEditModal) { item in
+                HouseworkTemplateItemEditModalScreen(
+                    mode: .edit(before: .init(item: item, recurrence: recurrence(for: item)))
+                ) { input in
+                    tappedEditItemButton(input: input)
+                }
+            }
+            .navigationDestination(item: $presentingDetailItem) { item in
+                HouseworkTemplateItemDetailScreen(
+                    item: item,
+                    recurrence: recurrence(for: item),
+                    onEdit: { input in
+                        tappedEditItemButton(input: input)
+                    },
+                    onDelete: {
+                        tappedDeleteItemButton(itemId: item.id)
+                    }
+                )
+            }
+            .onChange(of: initialDraft) {
+                onChangeInitialDraft()
+            }
+            .alert(
+                .localized("他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？"),
+                isPresented: $presentingConflictDraftAlert
+            ) {
+                Button(.localized("破棄"), role: .destructive) {
+                    tappedDiscardChangesAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            }
+            .alert(.localized("変更内容はまだ確定していません"), isPresented: $presentingDismissAlert) {
+                Button(.localized("閉じる"), role: .destructive) {
+                    tappedDismissAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            } message: {
+                Text("このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。", bundle: #bundle)
+            }
+            .alert(.localized("編集前の状態に戻しますか？"), isPresented: $presentingResetAlert) {
+                Button(.localized("戻す"), role: .destructive) {
+                    tappedResetAlertButton()
+                }
+                Button(.localized("キャンセル"), role: .cancel) {}
+            } message: {
+                Text("現在の編集内容は破棄されます。", bundle: #bundle)
+            }
+            .commonError(content: $editErrorContent)
+            .fullScreenLoadingIndicator(loadingState)
+            .trackScreenView(.houseworkTemplate)
+        }
+        .environment(templateEditStore)
+    }
+
+    func tutorialView(step: HouseworkTemplateTutorialStep) -> some View {
+        HouseworkTemplateTutorialView(
+            step: step,
+            steps: tutorialStore.steps,
+            onTapNext: {
+                Task {
+                    await tutorialStore.next(from: step)
+                }
+            },
+            onTapBack: {
+                tutorialStore.back(from: step)
+            },
+            onTapClose: {
+                Task {
+                    await tutorialStore.close()
+                }
+            }
+        )
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension HouseworkTemplateScreen {
+
+    /// チュートリアルを出せるかを決める読み込みの状態。変わるたびに出せるかを判断し直す
+    var tutorialPrerequisiteLoadStates: [ListenerLoadState] {
+        [houseworkTemplateListStore.loadState, templateEditStore.loadState]
+    }
+
+    /// テンプレートの有無が分かってから、チュートリアルを出す
+    /// - Note: 作成済みなら作成のステップは要らないので除く。
+    ///         読み込みが終わるまでは`selectedTemplateId`がnilでも「テンプレートが無い」とは限らないため待つ。
+    ///         作成済みなら編集の準備が済むまで待つ。準備に失敗するとエラーの表示に切り替わり、
+    ///         その上でチュートリアルを最後まで見ると、使えない画面のまま見たことになってしまうため
+    func startTutorialIfNeeded() async {
+        guard houseworkTemplateListStore.loadState == .loaded else { return }
+
+        let hasTemplate = houseworkTemplateListStore.selectedTemplateId != nil
+        guard !hasTemplate || templateEditStore.loadState == .loaded else { return }
+
+        await tutorialStore.startIfNeeded(skipping: hasTemplate ? [.create] : [])
+    }
+
+    func tappedRemoveAdsLink() {
+        analyticsClient.log(.advertisement(step: .template))
+        isShowPaywall = true
+    }
+
+    func onAppear() async {
+        // currentVersionで変更検知するためテンプレートの変更監視を止める
+        await houseworkTemplateListStore.stopObservingItems()
+
+        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
+              let cohabitantId = account.cohabitantId else { return }
+
+        do {
+            // 楽観ロックのための状態監視を開始
+            try await templateEditStore.startEditing(
+                templateId: templateId,
+                cohabitantId: cohabitantId,
+                userId: account.id,
+                now: now
+            )
+
+            // 画面を開いたタイミングでの最新のテンプレート内容を設定
+            let initialDraftOnAppear = HouseworkTemplateDraft.make(
+                houseworkTemplateListStore.selectedDays,
+                monthlyItems: houseworkTemplateListStore.monthlyItems
+            )
+            editingDraft = initialDraftOnAppear
+            initialDraft = initialDraftOnAppear
+        } catch {
+            // 編集状態の監視・登録ができないと編集機能が成立しないので、
+            // Storeが持つloadStateを根拠にエラー表示へ倒し、この画面のままリトライできるようにする
+            print("failed to start editing housework template: \(error)")
+        }
+    }
+
+    /// 画面に出す内容
+    var templateViewContent: HouseworkTemplateView.Content {
+        if let loadFailure {
+            return .loadFailed(loadFailure)
+        }
+        guard houseworkTemplateListStore.selectedTemplateId != nil, let initialDraft else {
+            return .empty
+        }
+        return .editing(hasUnsavedChanges: initialDraft.hasUnsavedChanges(comparedTo: editingDraft))
+    }
+
+    var templateViewActions: HouseworkTemplateView.Actions {
+        .init(
+            onRetry: {
+                loadingState.task {
+                    await retry()
+                }
+            },
+            onTapItem: { item in presentingDetailItem = item },
+            onTapEdit: { item in presentingEditModal = item },
+            onTapDelete: { itemId, day in tappedDeleteItemButton(itemId: itemId, from: day) },
+            onDropItem: { itemId, destination in onDropItem(itemId: itemId, to: destination) },
+            onTapAdd: { presentingAddModal = true },
+            onTapReset: { presentingResetAlert = true },
+            onTapSave: {
+                guard let templateId = houseworkTemplateListStore.selectedTemplateId else { return }
+                Task {
+                    await tappedSaveButton(templateId: templateId)
+                }
+            },
+            onTapCreateTemplate: {
+                Task {
+                    await tappedCreateTemplateButton()
+                }
+            },
+            onTapClose: { tappedCancelButton() },
+            onTapRemoveAdsLink: { tappedRemoveAdsLink() }
+        )
+    }
+
+    /// テンプレートの初回ロードが失敗している場合に、エラー表示に使う内容を返す
+    var loadFailure: DomainError? {
+        for state in [houseworkTemplateListStore.loadState, templateEditStore.loadState] {
+            if case let .failed(error) = state {
+                return error
+            }
+        }
+        return nil
+    }
+
+    /// テンプレートの初回ロードをやり直す
+    /// - Note: 失敗した層から順にやり直す（一覧の取得から失敗している場合はconfigureから）。
+    func retry() async {
+        guard let cohabitantId = account.cohabitantId else { return }
+
+        // テンプレート一覧のロード自体が失敗していた場合は、そこからやり直す
+        if case .failed = houseworkTemplateListStore.loadState {
+            try? await houseworkTemplateListStore.configure(cohabitantId: cohabitantId)
+        }
+
+        if let templateId = houseworkTemplateListStore.selectedTemplateId {
+            await templateEditStore.stopEditing(
+                templateId: templateId,
+                cohabitantId: cohabitantId,
+                userId: account.id
+            )
+        }
+        await onAppear()
+    }
+
+    func onDisappear() async {
+        guard let templateId = houseworkTemplateListStore.selectedTemplateId,
+              let cohabitantId = account.cohabitantId else { return }
+
+        await templateEditStore.stopEditing(
+            templateId: templateId,
+            cohabitantId: cohabitantId,
+            userId: account.id
+        )
+
+        // テンプレートの変更検知で家事の内容をリアルタイムに更新するために監視を再開する
+        await houseworkTemplateListStore.startObservingItems(
+            templateId: templateId,
+            cohabitantId: cohabitantId
+        )
+    }
+
+    func onChangeEditors() {
+        editorContext = editorContext.applyEditors(
+            editors: templateEditStore.editors,
+            members: members,
+            now: now
+        )
+    }
+
+    /// editorsのスナップショットに変化が無くても、経過時間で編集者バッジを再評価する
+    /// （相手のアプリがクラッシュ等でpresence更新が止まった場合、Firestore側のTTL削除（最大24時間）を待たずに表示から外すため）
+    func observeEditorExpiry() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(30))
+            guard !Task.isCancelled else { return }
+            editorContext = editorContext.applyEditors(
+                editors: templateEditStore.editors,
+                members: members,
+                now: .now
+            )
+        }
+    }
+
+    func onChangeTemplateVersion() async {
+        // ローカルで保持しているテンプレートバージョンよりも大きいバージョンの場合に、コンフリクトが発生したとみなす
+        guard editorContext.currentTemplateVersion < templateEditStore.currentVersion,
+              let templateId = houseworkTemplateListStore.selectedTemplateId,
+              let cohabitantId = account.cohabitantId else { return }
+
+        await loadCurrentTemplate(templateId: templateId, cohabitantId: cohabitantId)
+    }
+
+    func onChangeSelectedTemplateId(oldValue: String?, newValue: String?) async {
+        // テンプレート画面内でテンプレートがない状態からテンプレートが作成されたことを検知したら、
+        // 現在のテンプレートの内容をロードする
+        guard oldValue == nil,
+              let newValue,
+              let cohabitantId = account.cohabitantId else { return }
+
+        await loadCurrentTemplate(templateId: newValue, cohabitantId: cohabitantId)
+    }
+
+    func loadCurrentTemplate(templateId: String, cohabitantId: String) async {
+        do {
+            // バージョンが変わったらテンプレートの内容を再ロードする
+            try await houseworkTemplateListStore.loadDays(templateId: templateId, cohabitantId: cohabitantId)
+            await houseworkTemplateListStore.loadMonthlyItems(templateId: templateId, cohabitantId: cohabitantId)
+            // 未保存の変更が残っている場合はコンフリクトアラートで解決されるまでバージョンを進めない
+            // （先にバージョンを進めてしまうと、アラートを「キャンセル」した後の保存で楽観ロックが素通りしてしまうため）
+            let hasUnresolvedConflict = initialDraft?.hasUnsavedChanges(comparedTo: editingDraft) ?? false
+            let latestDraft = HouseworkTemplateDraft.make(
+                houseworkTemplateListStore.selectedDays,
+                monthlyItems: houseworkTemplateListStore.monthlyItems
+            )
+            initialDraft = latestDraft
+            if !hasUnresolvedConflict {
+                // 未保存の変更が無い場合は編集中の内容も最新化する
+                // （editingDraftを更新しないとinitialDraftとの差分検知で誤ってコンフリクトアラートが表示されてしまうため）
+                editingDraft = latestDraft
+                editorContext = editorContext.applyEditors(templateEditStore.currentVersion)
+            }
+        } catch {
+            commonErrorContent = .init(error: error)
+        }
+    }
+
+}

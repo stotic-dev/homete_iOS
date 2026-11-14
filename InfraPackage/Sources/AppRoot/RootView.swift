@@ -4,6 +4,7 @@
 
 import AuthFeature
 import HometeDomain
+import HometeDomainUI
 import HometeUI
 import SwiftUI
 

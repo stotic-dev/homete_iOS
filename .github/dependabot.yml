@@ -1,10 +1,10 @@
 version: 2
 updates:
-  # LocalPackage / InfraPackage（SPM）の直接依存のみを監視する。
+  # UIPackage / InfraPackage（SPM）の直接依存のみを監視する。LocalPackageは外部依存を持たない。
   # ProjectTools / DangerTools / homete.xcodeproj は対象外。
   - package-ecosystem: "swift"
     directories:
-      - "/LocalPackage"
+      - "/UIPackage"
       - "/InfraPackage"
     schedule:
       interval: "weekly"

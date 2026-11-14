@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0AA7C0030000000000000001 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeDomain */; };
+		0AA7C0030000000000000001 /* HometeModel in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeModel */; };
 		0AA7C0030000000000000002 /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000002 /* HometeResources */; };
 		0AA7C0030000000000000003 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000003 /* HometeUI */; };
 		0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeatureUI */; };
@@ -89,7 +89,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */,
-				0AA7C0030000000000000001 /* HometeDomain in Frameworks */,
+				0AA7C0030000000000000001 /* HometeModel in Frameworks */,
 				0AA7C0030000000000000002 /* HometeResources in Frameworks */,
 				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
 				0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */,
@@ -173,7 +173,7 @@
 			name = hometeSnapshotTests;
 			packageProductDependencies = (
 				0AA7C002000000000000000C /* HometeSnapshotTestSupport */,
-				0AA7C0020000000000000001 /* HometeDomain */,
+				0AA7C0020000000000000001 /* HometeModel */,
 				0AA7C0020000000000000002 /* HometeResources */,
 				0AA7C0020000000000000003 /* HometeUI */,
 				0AA7C0020000000000000004 /* AuthFeatureUI */,
@@ -221,6 +221,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+				0AA7C0040000000000000010 /* XCLocalSwiftPackageReference "UIPackage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
@@ -687,12 +688,16 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = LocalPackage;
 		};
+		0AA7C0040000000000000010 /* XCLocalSwiftPackageReference "UIPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = UIPackage;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0AA7C0020000000000000001 /* HometeDomain */ = {
+		0AA7C0020000000000000001 /* HometeModel */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HometeDomain;
+			productName = HometeModel;
 		};
 		0AA7C0020000000000000002 /* HometeResources */ = {
 			isa = XCSwiftPackageProductDependency;

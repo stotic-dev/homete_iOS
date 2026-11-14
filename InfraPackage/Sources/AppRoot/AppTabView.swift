@@ -7,6 +7,7 @@ import HomeFeature
 import HomeFeatureUI
 import HometeAppCore
 import HometeDomain
+import HometeDomainUI
 import HometeUI
 import HouseworkFeature
 import HouseworkFeatureUI
