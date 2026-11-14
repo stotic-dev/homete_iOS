@@ -1,0 +1,56 @@
+name: agent_tools_test
+
+# HometeAppCoreのViewModelをCLIと同じ入口で動かす行動テスト（doc/adr/0072、doc/tech/agent-cli.md）。
+# make test-affected はLocalPackageだけを流すので、AgentToolsPackageはこのワークフローで流す。
+# 行動テストが動かすLocalPackage・CLIの道具・Makefileの変更でも流す
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "AgentToolsPackage/**"
+      - "LocalPackage/Sources/**"
+      - "LocalPackage/Package.swift"
+      - "ProjectTools/**"
+      - "Makefile"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "AgentToolsPackage/**"
+      - "LocalPackage/Sources/**"
+      - "LocalPackage/Package.swift"
+      - "ProjectTools/**"
+      - "Makefile"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s '${{ env.DEVELOPER_DIR }}/Contents/Developer'
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Cache AgentToolsPackage
+        uses: actions/cache@v4
+        with:
+          path: |
+            AgentToolsPackage/.build/checkouts
+            AgentToolsPackage/.build/repositories
+            AgentToolsPackage/.build/artifacts
+            AgentToolsPackage/.build/workspace-state.json
+          key: agent-tools-v1-${{ runner.os }}-${{ hashFiles('AgentToolsPackage/Package.swift', 'ProjectTools/Package.resolved') }}
+          restore-keys: |
+            agent-tools-v1-${{ runner.os }}-
+
+      - name: Run behavior tests
+        run: make test-behavior

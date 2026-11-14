@@ -1,4 +1,4 @@
-.PHONY: help resolve-packages build-local-package build-ui-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
+.PHONY: help resolve-packages build-local-package build-ui-package build-infra-package build-cli test-behavior run-cli test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
 
 .DEFAULT_GOAL := setup-project
 
@@ -57,6 +57,19 @@ test-affected: ## 変更に関係するテストターゲットだけ実行（BA
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox $(if $(COVERAGE),--enable-code-coverage) --filter "$$filter"
 
+build-cli: ## CLI（homete-cli）と行動テストをビルド（AgentToolsPackage。ホストのmacOS向け）
+	scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift build --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox --build-tests
+
+test-behavior: ## HometeAppCoreのViewModelをCLIと同じ入口で動かす行動テストを実行。FILTER=<Suite名>で絞り込める（doc/tech/agent-cli.md）
+	scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift test --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox $(if $(FILTER),--filter '$(FILTER)')
+
+run-cli: ## CLIを起動する。標準入力の ls / do <JSON> に標準出力のJSONで答える（SCENARIO=<名前>、既定はtoday）
+	@scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift build --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox --product homete-cli 1>&2
+	@$(CURDIR)/AgentToolsPackage/.build/debug/homete-cli --scenario $(or $(SCENARIO),today)
+
 snapshot-affected: ## 直接変えたHometeUI・FeatureUIのプレビューだけ、ローカルでVRTを流す（BASE=<ref>）。参照スナップショットは更新しない
 	scripts/run-affected-snapshots.sh $(BASE)
 
@@ -81,7 +94,7 @@ format: ## プロダクション+テストコード全体にSwiftFormatを実行
 		--allow-writing-to-package-directory \
 		--allow-writing-to-directory $(CURDIR) \
 		swiftformat --config .swiftformat \
-		homete hometeSnapshotTests LocalPackage UIPackage InfraPackage
+		homete hometeSnapshotTests LocalPackage UIPackage InfraPackage AgentToolsPackage
 
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh
