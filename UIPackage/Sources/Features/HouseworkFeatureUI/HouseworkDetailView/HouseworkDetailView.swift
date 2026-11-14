@@ -139,7 +139,20 @@ private extension HouseworkDetailView {
             onTapAction: { _ in },
             onTapEditMemo: {},
             onToggleMemoChecklistItem: { _ in },
-            imageSection: { EmptyView() }
+            imageSection: {
+                // 本番の画像の欄（HouseworkDetailImageComponent）と同じ、無料プランの見た目を出す
+                HouseworkImageSectionContent(
+                    images: [HouseworkImage](),
+                    addState: .premiumRequired,
+                    isCameraAvailable: false,
+                    thumbnailAccessibilityLabel: .localized("画像を拡大して見る"),
+                    layout: .carousel,
+                    onTapImage: { _ in },
+                    onTapAdd: { _ in },
+                    onTapPremium: {},
+                    thumbnail: { _ in EmptyView() }
+                )
+            }
         )
     }
     .setupEnvironmentForPreview()
@@ -172,7 +185,20 @@ private extension HouseworkDetailView {
             onTapAction: { _ in },
             onTapEditMemo: {},
             onToggleMemoChecklistItem: { _ in },
-            imageSection: { EmptyView() }
+            imageSection: {
+                // 本番の画像の欄（HouseworkDetailImageComponent）と同じ、無料プランの見た目を出す
+                HouseworkImageSectionContent(
+                    images: [HouseworkImage](),
+                    addState: .premiumRequired,
+                    isCameraAvailable: false,
+                    thumbnailAccessibilityLabel: .localized("画像を拡大して見る"),
+                    layout: .carousel,
+                    onTapImage: { _ in },
+                    onTapAdd: { _ in },
+                    onTapPremium: {},
+                    thumbnail: { _ in EmptyView() }
+                )
+            }
         )
     }
     .setupEnvironmentForPreview()
