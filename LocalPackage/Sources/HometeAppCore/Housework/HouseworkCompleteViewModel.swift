@@ -42,9 +42,29 @@ public final class HouseworkCompleteViewModel: Identifiable {
             self.error = error
         }
 
+        /// 頑張り度・担当者を変えられるか。完了にしている途中と完了にした後は変えられない
+        public var isEditable: Bool {
+            !isCompleting && completedPoint == nil
+        }
+
         /// 完了にできるか
         public var canComplete: Bool {
-            allocation.validationError == nil && !isCompleting && completedPoint == nil
+            isEditable && allocation.validationError == nil
+        }
+
+        /// 閉じるボタンを出すか。完了にした後は、演出を見せ終わると自動で閉じるので出さない
+        public var canClose: Bool {
+            isEditable
+        }
+
+        /// シートを下へスワイプして閉じられるか。完了にしている途中は閉じられない
+        public var canDismiss: Bool {
+            !isCompleting
+        }
+
+        /// ほめる演出を出しているか
+        public var isPraising: Bool {
+            completedPoint != nil
         }
 
     }
@@ -104,9 +124,9 @@ public final class HouseworkCompleteViewModel: Identifiable {
         members: CohabitantMemberList,
         account: Account,
         houseworkListStore: HouseworkListStore,
-        now: @escaping @MainActor () -> Date = { .now },
+        now: @escaping @MainActor () -> Date,
         tasks: TaskTracker = TaskTracker(),
-        onFinish: @escaping @MainActor (Outcome) -> Void = { _ in }
+        onFinish: @escaping @MainActor (Outcome) -> Void
     ) {
         id = item.id
         self.item = item
@@ -160,8 +180,7 @@ private extension HouseworkCompleteViewModel {
 
     /// 画面からの操作。`update(_:)`の`Message.action`から呼ぶ
     func handle(_ action: Action) {
-        // 完了にした後と完了にしている途中は、入力を変えられない
-        let isEditable = !state.isCompleting && state.completedPoint == nil
+        let isEditable = state.isEditable
         switch action {
         case let .effortSelected(effort):
             guard isEditable else { return }
@@ -191,11 +210,11 @@ private extension HouseworkCompleteViewModel {
 
         case .closeTapped:
             // 完了にしている途中に閉じると「閉じたのに完了になった」ように見えるので、終わるまで受け付けない
-            guard !state.isCompleting else { return }
-            onFinish(state.completedPoint == nil ? .cancelled : .completed)
+            guard state.canDismiss else { return }
+            onFinish(state.isPraising ? .completed : .cancelled)
 
         case .praiseFinished:
-            guard state.completedPoint != nil else { return }
+            guard state.isPraising else { return }
             onFinish(.completed)
 
         case .errorDismissed:

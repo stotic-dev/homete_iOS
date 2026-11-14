@@ -22,6 +22,8 @@ public struct HouseworkCompleteView: View {
     let praise: HometteCompletionPraise?
     /// 完了にできるか
     let canComplete: Bool
+    /// 閉じるボタンを出すか
+    let canClose: Bool
     let onTapClose: () -> Void
     let onTapComplete: () -> Void
     /// ほめる演出を見せ終わった
@@ -33,6 +35,7 @@ public struct HouseworkCompleteView: View {
         isExpandedAllocation: Binding<Bool>,
         praise: HometteCompletionPraise?,
         canComplete: Bool,
+        canClose: Bool,
         onTapClose: @escaping () -> Void,
         onTapComplete: @escaping () -> Void,
         onFinishPraise: @escaping () -> Void
@@ -42,6 +45,7 @@ public struct HouseworkCompleteView: View {
         _isExpandedAllocation = isExpandedAllocation
         self.praise = praise
         self.canComplete = canComplete
+        self.canClose = canClose
         self.onTapClose = onTapClose
         self.onTapComplete = onTapComplete
         self.onFinishPraise = onFinishPraise
@@ -69,8 +73,7 @@ public struct HouseworkCompleteView: View {
         .navigationTitle(.localized("完了にする"))
         .inlineNavigationBarTitleDisplayMode()
         .leadingToolbarItem {
-            // 完了にした後は、演出を見せ終わると自動で閉じるので、ボタンは出さない
-            if praise == nil {
+            if canClose {
                 NavigationBarButton(label: .close) {
                     onTapClose()
                 }
@@ -140,6 +143,7 @@ private extension HouseworkCompleteView {
             isExpandedAllocation: .constant(false),
             praise: nil,
             canComplete: true,
+            canClose: true,
             onTapClose: {},
             onTapComplete: {},
             onFinishPraise: {}
@@ -164,6 +168,7 @@ private extension HouseworkCompleteView {
             isExpandedAllocation: .constant(true),
             praise: nil,
             canComplete: true,
+            canClose: true,
             onTapClose: {},
             onTapComplete: {},
             onFinishPraise: {}

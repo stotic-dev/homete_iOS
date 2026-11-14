@@ -91,6 +91,7 @@ private struct HouseworkCompleteSheetContent: View {
                 ),
                 praise: praise,
                 canComplete: viewModel.state.canComplete,
+                canClose: viewModel.state.canClose,
                 onTapClose: { viewModel.send(.closeTapped) },
                 onTapComplete: { viewModel.send(.completeTapped) },
                 onFinishPraise: { viewModel.send(.praiseFinished) }
@@ -99,11 +100,11 @@ private struct HouseworkCompleteSheetContent: View {
         .presentationDragIndicator(.visible)
         // 完了にしている途中に閉じると「閉じたのに完了になった」ように見えるうえ、ViewModelは閉じる操作を受け付けないため、
         // スワイプでも閉じられないようにする
-        .interactiveDismissDisabled(viewModel.state.isCompleting)
+        .interactiveDismissDisabled(!viewModel.state.canDismiss)
         .fullScreenLoadingIndicator(LoadingStateStore(isLoading: viewModel.state.isCompleting))
         .commonError(content: errorContent)
         // ほめる文言は毎回ランダムに選ぶので、完了にできた時点で1回だけ決める
-        .onChange(of: viewModel.state.completedPoint) { _, point in
+        .onChange(of: viewModel.state.completedPoint, initial: true) { _, point in
             guard let point else { return }
             praise = .init(houseworkTitle: viewModel.item.originalItem.title, point: point)
         }
@@ -116,7 +117,7 @@ private extension HouseworkCompleteSheetContent {
 
     var errorContent: Binding<DomainErrorAlertContent> {
         .init(
-            get: { viewModel.state.error.map { .init(error: $0) } ?? .initial },
+            get: { viewModel.state.error.map { .init(isPresenting: true, error: $0) } ?? .initial },
             set: { content in
                 if !content.isPresenting {
                     viewModel.send(.errorDismissed)

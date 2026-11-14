@@ -88,8 +88,8 @@ public final class TodayHouseworkViewModel {
             presentCompletion(for: item)
 
         case .completionDismissed:
-            // 完了にしている途中は閉じられない（`HouseworkCompleteViewModel`が受け付けない）
-            guard let completion, !completion.state.isCompleting else { return }
+            // 完了にしている途中は閉じられない
+            guard let completion, completion.state.canDismiss else { return }
             closeCompletion()
         }
     }

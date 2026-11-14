@@ -109,8 +109,7 @@ private extension AppIntrospector {
     ) -> [AvailableAction] {
         let state = completion.state
         var actions: [AvailableAction] = []
-        // 完了にしている途中と完了にした後は、入力欄が出ていない・変えられない
-        if !state.isCompleting, state.completedPoint == nil {
+        if state.isEditable {
             actions += [
                 AvailableAction(
                     "selectEffort",
@@ -135,19 +134,17 @@ private extension AppIntrospector {
                 completion.send(.completeTapped)
             })
         }
-        // 完了にした後は、演出を見せ終わると自動で閉じるので閉じるボタンが出ていない
-        if !state.isCompleting, state.completedPoint == nil {
+        if state.canClose {
             actions.append(AvailableAction("close", summary: "閉じるボタンを押す") { _ in
                 completion.send(.closeTapped)
             })
         }
-        // 完了にしている途中は閉じられない
-        if !state.isCompleting {
+        if state.canDismiss {
             actions.append(AvailableAction("dismiss", summary: "シートを下へスワイプして閉じる") { _ in
                 today.send(.completionDismissed)
             })
         }
-        if state.completedPoint != nil {
+        if state.isPraising {
             actions.append(AvailableAction("finishPraise", summary: "ほめる演出を見せ終える") { _ in
                 completion.send(.praiseFinished)
             })
