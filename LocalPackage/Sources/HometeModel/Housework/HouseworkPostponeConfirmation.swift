@@ -14,7 +14,6 @@ public struct HouseworkPostponeConfirmation: Identifiable, Equatable, Sendable {
 
     public enum Reason: Equatable, Sendable {
 
-
         /// まわす先の同じテンプレートの家事にまとめる
         case merge
         /// まわす先に同じ名前の家事がある

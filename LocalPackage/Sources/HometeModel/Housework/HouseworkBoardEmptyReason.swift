@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2026/04/04.
 //
 
-
 /// 家事ボードの各タブが空のときの理由
 public enum HouseworkBoardEmptyReason: Equatable, Sendable {
 

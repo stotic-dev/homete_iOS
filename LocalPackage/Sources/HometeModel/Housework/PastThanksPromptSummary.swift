@@ -39,7 +39,6 @@ public extension PastThanksPromptSummary {
     /// 1日分の、ありがとうを伝えられる家事
     struct DailyItems: Equatable, Sendable, Identifiable {
 
-
         /// 家事の日付（その日の0時）
         public let date: Date
         /// まだ送っていない → 送った、の順。それぞれ完了日時の新しい順

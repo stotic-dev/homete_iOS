@@ -157,7 +157,6 @@ public extension TodayHouseworkSummary {
     /// サマリーの表示状態
     enum DisplayState: Equatable, Sendable {
 
-
         /// 当日の家事が0件
         case empty
         /// 全ての家事が完了

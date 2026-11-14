@@ -75,7 +75,6 @@ extension ReceivedThanksDisplayRecord: Codable {
 
     public enum CodingKeys: String, CodingKey, Sendable {
 
-
         case day
         case shownCount
         case dismissedLatestSentAt

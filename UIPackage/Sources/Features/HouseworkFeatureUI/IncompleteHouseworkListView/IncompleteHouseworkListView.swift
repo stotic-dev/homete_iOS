@@ -115,9 +115,12 @@ private extension IncompleteHouseworkListView {
         calendar: calendar
     )
     return NavigationStack {
-        IncompleteHouseworkListView(summary: summary, onSelectItem: { _ in }, onTapComplete: { _ in }) { _ in
-            EmptyView()
-        }
+        IncompleteHouseworkListView(
+            summary: summary,
+            onSelectItem: { _ in },
+            onTapComplete: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
     }
     .environment(\.now, today)
     .setupEnvironmentForPreview()
@@ -134,10 +137,9 @@ private extension IncompleteHouseworkListView {
                 calendar: .japanese
             ),
             onSelectItem: { _ in },
-            onTapComplete: { _ in }
-        ) { _ in
-            EmptyView()
-        }
+            onTapComplete: { _ in },
+            rowMenu: { _ in EmptyView() }
+        )
     }
     .environment(\.now, today)
     .setupEnvironmentForPreview()

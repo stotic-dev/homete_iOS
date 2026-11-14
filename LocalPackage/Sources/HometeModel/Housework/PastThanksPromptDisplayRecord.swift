@@ -57,7 +57,6 @@ extension PastThanksPromptDisplayRecord: Codable {
 
     public enum CodingKeys: String, CodingKey, Sendable {
 
-
         case day
         case shownCount
 

@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-
 public extension HouseworkItem {
 
     /// 未完了家事の表示順（ポイント降順）を決める比較関数

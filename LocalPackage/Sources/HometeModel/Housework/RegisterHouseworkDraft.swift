@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-
 /// 家事の登録シートで入力中の内容
 /// - Note: 「いつもの家事から選んだもの」「続けて入力で積んだもの」「入力中のもの」をまとめて登録予定リストにする
 public struct RegisterHouseworkDraft: Equatable, Sendable {

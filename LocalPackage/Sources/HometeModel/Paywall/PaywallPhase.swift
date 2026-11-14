@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-
 /// Paywallに何を出しているか
 public enum PaywallPhase: Equatable, Sendable {
 

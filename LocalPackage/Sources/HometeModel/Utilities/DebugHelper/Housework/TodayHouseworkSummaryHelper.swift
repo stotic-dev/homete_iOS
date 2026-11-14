@@ -5,7 +5,6 @@
 //  Created by 佐藤汰一 on 2026/05/18.
 //
 
-
 public extension TodayHouseworkSummary {
 
     static func makeForTest(

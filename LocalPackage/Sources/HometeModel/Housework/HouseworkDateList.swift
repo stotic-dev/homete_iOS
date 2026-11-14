@@ -11,7 +11,6 @@ public struct HouseworkDateList: Equatable, Sendable {
 
     public struct Item: Equatable, Sendable {
 
-
         public let date: Date
         public let state: HouseworkDateState
 

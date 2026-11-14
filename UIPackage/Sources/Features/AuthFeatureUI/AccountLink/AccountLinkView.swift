@@ -76,24 +76,24 @@ private extension AccountLinkView {
 
 #Preview("AccountLinkView_連携が必須") {
     NavigationStack {
-        AccountLinkView(isBeforePurchase: false, isClosable: false, onTapClose: {}) {
+        AccountLinkView(isBeforePurchase: false, isClosable: false, onTapClose: {}, signInButton: {
             SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
-        }
+        })
     }
 }
 
 #Preview("AccountLinkView_設定") {
     NavigationStack {
-        AccountLinkView(isBeforePurchase: false, isClosable: true, onTapClose: {}) {
+        AccountLinkView(isBeforePurchase: false, isClosable: true, onTapClose: {}, signInButton: {
             SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
-        }
+        })
     }
 }
 
 #Preview("AccountLinkView_Paywallの前") {
     NavigationStack {
-        AccountLinkView(isBeforePurchase: true, isClosable: true, onTapClose: {}) {
+        AccountLinkView(isBeforePurchase: true, isClosable: true, onTapClose: {}, signInButton: {
             SignInWithAppleButtonContent(onRequest: { _ in }, onCompletion: { _ in })
-        }
+        })
     }
 }

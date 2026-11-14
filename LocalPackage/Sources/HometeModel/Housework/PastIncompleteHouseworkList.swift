@@ -33,7 +33,6 @@ public extension PastIncompleteHouseworkList {
     /// 1日分の、まだ終わっていない家事
     struct DaySection: Equatable, Sendable, Identifiable {
 
-
         /// 家事の日付（その日の0時）
         public let date: Date
         /// 未完了の表示順（ポイント降順）に並べた家事
@@ -56,7 +55,6 @@ public extension PastIncompleteHouseworkList {
     /// 一覧に並べる要素。日付の区切りと、その間に挟む広告
     enum Element: Equatable, Sendable, Identifiable {
 
-
         case section(DaySection)
         /// 何番目の広告か（0始まり）
         case advertisement(index: Int)
@@ -71,7 +69,6 @@ public extension PastIncompleteHouseworkList {
     }
 
     enum ElementID: Hashable, Sendable {
-
 
         case section(Date)
         case advertisement(Int)

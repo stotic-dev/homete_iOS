@@ -3,7 +3,6 @@
 //  homete
 //
 
-
 /// 家事詳細に出す、誰から届いたありがとうか
 public struct HouseworkThanksMessage: Equatable, Sendable {
 

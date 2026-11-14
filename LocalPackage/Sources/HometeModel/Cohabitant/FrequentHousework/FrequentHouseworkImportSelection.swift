@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-
 /// テンプレートから取り込む家事の選択状態
 /// - Note: 候補は名前で重複を除いてあるため、選択は名前で持つ
 public struct FrequentHouseworkImportSelection: Equatable, Sendable {
@@ -42,7 +41,8 @@ public struct FrequentHouseworkImportSelection: Equatable, Sendable {
     }
 
     /// 取り込む候補（チェックしていて、まだ登録していないもの）
-    public func importTargets(from candidates: [FrequentHouseworkImportCandidate]) -> [FrequentHouseworkImportCandidate] {
+    public func importTargets(from candidates: [FrequentHouseworkImportCandidate])
+        -> [FrequentHouseworkImportCandidate] {
         candidates.filter { !$0.isAlreadyRegistered && selectedTitles.contains($0.title) }
     }
 

@@ -3,7 +3,6 @@
 //  LocalPackage
 //
 
-
 /// いつもの家事の追加・編集モーダルで入力中の内容
 public struct FrequentHouseworkEditInput: Equatable, Sendable {
 

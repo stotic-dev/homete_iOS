@@ -5,7 +5,6 @@
 //  Created by Taichi Sato on 2026/04/28.
 //
 
-
 /// 全ユーザーの月間家事貢献度集計
 public struct AllUserPointSummary: Equatable, Sendable {
 

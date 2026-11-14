@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 public enum SettingMenuItem: Equatable, CaseIterable, Sendable {
 
     case memberInvitation

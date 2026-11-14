@@ -3,14 +3,12 @@
 //  LocalPackage
 //
 
-
 /// 登録予定リストの1件
 /// - Note: ポイントはここでは変えられない（取り消して入力し直す）
 public struct PendingEntry: Equatable, Identifiable, Sendable {
 
     /// どこから来た1件か（取り消しの対象を特定するのに使う）
     public enum Source: Equatable, Sendable {
-
 
         /// いつもの家事から選んだ
         case frequent(itemId: String)
@@ -67,6 +65,7 @@ public struct PendingEntry: Equatable, Identifiable, Sendable {
             "editing"
         }
     }
+
 }
 
 public extension PendingEntry {
@@ -96,4 +95,5 @@ public extension PendingEntry {
             images: entry.attachedImages
         )
     }
+
 }
