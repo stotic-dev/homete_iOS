@@ -1,0 +1,139 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "これからは、あなたとパートナーの家事を分担し、協力していくことができます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now you and your partner can share the chores and work together."
+          }
+        }
+      }
+    },
+    "もう一度、デバイスを近づけてください" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please bring your devices close together and try again."
+          }
+        }
+      }
+    },
+    "接続エラー" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection Error"
+          }
+        }
+      }
+    },
+    "登録が完了しました！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration complete!"
+          }
+        }
+      }
+    },
+    "登録に失敗しました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration failed"
+          }
+        }
+      }
+    },
+    "登録を終了すると、また初めから登録し直す必要があります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you stop now, you'll need to start over from the beginning."
+          }
+        }
+      }
+    },
+    "登録処理を終了しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop registration?"
+          }
+        }
+      }
+    },
+    "相手のアプリのアップデートが必要です" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other device needs an app update"
+          }
+        }
+      }
+    },
+    "相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update the app to the latest version on the other device, then try again."
+          }
+        }
+      }
+    },
+    "終了する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
+          }
+        }
+      }
+    },
+    "通信中のメンバーがキャンセルしました" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other member canceled"
+          }
+        }
+      }
+    },
+    "通信状態をご確認のうえ、もう一度つなぎ直してください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please check your connection and try connecting again."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

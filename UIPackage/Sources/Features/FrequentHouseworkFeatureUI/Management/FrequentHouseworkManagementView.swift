@@ -1,0 +1,298 @@
+//
+//  FrequentHouseworkManagementView.swift
+//  LocalPackage
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// いつもの家事の管理画面（カテゴリごとのセクションで一覧表示する）
+public struct FrequentHouseworkManagementView: View {
+
+    #if os(iOS)
+    /// 並べ替え・削除の編集モード
+    /// - Note: ツールバーの出し分けに使うため、`EditButton`任せにせずこの画面で持つ
+    @State var editMode = EditMode.inactive
+    #endif
+
+    /// いつもの家事・カテゴリの読み込み状態
+    /// - Note: 読み込み済みになるまでは件数上限・名前の重複・カテゴリを正しく判定できないため、一覧も追加も出さない
+    let loadState: ListenerLoadState
+    let sections: [FrequentHouseworkSection]
+    /// 上限を超えていて使えない家事のID
+    let unusableItemIds: Set<String>
+    /// 無料プランの件数と上限。プレミアムプランでは`nil`
+    let limitStatus: FrequentHouseworkLimitStatus?
+    let onTapClose: () -> Void
+    let onTapAdd: () -> Void
+    let onTapManageCategories: () -> Void
+    /// テンプレートから取り込む導線。テンプレートに家事がない場合は`nil`
+    let onTapImport: (() -> Void)?
+    let onTapItem: (FrequentHouseworkItem) -> Void
+    let onDelete: (FrequentHouseworkItem) -> Void
+    /// カテゴリ内で並べ替えた後の家事IDの順
+    let onMove: ([String]) -> Void
+    let onTapUpgrade: () -> Void
+    let onRetry: () -> Void
+
+    public init(
+        loadState: ListenerLoadState,
+        sections: [FrequentHouseworkSection],
+        unusableItemIds: Set<String>,
+        limitStatus: FrequentHouseworkLimitStatus?,
+        onTapClose: @escaping () -> Void,
+        onTapAdd: @escaping () -> Void,
+        onTapManageCategories: @escaping () -> Void,
+        onTapImport: (() -> Void)?,
+        onTapItem: @escaping (FrequentHouseworkItem) -> Void,
+        onDelete: @escaping (FrequentHouseworkItem) -> Void,
+        onMove: @escaping ([String]) -> Void,
+        onTapUpgrade: @escaping () -> Void,
+        onRetry: @escaping () -> Void
+    ) {
+        self.loadState = loadState
+        self.sections = sections
+        self.unusableItemIds = unusableItemIds
+        self.limitStatus = limitStatus
+        self.onTapClose = onTapClose
+        self.onTapAdd = onTapAdd
+        self.onTapManageCategories = onTapManageCategories
+        self.onTapImport = onTapImport
+        self.onTapItem = onTapItem
+        self.onDelete = onDelete
+        self.onMove = onMove
+        self.onTapUpgrade = onTapUpgrade
+        self.onRetry = onRetry
+    }
+
+    public var body: some View {
+        content()
+            // ほかの画面と地の色をそろえ、白い行を浮かせる
+            .background(.backgroundScreen)
+            .navigationTitle(.localized("いつもの家事"))
+            .inlineNavigationBarTitleDisplayMode()
+            .leadingToolbarItem {
+                NavigationBarButton(label: .close) {
+                    onTapClose()
+                }
+            }
+            .trailingToolbarItem {
+                trailingNavigationItem()
+            }
+        // ツールバーの中身にも編集モードを伝えるため、ツールバーより外側で環境に載せる
+        #if os(iOS)
+            .environment(\.editMode, $editMode)
+        #endif
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension FrequentHouseworkManagementView {
+
+    @ViewBuilder
+    func content() -> some View {
+        switch loadState {
+        case .loading:
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case let .failed(error):
+            LoadErrorView(error: error) {
+                onRetry()
+            }
+            .padding(.horizontal, .space16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+        case .loaded:
+            loadedContent()
+        }
+    }
+
+    @ViewBuilder
+    func loadedContent() -> some View {
+        if sections.isEmpty {
+            FrequentHouseworkEmptyView(onTapAdd: onTapAdd, onTapImport: onTapImport)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            itemList()
+        }
+    }
+
+    func itemList() -> some View {
+        List {
+            if let limitStatus {
+                Section {
+                    FrequentHouseworkLimitHeader(status: limitStatus) {
+                        onTapUpgrade()
+                    }
+                    .listRowBackground(Color.backgroundCard)
+                }
+            }
+            ForEach(sections) { section in
+                Section(section.category.name) {
+                    ForEach(section.items) { item in
+                        itemRow(item, isUsable: !unusableItemIds.contains(item.id))
+                    }
+                    .onDelete { offsets in
+                        offsets.map { section.items[$0] }.forEach(onDelete)
+                    }
+                    .onMove { source, destination in
+                        var orderedIds = section.items.map(\.id)
+                        orderedIds.move(fromOffsets: source, toOffset: destination)
+                        onMove(orderedIds)
+                    }
+                    .listRowBackground(Color.backgroundCard)
+                }
+            }
+        }
+        .scrollContentBackground(.hidden)
+    }
+
+    func itemRow(_ item: FrequentHouseworkItem, isUsable: Bool) -> some View {
+        Button {
+            onTapItem(item)
+        } label: {
+            HStack(spacing: .space8) {
+                VStack(alignment: .leading, spacing: .space4) {
+                    Text(item.title)
+                        .font(with: .body)
+                        .foregroundStyle(.textPrimary)
+                    if !isUsable {
+                        Text("プレミアムプランで使えます", bundle: #bundle)
+                            .font(with: .caption)
+                            .foregroundStyle(.textSecondary)
+                    }
+                }
+                Spacer()
+                PointLabel(point: item.point)
+            }
+            .opacity(isUsable ? 1 : 0.5)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 並びは「編集」「追加」の主操作を先に置き、その他の操作をまとめたサブメニューを一番右に寄せる
+    /// - Note: 編集中は並べ替え・削除に使えない操作を出さず、「完了」だけにする
+    @ViewBuilder
+    func trailingNavigationItem() -> some View {
+        if loadState == .loaded {
+            HStack(spacing: .space8) {
+                #if os(iOS)
+                if !sections.isEmpty {
+                    EditButton()
+                }
+                #endif
+                if !isEditing {
+                    Button {
+                        onTapAdd()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(.localized("いつもの家事を追加"))
+                    subMenu()
+                }
+            }
+        }
+    }
+
+    var isEditing: Bool {
+        #if os(iOS)
+        editMode.isEditing
+        #else
+        false
+        #endif
+    }
+
+    func subMenu() -> some View {
+        Menu {
+            Button {
+                onTapManageCategories()
+            } label: {
+                Label(.localized("カテゴリを管理"), systemImage: "folder")
+            }
+            if let onTapImport {
+                Button {
+                    onTapImport()
+                } label: {
+                    Label(.localized("テンプレートから取り込む"), systemImage: "square.and.arrow.down")
+                }
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+        }
+        .accessibilityLabel(.localized("その他の操作"))
+    }
+
+}
+
+#if DEBUG
+#Preview("FrequentHouseworkManagementView_無料プラン") {
+    let items: [FrequentHouseworkItem] = [
+        .makeForPreview(id: "1", title: "風呂掃除", categoryId: "preset.cleaning"),
+        .makeForPreview(id: "2", title: "換気扇", point: 30, categoryId: "preset.cleaning", sortOrder: 1),
+        .makeForPreview(id: "3", title: "布団干し", point: 20, categoryId: "preset.laundry"),
+        .makeForPreview(id: "4", title: "ゴミ出し"),
+    ]
+    NavigationStack {
+        FrequentHouseworkManagementView(
+            loadState: .loaded,
+            sections: FrequentHouseworkContext(items: items).sections,
+            unusableItemIds: ["4"],
+            limitStatus: .init(count: 11, limit: 10, isReached: true),
+            onTapClose: {},
+            onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
+            onTapItem: { _ in },
+            onDelete: { _ in },
+            onMove: { _ in },
+            onTapUpgrade: {},
+            onRetry: {}
+        )
+    }
+}
+
+#Preview("FrequentHouseworkManagementView_未登録") {
+    NavigationStack {
+        FrequentHouseworkManagementView(
+            loadState: .loaded,
+            sections: [],
+            unusableItemIds: [],
+            limitStatus: nil,
+            onTapClose: {},
+            onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
+            onTapItem: { _ in },
+            onDelete: { _ in },
+            onMove: { _ in },
+            onTapUpgrade: {},
+            onRetry: {}
+        )
+    }
+}
+
+#Preview("FrequentHouseworkManagementView_読み込み失敗") {
+    NavigationStack {
+        FrequentHouseworkManagementView(
+            loadState: .failed(.noNetwork),
+            sections: [],
+            unusableItemIds: [],
+            limitStatus: nil,
+            onTapClose: {},
+            onTapAdd: {},
+            onTapManageCategories: {},
+            onTapImport: {},
+            onTapItem: { _ in },
+            onDelete: { _ in },
+            onMove: { _ in },
+            onTapUpgrade: {},
+            onRetry: {}
+        )
+    }
+}
+#endif

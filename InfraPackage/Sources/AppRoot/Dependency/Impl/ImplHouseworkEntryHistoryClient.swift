@@ -4,6 +4,7 @@
 //
 
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 
 extension HouseworkEntryHistoryClient {

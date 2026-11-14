@@ -4,6 +4,10 @@ excluded:
   - DangerTools
   - LocalPackage/.build
   - LocalPackage/Package.swift
+  - UIPackage/.build
+  - UIPackage/Package.swift
+  - AgentToolsPackage/.build
+  - AgentToolsPackage/Package.swift
   - InfraPackage/.build
   - InfraPackage/Package.swift
   - vendor

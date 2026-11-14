@@ -7,7 +7,7 @@ paths:
 
 `#Preview` は Prefire によって `hometeSnapshotTests/PreviewTests.generated.swift` へ**中身がそのまま展開**され、対象モジュールを `@testable import` した上でビルドされる（生成の設定は `.prefire.yml`）。
 
-そのため `#Preview` は、実装ファイルの中に書かれていても**別モジュール・別ファイルからコンパイルされる**前提で書く必要がある。ここを外すと、ローカルの `make test-packages-fast` は通るのに Xcode Cloud の `VRT` ワークフローだけがビルドエラーで落ちる（LocalPackage単体のビルドでは生成コードがビルド対象に入らないため、手元では再現しない）。
+そのため `#Preview` は、実装ファイルの中に書かれていても**別モジュール・別ファイルからコンパイルされる**前提で書く必要がある。ここを外すと、ローカルの `make build-affected` は通るのに Xcode Cloud の `VRT` ワークフローだけがビルドエラーで落ちる（UIPackage単体のビルドでは生成コードがビルド対象に入らないため、手元では再現しない）。
 
 ## 必須事項
 
@@ -19,14 +19,14 @@ paths:
 'setupStorageEnvironmentForPreview' is inaccessible due to 'fileprivate' protection level
 ```
 
-とくに踏みやすいのが、プレビュー専用のヘルパーを実装ファイルの末尾に `private extension View` で置くパターン。**プレビュー用ヘルパーは `LocalPackage/Sources/HometeDomain/Utilities/DebugHelper/Preview/PreviewEnvironment.swift` に `public` で置く**（`setupEnvironmentForPreview()` / `setupStorageEnvironmentForPreview(now:storagePolicy:)` と同じ場所）。1ファイルでしか使わないヘルパーでも、そこに置けば再発しない。
-`HometeUI`は`HometeDomain`に依存しないので、`HometeUI`のプレビューで使うヘルパーは`HometeUI`に、値型のプレビュー用データ（`HouseworkItem.makeForTest`・`Date.previewDate`など）は`LocalPackage/Sources/HometeModel/Utilities/DebugHelper/`に置く。
+とくに踏みやすいのが、プレビュー専用のヘルパーを実装ファイルの末尾に `private extension View` で置くパターン。**プレビュー用ヘルパーは `UIPackage/Sources/HometeUI/ViewUtilities/DebugHelper/PreviewEnvironment.swift` に `public` で置く**（`setupEnvironmentForPreview()` / `setupStorageEnvironmentForPreview(now:storagePolicy:)` と同じ場所）。1ファイルでしか使わないヘルパーでも、そこに置けば再発しない。
+プレビューは`HometeUI`・`XxxFeatureUI`にだけ置く（`HometeDomain`に依存しないモジュール）。値型のプレビュー用データ（`HouseworkItem.makeForTest`・`Date.previewDate`など）は`LocalPackage/Sources/HometeModel/Utilities/DebugHelper/`に置く。
 
 同様に `private struct XxxPreviewWrapper: View` のようなプレビュー用のラッパー型も `private` にしない。
 
 ### 2. `Prefire` の import は `#if canImport(Prefire)` で囲む
 
-`LocalPackage/Package.swift` で `Prefire` プロダクトは `condition: .when(platforms: [.iOS])` としてiOS限定でリンクされている。`swift test --package-path LocalPackage`（`make test-packages-fast`）が実行するホストmacOS向けビルドには `Prefire` モジュールが存在しないため、無条件の `import Prefire` は `error: no such module 'Prefire'` で失敗する。
+`Prefire` はUIPackage（iOS向けにだけビルドする）の`HometeUI`・`HometeSnapshotTestSupport`からだけ使える。プレビューを書くモジュールが`Prefire`に直接依存しているとは限らないため、`.prefireIgnored()`・`.snapshot()` を使うためのimportは条件付きにしておく。
 
 ```swift
 import HometeUI
@@ -170,6 +170,6 @@ VRT自体はローカルで実行しない（`.claude/rules/swift-code-verificat
 
 ## 参考実装
 
-- `LocalPackage/Sources/HometeDomain/Utilities/DebugHelper/Preview/PreviewEnvironment.swift`
-- `LocalPackage/Sources/HometeUI/Components/Indicator/LoadingIndicator.swift`（スピナーをVRTの対象から外した例）
-- `LocalPackage/Sources/Features/ContributionFeature/View/Analytics/ContributionAnalyticsView.swift`（UI変更をScreen層に逃がさずView層に含めた例）
+- `UIPackage/Sources/HometeUI/ViewUtilities/DebugHelper/PreviewEnvironment.swift`
+- `UIPackage/Sources/HometeUI/Components/Indicator/LoadingIndicator.swift`（スピナーをVRTの対象から外した例）
+- `UIPackage/Sources/Features/ContributionFeatureUI/View/Analytics/ContributionAnalyticsView.swift`（UI変更をScreen層に逃がさずView層に含めた例）

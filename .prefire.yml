@@ -7,26 +7,25 @@ test_configuration:
   - template_file_path: generateTestTemplate.stencil 
   - use_grouped_snapshots: true
   - sources:
-    - ${PROJECT_DIR}/LocalPackage/Sources
+    - ${PROJECT_DIR}/UIPackage/Sources
   - snapshot_devices:
     - iPhone 16
     - iPhone SE (2nd generation)
   - imports:
     - UIKit
     - SwiftUI
-    - MultipeerConnectivity
-    - HometeDomain
+    - HometeModel
     - HometeResources
   - testable_imports:
     - HometeUI
-    - AuthFeature
-    - SettingFeature
-    - HomeFeature
-    - CohabitantRegistrationFeature
-    - HouseworkFeature
-    - HouseworkTemplateFeature
-    - ContributionFeature
-    - FrequentHouseworkFeature
-    - PaywallFeature
+    - AuthFeatureUI
+    - SettingFeatureUI
+    - HomeFeatureUI
+    - CohabitantRegistrationFeatureUI
+    - HouseworkFeatureUI
+    - HouseworkTemplateFeatureUI
+    - ContributionFeatureUI
+    - FrequentHouseworkFeatureUI
+    - PaywallFeatureUI
   - draw_hierarchy_in_key_window_default_enabled: true
 

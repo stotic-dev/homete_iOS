@@ -1,6 +1,6 @@
 ---
 paths:
-  - "LocalPackage/Sources/**/*.swift"
+  - "UIPackage/Sources/**/*.swift"
   - "InfraPackage/Sources/**/*.swift"
 ---
 
@@ -80,6 +80,18 @@ public struct HouseworkBoardScreen: View {
 - **判断と操作の置き場所が1箇所に揃う。** UIのあちこちでStoreを呼ぶと、同じ操作のエラー処理や
   Analyticsが散らばって食い違う
 
+## モジュールの分け方
+
+UIのみのViewは `XxxFeatureUI`（UIPackage）に、ロジックを持つViewは `XxxFeature` に置く（[ADR-0063](../../doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）。
+`XxxFeatureUI` は `HometeDomain` に依存しないので、Store・Client・`routeResolver`・`.trackScreenView` を使うとビルドが通らない。
+UIのみのViewが他のモジュールから使われるため、`public` にして、引数を受け取る `public init` を書く。
+
+UIのみのViewがロジックを持つ部品（画像の読み込み・Appleでサインインのボタンなど）を並べるときは、`@ViewBuilder` の引数で差し込んでもらう
+（`ManualHouseworkForm` の `thumbnail`、`LoginView` の `signInButton`）。
+
+画面の状態と判断をViewModelにした画面は、`XxxScreen` が `HometeAppCore` の `XxxViewModel` の `state` を読み、操作を `send(_:)` で送るだけにする
+（[ADR-0072](../../doc/adr/0072-app-core-view-models-and-behavior-cli.md)、`TodayHouseworkSummaryComponent`・`HouseworkCompleteSheet`）。
+
 ## 置き方の補足
 
 - `#Preview`はUIのみのView側に書く。ロジックを持つView側はVRTの対象にしない
@@ -89,5 +101,5 @@ public struct HouseworkBoardScreen: View {
 
 ## 既存コード
 
-`RegisteredContent`（名前はContentだがStoreを使う）や`HouseworkQuickActionMenuContent`（Storeを呼ぶメニューの中身）
-のように、この分け方になっていないViewが残っている。新しく書くコードはこれに倣わず、触る機会があれば分ける。
+`RegisteredContent`（名前はContentだがStoreを使う）のように、名前がこの分け方に沿っていないViewが残っている。
+新しく書くコードはこれに倣わず、触る機会があれば名前もそろえる。

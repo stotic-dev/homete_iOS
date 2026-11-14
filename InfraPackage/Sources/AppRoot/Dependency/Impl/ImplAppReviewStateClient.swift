@@ -4,6 +4,7 @@
 
 import Foundation
 import HometeDomain
+import HometeDomainUI
 
 public extension AppReviewStateClient {
 

@@ -15,16 +15,7 @@ import Observation
 @Observable
 public final class PasteboardInvitationStore {
 
-    public enum State: Equatable, Sendable {
-
-        /// 案内を出さない
-        case idle
-        /// 「招待リンクを確認する」の案内を出す
-        case suggesting
-        /// 読み取ったが招待リンクではなかった
-        case notFound
-
-    }
+    public typealias State = PasteboardInvitationState
 
     public private(set) var state: State = .idle
 

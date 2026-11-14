@@ -5,6 +5,7 @@
 import CryptoKit
 import Foundation
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 
 extension NonceGenerationClient {

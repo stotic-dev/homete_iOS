@@ -7,7 +7,6 @@
 import Foundation
 @testable import HometeAppIntents
 import HometeDomain
-import HouseworkFeature
 import Testing
 
 /// 声で伝えた家事の名前から、やった家事を記録する・これからやる家事を登録する

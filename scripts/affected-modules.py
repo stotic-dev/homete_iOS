@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """変更されたファイルから、ビルド・テスト・VRTが必要なモジュールを割り出す。
 
-モジュールの依存はLocalPackage・InfraPackageの `swift package dump-package` から読む。
+モジュールの依存はLocalPackage・UIPackage・InfraPackageの `swift package dump-package` から読む。
 変更されたターゲットと、それに（推移的に）依存するターゲットを「影響を受けたターゲット」とし、
 その範囲だけをビルド・テストする。経緯は doc/adr/0048-verify-only-affected-modules.md。
 
@@ -19,9 +19,11 @@ query:
   summary        判定結果を人が読む形で出す
   tests          実行すべきテストターゲット（1行に1つ）
   test-filter    swift test --filter に渡す正規表現。対象が無ければ何も出さない
-  build-targets  iOS向けにビルドすべきLocalPackageのターゲット。他の対象に含まれるものは省く
+  build-targets  iOS向けにビルドすべきLocalPackage・UIPackageのターゲット（「パッケージ ターゲット」の形で1行に1つ）。
+                 他の対象に含まれるものは省く
   infra          InfraPackageのビルドが必要なら yes、不要なら no
   app            homete.xcodeproj（アプリ本体）のビルドが必要なら yes、不要なら no
+  behavior       AgentToolsPackageの行動テスト（make test-behavior）が必要なら yes、不要なら no
   vrt-tests      流すVRTのテスト名（PreviewTests/test_..._Preview の ... の部分）
   vrt-all        全プレビューを流すべきなら yes。vrt-tests の名前で絞らずに流す
 """
@@ -33,16 +35,22 @@ import subprocess
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PACKAGES = ["LocalPackage", "InfraPackage"]
+PACKAGES = ["LocalPackage", "UIPackage", "InfraPackage"]
+# iOS向けに単体でビルドして確かめるパッケージ。InfraPackageは重いので、影響が届くときだけまとめてビルドする
+IOS_PACKAGES = {"LocalPackage", "UIPackage"}
 
-# 変わるとLocalPackageの全ターゲットに効くもの。SwiftLintはビルド時にプラグインとして走るので、
+# 変わるとLocalPackage・UIPackageの全ターゲットに効くもの。SwiftLintはビルド時にプラグインとして走るので、
 # 設定が変わればどのターゲットのビルドも結果が変わりうる
 ALL_TARGETS_PATTERNS = [
-    r"LocalPackage/Package\.(swift|resolved)$",
     r"ProjectTools/",
     r"\.swiftlint\.yml$",
 ]
+LOCAL_PATTERNS = [r"LocalPackage/Package\.(swift|resolved)$"]
+UI_PATTERNS = [r"UIPackage/Package\.(swift|resolved)$"]
 INFRA_PATTERNS = [r"InfraPackage/Package\.(swift|resolved)$"]
+# AgentToolsPackage（CLI・行動テスト）が動かすモジュール。変わったら行動テストを流す
+BEHAVIOR_TARGETS = {"HometeModel", "HometeDomain", "HometeAppCore"}
+BEHAVIOR_PATTERNS = [r"AgentToolsPackage/"]
 APP_PATTERNS = [r"homete/", r"hometeNotificationService/", r"homete\.xcodeproj/"]
 # VRTの設定・テンプレート。変わったら全プレビューが対象になる
 VRT_ALL_PATTERNS = [
@@ -60,15 +68,15 @@ VRT_ALL_TARGETS = {"HometeSnapshotTestSupport"}
 # VRTが描画するモジュール。.prefire.yml の testable_imports と同じ
 VRT_MODULES = {
     "HometeUI",
-    "AuthFeature",
-    "SettingFeature",
-    "HomeFeature",
-    "CohabitantRegistrationFeature",
-    "HouseworkFeature",
-    "HouseworkTemplateFeature",
-    "ContributionFeature",
-    "FrequentHouseworkFeature",
-    "PaywallFeature",
+    "AuthFeatureUI",
+    "SettingFeatureUI",
+    "HomeFeatureUI",
+    "CohabitantRegistrationFeatureUI",
+    "HouseworkFeatureUI",
+    "HouseworkTemplateFeatureUI",
+    "ContributionFeatureUI",
+    "FrequentHouseworkFeatureUI",
+    "PaywallFeatureUI",
 }
 
 
@@ -154,14 +162,20 @@ def deps_closure(name, targets):
 
 def analyze(files, targets, transitive=False):
     changed = set()
-    app = vrt_all = False
+    app = vrt_all = behavior = False
     for path in files:
         if matches(path, ALL_TARGETS_PATTERNS):
+            changed |= {n for n, t in targets.items() if t["package"] in IOS_PACKAGES}
+        if matches(path, LOCAL_PATTERNS):
             changed |= {n for n, t in targets.items() if t["package"] == "LocalPackage"}
+        if matches(path, UI_PATTERNS):
+            changed |= {n for n, t in targets.items() if t["package"] == "UIPackage"}
         if matches(path, INFRA_PATTERNS):
             changed |= {n for n, t in targets.items() if t["package"] == "InfraPackage"}
         if matches(path, APP_PATTERNS):
             app = True
+        if matches(path, BEHAVIOR_PATTERNS):
+            behavior = True
         if matches(path, VRT_ALL_PATTERNS):
             vrt_all = True
         name = owner(path, targets)
@@ -171,7 +185,7 @@ def analyze(files, targets, transitive=False):
     affected = dependents_closure(changed, targets)
     local_regular = {
         n for n in affected
-        if targets[n]["package"] == "LocalPackage" and targets[n]["type"] == "regular"
+        if targets[n]["package"] in IOS_PACKAGES and targets[n]["type"] == "regular"
     }
     # 他の対象をビルドすれば一緒にビルドされるものは省く
     covered = set().union(*(deps_closure(n, targets) for n in local_regular)) if local_regular else set()
@@ -187,9 +201,11 @@ def analyze(files, targets, transitive=False):
         "changed": sorted(changed),
         "affected": sorted(affected),
         "tests": sorted(n for n in affected if targets[n]["type"] == "test"),
-        "build_targets": sorted(local_regular - covered),
+        # UIPackageのターゲットをビルドすれば、依存しているLocalPackageのターゲットも一緒にビルドされる
+        "build_targets": sorted((targets[n]["package"], n) for n in local_regular - covered),
         "infra": any(targets[n]["package"] == "InfraPackage" for n in affected),
         "app": app,
+        "behavior": behavior or bool(affected & BEHAVIOR_TARGETS),
         "vrt_modules": sorted(vrt_modules),
         "vrt_all": vrt_all,
     }
@@ -233,7 +249,7 @@ def main():
     parser.add_argument("--transitive", action="store_true")
     parser.add_argument("--generated")
     parser.add_argument("query", choices=[
-        "summary", "tests", "test-filter", "build-targets", "infra", "app", "vrt-tests", "vrt-all",
+        "summary", "tests", "test-filter", "build-targets", "infra", "app", "behavior", "vrt-tests", "vrt-all",
     ])
     args = parser.parse_args()
 
@@ -244,9 +260,10 @@ def main():
     if args.query == "summary":
         print(f"変更されたターゲット: {', '.join(result['changed']) or 'なし'}")
         print(f"テスト: {', '.join(result['tests']) or 'なし'}")
-        print(f"iOS向けビルド: {', '.join(result['build_targets']) or 'なし'}")
+        print(f"iOS向けビルド: {', '.join(t for _, t in result['build_targets']) or 'なし'}")
         print(f"InfraPackageのビルド: {'要' if result['infra'] else '不要'}")
         print(f"アプリ本体のビルド: {'要' if result['app'] else '不要'}")
+        print(f"行動テスト（make test-behavior）: {'要' if result['behavior'] else '不要'}")
         label = "CIのVRT" if args.transitive else "ローカルVRT"
         modules = "全件" if result["vrt_all"] else ", ".join(result["vrt_modules"]) or "なし"
         print(f"{label}: {modules}")
@@ -256,8 +273,8 @@ def main():
         if result["tests"]:
             print("|".join(f"^{t}\\." for t in result["tests"]))
     elif args.query == "build-targets":
-        print("\n".join(result["build_targets"]))
-    elif args.query in ("infra", "app"):
+        print("\n".join(f"{package} {target}" for package, target in result["build_targets"]))
+    elif args.query in ("infra", "app", "behavior"):
         print("yes" if result[args.query] else "no")
     elif args.query == "vrt-all":
         print("yes" if result["vrt_all"] else "no")

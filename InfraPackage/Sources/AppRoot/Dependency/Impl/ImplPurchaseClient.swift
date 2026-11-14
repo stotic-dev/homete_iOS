@@ -4,6 +4,7 @@
 
 #if os(iOS)
 import HometeDomain
+import HometeDomainUI
 import RevenueCat
 
 extension PurchaseClient {

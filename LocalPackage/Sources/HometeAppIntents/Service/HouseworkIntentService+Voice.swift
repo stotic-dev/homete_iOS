@@ -4,8 +4,8 @@
 //
 
 import Foundation
+import HometeAppCore
 import HometeDomain
-import HouseworkFeature
 
 /// 声で伝えた家事の名前から探した、今日の家事といつもの家事
 struct VoiceHouseworkPlan: Equatable {

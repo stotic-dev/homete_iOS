@@ -4,6 +4,7 @@
 
 import FirebaseAuth
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 
 extension AccountAuthClient {

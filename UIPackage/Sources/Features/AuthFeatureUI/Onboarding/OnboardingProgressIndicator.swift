@@ -1,0 +1,76 @@
+//
+//  OnboardingProgressIndicator.swift
+//  LocalPackage
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// オンボーディングが全何ステップ中のどこまで進んだかを表すページドット
+/// - Note: 一方向のフローで戻る導線を持たないため、ドットはタップできない表示専用のコンポーネントとする
+public struct OnboardingProgressIndicator: View {
+
+    /// 実際に案内するステップの並び。スキップされるステップを含めないため、フロー側から受け取る
+    let steps: [OnboardingStep]
+    let currentStep: OnboardingStep
+
+    public init(
+        steps: [OnboardingStep],
+        currentStep: OnboardingStep
+    ) {
+        self.steps = steps
+        self.currentStep = currentStep
+    }
+
+    public var body: some View {
+        HStack(spacing: .space8) {
+            ForEach(steps, id: \.self) { step in
+                Circle()
+                    .fill(color(of: step))
+                    .frame(width: dotSize, height: dotSize)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(.localized("全\(steps.count)ステップ中\(currentIndex + 1)ステップ目"))
+    }
+
+}
+
+// MARK: UI定義
+
+private extension OnboardingProgressIndicator {
+
+    var dotSize: CGFloat {
+        8
+    }
+
+    /// 先頭から数えた現在地（0始まり）
+    var currentIndex: Int {
+        steps.firstIndex(of: currentStep) ?? 0
+    }
+
+    /// 到達済みのステップはアクセントカラーで塗りつぶし、未到達のステップは薄く表示する
+    /// - Note: `fillAccentSubtle`は面（背景）に使う色で、`backgroundScreen`の上に置くとどちらのモードでも
+    ///         ほとんど識別できないため、前景として塗るドットには`fillAccent`と`iconDecorative`を使う
+    func color(of step: OnboardingStep) -> Color {
+        guard let index = steps.firstIndex(of: step) else { return .clear }
+
+        return index <= currentIndex ? .fillAccent : Color.iconDecorative.opacity(0.4)
+    }
+
+}
+
+#Preview("OnboardingProgressIndicator", traits: .sizeThatFitsLayout) {
+    VStack(spacing: .space16) {
+        ForEach(OnboardingStep.allCases, id: \.self) { step in
+            OnboardingProgressIndicator(steps: OnboardingStep.allCases, currentStep: step)
+        }
+        // Apple連携が不要で、通知の権限が決定済みのため通知のステップもスキップされる場合
+        OnboardingProgressIndicator(
+            steps: [.registration, .partnerRegistration, .premiumIntroduction],
+            currentStep: .premiumIntroduction
+        )
+    }
+    .padding(.space16)
+}

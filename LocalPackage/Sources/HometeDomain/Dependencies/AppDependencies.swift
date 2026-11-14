@@ -5,7 +5,7 @@
 //  Created by 佐藤汰一 on 2025/08/03.
 //
 
-import SwiftUI
+import Foundation
 
 public struct AppDependencies: Sendable {
 
@@ -145,11 +145,5 @@ public struct AppDependencies: Sendable {
 public extension AppDependencies {
 
     static let previewValue: Self = .init()
-
-}
-
-public extension EnvironmentValues {
-
-    @Entry var appDependencies: AppDependencies = .init()
 
 }

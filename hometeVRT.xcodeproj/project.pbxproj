@@ -7,18 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0AA7C0030000000000000001 /* HometeDomain in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeDomain */; };
+		0AA7C0030000000000000001 /* HometeModel in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000001 /* HometeModel */; };
 		0AA7C0030000000000000002 /* HometeResources in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000002 /* HometeResources */; };
 		0AA7C0030000000000000003 /* HometeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000003 /* HometeUI */; };
-		0AA7C0030000000000000004 /* AuthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeature */; };
-		0AA7C0030000000000000005 /* SettingFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeature */; };
-		0AA7C0030000000000000006 /* HomeFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeature */; };
-		0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeature */; };
-		0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeature */; };
-		0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeature */; };
-		0AA7C003000000000000000A /* ContributionFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeature */; };
-		0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeature */; };
-		0AA7C003000000000000000D /* PaywallFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000D /* PaywallFeature */; };
+		0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000004 /* AuthFeatureUI */; };
+		0AA7C0030000000000000005 /* SettingFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000005 /* SettingFeatureUI */; };
+		0AA7C0030000000000000006 /* HomeFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000006 /* HomeFeatureUI */; };
+		0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */; };
+		0AA7C0030000000000000008 /* HouseworkFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000008 /* HouseworkFeatureUI */; };
+		0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */; };
+		0AA7C003000000000000000A /* ContributionFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000A /* ContributionFeatureUI */; };
+		0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */; };
+		0AA7C003000000000000000D /* PaywallFeatureUI in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000D /* PaywallFeatureUI */; };
 		0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0AA7C002000000000000000C /* HometeSnapshotTestSupport */; };
 /* End PBXBuildFile section */
 
@@ -89,18 +89,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				0AA7C003000000000000000C /* HometeSnapshotTestSupport in Frameworks */,
-				0AA7C0030000000000000001 /* HometeDomain in Frameworks */,
+				0AA7C0030000000000000001 /* HometeModel in Frameworks */,
 				0AA7C0030000000000000002 /* HometeResources in Frameworks */,
 				0AA7C0030000000000000003 /* HometeUI in Frameworks */,
-				0AA7C0030000000000000004 /* AuthFeature in Frameworks */,
-				0AA7C0030000000000000005 /* SettingFeature in Frameworks */,
-				0AA7C0030000000000000006 /* HomeFeature in Frameworks */,
-				0AA7C0030000000000000007 /* CohabitantRegistrationFeature in Frameworks */,
-				0AA7C0030000000000000008 /* HouseworkFeature in Frameworks */,
-				0AA7C0030000000000000009 /* HouseworkTemplateFeature in Frameworks */,
-				0AA7C003000000000000000A /* ContributionFeature in Frameworks */,
-				0AA7C003000000000000000B /* FrequentHouseworkFeature in Frameworks */,
-				0AA7C003000000000000000D /* PaywallFeature in Frameworks */,
+				0AA7C0030000000000000004 /* AuthFeatureUI in Frameworks */,
+				0AA7C0030000000000000005 /* SettingFeatureUI in Frameworks */,
+				0AA7C0030000000000000006 /* HomeFeatureUI in Frameworks */,
+				0AA7C0030000000000000007 /* CohabitantRegistrationFeatureUI in Frameworks */,
+				0AA7C0030000000000000008 /* HouseworkFeatureUI in Frameworks */,
+				0AA7C0030000000000000009 /* HouseworkTemplateFeatureUI in Frameworks */,
+				0AA7C003000000000000000A /* ContributionFeatureUI in Frameworks */,
+				0AA7C003000000000000000B /* FrequentHouseworkFeatureUI in Frameworks */,
+				0AA7C003000000000000000D /* PaywallFeatureUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,18 +173,18 @@
 			name = hometeSnapshotTests;
 			packageProductDependencies = (
 				0AA7C002000000000000000C /* HometeSnapshotTestSupport */,
-				0AA7C0020000000000000001 /* HometeDomain */,
+				0AA7C0020000000000000001 /* HometeModel */,
 				0AA7C0020000000000000002 /* HometeResources */,
 				0AA7C0020000000000000003 /* HometeUI */,
-				0AA7C0020000000000000004 /* AuthFeature */,
-				0AA7C0020000000000000005 /* SettingFeature */,
-				0AA7C0020000000000000006 /* HomeFeature */,
-				0AA7C0020000000000000007 /* CohabitantRegistrationFeature */,
-				0AA7C0020000000000000008 /* HouseworkFeature */,
-				0AA7C0020000000000000009 /* HouseworkTemplateFeature */,
-				0AA7C002000000000000000A /* ContributionFeature */,
-				0AA7C002000000000000000B /* FrequentHouseworkFeature */,
-				0AA7C002000000000000000D /* PaywallFeature */,
+				0AA7C0020000000000000004 /* AuthFeatureUI */,
+				0AA7C0020000000000000005 /* SettingFeatureUI */,
+				0AA7C0020000000000000006 /* HomeFeatureUI */,
+				0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */,
+				0AA7C0020000000000000008 /* HouseworkFeatureUI */,
+				0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */,
+				0AA7C002000000000000000A /* ContributionFeatureUI */,
+				0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */,
+				0AA7C002000000000000000D /* PaywallFeatureUI */,
 			);
 			productName = hometeSnapshotTests;
 			productReference = BC1BB2682E909B8C001D168F /* hometeSnapshotTests.xctest */;
@@ -221,6 +221,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				04B371972F40526F00820C62 /* XCLocalSwiftPackageReference "LocalPackage" */,
+				0AA7C0040000000000000010 /* XCLocalSwiftPackageReference "UIPackage" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BCC853F62DB74BBC00C9A44B /* Products */;
@@ -687,12 +688,16 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = LocalPackage;
 		};
+		0AA7C0040000000000000010 /* XCLocalSwiftPackageReference "UIPackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = UIPackage;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		0AA7C0020000000000000001 /* HometeDomain */ = {
+		0AA7C0020000000000000001 /* HometeModel */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HometeDomain;
+			productName = HometeModel;
 		};
 		0AA7C0020000000000000002 /* HometeResources */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -702,41 +707,41 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = HometeUI;
 		};
-		0AA7C0020000000000000004 /* AuthFeature */ = {
+		0AA7C0020000000000000004 /* AuthFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = AuthFeature;
+			productName = AuthFeatureUI;
 		};
-		0AA7C0020000000000000005 /* SettingFeature */ = {
+		0AA7C0020000000000000005 /* SettingFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = SettingFeature;
+			productName = SettingFeatureUI;
 		};
-		0AA7C0020000000000000006 /* HomeFeature */ = {
+		0AA7C0020000000000000006 /* HomeFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HomeFeature;
+			productName = HomeFeatureUI;
 		};
-		0AA7C0020000000000000007 /* CohabitantRegistrationFeature */ = {
+		0AA7C0020000000000000007 /* CohabitantRegistrationFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = CohabitantRegistrationFeature;
+			productName = CohabitantRegistrationFeatureUI;
 		};
-		0AA7C0020000000000000008 /* HouseworkFeature */ = {
+		0AA7C0020000000000000008 /* HouseworkFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HouseworkFeature;
+			productName = HouseworkFeatureUI;
 		};
-		0AA7C0020000000000000009 /* HouseworkTemplateFeature */ = {
+		0AA7C0020000000000000009 /* HouseworkTemplateFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = HouseworkTemplateFeature;
+			productName = HouseworkTemplateFeatureUI;
 		};
-		0AA7C002000000000000000A /* ContributionFeature */ = {
+		0AA7C002000000000000000A /* ContributionFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = ContributionFeature;
+			productName = ContributionFeatureUI;
 		};
-		0AA7C002000000000000000B /* FrequentHouseworkFeature */ = {
+		0AA7C002000000000000000B /* FrequentHouseworkFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = FrequentHouseworkFeature;
+			productName = FrequentHouseworkFeatureUI;
 		};
-		0AA7C002000000000000000D /* PaywallFeature */ = {
+		0AA7C002000000000000000D /* PaywallFeatureUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = PaywallFeature;
+			productName = PaywallFeatureUI;
 		};
 		0AA7C002000000000000000C /* HometeSnapshotTestSupport */ = {
 			isa = XCSwiftPackageProductDependency;
