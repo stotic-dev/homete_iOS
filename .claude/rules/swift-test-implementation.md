@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Tests/**/*.swift"
+  - "AgentToolsPackage/Tests/**/*.swift"
 ---
 
 # Swiftテスト実装ルール

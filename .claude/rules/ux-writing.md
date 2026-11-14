@@ -106,10 +106,10 @@ homeauは「ほめる」から名付けたアプリなので、文言でも、�
 
 ## 参照実装
 
-- `LocalPackage/Sources/Features/AuthFeature/Onboarding/PremiumIntroductionView.swift` — 敬体・結果ベースの言い回しのお手本
+- `UIPackage/Sources/Features/AuthFeatureUI/Onboarding/PremiumIntroductionView.swift` — 敬体・結果ベースの言い回しのお手本
 - `doc/premium_plan.md` — プレミアムプランの訴求内容と実際の提供価値の対応関係
-- `LocalPackage/Sources/Features/PaywallFeature/SubViews/PaywallBenefitListContent.swift` — Paywallで訴求する特典の文言
+- `UIPackage/Sources/Features/PaywallFeatureUI/SubViews/PaywallBenefitListContent.swift` — Paywallで訴求する特典の文言
 
 ## 適用範囲の補足
 
-Paywallの訴求文言は`PaywallFeature`のコード（`PaywallBenefit`と`PaywallBenefitListContent`）にある（[ADR-0070](../../doc/adr/0070-custom-paywall-view.md)）。ほかの画面と同じくこのルールで書き、特典を足すときは、その機能がプラン判定で実際に解放されていることをコードで確認する（原則4）。
+Paywallの訴求文言は`PaywallBenefit`（`HometeModel`）と`PaywallBenefitListContent`（`PaywallFeatureUI`）にある（[ADR-0070](../../doc/adr/0070-custom-paywall-view.md)）。ほかの画面と同じくこのルールで書き、特典を足すときは、その機能がプラン判定で実際に解放されていることをコードで確認する（原則4）。

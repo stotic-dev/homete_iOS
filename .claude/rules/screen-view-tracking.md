@@ -1,6 +1,6 @@
 ---
 paths:
-  - "LocalPackage/Sources/**/*.swift"
+  - "UIPackage/Sources/**/*.swift"
   - "InfraPackage/Sources/**/*.swift"
 ---
 
@@ -14,8 +14,8 @@ Firebase Analyticsの自動収集`screen_view`は`UIViewController`単位で動�
 
 新しい画面のルートViewを作ったら、以下を1セットで行う。
 
-1. `HometeDomain/AnalyticsLog/AppScreen.swift` にケースを追加する（`rawValue`はsnake_case）
-2. 画面のルートViewの`body`の**最後のModifier**として `.trackScreenView(.追加したケース)` を付ける
+1. `LocalPackage/Sources/HometeDomain/AnalyticsLog/AppScreen.swift` にケースを追加する（`rawValue`はsnake_case）
+2. 画面のルートView（`XxxFeature`の`XxxScreen`）の`body`の**最後のModifier**として `.trackScreenView(.追加したケース)` を付ける
 3. [doc/analytics_events.md](../../doc/analytics_events.md) の `### screen_view` にある画面一覧の表に行を追加する
 
 ```swift
@@ -55,7 +55,7 @@ var body: some View {
 
 **画面のルートViewの`body`の最後**に付ける。サブViewや条件分岐の内側に付けると、条件によって送信されたりされなかったりして数が合わなくなる。
 
-`.trackScreenView(_:)`は`HometeDomain`にある。`HometeUI`は`HometeDomain`に依存させないため（[ADR-0063](../../doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）、`HometeUI`のViewには付けられない。`HometeUI`のViewを画面として出すときは、**画面を組み立てる側**（Feature・`AppRoot`）で付ける。`AppRoot/RootView.swift`の`MaintenanceView`・`ForceUpdateView`、家事メモの編集シート（`HouseworkMemoEditScreen`）の各呼び出し元がこのケース。`PaywallFeature`の`PaywallScreen`は、Apple連携と購入者の準備を済ませてから出すため、`AppRoot/ResolverImpl/AccountLinkRoutes.swift`の`PaywallGate`で付けている。
+`.trackScreenView(_:)`は`HometeDomainUI`（UIPackage）にある。`HometeUI`・`XxxFeatureUI`は`HometeDomain`に依存させないため（[ADR-0063](../../doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）、UIのみのViewには付けられない。UIのみのViewを画面として出すときは、**画面を組み立てる側**（`XxxFeature`の`XxxScreen`・`AppRoot`）で付ける。`AppRoot/RootView.swift`の`MaintenanceView`・`ForceUpdateView`、家事メモの編集シート（`HouseworkMemoEditScreen`）の各呼び出し元がこのケース。`PaywallFeature`の`PaywallScreen`は、Apple連携と購入者の準備を済ませてから出すため、`AppRoot/ResolverImpl/AccountLinkRoutes.swift`の`PaywallGate`で付けている。
 
 ## 禁止事項
 
