@@ -65,8 +65,8 @@ private extension AppIntrospector {
 
         init(
             _ name: String,
-            arguments: [String] = [],
             summary: String,
+            arguments: [String] = [],
             run: @escaping @MainActor ([String: String]) throws(IntrospectionError) -> Void
         ) {
             descriptor = ActionDescriptor(name: name, summary: summary, arguments: arguments)
@@ -78,8 +78,6 @@ private extension AppIntrospector {
     static let allActionNames: Set<String> = [
         "complete", "selectEffort", "toggleMember", "save", "close", "dismiss", "finishPraise", "dismissError",
     ]
-
-    static let efforts: [String: HouseworkEffort] = ["normal": .normal, "hard": .hard, "veryHard": .veryHard]
 
     var currentScreen: ScreenName {
         session.today.completion == nil ? .todayHousework : .houseworkComplete
@@ -97,7 +95,7 @@ private extension AppIntrospector {
         // 「完了にする」は、今日の未完了の家事があるときだけ押せる
         guard !today.summary.incompleteItems.isEmpty else { return [] }
         return [
-            AvailableAction("complete", arguments: ["id"], summary: "家事の「完了にする」を押す（完了にするシートを出す）") { arguments in
+            AvailableAction("complete", summary: "家事の「完了にする」を押す（完了にするシートを出す）", arguments: ["id"]) { arguments in
                 today.send(.completeTapped(itemId: arguments["id", default: ""]))
             },
         ]
@@ -113,10 +111,10 @@ private extension AppIntrospector {
             actions += [
                 AvailableAction(
                     "selectEffort",
-                    arguments: ["effort"],
-                    summary: "頑張り度を選ぶ（normal・hard・veryHard）"
+                    summary: "頑張り度を選ぶ（normal・hard・veryHard）",
+                    arguments: ["effort"]
                 ) { arguments throws(IntrospectionError) in
-                    guard let effort = Self.efforts[arguments["effort", default: ""]] else {
+                    guard let effort = SnapshotName.effort(named: arguments["effort", default: ""]) else {
                         throw IntrospectionError(
                             code: .invalidArguments,
                             message: "effort は normal・hard・veryHard のどれかです"
@@ -124,7 +122,7 @@ private extension AppIntrospector {
                     }
                     completion.send(.effortSelected(effort))
                 },
-                AvailableAction("toggleMember", arguments: ["userId"], summary: "担当者の選択を切り替える") { arguments in
+                AvailableAction("toggleMember", summary: "担当者の選択を切り替える", arguments: ["userId"]) { arguments in
                     completion.send(.memberToggled(userId: arguments["userId", default: ""]))
                 },
             ]

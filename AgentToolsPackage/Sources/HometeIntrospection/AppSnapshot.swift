@@ -141,13 +141,13 @@ public struct HouseworkCompleteSnapshot: Codable, Equatable, Sendable {
         self.init(
             houseworkId: viewModel.item.id,
             title: viewModel.item.title,
-            effort: "\(state.allocation.effort)",
+            effort: SnapshotName.effort(state.allocation.effort),
             selectableMemberIds: viewModel.selectableMembers.map(\.id),
             executors: state.allocation.entries.map { .init(userId: $0.userId, percentage: $0.percentage) },
             totalPoint: state.allocation.totalPoint,
             isCompleting: state.isCompleting,
             completedPoint: state.completedPoint,
-            error: state.error.map { "\($0)" }
+            error: state.error.map(SnapshotName.error)
         )
     }
 
@@ -165,6 +165,43 @@ public struct ActionDescriptor: Codable, Equatable, Sendable {
         self.name = name
         self.arguments = arguments
         self.summary = summary
+    }
+
+}
+
+/// スナップショット・操作の引数で使う、値の名前
+///
+/// `CustomStringConvertible`の有無で出力が変わらないよう、名前は明示的に決める
+enum SnapshotName {
+
+    static let efforts: [(name: String, effort: HouseworkEffort)] = [
+        ("normal", .normal),
+        ("hard", .hard),
+        ("veryHard", .veryHard),
+    ]
+
+    static func effort(_ effort: HouseworkEffort) -> String {
+        efforts.first { $0.effort == effort }?.name ?? "unknown"
+    }
+
+    static func effort(named name: String) -> HouseworkEffort? {
+        efforts.first { $0.name == name }?.effort
+    }
+
+    static func error(_ error: DomainError) -> String {
+        switch error {
+        case .failAuth:
+            "failAuth"
+
+        case .noNetwork:
+            "noNetwork"
+
+        case .accountNotFound:
+            "accountNotFound"
+
+        case .other:
+            "other"
+        }
     }
 
 }

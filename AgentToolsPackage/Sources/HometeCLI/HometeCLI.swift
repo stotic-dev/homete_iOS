@@ -66,7 +66,7 @@ enum HometeCLI {
 private extension HometeCLI {
 
     /// JSONを書き出す、元の標準出力
-    nonisolated(unsafe) static var standardOutput = FileHandle.standardOutput
+    @MainActor static var standardOutput = FileHandle.standardOutput
 
     static let usage = """
     使い方: homete-cli [--scenario <名前>]
@@ -130,6 +130,7 @@ private extension HometeCLI {
         }
     }
 
+    @MainActor
     static func output(_ response: CLIResponse) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]

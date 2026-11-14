@@ -27,13 +27,21 @@ public final class AgentSession {
 
     /// ViewModelが始めた非同期の処理がすべて終わり、書き込んだ家事がStoreに届くまで待つ
     ///
-    /// - Note: `HouseworkListStore`は書き込んだ家事を`HouseworkManager`の通知から受け取るので、
-    ///         処理が終わった後にMainActorの順番を譲って、通知を受け取る処理を先に進める
+    /// - Note: `HouseworkListStore`は書き込んだ家事を`HouseworkManager`（actor）の通知から受け取るので、
+    ///         処理が終わった後にMainActorの順番を譲って、通知を受け取る処理を先に進める。
+    ///         通知の経路にactorの移り先が増えて行動テストが不安定になったら、`yieldCountForStoreUpdates`を増やす
     public func settle() async {
         await tasks.waitUntilIdle()
-        for _ in 0 ..< 20 {
+        for _ in 0 ..< Self.yieldCountForStoreUpdates {
             await Task.yield()
         }
     }
+
+}
+
+private extension AgentSession {
+
+    /// 書き込みの後、Storeに通知が届くまでにMainActorの順番を譲る回数
+    static let yieldCountForStoreUpdates = 20
 
 }
