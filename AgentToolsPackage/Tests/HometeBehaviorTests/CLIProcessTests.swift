@@ -28,9 +28,30 @@ struct CLIProcessTests {
         // Assert
 
         let responses = try lines.map { try JSONDecoder().decode(CLIResponse.self, from: Data($0.utf8)) }
-        #expect(responses.map(\.ok) == [true, false])
-        #expect(responses.first?.snapshot?.currentScreen == .houseworkComplete)
-        #expect(responses.last?.error?.code == .unknownAction)
+        let expected = [
+            CLIResponse(snapshot: AppSnapshot(
+                currentScreen: .houseworkComplete,
+                todayHousework: .init(
+                    incomplete: [
+                        .init(id: "cleaning", title: "掃除", point: 20),
+                        .init(id: "laundry", title: "洗濯", point: 10),
+                    ],
+                    completedCount: 1,
+                    totalCount: 3
+                ),
+                houseworkComplete: .init(
+                    houseworkId: "laundry",
+                    title: "洗濯",
+                    effort: "normal",
+                    selectableMemberIds: ["own", "partner"],
+                    executors: [.init(userId: "own", percentage: 100)],
+                    totalPoint: 10
+                ),
+                availableActions: completionActions()
+            )),
+            CLIResponse(error: .init(code: .unknownAction, message: "unknown という操作はありません")),
+        ]
+        #expect(responses == expected)
     }
 
     // MARK: - Helper
@@ -44,7 +65,8 @@ struct CLIProcessTests {
         let stdout = Pipe()
         process.standardInput = stdin
         process.standardOutput = stdout
-        process.standardError = Pipe()
+        // 診断は読まない。パイプに溜めるとバッファがあふれてCLIが止まるため捨てる
+        process.standardError = FileHandle.nullDevice
         try process.run()
         stdin.fileHandleForWriting.write(Data(input.utf8))
         try stdin.fileHandleForWriting.close()

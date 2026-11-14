@@ -3,6 +3,7 @@
 //  AgentToolsPackage
 //
 
+import Foundation
 import HometeDomain
 import HometeIntrospection
 import HometeScenarioSupport
@@ -14,6 +15,9 @@ struct HouseworkCompleteBehaviorTests {
     // 未完了の家事は、ポイントの大きい順に並ぶ（`HouseworkItem+IncompleteDisplayOrder`）
     private let laundry = HouseworkSnapshot(id: "laundry", title: "洗濯", point: 10)
     private let cleaning = HouseworkSnapshot(id: "cleaning", title: "掃除", point: 20)
+    /// シナリオの現在日時（2026/1/1 12:00 JST）と、その日の0時
+    private let now = Date(timeIntervalSince1970: 1_767_236_400)
+    private let today = Date(timeIntervalSince1970: 1_767_193_200)
 
     @Test("今日の家事を、パートナーと分けて「がんばった」で完了にすると、演出の後にシートが閉じて未完了から外れる")
     func completeWithPartner() async throws {
@@ -40,10 +44,22 @@ struct HouseworkCompleteBehaviorTests {
         #expect(driver.snapshot == expected)
         let written = await driver.backend.items.first { $0.id == "laundry" }
         // 10ptを「がんばった」の1.2倍にした12ptを、2人で6ptずつ分ける
-        #expect(written?.executors == [
-            .init(userId: "own", percentage: 50, point: 6),
-            .init(userId: "partner", percentage: 50, point: 6),
-        ])
+        let expectedItem = HouseworkItem(
+            id: "laundry",
+            indexedDate: .init(value: today),
+            title: "洗濯",
+            point: 10,
+            state: .completed,
+            executors: [
+                .init(userId: "own", percentage: 50, point: 6),
+                .init(userId: "partner", percentage: 50, point: 6),
+            ],
+            effort: .hard,
+            executedAt: now,
+            templateHouseworkItemId: nil,
+            createdAt: today
+        )
+        #expect(written == expectedItem)
     }
 
     @Test("完了にできた直後は、ほめる演出を出し、入力と閉じるボタンを出さない")
@@ -143,7 +159,11 @@ struct HouseworkCompleteBehaviorTests {
 
         // Assert
 
-        #expect(error?.code == .actionNotAvailable)
+        let expected = IntrospectionError(
+            code: .actionNotAvailable,
+            message: "complete は今の画面（houseworkComplete）では実行できません"
+        )
+        #expect(error == expected)
     }
 
     @Test("今日の家事が無いときは、操作が並ばない")
