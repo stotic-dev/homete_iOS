@@ -15,6 +15,10 @@ public struct PurchaseClient: Sendable {
     public let showManageSubscriptions: @Sendable () async throws -> Void
     /// 過去の購入を復元し、復元後のエンタイトルメント状態を返す
     public let restorePurchases: @Sendable () async throws -> EntitlementInfo
+    /// Paywallに並べるプランの一覧。導入オファーは利用資格がある場合だけ入れる
+    public let fetchOffering: @Sendable () async throws -> PurchaseOffering
+    /// 指定したプラン（`PurchasePackage.id`）を購入する
+    public let purchase: @Sendable (_ packageId: String) async throws -> PurchaseResult
 
     public init(
         logIn: @Sendable @escaping (String) async throws -> Void = { _ in },
@@ -27,7 +31,9 @@ public struct PurchaseClient: Sendable {
         showManageSubscriptions: @Sendable @escaping () async throws -> Void = {},
         restorePurchases: @Sendable @escaping () async throws -> EntitlementInfo = {
             .init(isActive: false, productIdentifier: "", expirationDate: nil, willRenew: false)
-        }
+        },
+        fetchOffering: @Sendable @escaping () async throws -> PurchaseOffering = { .init(packages: []) },
+        purchase: @Sendable @escaping (_ packageId: String) async throws -> PurchaseResult = { _ in .cancelled }
     ) {
         self.logIn = logIn
         self.logOut = logOut
@@ -36,6 +42,8 @@ public struct PurchaseClient: Sendable {
         self.entitlementInfoUpdates = entitlementInfoUpdates
         self.showManageSubscriptions = showManageSubscriptions
         self.restorePurchases = restorePurchases
+        self.fetchOffering = fetchOffering
+        self.purchase = purchase
     }
 
 }

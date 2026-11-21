@@ -1,5 +1,5 @@
 {
-  "originHash" : "e1629284bf600dfafcff1abddac783ab7775a52d09e7f405a3ceaa39fdba4abe",
+  "originHash" : "a60d682601bed574f390fb78a92db25293158d166aa2fae1732ee965be341376",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "bb912cffdabce65ca87367f79a6ca9df63b6f605",
-        "version" : "6.2.0"
+        "revision" : "34248f6f227cfe9917f8d9f5dee194903f488776",
+        "version" : "6.5.0"
       }
     },
     {
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
       "state" : {
-        "revision" : "a7ef4d7d3b065a5f428065b94e81224a6ab913f3",
-        "version" : "5.98.0"
+        "revision" : "14a93c5a1b35710fd16bb42ac1a4cdc12b172a70",
+        "version" : "5.100.0"
       }
     },
     {
@@ -152,6 +152,15 @@
       "state" : {
         "revision" : "82645ec760917961cfa08c9c0c7104a57a0fa4b1",
         "version" : "1.3.3"
+      }
+    },
+    {
+      "identity" : "swift-issue-reporting",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pointfreeco/swift-issue-reporting",
+      "state" : {
+        "revision" : "b23bb4493c439d3e05152bc167014235ba3d47fc",
+        "version" : "2.1.2"
       }
     },
     {

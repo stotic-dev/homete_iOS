@@ -16,9 +16,12 @@ public enum AppRoute: Hashable, Sendable {
     /// いつもの家事の管理画面
     case frequentHouseworkManagement
     /// プレミアムプランのPaywall画面
-    /// - Parameter step: Paywallへの導線。Paywallを実際に出したときに、表示と終了のイベントへ載せる。`nil`なら送らない（デバッグメニュー）
+    /// - Parameters:
+    ///   - step: Paywallへの導線。Paywallを実際に出したときに、表示と終了のイベントへ載せる。`nil`なら送らない（デバッグメニュー）
+    ///   - isPlanChange: 契約中のプランを変えるために開くか。`false`のとき、契約中の人にはプランの一覧ではなく契約プラン画面を出す。
+    ///     契約プラン画面の「プランを変更」から`true`で開き、契約プラン画面を開き直し続けないようにする
     /// - Note: 匿名のアカウントは購入の前にAppleアカウントとの連携を求め、連携しなければPaywallを出さない
-    case paywall(step: PaywallAnalyticsStep?)
+    case paywall(step: PaywallAnalyticsStep?, isPlanChange: Bool = false)
     /// 匿名のアカウントをAppleアカウントと連携する画面（シートで出し、閉じられる）
     case accountLink(entry: AccountLinkEntry)
     #if DEBUG

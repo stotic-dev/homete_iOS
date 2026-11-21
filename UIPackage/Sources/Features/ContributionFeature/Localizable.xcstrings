@@ -1,0 +1,59 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "家事の記録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chore Insights"
+          }
+        }
+      }
+    },
+    "期間の最初から日が経つごとに積み上がっていく合計ポイントです。\n期間の終わりで最も高い位置にいる人が、その期間中にもっとも多くポイントを獲得した人です。\n線の傾きが急な時期は、その日に多くポイントを獲得した時期を表します。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the total points that build up day by day from the start of the period.\nWhoever is highest at the end of the period earned the most points.\nThe steeper a line, the more points were earned at that time."
+          }
+        }
+      }
+    },
+    "期間中、日ごとに獲得したポイントを表します。\n同じ日のメンバー同士を比べると、その日にだれがよくがんばったかがひと目で分かります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the points earned each day in the period.\nCompare members on the same day to see at a glance who did the most that day."
+          }
+        }
+      }
+    },
+    "期間中、月ごとに獲得したポイントを表します。\n同じ月のメンバー同士を比べると、その月にだれがよくがんばったかがひと目で分かります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the points earned each month in the period.\nCompare users in the same month to see at a glance who did the most that month."
+          }
+        }
+      }
+    },
+    "選んだ期間に終えた家事のうち、それぞれが何件やったかの割合です。\n件数で比べると、だれがどれくらい家事をしたかが分かります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows each member's share of the chores completed in the selected period.\nComparing the counts shows who did how much."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

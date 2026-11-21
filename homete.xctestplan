@@ -3,9 +3,7 @@
     {
       "id" : "935E1E91-669A-4322-91EB-338493FFF294",
       "name" : "Test Scheme Action",
-      "options" : {
-
-      }
+      "options" : {}
     }
   ],
   "defaultOptions" : {
@@ -47,29 +45,8 @@
     {
       "target" : {
         "containerPath" : "container:LocalPackage",
-        "identifier" : "HouseworkFeatureTests",
-        "name" : "HouseworkFeatureTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:LocalPackage",
-        "identifier" : "ContributionFeatureTests",
-        "name" : "ContributionFeatureTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:LocalPackage",
-        "identifier" : "HouseworkTemplateFeatureTests",
-        "name" : "HouseworkTemplateFeatureTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:LocalPackage",
-        "identifier" : "SettingFeatureTests",
-        "name" : "SettingFeatureTests"
+        "identifier" : "HometeAppCoreTests",
+        "name" : "HometeAppCoreTests"
       }
     },
     {

@@ -3,6 +3,7 @@
 //
 
 import HometeDomain
+import HometeDomainUI
 import SwiftUI
 
 /// 運営からのお知らせを取り直し、ダッシュボードのバッジと起動時のシートに反映する

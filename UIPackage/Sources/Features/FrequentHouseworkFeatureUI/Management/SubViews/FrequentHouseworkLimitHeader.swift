@@ -1,0 +1,55 @@
+//
+//  FrequentHouseworkLimitHeader.swift
+//  LocalPackage
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// 無料プランで、登録件数と上限を増やす導線を表示する
+public struct FrequentHouseworkLimitHeader: View {
+
+    let status: FrequentHouseworkLimitStatus
+    let onTapUpgrade: () -> Void
+
+    public init(
+        status: FrequentHouseworkLimitStatus,
+        onTapUpgrade: @escaping () -> Void
+    ) {
+        self.status = status
+        self.onTapUpgrade = onTapUpgrade
+    }
+
+    public var body: some View {
+        HStack(spacing: .space8) {
+            VStack(alignment: .leading, spacing: .space4) {
+                Text("無料プランでは\(status.limit)件まで登録できます", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+                Text("\(status.count) / \(status.limit)件", bundle: #bundle)
+                    .font(with: .headLineS)
+                    .foregroundStyle(status.isReached ? Color.textDestructive : Color.textPrimary)
+            }
+            Spacer()
+            Button(.localized("上限を増やす")) {
+                onTapUpgrade()
+            }
+            .font(with: .headLineS)
+            .foregroundStyle(.textAccent)
+        }
+    }
+
+}
+
+#if DEBUG
+#Preview("FrequentHouseworkLimitHeader_上限未満", traits: .sizeThatFitsLayout) {
+    FrequentHouseworkLimitHeader(status: .init(count: 7, limit: 10, isReached: false), onTapUpgrade: {})
+        .padding()
+}
+
+#Preview("FrequentHouseworkLimitHeader_上限到達", traits: .sizeThatFitsLayout) {
+    FrequentHouseworkLimitHeader(status: .init(count: 12, limit: 10, isReached: true), onTapUpgrade: {})
+        .padding()
+}
+#endif

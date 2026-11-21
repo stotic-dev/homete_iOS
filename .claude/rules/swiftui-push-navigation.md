@@ -100,8 +100,8 @@ Button {
 
 ## 参照実装
 
-- `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardRoute.swift`
-- `LocalPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen.swift`
-- `LocalPackage/Sources/Features/SettingFeature/SettingRoute.swift`
-- `LocalPackage/Sources/Features/SettingFeature/SettingView.swift`
-- `LocalPackage/Sources/HometeUI/ViewUtilities/Navigation/AppNavigationPath.swift`
+- `UIPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardRoute.swift`
+- `UIPackage/Sources/Features/HouseworkFeature/HouseworkBoardView/HouseworkBoardScreen.swift`
+- `UIPackage/Sources/Features/SettingFeature/SettingRoute.swift`
+- `UIPackage/Sources/Features/SettingFeature/SettingViewScreen.swift`
+- `UIPackage/Sources/HometeUI/ViewUtilities/Navigation/AppNavigationPath.swift`

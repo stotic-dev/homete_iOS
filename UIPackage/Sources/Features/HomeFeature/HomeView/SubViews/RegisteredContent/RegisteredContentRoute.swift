@@ -1,0 +1,32 @@
+//
+//  RegisteredContentRoute.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2026/05/18.
+//
+
+import HomeFeatureUI
+import HometeModel
+import HometeUI
+import HouseworkFeature
+import HouseworkFeatureUI
+import SwiftUI
+
+enum RegisteredContentRoute: Hashable {
+
+    /// 未完了家事一覧画面
+    case incompleteHouseworkList
+    /// 家事詳細画面
+    case houseworkDetail(HouseworkBoardItem)
+    /// ありがとうを伝えられる今日の家事の一覧画面
+    case thanksTargetList
+    /// 過去のありがとう漏れの一覧画面
+    case pastThanksTargetList
+
+}
+
+extension EnvironmentValues {
+
+    @Entry var registeredContentNavigationPath = AppNavigationPath<RegisteredContentRoute>()
+
+}

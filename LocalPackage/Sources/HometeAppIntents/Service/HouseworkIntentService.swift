@@ -3,10 +3,9 @@
 //  LocalPackage
 //
 
-import ContributionFeature
 import Foundation
+import HometeAppCore
 import HometeDomain
-import HouseworkFeature
 import os
 
 /// App Intentで、家事を探して完了にする・ありがとうを伝える・今月のがんばりを集計する

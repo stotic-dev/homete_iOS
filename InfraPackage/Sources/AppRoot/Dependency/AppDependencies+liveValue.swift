@@ -3,7 +3,9 @@
 //
 
 import HometeAppIntents
+import HometeAppIntentsUI
 import HometeDomain
+import HometeDomainUI
 import HometeLocalNotification
 
 // MARK: Live用の定義
@@ -14,6 +16,7 @@ public extension AppDependencies {
         nonceGeneratorClient: .liveValue,
         accountAuthClient: .liveValue,
         analyticsClient: .liveValue,
+        errorReportClient: .liveValue,
         accountInfoClient: .liveValue,
         cohabitantClient: .liveValue,
         cohabitantInvitationClient: .liveValue,

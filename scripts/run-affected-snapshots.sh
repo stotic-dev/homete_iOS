@@ -1,7 +1,7 @@
 #!/bin/bash
 # 変更したモジュールのプレビューだけ、ローカルでVRT（スナップショットテスト）を流す。
 #
-# 対象は scripts/affected-modules.py の vrt-tests（直接変えたHometeUI・Featureのプレビュー）。
+# 対象は scripts/affected-modules.py の vrt-tests（直接変えたHometeUI・FeatureUIのプレビュー）。
 # 全プレビューの確認と参照スナップショットの更新はXcode CloudのVRTに任せる（doc/adr/0048）。
 #
 # - 参照スナップショットは書き換えない。参照の無い新しいプレビューはライブラリが参照PNGを
@@ -21,7 +21,7 @@ ARTIFACTS_DIR="$DERIVED_DATA/SnapshotFailures"
 SNAPSHOT_DIR="hometeSnapshotTests/__Snapshots__/PreviewTests.generated"
 candidates="$(python3 scripts/affected-modules.py vrt-tests --base "$BASE")"
 if [ -z "$candidates" ]; then
-    echo "VRTの対象になるモジュール（HometeUI・Feature）に変更が無いので、ローカルVRTは流しません。"
+    echo "VRTの対象になるモジュール（HometeUI・FeatureUI）に変更が無いので、ローカルVRTは流しません。"
     exit 0
 fi
 

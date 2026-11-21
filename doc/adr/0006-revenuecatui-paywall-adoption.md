@@ -1,6 +1,6 @@
 ## タイトル: Paywall（購入画面）UIの実装にRevenueCatUIを採用する
 
-* **承認済**
+* **非推奨**（[ADR-0070](0070-custom-paywall-view.md)で置き換え。Paywallは自前のSwiftUI Viewにした）
 * stotic-dev
 * 日付: 2026-08-08
 * 技術的背景: [ADR-0004](0004-revenuecat-sdk-adoption.md)で採用したRevenueCat SDKを使い、実際に購入手続きを行うPaywall UIを実装する（Issue #194）

@@ -7,6 +7,7 @@ import CohabitantRegistrationFeature
 import FrequentHouseworkFeature
 import HomeFeature
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 import HometeUI
 import HouseworkTemplateFeature
@@ -29,8 +30,8 @@ private struct RouteResolverInjectionModifier: ViewModifier {
                     HouseworkTemplateScreen.make()
                 case .frequentHouseworkManagement:
                     FrequentHouseworkManagementScreen()
-                case let .paywall(step):
-                    PaywallGate(step: step)
+                case let .paywall(step, isPlanChange):
+                    PaywallGate(step: step, isPlanChange: isPlanChange)
                 case let .accountLink(entry):
                     AccountLinkSheet(entry: entry)
                 #if DEBUG

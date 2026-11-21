@@ -5,6 +5,7 @@
 import FirebaseAnalytics
 import FirebaseCrashlytics
 import HometeDomain
+import HometeDomainUI
 
 extension AnalyticsClient {
 

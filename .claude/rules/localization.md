@@ -1,6 +1,7 @@
 ---
 paths:
   - "LocalPackage/Sources/**/*.swift"
+  - "UIPackage/Sources/**/*.swift"
   - "InfraPackage/Sources/**/*.swift"
   - "LocalPackage/Tests/**/*.swift"
 ---

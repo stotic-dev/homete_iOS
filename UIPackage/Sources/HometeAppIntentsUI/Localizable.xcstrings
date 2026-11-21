@@ -1,0 +1,29 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "今月のがんばりです" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Here's this month's effort."
+          }
+        }
+      }
+    },
+    "今月の記録はまだありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records yet this month."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

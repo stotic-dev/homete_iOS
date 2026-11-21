@@ -1,0 +1,289 @@
+//
+//  HouseworkBoardListContent.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2025/09/06.
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// 家事ボードの1ページ（未完了・完了のどちらか）の一覧
+///
+/// 渡された家事を並べてタップを伝えるだけのUIで、家事の操作や遷移は呼び出し側が行う。
+public struct HouseworkBoardListContent<RowMenu: View>: View {
+
+    let state: HouseworkState
+    let list: HouseworkBoardList
+    /// 完了した家事の担当者名を引くための同居人一覧
+    let memberList: CohabitantMemberList
+    /// ログイン中のユーザーのID。ありがとうの状況と、選択できる家事の判定に使う
+    let ownUserId: String
+    /// 一覧がタブバーの裏まで伸びている分の高さ
+    ///
+    /// 終端までスクロールしたときに最後の行がタブバーに隠れないよう、この分を余白として足す
+    let bottomContentInset: CGFloat
+    @Binding var selectedHouseworkState: HouseworkState
+    @Binding var isSelecting: Bool
+    /// 選択中の家事のID
+    ///
+    /// 一括操作のボタンはナビゲーションバー側に置いているため、選択の保持は親のViewが行う
+    @Binding var selectedIDs: Set<String>
+    let onCreateTapped: () -> Void
+    let onTapItem: (HouseworkBoardItem) -> Void
+    /// 行の完了ボタンのタップ。完了のハーフモーダルは呼び出し側が出す
+    let onTapComplete: (HouseworkBoardItem) -> Void
+    /// ハートのタップで、メッセージを書かずにありがとうだけを伝える
+    let onTapThanks: (HouseworkBoardItem) -> Void
+    /// 家事のセルを長押ししたときと、その他ボタンのメニューの中身
+    @ViewBuilder let rowMenu: (HouseworkBoardItem) -> RowMenu
+
+    public init(
+        state: HouseworkState,
+        list: HouseworkBoardList,
+        memberList: CohabitantMemberList,
+        ownUserId: String,
+        bottomContentInset: CGFloat,
+        selectedHouseworkState: Binding<HouseworkState>,
+        isSelecting: Binding<Bool>,
+        selectedIDs: Binding<Set<String>>,
+        onCreateTapped: @escaping () -> Void,
+        onTapItem: @escaping (HouseworkBoardItem) -> Void,
+        onTapComplete: @escaping (HouseworkBoardItem) -> Void,
+        onTapThanks: @escaping (HouseworkBoardItem) -> Void,
+        @ViewBuilder rowMenu: @escaping (HouseworkBoardItem) -> RowMenu
+    ) {
+        self.state = state
+        self.list = list
+        self.memberList = memberList
+        self.ownUserId = ownUserId
+        self.bottomContentInset = bottomContentInset
+        _selectedHouseworkState = selectedHouseworkState
+        _isSelecting = isSelecting
+        _selectedIDs = selectedIDs
+        self.onCreateTapped = onCreateTapped
+        self.onTapItem = onTapItem
+        self.onTapComplete = onTapComplete
+        self.onTapThanks = onTapThanks
+        self.rowMenu = rowMenu
+    }
+
+    public var body: some View {
+        if let emptyReason = HouseworkBoardEmptyReason(list: list, state: state) {
+            HouseworkBoardEmptyView(
+                reason: emptyReason,
+                onCreateTapped: onCreateTapped,
+                onSwitchTab: { selectedHouseworkState = $0 }
+            )
+        } else {
+            List(selection: isSelecting ? $selectedIDs : .constant([])) {
+                ForEach(selection.items) { item in
+                    let isSelectionDisabled = isSelecting && !selection.isSelectable(item)
+                    houseworkItemRow(item)
+                        // 選択モード中は行のどこをタップしても選択の切り替えにする。行の中の詳細へ遷移するボタンが
+                        // 先にタップを受け取ると、`List`の選択に届かず詳細画面へ遷移してしまうため
+                        .allowsHitTesting(!isSelecting)
+                        .padding(.vertical, .space8)
+                        .opacity(isSelectionDisabled ? 0.4 : 1)
+                        .selectionDisabled(isSelectionDisabled)
+                        .contextMenu {
+                            // 選択モード中は1件ずつの操作をさせず、一括操作に寄せる
+                            if !isSelecting {
+                                rowMenu(item)
+                            }
+                        }
+                        .tutorialSpotlightTarget(
+                            isTutorialTargetRow(item) ? .houseworkIncompleteRow : nil
+                        )
+                }
+                // 1件ずつをカードに載せ、ミルク色の地の上で家事の区切りが見えるようにする
+                .listRowInsets(.init(top: .space8, leading: .space16, bottom: .space8, trailing: .space8))
+                .listRowBackground(rowCardBackground)
+                #if os(iOS)
+                    .listRowSpacing(.zero)
+                    .listRowSeparator(.hidden)
+                #endif
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            // 終端までスクロールしたときに、最後の行が浮いている追加ボタンやタブバーに隠れないようにする。
+            // 高さをリテラルで持つとボタンのデザイン変更に追従できないため、同じボタンを隠して置いて実寸を使う
+            .safeAreaInset(edge: .bottom) {
+                AddHouseworkButton {}
+                    .padding(.bottom, .space24)
+                    .padding(.bottom, bottomContentInset)
+                    .hidden()
+            }
+            #if os(iOS)
+            .environment(\.editMode, .constant(isSelecting ? .active : .inactive))
+            #endif
+        }
+    }
+
+}
+
+private extension HouseworkBoardListContent {
+
+    /// 行の背景のカード。上下を空けて、カード同士の間にミルク色の地をのぞかせる
+    var rowCardBackground: some View {
+        RoundedRectangle(radius: .radius12)
+            .fill(.backgroundCard)
+            .padding(.vertical, .space4)
+    }
+
+    var selection: HouseworkSelection {
+        .init(
+            items: list.items(matching: state),
+            selectedIDs: selectedIDs,
+            ownUserId: ownUserId
+        )
+    }
+
+    func houseworkItemRow(_ item: HouseworkBoardItem) -> some View {
+        let completionInfo = completionInfo(of: item)
+        // 選択モード中は行のタップで選ぶことを優先して、アクションのボタンは出さない
+        // （行のタップ自体も`List`の選択に任せるため、`onTapItem`は呼ばれない）
+        return HouseBoardListRow(
+            houseworkItem: item.originalItem,
+            completionInfo: completionInfo,
+            showsCompleteButton: !isSelecting && item.state == .incomplete,
+            showsMoreButton: !isSelecting && !quickActions(of: item).isEmpty,
+            onTapRow: { onTapItem(item) },
+            onTapThanks: thanksAction(of: item, status: completionInfo?.thanksStatus),
+            onTapComplete: { onTapComplete(item) },
+            menuContent: { rowMenu(item) }
+        )
+    }
+
+    /// メニューに出せるクイックアクション
+    ///
+    /// その他ボタンを出すかどうかは、メニューの中身と同じ判断に揃えて、押しても何も並ばない
+    /// メニューが開く食い違いを防ぐ。
+    func quickActions(of item: HouseworkBoardItem) -> [HouseworkQuickAction] {
+        HouseworkQuickAction.actions(
+            for: item,
+            ownUserId: ownUserId,
+            canAddHelper: item.canAddHelper(members: memberList)
+        )
+    }
+
+    /// チュートリアルで完了のしかたを説明するときに切り抜く、未完了の一覧の先頭の家事か
+    ///
+    /// 完了の一覧も同じ`TabView`の中に並んでいるため、未完了の一覧に限って同じ識別子を伝えないようにする。
+    func isTutorialTargetRow(_ item: HouseworkBoardItem) -> Bool {
+        state == .incomplete && item.id == selection.items.first?.id
+    }
+
+    /// ハートのタップで伝えられるのは、まだ伝えていない家事だけ。選択中はセルの選択を優先する
+    func thanksAction(of item: HouseworkBoardItem, status: HouseworkThanksStatus?) -> (() -> Void)? {
+        guard status == .notSent, !isSelecting else { return nil }
+
+        return { onTapThanks(item) }
+    }
+
+    /// 完了リストの家事セルに出す、担当者とありがとうの状況
+    ///
+    /// 未完了リストには担当者もありがとうもないため出さない。
+    func completionInfo(of item: HouseworkBoardItem) -> HouseworkRowCompletionInfo? {
+        guard state == .completed else { return nil }
+
+        return .init(
+            executorNames: item.executors.compactMap { memberList.userName($0.userId) },
+            thanksStatus: HouseworkThanksStatus.make(item: item, ownUserId: ownUserId)
+        )
+    }
+
+}
+
+#if DEBUG
+#Preview {
+    @Previewable @State var selectedState = HouseworkState.incomplete
+    @Previewable @State var isSelecting = false
+    HouseworkBoardListContent(
+        state: .incomplete,
+        list: .init(items: [
+            .makeForPreview(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
+            ),
+            .makeForPreview(
+                id: "2",
+                title: "掃除",
+                point: 100,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
+            ),
+            .makeForPreview(
+                id: "3",
+                title: "料理",
+                point: 1,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1))
+            ),
+        ]),
+        memberList: .init(value: [], ownId: ""),
+        ownUserId: "ownUserId",
+        bottomContentInset: .zero,
+        selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
+        selectedIDs: .constant([]),
+        onCreateTapped: {},
+        onTapItem: { _ in },
+        onTapComplete: { _ in },
+        onTapThanks: { _ in },
+        rowMenu: { _ in EmptyView() }
+    )
+}
+
+#Preview("HouseworkBoardListContent_選択モード") {
+    @Previewable @State var selectedState = HouseworkState.completed
+    @Previewable @State var isSelecting = true
+    HouseworkBoardListContent(
+        state: .completed,
+        list: .init(items: [
+            .makeForPreview(
+                id: "1",
+                title: "洗濯",
+                point: 20,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "2",
+                title: "掃除",
+                point: 100,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .completed,
+                executorId: "otherUserId"
+            ),
+            .makeForPreview(
+                id: "3",
+                title: "料理",
+                point: 1,
+                indexedDate: .init(value: .previewDate(year: 2026, month: 1, day: 1)),
+                state: .completed,
+                executorId: "ownUserId"
+            ),
+        ]),
+        memberList: .init(
+            value: [
+                .init(id: "ownUserId", userName: "たろう"),
+                .init(id: "otherUserId", userName: "はなこ"),
+            ],
+            ownId: "ownUserId"
+        ),
+        ownUserId: "ownUserId",
+        bottomContentInset: .zero,
+        selectedHouseworkState: $selectedState,
+        isSelecting: $isSelecting,
+        selectedIDs: .constant(["1"]),
+        onCreateTapped: {},
+        onTapItem: { _ in },
+        onTapComplete: { _ in },
+        onTapThanks: { _ in },
+        rowMenu: { _ in EmptyView() }
+    )
+}
+#endif

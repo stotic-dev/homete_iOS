@@ -1,0 +1,165 @@
+//
+//  CohabitantRegistrationPeersListView.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2025/08/30.
+//
+
+import HometeModel
+import HometeResources
+import HometeUI
+import SwiftUI
+
+public struct CohabitantRegistrationPeersListView: View {
+
+    @State var isPresentingConfirmReadyRegistrationAlert = false
+
+    /// 接続中のメンバー
+    let connectedPeers: Set<CohabitantRegistrationPeerID>
+    /// 登録開始を宣言済みのメンバー
+    let confirmedPeers: Set<CohabitantRegistrationPeerID>
+    /// 自分が登録開始を宣言済みかどうか
+    /// - Note: 宣言済みの間は他のメンバーの宣言を待つ表示にし、ボタンは押せなくする
+    let isConfirmed: Bool
+    /// 表示中のメンバーで登録を開始するかどうかを確定した
+    let onConfirmMembers: (_ isOK: Bool) -> Void
+
+    public init(
+        isPresentingConfirmReadyRegistrationAlert: Bool = false,
+        connectedPeers: Set<CohabitantRegistrationPeerID>,
+        confirmedPeers: Set<CohabitantRegistrationPeerID>,
+        isConfirmed: Bool,
+        onConfirmMembers: @escaping (_ isOK: Bool) -> Void
+    ) {
+        _isPresentingConfirmReadyRegistrationAlert = State(initialValue: isPresentingConfirmReadyRegistrationAlert)
+        self.connectedPeers = connectedPeers
+        self.confirmedPeers = confirmedPeers
+        self.isConfirmed = isConfirmed
+        self.onConfirmMembers = onConfirmMembers
+    }
+
+    public var body: some View {
+        VStack(spacing: .space16) {
+            // メンバーが増えても、画面下部の「登録を開始する」を押せる高さを確保できるようスクロールさせる
+            ScrollView {
+                VStack(spacing: .space16) {
+                    Text("デバイスの名前を確認してください", bundle: #bundle)
+                        .font(with: .headLineM)
+                    ForEach(convertToPeerRows(connectedPeers), id: \.id) { row in
+                        HStack(spacing: .space24) {
+                            Image(systemName: "iphone")
+                                .frame(width: 24, height: 24)
+                                .padding(.space8)
+                                .foregroundStyle(.textPrimary)
+                                .background(.fillAccentSubtle)
+                                .cornerRadius(.radius12)
+                            VStack(alignment: .leading, spacing: .space4) {
+                                Text(row.displayName)
+                                    .font(with: .body)
+                                if row.isConfirmed {
+                                    // 相手が先に宣言した場合、こちらの操作を止めずに待たれていることが分かるようにする
+                                    Label(.localized("登録を開始して、あなたを待っています"), systemImage: "checkmark.circle.fill")
+                                        .font(with: .caption)
+                                        .foregroundStyle(.textAccent)
+                                }
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+            if isConfirmed {
+                Label(.localized("他のメンバーが登録を開始するのを待っています"), systemImage: "hourglass")
+                    .font(with: .caption)
+                    .foregroundStyle(.textPrimary)
+            }
+            Button {
+                isPresentingConfirmReadyRegistrationAlert = true
+            } label: {
+                Text("登録を開始する", bundle: #bundle)
+                    .frame(maxWidth: .infinity)
+            }
+            .primaryButtonStyle()
+            .disabled(isConfirmed)
+            Spacer()
+                .frame(height: .space24)
+        }
+        .padding(.horizontal, .space16)
+        .alert(.localized("表示されているメンバーで登録を開始しますか？"), isPresented: $isPresentingConfirmReadyRegistrationAlert) {
+            Button {
+                onConfirmMembers(false)
+            } label: {
+                Text("キャンセル", bundle: #bundle)
+            }
+            Button {
+                onConfirmMembers(true)
+            } label: {
+                Text("開始する", bundle: #bundle)
+            }
+        }
+    }
+
+}
+
+private extension CohabitantRegistrationPeersListView {
+
+    struct PeerRow {
+
+        /// displayNameにはUUIDが含まれるため、同名のメンバーがいても一意になる
+        let id: String
+        let displayName: String
+        let isConfirmed: Bool
+
+    }
+
+    // MARK: プレゼンテーション処理
+
+    func convertToPeerRows(_ peers: Set<CohabitantRegistrationPeerID>) -> [PeerRow] {
+        peers.map { peerID in
+            PeerRow(
+                id: peerID.displayName,
+                displayName: peerID.userName,
+                isConfirmed: confirmedPeers.contains(peerID)
+            )
+        }
+    }
+
+}
+
+#Preview("CohabitantRegistrationPeersListView_デバイス検知済みケース") {
+    CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
+        confirmedPeers: [],
+        isConfirmed: false,
+        onConfirmMembers: { _ in }
+    )
+}
+
+#Preview("CohabitantRegistrationPeersListView_確認アラート表示中のケース") {
+    CohabitantRegistrationPeersListView(
+        isPresentingConfirmReadyRegistrationAlert: true,
+        connectedPeers: [.init(displayName: "Test_UUID")],
+        confirmedPeers: [],
+        isConfirmed: false,
+        onConfirmMembers: { _ in }
+    )
+}
+
+#Preview("CohabitantRegistrationPeersListView_相手が開始済みのケース") {
+    CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
+        confirmedPeers: [.init(displayName: "Test_UUID")],
+        isConfirmed: false,
+        onConfirmMembers: { _ in }
+    )
+}
+
+#Preview("CohabitantRegistrationPeersListView_自分が開始済みで相手待ちのケース") {
+    CohabitantRegistrationPeersListView(
+        connectedPeers: [.init(displayName: "Test_UUID")],
+        confirmedPeers: [],
+        isConfirmed: true,
+        onConfirmMembers: { _ in }
+    )
+}

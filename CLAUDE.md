@@ -19,19 +19,24 @@ hometeは同居人（ルームメイト/家族）間で家事を管理するた�
 # 変更に関係するモジュールと、必要なビルド・テスト・VRTを表示（起点は BASE=<ref>、既定は origin/main）
 make affected
 
-# 変更に関係するLocalPackageのターゲットだけiOS向けにビルドし、影響が届くならInfraPackageもビルド
+# 変更に関係するLocalPackage・UIPackageのターゲットだけiOS向けにビルドし、影響が届くならInfraPackageもビルド
 make build-affected
 
 # 変更に関係するテストターゲットだけ実行（最も使う。xcodebuildは使わない）
 make test-affected
 
-# 直接変えたHometeUI・Featureのプレビューだけ、iOS 27.0のiPhone 16でVRTを流す（参照スナップショットは更新しない）
+# HometeAppCoreのViewModelをCLI・行動テストで動かす（シミュレーター不要。手順は doc/tech/agent-cli.md）
+make test-behavior
+make run-cli SCENARIO=<名前>   # 標準入力の ls / do <JSON> に標準出力のJSONで答える
+
+# 直接変えたHometeUI・FeatureUIのプレビューだけ、iOS 27.0のiPhone 16でVRTを流す（参照スナップショットは更新しない）
 make snapshot-affected
 
 # 全ターゲットが対象の版。判定が当てにならないときや頼まれたときだけ使う
 # FILTER=<テストターゲット/Suite名>で絞れる。カバレッジ付きの make test-packages はCI用
 make test-packages-fast
 make build-local-package
+make build-ui-package
 
 # InfraPackage（HometeInfrastructure・AppRoot）をビルド。make build-affected が必要なときに呼ぶ
 make build-infra-package
@@ -85,23 +90,26 @@ Services（Firestore、SignInWithApple、P2P、NotificationCenter）
 Domain Models（Codable構造体）
 ```
 
-**マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/` と `InfraPackage/` に置かれている。Firebase・AdMob・RevenueCat・GRDBなど重い外部依存を持つモジュールだけを `InfraPackage/` に分け、ユニットテストのある `LocalPackage/` には持ち込まない（[ADR-0046](doc/adr/0046-split-infra-package-from-local-package.md)）。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
+**マルチモジュール構成**（SPM）: 実装コードはメインターゲットではなく `LocalPackage/`・`UIPackage/`・`InfraPackage/` に置かれている。SwiftUIに依存しない値型・Store・UseCase・画面のViewModelとユニットテストは `LocalPackage/`、SwiftUIで描くモジュールは `UIPackage/`（iOS向けのみ・テストなし。[ADR-0071](doc/adr/0071-split-ui-package.md)）、Firebase・AdMob・RevenueCat・GRDBなど重い外部依存を持つモジュールは `InfraPackage/`（[ADR-0046](doc/adr/0046-split-infra-package-from-local-package.md)）。CLI・行動テストは `AgentToolsPackage/`（[ADR-0072](doc/adr/0072-app-core-view-models-and-behavior-cli.md)）。モジュールの一覧・責務・依存関係は **[doc/multimodules_structure.md](doc/multimodules_structure.md)** が正。採用経緯は [ADR-0001](doc/adr/0001-spm-multimodule-structure.md)。
 
 **主要ディレクトリ:**
 - `LocalPackage/Sources/HometeModel/` - UIが使う値型のドメインモデル（最下層、依存なし。[ADR-0063](doc/adr/0063-split-ui-modules-from-domain-for-affected-vrt.md)）
-- `LocalPackage/Sources/HometeDomain/` - UIが使わない値型・Clientプロトコル・Store・UseCase（`HometeModel`に依存し、再公開する）
-- `LocalPackage/Sources/Features/` - 機能別SwiftUIビュー（Auth / Home / Housework / HouseworkTemplate / Setting / Contribution）
-- `LocalPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ（`HometeDomain`には依存しない）
+- `LocalPackage/Sources/HometeDomain/` - UIが使わない値型・Clientプロトコル・Store・UseCase（`HometeModel`に依存し、再公開する。SwiftUIはimportしない）
+- `LocalPackage/Sources/HometeAppCore/` - 画面単位のViewModel・Feature固有のStore（iOSのUIとCLI・行動テストが同じものを使う）
+- `UIPackage/Sources/Features/` - 機能ごとに、UIのみのViewとプレビューの`XxxFeatureUI`と、ロジックを持つView（Screen）の`XxxFeature`
+- `UIPackage/Sources/HometeUI/` - デザインシステム・共通コンポーネント・Viewユーティリティ（`HometeDomain`には依存しない）
+- `UIPackage/Sources/HometeDomainUI/` - `HometeDomain`をSwiftUIにつなぐ部分（Environmentへの登録・`DependenciesInjectLayer`・`RouteResolver`・`.trackScreenView`）
 - `InfraPackage/Sources/HometeInfrastructure/` - Clientの`liveValue`実装とService（Firestore、SignInWithApple、Purchase、Advertisement）
-- `LocalPackage/Sources/HometeResources/` - アセットとSwiftGen生成コード
+- `UIPackage/Sources/HometeResources/` - アセットとSwiftGen生成コード
+- `AgentToolsPackage/` - ViewModelをシミュレーターなしで動かすCLI（`homete-cli`）と行動テスト（[doc/tech/agent-cli.md](doc/tech/agent-cli.md)）
 - `InfraPackage/Sources/AppRoot/` - RootView・AppTabView・依存注入レイヤ
 
 **エントリーポイント:**
 - `homete/Views/HometeApp.swift` - アプリのエントリーポイント、Firebaseの初期化、App Intentの依存の登録
-- `homete/AppIntents/HometeAppShortcuts.swift` - App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要があるため、メインターゲットに置く）。Intent本体は`LocalPackage/Sources/HometeAppIntents/`。Intentのタイトルなどのメタデータの文言はアプリ本体の`homete/Resouces/Localizable.xcstrings`から引かれ、フレーズの日本語は`homete/Resouces/AppShortcuts.xcstrings`に入れる（[ADR-0044](doc/adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
+- `homete/AppIntents/HometeAppShortcuts.swift` - App Shortcuts（`AppShortcutsProvider`はアプリ本体に置く必要があるため、メインターゲットに置く）。Intent本体は`LocalPackage/Sources/HometeAppIntents/`（結果をSwiftUIで描くIntentは`UIPackage/Sources/HometeAppIntentsUI/`）。Intentのタイトルなどのメタデータの文言はアプリ本体の`homete/Resouces/Localizable.xcstrings`から引かれ、フレーズの日本語は`homete/Resouces/AppShortcuts.xcstrings`に入れる（[ADR-0044](doc/adr/0044-app-intents-headless-usecase-and-title-keyed-entity.md)）
 - `hometeNotificationService/NotificationService.swift` - Notification Service Extension。同居人から届く家事の完了通知を受けて、今日のふりかえり通知を予約する。アプリが終了していても起動する（[ADR-0021](doc/adr/0021-daily-completion-reminder-on-device.md)）
 - `InfraPackage/Sources/AppRoot/RootView.swift` - 起動状態マシン（launching → login → logged in）
-- `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ
+- `LocalPackage/Sources/HometeDomain/Dependencies/AppDependencies.swift` - Dependency Injectionコンテナ（Environmentへの登録は`HometeDomainUI`）
 
 ### Dependency Injectionパターン
 
@@ -195,21 +203,25 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 ### テスト戦略
 
 **ユニットテスト** (`LocalPackage/Tests/`):
-- テストターゲット: `HometeModelTests`、`HometeDomainTests`、`HouseworkFeatureTests`、`ContributionFeatureTests`、`HouseworkTemplateFeatureTests`、`HometeAppIntentsTests`
+- テストターゲット: `HometeModelTests`、`HometeDomainTests`、`HometeAppCoreTests`、`HometeAppIntentsTests`。UIPackageにはテストを置かない
 - 実行: `make test-affected`（`swift test --filter`。xcodebuildは使わない）。変更されたターゲットと、それに依存するターゲットのテストだけを流す（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）。カバレッジ付きの`make test-packages`はCI（Danger）用で、ローカルで混ぜるとビルドが全部やり直しになる
 - Xcode経由で流す場合のテストプラン: `homete.xctestplan`（上記のターゲットを含む）
 - CI: `.github/workflows/ci_local_package.yml`（`LocalPackage/**` の変更でトリガー、macos-26 / Xcode 26.4.1）。PRでは関係するテストだけ、mainへのpushでは全テストを流す
 
+**行動テスト** (`AgentToolsPackage/Tests/HometeBehaviorTests/`):
+- `HometeAppCore`のViewModelを、CLI（`homete-cli`）と同じ入口（`AppIntrospector`）で動かし、一連の振る舞いを確かめる。`make test-behavior`（`make test-affected`の対象外。要否は`make affected`が出す）
+- CI: `.github/workflows/ci_agent_tools.yml`。書き方・CLIの使い方は [doc/tech/agent-cli.md](doc/tech/agent-cli.md)
+
 **スナップショットテスト** (`hometeSnapshotTests/`):
-- プロジェクトはVRT専用の `hometeVRT.xcodeproj`（`homete.xcodeproj` には無い）。参照するパッケージはLocalPackageだけで、Firebaseなどを解決しない（[ADR-0047](doc/adr/0047-vrt-dedicated-xcode-project.md)）。同じLocalPackageを参照するため、`homete.xcodeproj` とは同時に開けない
-- ライブラリ: PointFreeのswift-snapshot-testing 1.19.6（Prefireとともに、LocalPackageの`HometeSnapshotTestSupport`経由でリンクする）
+- プロジェクトはVRT専用の `hometeVRT.xcodeproj`（`homete.xcodeproj` には無い）。参照するパッケージはLocalPackage・UIPackageだけで、Firebaseなどを解決しない（[ADR-0047](doc/adr/0047-vrt-dedicated-xcode-project.md)）。同じパッケージを参照するため、`homete.xcodeproj` とは同時に開けない
+- ライブラリ: PointFreeのswift-snapshot-testing 1.19.7（Prefireとともに、UIPackageの`HometeSnapshotTestSupport`経由でリンクする）
 - テストプラン: `snapshotTesting.xctestplan`（言語は`-AppleLanguages (ja)`で日本語固定）
-- Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `LocalPackage/Sources`
-- テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュールは `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports` と `hometeVRT.xcodeproj` のテストターゲットのリンク設定の両方を更新する
-- `AppRoot` はVRT対象外。スナップショットを撮りたいViewは `HometeUI` かFeature配下に置く
+- Prefire連携（`.prefire.yml`）でプレビューからテストを生成。対象ソースは `UIPackage/Sources`。プレビューは`HometeUI`と`XxxFeatureUI`にだけ置く
+- テストホストはVRT専用の空アプリ `hometeVRTHost`。Firebase/AdMob/RevenueCatをビルドしないためのもの（[ADR-0029](doc/adr/0029-vrt-dedicated-host-app-target.md)）。描画対象のモジュール（`XxxFeatureUI`）は `hometeSnapshotTests` が直接リンクするので、Featureを追加したら `.prefire.yml` の `testable_imports`・`hometeVRT.xcodeproj` のテストターゲットのリンク設定・`scripts/affected-modules.py` の `VRT_MODULES` を更新する
+- `AppRoot` はVRT対象外。スナップショットを撮りたいViewは `HometeUI` か `XxxFeatureUI` に置く
 - 収録デバイス: iPhone 16 / iPhone SE (2nd generation)、必要OS: 27
 - CI上で失敗時は`Build/VRT/SnapshotsFailures`にアップロード
-- ローカルでは、直接変えたHometeUI・Featureのプレビューだけ`make snapshot-affected`で流せる。必ずiOS 27.0のiPhone 16で流す（CIとマイナーバージョンまでそろえないと描画に差分が出る）。参照スナップショットの更新はCIに任せる（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）
+- ローカルでは、直接変えたHometeUI・FeatureUIのプレビューだけ`make snapshot-affected`で流せる。必ずiOS 27.0のiPhone 16で流す（CIとマイナーバージョンまでそろえないと描画に差分が出る）。参照スナップショットの更新はCIに任せる（[ADR-0048](doc/adr/0048-verify-only-affected-modules.md)）
 
 **シミュレータでの簡易E2E確認**（`.claude/skills/simulator-e2e-check/`）:
 - Xcode MCP + `device-interaction` スキルで実装後の画面をハッピーパス1〜3本だけ実際に操作して確認する。ユニットテスト・VRTの代替ではない
@@ -228,8 +240,10 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
    - PRでは`scripts/affected-modules.py`で割り出した、変更に関係するテストターゲットだけを流す。mainへのpushでは全テスト
 
 3. **`ci_infra_package.yml`** - InfraPackageのビルド（`make build-infra-package`）
-   - `InfraPackage/**`とLocalPackageのソース・マニフェストへの変更でトリガー。`AppRoot`が全Featureに依存するため、LocalPackage側の変更でも追従漏れを確かめる
+   - `InfraPackage/**`とLocalPackage・UIPackageのソース・マニフェストへの変更でトリガー。`AppRoot`が全Featureに依存するため、LocalPackage・UIPackage側の変更でも追従漏れを確かめる。UIPackageはユニットテストを持たないので、GitHub ActionsでUIのビルドを確かめるのはここ
    - PRでは、変更がInfraPackageのターゲットまで届くときだけビルドする（テストやHometeSnapshotTestSupportだけの変更ではビルドしない）
+
+   **`ci_agent_tools.yml`** - AgentToolsPackageの行動テスト（`make test-behavior`）。AgentToolsPackage・LocalPackageのソース・ProjectTools・Makefileの変更でトリガー
 
 4. **`create-release-note.yaml`** - リリースノート生成
 
@@ -286,7 +300,7 @@ launching → notLoggedIn → 説明画面（「はじめる」で匿名サイ�
 - `.swiftlint.yml`で設定
 - `force_unwrapping`、`multiline_arguments`、`trailing_closure`などのopt-inルールを有効化
 - `identifier_name`、`statement_position`などのルールを無効化
-- `ProjectTools`・`DangerTools`・`LocalPackage/.build`・`LocalPackage/Package.swift`・`InfraPackage/.build`・`InfraPackage/Package.swift`・`vendor`を除外し、それ以外をlint
+- `ProjectTools`・`DangerTools`・各パッケージ（Local・UI・Infra・AgentTools）の`.build`と`Package.swift`・`vendor`を除外し、それ以外をlint
 
 ### Xcode 26対応
 
@@ -338,7 +352,7 @@ Firebase Analytics（GA4）へ送るイベントの一覧・送信タイミン�
   - `Build/test.xcresult`からコードカバレッジをレポート
   - VRTスナップショット（`hometeSnapshotTests/__Snapshots__/PreviewTests.generated`）の差分を報告
 
-> 注意: Dangerの`lintTargets`は`homete`のみで、実装コードの大半がある`LocalPackage/`はPR時のDanger lint対象外。ローカルではSPMプラグインが同じlintを実行するため検知はできる。
+> 注意: Dangerの`lintTargets`は`homete`のみで、実装コードの大半がある`LocalPackage/`・`UIPackage/`はPR時のDanger lint対象外。ローカルではSPMプラグインが同じlintを実行するため検知はできる。
 
 ## エージェント
 
@@ -392,9 +406,10 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 - プレーンテキストで「対象範囲: 〜のときのみ参照」のように書くだけでは自動スコープにならないため使わない。必ず`paths:`フロントマターで機能として制限する
 - 既存ルールの`paths:`は以下の通り。`applyTo:`はスコープ機能として認識されないため使わないこと
   - `**/*.swift`: `swift-code-verification.md`、`swiftui-push-navigation.md`、`prefire-canimport.md`、`ux-writing.md`、`task-closure-capture.md`
-  - `LocalPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-attributes-in-view.md`、`ui-logic-view-separation.md`
-  - `LocalPackage/Tests/**/*.swift`: `swift-test-implementation.md`
-  - `LocalPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift` / `LocalPackage/Tests/**/*.swift`: `localization.md`
+  - `UIPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift`: `dependency-environment-access.md`、`presentation-logic-placement.md`、`screen-view-tracking.md`、`ui-logic-view-separation.md`
+  - `LocalPackage/Sources/**/*.swift` / `UIPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift`: `ui-attributes-in-view.md`
+  - `LocalPackage/Tests/**/*.swift` / `AgentToolsPackage/Tests/**/*.swift`: `swift-test-implementation.md`
+  - `LocalPackage/Sources/**/*.swift` / `UIPackage/Sources/**/*.swift` / `InfraPackage/Sources/**/*.swift` / `LocalPackage/Tests/**/*.swift`: `localization.md`
   - `.claude/**` / `CLAUDE.md` / `.worktreeinclude`: `claude-config-update.md`
   - `adr.md` / `git-commit.md` は`paths:`を持たない（技術選定・コミット粒度はファイル種別に紐づかないため意図的に常時ロード）
 
@@ -402,24 +417,24 @@ Swiftコードの実装完了後に使用する専用のコードレビューエ
 
 新機能を追加する際:
 
-1. **Views**: `LocalPackage/Sources/Features/<機能名>Feature/` に追加
+1. **Views**: UIのみのView（`XxxView`/`XxxContent`）とプレビューは `UIPackage/Sources/Features/<機能名>FeatureUI/`、ロジックを持つView（`XxxScreen`/`XxxComponent`）は `UIPackage/Sources/Features/<機能名>Feature/` に追加
 2. **ドメインモデル**: UIが使う値型は `LocalPackage/Sources/HometeModel/`、UIが使わない値型（Analytics・RemoteConfigなど）は `LocalPackage/Sources/HometeDomain/` の、ドメイン領域別のサブフォルダに追加
 3. **Clients**: `LocalPackage/Sources/HometeDomain/Dependencies/` でプロトコルと`.previewValue`を定義し、`.liveValue`は `InfraPackage/Sources/HometeInfrastructure/` に実装
 4. **Services**: `InfraPackage/Sources/HometeInfrastructure/` のサブフォルダにインフラコードを追加
-5. **Stores**: `LocalPackage/Sources/HometeDomain/` の該当ドメインフォルダにObservable状態管理クラスを追加（機能固有のものは Feature 配下の `Model/` でもよい）
-6. **共通UI**: `LocalPackage/Sources/HometeUI/` に追加
+5. **Stores**: `LocalPackage/Sources/HometeDomain/` の該当ドメインフォルダにObservable状態管理クラスを追加（1つの画面でしか使わないものは `LocalPackage/Sources/HometeAppCore/`）。画面ごとの状態はHometeAppCoreの`XxxViewModel`に置く
+6. **共通UI**: `UIPackage/Sources/HometeUI/` に追加
 7. **Tests**: `LocalPackage/Tests/<対象モジュール>Tests/` に対象モジュールの構造をミラー
 
-新しいモジュールを足す場合は `LocalPackage/Package.swift`（重い外部依存を持つなら `InfraPackage/Package.swift`）と [doc/multimodules_structure.md](doc/multimodules_structure.md) の両方を更新する。
+新しいモジュールを足す場合は `LocalPackage/Package.swift`（SwiftUIで描くなら `UIPackage/Package.swift`、重い外部依存を持つなら `InfraPackage/Package.swift`）と [doc/multimodules_structure.md](doc/multimodules_structure.md) の両方を更新する。
 
 常にDependency Injectionパターンを使用 - ViewからServiceに直接アクセスしない。
 
 ## 主要な依存関係
 
-**iOS（SPM）:** バージョンは`LocalPackage/Package.swift`・`InfraPackage/Package.swift`が正。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
+**iOS（SPM）:** バージョンは`UIPackage/Package.swift`・`InfraPackage/Package.swift`が正（LocalPackageは外部依存を持たない）。外部ライブラリはxcodeprojから直接参照しない（理由は[doc/multimodules_structure.md](doc/multimodules_structure.md)）
 - Firebase iOS SDK（Auth、Firestore、Messaging、Analytics など）
-- swift-snapshot-testing 1.19.6
-- Prefire 6.1.0
+- swift-snapshot-testing 1.19.7
+- Prefire 6.5.0
 
 **ビルドツール:**
 - Fastlane（Bundler/Gemfile経由）
