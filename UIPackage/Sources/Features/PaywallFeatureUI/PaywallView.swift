@@ -150,6 +150,7 @@ private extension PaywallView {
 
 // MARK: Preview定義
 
+#if DEBUG
 #Preview("PaywallView_未登録") {
     @Previewable @State var selectedPackageId: String? = PurchasePackage.yearlyForPreview.id
     NavigationStack {
@@ -225,3 +226,4 @@ private extension PaywallView {
     .prefireIgnored()
     #endif
 }
+#endif
