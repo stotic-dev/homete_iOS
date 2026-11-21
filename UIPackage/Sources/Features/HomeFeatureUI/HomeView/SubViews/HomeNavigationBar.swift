@@ -29,7 +29,7 @@ public extension View {
                         action: onTapAnnouncement
                     )
                 }
-                HomeNavigationBarSpacer()
+                NavigationBarSpacer(placement: .topBarTrailing)
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationBarButton(label: .settings, action: onTapSetting)
                 }
@@ -38,21 +38,3 @@ public extension View {
     }
 
 }
-
-#if os(iOS)
-/// ナビゲーションバー右側のボタンの間に挟む`ToolbarSpacer`
-///
-/// - Note: `toolbar`の中に`if #available`を直に書くと、`homeNavigationBar`の戻り値の型に
-///         SwiftUIの`buildLimitedAvailability`の不透明型が含まれる。Release構成ではモジュールをまたぐ最適化で
-///         呼び出し側（HomeFeature）がこの型を直接参照するが、SwiftUIはこの型のシンボルを公開していないため
-///         リンクに失敗する。型に包んで、呼び出し側から見える型に出さないようにする
-private struct HomeNavigationBarSpacer: ToolbarContent {
-
-    var body: some ToolbarContent {
-        if #available(iOS 26.0, *) {
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-        }
-    }
-
-}
-#endif
