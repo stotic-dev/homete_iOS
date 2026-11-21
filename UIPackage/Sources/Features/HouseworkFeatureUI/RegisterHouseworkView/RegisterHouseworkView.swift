@@ -211,9 +211,7 @@ private extension RegisterHouseworkView {
             ToolbarItem(placement: .topBarTrailing) {
                 manageFrequentButton()
             }
-            if #available(iOS 26.0, *) {
-                ToolbarSpacer(.fixed)
-            }
+            NavigationBarSpacer()
         }
         ToolbarItem(placement: .topBarTrailing) {
             registerButton()
