@@ -185,6 +185,7 @@ private extension PaywallPlanOptionContent {
 
 // MARK: Preview定義
 
+#if DEBUG
 #Preview("PaywallPlanOptionContent_年額_選択中", traits: .sizeThatFitsLayout) {
     PaywallPlanOptionContent(
         package: .yearlyForPreview,
@@ -220,3 +221,4 @@ private extension PaywallPlanOptionContent {
     .padding()
     .background(.backgroundScreen)
 }
+#endif
