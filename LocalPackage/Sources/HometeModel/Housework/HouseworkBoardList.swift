@@ -1,0 +1,58 @@
+//
+//  HouseworkBoardList.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2025/09/06.
+//
+
+import Foundation
+
+public struct HouseworkBoardList: Equatable, Sendable {
+
+    public private(set) var items: [HouseworkBoardItem]
+
+    public init(
+        items: [HouseworkBoardItem]
+    ) {
+        self.items = items
+    }
+
+    public func items(matching state: HouseworkState) -> [HouseworkBoardItem] {
+        items.filter { $0.state == state }
+    }
+
+}
+
+public extension HouseworkBoardList {
+
+    init(
+        dailyList: [DailyHouseworkList],
+        selectedDateTemplate: HouseworkTemplateDay?,
+        selectedDate: Date,
+        calendar: Calendar,
+        uuidGenerator: () -> UUID
+    ) {
+        let items = dailyList
+            .first {
+                $0.metaData.indexedDate == .init(value: selectedDate)
+            }?.items ?? []
+
+        // テンプレートが存在するときは、条件に合ったテンプレートの家事を未完了で追加する
+        guard let selectedDateTemplate else {
+            // 別の日へまわしたテンプレートの家事の記録は出さない（テンプレートを消した後も残っているため）
+            self.items = items
+                .filter { !$0.isPostponedRecord }
+                .map { .init(originalItem: $0, isRegistered: true) }
+            return
+        }
+
+        self.items = selectedDateTemplate.applyTemplate(
+            registeredItems: items,
+            selectedDate: selectedDate,
+            calendar: calendar,
+            uuidGenerator: uuidGenerator
+        )
+        .map { .init(originalItem: $0, isRegistered: false) }
+    }
+
+}

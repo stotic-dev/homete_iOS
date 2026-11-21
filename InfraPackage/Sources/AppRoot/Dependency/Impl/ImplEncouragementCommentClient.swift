@@ -5,6 +5,7 @@
 import Foundation
 #if canImport(FoundationModels)
 import FoundationModels
+import HometeDomainUI
 #endif
 import HometeDomain
 

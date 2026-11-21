@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SOURCE_ROOTS = ["LocalPackage/Sources", "homete/Views"]
+SOURCE_ROOTS = ["UIPackage/Sources", "homete/Views"]
 
 # ファイルスコープのprivate/fileprivate宣言。型の内部に書かれたprivateメンバーは
 # そもそも`#Preview`から名前で参照できず誤検知になるだけなので、対象にしない。
@@ -106,7 +106,7 @@ def collect_preview_blocks(lines: list[str]) -> list[tuple[int, int]]:
 
 def module_name(path: Path) -> str | None:
     relative = path.relative_to(REPO_ROOT).as_posix()
-    if not relative.startswith("LocalPackage/Sources/"):
+    if not relative.startswith("UIPackage/Sources/"):
         return None
     parts = relative.split("/")[2:]
     if parts[0] == "Features":

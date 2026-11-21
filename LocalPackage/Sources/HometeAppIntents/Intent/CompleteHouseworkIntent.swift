@@ -26,7 +26,7 @@ public struct CompleteHouseworkIntent: AppIntent {
 
     public init() {}
 
-    init(housework: HouseworkTitleEntity) {
+    public init(housework: HouseworkTitleEntity) {
         self.housework = housework
     }
 

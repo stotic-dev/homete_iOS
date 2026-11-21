@@ -1,0 +1,401 @@
+//
+//  ManualHouseworkForm.swift
+//  LocalPackage
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// 家事の登録シートの「新しく入力」タブ
+/// - Note: 画面の背景はシート既定のままにして「いつもの家事」タブと揃え、
+///         セクションのカードとの境目は`SectionCard`の影で見せる
+public struct ManualHouseworkForm<Thumbnail: View>: View {
+
+    @Binding var entry: RegisterHouseworkDraft.ManualEntry
+
+    /// 「いつもの家事に保存する」で選べるカテゴリ
+    let categories: [FrequentHouseworkCategory]
+    let saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState
+    /// 繰り返しを設定できるか（テンプレートの読み込みが終わっているか）
+    let canSetRecurrence: Bool
+    let history: [HouseworkEntryHistoryItem]
+    let onTapHistory: (HouseworkEntryHistoryItem) -> Void
+    /// 上限に達している状態で「いつもの家事に保存する」を押したとき
+    let onTapSaveAsFrequentWhenLimitReached: () -> Void
+    let onTapMemo: () -> Void
+    /// 欄に並べる画像（くり返す家事のときは呼び出し側で空にする）
+    let images: [HouseworkImageUpload]
+    /// 画像の追加ボタンの状態（くり返す家事のときは呼び出し側で`.hidden`にする）
+    let imageAddState: HouseworkImageAddState
+    /// 画像を添えられない理由（くり返す家事のとき）
+    let imageNote: LocalizedStringResource?
+    let isCameraAvailable: Bool
+    let onTapAddImage: (HouseworkImagePickSource) -> Void
+    /// 無料プランで画像の追加ボタンを押したとき
+    let onTapImagePremium: () -> Void
+    let onTapImage: (HouseworkImageUpload.ID) -> Void
+    /// 添えた画像のサムネイル。画像の読み込みはロジックを持つView側が受け持つ
+    @ViewBuilder let thumbnail: (HouseworkImageUpload) -> Thumbnail
+
+    @FocusState var isShowingKeyboard: Bool
+
+    public init(
+        entry: Binding<RegisterHouseworkDraft.ManualEntry>,
+        categories: [FrequentHouseworkCategory],
+        saveAsFrequentState: RegisterHouseworkDraft.SaveAsFrequentState,
+        canSetRecurrence: Bool,
+        history: [HouseworkEntryHistoryItem],
+        onTapHistory: @escaping (HouseworkEntryHistoryItem) -> Void,
+        onTapSaveAsFrequentWhenLimitReached: @escaping () -> Void,
+        onTapMemo: @escaping () -> Void,
+        images: [HouseworkImageUpload],
+        imageAddState: HouseworkImageAddState,
+        imageNote: LocalizedStringResource?,
+        isCameraAvailable: Bool,
+        onTapAddImage: @escaping (HouseworkImagePickSource) -> Void,
+        onTapImagePremium: @escaping () -> Void,
+        onTapImage: @escaping (HouseworkImageUpload.ID) -> Void,
+        @ViewBuilder thumbnail: @escaping (HouseworkImageUpload) -> Thumbnail
+    ) {
+        _entry = entry
+        self.categories = categories
+        self.saveAsFrequentState = saveAsFrequentState
+        self.canSetRecurrence = canSetRecurrence
+        self.history = history
+        self.onTapHistory = onTapHistory
+        self.onTapSaveAsFrequentWhenLimitReached = onTapSaveAsFrequentWhenLimitReached
+        self.onTapMemo = onTapMemo
+        self.images = images
+        self.imageAddState = imageAddState
+        self.imageNote = imageNote
+        self.isCameraAvailable = isCameraAvailable
+        self.onTapAddImage = onTapAddImage
+        self.onTapImagePremium = onTapImagePremium
+        self.onTapImage = onTapImage
+        self.thumbnail = thumbnail
+    }
+
+    public var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: .space24) {
+                houseworkSection()
+                imageSection()
+                // 上の欄が増えると、小さい端末では画面の下に押し出されるため、説明するときにスクロールして見せる
+                saveAsFrequentSection()
+                    .tutorialSpotlightScrollTarget(.registerHouseworkSaveAsFrequent)
+                if !history.isEmpty {
+                    entryHistorySection()
+                }
+            }
+            .padding(.space16)
+            // 入力欄の下端が、右下に浮く2つのフローティングボタンに隠れないようにする
+            .padding(.bottom, .space64 * 2)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .scrollsToTutorialSpotlightTarget()
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension ManualHouseworkForm {
+
+    func houseworkSection() -> some View {
+        SectionCard(.localized("登録する家事")) {
+            inputTitleField()
+            Divider()
+            inputPointPicker()
+            if canSetRecurrence {
+                Divider()
+                inputRecurrence()
+            }
+            Divider()
+            HouseworkMemoRow(hasContent: entry.memo.hasContent, titleFont: .body) {
+                onTapMemo()
+            }
+        }
+    }
+
+    func imageSection() -> some View {
+        HouseworkImageSectionContent(
+            images: images,
+            addState: imageAddState,
+            isCameraAvailable: isCameraAvailable,
+            thumbnailAccessibilityLabel: .localized("画像を外す"),
+            note: imageNote,
+            onTapImage: onTapImage,
+            onTapAdd: onTapAddImage,
+            onTapPremium: onTapImagePremium,
+            thumbnail: thumbnail
+        )
+    }
+
+    func inputTitleField() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("家事の名前", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            ClearableTextField(
+                text: $entry.title,
+                placeholder: .localized("家事の名前を入力"),
+                focus: $isShowingKeyboard
+            )
+        }
+    }
+
+    func inputPointPicker() -> some View {
+        HStack(spacing: .space8) {
+            Text("もらえるポイント", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+            Spacer()
+            PointWheelPickerField(point: $entry.point)
+                .font(with: .body)
+        }
+    }
+
+    /// - Note: 家事自体はカテゴリを持たないため、カテゴリはいつもの家事に保存するときだけ意味を持つ
+    func saveAsFrequentSection() -> some View {
+        SectionCard(.localized("いつもの家事")) {
+            saveAsFrequentControl()
+            Divider()
+            categoryPicker()
+                .disabled(!entry.savesAsFrequent)
+        }
+    }
+
+    @ViewBuilder
+    func saveAsFrequentControl() -> some View {
+        switch saveAsFrequentState {
+        case .available:
+            Toggle(.localized("いつもの家事に保存する"), isOn: $entry.savesAsFrequent)
+                .font(with: .body)
+
+        case .duplicated:
+            VStack(alignment: .leading, spacing: .space4) {
+                Toggle(.localized("いつもの家事に保存する"), isOn: .constant(false))
+                    .font(with: .body)
+                    .disabled(true)
+                Text("同じ名前のいつもの家事があります", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+            }
+
+        case .limitReached:
+            Button {
+                onTapSaveAsFrequentWhenLimitReached()
+            } label: {
+                HStack(spacing: .space8) {
+                    Text("いつもの家事に保存する", bundle: #bundle)
+                        .font(with: .body)
+                        .foregroundStyle(.textPrimary)
+                    Spacer()
+                    Text("無料プランは\(FrequentHouseworkLimitPolicy.freeLimit)件まで", bundle: #bundle)
+                        .font(with: .caption)
+                        .foregroundStyle(.textSecondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    func categoryPicker() -> some View {
+        HStack(spacing: .space8) {
+            Text("カテゴリ", bundle: #bundle)
+                .font(with: .body)
+                .foregroundStyle(.textPrimary)
+            Spacer()
+            Picker(.localized("カテゴリ"), selection: $entry.categoryId) {
+                ForEach(categories) { category in
+                    Text(category.name)
+                        .tag(category.categoryId)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(.textPrimary)
+        }
+    }
+
+    func inputRecurrence() -> some View {
+        RecurrenceSelector(
+            input: $entry.recurrenceInput,
+            kinds: HouseworkRecurrenceInput.Kind.allCases,
+            titleFont: .body,
+            showsDetail: false
+        )
+    }
+
+    /// - Note: 前回登録したときの完了ポイントも一緒に戻すため、名前の横にポイントを添えて何が入るかを示す
+    func entryHistorySection() -> some View {
+        SectionCard(.localized("入力履歴")) {
+            ForEach(Array(history.enumerated()), id: \.element) { index, item in
+                if index > 0 {
+                    Divider()
+                }
+                entryHistoryRow(item)
+            }
+        }
+    }
+
+    func entryHistoryRow(_ item: HouseworkEntryHistoryItem) -> some View {
+        Button {
+            onTapHistory(item)
+        } label: {
+            HStack(spacing: .space8) {
+                Text(item.title)
+                    .font(with: .body)
+                    .foregroundStyle(.textPrimary)
+                Spacer()
+                Text("\(item.point)pt")
+                    .font(with: .caption)
+                    .foregroundStyle(.textSecondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(.localized("\(item.title) \(item.point)ポイント"))
+    }
+
+}
+
+#if DEBUG
+#Preview("ManualHouseworkForm_入力なし") {
+    ManualHouseworkForm(
+        entry: .constant(.initial),
+        categories: FrequentHouseworkContext().categories,
+        saveAsFrequentState: .available,
+        canSetRecurrence: true,
+        history: [
+            .init(title: "洗濯", point: 20),
+            .init(title: "掃除", point: 10),
+        ],
+        onTapHistory: { _ in },
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in },
+        thumbnail: { _ in EmptyView() }
+    )
+}
+
+#Preview("ManualHouseworkForm_名前が重複") {
+    ManualHouseworkForm(
+        entry: .constant(.init(
+            id: "",
+            title: "洗濯",
+            point: 20,
+            categoryId: nil,
+            savesAsFrequent: false,
+            recurrenceInput: .init(kind: .none)
+        )),
+        categories: FrequentHouseworkContext().categories,
+        saveAsFrequentState: .duplicated,
+        canSetRecurrence: true,
+        history: [],
+        onTapHistory: { _ in },
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in },
+        thumbnail: { _ in EmptyView() }
+    )
+}
+
+#Preview("ManualHouseworkForm_毎週くり返し") {
+    ManualHouseworkForm(
+        entry: .constant(.init(
+            id: "",
+            title: "ゴミ出し",
+            point: 10,
+            categoryId: nil,
+            savesAsFrequent: false,
+            recurrenceInput: .init(kind: .weekly, weekdays: [.thursday])
+        )),
+        categories: FrequentHouseworkContext().categories,
+        saveAsFrequentState: .available,
+        canSetRecurrence: true,
+        history: [],
+        onTapHistory: { _ in },
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {},
+        images: [],
+        imageAddState: .hidden,
+        imageNote: .localized("くり返す家事には、画像を添えられません"),
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in },
+        thumbnail: { _ in EmptyView() }
+    )
+}
+
+#Preview("ManualHouseworkForm_毎月くり返し_月末") {
+    ManualHouseworkForm(
+        entry: .constant(.init(
+            id: "",
+            title: "排水溝の掃除",
+            point: 30,
+            categoryId: nil,
+            savesAsFrequent: false,
+            recurrenceInput: .init(kind: .monthly, dayOfMonth: 31)
+        )),
+        categories: FrequentHouseworkContext().categories,
+        saveAsFrequentState: .available,
+        canSetRecurrence: true,
+        history: [],
+        onTapHistory: { _ in },
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {},
+        images: [],
+        imageAddState: .hidden,
+        imageNote: .localized("くり返す家事には、画像を添えられません"),
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in },
+        thumbnail: { _ in EmptyView() }
+    )
+}
+
+#Preview("ManualHouseworkForm_上限に到達") {
+    ManualHouseworkForm(
+        entry: .constant(.init(
+            id: "",
+            title: "風呂掃除",
+            point: 10,
+            categoryId: nil,
+            savesAsFrequent: false,
+            recurrenceInput: .init(kind: .none)
+        )),
+        categories: FrequentHouseworkContext().categories,
+        saveAsFrequentState: .limitReached,
+        canSetRecurrence: false,
+        history: [],
+        onTapHistory: { _ in },
+        onTapSaveAsFrequentWhenLimitReached: {},
+        onTapMemo: {},
+        images: [],
+        imageAddState: .available(remainingCount: 10),
+        imageNote: nil,
+        isCameraAvailable: true,
+        onTapAddImage: { _ in },
+        onTapImagePremium: {},
+        onTapImage: { _ in },
+        thumbnail: { _ in EmptyView() }
+    )
+}
+#endif

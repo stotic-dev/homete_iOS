@@ -4,6 +4,7 @@
 
 import FirebaseCrashlytics
 import HometeDomain
+import HometeDomainUI
 
 extension ErrorReportClient {
 

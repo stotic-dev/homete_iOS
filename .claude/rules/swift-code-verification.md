@@ -11,7 +11,7 @@ Swiftファイル（`*.swift`）を編集・作成・削除した後は、必ず
 - `.claude/skills/swift-code-verification/SKILL.md`
 
 **最初に `make affected` で影響範囲を割り出し、その範囲だけを検証する。** 全体ビルド（`make build-local-package`）や全テスト（`make test-packages-fast`）は流さず、`make build-affected` / `make test-affected` を使う。
-変更に関係するテストターゲットがある限り、ユニットテストは省略不可。全部「なし」ならSwiftのビルドに影響しない変更なので、変更したもの自体の動作だけを最小限で確かめる。
+変更に関係するテストターゲットがある限り、ユニットテストは省略不可。`make affected` が「行動テスト: 要」と出したら `make test-behavior`（AgentToolsPackage。[doc/tech/agent-cli.md](../../doc/tech/agent-cli.md)）も流す。全部「なし」ならSwiftのビルドに影響しない変更なので、変更したもの自体の動作だけを最小限で確かめる。
 
 **同じ検証コマンドを2回流さない。** 検証は1回が高コストなので、出力は `tee` でログに残してからフィルタし、絞り方が足りなければ再実行ではなく保存済みログを読み直す。
 `tail` はテスト結果の判定には使わない（最後のターゲットしか映らず他が見えない）。フィルタの具体例はスキル参照。

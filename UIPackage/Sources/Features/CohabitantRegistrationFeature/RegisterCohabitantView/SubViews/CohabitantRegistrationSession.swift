@@ -1,0 +1,142 @@
+//
+//  CohabitantRegistrationSession.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2025/08/27.
+//
+
+import HometeDomainUI
+import CohabitantRegistrationFeatureUI
+import Combine
+import HometeDomain
+import HometeUI
+import MultipeerConnectivity
+import SwiftUI
+
+/// P2Pセッションの出来事を`CohabitantRegistrationStore`のイベントへ変換し、状態に応じた画面を出し分けるView
+/// - Note: 登録の進め方（遷移・送信・保存）の判断は`CohabitantRegistrationStateMachine`が持つ。
+///         このViewはセッションと画面操作をイベントに写し、返ってきた状態を描画するだけに留める
+struct CohabitantRegistrationSession: View {
+
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.connectedPeers) var connectedPeers
+    @Environment(\.p2pSessionReceiveData) var receiveData
+
+    let store: CohabitantRegistrationStore
+    let session: MCSession?
+
+    /// 役割の通知を送り直す間隔
+    /// - Note: 相手が登録処理に入る前に送った通知は届かないため、相手からの返答が来るまで送り続ける
+    private let roleNotificationTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ZStack {
+            switch store.state.phase {
+            case let .scanning(scanning):
+                P2PScanner(serviceType: .register, session: session) {
+                    CohabitantRegistrationScanningStateView(
+                        scanning: scanning,
+                        store: store,
+                        scannerController: $0
+                    )
+                }
+                .transition(.push(from: .trailing))
+
+            case .processing:
+                CohabitantRegistrationProcessingView()
+                    .transition(.push(from: .trailing))
+
+            case .completed:
+                CohabitantCompletionView(
+                    title: .localized("登録が完了しました！"),
+                    message: .localized("これからは、あなたとパートナーの家事を分担し、協力していくことができます。")
+                ) {
+                    dismiss()
+                }
+                .hideNavigationBar()
+                .trackScreenView(.cohabitantCompletion)
+                .transition(.push(from: .trailing))
+            }
+        }
+        .animation(.spring, value: store.state.phase)
+        .cohabitantRegistrationAlert(store: store)
+        .onChange(of: connectedPeers, initial: true) { _, newValue in
+            store.send(.peersChanged(Set(newValue.map { CohabitantRegistrationPeerID(displayName: $0.displayName) })))
+        }
+        .onChange(of: receiveData) { _, newValue in
+            guard let newValue,
+                  let message = CohabitantRegistrationMessage(newValue.body) else { return }
+            store.send(.received(message, from: .init(displayName: newValue.sender.displayName)))
+        }
+        .onReceive(roleNotificationTimer) { _ in
+            store.send(.tick)
+        }
+        .onChange(of: store.state.isDismissRequested) {
+            guard store.state.isDismissRequested else { return }
+            dismiss()
+        }
+    }
+
+}
+
+private extension View {
+
+    /// 登録処理で発生したエラーのアラート
+    /// - Note: アラートを閉じた後の進み方（選び直しに戻す・画面を閉じる）は状態機械が決めるため、
+    ///         ここでは閉じたことだけを伝える
+    func cohabitantRegistrationAlert(store: CohabitantRegistrationStore) -> some View {
+        alert(
+            store.state.alert?.title ?? "",
+            isPresented: .init(
+                get: { store.state.alert != nil },
+                set: { isPresented in
+                    guard !isPresented else { return }
+                    store.send(.userDismissedAlert)
+                }
+            )
+        ) {
+            Button("OK") {}
+        } message: {
+            if let message = store.state.alert?.message {
+                Text(message)
+            }
+        }
+    }
+
+}
+
+private extension CohabitantRegistrationState.Alert {
+
+    var title: LocalizedStringResource {
+        switch self {
+        case .rejectedByPeer:
+            .localized("通信中のメンバーがキャンセルしました")
+
+        case .sendFailed, .connectionError:
+            .localized("接続エラー")
+
+        case .registrationFailed:
+            .localized("登録に失敗しました")
+
+        case .outdatedPeer:
+            .localized("相手のアプリのアップデートが必要です")
+        }
+    }
+
+    var message: LocalizedStringResource? {
+        switch self {
+        case .rejectedByPeer:
+            nil
+
+        case .sendFailed, .connectionError:
+            .localized("もう一度、デバイスを近づけてください")
+
+        case .registrationFailed:
+            .localized("通信状態をご確認のうえ、もう一度つなぎ直してください。")
+
+        case .outdatedPeer:
+            .localized("相手の端末でアプリを最新バージョンにアップデートしてから、もう一度お試しください。")
+        }
+    }
+
+}

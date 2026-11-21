@@ -5,12 +5,14 @@
 
 import AppIntents
 import HometeAppIntents
+import HometeAppIntentsUI
 
-/// `HometeAppIntents`パッケージのApp Intentを、アプリのメタデータに含める
+/// `HometeAppIntents`・`HometeAppIntentsUI`パッケージのApp Intentを、アプリのメタデータに含める
+/// - Note: `HometeAppIntentsUIPackage`が`HometeAppIntentsPackage`を取り込んでいる
 struct HometeAppIntentsPackageRoot: AppIntentsPackage {
 
     static var includedPackages: [any AppIntentsPackage.Type] {
-        [HometeAppIntentsPackage.self]
+        [HometeAppIntentsUIPackage.self]
     }
 
 }

@@ -20,12 +20,12 @@ import os
 import sys
 
 # (そろえるPackage.resolved, 版の取り元にするパッケージのPackage.resolved)。上から順にそろえる
-# InfraPackageはLocalPackageと共通の依存（Prefireなど）を直接宣言していないので、共通の依存はLocalPackageの値が正。
-# InfraPackageはLocalPackageに依存しているので、アプリが使うパッケージを全部含む
+# InfraPackageはUIPackageと共通の依存（Prefireなど）を直接宣言していないので、共通の依存はUIPackageの値が正。
+# InfraPackageはUIPackage・LocalPackageに依存しているので、アプリが使うパッケージを全部含む
 TARGETS = [
-    ("InfraPackage/Package.resolved", "LocalPackage/Package.resolved"),
+    ("InfraPackage/Package.resolved", "UIPackage/Package.resolved"),
     ("homete.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved", "InfraPackage/Package.resolved"),
-    ("hometeVRT.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved", "LocalPackage/Package.resolved"),
+    ("hometeVRT.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved", "UIPackage/Package.resolved"),
 ]
 
 

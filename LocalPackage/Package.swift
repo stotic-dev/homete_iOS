@@ -4,6 +4,8 @@ import PackageDescription
 
 // MARK: - Package
 
+// SwiftUI・UIKitで描くモジュールはUIPackageに置き、ここにはSwiftUIに依存しないモジュールとユニットテストだけを置く。
+// CLI・行動テスト（AgentToolsPackage）からも使うため、AppleのUIフレームワークはimportしない（doc/adr/0071）
 let package = Package(
     name: "LocalPackage",
     defaultLocalization: "ja",
@@ -11,26 +13,12 @@ let package = Package(
     products: [
         lib("HometeModel"),
         lib("HometeDomain"),
-        lib("HometeUI"),
-        lib("HometeResources"),
-        lib("AuthFeature"),
-        lib("SettingFeature"),
-        lib("HomeFeature"),
-        lib("CohabitantRegistrationFeature"),
-        lib("HouseworkFeature"),
-        lib("ContributionFeature"),
+        lib("HometeAppCore"),
         lib("HometeLocalNotification"),
         lib("HometeAppIntents"),
-        lib("HouseworkTemplateFeature"),
-        lib("FrequentHouseworkFeature"),
-        lib("PaywallFeature"),
-        lib("HometeSnapshotTestSupport")
     ],
     dependencies: [
         .package(path: "../ProjectTools"),
-        .package(url: "https://github.com/SwiftGen/SwiftGenPlugin", from: "6.6.2"),
-        .package(url: "https://github.com/BarredEwe/Prefire.git", exact: "6.5.0"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", exact: "1.19.7"),
     ],
     targets: [
 
@@ -48,61 +36,15 @@ let package = Package(
             resources: [localizableStrings()],
             plugins: [swiftLintPlugin()]
         ),
-        // HometeDomainには依存させない。Store・UseCase・Clientの変更でVRTが全件にならないようにする（doc/adr/0063）
+        // 画面単位の状態と操作（Feature固有のStore・ViewModel）。iOSのUIとCLI・行動テストが同じものを使う（doc/adr/0072）
         .target(
-            name: "HometeUI",
-            dependencies: [
-                "HometeModel",
-                "HometeResources",
-                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
-            ],
-            resources: [localizableStrings()],
+            name: "HometeAppCore",
+            dependencies: ["HometeDomain"],
             plugins: [swiftLintPlugin()]
         ),
-        .target(
-            name: "HometeResources",
-            resources: [
-                .process("Resources/Colors.xcassets"),
-                .process("Resources/Image.xcassets"),
-            ],
-            plugins: [
-                .plugin(name: "SwiftGenPlugin", package: "SwiftGenPlugin"),
-            ]
-        ),
-
-        // MARK: Feature Targets
-
-        feature(name: "AuthFeature"),
-        feature(name: "SettingFeature"),
-        feature(name: "HomeFeature", extraDeps: ["ContributionFeature", "HouseworkFeature"]),
-        feature(name: "CohabitantRegistrationFeature"),
-        feature(name: "HouseworkFeature", extraDeps: ["FrequentHouseworkFeature"]),
-        feature(name: "ContributionFeature"),
-        feature(name: "FrequentHouseworkFeature"),
-        feature(name: "PaywallFeature"),
 
         // MARK: Others
 
-        .target(
-            name: "HouseworkTemplateFeature",
-            dependencies: [
-                "HometeDomain",
-                "HometeUI",
-                "HometeResources",
-            ],
-            path: "./Sources/Features/HouseworkTemplateFeature",
-            resources: [localizableStrings()],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
-        .testTarget(
-            name: "HouseworkTemplateFeatureTests",
-            dependencies: ["HouseworkTemplateFeature"],
-            plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "ProjectTools"),
-            ]
-        ),
         // Notification Service Extensionからも使うため、Firebaseなど重い依存を持たせない
         .target(
             name: "HometeLocalNotification",
@@ -110,23 +52,11 @@ let package = Package(
             plugins: [swiftLintPlugin()]
         ),
         // Siri・Spotlight・ショートカットAppから実行するApp Intent。Firebaseの実装はアプリから受け取るため、
-        // HometeInfrastructureに依存させない
+        // HometeInfrastructureに依存させない。結果をSwiftUIで描くIntentはUIPackageのHometeAppIntentsUIに置く
         .target(
             name: "HometeAppIntents",
-            dependencies: ["HometeDomain", "HouseworkFeature", "ContributionFeature"],
+            dependencies: ["HometeDomain", "HometeAppCore"],
             resources: [localizableStrings()],
-            plugins: [swiftLintPlugin()]
-        ),
-
-        // MARK: Test Support
-
-        // VRT（hometeSnapshotTests）専用。アプリ本体からは依存しない
-        .target(
-            name: "HometeSnapshotTestSupport",
-            dependencies: [
-                .product(name: "Prefire", package: "Prefire", condition: .when(platforms: [.iOS])),
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing", condition: .when(platforms: [.iOS])),
-            ],
             plugins: [swiftLintPlugin()]
         ),
 
@@ -138,40 +68,20 @@ let package = Package(
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(
+            name: "HometeAppCoreTests",
+            dependencies: ["HometeAppCore"],
+            plugins: [swiftLintPlugin()]
+        ),
+        .testTarget(
             name: "HometeDomainTests",
             dependencies: ["HometeDomain"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "HouseworkFeatureTests",
-            dependencies: ["HouseworkFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "ContributionFeatureTests",
-            dependencies: ["ContributionFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "SettingFeatureTests",
-            dependencies: ["SettingFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "FrequentHouseworkFeatureTests",
-            dependencies: ["FrequentHouseworkFeature"],
-            plugins: [swiftLintPlugin()]
-        ),
-        .testTarget(
-            name: "PaywallFeatureTests",
-            dependencies: ["PaywallFeature"],
             plugins: [swiftLintPlugin()]
         ),
         .testTarget(
             name: "HometeAppIntentsTests",
             dependencies: ["HometeAppIntents"],
             plugins: [swiftLintPlugin()]
-        )
+        ),
     ]
 )
 
@@ -179,16 +89,6 @@ let package = Package(
 
 func swiftLintPlugin() -> Target.PluginUsage {
     .plugin(name: "SwiftLintPlugin", package: "ProjectTools")
-}
-
-func feature(name: String, extraDeps: [Target.Dependency] = []) -> Target {
-    .target(
-        name: name,
-        dependencies: ["HometeDomain", "HometeUI", "HometeResources"] + extraDeps,
-        path: "./Sources/Features/\(name)",
-        resources: [localizableStrings()],
-        plugins: [swiftLintPlugin()]
-    )
 }
 
 /// 画面に出す文言のString Catalog。キーは日本語の文言そのもので、英語などの訳はXcodeの「Generate Translation」で入れる

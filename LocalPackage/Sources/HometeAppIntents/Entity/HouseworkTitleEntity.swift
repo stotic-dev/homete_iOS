@@ -19,6 +19,10 @@ public struct HouseworkTitleEntity: AppEntity {
     /// 家事の名前
     public let id: String
 
+    public init(id: String) {
+        self.id = id
+    }
+
     public var displayRepresentation: DisplayRepresentation {
         // 家事の名前はユーザーが入力した文字なので翻訳しない
         .init(title: "\(id)")

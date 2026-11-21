@@ -1,0 +1,166 @@
+//
+//  RegisteredContent.swift
+//  homete
+//
+//  Created by 佐藤汰一 on 2025/09/04.
+//
+
+import HometeDomainUI
+import ContributionFeature
+import HomeFeatureUI
+import HometeAppCore
+import HometeDomain
+import HometeModel
+import HometeUI
+import HouseworkFeature
+import HouseworkFeatureUI
+import SwiftUI
+
+struct RegisteredContent: View {
+
+    @Environment(\.adComponentResolver) var adComponentResolver
+    @Environment(\.appDependencies.analyticsClient) var analyticsClient
+    @Environment(CohabitantStore.self) var cohabiantStore
+    @Environment(ContributionStore.self) var contributionStore
+    @Environment(HouseworkListStore.self) var houseworkListstore
+    @Environment(SubscriptionStore.self) var subscriptionStore
+    @Environment(\.isAdsEnabled) var isAdsEnabled
+    @Environment(\.routeResolver) var router
+    @Environment(\.registeredContentNavigationPath) var navigationPath
+    @Environment(\.houseworkTemplateContext.hasTemplate) var hasTemplate
+
+    @State var isShowHouseworkTemplate = false
+    @State var isShowPaywall = false
+    @State var loadFailure: DomainError?
+
+    @LoadingState var loadingState
+
+    let onRetry: () async -> Void
+
+    var body: some View {
+        DashboardContent(
+            loadFailure: loadFailure,
+            showsAdvertisement: AdDisplayPolicy.shouldShowAds(
+                isPremium: subscriptionStore.isPremium,
+                isEnabled: isAdsEnabled
+            ),
+            isLoading: loadingState.isLoading,
+            showsTemplateBanner: !hasTemplate,
+            onTapRetry: {
+                Task { await retry() }
+            },
+            onTapRemoveAdsPromotion: { tappedRemoveAdsPromotionLink() },
+            onTapTemplateBanner: { isShowHouseworkTemplate = true },
+            encouragementComment: {
+                EncouragementCommentComponent.make()
+            },
+            todaySummary: {
+                TodayHouseworkSummaryComponent.make()
+            },
+            advertisement: {
+                adComponentResolver.resolve(.banner(.dashboardTop))
+            },
+            contributionSummary: {
+                ContributionSummaryComponent.make()
+            },
+            pastIncompleteHousework: {
+                PastIncompleteHouseworkComponent.make()
+            }
+        )
+        .fullScreenCoverOnIOS(isPresented: $isShowHouseworkTemplate) {
+            router.resolve(.houseworkTemplate)
+        }
+        .fullScreenCoverOnIOS(
+            isPresented: $isShowPaywall,
+            content: { router.resolve(.paywall(step: .dashboardAd)) }
+        )
+        .onChange(of: contributionStore.loadState) {
+            onChangeStoreLoadState()
+        }
+        .onChange(of: cohabiantStore.loadState) {
+            onChangeStoreLoadState()
+        }
+        .onChange(of: houseworkListstore.loadState) {
+            onChangeStoreLoadState()
+        }
+        .navigationDestination(for: RegisteredContentRoute.self) { route in
+            navigationHandler(route)
+                .environment(houseworkListstore)
+                .environment(cohabiantStore)
+        }
+        .fullScreenLoadingIndicator(loadingState)
+        .trackScreenView(.dashboard)
+    }
+
+}
+
+// MARK: UI定義
+
+private extension RegisteredContent {
+
+    @ViewBuilder
+    func navigationHandler(_ route: RegisteredContentRoute) -> some View {
+        switch route {
+        case .incompleteHouseworkList:
+            IncompleteHouseworkListScreen.make { item in
+                navigationPath.push(.houseworkDetail(item))
+            }
+
+        case let .houseworkDetail(item):
+            HouseworkDetailScreen.make(item: item)
+
+        case .thanksTargetList:
+            ThanksTargetListScreen.make {
+                navigationPath.push(.pastThanksTargetList)
+            }
+
+        case .pastThanksTargetList:
+            PastThanksTargetListScreen.make()
+        }
+    }
+
+}
+
+// MARK: プレゼンテーションロジック
+
+private extension RegisteredContent {
+
+    /// 再購読を実行し、完了時点のStoreの状態で表示を組み直す
+    ///
+    /// - Note: 同じエラーが再発した場合は`loadState`が変化せず`onChange`が発火しないため、
+    ///         完了後に明示的に状態を反映する。
+    func retry() async {
+        loadingState.isLoading = true
+        await onRetry()
+        onChangeStoreLoadState()
+    }
+
+    /// ダッシュボードが依存する全Storeの購読状態
+    var loadStates: [ListenerLoadState] {
+        [contributionStore.loadState, cohabiantStore.loadState, houseworkListstore.loadState]
+    }
+
+    func onChangeStoreLoadState() {
+        // どれかが失敗していれば、ローディングは解除してエラー表示に倒す
+        let failure = loadStates.compactMap { state -> DomainError? in
+            guard case let .failed(error) = state else { return nil }
+            return error
+        }.first
+
+        if let failure {
+            loadFailure = failure
+            loadingState.isLoading = false
+            return
+        }
+
+        loadFailure = nil
+        // Storeの初回ロード完了まで、ローディング画面を表示する
+        loadingState.isLoading = loadStates.contains { $0 != .loaded }
+    }
+
+    func tappedRemoveAdsPromotionLink() {
+        analyticsClient.log(.advertisement(step: .dashboard))
+        isShowPaywall = true
+    }
+
+}

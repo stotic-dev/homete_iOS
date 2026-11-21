@@ -7,6 +7,7 @@ import CohabitantRegistrationFeature
 import FrequentHouseworkFeature
 import HomeFeature
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 import HometeUI
 import HouseworkTemplateFeature

@@ -1,0 +1,96 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "このまま閉じられると変更中の内容が破棄されます。\n変更を確定する場合は保存してから閉じてください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you close now, your changes will be discarded.\nTo keep them, save before closing."
+          }
+        }
+      }
+    },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "他メンバーのテンプレート更新が、あなたの変更と競合したので変更を破棄する必要があります。よろしいですか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another member updated the templates in a way that conflicts with your changes, so your changes need to be discarded. Continue?"
+          }
+        }
+      }
+    },
+    "変更内容はまだ確定していません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your changes haven't been saved"
+          }
+        }
+      }
+    },
+    "戻す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revert"
+          }
+        }
+      }
+    },
+    "現在の編集内容は破棄されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your current edits will be discarded."
+          }
+        }
+      }
+    },
+    "破棄" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        }
+      }
+    },
+    "編集前の状態に戻しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revert your changes?"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

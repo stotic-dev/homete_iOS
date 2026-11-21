@@ -1,0 +1,368 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "" : {
+
+    },
+    "%@には「%@」がすでにあります。" : {
+      "comment" : "1つめはまわす先の日付、2つめは家事の名前",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@には「%2$@」がすでにあります。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%2$@” is already on %1$@."
+          }
+        }
+      }
+    },
+    "%@にも「%@」があるので、その日の分にまとめます。" : {
+      "comment" : "1つめはまわす先の日付、2つめは家事の名前",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@にも「%2$@」があるので、その日の分にまとめます。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%2$@” is already on %1$@, so it will be combined into that day's chore."
+          }
+        }
+      }
+    },
+    "%lld%%・%lldpt" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld%%・%2$lldpt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld%% · %2$lldpt"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "「%@」に添えた画像は、%@の家事には引き継がれず、見られなくなります。" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "「%1$@」に添えた画像は、%2$@の家事には引き継がれず、見られなくなります。"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The photos attached to \"%1$@\" won't move to the chore on %2$@ and will no longer be visible."
+          }
+        }
+      }
+    },
+    "いつもの家事に保存できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save to Go-to Chores"
+          }
+        }
+      }
+    },
+    "いつもより手間をかけたときに選ぶと、もらえるポイントが増えます。\n「がんばった」は1.2倍、「すごくがんばった」は1.5倍になります（端数は切り上げ）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose this when a chore took more effort than usual to earn more points.\n“Worked Hard” gives 1.2× and “Went All Out” gives 1.5× (rounded up)."
+          }
+        }
+      }
+    },
+    "このまままわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Anyway?"
+          }
+        }
+      }
+    },
+    "この家事は完了または「やらない」になったため、メモを編集できません。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This chore is done or marked “Won't Do,” so its note can't be edited."
+          }
+        }
+      }
+    },
+    "この画像を外しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this photo?"
+          }
+        }
+      }
+    },
+    "この画像を消しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this photo?"
+          }
+        }
+      }
+    },
+    "まとめてまわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combine with That Day?"
+          }
+        }
+      }
+    },
+    "まとめる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Combine"
+          }
+        }
+      }
+    },
+    "まわす" : {
+      "comment" : "家事を別の日へ移すボタン",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move"
+          }
+        }
+      }
+    },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "グループの登録または参加を行うと、家事の管理ができるようになります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create or join a group to start managing chores."
+          }
+        }
+      }
+    },
+    "プレミアムプランにすると、件数を気にせず登録できます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With Premium, you can save as many as you like."
+          }
+        }
+      }
+    },
+    "プレミアムプランを見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Premium Plan"
+          }
+        }
+      }
+    },
+    "メモを保存できませんでした" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save the note"
+          }
+        }
+      }
+    },
+    "入力した内容を破棄しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard what you've entered?"
+          }
+        }
+      }
+    },
+    "入力を続ける" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Editing"
+          }
+        }
+      }
+    },
+    "割合の合計が100%%になるように調整してください（いまは%lld%%です）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust the shares so they add up to 100%% (currently %lld%%)"
+          }
+        }
+      }
+    },
+    "同居人の画面からも見えなくなります。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your housemates won't be able to see it anymore."
+          }
+        }
+      }
+    },
+    "外す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "家事は登録できています。いつもの家事への保存は、管理画面からやり直せます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your chore was added. You can save it to Go-to Chores again from the management screen."
+          }
+        }
+      }
+    },
+    "手分けした家事のポイントを、それぞれがやった割合に合わせて分けられます。\n割合の合計が100%になるように調整してください。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split a shared chore's points by how much each person did.\nMake sure the shares add up to 100%."
+          }
+        }
+      }
+    },
+    "消す" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "無料プランでは、いつもの家事を%lld件まで登録できます" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chore."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "On the Free Plan, you can save up to %lld go-to chores."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "画像を拡大して見る" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Photo"
+          }
+        }
+      }
+    },
+    "画像を残さずにまわしますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Without the Photos?"
+          }
+        }
+      }
+    },
+    "破棄する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        }
+      }
+    },
+    "閉じる" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

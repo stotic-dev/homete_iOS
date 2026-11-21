@@ -1,0 +1,46 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "このAppleアカウントは、すでに%@で使われています" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This Apple Account is already used with %@"
+          }
+        }
+      }
+    },
+    "そのアカウントでログインしますか？ここまでに登録したニックネームとパートナーは引き継がれず、削除されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log in with that account? The nickname and partner you have set up so far will not carry over and will be deleted."
+          }
+        }
+      }
+    },
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "ログインする" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log In"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

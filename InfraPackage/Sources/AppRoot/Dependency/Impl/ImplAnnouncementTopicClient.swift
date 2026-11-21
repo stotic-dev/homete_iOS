@@ -4,6 +4,7 @@
 
 import Foundation
 import HometeDomain
+import HometeDomainUI
 import HometeInfrastructure
 
 extension AnnouncementTopicClient {

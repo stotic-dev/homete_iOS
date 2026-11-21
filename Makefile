@@ -1,4 +1,4 @@
-.PHONY: help resolve-packages build-local-package build-infra-package test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
+.PHONY: help resolve-packages build-local-package build-ui-package build-infra-package build-cli test-behavior run-cli test-packages test-packages-fast affected build-affected test-affected snapshot-affected check-previews check-translations setup-project install-hooks format copy-xcode-cloud-secret xcode-cloud
 
 .DEFAULT_GOAL := setup-project
 
@@ -12,6 +12,10 @@ build-local-package: ## LocalPackageをiOSシミュレーター向けにビル�
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
 
+build-ui-package: ## UIPackage（HometeUI・Feature・FeatureUIなどSwiftUIで描くモジュール）をiOSシミュレーター向けにビルド
+	scripts/with-local-package-lock.sh $(CURDIR)/UIPackage -- \
+		swift build --package-path $(CURDIR)/UIPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
+
 build-infra-package: ## InfraPackage（HometeInfrastructure・AppRoot）をiOSシミュレーター向けにビルド。HometeDomainのプロトコルを変えたときの実装側の追従漏れはここで分かる
 	scripts/with-local-package-lock.sh $(CURDIR)/InfraPackage -- \
 		swift build --package-path $(CURDIR)/InfraPackage --disable-sandbox --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple arm64-apple-ios26.2-simulator
@@ -20,7 +24,7 @@ test-packages: ## LocalPackageのテストを実行（自worktree内の多重実
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox --enable-code-coverage
 
-test-packages-fast: ## カバレッジなしでLocalPackageのテストを実行。FILTER=<テストターゲット/Suite名>で絞り込める（例: make test-packages-fast FILTER=HouseworkFeatureTests）
+test-packages-fast: ## カバレッジなしでLocalPackageのテストを実行。FILTER=<テストターゲット/Suite名>で絞り込める（例: make test-packages-fast FILTER=HometeAppCoreTests）
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox $(if $(FILTER),--filter '$(FILTER)')
 
@@ -31,14 +35,15 @@ SIM_SDK = --sdk $(shell xcrun --sdk iphonesimulator --show-sdk-path) --triple ar
 affected: ## 変更に関係するモジュールと、必要なビルド・テスト・VRTを表示（BASE=<ref>、既定はorigin/main）
 	@python3 scripts/affected-modules.py summary --base $(BASE)
 
-build-affected: ## 変更に関係するLocalPackageのターゲットだけiOS向けにビルドし、必要ならInfraPackageもビルド（BASE=<ref>）
+build-affected: ## 変更に関係するLocalPackage・UIPackageのターゲットだけiOS向けにビルドし、必要ならInfraPackageもビルド（BASE=<ref>）
 	@targets="$$(python3 scripts/affected-modules.py build-targets --base $(BASE))"; \
-	if [ -z "$$targets" ]; then echo "iOS向けにビルドするLocalPackageのターゲットはありません。"; fi; \
-	for target in $$targets; do \
-		echo "=== $$target ==="; \
-		scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
-			swift build --package-path $(CURDIR)/LocalPackage --disable-sandbox $(SIM_SDK) --target $$target || exit 1; \
-	done; \
+	if [ -z "$$targets" ]; then echo "iOS向けにビルドするLocalPackage・UIPackageのターゲットはありません。"; fi; \
+	echo "$$targets" | while read -r package target; do \
+		[ -z "$$target" ] && continue; \
+		echo "=== $$package/$$target ==="; \
+		scripts/with-local-package-lock.sh $(CURDIR)/$$package -- \
+			swift build --package-path $(CURDIR)/$$package --disable-sandbox $(SIM_SDK) --target $$target || exit 1; \
+	done || exit 1; \
 	if [ "$$(python3 scripts/affected-modules.py infra --base $(BASE))" = yes ]; then \
 		$(MAKE) build-infra-package; \
 	else \
@@ -52,7 +57,20 @@ test-affected: ## 変更に関係するテストターゲットだけ実行（BA
 	scripts/with-local-package-lock.sh $(CURDIR)/LocalPackage -- \
 		swift test --package-path $(CURDIR)/LocalPackage --disable-sandbox $(if $(COVERAGE),--enable-code-coverage) --filter "$$filter"
 
-snapshot-affected: ## 直接変えたHometeUI・Featureのプレビューだけ、ローカルでVRTを流す（BASE=<ref>）。参照スナップショットは更新しない
+build-cli: ## CLI（homete-cli）と行動テストをビルド（AgentToolsPackage。ホストのmacOS向け）
+	scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift build --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox --build-tests
+
+test-behavior: ## HometeAppCoreのViewModelをCLIと同じ入口で動かす行動テストを実行。FILTER=<Suite名>で絞り込める（doc/tech/agent-cli.md）
+	scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift test --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox $(if $(FILTER),--filter '$(FILTER)')
+
+run-cli: ## CLIを起動する。標準入力の ls / do <JSON> に標準出力のJSONで答える（SCENARIO=<名前>、既定はtoday）
+	@scripts/with-local-package-lock.sh $(CURDIR)/AgentToolsPackage -- \
+		swift build --package-path $(CURDIR)/AgentToolsPackage --disable-sandbox --product homete-cli 1>&2
+	@$(CURDIR)/AgentToolsPackage/.build/debug/homete-cli --scenario $(or $(SCENARIO),today)
+
+snapshot-affected: ## 直接変えたHometeUI・FeatureUIのプレビューだけ、ローカルでVRTを流す（BASE=<ref>）。参照スナップショットは更新しない
 	scripts/run-affected-snapshots.sh $(BASE)
 
 check-previews: ## VRT(Prefire)のビルドが壊れる#Previewを静的に検出
@@ -76,7 +94,7 @@ format: ## プロダクション+テストコード全体にSwiftFormatを実行
 		--allow-writing-to-package-directory \
 		--allow-writing-to-directory $(CURDIR) \
 		swiftformat --config .swiftformat \
-		homete hometeSnapshotTests LocalPackage InfraPackage
+		homete hometeSnapshotTests LocalPackage UIPackage InfraPackage AgentToolsPackage
 
 setup-project: ## iOSプロジェクトのセットアップ
 	@bash scripts/setup_ruby.sh

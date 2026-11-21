@@ -1,0 +1,271 @@
+//
+//  FrequentHouseworkEditView.swift
+//  LocalPackage
+//
+
+import HometeModel
+import HometeUI
+import SwiftUI
+
+/// いつもの家事の追加・編集モーダルの中身（新規・編集兼用）
+/// - Note: メモの編集シート・カテゴリの作成・閉じる操作は`FrequentHouseworkEditModal`が受け持つ。
+///         `NavigationStack`の中に置かれる前提でツールバーの項目を並べる
+public struct FrequentHouseworkEditView: View {
+
+    @State var isPresentingCategoryNameAlert = false
+    @State var newCategoryName = ""
+    @FocusState var isShowingKeyboard: Bool
+
+    @Binding var input: FrequentHouseworkEditInput
+    let target: FrequentHouseworkEditTarget
+    let context: FrequentHouseworkContext
+    /// このモーダルから追加したカテゴリ
+    /// - Note: 追加直後は購読が届くまで`context`に入らないため、選択肢と名前の重複の判定に足す
+    let addedCategories: [FrequentHouseworkCustomCategory]
+    let onTapClose: () -> Void
+    let onTapConfirm: () -> Void
+    let onTapMemo: () -> Void
+    /// 新しいカテゴリの名前を決定した
+    let onConfirmNewCategory: (String) -> Void
+
+    public init(
+        input: Binding<FrequentHouseworkEditInput>,
+        target: FrequentHouseworkEditTarget,
+        context: FrequentHouseworkContext,
+        addedCategories: [FrequentHouseworkCustomCategory],
+        onTapClose: @escaping () -> Void,
+        onTapConfirm: @escaping () -> Void,
+        onTapMemo: @escaping () -> Void,
+        onConfirmNewCategory: @escaping (String) -> Void
+    ) {
+        _input = input
+        self.target = target
+        self.context = context
+        self.addedCategories = addedCategories
+        self.onTapClose = onTapClose
+        self.onTapConfirm = onTapConfirm
+        self.onTapMemo = onTapMemo
+        self.onConfirmNewCategory = onConfirmNewCategory
+    }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: .space16) {
+            inputTitleField()
+            inputPointPicker()
+            inputCategoryPicker()
+            HouseworkMemoRow(hasContent: input.memo.hasContent, titleFont: .headLineS) {
+                onTapMemo()
+            }
+            Spacer()
+        }
+        .padding(.horizontal, .space16)
+        .padding(.vertical, .space24)
+        .navigationTitle(navigationTitle)
+        .inlineNavigationBarTitleDisplayMode()
+        .leadingToolbarItem {
+            NavigationBarButton(label: .close) {
+                onTapClose()
+            }
+        }
+        .trailingToolbarItem {
+            NavigationBarPrimaryActionButton(systemImage: "checkmark") {
+                onTapConfirm()
+            }
+            .disabled(!validation.isValid)
+        }
+        .alert(.localized("新しいカテゴリ"), isPresented: $isPresentingCategoryNameAlert) {
+            TextField(text: $newCategoryName) {
+                Text("カテゴリの名前", bundle: #bundle)
+            }
+            Button(.localized("キャンセル"), role: .cancel) {}
+            Button(.localized("追加")) {
+                onConfirmNewCategory(newCategoryName)
+            }
+            .disabled(!newCategoryNameValidation.isValid)
+        } message: {
+            Text(newCategoryNameMessage)
+        }
+        .onAppear {
+            onAppear()
+        }
+    }
+
+}
+
+// MARK: - UI定義
+
+private extension FrequentHouseworkEditView {
+
+    var navigationTitle: LocalizedStringResource {
+        switch target {
+        case .create:
+            .localized("いつもの家事を追加")
+
+        case .edit:
+            .localized("いつもの家事を編集")
+        }
+    }
+
+    /// このモーダルから追加したカテゴリを含めた、判定と表示に使う値
+    var editingContext: FrequentHouseworkContext {
+        let knownIds = Set(context.customCategories.map(\.id))
+        let pendingCategories = addedCategories.filter { !knownIds.contains($0.id) }
+        guard !pendingCategories.isEmpty else { return context }
+        return context.replacingCustomCategories(context.customCategories + pendingCategories)
+    }
+
+    var validation: FrequentHouseworkContext.TitleValidation {
+        input.validation(context: editingContext, editingId: editingId)
+    }
+
+    var newCategoryNameValidation: FrequentHouseworkContext.CategoryNameValidation {
+        editingContext.validateCategoryName(newCategoryName)
+    }
+
+    var newCategoryNameMessage: LocalizedStringResource {
+        switch newCategoryNameValidation {
+        case .valid, .emptyName:
+            .localized("いつもの家事をまとめる名前を入力してください。")
+
+        case .duplicatedName:
+            .localized("同じ名前のカテゴリがあります。")
+        }
+    }
+
+    var editingId: String? {
+        switch target {
+        case .create:
+            nil
+
+        case let .edit(item):
+            item.id
+        }
+    }
+
+    func inputTitleField() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("家事の名前", bundle: #bundle)
+                .font(with: .headLineS)
+            ClearableTextField(
+                text: $input.title,
+                placeholder: .localized("家事の名前を入力"),
+                focus: $isShowingKeyboard
+            )
+            if validation == .duplicatedTitle {
+                Text("同じ名前のいつもの家事があります", bundle: #bundle)
+                    .font(with: .caption)
+                    .foregroundStyle(.textDestructive)
+            }
+        }
+    }
+
+    func inputPointPicker() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("ポイント", bundle: #bundle)
+                .font(with: .headLineS)
+            PointWheelPickerField(point: $input.point)
+                .font(with: .headLineM)
+        }
+    }
+
+    /// カテゴリの選択肢
+    /// - Note: 選択肢と「＋ 新しいカテゴリ」を1つのメニューに並べるため、`Picker`単体ではなく`Menu`で組み立てる
+    func inputCategoryPicker() -> some View {
+        VStack(alignment: .leading, spacing: .space8) {
+            Text("カテゴリ", bundle: #bundle)
+                .font(with: .headLineS)
+            Menu {
+                Picker(.localized("カテゴリ"), selection: $input.categoryId) {
+                    ForEach(editingContext.categories) { category in
+                        Text(categoryLabel(category))
+                            .tag(category.categoryId)
+                    }
+                }
+                .pickerStyle(.inline)
+                Divider()
+                Button {
+                    presentCategoryNameAlert()
+                } label: {
+                    Label(.localized("新しいカテゴリ"), systemImage: "plus")
+                }
+            } label: {
+                HStack(spacing: .space4) {
+                    Text(selectedCategoryLabel)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                }
+            }
+            .tint(.textPrimary)
+        }
+    }
+
+    var selectedCategoryLabel: String {
+        let selected = editingContext.categories.first { $0.categoryId == input.categoryId }
+        return categoryLabel(selected ?? .uncategorized)
+    }
+
+    func categoryLabel(_ category: FrequentHouseworkCategory) -> String {
+        switch category {
+        case .uncategorized:
+            // カスタムカテゴリの名前（ユーザーの入力）と並べるため、文字列にそろえる
+            LocalizedStringResource.localized("\(category.name)（未設定）", comment: "カテゴリを選んでいないときの表示。カテゴリ名「その他」が入る")
+                .resolved()
+
+        case .preset, .custom:
+            category.name
+        }
+    }
+
+}
+
+// MARK: - プレゼンテーションロジック
+
+private extension FrequentHouseworkEditView {
+
+    func onAppear() {
+        // 新規追加時はすぐに入力できるようにキーボードを出しておく
+        if case .create = target {
+            isShowingKeyboard = true
+        }
+    }
+
+    func presentCategoryNameAlert() {
+        newCategoryName = ""
+        isPresentingCategoryNameAlert = true
+    }
+
+}
+
+#if DEBUG
+#Preview("FrequentHouseworkEditModal_新規") {
+    NavigationStack {
+        FrequentHouseworkEditView(
+            input: .constant(.initial),
+            target: .create,
+            context: .init(),
+            addedCategories: [],
+            onTapClose: {},
+            onTapConfirm: {},
+            onTapMemo: {},
+            onConfirmNewCategory: { _ in }
+        )
+    }
+}
+
+#Preview("FrequentHouseworkEditModal_編集_名前が重複") {
+    let editing = FrequentHouseworkItem.makeForPreview(id: "1", title: "洗濯", point: 20, categoryId: "preset.laundry")
+    let other = FrequentHouseworkItem.makeForPreview(id: "2", title: "布団干し", point: 30, categoryId: "preset.laundry")
+    NavigationStack {
+        FrequentHouseworkEditView(
+            input: .constant(.init(title: "布団干し", point: 20, categoryId: "preset.laundry")),
+            target: .edit(editing),
+            context: .init(items: [editing, other]),
+            addedCategories: [],
+            onTapClose: {},
+            onTapConfirm: {},
+            onTapMemo: {},
+            onConfirmNewCategory: { _ in }
+        )
+    }
+}
+#endif
