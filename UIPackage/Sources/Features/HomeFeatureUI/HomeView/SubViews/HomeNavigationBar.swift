@@ -29,9 +29,7 @@ public extension View {
                         action: onTapAnnouncement
                     )
                 }
-                if #available(iOS 26.0, *) {
-                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
-                }
+                NavigationBarSpacer(placement: .topBarTrailing)
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationBarButton(label: .settings, action: onTapSetting)
                 }

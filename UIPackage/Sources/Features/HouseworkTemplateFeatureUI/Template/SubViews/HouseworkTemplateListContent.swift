@@ -257,9 +257,7 @@ private extension HouseworkTemplateListContent {
                 .foregroundStyle(.textPrimary)
             }
         }
-        if #available(iOS 26.0, *) {
-            ToolbarSpacer()
-        }
+        NavigationBarSpacer(.flexible)
         ToolbarItem(placement: .topBarTrailing) {
             NavigationBarPrimaryActionButton(systemImage: "checkmark") {
                 onTapSave()
