@@ -123,8 +123,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/BarredEwe/Prefire.git",
       "state" : {
-        "revision" : "34248f6f227cfe9917f8d9f5dee194903f488776",
-        "version" : "6.5.0"
+        "revision" : "c020027ecfd6e5a1c5e9421a215d224f6e2728fd",
+        "version" : "6.6.1"
       }
     },
     {
